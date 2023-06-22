@@ -2,8 +2,6 @@ module github.com/pingidentity/terraform-provider-pingfederate
 
 go 1.19
 
-replace github.com/pingidentity/pingfederate-go-client v0.0.0 => ../pingfederate-go-client
-
 require (
 	github.com/bflad/tfproviderlint v0.29.0
 	github.com/golangci/golangci-lint v1.53.2
@@ -14,7 +12,7 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.3.0
 	github.com/katbyte/terrafmt v0.5.2
 	github.com/pavius/impi v0.0.3
-	github.com/pingidentity/pingfederate-go-client v0.0.0
+	github.com/pingidentity/pingfederate-go-client v0.0.1
 	github.com/terraform-linters/tflint v0.46.1
 )
 
