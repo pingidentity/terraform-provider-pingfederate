@@ -16,6 +16,7 @@ import (
 	administrativeAccount "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/administrativeaccounts"
 	authenticationApiSettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/authenticationapisettings"
 	authenticationPolicyContracts "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/authenticationpolicycontracts"
+	idpDefaultUrls "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/idpdefaulturls"
 	keyPairsSigningImport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/keypairssigningimport"
 	keyPairsSslServerImport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/keypairssslserverimport"
 	oauthAuthServerSettingsScopesCommonScopes "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/oauthauthserversettingsscopescommonscopes"
@@ -190,6 +191,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		administrativeAccount.AdministrativeAccountResource,
 		authenticationApiSettings.AuthenticationApiSettingsResource,
 		authenticationPolicyContracts.AuthenticationPolicyContractsResource,
+		idpDefaultUrls.IdpDefaultUrlsResource,
 		keyPairsSigningImport.KeyPairsSigningImportResource,
 		keyPairsSslServerImport.KeyPairsSslServerImportResource,
 		oauthAuthServerSettingsScopesCommonScopes.OauthAuthServerSettingsScopesCommonScopesResource,
