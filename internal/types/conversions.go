@@ -200,7 +200,7 @@ func InterfaceStringOrNil(i interface{}) string {
 // Get a nested key value from given interface, handling if the value is nil
 func GetNestedInterfaceKeyStringValue(i interface{}, nestedKey string) types.String {
 	if i != nil && nestedKey != "" {
-		return StringValueOrNull(i.(map[string]interface{})[nestedKey])
+		return InterfaceStringValueOrNull(i.(map[string]interface{})[nestedKey])
 	} else {
 		return types.StringNull()
 	}
