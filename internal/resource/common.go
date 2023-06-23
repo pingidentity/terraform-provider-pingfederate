@@ -29,23 +29,6 @@ func AddCommonSchema(s *schema.Schema, idRequired bool) {
 			Computed:    true,
 		}
 	}
-
-	// If ID is required (for instantiable config objects) then set it as Required and
-	// require replace when changing. Otherwise, mark it as Computed.
-	if idRequired {
-		s.Attributes["id"] = schema.StringAttribute{
-			Description: "Name of this object.",
-			Required:    true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.RequiresReplace(),
-			},
-		}
-	} else {
-		s.Attributes["id"] = schema.StringAttribute{
-			Description: "Placeholder name of this object required by Terraform.",
-			Computed:    true,
-		}
-	}
 }
 
 func SetAllAttributesToOptionalAndComputed(s *schema.Schema, exemptAttributes []string) {

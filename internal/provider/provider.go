@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	administrativeAccount "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/administrativeaccounts"
+	authenticationApiSettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/authenticationapisettings"
 	authenticationPolicyContracts "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/authenticationpolicycontracts"
 	keyPairsSigningImport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/keypairssigningimport"
 	keyPairsSslServerImport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/keypairssslserverimport"
@@ -187,6 +188,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		administrativeAccount.AdministrativeAccountResource,
+		authenticationApiSettings.AuthenticationApiSettingsResource,
 		authenticationPolicyContracts.AuthenticationPolicyContractsResource,
 		keyPairsSigningImport.KeyPairsSigningImportResource,
 		keyPairsSslServerImport.KeyPairsSslServerImportResource,

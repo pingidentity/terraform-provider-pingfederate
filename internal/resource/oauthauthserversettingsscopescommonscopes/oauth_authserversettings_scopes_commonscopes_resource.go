@@ -86,7 +86,7 @@ func oauthAuthServerSettingsScopesCommonScopesResourceSchema(ctx context.Context
 		},
 	}
 
-	// Set attribtues in string list
+	// Set attributes in string list
 	if setOptionalToComputed {
 		config.SetAllAttributesToOptionalAndComputed(&schema, []string{"name", "description"})
 	}
@@ -94,11 +94,11 @@ func oauthAuthServerSettingsScopesCommonScopesResourceSchema(ctx context.Context
 }
 
 func (r *oauthAuthServerSettingsScopesCommonScopesResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	var model oauthAuthServerSettingsScopesCommonScopesResourceModel
-	req.Plan.Get(ctx, &model)
-	if model.Dynamic.ValueBool() && (model.Name.ValueString() != "" || !model.Name.IsNull()) {
+	var plan oauthAuthServerSettingsScopesCommonScopesResourceModel
+	req.Plan.Get(ctx, &plan)
+	if plan.Dynamic.ValueBool() && (plan.Name.ValueString() != "" || !plan.Name.IsNull()) {
 		{
-			containsAsteriskPrefix := strings.Index(model.Name.ValueString(), "*")
+			containsAsteriskPrefix := strings.Index(plan.Name.ValueString(), "*")
 			if containsAsteriskPrefix != 0 {
 				resp.Diagnostics.AddError("Dynamic property is set to true with Name property incorrectly specified!", "The Name property must be prefixed with an \"*\". For example, \"*example\"")
 			}

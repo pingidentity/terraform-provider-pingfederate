@@ -86,7 +86,7 @@ func oauthAuthServerSettingsScopesExclusiveScopesResourceSchema(ctx context.Cont
 		},
 	}
 
-	// Set attribtues in string list
+	// Set attributes in string list
 	if setOptionalToComputed {
 		config.SetAllAttributesToOptionalAndComputed(&schema, []string{"name", "description"})
 	}

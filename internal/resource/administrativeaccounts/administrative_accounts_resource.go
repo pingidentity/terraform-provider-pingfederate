@@ -134,7 +134,7 @@ func administrativeAccountResourceSchema(ctx context.Context, req resource.Schem
 		},
 	}
 
-	// Set attribtues in string list
+	// Set attributes in string list
 	if setOptionalToComputed {
 		config.SetAllAttributesToOptionalAndComputed(&schema, []string{"username", "password", "roles"})
 	}

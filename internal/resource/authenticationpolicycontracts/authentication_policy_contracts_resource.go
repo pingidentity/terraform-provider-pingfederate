@@ -105,7 +105,7 @@ func authenticationPolicyContractsResourceSchema(ctx context.Context, req resour
 		},
 	}
 
-	// Set attribtues in string list
+	// Set attributes in string list
 	if setOptionalToComputed {
 		config.SetAllAttributesToOptionalAndComputed(&schema, []string{"id"})
 	}

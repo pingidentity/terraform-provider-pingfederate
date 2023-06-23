@@ -270,7 +270,7 @@ func MaptoObjValue(attributeTypes map[string]attr.Type, attributeValues map[stri
 	return newObj
 }
 
-func StringValueOrNull(value interface{}) types.String {
+func InterfaceStringValueOrNull(value interface{}) types.String {
 	if value == nil {
 		return basetypes.NewStringNull()
 	} else {
