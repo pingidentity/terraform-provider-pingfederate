@@ -24,6 +24,7 @@ import (
 	oauthIssuer "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/oauthissuers"
 	protocolMetadataLifetimeSettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/protocolmetadatalifetimesettings"
 	serverSettingsGeneralSettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/serversettingsgeneralsettings"
+	sessionAuthenticationSessionPoliciesGlobal "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/sessionauthenticationsessionpoliciesglobal"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -201,5 +202,6 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		oauthIssuer.OauthIssuersResource,
 		protocolMetadataLifetimeSettings.ProtocolMetadataLifetimeSettingsResource,
 		serverSettingsGeneralSettings.ServerSettingsGeneralSettingsResource,
+		sessionAuthenticationSessionPoliciesGlobal.SessionAuthenticationSessionPoliciesGlobalResource,
 	}
 }
