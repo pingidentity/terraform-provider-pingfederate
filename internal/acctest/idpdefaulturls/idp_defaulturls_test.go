@@ -55,12 +55,11 @@ func TestAccIdpDefaultUrls(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:                  testAccIdpDefaultUrls(resourceName, updatedResourceModel),
-				ResourceName:            "pingfederate_idp_defaulturls." + resourceName,
-				ImportStateId:           idpDefaultUrlsId,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"items"},
+				Config:            testAccIdpDefaultUrls(resourceName, updatedResourceModel),
+				ResourceName:      "pingfederate_idp_defaulturls." + resourceName,
+				ImportStateId:     idpDefaultUrlsId,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

@@ -17,7 +17,7 @@ func AddCommonSchema(s *schema.Schema, idRequired bool) {
 	// require replace when changing. Otherwise, mark it as Computed.
 	if idRequired {
 		s.Attributes["id"] = schema.StringAttribute{
-			Description: "Name of this object.",
+			Description: "The persistent, unique ID for the resource. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.",
 			Required:    true,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.RequiresReplace(),

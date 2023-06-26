@@ -59,8 +59,9 @@ func administrativeAccountResourceSchema(ctx context.Context, req resource.Schem
 		Description: "Manages a AdministrativeAccount.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Optional: false,
-				Computed: true,
+				Description: "Computed attribute tied to the username property of this resource.",
+				Optional:    false,
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -134,7 +135,7 @@ func administrativeAccountResourceSchema(ctx context.Context, req resource.Schem
 		},
 	}
 
-	// Set attributes in string list
+	// Set attribtues in string list
 	if setOptionalToComputed {
 		config.SetAllAttributesToOptionalAndComputed(&schema, []string{"username", "password", "roles"})
 	}
@@ -188,6 +189,7 @@ func (r *administrativeAccountsResource) Configure(_ context.Context, req resour
 }
 
 func readAdministrativeAccountResponse(ctx context.Context, r *client.AdministrativeAccount, state *administrativeAccountResourceModel, expectedValues *administrativeAccountResourceModel, passwordPlan basetypes.StringValue) {
+	state.Id = types.StringValue(r.Username)
 	state.Username = types.StringValue(r.Username)
 	state.Password = types.StringValue(passwordPlan.ValueString())
 	state.Active = types.BoolValue(*r.Active)
@@ -197,7 +199,6 @@ func readAdministrativeAccountResponse(ctx context.Context, r *client.Administra
 	state.EmailAddress = internaltypes.StringTypeOrNil(r.EmailAddress, false)
 	state.Department = internaltypes.StringTypeOrNil(r.Department, false)
 	state.Roles = internaltypes.GetStringSet(r.Roles)
-	state.Id = types.StringValue(r.Username)
 }
 
 func (r *administrativeAccountsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

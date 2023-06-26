@@ -52,8 +52,9 @@ func oauthIssuersResourceSchema(ctx context.Context, req resource.SchemaRequest,
 		Description: "Manages an OAuth Issuer.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
-				Optional: true,
+				Description: "The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
+				Computed:    true,
+				Optional:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),
