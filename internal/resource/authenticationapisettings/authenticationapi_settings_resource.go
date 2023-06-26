@@ -49,14 +49,6 @@ func (r *authenticationApiSettingsResource) Schema(ctx context.Context, req reso
 	schema := schema.Schema{
 		Description: "Manages a AuthenticationApiSettings.",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "ID placeholder for Terraform state",
-				Optional:    false,
-				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
 			"api_enabled": schema.BoolAttribute{
 				Description: "Enable Authentication API",
 				Optional:    true,
@@ -116,6 +108,7 @@ func (r *authenticationApiSettingsResource) Schema(ctx context.Context, req reso
 		},
 	}
 
+	config.AddCommonSchema(&schema, false)
 	resp.Schema = schema
 }
 

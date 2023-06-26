@@ -50,15 +50,6 @@ func idpDefaultUrlsResourceSchema(ctx context.Context, req resource.SchemaReques
 	schema := schema.Schema{
 		Description: "Manages a IdpDefaultUrls.",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "ID placeholder for Terraform state",
-				Computed:    true,
-				Optional:    false,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-					stringplanmodifier.RequiresReplace(),
-				},
-			},
 			"confirm_idp_slo": schema.BoolAttribute{
 				Description: "Prompt user to confirm Single Logout (SLO).",
 				Computed:    true,
@@ -72,6 +63,7 @@ func idpDefaultUrlsResourceSchema(ctx context.Context, req resource.SchemaReques
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"idp_slo_success_url": schema.StringAttribute{
@@ -89,6 +81,7 @@ func idpDefaultUrlsResourceSchema(ctx context.Context, req resource.SchemaReques
 	if setOptionalToComputed {
 		config.SetAllAttributesToOptionalAndComputed(&schema, []string{"idp_error_msg"})
 	}
+	config.AddCommonSchema(&schema, false)
 	resp.Schema = schema
 }
 func addOptionalIdpDefaultUrlsFields(ctx context.Context, addRequest *client.IdpDefaultUrl, plan idpDefaultUrlsResourceModel) error {
