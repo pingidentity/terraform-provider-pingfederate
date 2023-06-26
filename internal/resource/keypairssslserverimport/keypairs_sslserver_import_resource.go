@@ -51,8 +51,9 @@ func keyPairsSslServerImportResourceSchema(ctx context.Context, req resource.Sch
 		Description: "Manages a KeyPairsSslServerImport.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Computed: true,
-				Optional: true,
+				Description: "The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.",
+				Computed:    true,
+				Optional:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
