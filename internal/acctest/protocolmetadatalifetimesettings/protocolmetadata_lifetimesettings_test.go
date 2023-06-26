@@ -12,6 +12,8 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
+const protocolMetadataLifetimeSettingsId = "id"
+
 // Attributes to test with. Add optional properties to test here if desired.
 type protocolMetadataLifetimeSettingsResourceModel struct {
 	id            string
@@ -49,7 +51,7 @@ func TestAccProtocolMetadataLifetimeSettings(t *testing.T) {
 				// Test importing the resource
 				Config:            testAccProtocolMetadataLifetimeSettings(resourceName, updatedResourceModel),
 				ResourceName:      "pingfederate_protocolmetadata_lifetimesettings." + resourceName,
-				ImportStateId:     "id",
+				ImportStateId:     protocolMetadataLifetimeSettingsId,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
