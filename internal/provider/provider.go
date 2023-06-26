@@ -22,6 +22,7 @@ import (
 	oauthAuthServerSettingsScopesCommonScopes "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/oauthauthserversettingsscopescommonscopes"
 	oauthAuthServerSettingsScopesExclusiveScopes "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/oauthauthserversettingsscopesexclusivescopes"
 	oauthIssuer "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/oauthissuers"
+	protocolMetadataLifetimeSettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/protocolmetadatalifetimesettings"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -197,5 +198,6 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		oauthAuthServerSettingsScopesCommonScopes.OauthAuthServerSettingsScopesCommonScopesResource,
 		oauthAuthServerSettingsScopesExclusiveScopes.OauthAuthServerSettingsScopesExclusiveScopesResource,
 		oauthIssuer.OauthIssuersResource,
+		protocolMetadataLifetimeSettings.ProtocolMetadataLifetimeSettingsResource,
 	}
 }
