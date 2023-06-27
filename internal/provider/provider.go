@@ -24,8 +24,8 @@ import (
 	oauthIssuer "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/oauthissuers"
 	protocolMetadataLifetimeSettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/protocolmetadatalifetimesettings"
 	serverSettingsGeneralSettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/serversettingsgeneralsettings"
-	sessionAuthenticationSessionPoliciesGlobal "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/sessionauthenticationsessionpoliciesglobal"
 	sessionApplicationSessionPolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/sessionapplicationsessionpolicy"
+	sessionAuthenticationSessionPoliciesGlobal "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/sessionauthenticationsessionpoliciesglobal"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
