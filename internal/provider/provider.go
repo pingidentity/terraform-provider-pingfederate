@@ -16,9 +16,11 @@ import (
 	administrativeAccount "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/administrativeaccounts"
 	authenticationApiSettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/authenticationapisettings"
 	authenticationPolicyContracts "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/authenticationpolicycontracts"
+	certificatesCa "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/certificatesca"
 	idpDefaultUrls "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/idpdefaulturls"
 	keyPairsSigningImport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/keypairssigningimport"
 	keyPairsSslServerImport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/keypairssslserverimport"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/license"
 	oauthAuthServerSettingsScopesCommonScopes "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/oauthauthserversettingsscopescommonscopes"
 	oauthAuthServerSettingsScopesExclusiveScopes "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/oauthauthserversettingsscopesexclusivescopes"
 	oauthIssuer "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/oauthissuers"
@@ -195,9 +197,11 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		administrativeAccount.AdministrativeAccountResource,
 		authenticationApiSettings.AuthenticationApiSettingsResource,
 		authenticationPolicyContracts.AuthenticationPolicyContractsResource,
+		certificatesCa.CertificateResource,
 		idpDefaultUrls.IdpDefaultUrlsResource,
 		keyPairsSigningImport.KeyPairsSigningImportResource,
 		keyPairsSslServerImport.KeyPairsSslServerImportResource,
+		license.LicenseResource,
 		oauthAuthServerSettingsScopesCommonScopes.OauthAuthServerSettingsScopesCommonScopesResource,
 		oauthAuthServerSettingsScopesExclusiveScopes.OauthAuthServerSettingsScopesExclusiveScopesResource,
 		oauthIssuer.OauthIssuersResource,
