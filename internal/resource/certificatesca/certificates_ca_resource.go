@@ -46,7 +46,7 @@ func (r *certificatesResource) Schema(ctx context.Context, req resource.SchemaRe
 
 func certificatesResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
 	schema := schema.Schema{
-		Description: "Manages CetrificateCA Import.",
+		Description: "Manages CertificateCA Import.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "The persistent, unique ID for the certificate",

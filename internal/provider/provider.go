@@ -21,6 +21,7 @@ import (
 	keyPairsSigningImport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/keypairssigningimport"
 	keyPairsSslServerImport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/keypairssslserverimport"
 	license "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/license"
+	licenseAgreement "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/licenseagreement"
 	oauthAuthServerSettingsScopesCommonScopes "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/oauthauthserversettingsscopescommonscopes"
 	oauthAuthServerSettingsScopesExclusiveScopes "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/oauthauthserversettingsscopesexclusivescopes"
 	oauthIssuer "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/oauthissuers"
@@ -202,6 +203,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		keyPairsSigningImport.KeyPairsSigningImportResource,
 		keyPairsSslServerImport.KeyPairsSslServerImportResource,
 		license.LicenseResource,
+		licenseAgreement.LicenseAgreementResource,
 		oauthAuthServerSettingsScopesCommonScopes.OauthAuthServerSettingsScopesCommonScopesResource,
 		oauthAuthServerSettingsScopesExclusiveScopes.OauthAuthServerSettingsScopesExclusiveScopesResource,
 		oauthIssuer.OauthIssuersResource,
