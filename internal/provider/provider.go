@@ -20,7 +20,7 @@ import (
 	idpDefaultUrls "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/idpdefaulturls"
 	keyPairsSigningImport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/keypairssigningimport"
 	keyPairsSslServerImport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/keypairssslserverimport"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/license"
+	license "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/license"
 	oauthAuthServerSettingsScopesCommonScopes "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/oauthauthserversettingsscopescommonscopes"
 	oauthAuthServerSettingsScopesExclusiveScopes "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/oauthauthserversettingsscopesexclusivescopes"
 	oauthIssuer "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/oauthissuers"

@@ -27,10 +27,6 @@ func TestAccCertificate(t *testing.T) {
 		id:      certificateId,
 		stateId: certificateId,
 	}
-	updatedResourceModel := certificatesResourceModel{
-		id:      certificateId,
-		stateId: certificateId,
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
@@ -44,16 +40,11 @@ func TestAccCertificate(t *testing.T) {
 				Check:  testAccCheckExpectedCertificateAttributes(initialResourceModel),
 			},
 			{
-				// Test updating some fields
-				Config: testAccCertificate(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedCertificateAttributes(updatedResourceModel),
-			},
-			{
 				// Test importing the resource
-				Config:            testAccCertificate(resourceName, updatedResourceModel),
+				Config:            testAccCertificate(resourceName, initialResourceModel),
 				ResourceName:      "pingfederate_certificates_ca." + resourceName,
 				ImportStateId:     certificateId,
-				ImportState:       false,
+				ImportState:       true,
 				ImportStateVerify: false,
 			},
 		},

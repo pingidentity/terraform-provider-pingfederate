@@ -26,10 +26,6 @@ func TestAccLicense(t *testing.T) {
 		id:       licenseId,
 		fileData: fileData,
 	}
-	updatedResourceModel := licenseResourceModel{
-		id:       licenseId,
-		fileData: fileData,
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
@@ -41,15 +37,11 @@ func TestAccLicense(t *testing.T) {
 				Config: testAccLicense(resourceName, initialResourceModel),
 			},
 			{
-				// Test updating some fields
-				Config: testAccLicense(resourceName, updatedResourceModel),
-			},
-			{
 				// Test importing the resource
-				Config:            testAccLicense(resourceName, updatedResourceModel),
+				Config:            testAccLicense(resourceName, initialResourceModel),
 				ResourceName:      "pingfederate_license." + resourceName,
 				ImportStateId:     licenseId,
-				ImportState:       false,
+				ImportState:       true,
 				ImportStateVerify: false,
 			},
 		},
@@ -59,9 +51,8 @@ func TestAccLicense(t *testing.T) {
 func testAccLicense(resourceName string, resourceModel licenseResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_license" "%[1]s" {
-  file_data = "%[3]s"
+  file_data = "%[2]s"
 }`, resourceName,
-		resourceModel.id,
 		fileData,
 	)
 }

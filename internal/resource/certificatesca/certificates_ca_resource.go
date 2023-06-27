@@ -58,14 +58,16 @@ func certificatesResourceSchema(ctx context.Context, req resource.SchemaRequest,
 				},
 			},
 			"crypto_provider": schema.StringAttribute{
-				Optional: true,
+				Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
+				Optional:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"file_data": schema.StringAttribute{
-				Required: true,
+				Description: "The certificate data in PEM format. New line characters should be omitted or encoded in this value.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
@@ -222,4 +224,12 @@ func deleteCertificate(ctx context.Context, req resource.DeleteRequest, resp *re
 		return
 	}
 
+}
+
+func (r *certificatesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	importLocation(ctx, req, resp)
+}
+
+func importLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
