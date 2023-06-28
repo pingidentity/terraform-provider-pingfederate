@@ -30,6 +30,7 @@ import (
 	sessionApplicationSessionPolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/sessionapplicationsessionpolicy"
 	sessionAuthenticationSessionPoliciesGlobal "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/sessionauthenticationsessionpoliciesglobal"
 	sessionSettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/sessionsettings"
+	virtualHostNames "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/virtualhostnames"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -213,5 +214,6 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		sessionAuthenticationSessionPoliciesGlobal.SessionAuthenticationSessionPoliciesGlobalResource,
 		sessionApplicationSessionPolicy.SessionApplicationSessionPolicyResource,
 		sessionSettings.SessionSettingsResource,
+		virtualHostNames.VirtualHostNamesResource,
 	}
 }
