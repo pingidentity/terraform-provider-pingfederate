@@ -16,9 +16,12 @@ import (
 	administrativeAccount "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/administrativeaccounts"
 	authenticationApiSettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/authenticationapisettings"
 	authenticationPolicyContracts "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/authenticationpolicycontracts"
+	certificatesCa "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/certificatesca"
 	idpDefaultUrls "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/idpdefaulturls"
 	keyPairsSigningImport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/keypairssigningimport"
 	keyPairsSslServerImport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/keypairssslserverimport"
+	license "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/license"
+	licenseAgreement "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/licenseagreement"
 	oauthAuthServerSettingsScopesCommonScopes "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/oauthauthserversettingsscopescommonscopes"
 	oauthAuthServerSettingsScopesExclusiveScopes "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/oauthauthserversettingsscopesexclusivescopes"
 	oauthIssuer "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/oauthissuers"
@@ -26,6 +29,7 @@ import (
 	serverSettingsGeneralSettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/serversettingsgeneralsettings"
 	sessionApplicationSessionPolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/sessionapplicationsessionpolicy"
 	sessionAuthenticationSessionPoliciesGlobal "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/sessionauthenticationsessionpoliciesglobal"
+	sessionSettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/sessionsettings"
 	virtualHostNames "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/virtualhostnames"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -196,9 +200,12 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		administrativeAccount.AdministrativeAccountResource,
 		authenticationApiSettings.AuthenticationApiSettingsResource,
 		authenticationPolicyContracts.AuthenticationPolicyContractsResource,
+		certificatesCa.CertificateResource,
 		idpDefaultUrls.IdpDefaultUrlsResource,
 		keyPairsSigningImport.KeyPairsSigningImportResource,
 		keyPairsSslServerImport.KeyPairsSslServerImportResource,
+		license.LicenseResource,
+		licenseAgreement.LicenseAgreementResource,
 		oauthAuthServerSettingsScopesCommonScopes.OauthAuthServerSettingsScopesCommonScopesResource,
 		oauthAuthServerSettingsScopesExclusiveScopes.OauthAuthServerSettingsScopesExclusiveScopesResource,
 		oauthIssuer.OauthIssuersResource,
@@ -206,6 +213,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		serverSettingsGeneralSettings.ServerSettingsGeneralSettingsResource,
 		sessionAuthenticationSessionPoliciesGlobal.SessionAuthenticationSessionPoliciesGlobalResource,
 		sessionApplicationSessionPolicy.SessionApplicationSessionPolicyResource,
+		sessionSettings.SessionSettingsResource,
 		virtualHostNames.VirtualHostNamesResource,
 	}
 }
