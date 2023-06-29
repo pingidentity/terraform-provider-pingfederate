@@ -16,7 +16,6 @@ const redirectValidationId = "id"
 
 // Attributes to test with. Add optional properties to test here if desired.
 type redirectValidationResourceModel struct {
-	id                                   string
 	enableTargetResourceValidationForSso bool
 	whiteListValidDomain                 string
 	enableWreplyValidationSlo            bool
