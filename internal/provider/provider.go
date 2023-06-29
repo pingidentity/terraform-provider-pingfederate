@@ -23,6 +23,7 @@ import (
 	oauthAuthServerSettingsScopesExclusiveScopes "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/oauthauthserversettingsscopesexclusivescopes"
 	oauthIssuer "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/oauthissuers"
 	protocolMetadataLifetimeSettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/protocolmetadatalifetimesettings"
+	redirectValidation "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/redirectvalidation"
 	serverSettingsGeneralSettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/serversettingsgeneralsettings"
 	sessionApplicationSessionPolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/sessionapplicationsessionpolicy"
 	sessionAuthenticationSessionPoliciesGlobal "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/sessionauthenticationsessionpoliciesglobal"
@@ -202,6 +203,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		oauthAuthServerSettingsScopesExclusiveScopes.OauthAuthServerSettingsScopesExclusiveScopesResource,
 		oauthIssuer.OauthIssuersResource,
 		protocolMetadataLifetimeSettings.ProtocolMetadataLifetimeSettingsResource,
+		redirectValidation.RedirectValidationResource,
 		serverSettingsGeneralSettings.ServerSettingsGeneralSettingsResource,
 		sessionAuthenticationSessionPoliciesGlobal.SessionAuthenticationSessionPoliciesGlobalResource,
 		sessionApplicationSessionPolicy.SessionApplicationSessionPolicyResource,
