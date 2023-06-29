@@ -52,6 +52,14 @@ func redirectValidationResourceSchema(ctx context.Context, req resource.SchemaRe
 	schema := schema.Schema{
 		Description: "Manages a RedirectValidation.",
 		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Description: "Placeholder for Terraform",
+				Computed:    true,
+				Optional:    false,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 			"redirect_validation_local_settings": schema.SingleNestedAttribute{
 				Description: "Settings for local redirect validation.",
 				Computed:    true,
@@ -190,11 +198,6 @@ func redirectValidationResourceSchema(ctx context.Context, req resource.SchemaRe
 		},
 	}
 
-	// Set attributes in string list
-	if setOptionalToComputed {
-		config.SetAllAttributesToOptionalAndComputed(&schema, []string{""})
-	}
-	config.AddCommonSchema(&schema, false)
 	resp.Schema = schema
 }
 func addOptionalRedirectValidationFields(ctx context.Context, addRequest *client.RedirectValidationSettings, plan redirectValidationResourceModel) error {
