@@ -96,18 +96,18 @@ func testAccCheckExpectedRedirectValidationAttributes(config redirectValidationR
 		}
 
 		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "enable_target_resource_validation_for_sso", config.enableTargetResourceValidationForSso, response.RedirectValidationLocalSettings.GetEnableTargetResourceValidationForSSO())
+		err = acctest.TestAttributesMatchBool(resourceType, nil, "enable_target_resource_validation_for_sso", config.enableTargetResourceValidationForSso, response.RedirectValidationLocalSettings.GetEnableTargetResourceValidationForSSO())
 		if err != nil {
 			return err
 		}
 
 		whiteListValidDomain := response.RedirectValidationLocalSettings.WhiteList
-		err = acctest.TestAttributesMatchString(resourceType, &config.id, "valid_domain", config.whiteListValidDomain, whiteListValidDomain[0].GetValidDomain())
+		err = acctest.TestAttributesMatchString(resourceType, nil, "valid_domain", config.whiteListValidDomain, whiteListValidDomain[0].GetValidDomain())
 		if err != nil {
 			return err
 		}
 
-		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "enable_wreply_validation_slo", config.enableWreplyValidationSlo, response.RedirectValidationPartnerSettings.GetEnableWreplyValidationSLO())
+		err = acctest.TestAttributesMatchBool(resourceType, nil, "enable_wreply_validation_slo", config.enableWreplyValidationSlo, response.RedirectValidationPartnerSettings.GetEnableWreplyValidationSLO())
 		if err != nil {
 			return err
 		}
