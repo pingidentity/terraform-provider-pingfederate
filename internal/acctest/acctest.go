@@ -153,6 +153,13 @@ func TestAttributesMatchBool(resourceType string, resourceName *string, attribut
 	return nil
 }
 
+func TestAttributesMatchBoolPointer(resourceType string, resourceName *string, attributeName string, expected, found *bool) error {
+	if expected != found {
+		return mismatchedAttributeError(resourceType, resourceName, attributeName, strconv.FormatBool(*expected), strconv.FormatBool(*found))
+	}
+	return nil
+}
+
 // Test if float64 attributes match
 func TestAttributesMatchFloat(resourceType string, resourceName *string, attributeName string, expected, found float64) error {
 	if expected != found {

@@ -86,7 +86,8 @@ func redirectValidationResourceSchema(ctx context.Context, req resource.SchemaRe
 					},
 					"enable_in_error_resource_validation": schema.BoolAttribute{
 						Description: "Enable validation for error resource.",
-						Required:    true,
+						Computed:    true,
+						Optional:    true,
 						PlanModifiers: []planmodifier.Bool{
 							boolplanmodifier.UseStateForUnknown(),
 						},
@@ -235,9 +236,9 @@ func addOptionalRedirectValidationFields(ctx context.Context, addRequest *client
 
 	if internaltypes.IsDefined(plan.RedirectValidationPartnerSettings) {
 		addRequest.RedirectValidationPartnerSettings = client.NewRedirectValidationPartnerSettings()
-		enableWreplyValidationSloAttrs := plan.RedirectValidationPartnerSettings.Attributes()
-		if internaltypes.IsDefined(enableWreplyValidationSloAttrs["enable_wreply_validation_slo"]) {
-			enableWreplyValidationSlo := internaltypes.ConvertToPrimitive(enableWreplyValidationSloAttrs["enable_wreply_validation_slo"]).(bool)
+		enableWreplyValidationSloAttrs := plan.RedirectValidationPartnerSettings.Attributes()["enable_wreply_validation_slo"]
+		if internaltypes.IsDefined(enableWreplyValidationSloAttrs) {
+			enableWreplyValidationSlo := internaltypes.ConvertToPrimitive(enableWreplyValidationSloAttrs).(bool)
 			addRequest.RedirectValidationPartnerSettings.EnableWreplyValidationSLO = &enableWreplyValidationSlo
 		}
 	}
