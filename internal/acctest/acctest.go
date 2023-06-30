@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	client "github.com/pingidentity/pingfederate-go-client"
-	config "github.com/pingidentity/terraform-provider-pingfederate/internal/resource"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
