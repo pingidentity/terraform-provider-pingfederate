@@ -91,7 +91,7 @@ func (r *virtualHostNamesResource) Configure(_ context.Context, req resource.Con
 
 }
 
-func readVirtualHostNamesResponse(ctx context.Context, r *client.VirtualHostNameSettings, state *virtualHostNamesResourceModel, expectedValues *virtualHostNamesResourceModel) {
+func readVirtualHostNamesResponse(ctx context.Context, r *client.VirtualHostNameSettings, state *virtualHostNamesResourceModel) {
 	state.Id = types.StringValue("id")
 	state.VirtualHostNames = internaltypes.GetStringSet(r.VirtualHostNames)
 }
@@ -131,7 +131,7 @@ func (r *virtualHostNamesResource) Create(ctx context.Context, req resource.Crea
 	// Read the response into the state
 	var state virtualHostNamesResourceModel
 
-	readVirtualHostNamesResponse(ctx, virtualHostNamesResponse, &state, &plan)
+	readVirtualHostNamesResponse(ctx, virtualHostNamesResponse, &state)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -164,7 +164,7 @@ func readVirtualHostNames(ctx context.Context, req resource.ReadRequest, resp *r
 	}
 
 	// Read the response into the state
-	readVirtualHostNamesResponse(ctx, apiReadVirtualHostNames, &state, &state)
+	readVirtualHostNamesResponse(ctx, apiReadVirtualHostNames, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -215,7 +215,7 @@ func updateVirtualHostNames(ctx context.Context, req resource.UpdateRequest, res
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	}
 	// Read the response
-	readVirtualHostNamesResponse(ctx, updateVirtualHostNamesResponse, &state, &plan)
+	readVirtualHostNamesResponse(ctx, updateVirtualHostNamesResponse, &state)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
