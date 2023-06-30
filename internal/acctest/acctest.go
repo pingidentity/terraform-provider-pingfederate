@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	client "github.com/pingidentity/pingfederate-go-client"
-	config "github.com/pingidentity/terraform-provider-pingfederate/internal/resource"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -149,13 +149,6 @@ func TestAttributesMatchStringPointer(resourceType string, resourceName *string,
 func TestAttributesMatchBool(resourceType string, resourceName *string, attributeName string, expected, found bool) error {
 	if expected != found {
 		return mismatchedAttributeError(resourceType, resourceName, attributeName, strconv.FormatBool(expected), strconv.FormatBool(found))
-	}
-	return nil
-}
-
-func TestAttributesMatchBoolPointer(resourceType string, resourceName *string, attributeName string, expected, found *bool) error {
-	if expected != found {
-		return mismatchedAttributeError(resourceType, resourceName, attributeName, strconv.FormatBool(*expected), strconv.FormatBool(*found))
 	}
 	return nil
 }
