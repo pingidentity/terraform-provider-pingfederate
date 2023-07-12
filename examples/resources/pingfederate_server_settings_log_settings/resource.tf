@@ -22,7 +22,7 @@ resource "pingfederate_server_settings_log_settings" "serverSettingsLogSettingsE
       id = "core"
       name = "Core"
       description = "Debug logging for core components."
-      enabled = true
+      enabled = false
     },
     {
       id = "policytree"
@@ -40,7 +40,7 @@ resource "pingfederate_server_settings_log_settings" "serverSettingsLogSettingsE
       id = "xmlsig"
       name = "XML Signatures"
       description = "Debug logging for XML signature operations."
-      enabled = true
+      enabled = false
     },
     {
       id = "requestheaders"
@@ -52,13 +52,13 @@ resource "pingfederate_server_settings_log_settings" "serverSettingsLogSettingsE
       id = "requestparams"
       name = "HTTP Request Parameters"
       description = "Log HTTP GET request parameters. Sensitive information, such as passwords, may be logged when this category is enabled."
-      enabled = true
+      enabled = false
     },
     {
       id = "restdatastore"
       name = "REST Data Store Requests and Responses"
       description = "Log REST datastore requests and responses. Sensitive information, such as passwords, may be logged when this category is enabled."
-      enabled = true
+      enabled = false
     },
   ]
 }
