@@ -206,6 +206,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		oauth.OauthIssuersResource,
 		protocolmetadata.ProtocolMetadataLifetimeSettingsResource,
 		serversettings.ServerSettingsGeneralSettingsResource,
+		serversettings.ServerSettingsLogSettingsResource,
 		session.SessionApplicationSessionPolicyResource,
 		session.SessionAuthenticationSessionPoliciesGlobalResource,
 		session.SessionSettingsResource,
