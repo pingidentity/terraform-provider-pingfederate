@@ -2,7 +2,6 @@ package oauth
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -236,7 +235,6 @@ func updateOauthIssuers(ctx context.Context, req resource.UpdateRequest, resp *r
 		return
 	}
 	requestJson, err := createUpdateRequest.MarshalJSON()
-	fmt.Printf("%s", requestJson)
 	if err == nil {
 		tflog.Debug(ctx, "Update request: "+string(requestJson))
 	}

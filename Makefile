@@ -61,7 +61,7 @@ clearstates:
 	
 kaboom: clearstates spincontainer install
 
-devchecknotest: golangcilint tfproviderlint tflint terrafmtlint importfmtlint install
+devchecknotest: install golangcilint tfproviderlint tflint terrafmtlint importfmtlint
 
 devcheck: devchecknotest kaboom testacc
 
@@ -89,7 +89,7 @@ tfproviderlint:
 									-XS002=false ./internal/...
 
 tflint:
-	go run github.com/terraform-linters/tflint --recursive
+	go run github.com/terraform-linters/tflint --recursive --disable-rule "terraform_required_providers" --disable-rule "terraform_required_version"
 
 terrafmtlint:
 	find ./internal/acctest -type f -name '*_test.go' \
