@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: install generate fmt vet test starttestcontainer removetestcontainer spincontainer clearstates kaboom testacc testacccomplete generateresource openlocalwebapi golangcilint tfproviderlint tflint terrafmtlint importfmtlint
+.PHONY: install generate fmt vet test starttestcontainer removetestcontainer spincontainer clearstates kaboom testacc testacccomplete generateresource openlocalwebapi golangcilint tfproviderlint tflint terrafmtlint importfmtlint devcheck devchecknotest
 
 default: install
 
@@ -27,6 +27,8 @@ starttestcontainer:
 		-d -p 9031:9031 \
 		-d -p 9999:9999 \
 		--env-file "${HOME}/.pingidentity/config" \
+		-e SERVER_PROFILE_URL=https://github.com/pingidentity/pingidentity-server-profiles.git \
+		-e SERVER_PROFILE_PATH=getting-started/pingfederate \
 		pingidentity/pingfederate:2305
 # Wait for the instance to become ready
 	sleep 1
@@ -49,6 +51,7 @@ testacc:
 	PINGFEDERATE_PROVIDER_HTTPS_HOST=https://localhost:9999 \
 	PINGFEDERATE_PROVIDER_USERNAME=administrator \
 	PINGFEDERATE_PROVIDER_PASSWORD=2FederateM0re \
+	PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true \
 	TF_ACC=1 go test -timeout 10m -v ./internal/... -p 4
 
 testacccomplete: spincontainer testacc
@@ -58,7 +61,9 @@ clearstates:
 	
 kaboom: clearstates spincontainer install
 
-devcheck: golangcilint tfproviderlint tflint terrafmtlint importfmtlint install kaboom testacc
+devchecknotest: golangcilint tfproviderlint tflint terrafmtlint importfmtlint install
+
+devcheck: devchecknotest kaboom testacc
 
 generateresource:
 	PINGFEDERATE_GENERATED_ENDPOINT=oauth/authServerSettings/scopes/exclusiveScopes \
