@@ -84,8 +84,8 @@ func idpDefaultUrlsResourceSchema(ctx context.Context, req resource.SchemaReques
 	config.AddCommonSchema(&schema, false)
 	resp.Schema = schema
 }
-func addOptionalIdpDefaultUrlsFields(ctx context.Context, addRequest *client.IdpDefaultUrl, plan idpDefaultUrlsResourceModel) error {
 
+func addOptionalIdpDefaultUrlsFields(ctx context.Context, addRequest *client.IdpDefaultUrl, plan idpDefaultUrlsResourceModel) error {
 	if internaltypes.IsDefined(plan.ConfirmIdpSlo) {
 		addRequest.ConfirmIdpSlo = plan.ConfirmIdpSlo.ValueBoolPointer()
 	}

@@ -98,8 +98,8 @@ func serverSettingsGeneralSettingsResourceSchema(ctx context.Context, req resour
 	config.AddCommonSchema(&schema, false)
 	resp.Schema = schema
 }
-func addOptionalServerSettingsGeneralSettingsFields(ctx context.Context, addRequest *client.GeneralSettings, plan serverSettingsGeneralSettingsResourceModel) error {
 
+func addOptionalServerSettingsGeneralSettingsFields(ctx context.Context, addRequest *client.GeneralSettings, plan serverSettingsGeneralSettingsResourceModel) error {
 	if internaltypes.IsDefined(plan.DisableAutomaticConnectionValidation) {
 		addRequest.DisableAutomaticConnectionValidation = plan.DisableAutomaticConnectionValidation.ValueBoolPointer()
 	}

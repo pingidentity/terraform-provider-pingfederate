@@ -208,16 +208,10 @@ func addOptionalRedirectValidationFields(ctx context.Context, addRequest *client
 		addRequest.RedirectValidationLocalSettings = client.NewRedirectValidationLocalSettings()
 		json.Unmarshal([]byte(internaljson.FromValue(plan.RedirectValidationLocalSettings)), addRequest.RedirectValidationLocalSettings)
 	}
-
 	if internaltypes.IsDefined(plan.RedirectValidationPartnerSettings) {
 		addRequest.RedirectValidationPartnerSettings = client.NewRedirectValidationPartnerSettings()
-		enableWreplyValidationSloAttrs := plan.RedirectValidationPartnerSettings.Attributes()["enable_wreply_validation_slo"]
-		if internaltypes.IsDefined(enableWreplyValidationSloAttrs) {
-			enableWreplyValidationSlo := internaltypes.ConvertToPrimitive(enableWreplyValidationSloAttrs).(bool)
-			addRequest.RedirectValidationPartnerSettings.EnableWreplyValidationSLO = &enableWreplyValidationSlo
-		}
+		json.Unmarshal([]byte(internaljson.FromValue(plan.RedirectValidationPartnerSettings)), addRequest.RedirectValidationPartnerSettings)
 	}
-
 	return nil
 
 }

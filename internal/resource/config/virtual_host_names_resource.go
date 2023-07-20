@@ -65,7 +65,6 @@ func virtualHostNamesResourceSchema(ctx context.Context, req resource.SchemaRequ
 	resp.Schema = schema
 }
 func addOptionalVirtualHostNamesFields(ctx context.Context, addRequest *client.VirtualHostNameSettings, plan virtualHostNamesResourceModel) error {
-
 	if internaltypes.IsDefined(plan.VirtualHostNames) {
 		var slice []string
 		plan.VirtualHostNames.ElementsAs(ctx, &slice, false)
