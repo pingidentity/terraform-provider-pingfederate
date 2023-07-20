@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -17,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
+	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -204,38 +206,7 @@ func redirectValidationResourceSchema(ctx context.Context, req resource.SchemaRe
 func addOptionalRedirectValidationFields(ctx context.Context, addRequest *client.RedirectValidationSettings, plan redirectValidationResourceModel) error {
 	if internaltypes.IsDefined(plan.RedirectValidationLocalSettings) {
 		addRequest.RedirectValidationLocalSettings = client.NewRedirectValidationLocalSettings()
-		redirectValidationLocalSettingsAttrs := plan.RedirectValidationLocalSettings.Attributes()
-		if internaltypes.IsDefined(redirectValidationLocalSettingsAttrs["enable_target_resource_validation_for_sso"]) {
-			addRequest.RedirectValidationLocalSettings.EnableTargetResourceValidationForSSO = redirectValidationLocalSettingsAttrs["enable_target_resource_validation_for_sso"].(types.Bool).ValueBoolPointer()
-		}
-		if internaltypes.IsDefined(redirectValidationLocalSettingsAttrs["enable_target_resource_validation_for_slo"]) {
-			addRequest.RedirectValidationLocalSettings.EnableTargetResourceValidationForSLO = redirectValidationLocalSettingsAttrs["enable_target_resource_validation_for_slo"].(types.Bool).ValueBoolPointer()
-		}
-		if internaltypes.IsDefined(redirectValidationLocalSettingsAttrs["enable_target_resource_validation_for_idp_discovery"]) {
-			addRequest.RedirectValidationLocalSettings.EnableTargetResourceValidationForIdpDiscovery = redirectValidationLocalSettingsAttrs["enable_target_resource_validation_for_idp_discovery"].(types.Bool).ValueBoolPointer()
-		}
-		if internaltypes.IsDefined(redirectValidationLocalSettingsAttrs["enable_in_error_resource_validation"]) {
-			addRequest.RedirectValidationLocalSettings.EnableInErrorResourceValidation = redirectValidationLocalSettingsAttrs["enable_in_error_resource_validation"].(types.Bool).ValueBoolPointer()
-		}
-
-		whiteListPlan := plan.RedirectValidationLocalSettings.Attributes()["white_list"].(types.Set)
-		if internaltypes.IsDefined(whiteListPlan) {
-			addRequest.RedirectValidationLocalSettings.WhiteList = []client.RedirectValidationSettingsWhitelistEntry{}
-			for i := 0; i < len(whiteListPlan.Elements()); i++ {
-				item := whiteListPlan.Elements()[i].(types.Object)
-				itemAttrs := item.Attributes()
-				newWhiteList := client.NewRedirectValidationSettingsWhitelistEntryWithDefaults()
-				newWhiteList.SetTargetResourceSSO(itemAttrs["target_resource_sso"].(types.Bool).ValueBool())
-				newWhiteList.SetTargetResourceSLO(itemAttrs["target_resource_slo"].(types.Bool).ValueBool())
-				newWhiteList.SetInErrorResource(itemAttrs["in_error_resource"].(types.Bool).ValueBool())
-				newWhiteList.SetIdpDiscovery(itemAttrs["idp_discovery"].(types.Bool).ValueBool())
-				newWhiteList.SetValidDomain(itemAttrs["valid_domain"].(types.String).ValueString())
-				newWhiteList.SetValidPath(itemAttrs["valid_path"].(types.String).ValueString())
-				newWhiteList.SetAllowQueryAndFragment(itemAttrs["allow_query_and_fragment"].(types.Bool).ValueBool())
-				newWhiteList.SetRequireHttps(itemAttrs["require_https"].(types.Bool).ValueBool())
-				addRequest.RedirectValidationLocalSettings.WhiteList = append(addRequest.RedirectValidationLocalSettings.WhiteList, *newWhiteList)
-			}
-		}
+		json.Unmarshal([]byte(internaljson.FromValue(plan.RedirectValidationLocalSettings)), addRequest.RedirectValidationLocalSettings)
 	}
 
 	if internaltypes.IsDefined(plan.RedirectValidationPartnerSettings) {
