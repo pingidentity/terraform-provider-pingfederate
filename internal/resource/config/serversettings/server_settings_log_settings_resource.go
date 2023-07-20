@@ -110,7 +110,10 @@ func addOptionalServerSettingsLogSettingsFields(ctx context.Context, addRequest 
 		addRequest.LogCategories = []client.LogCategorySettings{}
 		for _, logCategoriesSetting := range plan.LogCategories.Elements() {
 			unmarshalled := client.LogCategorySettings{}
-			json.Unmarshal([]byte(internaljson.FromValue(logCategoriesSetting)), &unmarshalled)
+			err := json.Unmarshal([]byte(internaljson.FromValue(logCategoriesSetting)), &unmarshalled)
+			if err != nil {
+				return err
+			}
 			addRequest.LogCategories = append(addRequest.LogCategories, unmarshalled)
 		}
 	}
