@@ -46,6 +46,40 @@ type redirectValidationResourceModel struct {
 	RedirectValidationPartnerSettings types.Object `tfsdk:"redirect_validation_partner_settings"`
 }
 
+// RedirectValidationLocalSettings Settings for local redirect validation.
+type TestRedirectValidationLocalSettings struct {
+	// Enable target resource validation for SSO.
+	EnableTargetResourceValidationForSSO *bool `json:"enableTargetResourceValidationForSSO,omitempty" tfsdk:"enable_target_resource_validation_for_sso"`
+	// Enable target resource validation for SLO.
+	EnableTargetResourceValidationForSLO *bool `json:"enableTargetResourceValidationForSLO,omitempty" tfsdk:"enable_target_resource_validation_for_slo"`
+	// Enable target resource validation for IdP discovery.
+	EnableTargetResourceValidationForIdpDiscovery *bool `json:"enableTargetResourceValidationForIdpDiscovery,omitempty" tfsdk:"enable_target_resource_validation_for_idp_discovery"`
+	// Enable validation for error resource.
+	EnableInErrorResourceValidation *bool `json:"enableInErrorResourceValidation,omitempty" tfsdk:"enable_in_error_resource_validation"`
+	// List of URLs that are designated as valid target resources.
+	WhiteList []TestRedirectValidationSettingsWhitelistEntry `json:"whiteList,omitempty" tfsdk:"white_list"`
+}
+
+// RedirectValidationSettingsWhitelistEntry Whitelist entry for valid target resource.
+type TestRedirectValidationSettingsWhitelistEntry struct {
+	// Enable this target resource for SSO redirect validation.
+	TargetResourceSSO *bool `json:"targetResourceSSO,omitempty" tfsdk:"target_resource_sso"`
+	// Enable this target resource for SLO redirect validation.
+	TargetResourceSLO *bool `json:"targetResourceSLO,omitempty" tfsdk:"target_resource_slo"`
+	// Enable this target resource for in error resource validation.
+	InErrorResource *bool `json:"inErrorResource,omitempty" tfsdk:"in_error_resource"`
+	// Enable this target resource for IdP discovery validation.
+	IdpDiscovery *bool `json:"idpDiscovery,omitempty" tfsdk:"idp_discovery"`
+	// Domain of a valid resource.
+	ValidDomain string `json:"validDomain" tfsdk:"valid_domain"`
+	// Path of a valid resource.
+	ValidPath *string `json:"validPath,omitempty" tfsdk:"valid_path"`
+	// Allow any query parameters and fragment in the resource.
+	AllowQueryAndFragment *bool `json:"allowQueryAndFragment,omitempty" tfsdk:"allow_query_and_fragment"`
+	// Require HTTPS for accessing this resource.
+	RequireHttps *bool `json:"requireHttps,omitempty" tfsdk:"require_https"`
+}
+
 // GetSchema defines the schema for the resource.
 func (r *redirectValidationResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	redirectValidationResourceSchema(ctx, req, resp, false)
@@ -240,7 +274,50 @@ func (r *redirectValidationResource) Configure(_ context.Context, req resource.C
 
 func readRedirectValidationResponse(ctx context.Context, r *client.RedirectValidationSettings, state *redirectValidationResourceModel) {
 	state.Id = types.StringValue("id")
+
+	redirectValidationLocalSettings := r.GetRedirectValidationLocalSettings()
+	testRedirectValidationLocalSettings := TestRedirectValidationLocalSettings{}
+	testRedirectValidationLocalSettings.EnableInErrorResourceValidation = redirectValidationLocalSettings.EnableInErrorResourceValidation
+	testRedirectValidationLocalSettings.EnableTargetResourceValidationForIdpDiscovery = redirectValidationLocalSettings.EnableTargetResourceValidationForIdpDiscovery
+	testRedirectValidationLocalSettings.EnableTargetResourceValidationForSLO = redirectValidationLocalSettings.EnableTargetResourceValidationForSLO
+	testRedirectValidationLocalSettings.EnableTargetResourceValidationForSSO = redirectValidationLocalSettings.EnableTargetResourceValidationForSSO
+
+	testRedirectValidationLocalSettings.WhiteList = []TestRedirectValidationSettingsWhitelistEntry{}
+	for _, whiteListItem := range redirectValidationLocalSettings.WhiteList {
+		testWhiteListItem := TestRedirectValidationSettingsWhitelistEntry{}
+		testWhiteListItem.TargetResourceSLO = whiteListItem.TargetResourceSLO
+		testWhiteListItem.TargetResourceSSO = whiteListItem.TargetResourceSSO
+		testWhiteListItem.InErrorResource = whiteListItem.InErrorResource
+		testWhiteListItem.IdpDiscovery = whiteListItem.IdpDiscovery
+		testWhiteListItem.ValidDomain = whiteListItem.ValidDomain
+		testWhiteListItem.ValidPath = whiteListItem.ValidPath
+		testWhiteListItem.AllowQueryAndFragment = whiteListItem.AllowQueryAndFragment
+		testWhiteListItem.RequireHttps = whiteListItem.RequireHttps
+		testRedirectValidationLocalSettings.WhiteList = append(testRedirectValidationLocalSettings.WhiteList, testWhiteListItem)
+	}
+
 	whiteListAttrTypes := map[string]attr.Type{
+		"target_resource_sso":      basetypes.BoolType{},
+		"target_resource_slo":      basetypes.BoolType{},
+		"in_error_resource":        basetypes.BoolType{},
+		"idp_discovery":            basetypes.BoolType{},
+		"valid_domain":             basetypes.StringType{},
+		"valid_path":               basetypes.StringType{},
+		"allow_query_and_fragment": basetypes.BoolType{},
+		"require_https":            basetypes.BoolType{},
+	}
+
+	redirectValidationLocalSettingsAttrTypes := map[string]attr.Type{
+		"enable_target_resource_validation_for_sso":           basetypes.BoolType{},
+		"enable_target_resource_validation_for_slo":           basetypes.BoolType{},
+		"enable_target_resource_validation_for_idp_discovery": basetypes.BoolType{},
+		"enable_in_error_resource_validation":                 basetypes.BoolType{},
+		"white_list":                                          basetypes.SetType{ElemType: basetypes.ObjectType{AttrTypes: whiteListAttrTypes}},
+	}
+
+	state.RedirectValidationLocalSettings, _ = types.ObjectValueFrom(ctx, redirectValidationLocalSettingsAttrTypes, testRedirectValidationLocalSettings)
+
+	/*whiteListAttrTypes := map[string]attr.Type{
 		"target_resource_sso":      basetypes.BoolType{},
 		"target_resource_slo":      basetypes.BoolType{},
 		"in_error_resource":        basetypes.BoolType{},
@@ -287,7 +364,7 @@ func readRedirectValidationResponse(ctx context.Context, r *client.RedirectValid
 		"white_list":                                          whiteListSlice,
 	}
 	redirectValidationLocalSettingsObjVal := internaltypes.MaptoObjValue(redirectValidationLocalSettingsAttrTypes, redirectValidationLocalSettingsAttrVals, diag.Diagnostics{})
-
+	*/
 	redirectValidationPartnerSettingsAttrTypes := map[string]attr.Type{
 		"enable_wreply_validation_slo": basetypes.BoolType{},
 	}
@@ -299,7 +376,7 @@ func readRedirectValidationResponse(ctx context.Context, r *client.RedirectValid
 
 	redirectValidationPartnerSettingsObjVal := internaltypes.MaptoObjValue(redirectValidationPartnerSettingsAttrTypes, redirectValidationPartnerSettingsAttrVals, diag.Diagnostics{})
 
-	state.RedirectValidationLocalSettings = redirectValidationLocalSettingsObjVal
+	//state.RedirectValidationLocalSettings = redirectValidationLocalSettingsObjVal
 	state.RedirectValidationPartnerSettings = redirectValidationPartnerSettingsObjVal
 }
 
