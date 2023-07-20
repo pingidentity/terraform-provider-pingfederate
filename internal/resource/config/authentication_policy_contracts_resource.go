@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -14,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
+	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -111,28 +113,31 @@ func authenticationPolicyContractsResourceSchema(ctx context.Context, req resour
 	}
 	resp.Schema = schema
 }
+
 func addAuthenticationPolicyContractsFields(ctx context.Context, addRequest *client.AuthenticationPolicyContract, plan authenticationPolicyContractsResourceModel) error {
 	if internaltypes.IsDefined(plan.Id) {
 		addRequest.Id = plan.Id.ValueStringPointer()
 	}
 	if internaltypes.IsDefined(plan.CoreAttributes) {
 		addRequest.CoreAttributes = []client.AuthenticationPolicyContractAttribute{}
-		pCaE := plan.CoreAttributes.Elements()
-		for i := 0; i < len(pCaE); i++ {
-			item := pCaE[i].(types.Object)
-			getAttrName := item.Attributes()["name"].(types.String)
-			attrName := client.NewAuthenticationPolicyContractAttribute(getAttrName.ValueString())
-			addRequest.CoreAttributes = append(addRequest.CoreAttributes, *attrName)
+		for _, coreAttribute := range plan.CoreAttributes.Elements() {
+			unmarshalled := client.AuthenticationPolicyContractAttribute{}
+			err := json.Unmarshal([]byte(internaljson.FromValue(coreAttribute)), &unmarshalled)
+			if err != nil {
+				return err
+			}
+			addRequest.CoreAttributes = append(addRequest.CoreAttributes, unmarshalled)
 		}
 	}
 	if internaltypes.IsDefined(plan.ExtendedAttributes) {
 		addRequest.ExtendedAttributes = []client.AuthenticationPolicyContractAttribute{}
-		pCaE := plan.ExtendedAttributes.Elements()
-		for i := 0; i < len(pCaE); i++ {
-			item := pCaE[i].(types.Object)
-			getAttrName := item.Attributes()["name"].(types.String)
-			attrName := client.NewAuthenticationPolicyContractAttribute(getAttrName.ValueString())
-			addRequest.ExtendedAttributes = append(addRequest.ExtendedAttributes, *attrName)
+		for _, extendedAttribute := range plan.ExtendedAttributes.Elements() {
+			unmarshalled := client.AuthenticationPolicyContractAttribute{}
+			err := json.Unmarshal([]byte(internaljson.FromValue(extendedAttribute)), &unmarshalled)
+			if err != nil {
+				return err
+			}
+			addRequest.ExtendedAttributes = append(addRequest.ExtendedAttributes, unmarshalled)
 		}
 	}
 	if internaltypes.IsDefined(plan.Name) {

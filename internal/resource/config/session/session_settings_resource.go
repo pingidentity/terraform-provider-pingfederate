@@ -76,8 +76,8 @@ func sessionSettingsResourceSchema(ctx context.Context, req resource.SchemaReque
 	config.AddCommonSchema(&schema, false)
 	resp.Schema = schema
 }
-func addOptionalSessionSettingsFields(ctx context.Context, addRequest *client.SessionSettings, plan sessionSettingsResourceModel) error {
 
+func addOptionalSessionSettingsFields(ctx context.Context, addRequest *client.SessionSettings, plan sessionSettingsResourceModel) error {
 	if internaltypes.IsDefined(plan.TrackAdapterSessionsForLogout) {
 		addRequest.TrackAdapterSessionsForLogout = plan.TrackAdapterSessionsForLogout.ValueBoolPointer()
 	}

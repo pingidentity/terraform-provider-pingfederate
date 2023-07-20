@@ -33,8 +33,6 @@ override.tf.json
 terraform.rc
 terraform
 
-*.vscode*
-
 *.DS_Store*
 scripts/*
 *__debug_bin*

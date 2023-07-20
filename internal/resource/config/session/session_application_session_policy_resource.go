@@ -73,8 +73,8 @@ func sessionApplicationSessionPolicyResourceSchema(ctx context.Context, req reso
 	config.AddCommonSchema(&schema, false)
 	resp.Schema = schema
 }
-func addOptionalSessionApplicationSessionPolicyFields(ctx context.Context, addRequest *client.ApplicationSessionPolicy, plan sessionApplicationSessionPolicyResourceModel) error {
 
+func addOptionalSessionApplicationSessionPolicyFields(ctx context.Context, addRequest *client.ApplicationSessionPolicy, plan sessionApplicationSessionPolicyResourceModel) error {
 	if internaltypes.IsDefined(plan.IdleTimeoutMins) {
 		addRequest.IdleTimeoutMins = plan.IdleTimeoutMins.ValueInt64Pointer()
 	}

@@ -2,6 +2,7 @@ package serversettings
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -15,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
+	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -102,19 +104,17 @@ func serverSettingsLogSettingsResourceSchema(ctx context.Context, req resource.S
 	}
 	resp.Schema = schema
 }
+
 func addOptionalServerSettingsLogSettingsFields(ctx context.Context, addRequest *client.LogSettings, plan serverSettingsLogSettingsResourceModel) error {
 	if internaltypes.IsDefined(plan.LogCategories) {
 		addRequest.LogCategories = []client.LogCategorySettings{}
-		logCategorySettings := plan.LogCategories.Elements()
-		for i := 0; i < len(logCategorySettings); i++ {
-			item := logCategorySettings[i].(types.Object)
-			itemsAttrs := item.Attributes()
-			newLogCategories := client.NewLogCategorySettingsWithDefaults()
-			newLogCategories.SetId(itemsAttrs["id"].(types.String).ValueString())
-			newLogCategories.SetName(itemsAttrs["name"].(types.String).ValueString())
-			newLogCategories.SetDescription(itemsAttrs["description"].(types.String).ValueString())
-			newLogCategories.SetEnabled(itemsAttrs["enabled"].(types.Bool).ValueBool())
-			addRequest.LogCategories = append(addRequest.LogCategories, *newLogCategories)
+		for _, logCategoriesSetting := range plan.LogCategories.Elements() {
+			unmarshalled := client.LogCategorySettings{}
+			err := json.Unmarshal([]byte(internaljson.FromValue(logCategoriesSetting)), &unmarshalled)
+			if err != nil {
+				return err
+			}
+			addRequest.LogCategories = append(addRequest.LogCategories, unmarshalled)
 		}
 	}
 	return nil

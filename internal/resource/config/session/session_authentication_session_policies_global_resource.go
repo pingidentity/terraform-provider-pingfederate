@@ -113,8 +113,8 @@ func sessionAuthenticationSessionPoliciesGlobalResourceSchema(ctx context.Contex
 	config.AddCommonSchema(&schema, false)
 	resp.Schema = schema
 }
-func addOptionalSessionAuthenticationSessionPoliciesGlobalFields(ctx context.Context, addRequest *client.GlobalAuthenticationSessionPolicy, plan sessionAuthenticationSessionPoliciesGlobalResourceModel) error {
 
+func addOptionalSessionAuthenticationSessionPoliciesGlobalFields(ctx context.Context, addRequest *client.GlobalAuthenticationSessionPolicy, plan sessionAuthenticationSessionPoliciesGlobalResourceModel) error {
 	if internaltypes.IsDefined(plan.EnableSessions) {
 		addRequest.EnableSessions = plan.EnableSessions.ValueBool()
 	}
