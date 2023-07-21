@@ -1,0 +1,39 @@
+version: "2.19.1"
+#------------------------------------------------------------------------------------------------------------------------------
+#- Ping Identity PingFederate
+#-
+#-     login  console
+#-     9031    9999
+#-      |       |
+#-   +---------------+
+#-   | PingFederate  |
+#-   +---------------+
+#-
+#-   +-----------------------+--------------------------------------------------------+
+#-   |  Product Console/App  |  URL                                                   |
+#-   |                       |    username: administrator                             |
+#-   |                       |    password: 2FederateM0re                             |
+#-   +-----------------------+--------------------------------------------------------+
+#-   |  PingFederate         |  https://localhost:9999/pingfederate/app               |
+#-   +-----------------------+--------------------------------------------------------+
+#-------------------------------------------------------------------------------------------------------------------------------
+
+services:
+  pingfederate:
+    image: pingidentity/pingfederate:2305
+    volumes:
+      - ./pingfederate:/opt/in
+      - pingfederate-out:/opt/out
+    env_file:
+      - ${HOME}/.pingidentity/devops
+    ports:
+      - "9031:9031"
+      - "9999:9999"
+    networks:
+      - pingnet
+
+networks:
+    pingnet:
+
+volumes:
+  pingfederate-out:
