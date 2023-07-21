@@ -5,7 +5,7 @@ The following applications must be installed locally to run the provider:
 - [Go](https://golang.org/doc/install) 1.20+ (to build the provider plugin)
 
 To run the example in this repository, you will also need
-- [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/)
+- [Docker](https://docs.docker.com/get-docker/)
 
 ## File system overview
 

@@ -20,7 +20,7 @@ version: "2.19.1"
 
 services:
   pingfederate:
-    image: pingidentity/pingfederate:2305
+    image: pingidentity/pingfederate:2305-11.2.5
     volumes:
       - ./pingfederate:/opt/in
       - pingfederate-out:/opt/out
