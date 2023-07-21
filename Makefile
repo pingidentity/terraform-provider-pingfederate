@@ -29,7 +29,7 @@ starttestcontainer:
 		--env-file "${HOME}/.pingidentity/config" \
 		-e SERVER_PROFILE_URL=https://github.com/pingidentity/pingidentity-server-profiles.git \
 		-e SERVER_PROFILE_PATH=getting-started/pingfederate \
-		pingidentity/pingfederate:2305
+		pingidentity/pingfederate:2305-11.2.5
 # Wait for the instance to become ready
 	sleep 1
 	duration=0
