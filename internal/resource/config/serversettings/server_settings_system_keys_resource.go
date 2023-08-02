@@ -51,23 +51,18 @@ func (r *serverSettingsSystemKeysResource) Schema(ctx context.Context, req resou
 }
 
 func serverSettingsSystemKeysResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
-	schema := schema.Schema{
+	resp.Schema = schema.Schema{
 		Description: "Manages a Server Settings SystemKeys.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "Placeholder for Terraform",
+				Description: "The ID of this resource",
 				Computed:    true,
 				Optional:    false,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
+				Required:    false,
 			},
 			"current": schema.SingleNestedAttribute{
 				Description: "Current SystemKeys Secrets that are used in cryptographic operations to generate and consume internal tokens.",
 				Required:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
 				Attributes: map[string]schema.Attribute{
 					"creation_date": schema.StringAttribute{
 						Description: "Creation time of the key.",
@@ -87,9 +82,7 @@ func serverSettingsSystemKeysResourceSchema(ctx context.Context, req resource.Sc
 						Description: "The clear text system key base 64 encoded. The system key must be 32 bytes before base 64 encoding",
 						Computed:    true,
 						Optional:    false,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
+						Required:    false,
 					},
 				},
 			},
@@ -119,18 +112,13 @@ func serverSettingsSystemKeysResourceSchema(ctx context.Context, req resource.Sc
 						Description: "The clear text system key base 64 encoded. The system key must be 32 bytes before base 64 encoding",
 						Computed:    true,
 						Optional:    false,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
+						Required:    false,
 					},
 				},
 			},
 			"pending": schema.SingleNestedAttribute{
 				Description: "Pending SystemKeys Secrets that are used in cryptographic operations to generate and consume internal tokens.",
 				Required:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
 				Attributes: map[string]schema.Attribute{
 					"creation_date": schema.StringAttribute{
 						Description: "Creation time of the key.",
@@ -150,48 +138,43 @@ func serverSettingsSystemKeysResourceSchema(ctx context.Context, req resource.Sc
 						Description: "The clear text system key base 64 encoded. The system key must be 32 bytes before base 64 encoding",
 						Computed:    true,
 						Optional:    false,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
+						Required:    false,
 					},
 				},
 			},
 		},
 	}
-
-	resp.Schema = schema
 }
 
-func addServerSettingsSystemKeysFields(ctx context.Context, addRequest *client.SystemKeys, plan serverSettingsSystemKeysResourceModel) error {
+func addServerSettingsSystemKeysFields(ctx context.Context, addRequest *client.SystemKeys, plan serverSettingsSystemKeysResourceModel) {
 
 	if internaltypes.IsDefined(plan.Current) {
 		currentAttrs := plan.Current.Attributes()
-		encryptedKeyDataAttrcurrent := currentAttrs["encrypted_key_data"]
-		if internaltypes.IsNonEmptyString(encryptedKeyDataAttrcurrent.(types.String)) {
+		encryptedKeyDataAttrcurrent := currentAttrs["encrypted_key_data"].(types.String)
+		if internaltypes.IsNonEmptyString(encryptedKeyDataAttrcurrent) {
 			addRequest.Current = *client.NewSystemKey()
-			currentEncryptedKeyData := internaltypes.ConvertToPrimitive(encryptedKeyDataAttrcurrent).(string)
+			currentEncryptedKeyData := encryptedKeyDataAttrcurrent.ValueString()
 			addRequest.Current.EncryptedKeyData = &currentEncryptedKeyData
 		}
 	}
 	if internaltypes.IsDefined(plan.Previous) {
 		previousAttrs := plan.Previous.Attributes()
-		encryptedKeyDataAttrPrevious := previousAttrs["encrypted_key_data"]
-		if internaltypes.IsNonEmptyString(encryptedKeyDataAttrPrevious.(types.String)) {
+		encryptedKeyDataAttrPrevious := previousAttrs["encrypted_key_data"].(types.String)
+		if internaltypes.IsNonEmptyString(encryptedKeyDataAttrPrevious) {
 			addRequest.Previous = client.NewSystemKey()
-			previousEncryptedKeyData := internaltypes.ConvertToPrimitive(encryptedKeyDataAttrPrevious).(string)
+			previousEncryptedKeyData := encryptedKeyDataAttrPrevious.ValueString()
 			addRequest.Previous.EncryptedKeyData = &previousEncryptedKeyData
 		}
 	}
 	if internaltypes.IsDefined(plan.Pending) {
 		pendingAttrs := plan.Pending.Attributes()
-		encryptedKeyDataAttrPending := pendingAttrs["encrypted_key_data"]
-		if internaltypes.IsNonEmptyString(encryptedKeyDataAttrPending.(types.String)) {
+		encryptedKeyDataAttrPending := pendingAttrs["encrypted_key_data"].(types.String)
+		if internaltypes.IsNonEmptyString(encryptedKeyDataAttrPending) {
 			addRequest.Pending = *client.NewSystemKey()
-			pendingEncryptedKeyData := internaltypes.ConvertToPrimitive(encryptedKeyDataAttrPending).(string)
+			pendingEncryptedKeyData := encryptedKeyDataAttrPending.ValueString()
 			addRequest.Pending.EncryptedKeyData = &pendingEncryptedKeyData
 		}
 	}
-	return nil
 }
 
 // Metadata returns the resource type name.
@@ -265,11 +248,7 @@ func (r *serverSettingsSystemKeysResource) Create(ctx context.Context, req resou
 		return
 	}
 	createServerSettingsSystemKeys := client.NewSystemKeysWithDefaults()
-	err := addServerSettingsSystemKeysFields(ctx, createServerSettingsSystemKeys, plan)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for System Keys", err.Error())
-		return
-	}
+	addServerSettingsSystemKeysFields(ctx, createServerSettingsSystemKeys, plan)
 	requestJson, err := createServerSettingsSystemKeys.MarshalJSON()
 	if err == nil {
 		tflog.Debug(ctx, "Add request: "+string(requestJson))
@@ -349,11 +328,7 @@ func updateServerSettingsSystemKeys(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 	createServerSettingsSystemKeys := client.NewSystemKeysWithDefaults()
-	err := addServerSettingsSystemKeysFields(ctx, createServerSettingsSystemKeys, plan)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for System Keys", err.Error())
-		return
-	}
+	addServerSettingsSystemKeysFields(ctx, createServerSettingsSystemKeys, plan)
 	requestJson, err := createServerSettingsSystemKeys.MarshalJSON()
 	if err == nil {
 		tflog.Debug(ctx, "Add request: "+string(requestJson))
@@ -391,6 +366,6 @@ func (r *serverSettingsSystemKeysResource) ImportState(ctx context.Context, req 
 	importServerSettingsSystemKeysLocation(ctx, req, resp)
 }
 func importServerSettingsSystemKeysLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
+	//  id provided doesn't matter, since this appears to be a singleton resource
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
