@@ -17,7 +17,9 @@
 * **New Resource:** `pingfederate_redirect_validation` (#17)
 * **New Resource:** `pingfederate_server_settings_general_settings` (#10)
 * **New Resource:** `pingfederate_server_settings_log_settings` (#23)
+* **New Resource:** `pingfederate_server_settings_system_keys` (#30)
 * **New Resource:** `pingfederate_session_application_session_policy` (#11)
 * **New Resource:** `pingfederate_session_authentication_session_policies_global` (#12)
 * **New Resource:** `pingfederate_session_settings` (#16)
 * **New Resource:** `pingfederate_virtual_host_names` (#14)
+
