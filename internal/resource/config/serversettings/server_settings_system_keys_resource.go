@@ -366,6 +366,6 @@ func (r *serverSettingsSystemKeysResource) ImportState(ctx context.Context, req 
 	importServerSettingsSystemKeysLocation(ctx, req, resp)
 }
 func importServerSettingsSystemKeysLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	//  id provided doesn't matter, since this appears to be a singleton resource
+	//  id  doesn't matter because it is a singleton resource.
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
