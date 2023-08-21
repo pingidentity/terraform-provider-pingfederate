@@ -1,0 +1,1167 @@
+package oauth
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"regexp"
+	"strings"
+
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	client "github.com/pingidentity/pingfederate-go-client"
+	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+)
+
+// Ensure the implementation satisfies the expected interfaces.
+var (
+	_ resource.Resource                = &oauthAuthServerSettingsResource{}
+	_ resource.ResourceWithConfigure   = &oauthAuthServerSettingsResource{}
+	_ resource.ResourceWithImportState = &oauthAuthServerSettingsResource{}
+)
+
+// OauthAuthServerSettingsResource is a helper function to simplify the provider implementation.
+func OauthAuthServerSettingsResource() resource.Resource {
+	return &oauthAuthServerSettingsResource{}
+}
+
+// oauthAuthServerSettingsResource is the resource implementation.
+type oauthAuthServerSettingsResource struct {
+	providerConfig internaltypes.ProviderConfiguration
+	apiClient      *client.APIClient
+}
+
+type oauthAuthServerSettingsResourceModel struct {
+	Id                                          types.String `tfsdk:"id"`
+	DefaultScopeDescription                     types.String `tfsdk:"default_scope_description"`
+	Scopes                                      types.Set    `tfsdk:"scopes"`
+	ScopeGroups                                 types.Set    `tfsdk:"scope_groups"`
+	ExclusiveScopes                             types.Set    `tfsdk:"exclusive_scopes"`
+	ExclusiveScopeGroups                        types.Set    `tfsdk:"exclusive_scope_groups"`
+	AuthorizationCodeTimeout                    types.Int64  `tfsdk:"authorization_code_timeout"`
+	AuthorizationCodeEntropy                    types.Int64  `tfsdk:"authorization_code_entropy"`
+	DisallowPlainPKCE                           types.Bool   `tfsdk:"disallow_plain_pkce"`
+	IncludeIssuerInAuthorizationResponse        types.Bool   `tfsdk:"include_issuer_in_authorization_response"`
+	TrackUserSessionsForLogout                  types.Bool   `tfsdk:"track_user_sessions_for_logout"`
+	TokenEndpointBaseUrl                        types.String `tfsdk:"token_endpoint_base_url"`
+	PersistentGrantLifetime                     types.Int64  `tfsdk:"persistent_grant_lifetime"`
+	PersistentGrantLifetimeUnit                 types.String `tfsdk:"persistent_grant_lifetime_unit"`
+	PersistentGrantIdleTimeout                  types.Int64  `tfsdk:"persistent_grant_idle_timeout"`
+	PersistentGrantIdleTimeoutTimeUnit          types.String `tfsdk:"persistent_grant_idle_timeout_time_unit"`
+	RefreshTokenLength                          types.Int64  `tfsdk:"refresh_token_length"`
+	RollRefreshTokenValues                      types.Bool   `tfsdk:"roll_refresh_token_values"`
+	RefreshTokenRollingGracePeriod              types.Int64  `tfsdk:"refresh_token_rolling_grace_period"`
+	RefreshRollingInterval                      types.Int64  `tfsdk:"refresh_rolling_interval"`
+	PersistentGrantReuseGrantTypes              types.Set    `tfsdk:"persistent_grant_reuse_grant_types"`
+	PersistentGrantContract                     types.Object `tfsdk:"persistent_grant_contract"`
+	BypassAuthorizationForApprovedGrants        types.Bool   `tfsdk:"bypass_authorization_for_approved_grants"`
+	AllowUnidentifiedClientROCreds              types.Bool   `tfsdk:"allow_unidentified_client_ro_creds"`
+	AllowUnidentifiedClientExtensionGrants      types.Bool   `tfsdk:"allow_unidentified_client_extension_grants"`
+	AdminWebServicePcvRef                       types.Object `tfsdk:"admin_web_service_pcv_ref"`
+	AtmIdForOAuthGrantManagement                types.String `tfsdk:"atm_id_for_oauth_grant_management"`
+	ScopeForOAuthGrantManagement                types.String `tfsdk:"scope_for_oauth_grant_management"`
+	AllowedOrigins                              types.Set    `tfsdk:"allowed_origins"`
+	UserAuthorizationUrl                        types.String `tfsdk:"user_authorization_url"`
+	BypassActivationCodeConfirmation            types.Bool   `tfsdk:"bypass_activation_code_confirmation"`
+	RegisteredAuthorizationPath                 types.String `tfsdk:"registered_authorization_path"`
+	PendingAuthorizationTimeout                 types.Int64  `tfsdk:"pending_authorization_timeout"`
+	DevicePollingInterval                       types.Int64  `tfsdk:"device_polling_interval"`
+	ActivationCodeCheckMode                     types.String `tfsdk:"activation_code_check_mode"`
+	UserAuthorizationConsentPageSetting         types.String `tfsdk:"user_authorization_consent_page_setting"`
+	UserAuthorizationConsentAdapter             types.String `tfsdk:"user_authorization_consent_adapter"`
+	ApprovedScopesAttribute                     types.String `tfsdk:"approved_scopes_attribute"`
+	ApprovedAuthorizationDetailAttribute        types.String `tfsdk:"approved_authorization_detail_attribute"`
+	ParReferenceTimeout                         types.Int64  `tfsdk:"par_reference_timeout"`
+	ParReferenceLength                          types.Int64  `tfsdk:"par_reference_length"`
+	ParStatus                                   types.String `tfsdk:"par_status"`
+	ClientSecretRetentionPeriod                 types.Int64  `tfsdk:"client_secret_retention_period"`
+	JwtSecuredAuthorizationResponseModeLifetime types.Int64  `tfsdk:"jwt_secured_authorization_response_mode_lifetime"`
+}
+
+// GetSchema defines the schema for the resource.
+func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	oauthAuthServerSettingsResourceSchema(ctx, req, resp, false)
+}
+
+func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
+	schema := schema.Schema{
+		Description: "Manages Oauth Auth Server Settings",
+		Attributes: map[string]schema.Attribute{
+			"default_scope_description": schema.StringAttribute{
+				Description: "The default scope description.",
+				Required:    true,
+			},
+			"scopes": schema.SetNestedAttribute{
+				Description: "The list of common scopes.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+				},
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"name": schema.StringAttribute{
+							Description: "The name of the scope.",
+							Required:    true,
+						},
+						"description": schema.StringAttribute{
+							Description: "The description of the scope that appears when the user is prompted for authorization.",
+							Required:    true,
+						},
+						"dynamic": schema.BoolAttribute{
+							Description: "True if the scope is dynamic. (Defaults to false)",
+							Computed:    true,
+							Optional:    true,
+							PlanModifiers: []planmodifier.Bool{
+								boolplanmodifier.UseStateForUnknown(),
+							},
+						},
+					},
+				},
+			},
+			"scope_groups": schema.SetNestedAttribute{
+				Description: "The list of common scope groups.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+				},
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"name": schema.StringAttribute{
+							Description: "The name of the scope group.",
+							Required:    true,
+							Validators: []validator.String{
+								stringvalidator.RegexMatches(
+									regexp.MustCompile(`^\S*$`),
+									"Scope group attribute \"name\" must not contain any spaces!",
+								),
+							},
+						},
+						"description": schema.StringAttribute{
+							Description: "The description of the scope group.",
+							Required:    true,
+						},
+						"scopes": schema.SetAttribute{
+							Description: "The set of scopes for this scope group.",
+							Required:    true,
+							ElementType: types.StringType,
+						},
+					},
+				},
+			},
+			"exclusive_scopes": schema.SetNestedAttribute{
+				Description: "The list of exclusive scopes.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+				},
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"name": schema.StringAttribute{
+							Description: "The name of the scope.",
+							Required:    true,
+						},
+						"description": schema.StringAttribute{
+							Description: "The description of the scope that appears when the user is prompted for authorization.",
+							Required:    true,
+						},
+						"dynamic": schema.BoolAttribute{
+							Description: "True if the scope is dynamic. (Defaults to false)",
+							Computed:    true,
+							Optional:    true,
+							PlanModifiers: []planmodifier.Bool{
+								boolplanmodifier.UseStateForUnknown(),
+							},
+						},
+					},
+				},
+			},
+			"exclusive_scope_groups": schema.SetNestedAttribute{
+				Description: "The list of exclusive scope groups.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+				},
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"name": schema.StringAttribute{
+							Description: "The name of the scope group.",
+							Computed:    true,
+							Optional:    true,
+							Validators: []validator.String{
+								stringvalidator.RegexMatches(
+									regexp.MustCompile(`^\S*$`),
+									"Exclusive scope group attribute \"name\" must not contain any spaces!",
+								),
+							},
+						},
+						"description": schema.StringAttribute{
+							Description: "The description of the scope group.",
+							Required:    true,
+						},
+						"scopes": schema.SetAttribute{
+							Description: "The set of scopes for this scope group.",
+							Required:    true,
+							ElementType: types.StringType,
+						},
+					},
+				},
+			},
+			"authorization_code_timeout": schema.Int64Attribute{
+				Description: "The authorization code timeout, in seconds.",
+				Required:    true,
+			},
+			"authorization_code_entropy": schema.Int64Attribute{
+				Description: "The authorization code entropy, in bytes.",
+				Required:    true,
+			},
+			"disallow_plain_pkce": schema.BoolAttribute{
+				Description: "Determines whether PKCE's 'plain' code challenge method will be disallowed. The default value is false.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"include_issuer_in_authorization_response": schema.BoolAttribute{
+				Description: "Determines whether the authorization server's issuer value is added to the authorization response or not. The default value is false.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"track_user_sessions_for_logout": schema.BoolAttribute{
+				Description: "Determines whether user sessions are tracked for logout. If this property is not provided on a PUT, the setting is left unchanged.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"token_endpoint_base_url": schema.StringAttribute{
+				Description: "The token endpoint base URL used to validate the 'aud' claim during Private Key JWT Client Authentication.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"persistent_grant_lifetime": schema.Int64Attribute{
+				Description: "The persistent grant lifetime. The default value is indefinite. -1 indicates an indefinite amount of time.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
+			"persistent_grant_lifetime_unit": schema.StringAttribute{
+				Description: "The persistent grant lifetime unit.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.String{
+					stringvalidator.OneOf([]string{"MINUTES", "DAYS", "HOURS"}...),
+				},
+			},
+			"persistent_grant_idle_timeout": schema.Int64Attribute{
+				Description: "The persistent grant idle timeout. The default value is 30 (days). -1 indicates an indefinite amount of time.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
+			"persistent_grant_idle_timeout_time_unit": schema.StringAttribute{
+				Description: "The persistent grant idle timeout time unit.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.String{
+					stringvalidator.OneOf([]string{"MINUTES", "DAYS", "HOURS"}...),
+				},
+			},
+			"refresh_token_length": schema.Int64Attribute{
+				Description: "The refresh token length in number of characters.",
+				Required:    true,
+			},
+			"roll_refresh_token_values": schema.BoolAttribute{
+				Description: "The roll refresh token values default policy. The default value is true.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"refresh_token_rolling_grace_period": schema.Int64Attribute{
+				Description: "The grace period that a rolled refresh token remains valid in seconds. The default value is 0.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
+			"refresh_rolling_interval": schema.Int64Attribute{
+				Description: "The minimum interval to roll refresh tokens, in hours.",
+				Required:    true,
+			},
+			"persistent_grant_reuse_grant_types": schema.SetAttribute{
+				Description: "The grant types that the OAuth AS can reuse rather than creating a new grant for each request. Only 'IMPLICIT' or 'AUTHORIZATION_CODE' or 'RESOURCE_OWNER_CREDENTIALS' are valid grant types.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+				},
+				ElementType: types.StringType,
+			},
+			"persistent_grant_contract": schema.SingleNestedAttribute{
+				Description: "The persistent grant contract defines attributes that are associated with OAuth persistent grants.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
+				Attributes: map[string]schema.Attribute{
+					"core_attributes": schema.SetNestedAttribute{
+						Description: "This is a read-only list of persistent grant attributes and includes USER_KEY and USER_NAME. Changes to this field will be ignored.",
+						Computed:    true,
+						Optional:    false,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"name": schema.StringAttribute{
+									Description: "The name of this attribute.",
+									Computed:    true,
+									Optional:    false,
+									PlanModifiers: []planmodifier.String{
+										stringplanmodifier.UseStateForUnknown(),
+									},
+								},
+							},
+						},
+						PlanModifiers: []planmodifier.Set{
+							setplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"extended_attributes": schema.SetNestedAttribute{
+						Description: "A list of additional attributes for the persistent grant contract.",
+						Computed:    true,
+						Optional:    true,
+						PlanModifiers: []planmodifier.Set{
+							setplanmodifier.UseStateForUnknown(),
+						},
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"name": schema.StringAttribute{
+									Description: "The name of this attribute.",
+									Required:    true,
+								},
+							},
+						},
+					},
+				},
+			},
+			"bypass_authorization_for_approved_grants": schema.BoolAttribute{
+				Description: "Bypass authorization for previously approved persistent grants. The default value is false.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"allow_unidentified_client_ro_creds": schema.BoolAttribute{
+				Description: "Allow unidentified clients to request resource owner password credentials grants. The default value is false.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"allow_unidentified_client_extension_grants": schema.BoolAttribute{
+				Description: "Allow unidentified clients to request extension grants. The default value is false.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"admin_web_service_pcv_ref": schema.SingleNestedAttribute{
+				Description: "The password credential validator reference that is used for authenticating access to the OAuth Administrative Web Service.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Description: "The ID of the resource.",
+						Computed:    true,
+						Optional:    true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"location": schema.StringAttribute{
+						Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
+						Computed:    true,
+						Optional:    true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+				},
+			},
+			"atm_id_for_oauth_grant_management": schema.StringAttribute{
+				Description: "The ID of the Access Token Manager used for OAuth enabled grant management.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"scope_for_oauth_grant_management": schema.StringAttribute{
+				Description: "The OAuth scope to validate when accessing grant management service.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"allowed_origins": schema.SetAttribute{
+				Description: "The list of allowed origins.",
+				ElementType: types.StringType,
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown()},
+			},
+			"user_authorization_url": schema.StringAttribute{
+				Description: "The URL used to generate 'verification_url' and 'verification_url_complete' values in a Device Authorization request",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"registered_authorization_path": schema.StringAttribute{
+				Description: "The Registered Authorization Path is concatenated to PingFederate base URL to generate 'verification_url' and 'verification_url_complete' values in a Device Authorization request. PingFederate listens to this path if specified",
+				Required:    true,
+				Validators: []validator.String{
+					stringvalidator.RegexMatches(
+						regexp.MustCompile(`^\/`),
+						"The Registered Authorization Path must begin with a '/'",
+					),
+				},
+			},
+			"pending_authorization_timeout": schema.Int64Attribute{
+				Description: "The 'device_code' and 'user_code' timeout, in seconds.",
+				Required:    true,
+			},
+			"device_polling_interval": schema.Int64Attribute{
+				Description: "The amount of time client should wait between polling requests, in seconds.",
+				Required:    true,
+			},
+			"activation_code_check_mode": schema.StringAttribute{
+				Description: "Determines whether the user is prompted to enter or confirm the activation code after authenticating or before. The default is AFTER_AUTHENTICATION.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.String{
+					stringvalidator.OneOf([]string{"AFTER_AUTHENTICATION", "BEFORE_AUTHENTICATION"}...),
+				},
+			},
+			"bypass_activation_code_confirmation": schema.BoolAttribute{
+				Description: "Indicates if the Activation Code Confirmation page should be bypassed if 'verification_url_complete' is used by the end user to authorize a device.",
+				Required:    true,
+			},
+			"user_authorization_consent_page_setting": schema.StringAttribute{
+				Description: "User Authorization Consent Page setting to use PingFederate's internal consent page or an external system",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.String{
+					stringvalidator.OneOf([]string{"INTERNAL", "ADAPTER"}...),
+				},
+			},
+			"user_authorization_consent_adapter": schema.StringAttribute{
+				Description: "Adapter ID of the external consent adapter to be used for the consent page user interface.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"approved_scopes_attribute": schema.StringAttribute{
+				Description: "Attribute from the external consent adapter's contract, intended for storing approved scopes returned by the external consent page.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"approved_authorization_detail_attribute": schema.StringAttribute{
+				Description: "Attribute from the external consent adapter's contract, intended for storing approved authorization details returned by the external consent page.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"par_reference_timeout": schema.Int64Attribute{
+				Description: "The timeout, in seconds, of the pushed authorization request reference. The default value is 60.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
+			"par_reference_length": schema.Int64Attribute{
+				Description: "The entropy of pushed authorization request references, in bytes. The default value is 24.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
+			"par_status": schema.StringAttribute{
+				Description: "The status of pushed authorization request support. The default value is ENABLED.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.String{
+					stringvalidator.OneOf([]string{"DISABLED", "ENABLED", "REQUIRED"}...),
+				},
+			},
+			"client_secret_retention_period": schema.Int64Attribute{
+				Description: "The length of time in minutes that client secrets will be retained as secondary secrets after secret change. The default value is 0, which will disable secondary client secret retention.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
+			"jwt_secured_authorization_response_mode_lifetime": schema.Int64Attribute{
+				Description: "The lifetime, in seconds, of the JWT Secured authorization response. The default value is 600.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
+		},
+	}
+
+	// Set attributes in string list
+	if setOptionalToComputed {
+		config.SetAllAttributesToOptionalAndComputed(&schema, []string{"default_scope_description", "authorization_code_timeout", "authorization_code_entropy", "refresh_token_length", "refresh_rolling_interval", "registered_authorization_path", "pending_authorization_timeout", "device_polling_interval", "bypass_activation_code_confirmation"})
+	}
+	config.AddCommonSchema(&schema, false)
+	resp.Schema = schema
+}
+
+func (r *oauthAuthServerSettingsResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+
+	var model oauthAuthServerSettingsResourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
+
+	// Validate allowed_origins value(s)
+	if internaltypes.IsDefined(model.AllowedOrigins) {
+		aoElems := model.AllowedOrigins.Elements()
+		for _, aoElem := range aoElems {
+			aoElemString := aoElem.(basetypes.StringValue).ValueString()
+			isElemUrl := internaltypes.IsUrlFormat(aoElemString)
+			if !isElemUrl {
+				resp.Diagnostics.AddError("Invalid URL Format!", fmt.Sprintf("Please provide a valid origin. Origin \"%s\" needs to be in a valid URL-like format - \"http(s)//:<value>.<domain>\"", aoElemString))
+			}
+		}
+	}
+
+	// Scope list for comparing values in matchNameBtwnScopes variable
+	scopeNames := []string{}
+
+	// Test scope names for dynamic true, string must be prepended with *
+	if internaltypes.IsDefined(model.Scopes) {
+		scopeElems := model.Scopes.Elements()
+		for _, scopeElem := range scopeElems {
+			scopeElemObjectAttrs := scopeElem.(types.Object)
+			scopeEntryName := scopeElemObjectAttrs.Attributes()["name"].(basetypes.StringValue).ValueString()
+			scopeNames = append(scopeNames, scopeEntryName)
+			scopeEntryIsDynamic := scopeElemObjectAttrs.Attributes()["dynamic"].(basetypes.BoolValue).ValueBool()
+			if scopeEntryIsDynamic {
+				if string(scopeEntryName[0]) != "*" {
+					resp.Diagnostics.AddError("Scope name conflict!", fmt.Sprintf("Scope name \"%s\" must be prefixed, suffixed or both by static part(s) with one and only one dynamic part represented by \"*\"", scopeEntryName))
+				}
+			}
+		}
+	}
+
+	// Test exclusive scope names for dynamic true, string must be prepended with *
+	eScopeNames := []string{}
+	if internaltypes.IsDefined(model.ExclusiveScopes) {
+		exclusiveScopeElems := model.ExclusiveScopes.Elements()
+		for _, esElem := range exclusiveScopeElems {
+			esElemObjectAttrs := esElem.(types.Object)
+			eScopeEntryName := strings.ToLower(esElemObjectAttrs.Attributes()["name"].(basetypes.StringValue).ValueString())
+			eScopeNames = append(eScopeNames, eScopeEntryName)
+			eScopeEntryIsDynamic := esElemObjectAttrs.Attributes()["dynamic"].(basetypes.BoolValue).ValueBool()
+			if eScopeEntryIsDynamic {
+				if string(eScopeEntryName[0]) != "*" {
+					resp.Diagnostics.AddError("Dynamic scope name conflict!", fmt.Sprintf("Dynamic scope name \"%s\" must be prefixed, suffixed or both by static part(s) with one and only one dynamic part represented by \"*\"", eScopeEntryName))
+				}
+			}
+		}
+	}
+
+	// Test if values in sets match
+	matchNameBtwnScopes, matchVal := internaltypes.MatchStringInSets(scopeNames, eScopeNames)
+	if matchNameBtwnScopes {
+		resp.Diagnostics.AddError("Scope name conflict!", fmt.Sprintf("The scope name \"%s\" is already defined in another scope list", matchVal))
+	}
+}
+
+func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *client.AuthorizationServerSettings, plan oauthAuthServerSettingsResourceModel) error {
+
+	if internaltypes.IsDefined(plan.DefaultScopeDescription) {
+		addRequest.DefaultScopeDescription = plan.DefaultScopeDescription.ValueString()
+	}
+
+	if internaltypes.IsDefined(plan.Scopes) {
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.Scopes)), &addRequest.Scopes)
+		if err != nil {
+			return err
+		}
+	}
+
+	if internaltypes.IsDefined(plan.ScopeGroups) {
+		addRequest.ScopeGroups = client.NewAuthorizationServerSettingsWithDefaults().ScopeGroups
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ScopeGroups)), &addRequest.ScopeGroups)
+		if err != nil {
+			return err
+		}
+	}
+
+	if internaltypes.IsDefined(plan.ExclusiveScopes) {
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ExclusiveScopes)), &addRequest.ExclusiveScopes)
+		if err != nil {
+			return err
+		}
+	}
+
+	if internaltypes.IsDefined(plan.ExclusiveScopeGroups) {
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ExclusiveScopeGroups)), &addRequest.ExclusiveScopeGroups)
+		if err != nil {
+			return err
+		}
+	}
+
+	if internaltypes.IsDefined(plan.AuthorizationCodeTimeout) {
+		addRequest.AuthorizationCodeTimeout = plan.AuthorizationCodeTimeout.ValueInt64()
+	}
+
+	if internaltypes.IsDefined(plan.AuthorizationCodeEntropy) {
+		addRequest.AuthorizationCodeEntropy = plan.AuthorizationCodeEntropy.ValueInt64()
+	}
+
+	if internaltypes.IsDefined(plan.DisallowPlainPKCE) {
+		addRequest.DisallowPlainPKCE = plan.DisallowPlainPKCE.ValueBoolPointer()
+	}
+
+	if internaltypes.IsDefined(plan.IncludeIssuerInAuthorizationResponse) {
+		addRequest.IncludeIssuerInAuthorizationResponse = plan.IncludeIssuerInAuthorizationResponse.ValueBoolPointer()
+	}
+
+	if internaltypes.IsDefined(plan.TrackUserSessionsForLogout) {
+		addRequest.TrackUserSessionsForLogout = plan.TrackUserSessionsForLogout.ValueBoolPointer()
+	}
+
+	if internaltypes.IsDefined(plan.TokenEndpointBaseUrl) {
+		addRequest.TokenEndpointBaseUrl = plan.TokenEndpointBaseUrl.ValueStringPointer()
+	}
+
+	if internaltypes.IsDefined(plan.PersistentGrantLifetime) {
+		addRequest.PersistentGrantLifetime = plan.PersistentGrantLifetime.ValueInt64Pointer()
+	}
+
+	if internaltypes.IsDefined(plan.PersistentGrantLifetimeUnit) {
+		addRequest.PersistentGrantLifetimeUnit = plan.PersistentGrantLifetimeUnit.ValueStringPointer()
+	}
+
+	if internaltypes.IsDefined(plan.PersistentGrantIdleTimeout) {
+		addRequest.PersistentGrantIdleTimeout = plan.PersistentGrantIdleTimeout.ValueInt64Pointer()
+	}
+
+	if internaltypes.IsDefined(plan.PersistentGrantIdleTimeoutTimeUnit) {
+		addRequest.PersistentGrantIdleTimeoutTimeUnit = plan.PersistentGrantIdleTimeoutTimeUnit.ValueStringPointer()
+	}
+
+	if internaltypes.IsDefined(plan.RefreshTokenLength) {
+		addRequest.RefreshTokenLength = plan.RefreshTokenLength.ValueInt64()
+	}
+
+	if internaltypes.IsDefined(plan.RollRefreshTokenValues) {
+		addRequest.RollRefreshTokenValues = plan.RollRefreshTokenValues.ValueBoolPointer()
+	}
+
+	if internaltypes.IsDefined(plan.RefreshTokenRollingGracePeriod) {
+		addRequest.RefreshTokenRollingGracePeriod = plan.RefreshTokenRollingGracePeriod.ValueInt64Pointer()
+	}
+
+	if internaltypes.IsDefined(plan.RefreshRollingInterval) {
+		addRequest.RefreshRollingInterval = plan.RefreshRollingInterval.ValueInt64()
+	}
+
+	if internaltypes.IsDefined(plan.PersistentGrantReuseGrantTypes) {
+		var slice []string
+		plan.PersistentGrantReuseGrantTypes.ElementsAs(ctx, &slice, false)
+		addRequest.PersistentGrantReuseGrantTypes = slice
+	}
+
+	if internaltypes.IsDefined(plan.PersistentGrantContract) {
+		addRequest.PersistentGrantContract = client.NewPersistentGrantContractWithDefaults()
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.PersistentGrantContract)), addRequest.PersistentGrantContract)
+		if err != nil {
+			return err
+		}
+	}
+
+	if internaltypes.IsDefined(plan.BypassAuthorizationForApprovedGrants) {
+		addRequest.BypassAuthorizationForApprovedGrants = plan.BypassAuthorizationForApprovedGrants.ValueBoolPointer()
+	}
+
+	if internaltypes.IsDefined(plan.AllowUnidentifiedClientROCreds) {
+		addRequest.AllowUnidentifiedClientROCreds = plan.AllowUnidentifiedClientROCreds.ValueBoolPointer()
+	}
+
+	if internaltypes.IsDefined(plan.AllowUnidentifiedClientExtensionGrants) {
+		addRequest.AllowUnidentifiedClientExtensionGrants = plan.AllowUnidentifiedClientExtensionGrants.ValueBoolPointer()
+	}
+
+	if internaltypes.IsDefined(plan.AdminWebServicePcvRef) {
+		addRequest.AdminWebServicePcvRef = client.NewResourceLinkWithDefaults()
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AdminWebServicePcvRef)), addRequest.AdminWebServicePcvRef)
+		if err != nil {
+			return err
+		}
+	}
+
+	if internaltypes.IsDefined(plan.AtmIdForOAuthGrantManagement) {
+		addRequest.AtmIdForOAuthGrantManagement = plan.AtmIdForOAuthGrantManagement.ValueStringPointer()
+	}
+
+	if internaltypes.IsDefined(plan.ScopeForOAuthGrantManagement) {
+		addRequest.ScopeForOAuthGrantManagement = plan.ScopeForOAuthGrantManagement.ValueStringPointer()
+	}
+
+	if internaltypes.IsDefined(plan.AllowedOrigins) {
+		var slice []string
+		plan.AllowedOrigins.ElementsAs(ctx, &slice, false)
+		addRequest.AllowedOrigins = slice
+	}
+
+	if internaltypes.IsDefined(plan.UserAuthorizationUrl) {
+		addRequest.UserAuthorizationUrl = plan.UserAuthorizationUrl.ValueStringPointer()
+	}
+
+	if internaltypes.IsDefined(plan.RegisteredAuthorizationPath) {
+		addRequest.RegisteredAuthorizationPath = plan.RegisteredAuthorizationPath.ValueString()
+	}
+
+	if internaltypes.IsDefined(plan.PendingAuthorizationTimeout) {
+		addRequest.PendingAuthorizationTimeout = plan.PendingAuthorizationTimeout.ValueInt64()
+	}
+
+	if internaltypes.IsDefined(plan.DevicePollingInterval) {
+		addRequest.DevicePollingInterval = plan.DevicePollingInterval.ValueInt64()
+	}
+
+	if internaltypes.IsDefined(plan.ActivationCodeCheckMode) {
+		addRequest.ActivationCodeCheckMode = plan.ActivationCodeCheckMode.ValueStringPointer()
+	}
+
+	if internaltypes.IsDefined(plan.BypassActivationCodeConfirmation) {
+		addRequest.BypassActivationCodeConfirmation = plan.BypassActivationCodeConfirmation.ValueBool()
+	}
+
+	if internaltypes.IsDefined(plan.UserAuthorizationConsentPageSetting) {
+		addRequest.UserAuthorizationConsentPageSetting = plan.UserAuthorizationConsentPageSetting.ValueStringPointer()
+	}
+
+	if internaltypes.IsDefined(plan.UserAuthorizationConsentAdapter) {
+		addRequest.UserAuthorizationConsentAdapter = plan.UserAuthorizationConsentAdapter.ValueStringPointer()
+	}
+
+	if internaltypes.IsDefined(plan.ApprovedScopesAttribute) {
+		addRequest.ApprovedScopesAttribute = plan.ApprovedScopesAttribute.ValueStringPointer()
+	}
+
+	if internaltypes.IsDefined(plan.ApprovedAuthorizationDetailAttribute) {
+		addRequest.ApprovedAuthorizationDetailAttribute = plan.ApprovedAuthorizationDetailAttribute.ValueStringPointer()
+	}
+
+	if internaltypes.IsDefined(plan.ParReferenceTimeout) {
+		addRequest.ParReferenceTimeout = plan.ParReferenceTimeout.ValueInt64Pointer()
+	}
+
+	if internaltypes.IsDefined(plan.ParReferenceLength) {
+		addRequest.ParReferenceLength = plan.ParReferenceLength.ValueInt64Pointer()
+	}
+
+	if internaltypes.IsDefined(plan.ParStatus) {
+		addRequest.ParStatus = plan.ParStatus.ValueStringPointer()
+	}
+
+	if internaltypes.IsDefined(plan.ClientSecretRetentionPeriod) {
+		addRequest.ClientSecretRetentionPeriod = plan.ClientSecretRetentionPeriod.ValueInt64Pointer()
+	}
+
+	if internaltypes.IsDefined(plan.JwtSecuredAuthorizationResponseModeLifetime) {
+		addRequest.JwtSecuredAuthorizationResponseModeLifetime = plan.JwtSecuredAuthorizationResponseModeLifetime.ValueInt64Pointer()
+	}
+
+	return nil
+
+}
+
+// Metadata returns the resource type name.
+func (r *oauthAuthServerSettingsResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_oauth_auth_server_settings"
+}
+
+func (r *oauthAuthServerSettingsResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+
+	providerCfg := req.ProviderData.(internaltypes.ResourceConfiguration)
+	r.providerConfig = providerCfg.ProviderConfig
+	r.apiClient = providerCfg.ApiClient
+
+}
+
+func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsResourceModel) {
+	state.Id = types.StringValue("id")
+	state.DefaultScopeDescription = types.StringValue(r.DefaultScopeDescription)
+
+	// state.Scopes
+	scopes := r.GetScopes()
+	toStateScopes := []client.ScopeEntry{}
+	for _, scope := range scopes {
+		scopeEntry := client.ScopeEntry{}
+		scopeEntry.Name = scope.Name
+		scopeEntry.Description = scope.Description
+		scopeEntry.Dynamic = scope.Dynamic
+		toStateScopes = append(toStateScopes, scopeEntry)
+	}
+
+	scopeAttrTypes := map[string]attr.Type{
+		"name":        basetypes.StringType{},
+		"description": basetypes.StringType{},
+		"dynamic":     basetypes.BoolType{},
+	}
+	state.Scopes, _ = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: scopeAttrTypes}, toStateScopes)
+
+	// state.ScopeGroups
+	scopeGroups := r.GetScopeGroups()
+	toStateScopeGroups := []client.ScopeGroupEntry{}
+	for _, scopeGroup := range scopeGroups {
+		scopeGroupEntry := client.ScopeGroupEntry{}
+		scopeGroupEntry.Name = scopeGroup.Name
+		scopeGroupEntry.Description = scopeGroup.Description
+		scopeGroupEntry.Scopes = scopeGroup.Scopes
+		toStateScopeGroups = append(toStateScopeGroups, scopeGroupEntry)
+	}
+
+	scopeGroupAttrTypes := map[string]attr.Type{
+		"name":        basetypes.StringType{},
+		"description": basetypes.StringType{},
+		"scopes":      basetypes.SetType{ElemType: types.StringType},
+	}
+	state.ScopeGroups, _ = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: scopeGroupAttrTypes}, toStateScopeGroups)
+
+	// state.ExclusiveScopes
+	exclusiveScopes := r.GetExclusiveScopes()
+	toStateExclusiveScopes := []client.ScopeEntry{}
+	for _, exclusiveScope := range exclusiveScopes {
+		exclusiveScopeEntry := client.ScopeEntry{}
+		exclusiveScopeEntry.Name = exclusiveScope.Name
+		exclusiveScopeEntry.Description = exclusiveScope.Description
+		exclusiveScopeEntry.Dynamic = exclusiveScope.Dynamic
+		toStateExclusiveScopes = append(toStateExclusiveScopes, exclusiveScopeEntry)
+	}
+
+	exclusiveScopeAttrTypes := map[string]attr.Type{
+		"name":        basetypes.StringType{},
+		"description": basetypes.StringType{},
+		"dynamic":     basetypes.BoolType{},
+	}
+	state.ExclusiveScopes, _ = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: exclusiveScopeAttrTypes}, toStateExclusiveScopes)
+
+	// state.ScopeGroups
+	exclusiveScopeGroups := r.GetExclusiveScopeGroups()
+	toStateExclusiveScopeGroups := []client.ScopeGroupEntry{}
+	for _, exclusiveScopeGroup := range exclusiveScopeGroups {
+		exclusiveScopeGroupEntry := client.ScopeGroupEntry{}
+		exclusiveScopeGroupEntry.Name = exclusiveScopeGroup.Name
+		exclusiveScopeGroupEntry.Description = exclusiveScopeGroup.Description
+		exclusiveScopeGroupEntry.Scopes = exclusiveScopeGroup.Scopes
+		toStateExclusiveScopeGroups = append(toStateExclusiveScopeGroups, exclusiveScopeGroupEntry)
+	}
+
+	exclusiveScopeGroupAttrTypes := map[string]attr.Type{
+		"name":        basetypes.StringType{},
+		"description": basetypes.StringType{},
+		"scopes":      basetypes.SetType{ElemType: types.StringType},
+	}
+	state.ExclusiveScopeGroups, _ = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: exclusiveScopeGroupAttrTypes}, toStateExclusiveScopeGroups)
+
+	// state.PersistentGrantContract
+	getPersistentGrantContract := r.GetPersistentGrantContract()
+	// Build core attributes
+	nameAttributeType := map[string]attr.Type{
+		"name": basetypes.StringType{},
+	}
+	coreAttrs := getPersistentGrantContract.CoreAttributes
+	setObjType := types.ObjectType{AttrTypes: nameAttributeType}
+	stateCoreAttrs := []client.Attribute{}
+	for _, coreAttr := range coreAttrs {
+		coreAttribute := client.Attribute{}
+		coreAttribute.Name = coreAttr.Name
+		stateCoreAttrs = append(stateCoreAttrs, coreAttribute)
+	}
+	toStateCoreAttributes, _ := types.SetValueFrom(ctx, setObjType, stateCoreAttrs)
+
+	// Build extended attributes
+	extdAttrs := getPersistentGrantContract.ExtendedAttributes
+	stateExtdAttrs := []client.Attribute{}
+	for _, extdAttr := range extdAttrs {
+		extdAttribute := client.Attribute{}
+		extdAttribute.Name = extdAttr.Name
+		stateExtdAttrs = append(stateExtdAttrs, extdAttribute)
+	}
+	toStateExtdAttributes, _ := types.SetValueFrom(ctx, setObjType, stateExtdAttrs)
+
+	// Build final object for state
+	persistentGrantObjContractTypes := map[string]attr.Type{
+		"core_attributes":     basetypes.SetType{ElemType: types.ObjectType{AttrTypes: nameAttributeType}},
+		"extended_attributes": basetypes.SetType{ElemType: types.ObjectType{AttrTypes: nameAttributeType}},
+	}
+
+	persistentGrantObjContractVals := map[string]attr.Value{
+		"core_attributes":     toStateCoreAttributes,
+		"extended_attributes": toStateExtdAttributes,
+	}
+
+	persistentGrantContract, _ := types.ObjectValue(persistentGrantObjContractTypes, persistentGrantObjContractVals)
+	state.PersistentGrantContract = persistentGrantContract
+
+	state.AuthorizationCodeTimeout = types.Int64Value(r.AuthorizationCodeTimeout)
+	state.AuthorizationCodeEntropy = types.Int64Value(r.AuthorizationCodeEntropy)
+	state.DisallowPlainPKCE = types.BoolPointerValue(r.DisallowPlainPKCE)
+	state.IncludeIssuerInAuthorizationResponse = types.BoolPointerValue(r.IncludeIssuerInAuthorizationResponse)
+	state.TrackUserSessionsForLogout = types.BoolPointerValue(r.TrackUserSessionsForLogout)
+	state.TokenEndpointBaseUrl = types.StringPointerValue(r.TokenEndpointBaseUrl)
+	state.PersistentGrantLifetime = types.Int64PointerValue(r.PersistentGrantLifetime)
+	state.PersistentGrantLifetimeUnit = types.StringPointerValue(r.PersistentGrantLifetimeUnit)
+	state.PersistentGrantIdleTimeout = types.Int64PointerValue(r.PersistentGrantIdleTimeout)
+	state.PersistentGrantIdleTimeoutTimeUnit = types.StringPointerValue(r.PersistentGrantIdleTimeoutTimeUnit)
+	state.RefreshTokenLength = types.Int64Value(r.RefreshTokenLength)
+	state.RollRefreshTokenValues = types.BoolPointerValue(r.RollRefreshTokenValues)
+	state.RefreshTokenRollingGracePeriod = types.Int64PointerValue(r.RefreshTokenRollingGracePeriod)
+	state.RefreshRollingInterval = types.Int64Value(r.RefreshRollingInterval)
+	state.PersistentGrantReuseGrantTypes = internaltypes.GetStringSet(r.PersistentGrantReuseGrantTypes)
+	state.BypassAuthorizationForApprovedGrants = types.BoolPointerValue(r.BypassAuthorizationForApprovedGrants)
+	state.AllowUnidentifiedClientROCreds = types.BoolPointerValue(r.AllowUnidentifiedClientROCreds)
+	state.AllowUnidentifiedClientExtensionGrants = types.BoolPointerValue(r.AllowUnidentifiedClientExtensionGrants)
+	state.AdminWebServicePcvRef = internaltypes.ToStateResourceLink(r.AdminWebServicePcvRef, diag.Diagnostics{})
+	state.AtmIdForOAuthGrantManagement = types.StringPointerValue(r.AtmIdForOAuthGrantManagement)
+	state.ScopeForOAuthGrantManagement = types.StringPointerValue(r.ScopeForOAuthGrantManagement)
+	state.AllowedOrigins = internaltypes.GetStringSet(r.AllowedOrigins)
+	state.UserAuthorizationUrl = types.StringPointerValue(r.UserAuthorizationUrl)
+	state.RegisteredAuthorizationPath = types.StringValue(r.RegisteredAuthorizationPath)
+	state.PendingAuthorizationTimeout = types.Int64Value(r.PendingAuthorizationTimeout)
+	state.DevicePollingInterval = types.Int64Value(r.DevicePollingInterval)
+	state.ActivationCodeCheckMode = types.StringPointerValue(r.ActivationCodeCheckMode)
+	state.BypassActivationCodeConfirmation = types.BoolValue(r.BypassActivationCodeConfirmation)
+	state.UserAuthorizationConsentPageSetting = types.StringPointerValue(r.UserAuthorizationConsentPageSetting)
+	state.UserAuthorizationConsentAdapter = types.StringPointerValue(r.UserAuthorizationConsentAdapter)
+	state.ApprovedScopesAttribute = types.StringPointerValue(r.ApprovedScopesAttribute)
+	state.ApprovedAuthorizationDetailAttribute = types.StringPointerValue(r.ApprovedAuthorizationDetailAttribute)
+	state.ParReferenceTimeout = types.Int64PointerValue(r.ParReferenceTimeout)
+	state.ParReferenceLength = types.Int64PointerValue(r.ParReferenceLength)
+	state.ParStatus = types.StringPointerValue(r.ParStatus)
+	state.ClientSecretRetentionPeriod = types.Int64PointerValue(r.ClientSecretRetentionPeriod)
+	state.JwtSecuredAuthorizationResponseModeLifetime = types.Int64PointerValue(r.JwtSecuredAuthorizationResponseModeLifetime)
+}
+
+func (r *oauthAuthServerSettingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan oauthAuthServerSettingsResourceModel
+
+	diags := req.Plan.Get(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	createOauthAuthServerSettings := client.NewAuthorizationServerSettings(plan.DefaultScopeDescription.ValueString(), plan.AuthorizationCodeTimeout.ValueInt64(), plan.AuthorizationCodeEntropy.ValueInt64(), plan.RefreshTokenLength.ValueInt64(), plan.RefreshRollingInterval.ValueInt64(), plan.RegisteredAuthorizationPath.ValueString(), plan.PendingAuthorizationTimeout.ValueInt64(), plan.DevicePollingInterval.ValueInt64(), plan.BypassActivationCodeConfirmation.ValueBool())
+	err := addOptionalOauthAuthServerSettingsFields(ctx, createOauthAuthServerSettings, plan)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for OauthAuthServerSettings", err.Error())
+		return
+	}
+	requestJson, err := createOauthAuthServerSettings.MarshalJSON()
+	if err == nil {
+		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	}
+
+	apiCreateOauthAuthServerSettings := r.apiClient.OauthAuthServerSettingsApi.UpdateAuthorizationServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateOauthAuthServerSettings = apiCreateOauthAuthServerSettings.Body(*createOauthAuthServerSettings)
+	oauthAuthServerSettingsResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsApi.UpdateAuthorizationServerSettingsExecute(apiCreateOauthAuthServerSettings)
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OauthAuthServerSettings", err, httpResp)
+		return
+	}
+	responseJson, err := oauthAuthServerSettingsResponse.MarshalJSON()
+	if err == nil {
+		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	}
+
+	// Read the response into the state
+	var state oauthAuthServerSettingsResourceModel
+
+	readOauthAuthServerSettingsResponse(ctx, oauthAuthServerSettingsResponse, &state)
+	diags = resp.State.Set(ctx, state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
+func (r *oauthAuthServerSettingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	readOauthAuthServerSettings(ctx, req, resp, r.apiClient, r.providerConfig)
+}
+
+func readOauthAuthServerSettings(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
+	var state oauthAuthServerSettingsResourceModel
+
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	apiReadOauthAuthServerSettings, httpResp, err := apiClient.OauthAuthServerSettingsApi.GetAuthorizationServerSettings(config.ProviderBasicAuthContext(ctx, providerConfig)).Execute()
+
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a OauthAuthServerSettings", err, httpResp)
+		return
+	}
+	// Log response JSON
+	responseJson, err := apiReadOauthAuthServerSettings.MarshalJSON()
+	if err == nil {
+		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	}
+
+	// Read the response into the state
+	readOauthAuthServerSettingsResponse(ctx, apiReadOauthAuthServerSettings, &state)
+
+	// Set refreshed state
+	diags = resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+}
+
+// Update updates the resource and sets the updated Terraform state on success.
+func (r *oauthAuthServerSettingsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	updateOauthAuthServerSettings(ctx, req, resp, r.apiClient, r.providerConfig)
+}
+
+func updateOauthAuthServerSettings(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
+	// Retrieve values from plan
+	var plan oauthAuthServerSettingsResourceModel
+	diags := req.Plan.Get(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Get the current state to see how any attributes are changing
+	var state oauthAuthServerSettingsResourceModel
+	req.State.Get(ctx, &state)
+	updateOauthAuthServerSettings := apiClient.OauthAuthServerSettingsApi.UpdateAuthorizationServerSettings(config.ProviderBasicAuthContext(ctx, providerConfig))
+	createUpdateRequest := client.NewAuthorizationServerSettings(plan.DefaultScopeDescription.ValueString(), plan.AuthorizationCodeTimeout.ValueInt64(), plan.AuthorizationCodeEntropy.ValueInt64(), plan.RefreshTokenLength.ValueInt64(), plan.RefreshRollingInterval.ValueInt64(), plan.RegisteredAuthorizationPath.ValueString(), plan.PendingAuthorizationTimeout.ValueInt64(), plan.DevicePollingInterval.ValueInt64(), plan.BypassActivationCodeConfirmation.ValueBool())
+	err := addOptionalOauthAuthServerSettingsFields(ctx, createUpdateRequest, plan)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for OauthAuthServerSettings", err.Error())
+		return
+	}
+	requestJson, err := createUpdateRequest.MarshalJSON()
+	if err == nil {
+		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	}
+	updateOauthAuthServerSettings = updateOauthAuthServerSettings.Body(*createUpdateRequest)
+	updateOauthAuthServerSettingsResponse, httpResp, err := apiClient.OauthAuthServerSettingsApi.UpdateAuthorizationServerSettingsExecute(updateOauthAuthServerSettings)
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OauthAuthServerSettings", err, httpResp)
+		return
+	}
+	// Log response JSON
+	responseJson, err := updateOauthAuthServerSettingsResponse.MarshalJSON()
+	if err == nil {
+		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	}
+	// Read the response
+	readOauthAuthServerSettingsResponse(ctx, updateOauthAuthServerSettingsResponse, &state)
+
+	// Update computed values
+	diags = resp.State.Set(ctx, state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+}
+
+// This config object is edit-only, so Terraform can't delete it.
+func (r *oauthAuthServerSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+}
+
+func (r *oauthAuthServerSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	importOauthAuthServerSettingsLocation(ctx, req, resp)
+}
+func importOauthAuthServerSettingsLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Retrieve import ID and save to id attribute
+	// Set a placeholder id value to appease terraform.
+	// The real attributes will be imported when terraform performs a read after the import.
+	// If no value is set here, Terraform will error out when importing.
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), "id")...)
+}

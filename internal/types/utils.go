@@ -79,7 +79,7 @@ func SetsEqual(a, b []string) bool {
 	return true
 }
 
-// Check if two  float slices representing sets are equal
+// Check if two float slices representing sets are equal
 func FloatSetsEqual(a, b []float64) bool {
 	if len(a) != len(b) {
 		return false
@@ -99,6 +99,26 @@ func FloatSetsEqual(a, b []float64) bool {
 		}
 	}
 	return true
+}
+
+// Compare two given sets, match string if found in both
+func MatchStringInSets(a, b []string) (bool, string) {
+	for aI := range a {
+		for bI := range b {
+			if a[aI] == b[bI] {
+				return true, a[aI]
+			} else {
+				return false, ""
+			}
+		}
+	}
+	return false, ""
+}
+
+func IsUrlFormat(s string) bool {
+	re, _ := regexp.Compile(`\bhttps?:\/\/[^\s/$.?#].[^\s]*\b$`)
+	matchRegex := re.MatchString(strings.ToLower(s))
+	return matchRegex
 }
 
 func CamelCaseToUnderscores(s string) string {

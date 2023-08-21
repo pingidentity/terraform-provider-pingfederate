@@ -262,6 +262,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		keypairs.KeyPairsSslServerImportResource,
 		license.LicenseAgreementResource,
 		license.LicenseResource,
+		oauth.OauthAuthServerSettingsResource,
 		oauth.OauthAuthServerSettingsScopesCommonScopesResource,
 		oauth.OauthAuthServerSettingsScopesExclusiveScopesResource,
 		oauth.OauthIssuersResource,

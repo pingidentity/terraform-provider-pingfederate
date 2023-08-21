@@ -67,58 +67,66 @@ func administrativeAccountResourceSchema(ctx context.Context, req resource.Schem
 				},
 			},
 			"active": schema.BoolAttribute{
-				Optional: true,
-				Computed: true,
+				Description: "Indicates whether the account is active or not.",
+				Optional:    true,
+				Computed:    true,
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"auditor": schema.BoolAttribute{
-				Optional: true,
-				Computed: true,
+				Description: "Indicates whether the account belongs to an Auditor. An Auditor has View-only permissions for all administrative functions. An Auditor cannot have any administrative roles.",
+				Optional:    true,
+				Computed:    true,
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"department": schema.StringAttribute{
-				Optional: true,
+				Description: "The Department name of account user.",
+				Optional:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"description": schema.StringAttribute{
-				Optional: true,
+				Description: "Description of the account.",
+				Optional:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"email_address": schema.StringAttribute{
-				Optional: true,
-				Computed: true,
+				Description: "Email address associated with the account.",
+				Optional:    true,
+				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"password": schema.StringAttribute{
-				Required:  true,
-				Sensitive: true,
+				Description: "Password for the Account. This field is only applicable during a POST operation.",
+				Required:    true,
+				Sensitive:   true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"phone_number": schema.StringAttribute{
-				Optional: true,
+				Description: "Phone number associated with the account.",
+				Optional:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"roles": schema.SetAttribute{
-				Required: true,
+				Description: "Roles available for an administrator. USER_ADMINISTRATOR - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. CRYPTO_ADMINISTRATOR - Can manage local keys and certificates. ADMINISTRATOR - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. EXPRESSION_ADMINISTRATOR - Can add and update OGNL expressions.",
+				Required:    true,
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.UseStateForUnknown(),
 					setplanmodifier.RequiresReplace(),
@@ -126,7 +134,8 @@ func administrativeAccountResourceSchema(ctx context.Context, req resource.Schem
 				ElementType: types.StringType,
 			},
 			"username": schema.StringAttribute{
-				Required: true,
+				Description: "Username for the Administrative Account.",
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
