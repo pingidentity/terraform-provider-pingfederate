@@ -9,6 +9,14 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
+// Run "go generate" to format example terraform files and generate the provider docs
+
+// Format examples
+//go:generate terraform fmt -recursive ./examples/
+
+// Run the docs generation tool
+//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
+
 func main() {
 	var debug bool
 	flag.BoolVar(&debug, "debug", false, "set to true to run the provider with support for debuggers like delve")
