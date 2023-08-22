@@ -66,8 +66,8 @@ devchecknotest: install golangcilint tfproviderlint tflint terrafmtlint importfm
 devcheck: devchecknotest kaboom testacc
 
 generateresource:
-	PINGFEDERATE_GENERATED_ENDPOINT=oauth/authServerSettings/scopes/exclusiveScopes \
-	PINGFEDERATE_RESOURCE_DEFINITION_NAME=ScopeEntry \
+	PINGFEDERATE_GENERATED_ENDPOINT=/idp/adapters \
+	PINGFEDERATE_RESOURCE_DEFINITION_NAME=IdpAdapter \
 	PINGFEDERATE_ALLOW_REQUIRED_BYPASS=False \
 	OVERWRITE_EXISTING_RESOURCE_FILE=False \
 	PINGFEDERATE_PUT_ONLY_RESOURCE=False \
