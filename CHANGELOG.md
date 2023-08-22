@@ -10,6 +10,7 @@
 * **New Resource:** `pingfederate_key_pairs_sslserver_import` => [Initial Commit](https://github.com/pingidentity/terraform-provider-pingfederate/commit/fe35b53aac7146d2a75eeb70f4e21aaf52995a96)
 * **New Resource:** `pingfederate_license` (#13)
 * **New Resource:** `pingfederate_license_agreement` (#15)
+* **New Resource:** `pingfederate_oauth_auth_server_settings` (#34)
 * **New Resource:** `pingfederate_oauth_auth_server_settings_scopes_common_scopes` => [Initial Commit](https://github.com/pingidentity/terraform-provider-pingfederate/commit/fe35b53aac7146d2a75eeb70f4e21aaf52995a96)
 * **New Resource:** `pingfederate_oauth_auth_server_settings_scopes_exclusive_scopes` => [Initial Commit](https://github.com/pingidentity/terraform-provider-pingfederate/commit/fe35b53aac7146d2a75eeb70f4e21aaf52995a96)
 * **New Resource:** `pingfederate_oauth_issuers` => [Initial Commit](https://github.com/pingidentity/terraform-provider-pingfederate/commit/fe35b53aac7146d2a75eeb70f4e21aaf52995a96)
@@ -22,4 +23,3 @@
 * **New Resource:** `pingfederate_session_authentication_session_policies_global` (#12)
 * **New Resource:** `pingfederate_session_settings` (#16)
 * **New Resource:** `pingfederate_virtual_host_names` (#14)
-

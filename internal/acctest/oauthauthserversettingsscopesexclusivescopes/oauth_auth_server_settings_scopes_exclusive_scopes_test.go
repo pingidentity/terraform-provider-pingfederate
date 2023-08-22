@@ -69,11 +69,10 @@ func TestAccOauthAuthServerSettingsScopesExclusiveScopes(t *testing.T) {
 func testAccOauthAuthServerSettingsScopesExclusiveScopes(resourceName string, resourceModel oauthAuthServerSettingsScopesExclusiveScopesResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_auth_server_settings_scopes_exclusive_scopes" "%[1]s" {
-  dynamic     = %[3]t
-  description = "%[4]s"
-  name        = "%[5]s"
+  dynamic     = %[2]t
+  description = "%[3]s"
+  name        = "%[4]s"
 }`, resourceName,
-		resourceModel.id,
 		resourceModel.dynamic,
 		resourceModel.description,
 		resourceModel.name,

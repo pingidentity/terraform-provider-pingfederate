@@ -7,12 +7,13 @@ require (
 	github.com/golangci/golangci-lint v1.54.1
 	github.com/hashicorp/terraform-plugin-docs v0.16.0
 	github.com/hashicorp/terraform-plugin-framework v1.3.5
+	github.com/hashicorp/terraform-plugin-framework-validators v0.11.0
 	github.com/hashicorp/terraform-plugin-go v0.18.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-testing v1.4.0
 	github.com/katbyte/terrafmt v0.5.2
 	github.com/pavius/impi v0.0.3
-	github.com/pingidentity/pingfederate-go-client v0.0.1
+	github.com/pingidentity/pingfederate-go-client v0.0.2
 	github.com/terraform-linters/tflint v0.47.0
 )
 

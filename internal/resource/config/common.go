@@ -27,6 +27,11 @@ func AddCommonSchema(s *schema.Schema, idRequired bool) {
 		s.Attributes["id"] = schema.StringAttribute{
 			Description: "Placeholder name of this object required by Terraform.",
 			Computed:    true,
+			Required:    false,
+			Optional:    false,
+			PlanModifiers: []planmodifier.String{
+				stringplanmodifier.UseStateForUnknown(),
+			},
 		}
 	}
 }

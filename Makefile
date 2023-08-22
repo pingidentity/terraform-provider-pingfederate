@@ -52,7 +52,7 @@ testacc:
 	PINGFEDERATE_PROVIDER_USERNAME=administrator \
 	PINGFEDERATE_PROVIDER_PASSWORD=2FederateM0re \
 	PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true \
-	TF_ACC=1 go test -timeout 10m -v ./internal/... -p 4
+	TF_ACC=1 go test -timeout 10m -v ./internal/... -p 1
 
 testacccomplete: spincontainer testacc
 
@@ -69,8 +69,11 @@ generateresource:
 	PINGFEDERATE_GENERATED_ENDPOINT=oauth/authServerSettings/scopes/exclusiveScopes \
 	PINGFEDERATE_RESOURCE_DEFINITION_NAME=ScopeEntry \
 	PINGFEDERATE_ALLOW_REQUIRED_BYPASS=False \
+	OVERWRITE_EXISTING_RESOURCE_FILE=False \
 	PINGFEDERATE_PUT_ONLY_RESOURCE=False \
+	GENERATE_SCHEMA=True \
 	python3 scripts/generate_resource.py
+	make fmt
 	
 openlocalwebapi:
 	open "https://localhost:9999/pf-admin-api/api-docs/#/"
