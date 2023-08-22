@@ -637,7 +637,7 @@ func (r *oauthAuthServerSettingsResource) ValidateConfig(ctx context.Context, re
 		exclusiveScopeElems := model.ExclusiveScopes.Elements()
 		for _, esElem := range exclusiveScopeElems {
 			esElemObjectAttrs := esElem.(types.Object)
-			eScopeEntryName := strings.ToLower(esElemObjectAttrs.Attributes()["name"].(basetypes.StringValue).ValueString())
+			eScopeEntryName := esElemObjectAttrs.Attributes()["name"].(basetypes.StringValue).ValueString()
 			eScopeNames = append(eScopeNames, eScopeEntryName)
 			eScopeEntryIsDynamic := esElemObjectAttrs.Attributes()["dynamic"].(basetypes.BoolValue).ValueBool()
 			if eScopeEntryIsDynamic {
