@@ -3,7 +3,7 @@
 # https://developer.hashicorp.com/terraform/plugin/best-practices/sensitive-state #
 
 resource "pingfederate_server_settings_system_keys" "serverSettingsSystemKeysExample" {
-  current= {
+  current = {
     encrypted_key_data = ""
   }
   pending = {
