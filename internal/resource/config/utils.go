@@ -32,6 +32,42 @@ type pingFederateError struct {
 	Detail  string   `json:"detail"`
 }
 
+// Report an HTTP error as a warning
+func ReportHttpErrorAsWarning(ctx context.Context, diagnostics *diag.Diagnostics, errorSummary string, err error, httpResp *http.Response) {
+	reportHttpResponse(ctx, diagnostics, errorSummary, err, httpResp, true)
+}
+
+func reportHttpResponse(ctx context.Context, diagnostics *diag.Diagnostics, errorSummary string, err error, httpResp *http.Response, isWarning bool) {
+	httpErrorPrinted := false
+	var internalError error
+	if httpResp != nil {
+		body, internalError := io.ReadAll(httpResp.Body)
+		if internalError == nil {
+			tflog.Debug(ctx, "Error HTTP response body: "+string(body))
+			var pdError pingFederateError
+			internalError = json.Unmarshal(body, &pdError)
+			if internalError == nil {
+				if isWarning {
+					diagnostics.AddWarning(errorSummary, err.Error()+" - Detail: "+pdError.Detail)
+				} else {
+					diagnostics.AddError(errorSummary, err.Error()+" - Detail: "+pdError.Detail)
+				}
+				httpErrorPrinted = true
+			}
+		}
+	}
+	if !httpErrorPrinted {
+		if internalError != nil {
+			tflog.Warn(ctx, "Failed to unmarshal HTTP response body: "+internalError.Error())
+		}
+		if isWarning {
+			diagnostics.AddWarning(errorSummary, err.Error())
+		} else {
+			diagnostics.AddError(errorSummary, err.Error())
+		}
+	}
+}
+
 // Report an HTTP error
 func ReportHttpError(ctx context.Context, diagnostics *diag.Diagnostics, errorSummary string, err error, httpResp *http.Response) {
 	httpErrorPrinted := false

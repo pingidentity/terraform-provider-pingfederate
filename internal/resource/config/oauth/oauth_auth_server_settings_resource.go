@@ -13,11 +13,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -96,10 +99,6 @@ type oauthAuthServerSettingsResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	oauthAuthServerSettingsResourceSchema(ctx, req, resp, false)
-}
-
-func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
 	schema := schema.Schema{
 		Description: "Manages Oauth Auth Server Settings",
 		Attributes: map[string]schema.Attribute{
@@ -128,6 +127,7 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 							Description: "True if the scope is dynamic. (Defaults to false)",
 							Computed:    true,
 							Optional:    true,
+							Default:     booldefault.StaticBool(false),
 							PlanModifiers: []planmodifier.Bool{
 								boolplanmodifier.UseStateForUnknown(),
 							},
@@ -187,6 +187,7 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 							Description: "True if the scope is dynamic. (Defaults to false)",
 							Computed:    true,
 							Optional:    true,
+							Default:     booldefault.StaticBool(false),
 							PlanModifiers: []planmodifier.Bool{
 								boolplanmodifier.UseStateForUnknown(),
 							},
@@ -205,8 +206,7 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
 							Description: "The name of the scope group.",
-							Computed:    true,
-							Optional:    true,
+							Required:    true,
 							Validators: []validator.String{
 								stringvalidator.RegexMatches(
 									regexp.MustCompile(`^\S*$`),
@@ -238,6 +238,7 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 				Description: "Determines whether PKCE's 'plain' code challenge method will be disallowed. The default value is false.",
 				Computed:    true,
 				Optional:    true,
+				Default:     booldefault.StaticBool(false),
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
 				},
@@ -246,6 +247,7 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 				Description: "Determines whether the authorization server's issuer value is added to the authorization response or not. The default value is false.",
 				Computed:    true,
 				Optional:    true,
+				Default:     booldefault.StaticBool(false),
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
 				},
@@ -270,6 +272,7 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 				Description: "The persistent grant lifetime. The default value is indefinite. -1 indicates an indefinite amount of time.",
 				Computed:    true,
 				Optional:    true,
+				Default:     int64default.StaticInt64(-1),
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
 				},
@@ -278,6 +281,7 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 				Description: "The persistent grant lifetime unit.",
 				Computed:    true,
 				Optional:    true,
+				Default:     stringdefault.StaticString("DAYS"),
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -289,14 +293,16 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 				Description: "The persistent grant idle timeout. The default value is 30 (days). -1 indicates an indefinite amount of time.",
 				Computed:    true,
 				Optional:    true,
+				Default:     int64default.StaticInt64(30),
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
 				},
 			},
 			"persistent_grant_idle_timeout_time_unit": schema.StringAttribute{
-				Description: "The persistent grant idle timeout time unit.",
+				Description: "The persistent grant idle timeout time unit. The default value is DAYS",
 				Computed:    true,
 				Optional:    true,
+				Default:     stringdefault.StaticString("DAYS"),
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -312,6 +318,7 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 				Description: "The roll refresh token values default policy. The default value is true.",
 				Computed:    true,
 				Optional:    true,
+				Default:     booldefault.StaticBool(true),
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
 				},
@@ -320,6 +327,7 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 				Description: "The grace period that a rolled refresh token remains valid in seconds. The default value is 0.",
 				Computed:    true,
 				Optional:    true,
+				Default:     int64default.StaticInt64(0),
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
 				},
@@ -367,7 +375,6 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 					},
 					"extended_attributes": schema.SetNestedAttribute{
 						Description: "A list of additional attributes for the persistent grant contract.",
-						Computed:    true,
 						Optional:    true,
 						PlanModifiers: []planmodifier.Set{
 							setplanmodifier.UseStateForUnknown(),
@@ -387,6 +394,7 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 				Description: "Bypass authorization for previously approved persistent grants. The default value is false.",
 				Computed:    true,
 				Optional:    true,
+				Default:     booldefault.StaticBool(false),
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
 				},
@@ -395,6 +403,7 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 				Description: "Allow unidentified clients to request resource owner password credentials grants. The default value is false.",
 				Computed:    true,
 				Optional:    true,
+				Default:     booldefault.StaticBool(false),
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
 				},
@@ -403,6 +412,7 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 				Description: "Allow unidentified clients to request extension grants. The default value is false.",
 				Computed:    true,
 				Optional:    true,
+				Default:     booldefault.StaticBool(false),
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
 				},
@@ -417,8 +427,7 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Description: "The ID of the resource.",
-						Computed:    true,
-						Optional:    true,
+						Required:    true,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
 						},
@@ -426,7 +435,7 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 					"location": schema.StringAttribute{
 						Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
 						Computed:    true,
-						Optional:    true,
+						Optional:    false,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
 						},
@@ -487,6 +496,7 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 				Description: "Determines whether the user is prompted to enter or confirm the activation code after authenticating or before. The default is AFTER_AUTHENTICATION.",
 				Computed:    true,
 				Optional:    true,
+				Default:     stringdefault.StaticString("AFTER_AUTHENTICATION"),
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -511,7 +521,6 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 			},
 			"user_authorization_consent_adapter": schema.StringAttribute{
 				Description: "Adapter ID of the external consent adapter to be used for the consent page user interface.",
-				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
@@ -519,7 +528,6 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 			},
 			"approved_scopes_attribute": schema.StringAttribute{
 				Description: "Attribute from the external consent adapter's contract, intended for storing approved scopes returned by the external consent page.",
-				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
@@ -527,7 +535,6 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 			},
 			"approved_authorization_detail_attribute": schema.StringAttribute{
 				Description: "Attribute from the external consent adapter's contract, intended for storing approved authorization details returned by the external consent page.",
-				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
@@ -537,6 +544,7 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 				Description: "The timeout, in seconds, of the pushed authorization request reference. The default value is 60.",
 				Computed:    true,
 				Optional:    true,
+				Default:     int64default.StaticInt64(60),
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
 				},
@@ -545,6 +553,7 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 				Description: "The entropy of pushed authorization request references, in bytes. The default value is 24.",
 				Computed:    true,
 				Optional:    true,
+				Default:     int64default.StaticInt64(24),
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
 				},
@@ -553,6 +562,7 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 				Description: "The status of pushed authorization request support. The default value is ENABLED.",
 				Computed:    true,
 				Optional:    true,
+				Default:     stringdefault.StaticString("ENABLED"),
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -564,6 +574,7 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 				Description: "The length of time in minutes that client secrets will be retained as secondary secrets after secret change. The default value is 0, which will disable secondary client secret retention.",
 				Computed:    true,
 				Optional:    true,
+				Default:     int64default.StaticInt64(0),
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
 				},
@@ -572,6 +583,7 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 				Description: "The lifetime, in seconds, of the JWT Secured authorization response. The default value is 600.",
 				Computed:    true,
 				Optional:    true,
+				Default:     int64default.StaticInt64(600),
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
 				},
@@ -579,10 +591,6 @@ func oauthAuthServerSettingsResourceSchema(ctx context.Context, req resource.Sch
 		},
 	}
 
-	// Set attributes in string list
-	if setOptionalToComputed {
-		config.SetAllAttributesToOptionalAndComputed(&schema, []string{"default_scope_description", "authorization_code_timeout", "authorization_code_entropy", "refresh_token_length", "refresh_rolling_interval", "registered_authorization_path", "pending_authorization_timeout", "device_polling_interval", "bypass_activation_code_confirmation"})
-	}
 	config.AddCommonSchema(&schema, false)
 	resp.Schema = schema
 }
@@ -616,8 +624,8 @@ func (r *oauthAuthServerSettingsResource) ValidateConfig(ctx context.Context, re
 			scopeNames = append(scopeNames, scopeEntryName)
 			scopeEntryIsDynamic := scopeElemObjectAttrs.Attributes()["dynamic"].(basetypes.BoolValue).ValueBool()
 			if scopeEntryIsDynamic {
-				if string(scopeEntryName[0]) != "*" {
-					resp.Diagnostics.AddError("Scope name conflict!", fmt.Sprintf("Scope name \"%s\" must be prefixed, suffixed or both by static part(s) with one and only one dynamic part represented by \"*\"", scopeEntryName))
+				if strings.Index(scopeEntryName, "*") != 0 {
+					resp.Diagnostics.AddError("Scope name conflict!", fmt.Sprintf("Scope name \"%s\" must be prefixed with a \"*\" when dynamic is set to true.", scopeEntryName))
 				}
 			}
 		}
@@ -633,25 +641,21 @@ func (r *oauthAuthServerSettingsResource) ValidateConfig(ctx context.Context, re
 			eScopeNames = append(eScopeNames, eScopeEntryName)
 			eScopeEntryIsDynamic := esElemObjectAttrs.Attributes()["dynamic"].(basetypes.BoolValue).ValueBool()
 			if eScopeEntryIsDynamic {
-				if string(eScopeEntryName[0]) != "*" {
-					resp.Diagnostics.AddError("Dynamic scope name conflict!", fmt.Sprintf("Dynamic scope name \"%s\" must be prefixed, suffixed or both by static part(s) with one and only one dynamic part represented by \"*\"", eScopeEntryName))
+				if strings.Index(eScopeEntryName, "*") != 0 {
+					resp.Diagnostics.AddError("Exclusive scope name conflict!", fmt.Sprintf("Scope name \"%s\" must be prefixed with a \"*\" when dynamic is set to true.", eScopeEntryName))
 				}
 			}
 		}
 	}
 
 	// Test if values in sets match
-	matchNameBtwnScopes, matchVal := internaltypes.MatchStringInSets(scopeNames, eScopeNames)
-	if matchNameBtwnScopes {
-		resp.Diagnostics.AddError("Scope name conflict!", fmt.Sprintf("The scope name \"%s\" is already defined in another scope list", matchVal))
+	matchVal := internaltypes.MatchStringInSets(scopeNames, eScopeNames)
+	if matchVal != nil {
+		resp.Diagnostics.AddError("Scope name conflict!", fmt.Sprintf("The scope name \"%s\" is already defined in another scope list", *matchVal))
 	}
 }
 
 func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *client.AuthorizationServerSettings, plan oauthAuthServerSettingsResourceModel) error {
-
-	if internaltypes.IsDefined(plan.DefaultScopeDescription) {
-		addRequest.DefaultScopeDescription = plan.DefaultScopeDescription.ValueString()
-	}
 
 	if internaltypes.IsDefined(plan.Scopes) {
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.Scopes)), &addRequest.Scopes)
@@ -661,7 +665,6 @@ func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *c
 	}
 
 	if internaltypes.IsDefined(plan.ScopeGroups) {
-		addRequest.ScopeGroups = client.NewAuthorizationServerSettingsWithDefaults().ScopeGroups
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ScopeGroups)), &addRequest.ScopeGroups)
 		if err != nil {
 			return err
@@ -680,14 +683,6 @@ func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *c
 		if err != nil {
 			return err
 		}
-	}
-
-	if internaltypes.IsDefined(plan.AuthorizationCodeTimeout) {
-		addRequest.AuthorizationCodeTimeout = plan.AuthorizationCodeTimeout.ValueInt64()
-	}
-
-	if internaltypes.IsDefined(plan.AuthorizationCodeEntropy) {
-		addRequest.AuthorizationCodeEntropy = plan.AuthorizationCodeEntropy.ValueInt64()
 	}
 
 	if internaltypes.IsDefined(plan.DisallowPlainPKCE) {
@@ -722,20 +717,12 @@ func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *c
 		addRequest.PersistentGrantIdleTimeoutTimeUnit = plan.PersistentGrantIdleTimeoutTimeUnit.ValueStringPointer()
 	}
 
-	if internaltypes.IsDefined(plan.RefreshTokenLength) {
-		addRequest.RefreshTokenLength = plan.RefreshTokenLength.ValueInt64()
-	}
-
 	if internaltypes.IsDefined(plan.RollRefreshTokenValues) {
 		addRequest.RollRefreshTokenValues = plan.RollRefreshTokenValues.ValueBoolPointer()
 	}
 
 	if internaltypes.IsDefined(plan.RefreshTokenRollingGracePeriod) {
 		addRequest.RefreshTokenRollingGracePeriod = plan.RefreshTokenRollingGracePeriod.ValueInt64Pointer()
-	}
-
-	if internaltypes.IsDefined(plan.RefreshRollingInterval) {
-		addRequest.RefreshRollingInterval = plan.RefreshRollingInterval.ValueInt64()
 	}
 
 	if internaltypes.IsDefined(plan.PersistentGrantReuseGrantTypes) {
@@ -790,24 +777,12 @@ func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *c
 		addRequest.UserAuthorizationUrl = plan.UserAuthorizationUrl.ValueStringPointer()
 	}
 
-	if internaltypes.IsDefined(plan.RegisteredAuthorizationPath) {
-		addRequest.RegisteredAuthorizationPath = plan.RegisteredAuthorizationPath.ValueString()
-	}
-
-	if internaltypes.IsDefined(plan.PendingAuthorizationTimeout) {
-		addRequest.PendingAuthorizationTimeout = plan.PendingAuthorizationTimeout.ValueInt64()
-	}
-
 	if internaltypes.IsDefined(plan.DevicePollingInterval) {
 		addRequest.DevicePollingInterval = plan.DevicePollingInterval.ValueInt64()
 	}
 
 	if internaltypes.IsDefined(plan.ActivationCodeCheckMode) {
 		addRequest.ActivationCodeCheckMode = plan.ActivationCodeCheckMode.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.BypassActivationCodeConfirmation) {
-		addRequest.BypassActivationCodeConfirmation = plan.BypassActivationCodeConfirmation.ValueBool()
 	}
 
 	if internaltypes.IsDefined(plan.UserAuthorizationConsentPageSetting) {
@@ -1059,16 +1034,9 @@ func (r *oauthAuthServerSettingsResource) Create(ctx context.Context, req resour
 	readOauthAuthServerSettingsResponse(ctx, oauthAuthServerSettingsResponse, &state)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *oauthAuthServerSettingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	readOauthAuthServerSettings(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func readOauthAuthServerSettings(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	var state oauthAuthServerSettingsResourceModel
 
 	diags := req.State.Get(ctx, &state)
@@ -1076,10 +1044,15 @@ func readOauthAuthServerSettings(ctx context.Context, req resource.ReadRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthAuthServerSettings, httpResp, err := apiClient.OauthAuthServerSettingsApi.GetAuthorizationServerSettings(config.ProviderBasicAuthContext(ctx, providerConfig)).Execute()
+	apiReadOauthAuthServerSettings, httpResp, err := r.apiClient.OauthAuthServerSettingsApi.GetAuthorizationServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a OauthAuthServerSettings", err, httpResp)
+		if httpResp.StatusCode == 404 {
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Custom Logged Stats", err, httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Custom Logged Stats", err, httpResp)
+		}
 		return
 	}
 	// Log response JSON
@@ -1094,18 +1067,10 @@ func readOauthAuthServerSettings(ctx context.Context, req resource.ReadRequest, 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *oauthAuthServerSettingsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	updateOauthAuthServerSettings(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func updateOauthAuthServerSettings(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	// Retrieve values from plan
 	var plan oauthAuthServerSettingsResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -1117,7 +1082,7 @@ func updateOauthAuthServerSettings(ctx context.Context, req resource.UpdateReque
 	// Get the current state to see how any attributes are changing
 	var state oauthAuthServerSettingsResourceModel
 	req.State.Get(ctx, &state)
-	updateOauthAuthServerSettings := apiClient.OauthAuthServerSettingsApi.UpdateAuthorizationServerSettings(config.ProviderBasicAuthContext(ctx, providerConfig))
+	updateOauthAuthServerSettings := r.apiClient.OauthAuthServerSettingsApi.UpdateAuthorizationServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewAuthorizationServerSettings(plan.DefaultScopeDescription.ValueString(), plan.AuthorizationCodeTimeout.ValueInt64(), plan.AuthorizationCodeEntropy.ValueInt64(), plan.RefreshTokenLength.ValueInt64(), plan.RefreshRollingInterval.ValueInt64(), plan.RegisteredAuthorizationPath.ValueString(), plan.PendingAuthorizationTimeout.ValueInt64(), plan.DevicePollingInterval.ValueInt64(), plan.BypassActivationCodeConfirmation.ValueBool())
 	err := addOptionalOauthAuthServerSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -1129,7 +1094,7 @@ func updateOauthAuthServerSettings(ctx context.Context, req resource.UpdateReque
 		tflog.Debug(ctx, "Update request: "+string(requestJson))
 	}
 	updateOauthAuthServerSettings = updateOauthAuthServerSettings.Body(*createUpdateRequest)
-	updateOauthAuthServerSettingsResponse, httpResp, err := apiClient.OauthAuthServerSettingsApi.UpdateAuthorizationServerSettingsExecute(updateOauthAuthServerSettings)
+	updateOauthAuthServerSettingsResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsApi.UpdateAuthorizationServerSettingsExecute(updateOauthAuthServerSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OauthAuthServerSettings", err, httpResp)
 		return
@@ -1145,10 +1110,6 @@ func updateOauthAuthServerSettings(ctx context.Context, req resource.UpdateReque
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // This config object is edit-only, so Terraform can't delete it.
@@ -1156,9 +1117,6 @@ func (r *oauthAuthServerSettingsResource) Delete(ctx context.Context, req resour
 }
 
 func (r *oauthAuthServerSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	importOauthAuthServerSettingsLocation(ctx, req, resp)
-}
-func importOauthAuthServerSettingsLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	// Set a placeholder id value to appease terraform.
 	// The real attributes will be imported when terraform performs a read after the import.

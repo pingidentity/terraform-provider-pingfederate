@@ -31,6 +31,7 @@ type oauthAuthServerSettingsResourceModel struct {
 func TestAccOauthAuthServerSettings(t *testing.T) {
 	resourceName := "myOauthAuthServerSettings"
 	initialResourceModel := oauthAuthServerSettingsResourceModel{
+		id:                               oauthAuthServerSettingsId,
 		defaultScopeDescription:          "example scope description",
 		authorizationCodeTimeout:         50,
 		authorizationCodeEntropy:         20,
@@ -42,6 +43,7 @@ func TestAccOauthAuthServerSettings(t *testing.T) {
 		bypassActivationCodeConfirmation: false,
 	}
 	updatedResourceModel := oauthAuthServerSettingsResourceModel{
+		id:                               oauthAuthServerSettingsId,
 		defaultScopeDescription:          "example updated scope description",
 		authorizationCodeTimeout:         60,
 		authorizationCodeEntropy:         30,
