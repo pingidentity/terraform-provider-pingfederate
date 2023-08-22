@@ -52,7 +52,7 @@ testacc:
 	PINGFEDERATE_PROVIDER_USERNAME=administrator \
 	PINGFEDERATE_PROVIDER_PASSWORD=2FederateM0re \
 	PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true \
-	TF_ACC=1 go test -timeout 20m -v ./internal/... -p 1
+	TF_ACC=1 go test -timeout 10m -v ./internal/... -p 1
 
 testacccomplete: spincontainer testacc
 
