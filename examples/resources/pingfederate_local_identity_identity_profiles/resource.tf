@@ -36,9 +36,9 @@ resource "pingfederate_local_identity_identity_profiles" "localIdentityIdentityP
     execute_workflow = "AFTER_ACCOUNT_CREATION"
   }
   profile_config = {
-		delete_identity_enabled = true
-		template_name = "local.identity.profile.html"	
-	} 
+    delete_identity_enabled = true
+    template_name           = "local.identity.profile.html"
+  }
   field_config = {
     fields = [
       {
@@ -87,13 +87,13 @@ resource "pingfederate_local_identity_identity_profiles" "localIdentityIdentityP
     /* email_verification_sent_template_name = "local.identity.email.verification.sent.html"  */
     email_verification_success_template_name = "local.identity.email.verification.success.html"
     email_verification_error_template_name   = "local.identity.email.verification.error.html"
-	/* TO ENABLE OTL as the email verification type, remove verification OTP template,otp_character_set, otp_retry attempts, otp_length attribute  and uncomment otl_time_to_live,email_verification_sent and require_verified email template*/
-    email_verification_type                  = "OTP"
-    allowed_otp_character_set                = "23456789BCDFGHJKMNPQRSTVWXZbcdfghjkmnpqrstvwxz"
-    email_verification_otp_template_name     = "message-template-email-ownership-verification.html"
-    otp_length                               = 8
-    otp_retry_attempts                       = 3
-    otp_time_to_live                         = 3
+    /* TO ENABLE OTL as the email verification type, remove verification OTP template,otp_character_set, otp_retry attempts, otp_length attribute  and uncomment otl_time_to_live,email_verification_sent and require_verified email template*/
+    email_verification_type              = "OTP"
+    allowed_otp_character_set            = "23456789BCDFGHJKMNPQRSTVWXZbcdfghjkmnpqrstvwxz"
+    email_verification_otp_template_name = "message-template-email-ownership-verification.html"
+    otp_length                           = 8
+    otp_retry_attempts                   = 3
+    otp_time_to_live                     = 3
     /* otl_time_to_live = 1440  */
     field_for_email_to_verify         = "mail"
     field_storing_verification_status = "entryUUID"
