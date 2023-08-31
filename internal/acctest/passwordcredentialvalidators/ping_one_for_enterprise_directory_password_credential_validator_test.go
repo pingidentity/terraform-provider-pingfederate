@@ -62,48 +62,48 @@ func TestAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(t *testing
 func testAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(resourceName string, resourceModel pingOneForEnterpriseDirectoryPasswordCredentialValidatorsResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_password_credential_validators" "%[1]s" {
-	id = "%[2]s"
-	name = "%[3]s"
-	plugin_descriptor_ref = {
-		id = "com.pingconnect.alexandria.pingfed.pcv.PingOnePasswordValidator"
-	}
-	configuration = {
-		tables = [],
-		fields = [
-			{
-				name = "Client Id"
-				value = "ping_federate_client_id"
-			},
-			{
-				name = "Client Secret"
-				value = "2FederateM0re"
-			},
-			{
-				name = "PingOne URL"
-				value = "https://directory-api.pingone.com/api"
-			},
-			{
-				name = "Authenticate by Subject URL"
-				value = "/directory/users/authenticate?by=subject"
-			},
-			{
-				name = "Reset Password URL"
-				value = "/directory/users/password-reset"
-			},
-			{
-				name = "SCIM User URL"
-				value = "/directory/user"
-			},
-			{
-				name = "Connection Pool Size"
-				value = "100"
-			},
-			{
-				name = "Connection Pool Idle Timeout"
-				value = "4000"
-			}
-		]
-	}
+  id   = "%[2]s"
+  name = "%[3]s"
+  plugin_descriptor_ref = {
+    id = "com.pingconnect.alexandria.pingfed.pcv.PingOnePasswordValidator"
+  }
+  configuration = {
+    tables = [],
+    fields = [
+      {
+        name  = "Client Id"
+        value = "ping_federate_client_id"
+      },
+      {
+        name  = "Client Secret"
+        value = "2FederateM0re"
+      },
+      {
+        name  = "PingOne URL"
+        value = "https://directory-api.pingone.com/api"
+      },
+      {
+        name  = "Authenticate by Subject URL"
+        value = "/directory/users/authenticate?by=subject"
+      },
+      {
+        name  = "Reset Password URL"
+        value = "/directory/users/password-reset"
+      },
+      {
+        name  = "SCIM User URL"
+        value = "/directory/user"
+      },
+      {
+        name  = "Connection Pool Size"
+        value = "100"
+      },
+      {
+        name  = "Connection Pool Idle Timeout"
+        value = "4000"
+      }
+    ]
+  }
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.name,

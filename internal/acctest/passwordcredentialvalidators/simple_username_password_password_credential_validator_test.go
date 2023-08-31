@@ -62,9 +62,9 @@ func TestAccSimpleUsernamePasswordCredentialValidators(t *testing.T) {
 func testAccPasswordCredentialValidators(resourceName string, resourceModel simpleUsernamePasswordPasswordCredentialValidatorsResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_password_credential_validators" "%[1]s" {
-	id = "%[2]s"
-	name = "%[3]s"
-	plugin_descriptor_ref = {
+  id   = "%[2]s"
+  name = "%[3]s"
+  plugin_descriptor_ref = {
     id = "org.sourceid.saml20.domain.SimpleUsernamePasswordCredentialValidator"
   }
   configuration = {

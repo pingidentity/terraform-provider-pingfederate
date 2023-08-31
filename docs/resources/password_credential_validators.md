@@ -537,9 +537,9 @@ resource "pingfederate_password_credential_validators" "pingIdPasswordCredential
   }
 }
 
-resource "pingfederate_password_credential_validators" "pingIdPasswordCredentialValidatorExample" {
-  id   = "pingIdPCV"
-  name = "pingIdPasswordCredentialValidatorExample"
+resource "pingfederate_password_credential_validators" "pingOneForEnterpriseDirectoryPasswordCredentialValidatorExample" {
+  id   = "pingOneForEnterpriseDirectoryPCV"
+  name = "pingOneForEnterpriseDirectoryPasswordCredentialValidatorExample"
   plugin_descriptor_ref = {
     id = "com.pingconnect.alexandria.pingfed.pcv.PingOnePasswordValidator"
   }
