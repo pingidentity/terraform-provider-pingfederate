@@ -14,6 +14,7 @@
 * **New Resource:** `pingfederate_oauth_auth_server_settings_scopes_common_scopes` => [Initial Commit](https://github.com/pingidentity/terraform-provider-pingfederate/commit/fe35b53aac7146d2a75eeb70f4e21aaf52995a96)
 * **New Resource:** `pingfederate_oauth_auth_server_settings_scopes_exclusive_scopes` => [Initial Commit](https://github.com/pingidentity/terraform-provider-pingfederate/commit/fe35b53aac7146d2a75eeb70f4e21aaf52995a96)
 * **New Resource:** `pingfederate_oauth_issuers` => [Initial Commit](https://github.com/pingidentity/terraform-provider-pingfederate/commit/fe35b53aac7146d2a75eeb70f4e21aaf52995a96)
+* **New Resource:** `pingfederate_password_credential_validators` (#39)
 * **New Resource:** `pingfederate_protocol_metadata_lifetime_settings` (#9)
 * **New Resource:** `pingfederate_redirect_validation` (#17)
 * **New Resource:** `pingfederate_server_settings_general_settings` (#10)
