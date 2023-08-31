@@ -255,6 +255,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		authenticationapi.AuthenticationApiSettingsResource,
 		certificates.CertificateResource,
 		config.AuthenticationPolicyContractsResource,
+		config.PasswordCredentialValidatorsResource,
 		config.RedirectValidationResource,
 		config.VirtualHostNamesResource,
 		idp.IdpDefaultUrlsResource,

@@ -63,7 +63,7 @@ kaboom: clearstates spincontainer install
 
 devchecknotest: install golangcilint tfproviderlint tflint terrafmtlint importfmtlint
 
-devcheck: devchecknotest kaboom testacc
+devcheck: devchecknotest generate kaboom testacc
 
 generateresource:
 	PINGFEDERATE_GENERATED_ENDPOINT=oauth/authServerSettings/scopes/exclusiveScopes \
