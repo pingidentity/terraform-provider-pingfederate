@@ -23,6 +23,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/license"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/localidentity"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/protocolmetadata"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings"
@@ -262,6 +263,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		keypairs.KeyPairsSslServerImportResource,
 		license.LicenseAgreementResource,
 		license.LicenseResource,
+		localidentity.LocalIdentityIdentityProfilesResource,
 		oauth.OauthAuthServerSettingsResource,
 		oauth.OauthAuthServerSettingsScopesCommonScopesResource,
 		oauth.OauthAuthServerSettingsScopesExclusiveScopesResource,

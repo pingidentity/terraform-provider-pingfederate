@@ -658,28 +658,28 @@ func (r *oauthAuthServerSettingsResource) ValidateConfig(ctx context.Context, re
 func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *client.AuthorizationServerSettings, plan oauthAuthServerSettingsResourceModel) error {
 
 	if internaltypes.IsDefined(plan.Scopes) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.Scopes)), &addRequest.Scopes)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.Scopes, false)), &addRequest.Scopes)
 		if err != nil {
 			return err
 		}
 	}
 
 	if internaltypes.IsDefined(plan.ScopeGroups) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ScopeGroups)), &addRequest.ScopeGroups)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ScopeGroups, false)), &addRequest.ScopeGroups)
 		if err != nil {
 			return err
 		}
 	}
 
 	if internaltypes.IsDefined(plan.ExclusiveScopes) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ExclusiveScopes)), &addRequest.ExclusiveScopes)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ExclusiveScopes, false)), &addRequest.ExclusiveScopes)
 		if err != nil {
 			return err
 		}
 	}
 
 	if internaltypes.IsDefined(plan.ExclusiveScopeGroups) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ExclusiveScopeGroups)), &addRequest.ExclusiveScopeGroups)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ExclusiveScopeGroups, false)), &addRequest.ExclusiveScopeGroups)
 		if err != nil {
 			return err
 		}
@@ -733,7 +733,7 @@ func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *c
 
 	if internaltypes.IsDefined(plan.PersistentGrantContract) {
 		addRequest.PersistentGrantContract = client.NewPersistentGrantContractWithDefaults()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.PersistentGrantContract)), addRequest.PersistentGrantContract)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.PersistentGrantContract, false)), addRequest.PersistentGrantContract)
 		if err != nil {
 			return err
 		}
@@ -753,7 +753,7 @@ func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *c
 
 	if internaltypes.IsDefined(plan.AdminWebServicePcvRef) {
 		addRequest.AdminWebServicePcvRef = client.NewResourceLinkWithDefaults()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AdminWebServicePcvRef)), addRequest.AdminWebServicePcvRef)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AdminWebServicePcvRef, false)), addRequest.AdminWebServicePcvRef)
 		if err != nil {
 			return err
 		}
