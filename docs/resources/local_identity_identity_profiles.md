@@ -197,11 +197,8 @@ Optional:
 
 Optional:
 
-- `source` (String) The local identity authentication source. Source is unique.
-
-Read-Only:
-
 - `id` (String) The persistent, unique ID for the local identity authentication source. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
+- `source` (String) The local identity authentication source. Source is unique.
 
 
 <a id="nestedatt--data_store_config"></a>

@@ -105,8 +105,7 @@ func localIdentityIdentityProfilesResourceSchema(ctx context.Context, req resour
 						"id": schema.StringAttribute{
 							Description: "The persistent, unique ID for the local identity authentication source. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
 							Computed:    true,
-							Optional:    false,
-							Required:    false,
+							Optional:    true,
 						},
 						"source": schema.StringAttribute{
 							Description: "The local identity authentication source. Source is unique.",
