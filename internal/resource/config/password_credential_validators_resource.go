@@ -580,10 +580,6 @@ func (r *passwordCredentialValidatorsResource) Update(ctx context.Context, req r
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
-	var state passwordCredentialValidatorsResourceModel
-	req.State.Get(ctx, &state)
-
 	// PluginDescriptorRef
 	pluginDescRefId := plan.PluginDescriptorRef.Attributes()["id"].(types.String).ValueString()
 	pluginDescRefResLink := client.NewResourceLinkWithDefaults()
@@ -625,10 +621,10 @@ func (r *passwordCredentialValidatorsResource) Update(ctx context.Context, req r
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	}
 	// Read the response
-	readPasswordCredentialValidatorsResponse(ctx, updatePasswordCredentialValidatorsResponse, &state, plan.Configuration)
+	readPasswordCredentialValidatorsResponse(ctx, updatePasswordCredentialValidatorsResponse, &plan, plan.Configuration)
 
 	// Update computed values
-	diags = resp.State.Set(ctx, state)
+	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 }
 
