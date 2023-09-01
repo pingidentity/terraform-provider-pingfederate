@@ -60,6 +60,9 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 			"id": schema.StringAttribute{
 				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 				Validators: []validator.String{
 					stringvalidator.RegexMatches(
 						regexp.MustCompile("^[a-zA-Z0-9_]{1,32}$"),
@@ -130,12 +133,7 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 								},
 								"rows": schema.SetNestedAttribute{
 									Description: "List of table rows.",
-									Computed:    true,
 									Optional:    true,
-									PlanModifiers: []planmodifier.Set{
-										setplanmodifier.UseStateForUnknown(),
-										setplanmodifier.RequiresReplace(),
-									},
 									NestedObject: schema.NestedAttributeObject{
 										Attributes: map[string]schema.Attribute{
 											"fields": schema.SetNestedAttribute{
@@ -154,7 +152,6 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 															Optional:    true,
 															PlanModifiers: []planmodifier.String{
 																stringplanmodifier.UseStateForUnknown(),
-																stringplanmodifier.RequiresReplace(),
 															},
 														},
 														"encrypted_value": schema.StringAttribute{
@@ -216,7 +213,6 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 									Optional:    true,
 									PlanModifiers: []planmodifier.String{
 										stringplanmodifier.UseStateForUnknown(),
-										stringplanmodifier.RequiresReplace(),
 									},
 								},
 								"encrypted_value": schema.StringAttribute{

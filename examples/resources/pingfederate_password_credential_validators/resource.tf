@@ -22,13 +22,11 @@ resource "pingfederate_password_credential_validators" "simpleUsernamePasswordCr
               {
                 name = "Password"
                 # This value will be stored into your state file and will not detect any configuration changes made in the UI
-                # Any changes made to this property will force replacement of resource
                 value = "2FederateM0re"
               },
               {
                 name = "Confirm Password"
                 # This value will be stored into your state file and will not detect any configuration changes made in the UI
-                # Any changes made to this property will force replacement of resource
                 value = "2FederateM0re"
               },
               {
@@ -47,13 +45,11 @@ resource "pingfederate_password_credential_validators" "simpleUsernamePasswordCr
               {
                 name = "Password"
                 # This value will be stored into your state file and will not detect any configuration changes made in the UI
-                # Any changes made to this property will force replacement of resource
                 value = "2FederateM0re"
               },
               {
                 name = "Confirm Password"
                 # This value will be stored into your state file and will not detect any configuration changes made in the UI
-                # Any changes made to this property will force replacement of resource
                 value = "2FederateM0re"
               },
               {
@@ -93,13 +89,11 @@ resource "pingfederate_password_credential_validators" "simpleUsernamePasswordCr
               {
                 name = "Password"
                 # This value will be stored into your state file and will not detect any configuration changes made in the UI
-                # Any changes made to this property will force replacement of resource
                 value = "2FederateM0re"
               },
               {
                 name = "Confirm Password"
                 # This value will be stored into your state file and will not detect any configuration changes made in the UI
-                # Any changes made to this property will force replacement of resource
                 value = "2FederateM0re"
               },
               {
@@ -118,13 +112,11 @@ resource "pingfederate_password_credential_validators" "simpleUsernamePasswordCr
               {
                 name = "Password"
                 # This value will be stored into your state file and will not detect any configuration changes made in the UI
-                # Any changes made to this property will force replacement of resource
                 value = "2FederateM0re"
               },
               {
                 name = "Confirm Password"
                 # This value will be stored into your state file and will not detect any configuration changes made in the UI
-                # Any changes made to this property will force replacement of resource
                 value = "2FederateM0re"
               },
               {
@@ -168,7 +160,6 @@ resource "pingfederate_password_credential_validators" "radiusUsernamePasswordCr
               {
                 name = "Shared Secret"
                 # This value will be stored into your state file and will not detect any configuration changes made in the UI
-                # Any changes made to this property will force replacement of resource
                 value = "2FederateM0re"
               }
             ]
@@ -306,7 +297,6 @@ resource "pingfederate_password_credential_validators" "pingIdPasswordCredential
               {
                 name = "Client Shared Secret"
                 # This value will be stored into your state file and will not detect any configuration changes made in the UI
-                # Any changes made to this property will force replacement of resource
                 value = "2FederateM0re"
               },
               {
@@ -538,7 +528,6 @@ resource "pingfederate_password_credential_validators" "pingOneForEnterpriseDire
       {
         name = "Client Secret"
         # This value will be stored into your state file and will not detect any configuration changes made in the UI
-        # Any changes made to this property will force replacement of resource
         value = "2FederateM0re"
       },
       {
