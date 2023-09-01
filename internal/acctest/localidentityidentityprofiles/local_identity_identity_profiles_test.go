@@ -16,21 +16,30 @@ const localIdentityIdentityProfilesId = "test"
 
 // Attributes to test with. Add optional properties to test here if desired.
 type localIdentityIdentityProfilesResourceModel struct {
-	id   string
-	name string
+	id                  string
+	name                string
+	authSourcesSource   string
+	registrationEnabled bool
+	profileEnabled      bool
 }
 
 func TestAccLocalIdentityIdentityProfiles(t *testing.T) {
 	resourceName := "myLocalIdentityIdentityProfiles"
 	initialResourceModel := localIdentityIdentityProfilesResourceModel{
-		id:   localIdentityIdentityProfilesId,
-		name: "example",
+		// Test is only run on attributes that do not require a PD dataStore.
+		id:                  localIdentityIdentityProfilesId,
+		name:                "example",
+		authSourcesSource:   "authsourceSources",
+		registrationEnabled: false,
+		profileEnabled:      false,
 	}
 	updatedResourceModel := localIdentityIdentityProfilesResourceModel{
-		id:   localIdentityIdentityProfilesId,
-		name: "example1",
+		id:                  localIdentityIdentityProfilesId,
+		name:                "example1",
+		authSourcesSource:   "authsourceidSources",
+		registrationEnabled: false,
+		profileEnabled:      false,
 	}
-
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
@@ -73,9 +82,20 @@ resource "pingfederate_local_identity_identity_profiles" "%[1]s" {
   apc_id = {
     id = pingfederate_authentication_policy_contracts.authenticationPolicyContractsExample.id
   }
+  auth_sources = [
+    {
+      source = "%[4]s"
+    }
+  ]
+  registration_enabled = %[5]t
+  profile_enabled      = %[6]t
+
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.name,
+		resourceModel.authSourcesSource,
+		resourceModel.registrationEnabled,
+		resourceModel.profileEnabled,
 	)
 }
 
@@ -98,6 +118,22 @@ func testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(config localIde
 		}
 		err = acctest.TestAttributesMatchString(resourceType, &config.id, "name",
 			config.name, response.Name)
+		if err != nil {
+			return err
+		}
+		getAuthSource := response.AuthSources[0].Source
+		err = acctest.TestAttributesMatchString(resourceType, &config.id, "source",
+			config.authSourcesSource, *getAuthSource)
+		if err != nil {
+			return err
+		}
+		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "registration_enabled",
+			config.registrationEnabled, *response.RegistrationEnabled)
+		if err != nil {
+			return err
+		}
+		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "profile_enabled",
+			config.profileEnabled, *response.ProfileEnabled)
 		if err != nil {
 			return err
 		}

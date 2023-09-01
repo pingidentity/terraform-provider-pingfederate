@@ -2,16 +2,14 @@ resource "pingfederate_local_identity_identity_profiles" "localIdentityIdentityP
   name = "yourIdentityProfileName"
   id   = "yourid"
   apc_id = {
-    id = "exampleapcid"
+    id =  "apcid"
   }
   auth_sources = [
     {
       "source" = "test",
-      "id"     = "b1KEsGAFZhaei8Ga",
     },
     {
       "source" : "username",
-      "id" : "ZU6Z3bbFUu6Zp0Yn"
     }
   ]
   auth_source_update_policy = {
@@ -31,7 +29,7 @@ resource "pingfederate_local_identity_identity_profiles" "localIdentityIdentityP
     username_field                          = "cn"
     this_is_my_device_enabled               = false
     registration_workflow = {
-      id = "registrationworkflowid",
+      id = "registrationid",
     }
     execute_workflow = "AFTER_ACCOUNT_CREATION"
   }
@@ -98,15 +96,16 @@ resource "pingfederate_local_identity_identity_profiles" "localIdentityIdentityP
     field_for_email_to_verify         = "mail"
     field_storing_verification_status = "entryUUID"
     notification_publisher_ref = {
-      id = "npid",
+      id = "testnp",
     }
     require_verified_email = true
     /* require_verified_email_template_name = "local.identity.email.verification.required.html" */
   }
+  // Local Identity profile only support Directory as DataStore
   data_store_config = {
     type = "LDAP"
     data_store_ref = {
-      id = "yourldapdsid"
+      id = "directoryid"
     }
     base_dn        = "ou=people,dc=example,dc=com",
     create_pattern = "uid=$${mail}",

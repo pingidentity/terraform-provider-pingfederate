@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -66,7 +67,7 @@ func localIdentityIdentityProfilesResourceSchema(ctx context.Context, req resour
 		Description: "Manages Local Identity Identity Profiles",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
-				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
+				Description: "The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
 				Optional:    true,
 				Computed:    true,
 				Validators: []validator.String{
@@ -104,7 +105,8 @@ func localIdentityIdentityProfilesResourceSchema(ctx context.Context, req resour
 						"id": schema.StringAttribute{
 							Description: "The persistent, unique ID for the local identity authentication source. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
 							Computed:    true,
-							Optional:    true,
+							Optional:    false,
+							Required:    false,
 						},
 						"source": schema.StringAttribute{
 							Description: "The local identity authentication source. Source is unique.",
@@ -120,22 +122,18 @@ func localIdentityIdentityProfilesResourceSchema(ctx context.Context, req resour
 				Attributes: map[string]schema.Attribute{
 					"store_attributes": schema.BoolAttribute{
 						Description: "Whether or not to store attributes that came from authentication sources.",
-						Computed:    true,
 						Optional:    true,
 					},
 					"retain_attributes": schema.BoolAttribute{
 						Description: "Whether or not to keep attributes after user disconnects.",
-						Computed:    true,
 						Optional:    true,
 					},
 					"update_attributes": schema.BoolAttribute{
 						Description: "Whether or not to update attributes when users authenticate.",
-						Computed:    true,
 						Optional:    true,
 					},
 					"update_interval": schema.Int64Attribute{
 						Description: "The minimum number of days between updates.",
-						Computed:    true,
 						Optional:    true,
 					},
 				},
@@ -319,6 +317,9 @@ func localIdentityIdentityProfilesResourceSchema(ctx context.Context, req resour
 					"otp_length": schema.Int64Attribute{
 						Description: "The OTP length generated for email verification. The default is 8. Note: Only applicable if EmailVerificationType is OTP.",
 						Optional:    true,
+						Validators: []validator.Int64{
+							int64validator.Between(5, 100),
+						},
 					},
 					"otp_retry_attempts": schema.Int64Attribute{
 						Description: "The number of OTP retry attempts for email verification. The default is 3. Note: Only applicable if EmailVerificationType is OTP.",
@@ -570,45 +571,46 @@ func (r *localIdentityIdentityProfilesResource) ValidateConfig(ctx context.Conte
 		emailVerificationType := model.EmailVerificationConfig.Attributes()["email_verification_type"].(basetypes.StringValue).ValueString()
 		switch emailVerificationType {
 		case "OTP":
-			if internaltypes.IsDefined(emailVerificationConfig["otl_time_to_live"].(basetypes.Int64Value)) {
+			if internaltypes.IsDefined(emailVerificationConfig["otl_time_to_live"]) {
 				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otl_time_to_live attribute is not allowed when email_verification_type is OTP. Required attributes are otp_length, otp_retry_attempts and otp_time_to_live."))
 			}
-			if internaltypes.IsDefined(emailVerificationConfig["otp_length"].(basetypes.Int64Value)) && (emailVerificationConfig["otp_length"].(basetypes.Int64Value).ValueInt64() < 5) {
-				resp.Diagnostics.AddError("Invalid Value for Attribute !", fmt.Sprintln("otp_length attribute must be a positive integer between 5 and 100."))
-			}
-			if internaltypes.IsDefined(emailVerificationConfig["require_verified_email_template_name"].(basetypes.StringValue)) {
+			if internaltypes.IsDefined(emailVerificationConfig["require_verified_email_template_name"]) {
 				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("require_verified_email_template_name is not allowed when email verification or require_verified_email is disabled or when email_verification_type is OTP."))
 			}
-			if internaltypes.IsDefined(emailVerificationConfig["email_verification_sent_template_name"].(basetypes.StringValue)) {
+			if internaltypes.IsDefined(emailVerificationConfig["email_verification_sent_template_name"]) {
 				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("email_verification_sent_template_name is not allowed when email verification or require_verified_email is disabled or when email_verification_type is OTP."))
 			}
 		case "OTL":
-			if internaltypes.IsDefined(emailVerificationConfig["otp_length"].(basetypes.Int64Value)) {
+			if internaltypes.IsDefined(emailVerificationConfig["otp_length"]) {
 				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otp_length attribute is not allowed when email_verification_type is OTL. Required attribute: otl_time_to_live."))
 			}
-			if internaltypes.IsDefined(emailVerificationConfig["otp_retry_attempts"].(basetypes.Int64Value)) {
+			if internaltypes.IsDefined(emailVerificationConfig["otp_retry_attempts"]) {
 				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otp_retry_attempts attribute is not allowed when email_verification_type is OTL. Required attribute: otl_time_to_live."))
 			}
-			if internaltypes.IsDefined(emailVerificationConfig["allowed_otp_character_set"].(basetypes.StringValue)) {
+			if internaltypes.IsDefined(emailVerificationConfig["allowed_otp_character_set"]) {
 				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("allowed_otp_character_set attribute is not allowed when email_verification_type is OTL. Required attribute: otl_time_to_live."))
 			}
-			if internaltypes.IsDefined(emailVerificationConfig["otp_length"].(basetypes.Int64Value)) {
+			if internaltypes.IsDefined(emailVerificationConfig["otp_length"]) {
 				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otp_length attribute is not allowed when email_verification_type is OTL. Required attribute: otl_time_to_live."))
 			}
-			if internaltypes.IsDefined(emailVerificationConfig["email_verification_otp_template_name"].(basetypes.StringValue)) {
+			if internaltypes.IsDefined(emailVerificationConfig["email_verification_otp_template_name"]) {
 				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("email_verification_otp_template_name attribute is not allowed when email_verification_type is OTL. Required attribute: otl_time_to_live."))
 			}
 		}
 	}
-
-	if (internaltypes.IsDefined(model.ProfileEnabled) && (!model.ProfileEnabled.ValueBool())) && (internaltypes.IsDefined(model.RegistrationEnabled) && (!model.RegistrationEnabled.ValueBool())) {
-		resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("email, data_store_config, fields, registration_config and profile_config are not allowed when registration and profile are disabled."))
+	if (!model.ProfileEnabled.ValueBool()) && (!model.RegistrationEnabled.ValueBool()) {
+		if internaltypes.IsDefined(model.EmailVerificationConfig) || internaltypes.IsDefined(model.DataStoreConfig) || internaltypes.IsDefined(model.FieldConfig) || internaltypes.IsDefined(model.RegistrationConfig) || internaltypes.IsDefined(model.ProfileConfig) {
+			resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("email, data_store_config, field Config, registration_config and profile_config are not allowed when registration and profile are disabled."))
+		}
+		if internaltypes.IsDefined(model.AuthSourceUpdatePolicy) {
+			resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("auth_source_update_policy is not allowed when registration and profile are disabled."))
+		}
 	} else {
-		if (internaltypes.IsDefined(model.ProfileEnabled)) && (internaltypes.IsDefined(model.RegistrationEnabled)) {
-			fieldObj := model.FieldConfig.Attributes()["fields"].(basetypes.SetValue)
-			fieldElems := fieldObj.Elements()
+		if (model.ProfileEnabled.ValueBool()) && (model.RegistrationEnabled.ValueBool()) {
 			if !model.ProfileEnabled.ValueBool() {
 				if internaltypes.IsDefined(model.FieldConfig.Attributes()["fields"]) {
+					fieldObj := model.FieldConfig.Attributes()["fields"].(basetypes.SetValue)
+					fieldElems := fieldObj.Elements()
 					for _, fieldElem := range fieldElems {
 						fieldElemAttrs := fieldElem.(basetypes.ObjectValue)
 						profilePagefield := fieldElemAttrs.Attributes()["profile_page_field"].(basetypes.BoolValue)
@@ -630,6 +632,8 @@ func (r *localIdentityIdentityProfilesResource) ValidateConfig(ctx context.Conte
 			}
 			if !model.RegistrationEnabled.ValueBool() {
 				if internaltypes.IsDefined(model.FieldConfig.Attributes()["fields"]) {
+					fieldObj := model.FieldConfig.Attributes()["fields"].(basetypes.SetValue)
+					fieldElems := fieldObj.Elements()
 					for _, fieldElem := range fieldElems {
 						fieldElemAttrs := fieldElem.(basetypes.ObjectValue)
 						registrationPageField := fieldElemAttrs.Attributes()["registration_page_field"].(basetypes.BoolValue)
@@ -655,7 +659,7 @@ func (r *localIdentityIdentityProfilesResource) ValidateConfig(ctx context.Conte
 
 func readLocalIdentityIdentityProfilesResponse(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfilesResourceModel) {
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
-	state.Name = types.StringPointerValue(&r.Name)
+	state.Name = types.StringValue(r.Name)
 	state.ApcId = internaltypes.ToStateResourceLink(&r.ApcId, diag.Diagnostics{})
 
 	authSourceUpdatePolicy := r.AuthSourceUpdatePolicy
@@ -812,7 +816,6 @@ func (r *localIdentityIdentityProfilesResource) Create(ctx context.Context, req 
 	readLocalIdentityIdentityProfilesResponse(ctx, localIdentityIdentityProfilesResponse, &state)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-
 }
 
 func (r *localIdentityIdentityProfilesResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -845,7 +848,6 @@ func (r *localIdentityIdentityProfilesResource) Read(ctx context.Context, req re
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
-
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
@@ -857,10 +859,6 @@ func (r *localIdentityIdentityProfilesResource) Update(ctx context.Context, req 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// Get the current state to see how any attributes are changing
-	var state localIdentityIdentityProfilesResourceModel
-	req.State.Get(ctx, &state)
-
 	updateLocalIdentityIdentityProfiles := r.apiClient.LocalIdentityIdentityProfilesApi.UpdateIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Id.ValueString())
 	apcId := plan.ApcId.Attributes()["id"].(types.String).ValueString()
 	apcResourceLink := client.NewResourceLink(apcId)
@@ -886,10 +884,10 @@ func (r *localIdentityIdentityProfilesResource) Update(ctx context.Context, req 
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	}
 	// Read the response
-	readLocalIdentityIdentityProfilesResponse(ctx, updateLocalIdentityIdentityProfilesResponse, &state)
+	readLocalIdentityIdentityProfilesResponse(ctx, updateLocalIdentityIdentityProfilesResponse, &plan)
 
 	// Update computed values
-	diags = resp.State.Set(ctx, state)
+	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
 }
 
@@ -909,8 +907,6 @@ func (r *localIdentityIdentityProfilesResource) Delete(ctx context.Context, req 
 
 }
 func (r *localIdentityIdentityProfilesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	// Set a placeholder id value to appease terraform.
 	// The real attributes will be imported when terraform performs a read after the import.
 	// If no value is set here, Terraform will error out when importing.
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
