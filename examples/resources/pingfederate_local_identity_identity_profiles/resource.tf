@@ -2,14 +2,14 @@ resource "pingfederate_local_identity_identity_profiles" "localIdentityIdentityP
   name = "yourIdentityProfileName"
   id   = "yourid"
   apc_id = {
-    id =  "apcid"
+    id = "apcid"
   }
   auth_sources = [
     {
-      "source" = "test",
+      source = "test",
     },
     {
-      "source" : "username",
+      source = "username",
     }
   ]
   auth_source_update_policy = {

@@ -21,10 +21,10 @@ resource "pingfederate_local_identity_identity_profiles" "localIdentityIdentityP
   }
   auth_sources = [
     {
-      "source" = "test",
+      source = "test",
     },
     {
-      "source" : "username",
+      source = "username",
     }
   ]
   auth_source_update_policy = {
