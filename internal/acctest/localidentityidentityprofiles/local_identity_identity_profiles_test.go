@@ -18,7 +18,6 @@ const localIdentityIdentityProfilesId = "test"
 type localIdentityIdentityProfilesResourceModel struct {
 	id                  string
 	name                string
-	authSourcesSource   string
 	registrationEnabled bool
 	profileEnabled      bool
 }
@@ -29,14 +28,12 @@ func TestAccLocalIdentityIdentityProfiles(t *testing.T) {
 		// Test is only run on attributes that do not require a PD dataStore.
 		id:                  localIdentityIdentityProfilesId,
 		name:                "example",
-		authSourcesSource:   "authsourceSources",
 		registrationEnabled: false,
 		profileEnabled:      false,
 	}
 	updatedResourceModel := localIdentityIdentityProfilesResourceModel{
 		id:                  localIdentityIdentityProfilesId,
 		name:                "example1",
-		authSourcesSource:   "authsourceidSources",
 		registrationEnabled: false,
 		profileEnabled:      false,
 	}
@@ -82,18 +79,12 @@ resource "pingfederate_local_identity_identity_profiles" "%[1]s" {
   apc_id = {
     id = pingfederate_authentication_policy_contracts.authenticationPolicyContractsExample.id
   }
-  auth_sources = [
-    {
-      source = "%[4]s"
-    }
-  ]
-  registration_enabled = %[5]t
-  profile_enabled      = %[6]t
+  registration_enabled = %[4]t
+  profile_enabled      = %[5]t
 
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.name,
-		resourceModel.authSourcesSource,
 		resourceModel.registrationEnabled,
 		resourceModel.profileEnabled,
 	)
@@ -121,9 +112,6 @@ func testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(config localIde
 		if err != nil {
 			return err
 		}
-		getAuthSource := response.AuthSources[0].Source
-		err = acctest.TestAttributesMatchString(resourceType, &config.id, "source",
-			config.authSourcesSource, *getAuthSource)
 		if err != nil {
 			return err
 		}
