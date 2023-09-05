@@ -901,7 +901,6 @@ func (r *localIdentityIdentityProfilesResource) Delete(ctx context.Context, req 
 	httpResp, err := r.apiClient.LocalIdentityIdentityProfilesApi.DeleteIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting Local Identity Profile", err, httpResp)
-		return
 	}
 
 }
