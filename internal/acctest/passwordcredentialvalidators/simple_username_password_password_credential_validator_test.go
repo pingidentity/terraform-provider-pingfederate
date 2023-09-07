@@ -53,7 +53,7 @@ func TestAccSimpleUsernamePasswordCredentialValidators(t *testing.T) {
 				ResourceName:            "pingfederate_password_credential_validators." + resourceName,
 				ImportStateId:           simpleUsernamePasswordPasswordCredentialValidatorsId,
 				ImportState:             true,
-				ImportStateVerifyIgnore: []string{"configuration"},
+				ImportStateVerifyIgnore: []string{"configuration.fields.value"},
 			},
 		},
 	})

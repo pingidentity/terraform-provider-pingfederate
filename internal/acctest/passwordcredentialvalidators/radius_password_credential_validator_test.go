@@ -59,7 +59,7 @@ func TestAccRadiusPasswordCredentialValidators(t *testing.T) {
 				ResourceName:            "pingfederate_password_credential_validators." + resourceName,
 				ImportStateId:           radiusPasswordCredentialValidatorsId,
 				ImportState:             true,
-				ImportStateVerifyIgnore: []string{"configuration"},
+				ImportStateVerifyIgnore: []string{"configuration.fields.value"},
 			},
 		},
 	})

@@ -187,7 +187,6 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 								},
 								"inherited": schema.BoolAttribute{
 									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-									Computed:    true,
 									Optional:    true,
 									PlanModifiers: []planmodifier.Bool{
 										boolplanmodifier.UseStateForUnknown(),
@@ -633,7 +632,6 @@ func (r *passwordCredentialValidatorsResource) Delete(ctx context.Context, req r
 	httpResp, err := r.apiClient.PasswordCredentialValidatorsApi.DeletePasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a PasswordCredentialValidator", err, httpResp)
-		return
 	}
 }
 

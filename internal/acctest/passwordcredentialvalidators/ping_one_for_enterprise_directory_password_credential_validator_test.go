@@ -56,7 +56,7 @@ func TestAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(t *testing
 				ResourceName:            "pingfederate_password_credential_validators." + resourceName,
 				ImportStateId:           pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId,
 				ImportState:             true,
-				ImportStateVerifyIgnore: []string{"configuration"},
+				ImportStateVerifyIgnore: []string{"configuration.fields.value"},
 			},
 		},
 	})
