@@ -4,12 +4,15 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
+	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -33,7 +36,6 @@ type idpAdaptersResource struct {
 }
 
 type idpAdaptersResourceModel struct {
-	//TODO left out of schema
 	AuthnCtxClassRef    types.String `tfsdk:"authn_ctx_class_ref"`
 	Id                  types.String `tfsdk:"id"`
 	Name                types.String `tfsdk:"name"`
@@ -46,11 +48,7 @@ type idpAdaptersResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *idpAdaptersResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	idpAdaptersResourceSchema(ctx, req, resp, false)
-}
-
-func idpAdaptersResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
-	schema := schema.Schema{
+	resp.Schema = schema.Schema{
 		Description: "Manages Idp Adapters",
 		Attributes: map[string]schema.Attribute{
 			"authn_ctx_class_ref": schema.StringAttribute{
@@ -237,190 +235,130 @@ func idpAdaptersResourceSchema(ctx context.Context, req resource.SchemaRequest, 
 				},
 			},
 
-			/*     "attribute_mapping": schema.SingleNestedAttribute{
-			    Description: "The attributes mapping from attribute sources to attribute targets.",
-			    Optional: true,
-			    Attributes: map[string]schema.Attribute{
-			  "attribute_sources": schema.SetNestedAttribute{
-			    Description: "A list of configured data stores to look up attributes from.",
-			    Optional: true,
-			    NestedObject: schema.NestedAttributeObject{
-			      Attributes: map[string]schema.Attribute{
-			    "type": schema.StringAttribute{
-			      Description: "The data store type of this attribute source.",
-			    Required: true,
-			Validators: []validator.String{
-			  stringvalidator.OneOf([]string{"LDAP", "PING_ONE_LDAP_GATEWAY", "JDBC", "CUSTOM"}...),
+			"attribute_mapping": schema.SingleNestedAttribute{
+				Description: "The attributes mapping from attribute sources to attribute targets.",
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					//TODO add attribute_sources with some kind of block system
+					"attribute_contract_fulfillment": schema.MapNestedAttribute{
+						Description: "A list of mappings from attribute names to their fulfillment values.",
+						Required:    true,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"source": schema.SingleNestedAttribute{
+									Description: "The attribute value source.",
+									Required:    true,
+									Attributes: map[string]schema.Attribute{
+										"type": schema.StringAttribute{
+											Description: "The source type of this key.",
+											Required:    true,
+											Validators: []validator.String{
+												stringvalidator.OneOf([]string{"TOKEN_EXCHANGE_PROCESSOR_POLICY", "ACCOUNT_LINK", "ADAPTER", "ASSERTION", "CONTEXT", "CUSTOM_DATA_STORE", "EXPRESSION", "JDBC_DATA_STORE", "LDAP_DATA_STORE", "PING_ONE_LDAP_GATEWAY_DATA_STORE", "MAPPED_ATTRIBUTES", "NO_MAPPING", "TEXT", "TOKEN", "REQUEST", "OAUTH_PERSISTENT_GRANT", "SUBJECT_TOKEN", "ACTOR_TOKEN", "PASSWORD_CREDENTIAL_VALIDATOR", "IDP_CONNECTION", "AUTHENTICATION_POLICY_CONTRACT", "CLAIMS", "LOCAL_IDENTITY_PROFILE", "EXTENDED_CLIENT_METADATA", "EXTENDED_PROPERTIES", "TRACKED_HTTP_PARAMS", "FRAGMENT", "INPUTS", "ATTRIBUTE_QUERY", "IDENTITY_STORE_USER", "IDENTITY_STORE_GROUP", "SCIM_USER", "SCIM_GROUP"}...),
+											},
+										},
+										"id": schema.StringAttribute{
+											Description: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+											Optional:    true,
+										},
+									},
+								},
+								"value": schema.StringAttribute{
+									Description: "The value for this attribute.",
+									Required:    true,
+								},
+							},
+						},
+					},
+					"issuance_criteria": schema.SingleNestedAttribute{
+						Description: "The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled.",
+						Optional:    true,
+						Attributes: map[string]schema.Attribute{
+							"conditional_criteria": schema.ListNestedAttribute{
+								Description: "An issuance criterion that checks a source attribute against a particular condition and the expected value. If the condition is true then this issuance criterion passes, otherwise the criterion fails.",
+								Optional:    true,
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										//TODO any way to share these definitions
+										"source": schema.SingleNestedAttribute{
+											Description: "The attribute value source.",
+											Required:    true,
+											Attributes: map[string]schema.Attribute{
+												"type": schema.StringAttribute{
+													Description: "The source type of this key.",
+													Required:    true,
+													Validators: []validator.String{
+														stringvalidator.OneOf([]string{"TOKEN_EXCHANGE_PROCESSOR_POLICY", "ACCOUNT_LINK", "ADAPTER", "ASSERTION", "CONTEXT", "CUSTOM_DATA_STORE", "EXPRESSION", "JDBC_DATA_STORE", "LDAP_DATA_STORE", "PING_ONE_LDAP_GATEWAY_DATA_STORE", "MAPPED_ATTRIBUTES", "NO_MAPPING", "TEXT", "TOKEN", "REQUEST", "OAUTH_PERSISTENT_GRANT", "SUBJECT_TOKEN", "ACTOR_TOKEN", "PASSWORD_CREDENTIAL_VALIDATOR", "IDP_CONNECTION", "AUTHENTICATION_POLICY_CONTRACT", "CLAIMS", "LOCAL_IDENTITY_PROFILE", "EXTENDED_CLIENT_METADATA", "EXTENDED_PROPERTIES", "TRACKED_HTTP_PARAMS", "FRAGMENT", "INPUTS", "ATTRIBUTE_QUERY", "IDENTITY_STORE_USER", "IDENTITY_STORE_GROUP", "SCIM_USER", "SCIM_GROUP"}...),
+													},
+												},
+												"id": schema.StringAttribute{
+													Description: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+													Optional:    true,
+												},
+											},
+										},
+										"attribute_name": schema.StringAttribute{
+											Description: "The name of the attribute to use in this issuance criterion.",
+											Required:    true,
+										},
+										"condition": schema.StringAttribute{
+											Description: "The condition that will be applied to the source attribute's value and the expected value.",
+											Required:    true,
+											Validators: []validator.String{
+												stringvalidator.OneOf([]string{"EQUALS", "EQUALS_CASE_INSENSITIVE", "EQUALS_DN", "NOT_EQUAL", "NOT_EQUAL_CASE_INSENSITIVE", "NOT_EQUAL_DN", "MULTIVALUE_CONTAINS", "MULTIVALUE_CONTAINS_CASE_INSENSITIVE", "MULTIVALUE_CONTAINS_DN", "MULTIVALUE_DOES_NOT_CONTAIN", "MULTIVALUE_DOES_NOT_CONTAIN_CASE_INSENSITIVE", "MULTIVALUE_DOES_NOT_CONTAIN_DN"}...),
+											},
+										},
+										"value": schema.StringAttribute{
+											Description: "The expected value of this issuance criterion.",
+											Required:    true,
+										},
+										"error_result": schema.StringAttribute{
+											Description: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
+											Optional:    true,
+										},
+									},
+								},
+							},
+							"expression_criteria": schema.ListNestedAttribute{
+								Description: "An issuance criterion that uses a Boolean return value from an OGNL expression to determine whether or not it passes.",
+								Optional:    true,
+								NestedObject: schema.NestedAttributeObject{
+									Attributes: map[string]schema.Attribute{
+										"expression": schema.StringAttribute{
+											Required:    true,
+											Description: "The OGNL expression to evaluate.",
+										},
+										"error_result": schema.StringAttribute{
+											Optional:    true,
+											Description: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
+										},
+									},
+								},
+							},
+						},
+					},
+					"inherited": schema.BoolAttribute{
+						Optional:    true,
+						Description: "Whether this attribute mapping is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
+					},
+				},
 			},
-			    },
-			  "data_store_ref": schema.SingleNestedAttribute{
-			    Description: "Reference to the associated data store.",
-			    Required: true,
-			    Attributes: map[string]schema.Attribute{
-			    "id": schema.StringAttribute{
-			      Description: "The ID of the resource.",
-			    Required: true,
-			    },
-			    "location": schema.StringAttribute{
-			      Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-			    Optional: true,
-			    },
-			          },
-			        },
-			    "id": schema.StringAttribute{
-			      Description: "The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.",
-			    Optional: true,
-			    },
-			    "description": schema.StringAttribute{
-			      Description: "The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping. Note: Required for APC-to-SP Adapter Mappings",
-			    Optional: true,
-			    },
-			  "attribute_contract_fulfillment": schema.MapNestedAttribute{
-			    Description: "A list of mappings from attribute names to their fulfillment values. This field is only valid for the SP Connection's Browser SSO mappings",
-			    Optional: true,
-			    NestedObject: schema.NestedAttributeObject{
-			      Attributes: map[string]schema.Attribute{
-			      },
-			    },
-			  "attribute_contract_fulfillment": schema.MapNestedAttribute{
-			    Description: "A list of mappings from attribute names to their fulfillment values.",
-			    Required: true,
-			    NestedObject: schema.NestedAttributeObject{
-			      Attributes: map[string]schema.Attribute{
-			    "type": schema.StringAttribute{
-			      Description: "The data store type of this attribute source.",
-			    Required: true,
-			Validators: []validator.String{
-			  stringvalidator.OneOf([]string{"LDAP", "PING_ONE_LDAP_GATEWAY", "JDBC", "CUSTOM"}...),
-			},
-			    },
-			  "data_store_ref": schema.SingleNestedAttribute{
-			    Description: "Reference to the associated data store.",
-			    Required: true,
-			    Attributes: map[string]schema.Attribute{
-			    "id": schema.StringAttribute{
-			      Description: "The ID of the resource.",
-			    Required: true,
-			    },
-			    "location": schema.StringAttribute{
-			      Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-			    Optional: true,
-			    },
-			          },
-			        },
-			    "id": schema.StringAttribute{
-			      Description: "The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.",
-			    Optional: true,
-			    },
-			    "description": schema.StringAttribute{
-			      Description: "The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping. Note: Required for APC-to-SP Adapter Mappings",
-			    Optional: true,
-			    },
-			  "attribute_contract_fulfillment": schema.MapNestedAttribute{
-			    Description: "A list of mappings from attribute names to their fulfillment values. This field is only valid for the SP Connection's Browser SSO mappings",
-			    Optional: true,
-			    NestedObject: schema.NestedAttributeObject{
-			      Attributes: map[string]schema.Attribute{
-			      },
-			    },
-			  "issuance_criteria": schema.SingleNestedAttribute{
-			    Description: "The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled.",
-			    Optional: true,
-			    Attributes: map[string]schema.Attribute{
-			    "type": schema.StringAttribute{
-			      Description: "The data store type of this attribute source.",
-			    Required: true,
-			Validators: []validator.String{
-			  stringvalidator.OneOf([]string{"LDAP", "PING_ONE_LDAP_GATEWAY", "JDBC", "CUSTOM"}...),
-			},
-			    },
-			  "data_store_ref": schema.SingleNestedAttribute{
-			    Description: "Reference to the associated data store.",
-			    Required: true,
-			    Attributes: map[string]schema.Attribute{
-			    "id": schema.StringAttribute{
-			      Description: "The ID of the resource.",
-			    Required: true,
-			    },
-			    "location": schema.StringAttribute{
-			      Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-			    Optional: true,
-			    },
-			          },
-			        },
-			    "id": schema.StringAttribute{
-			      Description: "The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.",
-			    Optional: true,
-			    },
-			    "description": schema.StringAttribute{
-			      Description: "The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping. Note: Required for APC-to-SP Adapter Mappings",
-			    Optional: true,
-			    },
-			  "attribute_contract_fulfillment": schema.MapNestedAttribute{
-			    Description: "A list of mappings from attribute names to their fulfillment values. This field is only valid for the SP Connection's Browser SSO mappings",
-			    Optional: true,
-			    NestedObject: schema.NestedAttributeObject{
-			      Attributes: map[string]schema.Attribute{
-			      },
-			    },
-			    "inherited": schema.BoolAttribute{
-			      Description: "Whether this attribute mapping is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
-			    Optional: true,
-			    },
-			          },
-			        },*/
-
 		},
 	}
-
-	// Set attributes in string list
-	if setOptionalToComputed {
-		config.SetAllAttributesToOptionalAndComputed(&schema, []string{"FIX_ME"})
-	}
-	config.AddCommonSchema(&schema, false)
-	resp.Schema = schema
 }
 
 func addOptionalIdpAdaptersFields(ctx context.Context, addRequest *client.IdpAdapter, plan idpAdaptersResourceModel) error {
-
 	if internaltypes.IsDefined(plan.AuthnCtxClassRef) {
 		addRequest.AuthnCtxClassRef = plan.AuthnCtxClassRef.ValueStringPointer()
 	}
 
-	if internaltypes.IsDefined(plan.Id) {
-		addRequest.Id = plan.Id.ValueString()
-	}
-
-	if internaltypes.IsDefined(plan.Name) {
-		addRequest.Name = plan.Name.ValueString()
-	}
-
-	if internaltypes.IsDefined(plan.PluginDescriptorRef) {
-		addRequest.PluginDescriptorRef = client.NewPluginDescriptorRef()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.PluginDescriptorRef)), addRequest.PluginDescriptorRef)
-		if err != nil {
-			return err
-		}
-	}
-
 	if internaltypes.IsDefined(plan.ParentRef) {
-		addRequest.ParentRef = client.NewParentRef()
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ParentRef)), addRequest.ParentRef)
 		if err != nil {
 			return err
 		}
 	}
 
-	if internaltypes.IsDefined(plan.Configuration) {
-		addRequest.Configuration = client.NewConfiguration()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration)), addRequest.Configuration)
-		if err != nil {
-			return err
-		}
-	}
-
 	if internaltypes.IsDefined(plan.AttributeMapping) {
-		addRequest.AttributeMapping = client.NewAttributeMapping()
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeMapping)), addRequest.AttributeMapping)
 		if err != nil {
 			return err
@@ -428,7 +366,6 @@ func addOptionalIdpAdaptersFields(ctx context.Context, addRequest *client.IdpAda
 	}
 
 	if internaltypes.IsDefined(plan.AttributeContract) {
-		addRequest.AttributeContract = client.NewAttributeContract()
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContract)), addRequest.AttributeContract)
 		if err != nil {
 			return err
@@ -436,7 +373,6 @@ func addOptionalIdpAdaptersFields(ctx context.Context, addRequest *client.IdpAda
 	}
 
 	return nil
-
 }
 
 // Metadata returns the resource type name.
@@ -456,9 +392,9 @@ func (r *idpAdaptersResource) Configure(_ context.Context, req resource.Configur
 }
 
 func readIdpAdaptersResponse(ctx context.Context, r *client.IdpAdapter, state *idpAdaptersResourceModel) {
-	state.AuthnCtxClassRef = internaltypes.StringTypeOrNil(r.AuthnCtxClassRef)
-	state.Id = internaltypes.StringTypeOrNil(r.Id)
-	state.Name = internaltypes.StringTypeOrNil(r.Name)
+	state.AuthnCtxClassRef = internaltypes.StringTypeOrNil(r.AuthnCtxClassRef, false)
+	state.Id = types.StringValue(r.Id)
+	state.Name = types.StringValue(r.Name)
 	state.PluginDescriptorRef = (r.PluginDescriptorRef)
 	state.ParentRef = (r.ParentRef)
 	state.Configuration = (r.Configuration)
@@ -475,8 +411,22 @@ func (r *idpAdaptersResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	createIdpAdapters := client.NewIdpAdapter()
-	err := addOptionalIdpAdaptersFields(ctx, createIdpAdapters, plan)
+	var pluginDescriptorRef client.ResourceLink
+	err := json.Unmarshal([]byte(internaljson.FromValue(plan.ParentRef)), pluginDescriptorRef)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to read plugin_descriptor_ref from plan", err.Error())
+		return
+	}
+
+	var configuration client.PluginConfiguration
+	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration)), configuration)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to read configuration from plan", err.Error())
+		return
+	}
+
+	createIdpAdapters := client.NewIdpAdapter(plan.Id.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, configuration)
+	err = addOptionalIdpAdaptersFields(ctx, createIdpAdapters, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdpAdapters", err.Error())
 		return
@@ -510,10 +460,6 @@ func (r *idpAdaptersResource) Create(ctx context.Context, req resource.CreateReq
 }
 
 func (r *idpAdaptersResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	readIdpAdapters(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func readIdpAdapters(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	var state idpAdaptersResourceModel
 
 	diags := req.State.Get(ctx, &state)
@@ -521,7 +467,7 @@ func readIdpAdapters(ctx context.Context, req resource.ReadRequest, resp *resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadIdpAdapters, httpResp, err := apiClient.IdpAdaptersApi.GetIdpAdapter(config.ProviderBasicAuthContext(ctx, providerConfig), state.Id.ValueString()).Execute()
+	apiReadIdpAdapters, httpResp, err := r.apiClient.IdpAdaptersApi.GetIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a IdpAdapters", err, httpResp)
@@ -547,10 +493,6 @@ func readIdpAdapters(ctx context.Context, req resource.ReadRequest, resp *resour
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *idpAdaptersResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	updateIdpAdapters(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func updateIdpAdapters(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	// Retrieve values from plan
 	var plan idpAdaptersResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -560,11 +502,25 @@ func updateIdpAdapters(ctx context.Context, req resource.UpdateRequest, resp *re
 	}
 
 	// Get the current state to see how any attributes are changing
-	var state idpAdaptersResourceModel
-	req.State.Get(ctx, &state)
-	updateIdpAdapters := apiClient.IdpAdaptersApi.UpdateIdpAdapter(config.ProviderBasicAuthContext(ctx, providerConfig), plan.Id.ValueString())
-	createUpdateRequest := client.NewIdpAdapter() //TODO
-	err := addOptionalIdpAdaptersFields(ctx, createUpdateRequest, plan)
+	updateIdpAdapters := r.apiClient.IdpAdaptersApi.UpdateIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Id.ValueString())
+
+	var pluginDescriptorRef client.ResourceLink
+	err := json.Unmarshal([]byte(internaljson.FromValue(plan.ParentRef)), pluginDescriptorRef)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to read plugin_descriptor_ref from plan", err.Error())
+		return
+	}
+
+	var configuration client.PluginConfiguration
+	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration)), configuration)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to read configuration from plan", err.Error())
+		return
+	}
+
+	createUpdateRequest := client.NewIdpAdapter(plan.Id.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, configuration)
+
+	err = addOptionalIdpAdaptersFields(ctx, createUpdateRequest, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdpAdapters", err.Error())
 		return
@@ -574,7 +530,7 @@ func updateIdpAdapters(ctx context.Context, req resource.UpdateRequest, resp *re
 		tflog.Debug(ctx, "Update request: "+string(requestJson))
 	}
 	updateIdpAdapters = updateIdpAdapters.Body(*createUpdateRequest)
-	updateIdpAdaptersResponse, httpResp, err := apiClient.IdpAdaptersApi.UpdateIdpAdapterExecute(updateIdpAdapters)
+	updateIdpAdaptersResponse, httpResp, err := r.apiClient.IdpAdaptersApi.UpdateIdpAdapterExecute(updateIdpAdapters)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating IdpAdapters", err, httpResp)
 		return
@@ -585,6 +541,7 @@ func updateIdpAdapters(ctx context.Context, req resource.UpdateRequest, resp *re
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	}
 	// Read the response
+	var state idpAdaptersResourceModel
 	readIdpAdaptersResponse(ctx, updateIdpAdaptersResponse, &state)
 
 	// Update computed values
@@ -596,14 +553,11 @@ func updateIdpAdapters(ctx context.Context, req resource.UpdateRequest, resp *re
 
 }
 
-// This config object is edit-only, so Terraform can't delete it.
+// This config object is edit-only, so Terraform can't delete it. This method will just remove it from state
 func (r *idpAdaptersResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 }
 
 func (r *idpAdaptersResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	importIdpAdaptersLocation(ctx, req, resp)
-}
-func importIdpAdaptersLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
