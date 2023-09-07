@@ -19,6 +19,7 @@ type pingOneForEnterpriseDirectoryPasswordCredentialValidatorsResourceModel stru
 	id                    string
 	name                  string
 	connectionPoolTimeout string
+	clientSecret          string
 }
 
 func TestAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(t *testing.T) {
@@ -27,11 +28,13 @@ func TestAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(t *testing
 		id:                    pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId,
 		name:                  "example",
 		connectionPoolTimeout: "4000",
+		clientSecret:          "2FederateM0re",
 	}
 	updatedResourceModel := pingOneForEnterpriseDirectoryPasswordCredentialValidatorsResourceModel{
 		id:                    pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId,
 		name:                  "updated example",
 		connectionPoolTimeout: "3000",
+		clientSecret:          "2FederateM0re!",
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -79,7 +82,7 @@ resource "pingfederate_password_credential_validators" "%[1]s" {
       },
       {
         name  = "Client Secret"
-        value = "2FederateM0re"
+        value = "%[4]s"
       },
       {
         name  = "PingOne URL"
@@ -103,13 +106,14 @@ resource "pingfederate_password_credential_validators" "%[1]s" {
       },
       {
         name  = "Connection Pool Idle Timeout"
-        value = "%[4]s"
+        value = "%[5]s"
       }
     ]
   }
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.name,
+		resourceModel.clientSecret,
 		resourceModel.connectionPoolTimeout,
 	)
 }

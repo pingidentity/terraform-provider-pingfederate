@@ -16,19 +16,22 @@ const simpleUsernamePasswordPasswordCredentialValidatorsId = "simpleUsernamePass
 
 // Attributes to test with. Add optional properties to test here if desired.
 type simpleUsernamePasswordPasswordCredentialValidatorsResourceModel struct {
-	id   string
-	name string
+	id       string
+	name     string
+	password string
 }
 
 func TestAccSimpleUsernamePasswordCredentialValidators(t *testing.T) {
 	resourceName := "mySimpleUsernamePasswordCredentialValidators"
 	initialResourceModel := simpleUsernamePasswordPasswordCredentialValidatorsResourceModel{
-		id:   simpleUsernamePasswordPasswordCredentialValidatorsId,
-		name: "example",
+		id:       simpleUsernamePasswordPasswordCredentialValidatorsId,
+		name:     "example",
+		password: "2FederateM0re",
 	}
 	updatedResourceModel := simpleUsernamePasswordPasswordCredentialValidatorsResourceModel{
-		id:   simpleUsernamePasswordPasswordCredentialValidatorsId,
-		name: "updated example",
+		id:       simpleUsernamePasswordPasswordCredentialValidatorsId,
+		name:     "updated example",
+		password: "2FederateM0re!",
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -81,12 +84,12 @@ resource "pingfederate_password_credential_validators" "%[1]s" {
               {
                 name = "Password"
                 # This value will be stored into your state file and will not detect any configuration changes made in the UI
-                value = "2FederateM0re"
+                value = "%[4]s"
               },
               {
                 name = "Confirm Password"
                 # This value will be stored into your state file and will not detect any configuration changes made in the UI
-                value = "2FederateM0re"
+                value = "%[4]s"
               },
               {
                 name  = "Relax Password Requirements"
@@ -104,12 +107,12 @@ resource "pingfederate_password_credential_validators" "%[1]s" {
               {
                 name = "Password"
                 # This value will be stored into your state file and will not detect any configuration changes made in the UI
-                value = "2FederateM0re"
+                value = "%[4]s"
               },
               {
                 name = "Confirm Password"
                 # This value will be stored into your state file and will not detect any configuration changes made in the UI
-                value = "2FederateM0re"
+                value = "%[4]s"
               },
               {
                 name  = "Relax Password Requirements"
@@ -125,6 +128,7 @@ resource "pingfederate_password_credential_validators" "%[1]s" {
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.name,
+		resourceModel.password,
 	)
 }
 

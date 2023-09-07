@@ -16,25 +16,28 @@ const radiusPasswordCredentialValidatorsId = "radiusPcv"
 
 // Attributes to test with. Add optional properties to test here if desired.
 type radiusPasswordCredentialValidatorsResourceModel struct {
-	id       string
-	name     string
-	authPort string
-	timeout  string
+	id           string
+	name         string
+	authPort     string
+	timeout      string
+	sharedSecret string
 }
 
 func TestAccRadiusPasswordCredentialValidators(t *testing.T) {
 	resourceName := "radiusPCV"
 	initialResourceModel := radiusPasswordCredentialValidatorsResourceModel{
-		id:       radiusPasswordCredentialValidatorsId,
-		name:     "example",
-		authPort: "1812",
-		timeout:  "3000",
+		id:           radiusPasswordCredentialValidatorsId,
+		name:         "example",
+		authPort:     "1812",
+		timeout:      "3000",
+		sharedSecret: "2FederateM0re",
 	}
 	updatedResourceModel := radiusPasswordCredentialValidatorsResourceModel{
-		id:       radiusPasswordCredentialValidatorsId,
-		name:     "updated example",
-		authPort: "1813",
-		timeout:  "4000",
+		id:           radiusPasswordCredentialValidatorsId,
+		name:         "updated example",
+		authPort:     "1813",
+		timeout:      "4000",
+		sharedSecret: "2FederateM0re!",
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -95,7 +98,7 @@ resource "pingfederate_password_credential_validators" "%[1]s" {
               {
                 name = "Shared Secret"
                 # This value will be stored into your state file and will not detect any configuration changes made in the UI
-                value = "2FederateM0re"
+                value = "%[5]s"
               }
             ]
             default_row = false
@@ -110,7 +113,7 @@ resource "pingfederate_password_credential_validators" "%[1]s" {
       },
       {
         name  = "Timeout"
-        value = "%[5]s"
+        value = "%[6]s"
       },
       {
         name  = "Retry Count"
@@ -133,6 +136,7 @@ resource "pingfederate_password_credential_validators" "%[1]s" {
 		resourceModel.id,
 		resourceModel.name,
 		resourceModel.authPort,
+		resourceModel.sharedSecret,
 		resourceModel.timeout,
 	)
 }
