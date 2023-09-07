@@ -206,14 +206,14 @@ func redirectValidationResourceSchema(ctx context.Context, req resource.SchemaRe
 func addOptionalRedirectValidationFields(ctx context.Context, addRequest *client.RedirectValidationSettings, plan redirectValidationResourceModel) error {
 	if internaltypes.IsDefined(plan.RedirectValidationLocalSettings) {
 		addRequest.RedirectValidationLocalSettings = client.NewRedirectValidationLocalSettings()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.RedirectValidationLocalSettings)), addRequest.RedirectValidationLocalSettings)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.RedirectValidationLocalSettings, false)), addRequest.RedirectValidationLocalSettings)
 		if err != nil {
 			return err
 		}
 	}
 	if internaltypes.IsDefined(plan.RedirectValidationPartnerSettings) {
 		addRequest.RedirectValidationPartnerSettings = client.NewRedirectValidationPartnerSettings()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.RedirectValidationPartnerSettings)), addRequest.RedirectValidationPartnerSettings)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.RedirectValidationPartnerSettings, false)), addRequest.RedirectValidationPartnerSettings)
 		if err != nil {
 			return err
 		}

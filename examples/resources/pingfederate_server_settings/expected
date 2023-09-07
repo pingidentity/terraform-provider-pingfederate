@@ -1,0 +1,17 @@
+types.ObjectType["enable_idp_discovery":basetypes.BoolType,
+│ "idp_role":types.ObjectType["enable":basetypes.BoolType, "enable_outbound_provisioning":basetypes.BoolType,
+│ "enable_saml_1_0":basetypes.BoolType, "enable_saml_1_1":basetypes.BoolType, "enable_ws_fed":basetypes.BoolType,
+│ "enable_ws_trust":basetypes.BoolType, "saml_2_0_profile":types.ObjectType["enable":basetypes.BoolType,
+│ "enable_auto_connect":basetypes.BoolType, "enable_xasp":basetypes.BoolType]],
+│ "oauth_role":types.ObjectType["enable_oauth":basetypes.BoolType, "enable_open_id_connect":basetypes.BoolType],
+│ "sp_role":types.ObjectType["enable":basetypes.BoolType, "enable_inbound_provisioning":basetypes.BoolType,
+│ "enable_open_id_connect":basetypes.BoolType, "enable_saml_1_0":basetypes.BoolType, "enable_saml_1_1":basetypes.BoolType,
+│ "enable_ws_fed":basetypes.BoolType, "enable_ws_trust":basetypes.BoolType, "saml_2_0_profile":types.ObjectType["enable":basetypes.BoolType,
+│ "enable_auto_connect":basetypes.BoolType, "enable_xasp":basetypes.BoolType]]] / underlying type:
+│ tftypes.Object["enable_idp_discovery":tftypes.Bool, "idp_role":tftypes.Object["enable":tftypes.Bool,
+│ "enable_outbound_provisioning":tftypes.Bool, "enable_saml_1_0":tftypes.Bool, "enable_saml_1_1":tftypes.Bool, "enable_ws_fed":tftypes.Bool,
+│ "enable_ws_trust":tftypes.Bool, "saml_2_0_profile":tftypes.Object["enable":tftypes.Bool, "enable_auto_connect":tftypes.Bool,
+│ "enable_xasp":tftypes.Bool]], "oauth_role":tftypes.Object["enable_oauth":tftypes.Bool, "enable_open_id_connect":tftypes.Bool],
+│ "sp_role":tftypes.Object["enable":tftypes.Bool, "enable_inbound_provisioning":tftypes.Bool, "enable_open_id_connect":tftypes.Bool,
+│ "enable_saml_1_0":tftypes.Bool, "enable_saml_1_1":tftypes.Bool, "enable_ws_fed":tftypes.Bool, "enable_ws_trust":tftypes.Bool,
+│ "saml_2_0_profile":tftypes.Object["enable":tftypes.Bool, "enable_auto_connect":tftypes.Bool, "enable_xasp":tftypes.Bool]]]

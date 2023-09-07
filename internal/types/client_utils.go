@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client"
 )
@@ -22,19 +22,18 @@ func ToRequestResourceLink(con context.Context, planObj basetypes.ObjectValue) *
 	return newLink
 }
 
-func ToStateResourceLink(r *client.ResourceLink, diags diag.Diagnostics) basetypes.ObjectValue {
+func ToStateResourceLink(con context.Context, resLinkVals client.ResourceLink) basetypes.ObjectValue {
 	attrTypes := map[string]attr.Type{
 		"id":       basetypes.StringType{},
 		"location": basetypes.StringType{},
 	}
+	resourceLink, _ := types.ObjectValueFrom(con, attrTypes, resLinkVals)
+	return resourceLink
+}
 
-	getId := r.GetId()
-	getLocation := r.GetLocation()
-	attrValues := map[string]attr.Value{
-		"id":       StringTypeOrNil(&getId, false),
-		"location": StringTypeOrNil(&getLocation, false),
+func ResourceLinkStateAttrType() map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":       basetypes.StringType{},
+		"location": basetypes.StringType{},
 	}
-
-	linkObjectValue := MaptoObjValue(attrTypes, attrValues, diags)
-	return linkObjectValue
 }
