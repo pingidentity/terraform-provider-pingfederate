@@ -16,19 +16,22 @@ const pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId = "pingOneForE
 
 // Attributes to test with. Add optional properties to test here if desired.
 type pingOneForEnterpriseDirectoryPasswordCredentialValidatorsResourceModel struct {
-	id   string
-	name string
+	id                    string
+	name                  string
+	connectionPoolTimeout string
 }
 
 func TestAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(t *testing.T) {
 	resourceName := "pingOneForEnterpriseDirectoryPCV"
 	initialResourceModel := pingOneForEnterpriseDirectoryPasswordCredentialValidatorsResourceModel{
-		id:   pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId,
-		name: "example",
+		id:                    pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId,
+		name:                  "example",
+		connectionPoolTimeout: "4000",
 	}
 	updatedResourceModel := pingOneForEnterpriseDirectoryPasswordCredentialValidatorsResourceModel{
-		id:   pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId,
-		name: "updated example",
+		id:                    pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId,
+		name:                  "updated example",
+		connectionPoolTimeout: "3000",
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -100,13 +103,14 @@ resource "pingfederate_password_credential_validators" "%[1]s" {
       },
       {
         name  = "Connection Pool Idle Timeout"
-        value = "4000"
+        value = "%[4]s"
       }
     ]
   }
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.name,
+		resourceModel.connectionPoolTimeout,
 	)
 }
 
@@ -126,6 +130,16 @@ func testAccCheckExpectedPingOneForEnterpriseDirectoryPasswordCredentialValidato
 		err = acctest.TestAttributesMatchString(resourceType, &config.id, "name", config.name, response.Name)
 		if err != nil {
 			return err
+		}
+
+		configFields := response.Configuration.Fields
+		for _, field := range configFields {
+			if field.Name == "Connection Pool Idle Timeout" {
+				err = acctest.TestAttributesMatchString(resourceType, &config.id, "name", config.connectionPoolTimeout, *field.Value)
+				if err != nil {
+					return err
+				}
+			}
 		}
 		return nil
 	}

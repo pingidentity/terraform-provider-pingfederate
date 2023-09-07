@@ -519,7 +519,6 @@ resource "pingfederate_password_credential_validators" "pingOneForEnterpriseDire
     id = "com.pingconnect.alexandria.pingfed.pcv.PingOnePasswordValidator"
   }
   configuration = {
-    tables = [],
     fields = [
       {
         name  = "Client Id"
@@ -554,7 +553,7 @@ resource "pingfederate_password_credential_validators" "pingOneForEnterpriseDire
         name  = "Connection Pool Idle Timeout"
         value = "4000"
       }
-    ]
+    ],
   }
 }
 

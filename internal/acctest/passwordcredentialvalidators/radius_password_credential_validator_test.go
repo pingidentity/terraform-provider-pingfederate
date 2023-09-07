@@ -16,19 +16,25 @@ const radiusPasswordCredentialValidatorsId = "radiusPcv"
 
 // Attributes to test with. Add optional properties to test here if desired.
 type radiusPasswordCredentialValidatorsResourceModel struct {
-	id   string
-	name string
+	id       string
+	name     string
+	authPort string
+	timeout  string
 }
 
 func TestAccRadiusPasswordCredentialValidators(t *testing.T) {
 	resourceName := "radiusPCV"
 	initialResourceModel := radiusPasswordCredentialValidatorsResourceModel{
-		id:   radiusPasswordCredentialValidatorsId,
-		name: "example",
+		id:       radiusPasswordCredentialValidatorsId,
+		name:     "example",
+		authPort: "1812",
+		timeout:  "3000",
 	}
 	updatedResourceModel := radiusPasswordCredentialValidatorsResourceModel{
-		id:   radiusPasswordCredentialValidatorsId,
-		name: "updated example",
+		id:       radiusPasswordCredentialValidatorsId,
+		name:     "updated example",
+		authPort: "1813",
+		timeout:  "4000",
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -80,7 +86,7 @@ resource "pingfederate_password_credential_validators" "%[1]s" {
               },
               {
                 name  = "Authentication Port"
-                value = "1812"
+                value = "%[4]s"
               },
               {
                 name  = "Authentication Protocol"
@@ -89,7 +95,6 @@ resource "pingfederate_password_credential_validators" "%[1]s" {
               {
                 name = "Shared Secret"
                 # This value will be stored into your state file and will not detect any configuration changes made in the UI
-                # Any changes made to this property will force replacement of resource
                 value = "2FederateM0re"
               }
             ]
@@ -105,7 +110,7 @@ resource "pingfederate_password_credential_validators" "%[1]s" {
       },
       {
         name  = "Timeout"
-        value = "3000"
+        value = "%[5]s"
       },
       {
         name  = "Retry Count"
@@ -127,6 +132,8 @@ resource "pingfederate_password_credential_validators" "%[1]s" {
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.name,
+		resourceModel.authPort,
+		resourceModel.timeout,
 	)
 }
 
@@ -147,6 +154,34 @@ func testAccCheckExpectedRadiusPasswordCredentialValidatorsAttributes(config rad
 		if err != nil {
 			return err
 		}
+
+		respConfig := response.Configuration
+		configTables := respConfig.Tables
+		for _, configTable := range configTables {
+			for _, row := range configTable.Rows {
+				for _, field := range row.Fields {
+					if field.Name == "Authentication Port" {
+						authPort := field.Value
+						err = acctest.TestAttributesMatchString(resourceType, &config.id, "name", config.authPort, *authPort)
+						if err != nil {
+							return err
+						}
+					}
+				}
+			}
+		}
+
+		configFields := respConfig.Fields
+		for _, field := range configFields {
+			if field.Name == "Timeout" {
+				timeout := field.Value
+				err = acctest.TestAttributesMatchString(resourceType, &config.id, "name", config.timeout, *timeout)
+				if err != nil {
+					return err
+				}
+			}
+		}
+
 		return nil
 	}
 }

@@ -10,11 +10,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -77,20 +77,7 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
 				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
-				Attributes: map[string]schema.Attribute{
-					"id": schema.StringAttribute{
-						Description: "The ID of the resource.",
-						Required:    true,
-					},
-					"location": schema.StringAttribute{
-						Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-						Computed:    true,
-						Optional:    false,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
-					},
-				},
+				Attributes:  AddResourceLinkSchema(),
 			},
 			"parent_ref": schema.SingleNestedAttribute{
 				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
@@ -99,20 +86,7 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
-				Attributes: map[string]schema.Attribute{
-					"id": schema.StringAttribute{
-						Description: "The ID of the resource.",
-						Required:    true,
-					},
-					"location": schema.StringAttribute{
-						Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-						Computed:    true,
-						Optional:    false,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
-					},
-				},
+				Attributes: AddResourceLinkSchema(),
 			},
 			"configuration": schema.SingleNestedAttribute{
 				Description: "Plugin instance configuration.",
@@ -148,22 +122,17 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 														},
 														"value": schema.StringAttribute{
 															Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
-															Computed:    true,
-															Optional:    true,
-															PlanModifiers: []planmodifier.String{
-																stringplanmodifier.UseStateForUnknown(),
-															},
+															Required:    true,
 														},
 														"encrypted_value": schema.StringAttribute{
-															Description: "For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. If you do not want to update the stored value, this attribute should be passed back unchanged.",
+															Description: "This value is not used in this provider due to the value changing on every GET request.",
 															Computed:    true,
 															Optional:    false,
+															Default:     stringdefault.StaticString(""),
 														},
 														"inherited": schema.BoolAttribute{
 															Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-															Computed:    true,
 															Optional:    true,
-															Default:     booldefault.StaticBool(false),
 															PlanModifiers: []planmodifier.Bool{
 																boolplanmodifier.UseStateForUnknown(),
 															},
@@ -173,7 +142,6 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 											},
 											"default_row": schema.BoolAttribute{
 												Description: "Whether this row is the default.",
-												Computed:    true,
 												Optional:    true,
 												PlanModifiers: []planmodifier.Bool{
 													boolplanmodifier.UseStateForUnknown(),
@@ -184,8 +152,6 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 								},
 								"inherited": schema.BoolAttribute{
 									Description: "Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.",
-									Default:     booldefault.StaticBool(false),
-									Computed:    true,
 									Optional:    true,
 									PlanModifiers: []planmodifier.Bool{
 										boolplanmodifier.UseStateForUnknown(),
@@ -209,20 +175,18 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 								},
 								"value": schema.StringAttribute{
 									Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
+									Required:    true,
+								},
+								"encrypted_value": schema.StringAttribute{
+									Description: "This value is not used in this provider due to the value changing on every GET request.",
 									Computed:    true,
-									Optional:    true,
+									Optional:    false,
 									PlanModifiers: []planmodifier.String{
 										stringplanmodifier.UseStateForUnknown(),
 									},
 								},
-								"encrypted_value": schema.StringAttribute{
-									Description: "For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. If you do not want to update the stored value, this attribute should be passed back unchanged.",
-									Computed:    true,
-									Optional:    false,
-								},
 								"inherited": schema.BoolAttribute{
 									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-									Default:     booldefault.StaticBool(false),
 									Computed:    true,
 									Optional:    true,
 									PlanModifiers: []planmodifier.Bool{
@@ -266,6 +230,9 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 						Description: "A list of additional attributes that can be returned by the password credential validator. The extended attributes are only used if the adapter supports them.",
 						Computed:    true,
 						Optional:    true,
+						PlanModifiers: []planmodifier.Set{
+							setplanmodifier.UseStateForUnknown(),
+						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -347,16 +314,12 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 	state.Name = types.StringValue(r.Name)
 
 	// state.pluginDescriptorRef
-	resLinkAttrTypes := map[string]attr.Type{
-		"id":       basetypes.StringType{},
-		"location": basetypes.StringType{},
-	}
 	pluginDescRef := r.GetPluginDescriptorRef()
-	state.PluginDescriptorRef, _ = types.ObjectValueFrom(ctx, resLinkAttrTypes, pluginDescRef)
+	state.PluginDescriptorRef = internaltypes.ToStateResourceLink(ctx, pluginDescRef)
 
 	// state.parentRef
 	parentRef := r.GetParentRef()
-	state.ParentRef, _ = types.ObjectValueFrom(ctx, resLinkAttrTypes, parentRef)
+	state.ParentRef = internaltypes.ToStateResourceLink(ctx, parentRef)
 
 	// state.Configuration
 	fieldAttrType := map[string]attr.Type{
@@ -378,53 +341,84 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 		"inherited": basetypes.BoolType{},
 	}
 
+	getClientConfig := r.Configuration
 	configFromPlanAttrs := configurationFromPlan.Attributes()
 	tables := []client.ConfigTable{}
-	tablesElems := configFromPlanAttrs["tables"]
-	if tablesElems != nil && len(tablesElems.(types.Set).Elements()) != 0 {
-		for _, ct := range tablesElems.(types.Set).Elements() {
+	tablesElems := getClientConfig.Tables
+	if len(tablesElems) != 0 {
+		for tei, tableElem := range tablesElems {
 			tableValue := client.ConfigTable{}
-			configTable := ct.(types.Object).Attributes()
-			tableValue.Inherited = configTable["inherited"].(types.Bool).ValueBoolPointer()
-			tableValue.Name = configTable["name"].(types.String).ValueString()
-			tableValue.Inherited = configTable["inherited"].(types.Bool).ValueBoolPointer()
-			tableRows := configTable["rows"].(types.Set).Elements()
+			tableValue.Name = tableElem.Name
+			tableValue.Inherited = tableElem.Inherited
+			tableRows := tableElem.Rows
 			toStateTableRows := []client.ConfigRow{}
-			for _, tr := range tableRows {
-				tableRow := client.ConfigRow{}
-				tableRowObjAttrs := tr.(types.Object).Attributes()
-				tableRow.DefaultRow = tableRowObjAttrs["default_row"].(types.Bool).ValueBoolPointer()
-				tableRowFields := tableRowObjAttrs["fields"].(types.Set).Elements()
-				toStateTableRowFields := []client.ConfigField{}
-				for _, trf := range tableRowFields {
-					tableRowField := client.ConfigField{}
-					tableRowFieldObjAttrs := trf.(types.Object).Attributes()
-					tableRowField.Name = tableRowFieldObjAttrs["name"].(types.String).ValueString()
-					tableRowField.Inherited = tableRowFieldObjAttrs["inherited"].(types.Bool).ValueBoolPointer()
-					tableRowField.EncryptedValue = tableRowFieldObjAttrs["encrypted_value"].(types.String).ValueStringPointer()
-					tableRowField.Value = tableRowFieldObjAttrs["value"].(types.String).ValueStringPointer()
-					toStateTableRowFields = append(toStateTableRowFields, tableRowField)
+			if configFromPlanAttrs["tables"] != nil {
+				tableIndex := configFromPlanAttrs["tables"].(types.Set).Elements()[tei].(types.Object).Attributes()
+				for tri, tr := range tableRows {
+					tableRow := client.ConfigRow{}
+					tableRow.DefaultRow = tr.DefaultRow
+					tableRowFields := tr.Fields
+					toStateTableRowFields := []client.ConfigField{}
+					tableRowIndex := tableIndex["rows"].(types.Set).Elements()[tri].(types.Object).Attributes()
+					tableRowPlanFields := tableRowIndex["fields"].(types.Set).Elements()
+					for _, trf := range tableRowFields {
+						for _, tableRowInPlan := range tableRowPlanFields {
+							tableRowField := client.ConfigField{}
+							nameFromPlan := tableRowInPlan.(types.Object).Attributes()["name"].(types.String).ValueString()
+							if trf.Name == nameFromPlan {
+								tableRowField.Name = trf.Name
+								tableRowFieldValueFromPlan := tableRowInPlan.(types.Object).Attributes()["value"].(types.String).ValueStringPointer()
+								if trf.Value == nil {
+									// Get plain-text value from plan for passwords
+									tableRowField.Value = tableRowFieldValueFromPlan
+								} else {
+									tableRowField.Value = trf.Value
+								}
+								emptyString := ""
+								tableRowField.EncryptedValue = &emptyString
+								tableRowField.Inherited = trf.Inherited
+								toStateTableRowFields = append(toStateTableRowFields, tableRowField)
+							} else {
+								continue
+							}
+						}
+					}
+					tableRow.Fields = toStateTableRowFields
+					toStateTableRows = append(toStateTableRows, tableRow)
 				}
-				tableRow.Fields = toStateTableRowFields
-				toStateTableRows = append(toStateTableRows, tableRow)
+				tableValue.Rows = toStateTableRows
+				tables = append(tables, tableValue)
 			}
-			tableValue.Rows = toStateTableRows
-			tables = append(tables, tableValue)
 		}
 	}
 	tableValue, _ := types.SetValueFrom(ctx, types.ObjectType{AttrTypes: tableAttrType}, tables)
 
 	fields := []client.ConfigField{}
-	fieldsElems := configFromPlanAttrs["fields"]
-	if fieldsElems != nil && len(fieldsElems.(types.Set).Elements()) != 0 {
-		for _, cf := range fieldsElems.(types.Set).Elements() {
-			fieldValue := client.ConfigField{}
-			configFieldAttrs := cf.(types.Object).Attributes()
-			fieldValue.Name = configFieldAttrs["name"].(types.String).ValueString()
-			fieldValue.EncryptedValue = configFieldAttrs["encrypted_value"].(types.String).ValueStringPointer()
-			fieldValue.Value = configFieldAttrs["value"].(types.String).ValueStringPointer()
-			fieldValue.Inherited = configFieldAttrs["inherited"].(types.Bool).ValueBoolPointer()
-			fields = append(fields, fieldValue)
+	fieldsElems := r.Configuration.Fields
+	if configFromPlanAttrs["fields"] != nil {
+		fieldsFromPlan := configFromPlanAttrs["fields"].(types.Set).Elements()
+		if len(fieldsElems) != 0 {
+			for _, cf := range fieldsElems {
+				for _, fieldInPlan := range fieldsFromPlan {
+					fieldValue := client.ConfigField{}
+					fieldNameFromPlan := fieldInPlan.(types.Object).Attributes()["name"].(types.String).ValueString()
+					if fieldNameFromPlan == cf.Name {
+						if cf.Value == nil {
+							// Get plain-text value from plan for passwords
+							fieldValue.Value = fieldInPlan.(types.Object).Attributes()["value"].(types.String).ValueStringPointer()
+						} else {
+							fieldValue.Value = cf.Value
+						}
+						fieldValue.Name = cf.Name
+						emptyString := ""
+						fieldValue.EncryptedValue = &emptyString
+						fieldValue.Inherited = cf.Inherited
+						fields = append(fields, fieldValue)
+					} else {
+						continue
+					}
+				}
+			}
 		}
 	}
 	configFieldValue, _ := types.SetValueFrom(ctx, types.ObjectType{AttrTypes: fieldAttrType}, fields)
@@ -441,7 +435,7 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 	state.Configuration, _ = types.ObjectValue(configurationAttrType, configurationAttrValue)
 
 	// state.AttributeContract
-	attrContract := r.GetAttributeContract()
+	attrContract := r.AttributeContract
 
 	attrType := map[string]attr.Type{
 		"name": basetypes.StringType{},
@@ -549,7 +543,7 @@ func (r *passwordCredentialValidatorsResource) Read(ctx context.Context, req res
 	}
 	apiReadPasswordCredentialValidators, httpResp, err := r.apiClient.PasswordCredentialValidatorsApi.GetPasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
-		if httpResp.StatusCode == 404 {
+		if httpResp != nil && httpResp.StatusCode == 404 {
 			ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Password Credential Validator", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
@@ -637,7 +631,7 @@ func (r *passwordCredentialValidatorsResource) Delete(ctx context.Context, req r
 		return
 	}
 	httpResp, err := r.apiClient.PasswordCredentialValidatorsApi.DeletePasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
-	if err != nil {
+	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a PasswordCredentialValidator", err, httpResp)
 		return
 	}

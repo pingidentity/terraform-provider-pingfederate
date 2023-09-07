@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -659,7 +658,7 @@ func (r *localIdentityIdentityProfilesResource) ValidateConfig(ctx context.Conte
 func readLocalIdentityIdentityProfilesResponse(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfilesResourceModel) {
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
 	state.Name = types.StringValue(r.Name)
-	state.ApcId = internaltypes.ToStateResourceLink(&r.ApcId, diag.Diagnostics{})
+	state.ApcId = internaltypes.ToStateResourceLink(ctx, r.GetApcId())
 
 	authSourceUpdatePolicy := r.AuthSourceUpdatePolicy
 	authSourceUpdatePolicyAttrTypes := map[string]attr.Type{
