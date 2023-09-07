@@ -76,8 +76,7 @@ resource "pingfederate_password_credential_validators" "simpleUsernamePasswordCr
           }
         ],
       }
-    ],
-    fields = [],
+    ]
   }
 }
 
@@ -144,8 +143,7 @@ resource "pingfederate_password_credential_validators" "simpleUsernamePasswordCr
           }
         ]
       }
-    ],
-    fields = []
+    ]
   }
 }
 
