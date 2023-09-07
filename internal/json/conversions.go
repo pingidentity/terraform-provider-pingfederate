@@ -6,9 +6,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
-func FromValue(value attr.Value) string {
+// Convert a terraform plugin framework value into an equivalent JSON string
+func FromValue(value attr.Value, skipNullOrUnknownAttrs bool) string {
 	var jsonString strings.Builder
 
 	// Simple types
@@ -34,31 +36,31 @@ func FromValue(value attr.Value) string {
 	// Lists and sets
 	listvalue, ok := value.(basetypes.ListValue)
 	if ok {
-		writeArray(listvalue.Elements(), &jsonString)
+		writeArray(listvalue.Elements(), &jsonString, skipNullOrUnknownAttrs)
 	}
 
 	setvalue, ok := value.(basetypes.SetValue)
 	if ok {
-		writeArray(setvalue.Elements(), &jsonString)
+		writeArray(setvalue.Elements(), &jsonString, skipNullOrUnknownAttrs)
 	}
 
 	// Maps and objects
 	mapvalue, ok := value.(basetypes.MapValue)
 	if ok {
-		writeMap(mapvalue.Elements(), &jsonString)
+		writeMap(mapvalue.Elements(), &jsonString, skipNullOrUnknownAttrs)
 	}
 
 	objvalue, ok := value.(basetypes.ObjectValue)
 	if ok {
-		writeMap(objvalue.Attributes(), &jsonString)
+		writeMap(objvalue.Attributes(), &jsonString, skipNullOrUnknownAttrs)
 	}
 	return jsonString.String()
 }
 
-func writeArray(values []attr.Value, builder *strings.Builder) {
+func writeArray(values []attr.Value, builder *strings.Builder, skipNullOrUnknownAttrs bool) {
 	builder.WriteRune('[')
 	for i, attrValue := range values {
-		builder.WriteString(FromValue(attrValue))
+		builder.WriteString(FromValue(attrValue, skipNullOrUnknownAttrs))
 		if i < len(values)-1 {
 			builder.WriteRune(',')
 		}
@@ -66,19 +68,22 @@ func writeArray(values []attr.Value, builder *strings.Builder) {
 	builder.WriteRune(']')
 }
 
-func writeMap(values map[string]attr.Value, builder *strings.Builder) {
+func writeMap(values map[string]attr.Value, builder *strings.Builder, skipNullOrUnknownAttrs bool) {
 	builder.WriteRune('{')
-	i := 0
+	isFirst := true
 	for attrName, attrValue := range values {
+		if skipNullOrUnknownAttrs && !internaltypes.IsDefined(attrValue) {
+			continue
+		}
+		if !isFirst {
+			builder.WriteRune(',')
+		} else {
+			isFirst = false
+		}
 		builder.WriteRune('"')
 		builder.WriteString(underscoreToCamelCase(attrName))
 		builder.WriteString("\":")
-		builder.WriteString(FromValue(attrValue))
-		if i < len(values)-1 {
-			builder.WriteRune(',')
-		}
-		i++
-
+		builder.WriteString(FromValue(attrValue, skipNullOrUnknownAttrs))
 	}
 	builder.WriteRune('}')
 }

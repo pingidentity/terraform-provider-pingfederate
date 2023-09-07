@@ -122,7 +122,7 @@ func addAuthenticationPolicyContractsFields(ctx context.Context, addRequest *cli
 		addRequest.CoreAttributes = []client.AuthenticationPolicyContractAttribute{}
 		for _, coreAttribute := range plan.CoreAttributes.Elements() {
 			unmarshalled := client.AuthenticationPolicyContractAttribute{}
-			err := json.Unmarshal([]byte(internaljson.FromValue(coreAttribute)), &unmarshalled)
+			err := json.Unmarshal([]byte(internaljson.FromValue(coreAttribute, false)), &unmarshalled)
 			if err != nil {
 				return err
 			}
@@ -133,7 +133,7 @@ func addAuthenticationPolicyContractsFields(ctx context.Context, addRequest *cli
 		addRequest.ExtendedAttributes = []client.AuthenticationPolicyContractAttribute{}
 		for _, extendedAttribute := range plan.ExtendedAttributes.Elements() {
 			unmarshalled := client.AuthenticationPolicyContractAttribute{}
-			err := json.Unmarshal([]byte(internaljson.FromValue(extendedAttribute)), &unmarshalled)
+			err := json.Unmarshal([]byte(internaljson.FromValue(extendedAttribute, false)), &unmarshalled)
 			if err != nil {
 				return err
 			}
