@@ -24,32 +24,32 @@ resource "pingfederate_server_settings" "serverSettingsExample" {
     phone= "555-555-1222"
   }
 
-//  notifications= {
-//    license_events= {
-//      email_address= "license-events-email@company.com"
-//      notification_publisher_ref= {
-//        id= "<uiInstanceID>"
-//      }
-//    }
-//    certificate_expirations= {
-//      email_address= "cert-expire-notifications@company.com"
-//      initial_warning_period= 45
-//      final_warning_period= 7
-//      notification_publisher_ref= {
-//        id= "<uiInstanceID>"
-//      }
-//    }
-//    notify_admin_user_password_changes= true
-//    account_changes_notification_publisher_ref= {
-//      id= "<uiInstanceID>"
-//   }
-//   metadata_notification_settings= {
-//     email_address= "metadata-notification@company.com"
-//     notification_publisher_ref= {
-//       id= "<uiInstanceID>"
-//    }
-//   }
-// }
+  notifications= {
+    license_events= {
+      email_address= "license-events-email@company2.com"
+      notification_publisher_ref= {
+        id= "uiInstanceID"
+      }
+    }
+    certificate_expirations= {
+      email_address= "cert-expire-notifications@company2.com"
+      initial_warning_period= 45
+      final_warning_period= 7
+      notification_publisher_ref= {
+        id= "uiInstanceID"
+      }
+    }
+    notify_admin_user_password_changes= true
+    account_changes_notification_publisher_ref= {
+      id= "uiInstanceID"
+   }
+   metadata_notification_settings= {
+     email_address= "metadata-notification@company.com"
+     notification_publisher_ref= {
+       id= "uiInstanceID"
+    }
+   }
+ }
 
   federation_info = {
   // base_url must be standard URL format: http(s)://<company-or-hostname> with optional domain and port\
@@ -71,8 +71,8 @@ resource "pingfederate_server_settings" "serverSettingsExample" {
     verify_hostname= true
     enable_utf8_message_headers= true
     use_debugging= false
-    //username= "emailServerAdmin"
-    //password= "emailServerAdminPassword"
+    username= "emailServerAdmin"
+    password= "emailServerAdminPassword"
   }
 
   // Captcha must be defined first in PF
