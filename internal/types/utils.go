@@ -279,7 +279,7 @@ func ConvertToPrimitive(value attr.Value) interface{} {
 }
 
 // Converts the map[string]attr.Type to basetypes.ObjectValue required for Terraform
-func MaptoObjValue(attributeTypes map[string]attr.Type, attributeValues map[string]attr.Value, diags diag.Diagnostics) basetypes.ObjectValue {
+func MaptoObjValue(attributeTypes map[string]attr.Type, attributeValues map[string]attr.Value, diags *diag.Diagnostics) basetypes.ObjectValue {
 	newObj, err := types.ObjectValue(attributeTypes, attributeValues)
 	if err != nil {
 		diags.AddError("ERROR: ", "An error occured while converting ")

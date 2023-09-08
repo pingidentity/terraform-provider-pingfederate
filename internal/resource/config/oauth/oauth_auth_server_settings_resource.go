@@ -841,7 +841,7 @@ func (r *oauthAuthServerSettingsResource) Configure(_ context.Context, req resou
 
 }
 
-func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsResourceModel) {
+func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsResourceModel, diags *diag.Diagnostics) {
 	state.Id = types.StringValue("id")
 	state.DefaultScopeDescription = types.StringValue(r.DefaultScopeDescription)
 
@@ -975,7 +975,7 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 	state.BypassAuthorizationForApprovedGrants = types.BoolPointerValue(r.BypassAuthorizationForApprovedGrants)
 	state.AllowUnidentifiedClientROCreds = types.BoolPointerValue(r.AllowUnidentifiedClientROCreds)
 	state.AllowUnidentifiedClientExtensionGrants = types.BoolPointerValue(r.AllowUnidentifiedClientExtensionGrants)
-	state.AdminWebServicePcvRef = internaltypes.ToStateResourceLink(r.AdminWebServicePcvRef, diag.Diagnostics{})
+	state.AdminWebServicePcvRef = internaltypes.ToStateResourceLink(ctx, r.AdminWebServicePcvRef, diags)
 	state.AtmIdForOAuthGrantManagement = types.StringPointerValue(r.AtmIdForOAuthGrantManagement)
 	state.ScopeForOAuthGrantManagement = types.StringPointerValue(r.ScopeForOAuthGrantManagement)
 	state.AllowedOrigins = internaltypes.GetStringSet(r.AllowedOrigins)
@@ -1031,7 +1031,7 @@ func (r *oauthAuthServerSettingsResource) Create(ctx context.Context, req resour
 	// Read the response into the state
 	var state oauthAuthServerSettingsResourceModel
 
-	readOauthAuthServerSettingsResponse(ctx, oauthAuthServerSettingsResponse, &state)
+	readOauthAuthServerSettingsResponse(ctx, oauthAuthServerSettingsResponse, &state, &resp.Diagnostics)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -1062,7 +1062,7 @@ func (r *oauthAuthServerSettingsResource) Read(ctx context.Context, req resource
 	}
 
 	// Read the response into the state
-	readOauthAuthServerSettingsResponse(ctx, apiReadOauthAuthServerSettings, &state)
+	readOauthAuthServerSettingsResponse(ctx, apiReadOauthAuthServerSettings, &state, &resp.Diagnostics)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -1105,7 +1105,7 @@ func (r *oauthAuthServerSettingsResource) Update(ctx context.Context, req resour
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	}
 	// Read the response
-	readOauthAuthServerSettingsResponse(ctx, updateOauthAuthServerSettingsResponse, &state)
+	readOauthAuthServerSettingsResponse(ctx, updateOauthAuthServerSettingsResponse, &state, &resp.Diagnostics)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

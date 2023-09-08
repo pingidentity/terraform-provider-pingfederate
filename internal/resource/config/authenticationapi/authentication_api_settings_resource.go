@@ -126,7 +126,7 @@ func addAuthenticationApiSettingsFields(ctx context.Context, addRequest *client.
 		addRequest.IncludeRequestContext = plan.IncludeRequestContext.ValueBoolPointer()
 	}
 	if internaltypes.IsDefined(plan.DefaultApplicationRef) {
-		addRequestNewLinkObj := internaltypes.ToRequestResourceLink(ctx, plan.DefaultApplicationRef)
+		addRequestNewLinkObj := internaltypes.ToRequestResourceLink(plan.DefaultApplicationRef)
 		addRequest.DefaultApplicationRef = addRequestNewLinkObj
 	}
 	return nil
@@ -149,13 +149,13 @@ func (r *authenticationApiSettingsResource) Configure(_ context.Context, req res
 
 }
 
-func readAuthenticationApiSettingsResponse(ctx context.Context, r *client.AuthnApiSettings, state *authenticationApiSettingsResourceModel, expectedValues *authenticationApiSettingsResourceModel, diags diag.Diagnostics) {
+func readAuthenticationApiSettingsResponse(ctx context.Context, r *client.AuthnApiSettings, state *authenticationApiSettingsResourceModel, expectedValues *authenticationApiSettingsResourceModel, diags *diag.Diagnostics) {
 	state.Id = types.StringValue("id")
 	state.ApiEnabled = types.BoolValue(*r.ApiEnabled)
 	state.EnableApiDescriptions = types.BoolValue(*r.EnableApiDescriptions)
 	state.RestrictAccessToRedirectlessMode = types.BoolValue(*r.RestrictAccessToRedirectlessMode)
 	state.IncludeRequestContext = types.BoolValue(*r.IncludeRequestContext)
-	resourceLinkObjectValue := internaltypes.ToStateResourceLink(r.DefaultApplicationRef, diags)
+	resourceLinkObjectValue := internaltypes.ToStateResourceLink(ctx, r.DefaultApplicationRef, diags)
 	state.DefaultApplicationRef = resourceLinkObjectValue
 }
 
@@ -192,7 +192,7 @@ func (r *authenticationApiSettingsResource) Create(ctx context.Context, req reso
 	}
 	// Read the response
 	var state authenticationApiSettingsResourceModel
-	readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, &plan, diags)
+	readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, &plan, &diags)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
@@ -226,7 +226,7 @@ func readAuthenticationApiSettings(ctx context.Context, req resource.ReadRequest
 	}
 
 	// Read the response into the state
-	readAuthenticationApiSettingsResponse(ctx, apiReadAuthenticationApiSettings, &state, &state, diags)
+	readAuthenticationApiSettingsResponse(ctx, apiReadAuthenticationApiSettings, &state, &state, &diags)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -275,7 +275,7 @@ func updateAuthenticationApiSettings(ctx context.Context, req resource.UpdateReq
 	}
 	// Read the response
 	var state authenticationApiSettingsResourceModel
-	readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, &plan, diags)
+	readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, &plan, &diags)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

@@ -4,49 +4,45 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
 const idpAdaptersId = "2"
 
 // Attributes to test with. Add optional properties to test here if desired.
 type idpAdaptersResourceModel struct {
-	id string
-	authnCtxClassRef string	
-	id string	
-	name string	
-	pluginDescriptorRef 	
-	parentRef 	
-	configuration 	
-	attributeMapping 	
-	attributeContract 
+	id               string
+	authnCtxClassRef string
+	name             string
+	/*pluginDescriptorRef
+	parentRef
+	configuration
+	attributeMapping
+	attributeContract*/
 }
 
 func TestAccIdpAdapters(t *testing.T) {
-	resourceName := "myIdpAdapters"
+	/*resourceName := "myIdpAdapters"
 	initialResourceModel := idpAdaptersResourceModel{
-		authnCtxClassRef: fill in test value,	
-		id: fill in test value,	
-		name: fill in test value,	
-		pluginDescriptorRef: fill in test value,	
-		parentRef: fill in test value,	
-		configuration: fill in test value,	
-		attributeMapping: fill in test value,	
+		authnCtxClassRef: fill in test value,
+		id: fill in test value,
+		name: fill in test value,
+		pluginDescriptorRef: fill in test value,
+		parentRef: fill in test value,
+		configuration: fill in test value,
+		attributeMapping: fill in test value,
 		attributeContract: fill in test value,
 	}
 	updatedResourceModel := idpAdaptersResourceModel{
-		authnCtxClassRef: fill in test value,	
-		id: fill in test value,	
-		name: fill in test value,	
-		pluginDescriptorRef: fill in test value,	
-		parentRef: fill in test value,	
-		configuration: fill in test value,	
-		attributeMapping: fill in test value,	
+		authnCtxClassRef: fill in test value,
+		id: fill in test value,
+		name: fill in test value,
+		pluginDescriptorRef: fill in test value,
+		parentRef: fill in test value,
+		configuration: fill in test value,
+		attributeMapping: fill in test value,
 		attributeContract: fill in test value,
 	}
 
@@ -75,7 +71,7 @@ func TestAccIdpAdapters(t *testing.T) {
 				ImportStateVerify:       true,
 			},
 		},
-	})
+	})*/
 }
 
 func testAccIdpAdapters(resourceName string, resourceModel idpAdaptersResourceModel) string {
@@ -85,24 +81,23 @@ resource "pingfederate_idp_adapters" "%[1]s" {
 	FILL THIS IN
 }`, resourceName,
 		resourceModel.id,
-	
 	)
 }
 
 // Test that the expected attributes are set on the PingFederate server
 func testAccCheckExpectedIdpAdaptersAttributes(config idpAdaptersResourceModel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resourceType := "IdpAdapters"
+		//resourceType := "IdpAdapters"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.<RESOURCE_API>.GetIdpAdapters(ctx, idpAdaptersId).Execute()
+		_, _, err := testClient.IdpAdaptersApi.GetIdpAdapters(ctx).Execute()
 
 		if err != nil {
 			return err
 		}
 
 		// Verify that attributes have expected values
-		FILL THESE in! 
+		//FILL THESE in!
 
 		return nil
 	}
@@ -112,7 +107,7 @@ func testAccCheckExpectedIdpAdaptersAttributes(config idpAdaptersResourceModel) 
 func testAccCheckIdpAdaptersDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.<RESOURCE_API>.DeleteIdpAdapters(ctx, idpAdaptersId).Execute()
+	_, err := testClient.IdpAdaptersApi.DeleteIdpAdapter(ctx, idpAdaptersId).Execute()
 	if err == nil {
 		return acctest.ExpectedDestroyError("IdpAdapters", idpAdaptersId)
 	}
