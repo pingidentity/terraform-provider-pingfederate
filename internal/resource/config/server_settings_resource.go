@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -736,6 +737,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Description: "The encrypted secret key for reCAPTCHA. If you do not want to update the stored value, this attribute should be passed back unchanged.",
 						Computed:    true,
 						Optional:    false,
+						Default:     stringdefault.StaticString(""),
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
 						},
@@ -899,7 +901,7 @@ func (r *serverSettingsResource) Configure(_ context.Context, req resource.Confi
 
 }
 
-func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, state *serverSettingsResourceModel) {
+func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, state *serverSettingsResourceModel, planCaptchaKey string) {
 	//////////////////////////////////////////////////
 	// CONTACT INFO
 	//////////////////////////////////////////////////
@@ -1084,8 +1086,14 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 		"secret_key":           basetypes.StringType{},
 		"encrypted_secret_key": basetypes.StringType{},
 	}
+	emptyString := ""
 
-	state.CaptchaSettings, _ = types.ObjectValueFrom(ctx, captchaSettingsAttrType, r.CaptchaSettings)
+	captchaSettingsAttrVal := map[string]attr.Value{
+		"site_key":             types.StringPointerValue(r.CaptchaSettings.SiteKey),
+		"secret_key":           types.StringValue(planCaptchaKey),
+		"encrypted_secret_key": types.StringPointerValue(&emptyString),
+	}
+	state.CaptchaSettings, _ = types.ObjectValue(captchaSettingsAttrType, captchaSettingsAttrVal)
 
 }
 
@@ -1124,7 +1132,10 @@ func (r *serverSettingsResource) Create(ctx context.Context, req resource.Create
 	// Read the response into the state
 	var state serverSettingsResourceModel
 
-	readServerSettingsResponse(ctx, serverSettingsResponse, &state)
+	planCaptchaSecretKey := plan.CaptchaSettings.Attributes()["secret_key"].(types.String).ValueString()
+
+	// TODO: send plan as an argument (get type) for the captcha secret_key so I have something to compare clear text key to for TF to be happy.
+	readServerSettingsResponse(ctx, serverSettingsResponse, &state, planCaptchaSecretKey)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -1143,7 +1154,7 @@ func (r *serverSettingsResource) Read(ctx context.Context, req resource.ReadRequ
 	apiReadServerSettings, httpResp, err := r.apiClient.ServerSettingsApi.GetServerSettings(ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 
 	if err != nil {
-		if httpResp.StatusCode == 404 {
+		if httpResp != nil && httpResp.StatusCode == 404 {
 			ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
@@ -1158,7 +1169,7 @@ func (r *serverSettingsResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Read the response into the state
-	readServerSettingsResponse(ctx, apiReadServerSettings, &state)
+	readServerSettingsResponse(ctx, apiReadServerSettings, &state, state.CaptchaSettings.Attributes()["secret_key"].(types.String).ValueString())
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -1205,7 +1216,7 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	}
 	// Read the response
-	readServerSettingsResponse(ctx, updateServerSettingsResponse, &state)
+	readServerSettingsResponse(ctx, updateServerSettingsResponse, &state, plan.CaptchaSettings.Attributes()["secret_key"].(types.String).ValueString())
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
