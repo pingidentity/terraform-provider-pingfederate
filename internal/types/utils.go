@@ -27,6 +27,15 @@ func IsNonEmptyObj(obj types.Object) bool {
 	return !obj.IsNull() && !obj.IsUnknown() && obj.Attributes() != nil
 }
 
+func ObjContainsNoEmptyVals(obj types.Object) bool {
+	for _, objVal := range obj.Attributes() {
+		if !IsDefined(objVal) {
+			return true
+		}
+	}
+	return false
+}
+
 // Return true if this types.String represents a non-empty, non-null, non-unknown string
 func IsNonEmptyString(str types.String) bool {
 	return !str.IsNull() && !str.IsUnknown() && str.ValueString() != ""

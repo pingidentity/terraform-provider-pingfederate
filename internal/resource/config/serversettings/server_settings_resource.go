@@ -693,6 +693,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 					},
 					"password": schema.StringAttribute{
 						Description: "User password. To update the password, specify the plaintext value in this field. This field will not be populated for GET requests.",
+						Computed:    true,
 						Optional:    true,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
@@ -1182,7 +1183,7 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 		"encrypted_password":          types.StringPointerValue(&emptyString),
 	}
 
-	state.EmailServer, _ = types.ObjectValueFrom(ctx, emailServerAttrType, emailServerAttrValue)
+	state.EmailServer, _ = types.ObjectValue(emailServerAttrType, emailServerAttrValue)
 
 	//////////////////////////////////////////////
 	// CAPTCHA SETTINGS
@@ -1194,7 +1195,7 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	}
 
 	var getCaptchaSettingsAttrValue = func() map[string]attr.Value {
-		if len(plan.CaptchaSettings.Attributes()) != 0 {
+		if internaltypes.ObjContainsNoEmptyVals(plan.CaptchaSettings) {
 			return map[string]attr.Value{
 				"site_key":             types.StringPointerValue(r.CaptchaSettings.SiteKey),
 				"secret_key":           types.StringValue(plan.CaptchaSettings.Attributes()["secret_key"].(types.String).ValueString()),
