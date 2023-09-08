@@ -533,6 +533,8 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 
 	var objectValueFromDiags diag.Diagnostics
 
+	//TODO probably need some logic to handle encryptedValues in tables/fields here
+	// That logic should probably be shared across the provider.
 	state.Configuration, objectValueFromDiags = types.ObjectValueFrom(ctx, configurationAttrTypes, r.Configuration)
 	diags.Append(objectValueFromDiags...)
 
