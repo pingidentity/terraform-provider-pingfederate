@@ -51,12 +51,12 @@ var (
 		"inherited": types.BoolType,
 	}
 	configurationAttrTypes = map[string]attr.Type{
-		"tables": types.SetType{
+		"tables": types.ListType{
 			ElemType: types.ObjectType{
 				AttrTypes: tablesAttrTypes,
 			},
 		},
-		"fields": types.SetType{
+		"fields": types.ListType{
 			ElemType: types.ObjectType{
 				AttrTypes: fieldsAttrTypes,
 			},
@@ -206,7 +206,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Description: "Plugin instance configuration.",
 				Required:    true,
 				Attributes: map[string]schema.Attribute{
-					"tables": schema.SetNestedAttribute{
+					"tables": schema.ListNestedAttribute{
 						Description: "List of configuration tables.",
 						Optional:    true,
 						NestedObject: schema.NestedAttributeObject{
@@ -258,7 +258,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 							},
 						},
 					},
-					"fields": schema.SetNestedAttribute{
+					"fields": schema.ListNestedAttribute{
 						Description: "List of configuration fields.",
 						Optional:    true,
 						NestedObject: schema.NestedAttributeObject{
@@ -348,7 +348,27 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Description: "The attributes mapping from attribute sources to attribute targets.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
-					//TODO add attribute_sources with some kind of block system
+					//TODO add attribute_sources
+					/*"attribute_sources": schema.ListNestedAttribute{
+						Description: "",
+						NestedObject: schema.NestedAttributeObject{
+							"ldap_attr_source": schema.SingleNestedAttribute{
+								//TODO ldap specific schema here
+							},
+							"jdbc_attr_source": schema.SingleNestedAttribute{
+								//TODO jdbc specific schema here
+							},
+							"custom_attr_source": schema.SingleNestedAttribute{
+								//TODO custom specific schema here
+							},
+							Validators: []validator.Object{
+								objectvalidator.AtLeastOneOf(
+									path.MatchRoot("ldap_attr_source"),
+									path.MatchRoot("jdbc_attr_source"),
+									path.MatchRoot("custom_attr_source")),
+							},
+						},
+					},*/
 					"attribute_contract_fulfillment": schema.MapNestedAttribute{
 						Description: "A list of mappings from attribute names to their fulfillment values.",
 						Required:    true,
@@ -470,6 +490,7 @@ func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdap
 
 	if internaltypes.IsDefined(plan.AttributeMapping) {
 		addRequest.AttributeMapping = &client.IdpAdapterContractMapping{}
+		//TODO use true see if that leaves off expression_criteria without breaking anything
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeMapping, false)), addRequest.AttributeMapping)
 		if err != nil {
 			return err
