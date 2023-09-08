@@ -490,15 +490,10 @@ func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdap
 
 	if internaltypes.IsDefined(plan.AttributeMapping) {
 		addRequest.AttributeMapping = &client.IdpAdapterContractMapping{}
-		//TODO use true see if that leaves off expression_criteria without breaking anything
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeMapping, false)), addRequest.AttributeMapping)
+		// Don't include non-specified attributes, since PF will complain about issuance_criteria.expression_criteria
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeMapping, true)), addRequest.AttributeMapping)
 		if err != nil {
 			return err
-		}
-		// issuance_criteria.expression_criteria needs to be totally left out of the request if it's not specified
-		//TODO should we update the client to do this for all slices?
-		if addRequest.AttributeMapping.IssuanceCriteria != nil && len(addRequest.AttributeMapping.IssuanceCriteria.ExpressionCriteria) == 0 {
-			addRequest.AttributeMapping.IssuanceCriteria.ExpressionCriteria = nil
 		}
 	}
 
