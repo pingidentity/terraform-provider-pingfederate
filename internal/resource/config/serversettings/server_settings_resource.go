@@ -49,6 +49,7 @@ type serverSettingsResource struct {
 }
 
 type serverSettingsResourceModel struct {
+	Id                types.String `tfsdk:"id"`
 	ContactInfo       types.Object `tfsdk:"contact_info"`
 	Notifications     types.Object `tfsdk:"notifications"`
 	RolesAndProtocols types.Object `tfsdk:"roles_and_protocols"`
@@ -59,7 +60,7 @@ type serverSettingsResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *serverSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	schema := schema.Schema{
 		Description: "Manages Server Settings",
 		Attributes: map[string]schema.Attribute{
 			"contact_info": schema.SingleNestedAttribute{
@@ -747,6 +748,8 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 			},
 		},
 	}
+	config.AddCommonSchema(&schema, false)
+	resp.Schema = schema
 }
 
 // ValidateConfig validates the configuration of the server settings resource.
@@ -844,7 +847,7 @@ func addOptionalServerSettingsFields(ctx context.Context, addRequest *client.Ser
 
 	if internaltypes.IsDefined(plan.Notifications) {
 		addRequest.Notifications = client.NewNotificationSettings()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.Notifications, false)), addRequest.Notifications)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.Notifications, true)), addRequest.Notifications)
 		if err != nil {
 			return err
 		}
@@ -868,15 +871,15 @@ func addOptionalServerSettingsFields(ctx context.Context, addRequest *client.Ser
 
 	if internaltypes.IsDefined(plan.EmailServer) {
 		addRequest.EmailServer = client.NewEmailServerSettingsWithDefaults()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.EmailServer, false)), addRequest.EmailServer)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.EmailServer, true)), addRequest.EmailServer)
 		if err != nil {
 			return err
 		}
 	}
 
-	if internaltypes.IsDefined(plan.CaptchaSettings) {
+	if internaltypes.ObjContainsNoEmptyVals(plan.CaptchaSettings) {
 		addRequest.CaptchaSettings = client.NewCaptchaSettings()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.CaptchaSettings, false)), addRequest.CaptchaSettings)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.CaptchaSettings, true)), addRequest.CaptchaSettings)
 		if err != nil {
 			return err
 		}
@@ -909,6 +912,7 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	//////////////////////////////////////////////////
 	// emptyString is a variable initialized with an empty string value.
 	emptyString := ""
+	state.Id = types.StringValue("id")
 
 	//////////////////////////////////////////////////
 	// CONTACT INFO
@@ -1060,7 +1064,16 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 		"wsfed_realm":            basetypes.StringType{},
 	}
 
-	state.FederationInfo, _ = types.ObjectValueFrom(ctx, federationInfoAttrType, r.FederationInfo)
+	federationInfoAttrValue := map[string]attr.Value{
+		"base_url":               types.StringPointerValue(r.FederationInfo.BaseUrl),
+		"saml2_entity_id":        types.StringPointerValue(r.FederationInfo.Saml2EntityId),
+		"auto_connect_entity_id": types.StringPointerValue(&emptyString),
+		"saml1x_issuer_id":       types.StringPointerValue(r.FederationInfo.Saml1xIssuerId),
+		"saml1x_source_id":       types.StringPointerValue(r.FederationInfo.Saml1xSourceId),
+		"wsfed_realm":            types.StringPointerValue(r.FederationInfo.WsfedRealm),
+	}
+
+	state.FederationInfo, _ = types.ObjectValue(federationInfoAttrType, federationInfoAttrValue)
 
 	//////////////////////////////////////////////
 	// EMAIL SERVER
@@ -1083,77 +1096,8 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 		"encrypted_password":          basetypes.StringType{},
 	}
 
-	// var getEmailSettingsAttrValue = func() map[string]attr.Value {
-	// if internaltypes.IsDefined(plan.EmailServer) {
-	// emailSettingsAttrValue := map[string]attr.Value{
-	// "source_addr":                 types.StringValue(r.EmailServer.SourceAddr),
-	// "email_server":                types.StringValue(r.EmailServer.EmailServer),
-	// "port":                        types.Int64Value(r.EmailServer.Port),
-	// "ssl_port":                    types.Int64PointerValue(r.EmailServer.SslPort),
-	// "timeout":                     types.Int64PointerValue(r.EmailServer.Timeout),
-	// "retry_attempts":              types.Int64PointerValue(r.EmailServer.RetryAttempts),
-	// "retry_delay":                 types.Int64PointerValue(r.EmailServer.RetryDelay),
-	// "use_ssl":                     types.BoolPointerValue(r.EmailServer.UseSSL),
-	// "use_tls":                     types.BoolPointerValue(r.EmailServer.UseTLS),
-	// "verify_hostname":             types.BoolPointerValue(r.EmailServer.VerifyHostname),
-	// "enable_utf8_message_headers": types.BoolPointerValue(r.EmailServer.EnableUtf8MessageHeaders),
-	// "use_debugging":               types.BoolPointerValue(r.EmailServer.UseDebugging),
-	// "username":                    types.StringPointerValue(r.EmailServer.Username),
-	// "password":                    types.StringValue(plan.EmailServer.Attributes()["password"].(types.String).ValueString()),
-	// "encrypted_password":          types.StringPointerValue(&emptyString),
-	// }
-	// return emailSettingsAttrValue
-	// } else {
-	// emailSettingsAttrValue := map[string]attr.Value{
-	// "source_addr":                 types.StringValue(r.EmailServer.SourceAddr),
-	// "email_server":                types.StringValue(r.EmailServer.EmailServer),
-	// "port":                        types.Int64Value(r.EmailServer.Port),
-	// "ssl_port":                    types.Int64PointerValue(r.EmailServer.SslPort),
-	// "timeout":                     types.Int64PointerValue(r.EmailServer.Timeout),
-	// "retry_attempts":              types.Int64PointerValue(r.EmailServer.RetryAttempts),
-	// "retry_delay":                 types.Int64PointerValue(r.EmailServer.RetryDelay),
-	// "use_ssl":                     types.BoolPointerValue(r.EmailServer.UseSSL),
-	// "use_tls":                     types.BoolPointerValue(r.EmailServer.UseTLS),
-	// "verify_hostname":             types.BoolPointerValue(r.EmailServer.VerifyHostname),
-	// "enable_utf8_message_headers": types.BoolPointerValue(r.EmailServer.EnableUtf8MessageHeaders),
-	// "use_debugging":               types.BoolPointerValue(r.EmailServer.UseDebugging),
-	// "username":                    types.StringPointerValue(&emptyString),
-	// "password":                    types.StringValue(plan.EmailServer.Attributes()["password"].(types.String).ValueString()),
-	// "encrypted_password":          types.StringPointerValue(&emptyString),
-	// }
-	// return captchaSettingsAttrValue
-	// }
-	// }
-	// emailServerAttrValue := map[string]attr.Value{
-	// "source_addr":                 types.StringValue(r.EmailServer.SourceAddr),
-	// "email_server":                types.StringValue(r.EmailServer.EmailServer),
-	// "port":                        types.Int64Value(r.EmailServer.Port),
-	// "ssl_port":                    types.Int64PointerValue(r.EmailServer.SslPort),
-	// "timeout":                     types.Int64PointerValue(r.EmailServer.Timeout),
-	// "retry_attempts":              types.Int64PointerValue(r.EmailServer.RetryAttempts),
-	// "retry_delay":                 types.Int64PointerValue(r.EmailServer.RetryDelay),
-	// "use_ssl":                     types.BoolPointerValue(r.EmailServer.UseSSL),
-	// "use_tls":                     types.BoolPointerValue(r.EmailServer.UseTLS),
-	// "verify_hostname":             types.BoolPointerValue(r.EmailServer.VerifyHostname),
-	// "enable_utf8_message_headers": types.BoolPointerValue(r.EmailServer.EnableUtf8MessageHeaders),
-	// "use_debugging":               types.BoolPointerValue(r.EmailServer.UseDebugging),
-	// "username":                    types.StringPointerValue(r.EmailServer.Username),
-	// "password":                    types.StringValue(plan.EmailServer.Attributes()["password"].(types.String).ValueString()),
-	// "encrypted_password":          types.StringPointerValue(&emptyString),
-	// }
-	//
-	// state.EmailServer, _ = types.ObjectValueFrom(ctx, emailServerAttrType, emailServerAttrValue)
-
-	// var getEmailCreds = func() (*string, string) {
-	// if plan.EmailServer.Attributes()["username"] != nil && plan.EmailServer.Attributes()["password"] != nil {
-	// username := basetypes.StringValue(plan.EmailServer.Attributes()["username"].(types.String))
-	// password := basetypes.StringValue(plan.EmailServer.Attributes()["password"].(types.String))
-	// return username.ValueStringPointer(), password.ValueString()
-	// } else {
-	// return types.StringPointerValue(&emptyString).ValueStringPointer(), types.StringValue(emptyString).ValueString()
-	// }
-	// }
-
+	// get email creds with function
+	// if username and password are not set, return null values
 	var getEmailCreds = func() (*string, string) {
 		if plan.EmailServer.Attributes()["username"] != nil && plan.EmailServer.Attributes()["password"] != nil {
 			username := plan.EmailServer.Attributes()["username"].(types.String).ValueStringPointer()
@@ -1164,6 +1108,8 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 		}
 	}
 
+	// retrieve values for saving to state
+	// encrypted_password is not returned in the response, so we set it to an empty string
 	username, password := getEmailCreds()
 	emailServerAttrValue := map[string]attr.Value{
 		"source_addr":                 types.StringValue(r.EmailServer.SourceAddr),
@@ -1355,5 +1301,5 @@ func (r *serverSettingsResource) ImportState(ctx context.Context, req resource.I
 	// Set a placeholder id value to appease terraform.
 	// The real attributes will be imported when terraform performs a read after the import.
 	// If no value is set here, Terraform will error out when importing.
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), "id")...)
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
