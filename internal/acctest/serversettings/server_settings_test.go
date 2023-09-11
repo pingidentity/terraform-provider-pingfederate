@@ -45,7 +45,7 @@ func TestAccServerSettings(t *testing.T) {
 	initialResourceModel := serverSettingsResourceModel{
 		contactInfo: contactInfoResourceModel{
 			company:   "initial company",
-			email:     "initialAdmin@company.com",
+			email:     "initialAdmin@example.com",
 			firstName: "Jane",
 			lastName:  "Admin",
 			phone:     "555-555-1111",
@@ -54,15 +54,15 @@ func TestAccServerSettings(t *testing.T) {
 			baseUrl: "https://localhost:9999",
 		},
 		emailServer: emailServerResourceModel{
-			sourceAddr:  "initialEmailServerAdmin@company.com",
-			emailServer: "initialEmailserver.company.com",
+			sourceAddr:  "initialEmailServerAdmin@example.com",
+			emailServer: "initialEmailserver.example.com",
 		},
 	}
 
 	updatedResourceModel := serverSettingsResourceModel{
 		contactInfo: contactInfoResourceModel{
 			company:   "updated company",
-			email:     "updatedAdminemail@company.com",
+			email:     "updatedAdminemail@example.com",
 			firstName: "Jane2",
 			lastName:  "Admin2",
 			phone:     "555-555-2222",
@@ -71,8 +71,8 @@ func TestAccServerSettings(t *testing.T) {
 			baseUrl: "https://localhost2:9999",
 		},
 		emailServer: emailServerResourceModel{
-			sourceAddr:  "updatedEmailServerAdmin@company.com",
-			emailServer: "updatedEmailserver.company.com",
+			sourceAddr:  "updatedEmailServerAdmin@example.com",
+			emailServer: "updatedEmailserver.example.com",
 		},
 	}
 
@@ -121,6 +121,8 @@ resource "pingfederate_server_settings" "%[1]s" {
   email_server = {
     source_addr  = "%[8]s"
     email_server = "%[9]s"
+    username     = "EmailServerAdmin"
+    password     = "EmailServerAdminPassword"
   }
 }`, resourceName,
 		resourceModel.contactInfo.company,

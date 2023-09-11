@@ -545,7 +545,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 							stringplanmodifier.UseStateForUnknown(),
 						},
 					},
-					"saml2_entity_id": schema.StringAttribute{
+					"saml_2_entity_id": schema.StringAttribute{
 						Description: "This ID defines your organization as the entity operating the server for SAML 2.0 transactions. It is usually defined as an organization's URL or a DNS address; for example: pingidentity.com. The SAML SourceID used for artifact resolution is derived from this ID using SHA1.",
 						Computed:    true,
 						Optional:    true,
@@ -561,7 +561,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 							stringplanmodifier.UseStateForUnknown(),
 						},
 					},
-					"saml1x_issuer_id": schema.StringAttribute{
+					"saml_1x_issuer_id": schema.StringAttribute{
 						Description: "This ID identifies your federation server for SAML 1.x transactions. As with SAML 2.0, it is usually defined as an organization's URL or a DNS address. The SourceID used for artifact resolution is derived from this ID using SHA1.",
 						Computed:    true,
 						Optional:    true,
@@ -569,7 +569,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 							stringplanmodifier.UseStateForUnknown(),
 						},
 					},
-					"saml1x_source_id": schema.StringAttribute{
+					"saml_1x_source_id": schema.StringAttribute{
 						Description: "If supplied, the Source ID value entered here is used for SAML 1.x, instead of being derived from the SAML 1.x Issuer/Audience.",
 						Computed:    true,
 						Optional:    true,
@@ -795,9 +795,6 @@ func (r *serverSettingsResource) ValidateConfig(ctx context.Context, req resourc
 			}
 		}
 	}
-	////////////////////////////////////
-	// ROLES AND PROTOCOLS
-	////////////////////////////////////
 
 	////////////////////////////////////
 	// FEDERATION INFO
@@ -953,7 +950,6 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 		"metadata_notification_settings":             basetypes.ObjectType{AttrTypes: notificationSettingsAttrType},
 	}
 
-	// put the pieces together into state
 	state.Notifications, _ = types.ObjectValueFrom(ctx, notificationsAttrType, r.Notifications)
 
 	//////////////////////////////////////////////
@@ -1057,19 +1053,19 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	//////////////////////////////////////////////
 	federationInfoAttrType := map[string]attr.Type{
 		"base_url":               basetypes.StringType{},
-		"saml2_entity_id":        basetypes.StringType{},
+		"saml_2_entity_id":       basetypes.StringType{},
 		"auto_connect_entity_id": basetypes.StringType{},
-		"saml1x_issuer_id":       basetypes.StringType{},
-		"saml1x_source_id":       basetypes.StringType{},
+		"saml_1x_issuer_id":      basetypes.StringType{},
+		"saml_1x_source_id":      basetypes.StringType{},
 		"wsfed_realm":            basetypes.StringType{},
 	}
 
 	federationInfoAttrValue := map[string]attr.Value{
 		"base_url":               types.StringPointerValue(r.FederationInfo.BaseUrl),
-		"saml2_entity_id":        types.StringPointerValue(r.FederationInfo.Saml2EntityId),
+		"saml_2_entity_id":       types.StringPointerValue(r.FederationInfo.Saml2EntityId),
 		"auto_connect_entity_id": types.StringPointerValue(&emptyString),
-		"saml1x_issuer_id":       types.StringPointerValue(r.FederationInfo.Saml1xIssuerId),
-		"saml1x_source_id":       types.StringPointerValue(r.FederationInfo.Saml1xSourceId),
+		"saml_1x_issuer_id":      types.StringPointerValue(r.FederationInfo.Saml1xIssuerId),
+		"saml_1x_source_id":      types.StringPointerValue(r.FederationInfo.Saml1xSourceId),
 		"wsfed_realm":            types.StringPointerValue(r.FederationInfo.WsfedRealm),
 	}
 
@@ -1197,9 +1193,6 @@ func (r *serverSettingsResource) Create(ctx context.Context, req resource.Create
 	readServerSettingsResponse(ctx, serverSettingsResponse, &state, &plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 // Read the server settings resource from the PingFederate API and update the state accordingly.
@@ -1239,10 +1232,6 @@ func (r *serverSettingsResource) Read(ctx context.Context, req resource.ReadRequ
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
@@ -1286,10 +1275,6 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // This config object is edit-only, so Terraform can't delete it.
@@ -1299,7 +1284,5 @@ func (r *serverSettingsResource) Delete(ctx context.Context, req resource.Delete
 func (r *serverSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	// Set a placeholder id value to appease terraform.
-	// The real attributes will be imported when terraform performs a read after the import.
-	// If no value is set here, Terraform will error out when importing.
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
