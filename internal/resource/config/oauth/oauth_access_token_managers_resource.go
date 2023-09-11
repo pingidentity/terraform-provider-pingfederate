@@ -9,7 +9,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -69,15 +73,254 @@ func (r *oauthAccessTokenManagersResource) Schema(ctx context.Context, req resou
 					),
 				},
 			},
+			"name": schema.StringAttribute{
+				Description: "The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
+				Required:    true,
+			},
+			"plugin_descriptor_ref": schema.SingleNestedAttribute{
+				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
+				Required:    true,
+				Attributes:  config.AddResourceLinkSchema(),
+			},
+			"parent_ref": schema.SingleNestedAttribute{
+				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
+				Attributes: config.AddResourceLinkSchema(),
+			},
+			"configuration": schema.SingleNestedAttribute{
+				Description: "Plugin instance configuration.",
+				Required:    true,
+				Attributes: map[string]schema.Attribute{
+					"tables": schema.SetNestedAttribute{
+						Description: "List of configuration tables.",
+						Computed:    true,
+						Optional:    true,
+						PlanModifiers: []planmodifier.Set{
+							setplanmodifier.UseStateForUnknown(),
+						},
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"name": schema.StringAttribute{
+									Description: "The name of the table.",
+									Required:    true,
+								},
+								"rows": schema.SetNestedAttribute{
+									Description: "List of table rows.",
+									Optional:    true,
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"fields": schema.SetNestedAttribute{
+												Description: "The configuration fields in the row.",
+												Computed:    true,
+												Optional:    true,
+												NestedObject: schema.NestedAttributeObject{
+													Attributes: map[string]schema.Attribute{
+														"name": schema.StringAttribute{
+															Description: "The name of the configuration field.",
+															Required:    true,
+														},
+														"value": schema.StringAttribute{
+															Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
+															Required:    true,
+														},
+														"encrypted_value": schema.StringAttribute{
+															Description: "This value is not used in this provider due to the value changing on every GET request.",
+															Computed:    true,
+															Optional:    false,
+															Default:     stringdefault.StaticString(""),
+														},
+														"inherited": schema.BoolAttribute{
+															Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
+															Optional:    true,
+															PlanModifiers: []planmodifier.Bool{
+																boolplanmodifier.UseStateForUnknown(),
+															},
+														},
+													},
+												},
+											},
+											"default_row": schema.BoolAttribute{
+												Description: "Whether this row is the default.",
+												Optional:    true,
+												PlanModifiers: []planmodifier.Bool{
+													boolplanmodifier.UseStateForUnknown(),
+												},
+											},
+										},
+									},
+								},
+								"inherited": schema.BoolAttribute{
+									Description: "Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.",
+									Optional:    true,
+									PlanModifiers: []planmodifier.Bool{
+										boolplanmodifier.UseStateForUnknown(),
+									},
+								},
+							},
+						},
+					},
+					"fields": schema.SetNestedAttribute{
+						Description: "List of configuration fields.",
+						Computed:    true,
+						Optional:    true,
+						PlanModifiers: []planmodifier.Set{
+							setplanmodifier.UseStateForUnknown(),
+						},
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"name": schema.StringAttribute{
+									Description: "The name of the configuration field.",
+									Required:    true,
+								},
+								"value": schema.StringAttribute{
+									Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
+									Required:    true,
+								},
+								"encrypted_value": schema.StringAttribute{
+									Description: "This value is not used in this provider due to the value changing on every GET request.",
+									Computed:    true,
+									Optional:    false,
+									PlanModifiers: []planmodifier.String{
+										stringplanmodifier.UseStateForUnknown(),
+									},
+								},
+								"inherited": schema.BoolAttribute{
+									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
+									Optional:    true,
+									PlanModifiers: []planmodifier.Bool{
+										boolplanmodifier.UseStateForUnknown(),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			"fields": schema.SetNestedAttribute{
+				Description: "List of configuration fields.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+				},
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"name": schema.StringAttribute{
+							Description: "The name of the configuration field.",
+							Required:    true,
+						},
+						"value": schema.StringAttribute{
+							Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
+							Required:    false,
+						},
+						"encrypted_value": schema.StringAttribute{
+							Description: "This value is not used in this provider due to the value changing on every GET request.",
+							Computed:    true,
+							Optional:    false,
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.UseStateForUnknown(),
+							},
+						},
+						"inherited": schema.BoolAttribute{
+							Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
+							Optional:    true,
+							PlanModifiers: []planmodifier.Bool{
+								boolplanmodifier.UseStateForUnknown(),
+							},
+						},
+					},	
+				},
+			},
+			"attribute_contract": schema.SingleNestedAttribute{
+				Description: "The list of attributes that will be added to an access token.",
+				Computed:    true,
+				Optional:    true,
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
+				Attributes: map[string]schema.Attribute{
+					"core_attributes": schema.SetNestedAttribute{
+						Description: "A list of core token attributes that are associated with the access token management plugin type. This field is read-only and is ignored on POST/PUT.",
+						Computed:    true,
+						Optional:    false,
+						PlanModifiers: []planmodifier.Set{
+							setplanmodifier.UseStateForUnknown(),
+						},
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"name": schema.StringAttribute{
+									Description: "The name of this attribute.",
+									Computed:    true,
+									Optional:    false,
+									PlanModifiers: []planmodifier.String{
+										stringplanmodifier.UseStateForUnknown(),
+									},
+								},
+							},
+							 "multi_valued": schema.BoolAttribute{
+								Description: "Indicates whether attribute value is always returned as an array.",
+								PlanModifiers: []planmodifier.Bool{
+									boolplanmodifier.UseStateForUnknown(),
+								},
+							 },
+							},
+						},
+						"extended_attributes": schema.SetNestedAttribute{
+							Description: "A list of additional token attributes that are associated with this access token management plugin instance.",
+							Computed:    true,
+							Optional:    false,
+							PlanModifiers: []planmodifier.Set{
+								setplanmodifier.UseStateForUnknown(),
+							},
+							NestedObject: schema.NestedAttributeObject{
+								Attributes: map[string]schema.Attribute{
+									"name": schema.StringAttribute{
+										Description: "The name of this attribute.",
+										Computed:    true,
+										Optional:    false,
+										PlanModifiers: []planmodifier.String{
+											stringplanmodifier.UseStateForUnknown(),
+										},
+									},
+								},
+								 "multi_valued": schema.BoolAttribute{
+									Description: "Indicates whether attribute value is always returned as an array.",
+									PlanModifiers: []planmodifier.Bool{
+										boolplanmodifier.UseStateForUnknown(),
+									},
+								 },
+								},
+					"inherited": schema.BoolAttribute{
+						Description: "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
+						Optional:    true,
+					},
+					"default_subject_attribute": schema.StringAttribute{
+						Description: "Default subject attribute to use for audit logging when validating the access token. Blank value means to use USER_KEY attribute value after grant lookup.",
+						Computed:    true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+				},
+			},
 		},
 	}
+//						},
+//			},
+//		},
+//	}
+
 	// Set attributes in string list
 	if setOptionalToComputed {
 		config.SetAllAttributesToOptionalAndComputed(&schema, []string{"FIX_ME"})
 	}
 	config.AddCommonSchema(&schema, false)
 	resp.Schema = schema
-}
+
 
 func addOptionalOauthAccessTokenManagersFields(ctx context.Context, addRequest *client.AccessTokenManagers, plan oauthAccessTokenManagersResourceModel) error {
 
