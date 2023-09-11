@@ -70,16 +70,16 @@ resource "pingfederate_server_settings" "serverSettingsExample" {
     // base_url must be standard URL format: http(s)://<company-or-hostname> with optional domain and port\
     base_url = "https://localhost:9999"
     // SAML entities have to be defined first
-    saml2_entity_id  = "urn:auth0:example:myserverconnection2"
-    saml1x_issuer_id = "pingidentity2.com"
-    //saml1x_source_id should be a hex if supplied.  Value can be empty string or not set at all.
-    saml1x_source_id = ""
-    wsfed_realm      = "myrealm2"
+    // saml2_entity_id  = "urn:auth0:example:myserverconnection"
+    // saml1x_issuer_id = "pingidentity.com"
+    // saml1x_source_id should be a hex if supplied.  Value can be empty string or not set at all.
+    // saml1x_source_id = ""
+    // wsfed_realm      = "myrealm"
   }
 
   email_server = {
-    source_addr  = "emailServerAdmin2@company.com"
-    email_server = "myemailserver2.company.com"
+    source_addr  = "emailServerAdmin@company.com"
+    email_server = "myemailserver.company.com"
     //use_ssl= true
     // cannot set both TLS and SSL at the same time.  SSL has priority
     //use_tls= true
