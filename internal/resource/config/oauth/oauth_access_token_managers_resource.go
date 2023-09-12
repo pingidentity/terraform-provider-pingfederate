@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -315,7 +316,9 @@ func (r *oauthAccessTokenManagersResource) Schema(ctx context.Context, req resou
 				Attributes: map[string]schema.Attribute{
 					"inherited": schema.BoolAttribute{
 						Description: "If this token manager has a parent, this flag determines whether session validation settings, such as checkValidAuthnSession, are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
+						Computed:    true,
 						Optional:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 					"include_session_id": schema.BoolAttribute{
 						Description: "Include the session identifier in the access token. Note that if any of the session validation features is enabled, the session identifier will already be included in the access tokens.",
@@ -484,14 +487,14 @@ func (r *oauthAccessTokenManagersResource) Read(ctx context.Context, req resourc
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthAccessTokenManagers, httpResp, err := r.apiClient.OauthApi.GetAccessTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.VALUE.ValueString()).Execute()
+	apiReadOauthAccessTokenManagers, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.GetOauthAccessTokenManagersSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the OauthAccessTokenManagers", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the OauthAccessTokenManagers", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  OauthAccessTokenManagers", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  OauthAccessTokenManagers", err, httpResp)
 		}
 	}
 	// Log response JSON
