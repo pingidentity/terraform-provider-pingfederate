@@ -39,7 +39,7 @@ resource "pingfederate_server_settings" "serverSettingsExample" {
       base_url = "https://localhost:9999"
       // SAML entities have to be defined first
       saml_2_entity_id  = "urn:auth0:example:myserverconnection"
-      saml_1x_issuer_id = "pingidentity.com"
+      saml_1x_issuer_id = "example.com"
       //saml_1x_source_id should be a hex if supplied.  Value can be empty string or not set at all.
       saml_1x_source_id = ""
       wsfed_realm       = "myrealm"
