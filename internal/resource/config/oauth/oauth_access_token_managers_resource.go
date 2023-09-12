@@ -56,7 +56,7 @@ type oauthAccessTokenManagersResourceModel struct {
 }
 
 // GetSchema defines the schema for the resource.
-func (r *oauthAccessTokenManagersResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *oauthAccessTokenManagersResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
 	schema := schema.Schema{
 		Description: "Manages Oauth Access Token Managers",
 		Attributes: map[string]schema.Attribute{
@@ -200,41 +200,6 @@ func (r *oauthAccessTokenManagersResource) Schema(ctx context.Context, req resou
 					},
 				},
 			},
-			"fields": schema.SetNestedAttribute{
-				Description: "List of configuration fields.",
-				Computed:    true,
-				Optional:    true,
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
-				},
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"name": schema.StringAttribute{
-							Description: "The name of the configuration field.",
-							Required:    true,
-						},
-						"value": schema.StringAttribute{
-							Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
-							Required:    false,
-						},
-						"encrypted_value": schema.StringAttribute{
-							Description: "This value is not used in this provider due to the value changing on every GET request.",
-							Computed:    true,
-							Optional:    false,
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.UseStateForUnknown(),
-							},
-						},
-						"inherited": schema.BoolAttribute{
-							Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-							Optional:    true,
-							PlanModifiers: []planmodifier.Bool{
-								boolplanmodifier.UseStateForUnknown(),
-							},
-						},
-					},	
-				},
-			},
 			"attribute_contract": schema.SingleNestedAttribute{
 				Description: "The list of attributes that will be added to an access token.",
 				Computed:    true,
@@ -260,40 +225,41 @@ func (r *oauthAccessTokenManagersResource) Schema(ctx context.Context, req resou
 										stringplanmodifier.UseStateForUnknown(),
 									},
 								},
-							},
-							 "multi_valued": schema.BoolAttribute{
-								Description: "Indicates whether attribute value is always returned as an array.",
-								PlanModifiers: []planmodifier.Bool{
-									boolplanmodifier.UseStateForUnknown(),
-								},
-							 },
-							},
-						},
-						"extended_attributes": schema.SetNestedAttribute{
-							Description: "A list of additional token attributes that are associated with this access token management plugin instance.",
-							Computed:    true,
-							Optional:    false,
-							PlanModifiers: []planmodifier.Set{
-								setplanmodifier.UseStateForUnknown(),
-							},
-							NestedObject: schema.NestedAttributeObject{
-								Attributes: map[string]schema.Attribute{
-									"name": schema.StringAttribute{
-										Description: "The name of this attribute.",
-										Computed:    true,
-										Optional:    false,
-										PlanModifiers: []planmodifier.String{
-											stringplanmodifier.UseStateForUnknown(),
-										},
-									},
-								},
-								 "multi_valued": schema.BoolAttribute{
+								"multi_valued": schema.BoolAttribute{
 									Description: "Indicates whether attribute value is always returned as an array.",
 									PlanModifiers: []planmodifier.Bool{
 										boolplanmodifier.UseStateForUnknown(),
 									},
-								 },
 								},
+							},
+						},
+					},
+					"extended_attributes": schema.SetNestedAttribute{
+						Description: "A list of additional token attributes that are associated with this access token management plugin instance.",
+						Computed:    true,
+						Optional:    false,
+						PlanModifiers: []planmodifier.Set{
+							setplanmodifier.UseStateForUnknown(),
+						},
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"name": schema.StringAttribute{
+									Description: "The name of this attribute.",
+									Computed:    true,
+									Optional:    false,
+									PlanModifiers: []planmodifier.String{
+										stringplanmodifier.UseStateForUnknown(),
+									},
+								},
+								"multi_valued": schema.BoolAttribute{
+									Description: "Indicates whether attribute value is always returned as an array.",
+									PlanModifiers: []planmodifier.Bool{
+										boolplanmodifier.UseStateForUnknown(),
+									},
+								},
+							},
+						},
+					},
 					"inherited": schema.BoolAttribute{
 						Description: "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
 						Optional:    true,
@@ -307,60 +273,105 @@ func (r *oauthAccessTokenManagersResource) Schema(ctx context.Context, req resou
 					},
 				},
 			},
+			"selection_settings": schema.SingleNestedAttribute{
+				Description: "Settings which determine how this token manager can be selected for use by an OAuth request.",
+				Computed:    true,
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"inherited": schema.BoolAttribute{
+						Description: "If this token manager has a parent, this flag determines whether selection settings, such as resource URI's, are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
+						Optional:    true,
+					},
+					"resource_uris": schema.SetAttribute{
+						Description: "The list of base resource URI's which map to this token manager. A resource URI, specified via the 'aud' parameter, can be used to select a specific token manager for an OAuth request.",
+						Optional:    true,
+					},
+				},
+			},
+			"access_control_settings": schema.SingleNestedAttribute{
+				Description: "Settings which determine which clients may access this token manager.",
+				Computed:    true,
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"inherited": schema.BoolAttribute{
+						Description: "If this token manager has a parent, this flag determines whether access control settings are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
+						Optional:    true,
+					},
+					"restrict_clients": schema.BoolAttribute{
+						Description: "Determines whether access to this token manager is restricted to specific OAuth clients. If false, the 'allowedClients' field is ignored. The default value is false.",
+						Optional:    true,
+					},
+					"allowed_clients": schema.SingleNestedAttribute{
+						Description: "If 'restrictClients' is true, this field defines the list of OAuth clients that are allowed to access the token manager.",
+						Required:    true,
+						Attributes:  config.AddResourceLinkSchema(),
+					},
+				},
+			},
+			"session_validation_settings": schema.SingleNestedAttribute{
+				Description: "Settings which determine how the user session is associated with the access token.",
+				Computed:    true,
+				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"inherited": schema.BoolAttribute{
+						Description: "If this token manager has a parent, this flag determines whether session validation settings, such as checkValidAuthnSession, are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
+						Optional:    true,
+					},
+					"include_session_id": schema.BoolAttribute{
+						Description: "Include the session identifier in the access token. Note that if any of the session validation features is enabled, the session identifier will already be included in the access tokens.",
+						Optional:    true,
+					},
+					"check_valid_authn_session": schema.BoolAttribute{
+						Description: "Check for a valid authentication session when validating the access token.",
+						Optional:    true,
+					},
+					"check_session_revocation_status": schema.BoolAttribute{
+						Description: "Check the session revocation status when validating the access token.",
+						Optional:    true,
+					},
+					"update_authn_session_activity": schema.BoolAttribute{
+						Description: "Update authentication session activity when validating the access token.",
+						Optional:    true,
+					},
+				},
+			},
+			"sequence_number": schema.Int64Attribute{
+				Description: "Number added to an access token to identify which Access Token Manager issued the token.",
+				Optional:    true,
+			},
 		},
 	}
-//						},
-//			},
-//		},
-//	}
 
 	// Set attributes in string list
 	if setOptionalToComputed {
-		config.SetAllAttributesToOptionalAndComputed(&schema, []string{"FIX_ME"})
+		config.SetAllAttributesToOptionalAndComputed(&schema, []string{"id"})
 	}
 	config.AddCommonSchema(&schema, false)
 	resp.Schema = schema
-
+}
 
 func addOptionalOauthAccessTokenManagersFields(ctx context.Context, addRequest *client.AccessTokenManagers, plan oauthAccessTokenManagersResourceModel) error {
 
-	if internaltypes.IsDefined(plan.AttributeContract) {
-		addRequest.AttributeContract = client.NewAttributeContract()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContract, false)), addRequest.AttributeContract)
-		if err != nil {
-			return err
-		}
-	}
-
-	if internaltypes.IsDefined(plan.Id) {
-		addRequest.Id = plan.Id.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.Name) {
-		addRequest.Name = plan.Name.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.PluginDescriptorRef) {
-		addRequest.PluginDescriptorRef = client.NewPluginDescriptorRef()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.PluginDescriptorRef, false)), addRequest.PluginDescriptorRef)
-		if err != nil {
-			return err
-		}
-	}
-
 	if internaltypes.IsDefined(plan.ParentRef) {
-		addRequest.ParentRef = client.NewParentRef()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ParentRef, false)), addRequest.ParentRef)
-		if err != nil {
-			return err
+		if plan.ParentRef.Attributes()["id"].(types.String).ValueString() != "" {
+			addRequest.ParentRef = client.NewResourceLinkWithDefaults()
+			addRequest.ParentRef.Id = plan.ParentRef.Attributes()["id"].(types.String).ValueString()
+			err := json.Unmarshal([]byte(internaljson.FromValue(plan.ParentRef, true)), addRequest.ParentRef)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
-	if internaltypes.IsDefined(plan.Configuration) {
-		addRequest.Configuration = client.NewConfiguration()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, false)), addRequest.Configuration)
+	if internaltypes.IsDefined(plan.AttributeContract) {
+		addRequest.AttributeContract = client.NewOauthAccessTokenManagersAttributeContractWithDefaults()
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContract, true)), addRequest.AttributeContract)
 		if err != nil {
 			return err
+		}
+		extendedAttrsLength := len(plan.AttributeContract.Attributes()["extended_attributes"].(types.Set).Elements())
+		if extendedAttrsLength == 0 {
+			addRequest.AttributeContract.ExtendedAttributes = nil
 		}
 	}
 
