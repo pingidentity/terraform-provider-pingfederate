@@ -1,7 +1,7 @@
 resource "pingfederate_server_settings" "serverSettingsExample" {
   contact_info = {
     company    = "example company"
-    email      = "adminemail@company.com"
+    email      = "adminemail@example.com"
     first_name = "Jane"
     last_name  = "Admin"
     phone      = "555-555-1222"
@@ -9,13 +9,13 @@ resource "pingfederate_server_settings" "serverSettingsExample" {
 
   notifications = {
     license_events = {
-      email_address = "license-events-email@company.com"
+      email_address = "license-events-email@example.com"
       notification_publisher_ref = {
         id = "<uiInstanceID>"
       }
     }
     certificate_expirations = {
-      email_address          = "cert-expire-notifications@company.com"
+      email_address          = "cert-expire-notifications@example.com"
       initial_warning_period = 45
       final_warning_period   = 7
       notification_publisher_ref = {
@@ -27,7 +27,7 @@ resource "pingfederate_server_settings" "serverSettingsExample" {
       id = "<uiInstanceID>"
     }
     metadata_notification_settings = {
-      email_address = "metadata-notification@company.com"
+      email_address = "metadata-notification@example.com"
       notification_publisher_ref = {
         id = "<uiInstanceID>"
       }
@@ -38,16 +38,16 @@ resource "pingfederate_server_settings" "serverSettingsExample" {
       // base_url must be standard URL format: http(s)://<company-or-hostname> with optional domain and port
       base_url = "https://localhost:9999"
       // SAML entities have to be defined first
-      saml2_entity_id  = "urn:auth0:example:myserverconnection2"
-      saml1x_issuer_id = "pingidentity2.com"
-      //saml1x_source_id should be a hex if supplied.  Value can be empty string or not set at all.
-      saml1x_source_id = ""
+      saml_2_entity_id  = "urn:auth0:example:myserverconnection2"
+      saml_1x_issuer_id = "pingidentity2.com"
+      //saml_1x_source_id should be a hex if supplied.  Value can be empty string or not set at all.
+      saml_1x_source_id = ""
       wsfed_realm      = "myrealm2"
     }
 
     email_server = {
-      source_addr  = "emailServerAdmin2@company.com"
-      email_server = "myemailserver2.company.com"
+      source_addr  = "emailServerAdmin2@example.com"
+      email_server = "myemailserver2.example.com"
       use_ssl      = true
       // cannot set both TLS and SSL at the same time.  SSL has priority
       //use_tls= true
