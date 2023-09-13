@@ -372,7 +372,7 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 	resp.Schema = schema
 }
 
-func addOptionalOauthAccessTokenManagersFields(ctx context.Context, addRequest *client.AccessTokenManagers, plan oauthAccessTokenManagersResourceModel) error {
+func addOptionalOauthAccessTokenManagersFields(ctx context.Context, addRequest *client.AccessTokenManager, plan oauthAccessTokenManagersResourceModel) error {
 
 	if internaltypes.IsDefined(plan.ParentRef) {
 		if plan.ParentRef.Attributes()["id"].(types.String).ValueString() != "" {
@@ -386,7 +386,7 @@ func addOptionalOauthAccessTokenManagersFields(ctx context.Context, addRequest *
 	}
 
 	if internaltypes.IsDefined(plan.AttributeContract) {
-		addRequest.AttributeContract = client.NewOauthAccessTokenManagersAttributeContractWithDefaults()
+		addRequest.AttributeContract = client.NewAccessTokenAttributeContract()
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContract, true)), addRequest.AttributeContract)
 		if err != nil {
 			return err
@@ -398,7 +398,7 @@ func addOptionalOauthAccessTokenManagersFields(ctx context.Context, addRequest *
 	}
 
 	if internaltypes.IsDefined(plan.SelectionSettings) {
-		addRequest.SelectionSettings = client.NewSelectionSettings()
+		addRequest.SelectionSettings = client.NewAtmSelectionSettings()
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.SelectionSettings, false)), addRequest.SelectionSettings)
 		if err != nil {
 			return err
@@ -406,7 +406,7 @@ func addOptionalOauthAccessTokenManagersFields(ctx context.Context, addRequest *
 	}
 
 	if internaltypes.IsDefined(plan.AccessControlSettings) {
-		addRequest.AccessControlSettings = client.NewAccessControlSettings()
+		addRequest.AccessControlSettings = client.NewAtmAccessControlSettings()
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AccessControlSettings, false)), addRequest.AccessControlSettings)
 		if err != nil {
 			return err
@@ -445,9 +445,9 @@ func (r *oauthAccessTokenManagersResource) Configure(_ context.Context, req reso
 
 }
 
-func readOauthAccessTokenManagersResponse(ctx context.Context, r *client.AccessTokenManagers, state *oauthAccessTokenManagersResourceModel) {
+func readOauthAccessTokenManagersResponse(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagersResourceModel) {
 	// state.AttributeContract = (r.AttributeContract)
-	// state.Id = internaltypes.StringTypeOrNil(r.Id)
+	state.Id = types.StringValue(r.Id)
 	// state.Name = internaltypes.StringTypeOrNil(r.Name)
 	// state.PluginDescriptorRef = (r.PluginDescriptorRef)
 	// state.ParentRef = (r.ParentRef)
@@ -496,9 +496,9 @@ func (r *oauthAccessTokenManagersResource) Create(ctx context.Context, req resou
 		tflog.Debug(ctx, "Add request: "+string(requestJson))
 	}
 
-	apiCreateOauthAccessTokenManagers := r.apiClient.OauthAccessTokenManagersApi.AddOauthAccessTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateOauthAccessTokenManagers := r.apiClient.OauthAccessTokenManagersApi.CreateTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateOauthAccessTokenManagers = apiCreateOauthAccessTokenManagers.Body(*createOauthAccessTokenManagers)
-	oauthAccessTokenManagersResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.AddOauthAccessTokenManager(apiCreateOauthAccessTokenManagers)
+	oauthAccessTokenManagersResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.CreateTokenManagerExecute(apiCreateOauthAccessTokenManagers)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OauthAccessTokenManagers", err, httpResp)
 		return
@@ -524,7 +524,7 @@ func (r *oauthAccessTokenManagersResource) Read(ctx context.Context, req resourc
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthAccessTokenManagers, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.GetOauthAccessTokenManagersSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadOauthAccessTokenManagers, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.CreateTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -579,7 +579,7 @@ func (r *oauthAccessTokenManagersResource) Update(ctx context.Context, req resou
 	// Get the current state to see how any attributes are changing
 	var state oauthAccessTokenManagersResourceModel
 	req.State.Get(ctx, &state)
-	updateOauthAccessTokenManagers := r.apiClient.OauthAccessTokenManagersApi.UpdateOauthAccessTokenManagersSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateOauthAccessTokenManagers := r.apiClient.OauthAccessTokenManagersApi.CreateTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewAccessTokenManager(plan.Id.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
 	err := addOptionalOauthAccessTokenManagersFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -591,7 +591,7 @@ func (r *oauthAccessTokenManagersResource) Update(ctx context.Context, req resou
 		tflog.Debug(ctx, "Update request: "+string(requestJson))
 	}
 	updateOauthAccessTokenManagers = updateOauthAccessTokenManagers.Body(*createUpdateRequest)
-	updateOauthAccessTokenManagersResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.UpdateOauthAccessTokenManagersSettingsExecute(updateOauthAccessTokenManagers)
+	updateOauthAccessTokenManagersResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.CreateTokenManagerExecute(updateOauthAccessTokenManagers)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OauthAccessTokenManagers", err, httpResp)
 		return
