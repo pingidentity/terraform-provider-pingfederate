@@ -27,8 +27,8 @@ starttestcontainer:
 		-d -p 9031:9031 \
 		-d -p 9999:9999 \
 		--env-file "${HOME}/.pingidentity/config" \
-		-e SERVER_PROFILE_URL=https://github.com/henryrecker-pingidentity/pingidentity-server-profiles.git \
-		-e SERVER_PROFILE_PATH=baseline/pingfederate \
+		-e SERVER_PROFILE_URL=https://github.com/pingidentity/pingidentity-server-profiles.git \
+		-e SERVER_PROFILE_PATH=getting-started/pingfederate \
 		pingidentity/pingfederate:2305-11.2.5
 # Wait for the instance to become ready
 	sleep 1
@@ -66,11 +66,11 @@ devchecknotest: install golangcilint tfproviderlint tflint terrafmtlint importfm
 devcheck: devchecknotest kaboom testacc
 
 generateresource:
-	PINGFEDERATE_GENERATED_ENDPOINT=/idp/adapters \
-	PINGFEDERATE_RESOURCE_DEFINITION_NAME=IdpAdapter \
+	PINGFEDERATE_GENERATED_ENDPOINT=serverSettings \
+	PINGFEDERATE_RESOURCE_DEFINITION_NAME=ServerSettings \
 	PINGFEDERATE_ALLOW_REQUIRED_BYPASS=False \
 	OVERWRITE_EXISTING_RESOURCE_FILE=False \
-	PINGFEDERATE_PUT_ONLY_RESOURCE=False \
+	PINGFEDERATE_PUT_ONLY_RESOURCE=True \
 	GENERATE_SCHEMA=True \
 	python3 scripts/generate_resource.py
 	make fmt
