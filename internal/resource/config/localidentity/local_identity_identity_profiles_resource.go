@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -655,7 +656,7 @@ func (r *localIdentityIdentityProfilesResource) ValidateConfig(ctx context.Conte
 	}
 }
 
-func readLocalIdentityIdentityProfilesResponse(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfilesResourceModel) {
+func readLocalIdentityIdentityProfilesResponse(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfilesResourceModel, diags *diag.Diagnostics) {
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
 	state.Name = types.StringValue(r.Name)
 	state.ApcId = internaltypes.ToStateResourceLink(ctx, r.GetApcId())
@@ -811,7 +812,7 @@ func (r *localIdentityIdentityProfilesResource) Create(ctx context.Context, req 
 	// Read the response into the state
 	var state localIdentityIdentityProfilesResourceModel
 
-	readLocalIdentityIdentityProfilesResponse(ctx, localIdentityIdentityProfilesResponse, &state)
+	readLocalIdentityIdentityProfilesResponse(ctx, localIdentityIdentityProfilesResponse, &state, &resp.Diagnostics)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -841,7 +842,7 @@ func (r *localIdentityIdentityProfilesResource) Read(ctx context.Context, req re
 	}
 
 	// Read the response into the state
-	readLocalIdentityIdentityProfilesResponse(ctx, apiReadLocalIdentityIdentityProfiles, &state)
+	readLocalIdentityIdentityProfilesResponse(ctx, apiReadLocalIdentityIdentityProfiles, &state, &resp.Diagnostics)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -882,7 +883,7 @@ func (r *localIdentityIdentityProfilesResource) Update(ctx context.Context, req 
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	}
 	// Read the response
-	readLocalIdentityIdentityProfilesResponse(ctx, updateLocalIdentityIdentityProfilesResponse, &plan)
+	readLocalIdentityIdentityProfilesResponse(ctx, updateLocalIdentityIdentityProfilesResponse, &plan, &resp.Diagnostics)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, plan)

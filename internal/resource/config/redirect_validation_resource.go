@@ -238,7 +238,7 @@ func (r *redirectValidationResource) Configure(_ context.Context, req resource.C
 
 }
 
-func readRedirectValidationResponse(ctx context.Context, r *client.RedirectValidationSettings, state *redirectValidationResourceModel) {
+func readRedirectValidationResponse(ctx context.Context, r *client.RedirectValidationSettings, state *redirectValidationResourceModel, diags *diag.Diagnostics) {
 	state.Id = types.StringValue("id")
 	whiteListAttrTypes := map[string]attr.Type{
 		"target_resource_sso":      basetypes.BoolType{},
@@ -286,7 +286,7 @@ func readRedirectValidationResponse(ctx context.Context, r *client.RedirectValid
 		"enable_in_error_resource_validation":                 types.BoolValue(redirectValidationLocalSettings.GetEnableInErrorResourceValidation()),
 		"white_list":                                          whiteListSlice,
 	}
-	redirectValidationLocalSettingsObjVal := internaltypes.MaptoObjValue(redirectValidationLocalSettingsAttrTypes, redirectValidationLocalSettingsAttrVals, diag.Diagnostics{})
+	redirectValidationLocalSettingsObjVal := internaltypes.MaptoObjValue(redirectValidationLocalSettingsAttrTypes, redirectValidationLocalSettingsAttrVals, diags)
 
 	redirectValidationPartnerSettingsAttrTypes := map[string]attr.Type{
 		"enable_wreply_validation_slo": basetypes.BoolType{},
@@ -297,7 +297,7 @@ func readRedirectValidationResponse(ctx context.Context, r *client.RedirectValid
 		"enable_wreply_validation_slo": types.BoolPointerValue(redirectValidationPartnerSettingsSlo),
 	}
 
-	redirectValidationPartnerSettingsObjVal := internaltypes.MaptoObjValue(redirectValidationPartnerSettingsAttrTypes, redirectValidationPartnerSettingsAttrVals, diag.Diagnostics{})
+	redirectValidationPartnerSettingsObjVal := internaltypes.MaptoObjValue(redirectValidationPartnerSettingsAttrTypes, redirectValidationPartnerSettingsAttrVals, diags)
 
 	state.RedirectValidationLocalSettings = redirectValidationLocalSettingsObjVal
 	state.RedirectValidationPartnerSettings = redirectValidationPartnerSettingsObjVal
@@ -338,7 +338,7 @@ func (r *redirectValidationResource) Create(ctx context.Context, req resource.Cr
 	// Read the response into the state
 	var state redirectValidationResourceModel
 
-	readRedirectValidationResponse(ctx, redirectValidationResponse, &state)
+	readRedirectValidationResponse(ctx, redirectValidationResponse, &state, &resp.Diagnostics)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -371,7 +371,7 @@ func readRedirectValidation(ctx context.Context, req resource.ReadRequest, resp 
 	}
 
 	// Read the response into the state
-	readRedirectValidationResponse(ctx, apiReadRedirectValidation, &state)
+	readRedirectValidationResponse(ctx, apiReadRedirectValidation, &state, &resp.Diagnostics)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -422,7 +422,7 @@ func updateRedirectValidation(ctx context.Context, req resource.UpdateRequest, r
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	}
 	// Read the response
-	readRedirectValidationResponse(ctx, updateRedirectValidationResponse, &state)
+	readRedirectValidationResponse(ctx, updateRedirectValidationResponse, &state, &resp.Diagnostics)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
