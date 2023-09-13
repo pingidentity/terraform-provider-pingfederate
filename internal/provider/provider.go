@@ -259,7 +259,6 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		config.PasswordCredentialValidatorsResource,
 		config.RedirectValidationResource,
 		config.VirtualHostNamesResource,
-		idp.IdpAdapterResource,
 		idp.IdpDefaultUrlsResource,
 		keypairs.KeyPairsSigningImportResource,
 		keypairs.KeyPairsSslServerImportResource,
