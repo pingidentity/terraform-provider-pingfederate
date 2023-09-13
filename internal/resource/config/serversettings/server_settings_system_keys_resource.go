@@ -193,7 +193,7 @@ func (r *serverSettingsSystemKeysResource) Configure(_ context.Context, req reso
 
 }
 
-func readServerSettingsSystemKeysResponse(ctx context.Context, r *client.SystemKeys, state *serverSettingsSystemKeysResourceModel) {
+func readServerSettingsSystemKeysResponse(ctx context.Context, r *client.SystemKeys, state *serverSettingsSystemKeysResourceModel, diags *diag.Diagnostics) {
 	state.Id = types.StringValue("id")
 	currentAttrTypes := map[string]attr.Type{
 		"creation_date":      basetypes.StringType{},
@@ -206,7 +206,7 @@ func readServerSettingsSystemKeysResponse(ctx context.Context, r *client.SystemK
 		"encrypted_key_data": types.StringValue(currentAttrs.GetEncryptedKeyData()),
 		"key_data":           types.StringValue(currentAttrs.GetKeyData()),
 	}
-	currentAttrsObjVal := internaltypes.MaptoObjValue(currentAttrTypes, currentAttrVals, diag.Diagnostics{})
+	currentAttrsObjVal := internaltypes.MaptoObjValue(currentAttrTypes, currentAttrVals, diags)
 
 	previousAttrTypes := map[string]attr.Type{
 		"creation_date":      basetypes.StringType{},
@@ -220,7 +220,7 @@ func readServerSettingsSystemKeysResponse(ctx context.Context, r *client.SystemK
 		"encrypted_key_data": types.StringValue(previousAttrs.GetEncryptedKeyData()),
 		"key_data":           types.StringValue(previousAttrs.GetKeyData()),
 	}
-	previousAttrsObjVal := internaltypes.MaptoObjValue(previousAttrTypes, previousAttrVals, diag.Diagnostics{})
+	previousAttrsObjVal := internaltypes.MaptoObjValue(previousAttrTypes, previousAttrVals, diags)
 	pendingAttrTypes := map[string]attr.Type{
 		"creation_date":      basetypes.StringType{},
 		"encrypted_key_data": basetypes.StringType{},
@@ -232,7 +232,7 @@ func readServerSettingsSystemKeysResponse(ctx context.Context, r *client.SystemK
 		"encrypted_key_data": types.StringValue(pendingAttrs.GetEncryptedKeyData()),
 		"key_data":           types.StringValue(pendingAttrs.GetKeyData()),
 	}
-	pendingAttrsObjVal := internaltypes.MaptoObjValue(pendingAttrTypes, pendingAttrVals, diag.Diagnostics{})
+	pendingAttrsObjVal := internaltypes.MaptoObjValue(pendingAttrTypes, pendingAttrVals, diags)
 
 	state.Current = currentAttrsObjVal
 	state.Pending = pendingAttrsObjVal
@@ -269,7 +269,7 @@ func (r *serverSettingsSystemKeysResource) Create(ctx context.Context, req resou
 	// Read the response into the state
 	var state serverSettingsSystemKeysResourceModel
 
-	readServerSettingsSystemKeysResponse(ctx, serverSettingsSystemKeysResponse, &state)
+	readServerSettingsSystemKeysResponse(ctx, serverSettingsSystemKeysResponse, &state, &resp.Diagnostics)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -302,7 +302,7 @@ func readServerSettingsSystemKeys(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// Read the response into the state
-	readServerSettingsSystemKeysResponse(ctx, apiReadServerSettingsSystemKeys, &state)
+	readServerSettingsSystemKeysResponse(ctx, apiReadServerSettingsSystemKeys, &state, &resp.Diagnostics)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -349,7 +349,7 @@ func updateServerSettingsSystemKeys(ctx context.Context, req resource.UpdateRequ
 	// Read the response into the state
 	var state serverSettingsSystemKeysResourceModel
 
-	readServerSettingsSystemKeysResponse(ctx, serverSettingsSystemKeysResponse, &state)
+	readServerSettingsSystemKeysResponse(ctx, serverSettingsSystemKeysResponse, &state, &resp.Diagnostics)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
