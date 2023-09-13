@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -840,7 +841,7 @@ func (r *oauthAuthServerSettingsResource) Configure(_ context.Context, req resou
 
 }
 
-func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsResourceModel) {
+func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsResourceModel, diags *diag.Diagnostics) {
 	state.Id = types.StringValue("id")
 	state.DefaultScopeDescription = types.StringValue(r.DefaultScopeDescription)
 
@@ -1030,7 +1031,7 @@ func (r *oauthAuthServerSettingsResource) Create(ctx context.Context, req resour
 	// Read the response into the state
 	var state oauthAuthServerSettingsResourceModel
 
-	readOauthAuthServerSettingsResponse(ctx, oauthAuthServerSettingsResponse, &state)
+	readOauthAuthServerSettingsResponse(ctx, oauthAuthServerSettingsResponse, &state, &resp.Diagnostics)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -1061,7 +1062,7 @@ func (r *oauthAuthServerSettingsResource) Read(ctx context.Context, req resource
 	}
 
 	// Read the response into the state
-	readOauthAuthServerSettingsResponse(ctx, apiReadOauthAuthServerSettings, &state)
+	readOauthAuthServerSettingsResponse(ctx, apiReadOauthAuthServerSettings, &state, &resp.Diagnostics)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -1104,7 +1105,7 @@ func (r *oauthAuthServerSettingsResource) Update(ctx context.Context, req resour
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	}
 	// Read the response
-	readOauthAuthServerSettingsResponse(ctx, updateOauthAuthServerSettingsResponse, &state)
+	readOauthAuthServerSettingsResponse(ctx, updateOauthAuthServerSettingsResponse, &state, &resp.Diagnostics)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

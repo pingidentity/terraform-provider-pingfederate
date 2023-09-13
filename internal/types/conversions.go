@@ -177,6 +177,7 @@ func StringTypeOrNil(str *string, useEmptyStringForNil bool) types.String {
 		// If a plan was provided and is using an empty string, we should use that for a nil string in the response.
 		// For PingFederate nil and empty string is equivalent, but to Terraform they are distinct. So we
 		// just want to match whatever is in the plan when we get a nil string back.
+		//TODO check on this
 		if useEmptyStringForNil {
 			// Use empty string instead of null to match the plan when resetting string properties.
 			// This is useful for computed values being reset to null.
