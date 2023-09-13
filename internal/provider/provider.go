@@ -272,6 +272,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		protocolmetadata.ProtocolMetadataLifetimeSettingsResource,
 		serversettings.ServerSettingsGeneralSettingsResource,
 		serversettings.ServerSettingsLogSettingsResource,
+		serversettings.ServerSettingsResource,
 		serversettings.ServerSettingsSystemKeysResource,
 		session.SessionApplicationSessionPolicyResource,
 		session.SessionAuthenticationSessionPoliciesGlobalResource,
