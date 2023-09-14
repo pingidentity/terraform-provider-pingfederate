@@ -67,7 +67,8 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
-				Required:    true,
+				Computed:    true,
+				Optional:    false,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -121,7 +122,7 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 											"fields": schema.SetNestedAttribute{
 												Description: "The configuration fields in the row.",
 												Computed:    true,
-												Required:    true,
+												Optional:    true,
 												NestedObject: schema.NestedAttributeObject{
 													Attributes: map[string]schema.Attribute{
 														"name": schema.StringAttribute{
@@ -238,7 +239,7 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 								},
 								"multi_valued": schema.BoolAttribute{
 									Description: "Indicates whether attribute value is always returned as an array.",
-									Optional:    false,
+									Optional:    true,
 									PlanModifiers: []planmodifier.Bool{
 										boolplanmodifier.UseStateForUnknown(),
 									},
@@ -264,7 +265,7 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 								},
 								"multi_valued": schema.BoolAttribute{
 									Description: "Indicates whether attribute value is always returned as an array.",
-									Optional:    false,
+									Optional:    true,
 									PlanModifiers: []planmodifier.Bool{
 										boolplanmodifier.UseStateForUnknown(),
 									},
@@ -280,7 +281,7 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 					},
 					"default_subject_attribute": schema.StringAttribute{
 						Description: "Default subject attribute to use for audit logging when validating the access token. Blank value means to use USER_KEY attribute value after grant lookup.",
-						Computed:    true,
+						Optional:    true,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
 						},
@@ -301,6 +302,7 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 					"resource_uris": schema.SetAttribute{
 						Description: "The list of base resource URI's which map to this token manager. A resource URI, specified via the 'aud' parameter, can be used to select a specific token manager for an OAuth request.",
 						Optional:    true,
+						ElementType: types.StringType,
 					},
 				},
 			},
@@ -323,7 +325,8 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 					},
 					"allowed_clients": schema.SingleNestedAttribute{
 						Description: "If 'restrictClients' is true, this field defines the list of OAuth clients that are allowed to access the token manager.",
-						Required:    true,
+						Computed:    true,
+						Optional:    true,
 						Attributes:  config.AddResourceLinkSchema(),
 					},
 				},
@@ -341,25 +344,34 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 					},
 					"include_session_id": schema.BoolAttribute{
 						Description: "Include the session identifier in the access token. Note that if any of the session validation features is enabled, the session identifier will already be included in the access tokens.",
+						Computed:    true,
 						Optional:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 					"check_valid_authn_session": schema.BoolAttribute{
 						Description: "Check for a valid authentication session when validating the access token.",
+						Computed:    true,
 						Optional:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 					"check_session_revocation_status": schema.BoolAttribute{
 						Description: "Check the session revocation status when validating the access token.",
+						Computed:    true,
 						Optional:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 					"update_authn_session_activity": schema.BoolAttribute{
 						Description: "Update authentication session activity when validating the access token.",
+						Computed:    true,
 						Optional:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 				},
 			},
 			"sequence_number": schema.Int64Attribute{
 				Description: "Number added to an access token to identify which Access Token Manager issued the token.",
-				Optional:    true,
+				Computed:    true,
+				Optional:    false,
 			},
 		},
 	}

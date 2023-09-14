@@ -1,87 +1,84 @@
+
 {
-  "items": [
-    {
-      "id": "string",
-      "name": "string",
-      "pluginDescriptorRef": {
-        "id": "string",
-        "location": "string"
-      },
-      "parentRef": {
-        "id": "string",
-        "location": "string"
-      },
-      "configuration": {
-        "tables": [
+  "id": "string",
+  "name": "string",
+  "pluginDescriptorRef": {
+    "id": "string",
+    "location": "string"
+  },
+  "parentRef": {
+    "id": "string",
+    "location": "string"
+  },
+  "configuration": {
+    "tables": [
+      {
+        "name": "string",
+        "rows": [
           {
-            "name": "string",
-            "rows": [
+            "fields": [
               {
-                "fields": [
-                  {
-                    "name": "string",
-                    "value": "string",
-                    "encryptedValue": "string",
-                    "inherited": true
-                  }
-                ],
-                "defaultRow": true
+                "name": "string",
+                "value": "string",
+                "encryptedValue": "string",
+                "inherited": true
               }
             ],
-            "inherited": true
+            "defaultRow": true
           }
         ],
-        "fields": [
-          {
-            "name": "string",
-            "value": "string",
-            "encryptedValue": "string",
-            "inherited": true
-          }
-        ]
-      },
-      "attributeContract": {
-        "coreAttributes": [
-          {
-            "name": "string",
-            "multiValued": true
-          }
-        ],
-        "extendedAttributes": [
-          {
-            "name": "string",
-            "multiValued": true
-          }
-        ],
-        "inherited": true,
-        "defaultSubjectAttribute": "string"
-      },
-      "selectionSettings": {
-        "inherited": true,
-        "resourceUris": [
-          "string"
-        ]
-      },
-      "accessControlSettings": {
-        "inherited": true,
-        "restrictClients": true,
-        "allowedClients": [
-          {
-            "id": "string",
-            "location": "string"
-          }
-        ]
-      },
-      "sessionValidationSettings": {
-        "inherited": true,
-        "includeSessionId": true,
-        "checkValidAuthnSession": true,
-        "checkSessionRevocationStatus": true,
-        "updateAuthnSessionActivity": true
-      },
-      "sequenceNumber": 0
-    }
-  ]
+        "inherited": true
+      }
+    ],
+    "fields": [
+      {
+        "name": "string",
+        "value": "string",
+        "encryptedValue": "string",
+        "inherited": true
+      }
+    ]
+  },
+  "attributeContract": {
+    "coreAttributes": [
+      {
+        "name": "string",
+        "multiValued": true
+      }
+    ],
+    "extendedAttributes": [
+      {
+        "name": "string",
+        "multiValued": true
+      }
+    ],
+    "inherited": true,
+    "defaultSubjectAttribute": "string"
+  },
+  "selectionSettings": {
+    "inherited": true,
+    "resourceUris": [
+      "string"
+    ]
+  },
+  "accessControlSettings": {
+    "inherited": true,
+    "restrictClients": true,
+    "allowedClients": [
+      {
+        "id": "string",
+        "location": "string"
+      }
+    ]
+  },
+  "sessionValidationSettings": {
+    "inherited": true,
+    "includeSessionId": true,
+    "checkValidAuthnSession": true,
+    "checkSessionRevocationStatus": true,
+    "updateAuthnSessionActivity": true
+  },
+  "sequenceNumber": 0
 }
 
 Internally Managed Refrence Tokens Type:
@@ -100,7 +97,7 @@ JSON Web Token Type:
       {
         "name": "Example Token Lifetime",
         "value": "120"
-      },
+      }
     ]
   }
 }
