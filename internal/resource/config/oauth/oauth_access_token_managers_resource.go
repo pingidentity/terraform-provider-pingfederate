@@ -6,6 +6,7 @@ import (
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -18,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
@@ -67,8 +69,7 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
-				Computed:    true,
-				Optional:    false,
+				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -457,17 +458,204 @@ func (r *oauthAccessTokenManagersResource) Configure(_ context.Context, req reso
 
 }
 
-func readOauthAccessTokenManagersResponse(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagersResourceModel) {
-	// state.AttributeContract = (r.AttributeContract)
+func readOauthAccessTokenManagersResponse(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagersResourceModel, configurationFromPlan basetypes.ObjectValue) {
 	state.Id = types.StringValue(r.Id)
-	// state.Name = internaltypes.StringTypeOrNil(r.Name)
-	// state.PluginDescriptorRef = (r.PluginDescriptorRef)
-	// state.ParentRef = (r.ParentRef)
-	// state.Configuration = (r.Configuration)
-	// state.SelectionSettings = (r.SelectionSettings)
-	// state.AccessControlSettings = (r.AccessControlSettings)
-	// state.SessionValidationSettings = (r.SessionValidationSettings)
-	// state.SequenceNumber = types.Int64Value(r.SequenceNumber)
+	state.Name = types.StringValue(r.Name)
+
+	// state.pluginDescriptorRef
+	pluginDescRef := r.GetPluginDescriptorRef()
+	state.PluginDescriptorRef = internaltypes.ToStateResourceLink(ctx, pluginDescRef)
+
+	// state.parentRef
+	parentRef := r.GetParentRef()
+	state.ParentRef = internaltypes.ToStateResourceLink(ctx, parentRef)
+
+	// state.Configuration
+	fieldAttrType := map[string]attr.Type{
+		"name":            basetypes.StringType{},
+		"value":           basetypes.StringType{},
+		"encrypted_value": basetypes.StringType{},
+		"inherited":       basetypes.BoolType{},
+	}
+
+	rowAttrType := map[string]attr.Type{
+		"fields":      basetypes.SetType{ElemType: basetypes.ObjectType{AttrTypes: fieldAttrType}},
+		"default_row": basetypes.BoolType{},
+	}
+
+	// configuration object
+	tableAttrType := map[string]attr.Type{
+		"name":      basetypes.StringType{},
+		"rows":      basetypes.SetType{ElemType: basetypes.ObjectType{AttrTypes: rowAttrType}},
+		"inherited": basetypes.BoolType{},
+	}
+
+	getClientConfig := r.Configuration
+	configFromPlanAttrs := configurationFromPlan.Attributes()
+	tables := []client.ConfigTable{}
+	tablesElems := getClientConfig.Tables
+	if len(tablesElems) != 0 {
+		for tei, tableElem := range tablesElems {
+			tableValue := client.ConfigTable{}
+			tableValue.Name = tableElem.Name
+			tableValue.Inherited = tableElem.Inherited
+			tableRows := tableElem.Rows
+			toStateTableRows := []client.ConfigRow{}
+			if configFromPlanAttrs["tables"] != nil {
+				tableIndex := configFromPlanAttrs["tables"].(types.Set).Elements()[tei].(types.Object).Attributes()
+				for tri, tr := range tableRows {
+					tableRow := client.ConfigRow{}
+					tableRow.DefaultRow = tr.DefaultRow
+					tableRowFields := tr.Fields
+					toStateTableRowFields := []client.ConfigField{}
+					tableRowIndex := tableIndex["rows"].(types.Set).Elements()[tri].(types.Object).Attributes()
+					tableRowPlanFields := tableRowIndex["fields"].(types.Set).Elements()
+					for _, trf := range tableRowFields {
+						for _, tableRowInPlan := range tableRowPlanFields {
+							tableRowField := client.ConfigField{}
+							nameFromPlan := tableRowInPlan.(types.Object).Attributes()["name"].(types.String).ValueString()
+							if trf.Name == nameFromPlan {
+								tableRowField.Name = trf.Name
+								tableRowFieldValueFromPlan := tableRowInPlan.(types.Object).Attributes()["value"].(types.String).ValueStringPointer()
+								if trf.Value == nil {
+									// Get plain-text value from plan for passwords
+									tableRowField.Value = tableRowFieldValueFromPlan
+								} else {
+									tableRowField.Value = trf.Value
+								}
+								emptyString := ""
+								tableRowField.EncryptedValue = &emptyString
+								tableRowField.Inherited = trf.Inherited
+								toStateTableRowFields = append(toStateTableRowFields, tableRowField)
+							} else {
+								continue
+							}
+						}
+					}
+					tableRow.Fields = toStateTableRowFields
+					toStateTableRows = append(toStateTableRows, tableRow)
+				}
+				tableValue.Rows = toStateTableRows
+				tables = append(tables, tableValue)
+			}
+		}
+	}
+	tableValue, _ := types.SetValueFrom(ctx, types.ObjectType{AttrTypes: tableAttrType}, tables)
+
+	fields := []client.ConfigField{}
+	fieldsElems := r.Configuration.Fields
+	if configFromPlanAttrs["fields"] != nil {
+		fieldsFromPlan := configFromPlanAttrs["fields"].(types.Set).Elements()
+		if len(fieldsElems) != 0 {
+			for _, cf := range fieldsElems {
+				for _, fieldInPlan := range fieldsFromPlan {
+					fieldValue := client.ConfigField{}
+					fieldNameFromPlan := fieldInPlan.(types.Object).Attributes()["name"].(types.String).ValueString()
+					if fieldNameFromPlan == cf.Name {
+						if cf.Value == nil {
+							// Get plain-text value from plan for passwords
+							fieldValue.Value = fieldInPlan.(types.Object).Attributes()["value"].(types.String).ValueStringPointer()
+						} else {
+							fieldValue.Value = cf.Value
+						}
+						fieldValue.Name = cf.Name
+						emptyString := ""
+						fieldValue.EncryptedValue = &emptyString
+						fieldValue.Inherited = cf.Inherited
+						fields = append(fields, fieldValue)
+					} else {
+						continue
+					}
+				}
+			}
+		}
+	}
+	configFieldValue, _ := types.SetValueFrom(ctx, types.ObjectType{AttrTypes: fieldAttrType}, fields)
+
+	configurationAttrType := map[string]attr.Type{
+		"fields": basetypes.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrType}},
+		"tables": basetypes.SetType{ElemType: types.ObjectType{AttrTypes: tableAttrType}},
+	}
+
+	configurationAttrValue := map[string]attr.Value{
+		"fields": configFieldValue,
+		"tables": tableValue,
+	}
+	state.Configuration, _ = types.ObjectValue(configurationAttrType, configurationAttrValue)
+
+	// state.AttributeContract
+	attrContract := r.AttributeContract
+
+	attrType := map[string]attr.Type{
+		"name":         basetypes.StringType{},
+		"multi_valued": basetypes.BoolType{},
+	}
+
+	// state.AttributeContract core_attributes
+	attributeContractClientCoreAttributes := attrContract.CoreAttributes
+	coreAttrs := []client.AccessTokenAttribute{}
+	for _, ca := range attributeContractClientCoreAttributes {
+		coreAttribute := client.AccessTokenAttribute{}
+		coreAttribute.Name = ca.Name
+		coreAttrs = append(coreAttrs, coreAttribute)
+	}
+	attributeContractCoreAttributes, _ := types.SetValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
+
+	// state.AttributeContract extended_attributes
+	attributeContractClientExtendedAttributes := attrContract.ExtendedAttributes
+	extdAttrs := []client.AccessTokenAttribute{}
+	for _, ea := range attributeContractClientExtendedAttributes {
+		extendedAttr := client.AccessTokenAttribute{}
+		extendedAttr.Name = ea.Name
+		extdAttrs = append(extdAttrs, extendedAttr)
+	}
+	attributeContractExtendedAttributes, _ := types.SetValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
+
+	attributeContractTypes := map[string]attr.Type{
+		"core_attributes":           basetypes.SetType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
+		"extended_attributes":       basetypes.SetType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
+		"inherited":                 basetypes.BoolType{},
+		"default_subject_attribute": basetypes.StringType{},
+	}
+
+	attributeContractValues := map[string]attr.Value{
+		"core_attributes":           attributeContractCoreAttributes,
+		"extended_attributes":       attributeContractExtendedAttributes,
+		"inherited":                 types.BoolPointerValue(attrContract.Inherited),
+		"default_subject_attribute": types.StringPointerValue(attrContract.DefaultSubjectAttribute),
+	}
+	state.AttributeContract, _ = types.ObjectValue(attributeContractTypes, attributeContractValues)
+
+	// state.SelectionSettings
+	selectionSettingsAttrType := map[string]attr.Type{
+		"inherited":     basetypes.BoolType{},
+		"resource_uris": basetypes.SetType{ElemType: basetypes.StringType{}},
+	}
+
+	state.SelectionSettings, _ = types.ObjectValueFrom(ctx, selectionSettingsAttrType, r.SelectionSettings)
+
+	// state.AccessControlSettings
+	accessControlSettingsAttrType := map[string]attr.Type{
+		"inherited":        basetypes.BoolType{},
+		"restrict_clients": basetypes.BoolType{},
+		"allowed_clients":  basetypes.ObjectType{AttrTypes: internaltypes.ResourceLinkStateAttrType()},
+	}
+
+	state.AccessControlSettings, _ = types.ObjectValueFrom(ctx, accessControlSettingsAttrType, r.AccessControlSettings)
+
+	// state.SessionValidationSettings
+	sessionValidationSettingsAttrType := map[string]attr.Type{
+		"inherited":                       basetypes.BoolType{},
+		"include_session_id":              basetypes.BoolType{},
+		"check_valid_authn_session":       basetypes.BoolType{},
+		"check_session_revocation_status": basetypes.BoolType{},
+		"update_authn_session_activity":   basetypes.BoolType{},
+	}
+
+	state.SessionValidationSettings, _ = types.ObjectValueFrom(ctx, sessionValidationSettingsAttrType, r.SessionValidationSettings)
+
+	// state.SequenceNumber
+	state.SequenceNumber = types.Int64PointerValue(r.SequenceNumber)
 }
 
 func (r *oauthAccessTokenManagersResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -523,7 +711,7 @@ func (r *oauthAccessTokenManagersResource) Create(ctx context.Context, req resou
 	// Read the response into the state
 	var state oauthAccessTokenManagersResourceModel
 
-	readOauthAccessTokenManagersResponse(ctx, oauthAccessTokenManagersResponse, &state)
+	readOauthAccessTokenManagersResponse(ctx, oauthAccessTokenManagersResponse, &state, plan.Configuration)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -553,7 +741,7 @@ func (r *oauthAccessTokenManagersResource) Read(ctx context.Context, req resourc
 	}
 
 	// Read the response into the state
-	readOauthAccessTokenManagersResponse(ctx, apiReadOauthAccessTokenManagers, &state)
+	readOauthAccessTokenManagersResponse(ctx, apiReadOauthAccessTokenManagers, &state, state.Configuration)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -614,7 +802,7 @@ func (r *oauthAccessTokenManagersResource) Update(ctx context.Context, req resou
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	}
 	// Read the response
-	readOauthAccessTokenManagersResponse(ctx, updateOauthAccessTokenManagersResponse, &state)
+	readOauthAccessTokenManagersResponse(ctx, updateOauthAccessTokenManagersResponse, &state, plan.Configuration)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
