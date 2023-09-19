@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -53,7 +52,7 @@ type oauthAccessTokenManagersResourceModel struct {
 	Configuration             types.Object `tfsdk:"configuration"`
 	AttributeContract         types.Object `tfsdk:"attribute_contract"`
 	SelectionSettings         types.Object `tfsdk:"selection_settings"`
-	AccessControlSettings     types.Object `tfsdk:"access_control_setting"`
+	AccessControlSettings     types.Object `tfsdk:"access_control_settings"`
 	SessionValidationSettings types.Object `tfsdk:"session_validation_settings"`
 	SequenceNumber            types.Int64  `tfsdk:"sequence_number"`
 }
@@ -64,7 +63,7 @@ func (r *oauthAccessTokenManagersResource) Schema(ctx context.Context, req resou
 }
 
 func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
-	schema := schema.Schema{
+	resp.Schema = schema.Schema{
 		Description: "Manages Oauth Access Token Managers",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -142,9 +141,7 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 														},
 														"inherited": schema.BoolAttribute{
 															Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-															Computed:    true,
 															Optional:    true,
-															Default:     booldefault.StaticBool(false),
 															PlanModifiers: []planmodifier.Bool{
 																boolplanmodifier.UseStateForUnknown(),
 															},
@@ -164,9 +161,7 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 								},
 								"inherited": schema.BoolAttribute{
 									Description: "Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.",
-									Computed:    true,
 									Optional:    true,
-									Default:     booldefault.StaticBool(false),
 									PlanModifiers: []planmodifier.Bool{
 										boolplanmodifier.UseStateForUnknown(),
 									},
@@ -201,9 +196,7 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 								},
 								"inherited": schema.BoolAttribute{
 									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-									Computed:    true,
 									Optional:    true,
-									Default:     booldefault.StaticBool(false),
 									PlanModifiers: []planmodifier.Bool{
 										boolplanmodifier.UseStateForUnknown(),
 									},
@@ -276,9 +269,7 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 					},
 					"inherited": schema.BoolAttribute{
 						Description: "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
-						Computed:    true,
 						Optional:    true,
-						Default:     booldefault.StaticBool(false),
 					},
 					"default_subject_attribute": schema.StringAttribute{
 						Description: "Default subject attribute to use for audit logging when validating the access token. Blank value means to use USER_KEY attribute value after grant lookup.",
@@ -296,9 +287,7 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 				Attributes: map[string]schema.Attribute{
 					"inherited": schema.BoolAttribute{
 						Description: "If this token manager has a parent, this flag determines whether selection settings, such as resource URI's, are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
-						Computed:    true,
 						Optional:    true,
-						Default:     booldefault.StaticBool(false),
 					},
 					"resource_uris": schema.SetAttribute{
 						Description: "The list of base resource URI's which map to this token manager. A resource URI, specified via the 'aud' parameter, can be used to select a specific token manager for an OAuth request.",
@@ -314,15 +303,12 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 				Attributes: map[string]schema.Attribute{
 					"inherited": schema.BoolAttribute{
 						Description: "If this token manager has a parent, this flag determines whether access control settings are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
-						Computed:    true,
 						Optional:    true,
-						Default:     booldefault.StaticBool(false),
 					},
 					"restrict_clients": schema.BoolAttribute{
 						Description: "Determines whether access to this token manager is restricted to specific OAuth clients. If false, the 'allowedClients' field is ignored. The default value is false.",
 						Computed:    true,
 						Optional:    true,
-						Default:     booldefault.StaticBool(false),
 					},
 					"allowed_clients": schema.SingleNestedAttribute{
 						Description: "If 'restrictClients' is true, this field defines the list of OAuth clients that are allowed to access the token manager.",
@@ -339,33 +325,27 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 				Attributes: map[string]schema.Attribute{
 					"inherited": schema.BoolAttribute{
 						Description: "If this token manager has a parent, this flag determines whether session validation settings, such as checkValidAuthnSession, are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
-						Computed:    true,
 						Optional:    true,
-						Default:     booldefault.StaticBool(false),
 					},
 					"include_session_id": schema.BoolAttribute{
 						Description: "Include the session identifier in the access token. Note that if any of the session validation features is enabled, the session identifier will already be included in the access tokens.",
 						Computed:    true,
 						Optional:    true,
-						Default:     booldefault.StaticBool(false),
 					},
 					"check_valid_authn_session": schema.BoolAttribute{
 						Description: "Check for a valid authentication session when validating the access token.",
 						Computed:    true,
 						Optional:    true,
-						Default:     booldefault.StaticBool(false),
 					},
 					"check_session_revocation_status": schema.BoolAttribute{
 						Description: "Check the session revocation status when validating the access token.",
 						Computed:    true,
 						Optional:    true,
-						Default:     booldefault.StaticBool(false),
 					},
 					"update_authn_session_activity": schema.BoolAttribute{
 						Description: "Update authentication session activity when validating the access token.",
 						Computed:    true,
 						Optional:    true,
-						Default:     booldefault.StaticBool(false),
 					},
 				},
 			},
@@ -376,13 +356,6 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 			},
 		},
 	}
-
-	// Set attributes in string list
-	if setOptionalToComputed {
-		config.SetAllAttributesToOptionalAndComputed(&schema, []string{"id"})
-	}
-	config.AddCommonSchema(&schema, false)
-	resp.Schema = schema
 }
 
 func addOptionalOauthAccessTokenManagersFields(ctx context.Context, addRequest *client.AccessTokenManager, plan oauthAccessTokenManagersResourceModel) error {
@@ -399,7 +372,7 @@ func addOptionalOauthAccessTokenManagersFields(ctx context.Context, addRequest *
 	}
 
 	if internaltypes.IsDefined(plan.AttributeContract) {
-		addRequest.AttributeContract = client.NewAccessTokenAttributeContract()
+		addRequest.AttributeContract = client.NewAccessTokenAttributeContractWithDefaults()
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContract, true)), addRequest.AttributeContract)
 		if err != nil {
 			return err
