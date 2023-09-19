@@ -22,6 +22,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -77,7 +78,7 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
 				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
-				Attributes:  AddResourceLinkSchema(),
+				Attributes:  resourcelink.ResourceLinkSchema(),
 			},
 			"parent_ref": schema.SingleNestedAttribute{
 				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
@@ -86,7 +87,7 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
-				Attributes: AddResourceLinkSchema(),
+				Attributes: resourcelink.ResourceLinkSchema(),
 			},
 			"configuration": schema.SingleNestedAttribute{
 				Description: "Plugin instance configuration.",
@@ -313,12 +314,10 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 	state.Name = types.StringValue(r.Name)
 
 	// state.pluginDescriptorRef
-	pluginDescRef := r.GetPluginDescriptorRef()
-	state.PluginDescriptorRef = internaltypes.ToStateResourceLink(ctx, pluginDescRef)
+	state.PluginDescriptorRef = resourcelink.ToStateResourceLink(ctx, r.GetPluginDescriptorRef())
 
 	// state.parentRef
-	parentRef := r.GetParentRef()
-	state.ParentRef = internaltypes.ToStateResourceLink(ctx, parentRef)
+	state.ParentRef = resourcelink.ToStateResourceLink(ctx, r.GetParentRef())
 
 	// state.Configuration
 	fieldAttrType := map[string]attr.Type{

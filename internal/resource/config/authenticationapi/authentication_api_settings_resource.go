@@ -2,6 +2,7 @@ package authenticationapi
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -13,6 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
+	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -71,7 +74,7 @@ func (r *authenticationApiSettingsResource) Schema(ctx context.Context, req reso
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
-				Attributes: config.AddResourceLinkSchema(),
+				Attributes: resourcelink.ResourceLinkSchema(),
 			},
 			"restrict_access_to_redirectless_mode": schema.BoolAttribute{
 				Description: "Enable restrict access to redirectless mode",
@@ -110,8 +113,13 @@ func addAuthenticationApiSettingsFields(ctx context.Context, addRequest *client.
 		addRequest.IncludeRequestContext = plan.IncludeRequestContext.ValueBoolPointer()
 	}
 	if internaltypes.IsDefined(plan.DefaultApplicationRef) {
-		addRequestNewLinkObj := internaltypes.ToRequestResourceLink(ctx, plan.DefaultApplicationRef)
-		addRequest.DefaultApplicationRef = addRequestNewLinkObj
+		defaultAppRefId := plan.DefaultApplicationRef.Attributes()["id"].(types.String).ValueString()
+		defaultAppRefResLink := client.NewResourceLinkWithDefaults()
+		defaultAppRefResLink.Id = defaultAppRefId
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.DefaultApplicationRef, false)), defaultAppRefResLink)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 
@@ -139,7 +147,7 @@ func readAuthenticationApiSettingsResponse(ctx context.Context, r *client.AuthnA
 	state.EnableApiDescriptions = types.BoolValue(*r.EnableApiDescriptions)
 	state.RestrictAccessToRedirectlessMode = types.BoolValue(*r.RestrictAccessToRedirectlessMode)
 	state.IncludeRequestContext = types.BoolValue(*r.IncludeRequestContext)
-	resourceLinkObjectValue := internaltypes.ToStateResourceLink(ctx, r.GetDefaultApplicationRef())
+	resourceLinkObjectValue := resourcelink.ToStateResourceLink(ctx, r.GetDefaultApplicationRef())
 	state.DefaultApplicationRef = resourceLinkObjectValue
 }
 

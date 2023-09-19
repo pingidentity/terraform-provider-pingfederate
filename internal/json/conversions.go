@@ -81,7 +81,8 @@ func writeMap(values map[string]attr.Value, builder *strings.Builder, skipNullOr
 			isFirst = false
 		}
 		builder.WriteRune('"')
-		builder.WriteString(underscoreToCamelCase(attrName))
+		builder.WriteString(attrName)
+		// builder.WriteString(underscoreToCamelCase(attrName))
 		builder.WriteString("\":")
 		builder.WriteString(FromValue(attrValue, skipNullOrUnknownAttrs))
 	}

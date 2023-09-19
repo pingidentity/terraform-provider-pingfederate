@@ -20,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -659,7 +660,7 @@ func (r *localIdentityIdentityProfilesResource) ValidateConfig(ctx context.Conte
 func readLocalIdentityIdentityProfilesResponse(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfilesResourceModel, diags *diag.Diagnostics) {
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
 	state.Name = types.StringValue(r.Name)
-	state.ApcId = internaltypes.ToStateResourceLink(ctx, r.GetApcId())
+	state.ApcId = resourcelink.ToStateResourceLink(ctx, r.GetApcId())
 
 	authSourceUpdatePolicy := r.AuthSourceUpdatePolicy
 	authSourceUpdatePolicyAttrTypes := map[string]attr.Type{
