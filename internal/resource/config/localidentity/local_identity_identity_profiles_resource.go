@@ -59,10 +59,6 @@ type localIdentityIdentityProfilesResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	localIdentityIdentityProfilesResourceSchema(ctx, req, resp, false)
-}
-
-func localIdentityIdentityProfilesResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
 	resp.Schema = schema.Schema{
 		Description: "Manages Local Identity Identity Profiles",
 		Attributes: map[string]schema.Attribute{
@@ -561,7 +557,6 @@ func (r *localIdentityIdentityProfilesResource) Configure(_ context.Context, req
 
 }
 func (r *localIdentityIdentityProfilesResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-
 	var model localIdentityIdentityProfilesResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
 	// Validates Email Verification type for Email Configuration
@@ -899,7 +894,7 @@ func (r *localIdentityIdentityProfilesResource) Delete(ctx context.Context, req 
 		return
 	}
 	httpResp, err := r.apiClient.LocalIdentityIdentityProfilesApi.DeleteIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
-	if err != nil {
+	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting Local Identity Profile", err, httpResp)
 	}
 

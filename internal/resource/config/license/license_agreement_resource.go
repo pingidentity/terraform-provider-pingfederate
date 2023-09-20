@@ -42,10 +42,6 @@ type licenseAgreementResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *licenseAgreementResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	licenseAgreementResourceSchema(ctx, req, resp, false)
-}
-
-func licenseAgreementResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
 	schema := schema.Schema{
 		Description: "Manages a LicenseAgreement.",
 		Attributes: map[string]schema.Attribute{
@@ -151,10 +147,6 @@ func (r *licenseAgreementResource) Create(ctx context.Context, req resource.Crea
 }
 
 func (r *licenseAgreementResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	readLicenseAgreement(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func readLicenseAgreement(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	var state licenseAgreementResourceModel
 
 	diags := req.State.Get(ctx, &state)
@@ -162,10 +154,14 @@ func readLicenseAgreement(ctx context.Context, req resource.ReadRequest, resp *r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadLicenseAgreement, httpResp, err := apiClient.LicenseApi.GetLicenseAgreement(config.ProviderBasicAuthContext(ctx, providerConfig)).Execute()
-
+	apiReadLicenseAgreement, httpResp, err := r.apiClient.LicenseApi.GetLicenseAgreement(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a LicenseAgreement", err, httpResp)
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the License Agreement", err, httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the License Agreement", err, httpResp)
+		}
 		return
 	}
 	// Log response JSON
@@ -180,18 +176,10 @@ func readLicenseAgreement(ctx context.Context, req resource.ReadRequest, resp *r
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *licenseAgreementResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	updateLicenseAgreement(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func updateLicenseAgreement(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	// Retrieve values from plan
 	var plan licenseAgreementResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -203,7 +191,7 @@ func updateLicenseAgreement(ctx context.Context, req resource.UpdateRequest, res
 	// Get the current state to see how any attributes are changing
 	var state licenseAgreementResourceModel
 	req.State.Get(ctx, &state)
-	updateLicenseAgreement := apiClient.LicenseApi.UpdateLicenseAgreement(config.ProviderBasicAuthContext(ctx, providerConfig))
+	updateLicenseAgreement := r.apiClient.LicenseApi.UpdateLicenseAgreement(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewLicenseAgreementInfo()
 	err := addOptionalLicenseAgreementFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -215,7 +203,7 @@ func updateLicenseAgreement(ctx context.Context, req resource.UpdateRequest, res
 		tflog.Debug(ctx, "Update request: "+string(requestJson))
 	}
 	updateLicenseAgreement = updateLicenseAgreement.Body(*createUpdateRequest)
-	updateLicenseAgreementResponse, httpResp, err := apiClient.LicenseApi.UpdateLicenseAgreementExecute(updateLicenseAgreement)
+	updateLicenseAgreementResponse, httpResp, err := r.apiClient.LicenseApi.UpdateLicenseAgreementExecute(updateLicenseAgreement)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating LicenseAgreement", err, httpResp)
 		return
@@ -231,19 +219,12 @@ func updateLicenseAgreement(ctx context.Context, req resource.UpdateRequest, res
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // This config object is edit-only, so Terraform can't delete it.
 func (r *licenseAgreementResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 }
-func (r *licenseAgreementResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	importLicenseAgreementLocation(ctx, req, resp)
-}
 
-func importLicenseAgreementLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *licenseAgreementResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

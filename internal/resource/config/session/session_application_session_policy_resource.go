@@ -41,10 +41,6 @@ type sessionApplicationSessionPolicyResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *sessionApplicationSessionPolicyResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	sessionApplicationSessionPolicyResourceSchema(ctx, req, resp, false)
-}
-
-func sessionApplicationSessionPolicyResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
 	schema := schema.Schema{
 		Description: "Manages a SessionApplicationSessionPolicy.",
 		Attributes: map[string]schema.Attribute{
@@ -66,10 +62,6 @@ func sessionApplicationSessionPolicyResourceSchema(ctx context.Context, req reso
 		},
 	}
 
-	// Set attributes in string list
-	if setOptionalToComputed {
-		config.SetAllAttributesToOptionalAndComputed(&schema, []string{""})
-	}
 	config.AddCommonSchema(&schema, false)
 	resp.Schema = schema
 }
@@ -145,16 +137,9 @@ func (r *sessionApplicationSessionPolicyResource) Create(ctx context.Context, re
 	readSessionApplicationSessionPolicyResponse(ctx, sessionApplicationSessionPolicyResponse, &state, &plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *sessionApplicationSessionPolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	readSessionApplicationSessionPolicy(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func readSessionApplicationSessionPolicy(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	var state sessionApplicationSessionPolicyResourceModel
 
 	diags := req.State.Get(ctx, &state)
@@ -162,10 +147,14 @@ func readSessionApplicationSessionPolicy(ctx context.Context, req resource.ReadR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadSessionApplicationSessionPolicy, httpResp, err := apiClient.SessionApi.GetApplicationPolicy(config.ProviderBasicAuthContext(ctx, providerConfig)).Execute()
-
+	apiReadSessionApplicationSessionPolicy, httpResp, err := r.apiClient.SessionApi.GetApplicationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a SessionApplicationSessionPolicy", err, httpResp)
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a SessionApplicationSessionPolicy", err, httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Session Application Session Policy", err, httpResp)
+		}
 		return
 	}
 	// Log response JSON
@@ -180,18 +169,10 @@ func readSessionApplicationSessionPolicy(ctx context.Context, req resource.ReadR
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *sessionApplicationSessionPolicyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	updateSessionApplicationSessionPolicy(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func updateSessionApplicationSessionPolicy(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	// Retrieve values from plan
 	var plan sessionApplicationSessionPolicyResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -203,7 +184,7 @@ func updateSessionApplicationSessionPolicy(ctx context.Context, req resource.Upd
 	// Get the current state to see how any attributes are changing
 	var state sessionApplicationSessionPolicyResourceModel
 	req.State.Get(ctx, &state)
-	updateSessionApplicationSessionPolicy := apiClient.SessionApi.UpdateApplicationPolicy(config.ProviderBasicAuthContext(ctx, providerConfig))
+	updateSessionApplicationSessionPolicy := r.apiClient.SessionApi.UpdateApplicationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewApplicationSessionPolicy()
 	err := addOptionalSessionApplicationSessionPolicyFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -215,7 +196,7 @@ func updateSessionApplicationSessionPolicy(ctx context.Context, req resource.Upd
 		tflog.Debug(ctx, "Update request: "+string(requestJson))
 	}
 	updateSessionApplicationSessionPolicy = updateSessionApplicationSessionPolicy.Body(*createUpdateRequest)
-	updateSessionApplicationSessionPolicyResponse, httpResp, err := apiClient.SessionApi.UpdateApplicationPolicyExecute(updateSessionApplicationSessionPolicy)
+	updateSessionApplicationSessionPolicyResponse, httpResp, err := r.apiClient.SessionApi.UpdateApplicationPolicyExecute(updateSessionApplicationSessionPolicy)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating SessionApplicationSessionPolicy", err, httpResp)
 		return
@@ -231,10 +212,6 @@ func updateSessionApplicationSessionPolicy(ctx context.Context, req resource.Upd
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // This config object is edit-only, so Terraform can't delete it.
@@ -242,9 +219,6 @@ func (r *sessionApplicationSessionPolicyResource) Delete(ctx context.Context, re
 }
 
 func (r *sessionApplicationSessionPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	importSessionApplicationSessionPolicyLocation(ctx, req, resp)
-}
-func importSessionApplicationSessionPolicyLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

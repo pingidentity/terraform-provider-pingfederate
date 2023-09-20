@@ -41,10 +41,6 @@ type protocolMetadataLifetimeSettingsResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *protocolMetadataLifetimeSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	protocolMetadataLifetimeSettingsResourceSchema(ctx, req, resp, false)
-}
-
-func protocolMetadataLifetimeSettingsResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
 	schema := schema.Schema{
 		Description: "Manages a ProtocolMetadataLifetimeSettings.",
 		Attributes: map[string]schema.Attribute{
@@ -69,6 +65,7 @@ func protocolMetadataLifetimeSettingsResourceSchema(ctx context.Context, req res
 	config.AddCommonSchema(&schema, false)
 	resp.Schema = schema
 }
+
 func addOptionalProtocolMetadataLifetimeSettingsFields(ctx context.Context, addRequest *client.MetadataLifetimeSettings, plan protocolMetadataLifetimeSettingsResourceModel) error {
 
 	if internaltypes.IsDefined(plan.CacheDuration) {
@@ -141,16 +138,9 @@ func (r *protocolMetadataLifetimeSettingsResource) Create(ctx context.Context, r
 	readProtocolMetadataLifetimeSettingsResponse(ctx, protocolMetadataLifetimeSettingsResponse, &state, &plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *protocolMetadataLifetimeSettingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	readProtocolMetadataLifetimeSettings(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func readProtocolMetadataLifetimeSettings(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	var state protocolMetadataLifetimeSettingsResourceModel
 
 	diags := req.State.Get(ctx, &state)
@@ -158,10 +148,14 @@ func readProtocolMetadataLifetimeSettings(ctx context.Context, req resource.Read
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadProtocolMetadataLifetimeSettings, httpResp, err := apiClient.ProtocolMetadataApi.GetLifetimeSettings(config.ProviderBasicAuthContext(ctx, providerConfig)).Execute()
-
+	apiReadProtocolMetadataLifetimeSettings, httpResp, err := r.apiClient.ProtocolMetadataApi.GetLifetimeSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a ProtocolMetadataLifetimeSettings", err, httpResp)
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the ProtocolMetadataLifetimeSettings", err, httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the ProtocolMetadataLifetimeSettings", err, httpResp)
+		}
 		return
 	}
 	// Log response JSON
@@ -176,18 +170,10 @@ func readProtocolMetadataLifetimeSettings(ctx context.Context, req resource.Read
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *protocolMetadataLifetimeSettingsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	updateProtocolMetadataLifetimeSettings(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func updateProtocolMetadataLifetimeSettings(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	var plan protocolMetadataLifetimeSettingsResourceModel
 
 	diags := req.Plan.Get(ctx, &plan)
@@ -196,7 +182,7 @@ func updateProtocolMetadataLifetimeSettings(ctx context.Context, req resource.Up
 		return
 	}
 
-	updateProtocolMetadataLifetimeSettings := apiClient.ProtocolMetadataApi.UpdateLifetimeSettings(config.ProviderBasicAuthContext(ctx, providerConfig))
+	updateProtocolMetadataLifetimeSettings := r.apiClient.ProtocolMetadataApi.UpdateLifetimeSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewMetadataLifetimeSettings()
 	err := addOptionalProtocolMetadataLifetimeSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -209,7 +195,7 @@ func updateProtocolMetadataLifetimeSettings(ctx context.Context, req resource.Up
 	}
 
 	updateProtocolMetadataLifetimeSettings = updateProtocolMetadataLifetimeSettings.Body(*createUpdateRequest)
-	protocolMetadataLifetimeSettingsResponse, httpResp, err := apiClient.ProtocolMetadataApi.UpdateLifetimeSettingsExecute(updateProtocolMetadataLifetimeSettings)
+	protocolMetadataLifetimeSettingsResponse, httpResp, err := r.apiClient.ProtocolMetadataApi.UpdateLifetimeSettingsExecute(updateProtocolMetadataLifetimeSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the ProtocolMetadataLifetimeSettings", err, httpResp)
 		return
@@ -225,10 +211,6 @@ func updateProtocolMetadataLifetimeSettings(ctx context.Context, req resource.Up
 	readProtocolMetadataLifetimeSettingsResponse(ctx, protocolMetadataLifetimeSettingsResponse, &state, &plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // This config object is edit-only, so Terraform can't delete it.
@@ -236,9 +218,6 @@ func (r *protocolMetadataLifetimeSettingsResource) Delete(ctx context.Context, r
 }
 
 func (r *protocolMetadataLifetimeSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	importProtocolMetadataLifetimeSettingsLocation(ctx, req, resp)
-}
-func importProtocolMetadataLifetimeSettingsLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

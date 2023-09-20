@@ -47,10 +47,6 @@ type serverSettingsSystemKeysResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *serverSettingsSystemKeysResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	serverSettingsSystemKeysResourceSchema(ctx, req, resp, false)
-}
-
-func serverSettingsSystemKeysResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
 	resp.Schema = schema.Schema{
 		Description: "Manages a Server Settings SystemKeys.",
 		Attributes: map[string]schema.Attribute{
@@ -272,16 +268,9 @@ func (r *serverSettingsSystemKeysResource) Create(ctx context.Context, req resou
 	readServerSettingsSystemKeysResponse(ctx, serverSettingsSystemKeysResponse, &state, &resp.Diagnostics)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *serverSettingsSystemKeysResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	readServerSettingsSystemKeys(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func readServerSettingsSystemKeys(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	var state serverSettingsSystemKeysResourceModel
 
 	diags := req.State.Get(ctx, &state)
@@ -289,10 +278,14 @@ func readServerSettingsSystemKeys(ctx context.Context, req resource.ReadRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadServerSettingsSystemKeys, httpResp, err := apiClient.ServerSettingsApi.GetSystemKeys(config.ProviderBasicAuthContext(ctx, providerConfig)).Execute()
-
+	apiReadServerSettingsSystemKeys, httpResp, err := r.apiClient.ServerSettingsApi.GetSystemKeys(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a ServerSettingsSystemKeys", err, httpResp)
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings System Keys", err, httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings System Keys", err, httpResp)
+		}
 		return
 	}
 	// Log response JSON
@@ -307,18 +300,10 @@ func readServerSettingsSystemKeys(ctx context.Context, req resource.ReadRequest,
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *serverSettingsSystemKeysResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	updateServerSettingsSystemKeys(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func updateServerSettingsSystemKeys(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	// Retrieve values from plan
 	var plan serverSettingsSystemKeysResourceModel
 
@@ -334,9 +319,9 @@ func updateServerSettingsSystemKeys(ctx context.Context, req resource.UpdateRequ
 		tflog.Debug(ctx, "Add request: "+string(requestJson))
 	}
 
-	apiCreateServerSettingsSystemKeys := apiClient.ServerSettingsApi.UpdateSystemKeys(config.ProviderBasicAuthContext(ctx, providerConfig))
+	apiCreateServerSettingsSystemKeys := r.apiClient.ServerSettingsApi.UpdateSystemKeys(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateServerSettingsSystemKeys = apiCreateServerSettingsSystemKeys.Body(*createServerSettingsSystemKeys)
-	serverSettingsSystemKeysResponse, httpResp, err := apiClient.ServerSettingsApi.UpdateSystemKeysExecute(apiCreateServerSettingsSystemKeys)
+	serverSettingsSystemKeysResponse, httpResp, err := r.apiClient.ServerSettingsApi.UpdateSystemKeysExecute(apiCreateServerSettingsSystemKeys)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the ServerSettingsSystemKeys", err, httpResp)
 		return
@@ -352,10 +337,6 @@ func updateServerSettingsSystemKeys(ctx context.Context, req resource.UpdateRequ
 	readServerSettingsSystemKeysResponse(ctx, serverSettingsSystemKeysResponse, &state, &resp.Diagnostics)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // This config object is edit-only, so Terraform can't delete it.
@@ -363,9 +344,6 @@ func (r *serverSettingsSystemKeysResource) Delete(ctx context.Context, req resou
 }
 
 func (r *serverSettingsSystemKeysResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	importServerSettingsSystemKeysLocation(ctx, req, resp)
-}
-func importServerSettingsSystemKeysLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	//  id  doesn't matter because it is a singleton resource.
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
