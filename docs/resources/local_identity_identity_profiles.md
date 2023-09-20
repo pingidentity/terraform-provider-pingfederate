@@ -358,3 +358,12 @@ Required:
 Read-Only:
 
 - `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "localIdentityIdentityProfileId" should be the id of the Local Identity Identity Profile to be imported
+terraform import pingfederate_local_identity_identity_profiles.myLocalIdentityIdentityProfile localIdentityIdentityProfileId
+```

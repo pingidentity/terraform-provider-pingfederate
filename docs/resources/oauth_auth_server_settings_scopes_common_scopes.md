@@ -35,3 +35,12 @@ resource "pingfederate_oauth_auth_server_settings_scopes_common_scopes" "oauthAu
 ### Read-Only
 
 - `id` (String) Computed attribute tied to the name property of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "myOauthAuthServerSettingsScopesCommonScopeId" should be the name of the OAuth Auth Server Setting Common Scope to be imported
+terraform import pingfederate_oauth_auth_server_settings_scopes_common_scopes.myOauthAuthServerSettingsScopesCommonScope myOauthAuthServerSettingsScopesCommonScopeId
+```

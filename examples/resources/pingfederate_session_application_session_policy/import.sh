@@ -1,0 +1,2 @@
+# "sessionApplicationSessionPolicyId" should be "id"
+terraform import pingfederate_session_application_session_policy.mySessionApplicationSessionPolicy sessionApplicationSessionPolicyId
