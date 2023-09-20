@@ -35,3 +35,12 @@ resource "pingfederate_oauth_auth_server_settings_scopes_exclusive_scopes" "oaut
 ### Read-Only
 
 - `id` (String) Computed attribute tied to the name property of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "myOauthAuthServerSettingsScopesExclusiveScopeId" should be the name of the OAuth Auth Server Setting Exclusive Scope to be imported
+terraform import pingfederate_oauth_auth_server_settings_scopes_exclusive_scopes.myOauthAuthServerSettingsScopesExclusiveScope myOauthAuthServerSettingsScopesExclusiveScopeId
+```

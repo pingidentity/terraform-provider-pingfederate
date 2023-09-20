@@ -35,3 +35,12 @@ resource "pingfederate_idp_default_urls" "idpDefaultUrlsExample" {
 ### Read-Only
 
 - `id` (String) Placeholder name of this object required by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "idpDefaultUrlId" should be "id"
+terraform import pingfederate_idp_default_urls.myIdpDefaultUrl idpDefaultUrlId
+```

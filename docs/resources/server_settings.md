@@ -332,3 +332,12 @@ Read-Only:
 - `enable` (Boolean) Enable SAML2.0 profile.
 - `enable_auto_connect` (Boolean) This property has been deprecated and no longer used.
 - `enable_xasp` (Boolean) Enable Attribute Requester Mapping for X.509 Attribute Sharing Profile (XASP)
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "serverSettingsId" should be "id"
+terraform import pingfederate_server_settings.myServerSettings serverSettingsId
+```

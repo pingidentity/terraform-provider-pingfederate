@@ -52,3 +52,12 @@ Required:
 Read-Only:
 
 - `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "authenticationApiSettingsId" should be "id"
+terraform import pingfederate_authentication_api_settings.myAuthenticationApiSettings authenticationApiSettingsId
+```

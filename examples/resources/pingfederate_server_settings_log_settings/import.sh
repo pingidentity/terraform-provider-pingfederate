@@ -1,0 +1,2 @@
+# "serverSettingsLogSettingsId" should be "id"
+terraform import pingfederate_server_settings_log_settings.myServerSettingsLogSettings serverSettingsLogSettingsId

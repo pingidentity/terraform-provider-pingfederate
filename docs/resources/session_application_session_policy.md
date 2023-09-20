@@ -30,3 +30,12 @@ resource "pingfederate_session_application_session_policy" "sessionApplicationSe
 ### Read-Only
 
 - `id` (String) Placeholder name of this object required by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "sessionApplicationSessionPolicyId" should be "id"
+terraform import pingfederate_session_application_session_policy.mySessionApplicationSessionPolicy sessionApplicationSessionPolicyId
+```
