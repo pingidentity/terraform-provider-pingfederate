@@ -98,20 +98,12 @@ resource "pingfederate_oauth_access_token_managers" "oauthAccessTokenManagersExa
         value = "true"
       },
       {
-        name = "Include X.509 Thumbprint Header Parameter"
-        value = ""
-      },
-      {
         name = "Default JWKS URL Cache Duration"
         value = "720"
       },
       {
         name = "Include JWE Key ID Header Parameter"
         value = "true"
-      },
-      {
-        name = "Include JWE X.509 Thumbprint Header Parameter"
-        value = ""
       },
       {
         name = "Client ID Claim Name"
@@ -152,14 +144,6 @@ resource "pingfederate_oauth_access_token_managers" "oauthAccessTokenManagersExa
       {
         name = "JWKS Endpoint Cache Duration"
         value = "720"
-      },
-      {
-        name = "Publish Key ID X.509 URL"
-        value = ""
-      },
-      {
-        name = "Publish Thumbprint X.509 URL"
-        value = ""
       },
       {
         name = "Expand Scope Groups"

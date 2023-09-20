@@ -310,11 +310,13 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 						Computed:    true,
 						Optional:    true,
 					},
-					"allowed_clients": schema.SingleNestedAttribute{
+					"allowed_clients": schema.SetNestedAttribute{
 						Description: "If 'restrictClients' is true, this field defines the list of OAuth clients that are allowed to access the token manager.",
 						Computed:    true,
 						Optional:    true,
-						Attributes:  config.AddResourceLinkSchema(),
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: config.AddResourceLinkSchema(),
+						},
 					},
 				},
 			},
@@ -355,6 +357,17 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 				Optional:    false,
 			},
 		},
+	}
+}
+
+func (r *oauthAccessTokenManagersResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var model oauthAccessTokenManagersResourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
+
+	if internaltypes.IsDefined(model.AttributeContract) {
+		if len(model.AttributeContract.Attributes()["extended_attributes"].(types.Set).Elements()) == 0 {
+			resp.Diagnostics.AddError("Empty set!", "Please provide valid properties within extended_attributes. The set cannot be empty.\nIf no values are necessary, remove this property from your terraform file.")
+		}
 	}
 }
 
@@ -570,6 +583,7 @@ func readOauthAccessTokenManagersResponse(ctx context.Context, r *client.AccessT
 	for _, ca := range attributeContractClientCoreAttributes {
 		coreAttribute := client.AccessTokenAttribute{}
 		coreAttribute.Name = ca.Name
+		coreAttribute.MultiValued = ca.MultiValued
 		coreAttrs = append(coreAttrs, coreAttribute)
 	}
 	attributeContractCoreAttributes, _ := types.SetValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
@@ -580,6 +594,7 @@ func readOauthAccessTokenManagersResponse(ctx context.Context, r *client.AccessT
 	for _, ea := range attributeContractClientExtendedAttributes {
 		extendedAttr := client.AccessTokenAttribute{}
 		extendedAttr.Name = ea.Name
+		extendedAttr.MultiValued = ea.MultiValued
 		extdAttrs = append(extdAttrs, extendedAttr)
 	}
 	attributeContractExtendedAttributes, _ := types.SetValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
@@ -611,7 +626,7 @@ func readOauthAccessTokenManagersResponse(ctx context.Context, r *client.AccessT
 	accessControlSettingsAttrType := map[string]attr.Type{
 		"inherited":        basetypes.BoolType{},
 		"restrict_clients": basetypes.BoolType{},
-		"allowed_clients":  basetypes.ObjectType{AttrTypes: internaltypes.ResourceLinkStateAttrType()},
+		"allowed_clients":  basetypes.SetType{ElemType: basetypes.ObjectType{AttrTypes: internaltypes.ResourceLinkStateAttrType()}},
 	}
 
 	state.AccessControlSettings, _ = types.ObjectValueFrom(ctx, accessControlSettingsAttrType, r.AccessControlSettings)
