@@ -46,11 +46,7 @@ type authenticationPolicyContractsResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *authenticationPolicyContractsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	authenticationPolicyContractsResourceSchema(ctx, req, resp, false)
-}
-
-func authenticationPolicyContractsResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
-	schema := schema.Schema{
+	resp.Schema = schema.Schema{
 		Description: "Manages a AuthenticationPolicyContracts.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -106,12 +102,6 @@ func authenticationPolicyContractsResourceSchema(ctx context.Context, req resour
 			},
 		},
 	}
-
-	// Set attributes in string list
-	if setOptionalToComputed {
-		SetAllAttributesToOptionalAndComputed(&schema, []string{"id"})
-	}
-	resp.Schema = schema
 }
 
 func addAuthenticationPolicyContractsFields(ctx context.Context, addRequest *client.AuthenticationPolicyContract, plan authenticationPolicyContractsResourceModel) error {
@@ -234,16 +224,9 @@ func (r *authenticationPolicyContractsResource) Create(ctx context.Context, req 
 	readAuthenticationPolicyContractsResponse(ctx, authenticationPolicyContractsResponse, &state, &plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *authenticationPolicyContractsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	readAuthenticationPolicyContracts(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func readAuthenticationPolicyContracts(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	var state authenticationPolicyContractsResourceModel
 
 	diags := req.State.Get(ctx, &state)
@@ -251,10 +234,14 @@ func readAuthenticationPolicyContracts(ctx context.Context, req resource.ReadReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadAuthenticationPolicyContracts, httpResp, err := apiClient.AuthenticationPolicyContractsApi.GetAuthenticationPolicyContract(ProviderBasicAuthContext(ctx, providerConfig), state.Id.ValueString()).Execute()
-
+	apiReadAuthenticationPolicyContracts, httpResp, err := r.apiClient.AuthenticationPolicyContractsApi.GetAuthenticationPolicyContract(ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
-		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a AuthenticationPolicyContracts", err, httpResp)
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a Authentication Policy Contract", err, httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Authentication Policy Contract", err, httpResp)
+		}
 		return
 	}
 	// Log response JSON
@@ -269,18 +256,10 @@ func readAuthenticationPolicyContracts(ctx context.Context, req resource.ReadReq
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *authenticationPolicyContractsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	updateAuthenticationPolicyContracts(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func updateAuthenticationPolicyContracts(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	// Retrieve values from plan
 	var plan authenticationPolicyContractsResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -292,7 +271,7 @@ func updateAuthenticationPolicyContracts(ctx context.Context, req resource.Updat
 	// Get the current state to see how any attributes are changing
 	var state authenticationPolicyContractsResourceModel
 	req.State.Get(ctx, &state)
-	updateAuthenticationPolicyContracts := apiClient.AuthenticationPolicyContractsApi.UpdateAuthenticationPolicyContract(ProviderBasicAuthContext(ctx, providerConfig), plan.Id.ValueString())
+	updateAuthenticationPolicyContracts := r.apiClient.AuthenticationPolicyContractsApi.UpdateAuthenticationPolicyContract(ProviderBasicAuthContext(ctx, r.providerConfig), plan.Id.ValueString())
 	createUpdateRequest := client.NewAuthenticationPolicyContract()
 	err := addAuthenticationPolicyContractsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -304,7 +283,7 @@ func updateAuthenticationPolicyContracts(ctx context.Context, req resource.Updat
 		tflog.Debug(ctx, "Update request: "+string(requestJson))
 	}
 	updateAuthenticationPolicyContracts = updateAuthenticationPolicyContracts.Body(*createUpdateRequest)
-	updateAuthenticationPolicyContractsResponse, httpResp, err := apiClient.AuthenticationPolicyContractsApi.UpdateAuthenticationPolicyContractExecute(updateAuthenticationPolicyContracts)
+	updateAuthenticationPolicyContractsResponse, httpResp, err := r.apiClient.AuthenticationPolicyContractsApi.UpdateAuthenticationPolicyContractExecute(updateAuthenticationPolicyContracts)
 	if err != nil {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating AuthenticationPolicyContracts", err, httpResp)
 		return
@@ -320,17 +299,10 @@ func updateAuthenticationPolicyContracts(ctx context.Context, req resource.Updat
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // // Delete deletes the resource and removes the Terraform state on success.
 func (r *authenticationPolicyContractsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	deleteAuthenticationPolicyContracts(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-func deleteAuthenticationPolicyContracts(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	// Retrieve values from state
 	var state authenticationPolicyContractsResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -338,8 +310,8 @@ func deleteAuthenticationPolicyContracts(ctx context.Context, req resource.Delet
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := apiClient.AuthenticationPolicyContractsApi.DeleteAuthenticationPolicyContract(ProviderBasicAuthContext(ctx, providerConfig), state.Id.ValueString()).Execute()
-	if err != nil {
+	httpResp, err := r.apiClient.AuthenticationPolicyContractsApi.DeleteAuthenticationPolicyContract(ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a AuthenticationPolicyContracts", err, httpResp)
 		return
 	}
@@ -347,9 +319,6 @@ func deleteAuthenticationPolicyContracts(ctx context.Context, req resource.Delet
 }
 
 func (r *authenticationPolicyContractsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	importAuthenticationPolicyContractsLocation(ctx, req, resp)
-}
-func importAuthenticationPolicyContractsLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

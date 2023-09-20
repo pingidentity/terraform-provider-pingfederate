@@ -51,11 +51,7 @@ type administrativeAccountResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *administrativeAccountsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	administrativeAccountResourceSchema(ctx, req, resp, false)
-}
-
-func administrativeAccountResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
-	schema := schema.Schema{
+	resp.Schema = schema.Schema{
 		Description: "Manages a AdministrativeAccount.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -143,12 +139,6 @@ func administrativeAccountResourceSchema(ctx context.Context, req resource.Schem
 			},
 		},
 	}
-
-	// Set attribtues in string list
-	if setOptionalToComputed {
-		config.SetAllAttributesToOptionalAndComputed(&schema, []string{"username", "password", "roles"})
-	}
-	resp.Schema = schema
 }
 func addOptionalAdministrativeAccountFields(ctx context.Context, addRequest *client.AdministrativeAccount, plan administrativeAccountResourceModel) error {
 	// Empty strings are treated as equivalent to null
@@ -248,16 +238,9 @@ func (r *administrativeAccountsResource) Create(ctx context.Context, req resourc
 	readAdministrativeAccountResponse(ctx, administrativeAccountResponse, &state, &plan, plan.Password)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *administrativeAccountsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	readAdministrativeAccount(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func readAdministrativeAccount(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	var state administrativeAccountResourceModel
 
 	diags := req.State.Get(ctx, &state)
@@ -265,10 +248,14 @@ func readAdministrativeAccount(ctx context.Context, req resource.ReadRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadAdministrativeAccount, httpResp, err := apiClient.AdministrativeAccountsApi.GetAccount(config.ProviderBasicAuthContext(ctx, providerConfig), state.Username.ValueString()).Execute()
-
+	apiReadAdministrativeAccount, httpResp, err := r.apiClient.AdministrativeAccountsApi.GetAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Username.ValueString()).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a AdministrativeAccount", err, httpResp)
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an Administrative Account", err, httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an Administrative Account", err, httpResp)
+		}
 		return
 	}
 	// Log response JSON
@@ -283,19 +270,10 @@ func readAdministrativeAccount(ctx context.Context, req resource.ReadRequest, re
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *administrativeAccountsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	updateAdministrativeAccount(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func updateAdministrativeAccount(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
-	// Retrieve values from plan
 	var plan administrativeAccountResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -306,7 +284,7 @@ func updateAdministrativeAccount(ctx context.Context, req resource.UpdateRequest
 	// Get the current state to see how any attributes are changing
 	var state administrativeAccountResourceModel
 	req.State.Get(ctx, &state)
-	updateAdministrativeAccount := apiClient.AdministrativeAccountsApi.UpdateAccount(config.ProviderBasicAuthContext(ctx, providerConfig), plan.Username.ValueString())
+	updateAdministrativeAccount := r.apiClient.AdministrativeAccountsApi.UpdateAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Username.ValueString())
 	createUpdateRequest := client.NewAdministrativeAccount(plan.Username.ValueString())
 	err := addOptionalAdministrativeAccountFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -318,7 +296,7 @@ func updateAdministrativeAccount(ctx context.Context, req resource.UpdateRequest
 		tflog.Debug(ctx, "Update request: "+string(requestJson))
 	}
 	updateAdministrativeAccount = updateAdministrativeAccount.Body(*createUpdateRequest)
-	updateAdministrativeAccountResponse, httpResp, err := apiClient.AdministrativeAccountsApi.UpdateAccountExecute(updateAdministrativeAccount)
+	updateAdministrativeAccountResponse, httpResp, err := r.apiClient.AdministrativeAccountsApi.UpdateAccountExecute(updateAdministrativeAccount)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating AdministrativeAccount", err, httpResp)
 		return
@@ -334,17 +312,10 @@ func updateAdministrativeAccount(ctx context.Context, req resource.UpdateRequest
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // // Delete deletes the resource and removes the Terraform state on success.
 func (r *administrativeAccountsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	deleteAdministrativeAccount(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-func deleteAdministrativeAccount(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	// Retrieve values from state
 	var state administrativeAccountResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -352,18 +323,13 @@ func deleteAdministrativeAccount(ctx context.Context, req resource.DeleteRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := apiClient.AdministrativeAccountsApi.DeleteAccount(config.ProviderBasicAuthContext(ctx, providerConfig), state.Username.ValueString()).Execute()
-	if err != nil {
+	httpResp, err := r.apiClient.AdministrativeAccountsApi.DeleteAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Username.ValueString()).Execute()
+	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a AdministrativeAccount", err, httpResp)
 		return
 	}
-
 }
 
 func (r *administrativeAccountsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	importAdministrativeAccountLocation(ctx, req, resp)
-}
-func importAdministrativeAccountLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import username and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("username"), req, resp)
 }

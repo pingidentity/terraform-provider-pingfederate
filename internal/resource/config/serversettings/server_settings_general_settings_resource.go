@@ -46,10 +46,6 @@ type serverSettingsGeneralSettingsResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *serverSettingsGeneralSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	serverSettingsGeneralSettingsResourceSchema(ctx, req, resp, false)
-}
-
-func serverSettingsGeneralSettingsResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
 	schema := schema.Schema{
 		Description: "Manages a ServerSettingsGeneralSettings.",
 		Attributes: map[string]schema.Attribute{
@@ -91,10 +87,6 @@ func serverSettingsGeneralSettingsResourceSchema(ctx context.Context, req resour
 		},
 	}
 
-	// Set attributes in string list
-	if setOptionalToComputed {
-		config.SetAllAttributesToOptionalAndComputed(&schema, []string{""})
-	}
 	config.AddCommonSchema(&schema, false)
 	resp.Schema = schema
 }
@@ -182,16 +174,9 @@ func (r *serverSettingsGeneralSettingsResource) Create(ctx context.Context, req 
 	readServerSettingsGeneralSettingsResponse(ctx, serverSettingsGeneralSettingsResponse, &state, &plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *serverSettingsGeneralSettingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	readServerSettingsGeneralSettings(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func readServerSettingsGeneralSettings(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	var state serverSettingsGeneralSettingsResourceModel
 
 	diags := req.State.Get(ctx, &state)
@@ -199,12 +184,17 @@ func readServerSettingsGeneralSettings(ctx context.Context, req resource.ReadReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadServerSettingsGeneralSettings, httpResp, err := apiClient.ServerSettingsApi.GetGeneralSettings(config.ProviderBasicAuthContext(ctx, providerConfig)).Execute()
-
+	apiReadServerSettingsGeneralSettings, httpResp, err := r.apiClient.ServerSettingsApi.GetGeneralSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a ServerSettingsGeneralSettings", err, httpResp)
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings General Settings", err, httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings General Settings", err, httpResp)
+		}
 		return
 	}
+
 	// Log response JSON
 	responseJson, err := apiReadServerSettingsGeneralSettings.MarshalJSON()
 	if err == nil {
@@ -217,18 +207,10 @@ func readServerSettingsGeneralSettings(ctx context.Context, req resource.ReadReq
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *serverSettingsGeneralSettingsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	updateServerSettingsGeneralSettings(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func updateServerSettingsGeneralSettings(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	// Retrieve values from plan
 	var plan serverSettingsGeneralSettingsResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -240,7 +222,7 @@ func updateServerSettingsGeneralSettings(ctx context.Context, req resource.Updat
 	// Get the current state to see how any attributes are changing
 	var state serverSettingsGeneralSettingsResourceModel
 	req.State.Get(ctx, &state)
-	updateServerSettingsGeneralSettings := apiClient.ServerSettingsApi.UpdateGeneralSettings(config.ProviderBasicAuthContext(ctx, providerConfig))
+	updateServerSettingsGeneralSettings := r.apiClient.ServerSettingsApi.UpdateGeneralSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewGeneralSettings()
 	err := addOptionalServerSettingsGeneralSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -252,7 +234,7 @@ func updateServerSettingsGeneralSettings(ctx context.Context, req resource.Updat
 		tflog.Debug(ctx, "Update request: "+string(requestJson))
 	}
 	updateServerSettingsGeneralSettings = updateServerSettingsGeneralSettings.Body(*createUpdateRequest)
-	updateServerSettingsGeneralSettingsResponse, httpResp, err := apiClient.ServerSettingsApi.UpdateGeneralSettingsExecute(updateServerSettingsGeneralSettings)
+	updateServerSettingsGeneralSettingsResponse, httpResp, err := r.apiClient.ServerSettingsApi.UpdateGeneralSettingsExecute(updateServerSettingsGeneralSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating ServerSettingsGeneralSettings", err, httpResp)
 		return
@@ -268,10 +250,6 @@ func updateServerSettingsGeneralSettings(ctx context.Context, req resource.Updat
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // This config object is edit-only, so Terraform can't delete it.
@@ -279,9 +257,6 @@ func (r *serverSettingsGeneralSettingsResource) Delete(ctx context.Context, req 
 }
 
 func (r *serverSettingsGeneralSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	importServerSettingsGeneralSettingsLocation(ctx, req, resp)
-}
-func importServerSettingsGeneralSettingsLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

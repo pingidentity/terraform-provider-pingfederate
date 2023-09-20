@@ -44,11 +44,7 @@ type oauthAuthServerSettingsScopesCommonScopesResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *oauthAuthServerSettingsScopesCommonScopesResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	oauthAuthServerSettingsScopesCommonScopesResourceSchema(ctx, req, resp, false)
-}
-
-func oauthAuthServerSettingsScopesCommonScopesResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
-	schema := schema.Schema{
+	resp.Schema = schema.Schema{
 		Description: "Manages a OauthAuthServerSettingsScopesCommonScopes.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -85,12 +81,6 @@ func oauthAuthServerSettingsScopesCommonScopesResourceSchema(ctx context.Context
 			},
 		},
 	}
-
-	// Set attributes in string list
-	if setOptionalToComputed {
-		config.SetAllAttributesToOptionalAndComputed(&schema, []string{"name", "description"})
-	}
-	resp.Schema = schema
 }
 
 func (r *oauthAuthServerSettingsScopesCommonScopesResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -182,16 +172,9 @@ func (r *oauthAuthServerSettingsScopesCommonScopesResource) Create(ctx context.C
 	readOauthAuthServerSettingsScopesCommonScopesResponse(ctx, oauthAuthServerSettingsScopesCommonScopesResponse, &state, &plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *oauthAuthServerSettingsScopesCommonScopesResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	readOauthAuthServerSettingsScopesCommonScopes(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func readOauthAuthServerSettingsScopesCommonScopes(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	var state oauthAuthServerSettingsScopesCommonScopesResourceModel
 
 	diags := req.State.Get(ctx, &state)
@@ -199,10 +182,14 @@ func readOauthAuthServerSettingsScopesCommonScopes(ctx context.Context, req reso
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthAuthServerSettingsScopesCommonScopes, httpResp, err := apiClient.OauthAuthServerSettingsApi.GetCommonScope(config.ProviderBasicAuthContext(ctx, providerConfig), state.Name.ValueString()).Execute()
-
+	apiReadOauthAuthServerSettingsScopesCommonScopes, httpResp, err := r.apiClient.OauthAuthServerSettingsApi.GetCommonScope(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Name.ValueString()).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a OauthAuthServerSettingsScopesCommonScopes", err, httpResp)
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the OauthAuthServerSettingsScopesCommonScopes", err, httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OauthAuthServerSettingsScopesCommonScopes", err, httpResp)
+		}
 		return
 	}
 	// Log response JSON
@@ -217,18 +204,10 @@ func readOauthAuthServerSettingsScopesCommonScopes(ctx context.Context, req reso
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *oauthAuthServerSettingsScopesCommonScopesResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	updateOauthAuthServerSettingsScopesCommonScopes(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func updateOauthAuthServerSettingsScopesCommonScopes(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	// Retrieve values from plan
 	var plan oauthAuthServerSettingsScopesCommonScopesResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -240,7 +219,7 @@ func updateOauthAuthServerSettingsScopesCommonScopes(ctx context.Context, req re
 	// Get the current state to see how any attributes are changing
 	var state oauthAuthServerSettingsScopesCommonScopesResourceModel
 	req.State.Get(ctx, &state)
-	updateOauthAuthServerSettingsScopesCommonScopes := apiClient.OauthAuthServerSettingsApi.UpdateCommonScope(config.ProviderBasicAuthContext(ctx, providerConfig), plan.Name.ValueString())
+	updateOauthAuthServerSettingsScopesCommonScopes := r.apiClient.OauthAuthServerSettingsApi.UpdateCommonScope(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Name.ValueString())
 	createUpdateRequest := client.NewScopeEntry(plan.Id.ValueString(), plan.Description.ValueString())
 	err := addOptionalOauthAuthServerSettingsScopesCommonScopesFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -252,7 +231,7 @@ func updateOauthAuthServerSettingsScopesCommonScopes(ctx context.Context, req re
 		tflog.Debug(ctx, "Update request: "+string(requestJson))
 	}
 	updateOauthAuthServerSettingsScopesCommonScopes = updateOauthAuthServerSettingsScopesCommonScopes.Body(*createUpdateRequest)
-	updateOauthAuthServerSettingsScopesCommonScopesResponse, httpResp, err := apiClient.OauthAuthServerSettingsApi.UpdateCommonScopeExecute(updateOauthAuthServerSettingsScopesCommonScopes)
+	updateOauthAuthServerSettingsScopesCommonScopesResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsApi.UpdateCommonScopeExecute(updateOauthAuthServerSettingsScopesCommonScopes)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OauthAuthServerSettingsScopesCommonScopes", err, httpResp)
 		return
@@ -268,17 +247,10 @@ func updateOauthAuthServerSettingsScopesCommonScopes(ctx context.Context, req re
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // // Delete deletes the resource and removes the Terraform state on success.
 func (r *oauthAuthServerSettingsScopesCommonScopesResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	deleteOauthAuthServerSettingsScopesCommonScopes(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-func deleteOauthAuthServerSettingsScopesCommonScopes(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	// Retrieve values from state
 	var state oauthAuthServerSettingsScopesCommonScopesResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -286,18 +258,14 @@ func deleteOauthAuthServerSettingsScopesCommonScopes(ctx context.Context, req re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := apiClient.OauthAuthServerSettingsApi.RemoveCommonScope(config.ProviderBasicAuthContext(ctx, providerConfig), state.Name.ValueString()).Execute()
-	if err != nil {
+	httpResp, err := r.apiClient.OauthAuthServerSettingsApi.RemoveCommonScope(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Name.ValueString()).Execute()
+	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a OauthAuthServerSettingsScopesCommonScopes", err, httpResp)
 		return
 	}
-
 }
 
 func (r *oauthAuthServerSettingsScopesCommonScopesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	importOauthAuthServerSettingsScopesCommonScopesLocation(ctx, req, resp)
-}
-func importOauthAuthServerSettingsScopesCommonScopesLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("name"), req, resp)
 }

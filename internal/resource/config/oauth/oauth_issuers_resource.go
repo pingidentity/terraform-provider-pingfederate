@@ -43,11 +43,7 @@ type oauthIssuersResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *oauthIssuersResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	oauthIssuersResourceSchema(ctx, req, resp, false)
-}
-
-func oauthIssuersResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
-	schema := schema.Schema{
+	resp.Schema = schema.Schema{
 		Description: "Manages an OAuth Issuer.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -85,11 +81,6 @@ func oauthIssuersResourceSchema(ctx context.Context, req resource.SchemaRequest,
 			},
 		},
 	}
-
-	if setOptionalToComputed {
-		config.SetAllAttributesToOptionalAndComputed(&schema, []string{"name", "host"})
-	}
-	resp.Schema = schema
 }
 func addOptionalOauthIssuersFields(ctx context.Context, addRequest *client.Issuer, plan oauthIssuersResourceModel) error {
 	// Empty strings are treated as equivalent to null
@@ -169,16 +160,9 @@ func (r *oauthIssuersResource) Create(ctx context.Context, req resource.CreateRe
 	readOauthIssuersResponse(ctx, oauthIssuerResponse, &state, &plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *oauthIssuersResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	readOauthIssuers(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func readOauthIssuers(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	var state oauthIssuersResourceModel
 
 	diags := req.State.Get(ctx, &state)
@@ -186,10 +170,14 @@ func readOauthIssuers(ctx context.Context, req resource.ReadRequest, resp *resou
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthIssuer, httpResp, err := apiClient.OauthIssuersApi.GetOauthIssuerById(config.ProviderBasicAuthContext(ctx, providerConfig), state.Id.ValueString()).Execute()
-
+	apiReadOauthIssuer, httpResp, err := r.apiClient.OauthIssuersApi.GetOauthIssuerById(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for an OAuth Issuers", err, httpResp)
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Issuer", err, httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Issuer", err, httpResp)
+		}
 		return
 	}
 	// Log response JSON
@@ -204,18 +192,10 @@ func readOauthIssuers(ctx context.Context, req resource.ReadRequest, resp *resou
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *oauthIssuersResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	updateOauthIssuers(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func updateOauthIssuers(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	// Retrieve values from plan
 	var plan oauthIssuersResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -227,7 +207,7 @@ func updateOauthIssuers(ctx context.Context, req resource.UpdateRequest, resp *r
 	// Get the current state to see how any attributes are changing
 	var state oauthIssuersResourceModel
 	req.State.Get(ctx, &state)
-	updateOauthIssuer := apiClient.OauthIssuersApi.UpdateOauthIssuer(config.ProviderBasicAuthContext(ctx, providerConfig), plan.Id.ValueString())
+	updateOauthIssuer := r.apiClient.OauthIssuersApi.UpdateOauthIssuer(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Id.ValueString())
 	createUpdateRequest := client.NewIssuer(plan.Name.ValueString(), plan.Host.ValueString())
 	err := addOptionalOauthIssuersFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -239,7 +219,7 @@ func updateOauthIssuers(ctx context.Context, req resource.UpdateRequest, resp *r
 		tflog.Debug(ctx, "Update request: "+string(requestJson))
 	}
 	updateOauthIssuer = updateOauthIssuer.Body(*createUpdateRequest)
-	updateOauthIssuerResponse, httpResp, err := apiClient.OauthIssuersApi.UpdateOauthIssuerExecute(updateOauthIssuer)
+	updateOauthIssuerResponse, httpResp, err := r.apiClient.OauthIssuersApi.UpdateOauthIssuerExecute(updateOauthIssuer)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OAuth Issuers", err, httpResp)
 		return
@@ -255,17 +235,10 @@ func updateOauthIssuers(ctx context.Context, req resource.UpdateRequest, resp *r
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // // Delete deletes the resource and removes the Terraform state on success.
 func (r *oauthIssuersResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	deleteOauthIssuers(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-func deleteOauthIssuers(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	// Retrieve values from state
 	var state oauthIssuersResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -273,18 +246,14 @@ func deleteOauthIssuers(ctx context.Context, req resource.DeleteRequest, resp *r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := apiClient.OauthIssuersApi.DeleteOauthIssuer(config.ProviderBasicAuthContext(ctx, providerConfig), state.Id.ValueString()).Execute()
-	if err != nil {
+	httpResp, err := r.apiClient.OauthIssuersApi.DeleteOauthIssuer(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Issuers", err, httpResp)
 		return
 	}
-
 }
 
 func (r *oauthIssuersResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	importOauthIssuersLocation(ctx, req, resp)
-}
-func importOauthIssuersLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

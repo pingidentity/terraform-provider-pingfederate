@@ -43,11 +43,7 @@ type keyPairsSigningImportResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *keyPairsSigningImportResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	keyPairsSigningImportResourceSchema(ctx, req, resp, false)
-}
-
-func keyPairsSigningImportResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
-	schema := schema.Schema{
+	resp.Schema = schema.Schema{
 		Description: "Manages a KeyPairsSigningImport.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -95,13 +91,8 @@ func keyPairsSigningImportResourceSchema(ctx context.Context, req resource.Schem
 			},
 		},
 	}
-
-	// Set attributes in string list
-	if setOptionalToComputed {
-		config.SetAllAttributesToOptionalAndComputed(&schema, []string{"file_data", "format", "password"})
-	}
-	resp.Schema = schema
 }
+
 func addOptionalKeyPairsSigningImportFields(ctx context.Context, addRequest *client.KeyPairFile, plan keyPairsSigningImportResourceModel) error {
 
 	if internaltypes.IsDefined(plan.Id) {
@@ -179,16 +170,9 @@ func (r *keyPairsSigningImportResource) Create(ctx context.Context, req resource
 	readKeyPairsSigningImportResponse(ctx, keyPairsSigningImportResponse, &state, &plan, planFileData, planFormat, planPassword)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *keyPairsSigningImportResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	readKeyPairsSigningImport(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func readKeyPairsSigningImport(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	var state keyPairsSigningImportResourceModel
 
 	diags := req.State.Get(ctx, &state)
@@ -196,10 +180,14 @@ func readKeyPairsSigningImport(ctx context.Context, req resource.ReadRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadKeyPairsSigningImport, httpResp, err := apiClient.KeyPairsSigningApi.GetSigningKeyPair(config.ProviderBasicAuthContext(ctx, providerConfig), state.Id.ValueString()).Execute()
-
+	apiReadKeyPairsSigningImport, httpResp, err := r.apiClient.KeyPairsSigningApi.GetSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a KeyPairsSigningImport", err, httpResp)
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPairsSigningImport", err, httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPairsSigningImport", err, httpResp)
+		}
 		return
 	}
 	// Log response JSON
@@ -217,22 +205,14 @@ func readKeyPairsSigningImport(ctx context.Context, req resource.ReadRequest, re
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *keyPairsSigningImportResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	tflog.Error(ctx, "Not sure how you got here, however this resource does not support update functionality.")
 }
 
 // // Delete deletes the resource and removes the Terraform state on success.
 func (r *keyPairsSigningImportResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	deleteKeyPairsSigningImport(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-func deleteKeyPairsSigningImport(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	// Retrieve values from state
 	var state keyPairsSigningImportResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -240,8 +220,8 @@ func deleteKeyPairsSigningImport(ctx context.Context, req resource.DeleteRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := apiClient.KeyPairsSigningApi.DeleteSigningKeyPair(config.ProviderBasicAuthContext(ctx, providerConfig), state.Id.ValueString()).Execute()
-	if err != nil {
+	httpResp, err := r.apiClient.KeyPairsSigningApi.DeleteSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a KeyPairsSigningImport", err, httpResp)
 		return
 	}
@@ -249,9 +229,6 @@ func deleteKeyPairsSigningImport(ctx context.Context, req resource.DeleteRequest
 }
 
 func (r *keyPairsSigningImportResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	keyPairsSigningImport(ctx, req, resp)
-}
-func keyPairsSigningImport(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
