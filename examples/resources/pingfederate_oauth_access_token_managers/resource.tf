@@ -13,7 +13,8 @@ provider "pingfederate" {
   https_host = "https://localhost:9999"
   insecure_trust_all_tls = true
 }
-resource "pingfederate_oauth_access_token_managers" "oauthAccessTokenManagersExample" {
+
+resource "pingfederate_oauth_access_token_managers" "jsonWebTokenOauthAccessTokenManagersExample2" {
   id = "test2"
   name = "test2"
   plugin_descriptor_ref = {
@@ -168,6 +169,73 @@ resource "pingfederate_oauth_access_token_managers" "oauthAccessTokenManagersExa
   }
   access_control_settings = {
     restrict_clients = false
+  }
+  session_validation_settings = {
+    check_valid_authn_session = false
+    check_session_revocation_status = false
+    update_authn_session_activity = false
+    include_session_id = false
+  }
+}
+
+resource "pingfederate_oauth_access_token_managers" "internallyManagedReferenceOauthAccessTokenManagersExample" {
+  id = "test4"
+  name = "test4"
+  plugin_descriptor_ref = {
+    id = "org.sourceid.oauth20.token.plugin.impl.ReferenceBearerAccessTokenManagementPlugin"
+  }
+  configuration = {
+    tables = []
+    fields = [
+      {
+        name = "Token Length"
+        value = "28"
+      },
+      {
+        name = "Token Lifetime"
+        value = "120"
+      },
+      {
+        name = "Lifetime Extension Policy"
+        value = "NONE"
+      },
+      {
+        name = "Maximum Token Lifetime"
+        value = ""
+      },
+      {
+        name = "Lifetime Extension Threshold Percentage"
+        value = "30"
+      },
+      {
+        name = "Mode for Synchronous RPC"
+        value = "3"
+      },
+      {
+        name = "RPC Timeout"
+        value = "500"
+      },
+      {
+        name = "Expand Scope Groups"
+        value = "false"
+      }
+    ]
+  }
+  attribute_contract = {
+    coreAttributes = []
+    extended_attributes = [
+      {
+        name = "extended_contract"
+        multi_valued = true
+      }
+    ]
+  }
+  selection_settings = {
+    resource_uris = []
+  }
+  access_control_settings = {
+    restrict_clients = false
+    allowedClients = []
   }
   session_validation_settings = {
     check_valid_authn_session = false

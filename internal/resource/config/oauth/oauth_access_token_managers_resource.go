@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
@@ -82,6 +83,9 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 			"name": schema.StringAttribute{
 				Description: "The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
 				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
@@ -317,6 +321,9 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: config.AddResourceLinkSchema(),
 						},
+						PlanModifiers: []planmodifier.Set{
+							setplanmodifier.UseStateForUnknown(),
+						},
 					},
 				},
 			},
@@ -355,6 +362,9 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 				Description: "Number added to an access token to identify which Access Token Manager issued the token.",
 				Computed:    true,
 				Optional:    false,
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 		},
 	}
@@ -712,7 +722,7 @@ func (r *oauthAccessTokenManagersResource) Read(ctx context.Context, req resourc
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthAccessTokenManagers, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.CreateTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadOauthAccessTokenManagers, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.GetTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -738,19 +748,18 @@ func (r *oauthAccessTokenManagersResource) Read(ctx context.Context, req resourc
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *oauthAccessTokenManagersResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-
-	var plan oauthAccessTokenManagersResourceModel
-	diags := req.Plan.Get(ctx, &plan)
+	var state oauthAccessTokenManagersResourceModel
+	diags := req.Plan.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	// PluginDescriptorRef
-	pluginDescRefId := plan.PluginDescriptorRef.Attributes()["id"].(types.String).ValueString()
+	pluginDescRefId := state.PluginDescriptorRef.Attributes()["id"].(types.String).ValueString()
 	pluginDescRefResLink := client.NewResourceLinkWithDefaults()
 	pluginDescRefResLink.Id = pluginDescRefId
-	pluginDescRefErr := json.Unmarshal([]byte(internaljson.FromValue(plan.PluginDescriptorRef, false)), pluginDescRefResLink)
+	pluginDescRefErr := json.Unmarshal([]byte(internaljson.FromValue(state.PluginDescriptorRef, false)), pluginDescRefResLink)
 	if pluginDescRefErr != nil {
 		resp.Diagnostics.AddError("Failed to build plugin descriptor ref request object:", pluginDescRefErr.Error())
 		return
@@ -758,18 +767,16 @@ func (r *oauthAccessTokenManagersResource) Update(ctx context.Context, req resou
 
 	// Configuration
 	configuration := client.NewPluginConfiguration()
-	configErr := json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, true)), configuration)
+	configErr := json.Unmarshal([]byte(internaljson.FromValue(state.Configuration, true)), configuration)
 	if configErr != nil {
 		resp.Diagnostics.AddError("Failed to build plugin configuration request object:", configErr.Error())
 		return
 	}
 
 	// Get the current state to see how any attributes are changing
-	var state oauthAccessTokenManagersResourceModel
-	req.State.Get(ctx, &state)
-	updateOauthAccessTokenManagers := r.apiClient.OauthAccessTokenManagersApi.CreateTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig))
-	createUpdateRequest := client.NewAccessTokenManager(plan.Id.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
-	err := addOptionalOauthAccessTokenManagersFields(ctx, createUpdateRequest, plan)
+	updateOauthAccessTokenManagers := r.apiClient.OauthAccessTokenManagersApi.UpdateTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString())
+	createUpdateRequest := client.NewAccessTokenManager(state.Id.ValueString(), state.Name.ValueString(), *pluginDescRefResLink, *configuration)
+	err := addOptionalOauthAccessTokenManagersFields(ctx, createUpdateRequest, state)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OauthAccessTokenManagers", err.Error())
 		return
@@ -779,7 +786,7 @@ func (r *oauthAccessTokenManagersResource) Update(ctx context.Context, req resou
 		tflog.Debug(ctx, "Update request: "+string(requestJson))
 	}
 	updateOauthAccessTokenManagers = updateOauthAccessTokenManagers.Body(*createUpdateRequest)
-	updateOauthAccessTokenManagersResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.CreateTokenManagerExecute(updateOauthAccessTokenManagers)
+	updateOauthAccessTokenManagersResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.UpdateTokenManagerExecute(updateOauthAccessTokenManagers)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OauthAccessTokenManagers", err, httpResp)
 		return
@@ -790,7 +797,7 @@ func (r *oauthAccessTokenManagersResource) Update(ctx context.Context, req resou
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	}
 	// Read the response
-	readOauthAccessTokenManagersResponse(ctx, updateOauthAccessTokenManagersResponse, &state, plan.Configuration)
+	readOauthAccessTokenManagersResponse(ctx, updateOauthAccessTokenManagersResponse, &state, state.Configuration)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
@@ -799,6 +806,17 @@ func (r *oauthAccessTokenManagersResource) Update(ctx context.Context, req resou
 
 // This config object is edit-only, so Terraform can't delete it.
 func (r *oauthAccessTokenManagersResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state oauthAccessTokenManagersResourceModel
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	httpResp, err := r.apiClient.OauthAccessTokenManagersApi.DeleteTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OauthAccessTokenManager", err, httpResp)
+		return
+	}
 }
 
 func (r *oauthAccessTokenManagersResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
