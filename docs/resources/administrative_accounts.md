@@ -41,3 +41,12 @@ resource "pingfederate_administrative_accounts" "administrativeAccountExample" {
 ### Read-Only
 
 - `id` (String) Computed attribute tied to the username property of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "administrativeAccountId" should be the username of the Administrative Account to be imported
+terraform import pingfederate_administrative_accounts.myAdministrativeAccount administrativeAccountId
+```

@@ -43,10 +43,6 @@ type sessionSettingsResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *sessionSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	sessionSettingsResourceSchema(ctx, req, resp, false)
-}
-
-func sessionSettingsResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
 	schema := schema.Schema{
 		Description: "Manages a SessionSettings.",
 		Attributes: map[string]schema.Attribute{
@@ -152,16 +148,9 @@ func (r *sessionSettingsResource) Create(ctx context.Context, req resource.Creat
 	readSessionSettingsResponse(ctx, sessionSettingsResponse, &state, &plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *sessionSettingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	readSessionSettings(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func readSessionSettings(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	var state sessionSettingsResourceModel
 
 	diags := req.State.Get(ctx, &state)
@@ -169,10 +158,14 @@ func readSessionSettings(ctx context.Context, req resource.ReadRequest, resp *re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadSessionSettings, httpResp, err := apiClient.SessionApi.GetSessionSettings(config.ProviderBasicAuthContext(ctx, providerConfig)).Execute()
-
+	apiReadSessionSettings, httpResp, err := r.apiClient.SessionApi.GetSessionSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a SessionSettings", err, httpResp)
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Session Settings", err, httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Session Settings", err, httpResp)
+		}
 		return
 	}
 	// Log response JSON
@@ -187,18 +180,10 @@ func readSessionSettings(ctx context.Context, req resource.ReadRequest, resp *re
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *sessionSettingsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	updateSessionSettings(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func updateSessionSettings(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	// Retrieve values from plan
 	var plan sessionSettingsResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -210,7 +195,7 @@ func updateSessionSettings(ctx context.Context, req resource.UpdateRequest, resp
 	// Get the current state to see how any attributes are changing
 	var state sessionSettingsResourceModel
 	req.State.Get(ctx, &state)
-	updateSessionSettings := apiClient.SessionApi.UpdateSessionSettings(config.ProviderBasicAuthContext(ctx, providerConfig))
+	updateSessionSettings := r.apiClient.SessionApi.UpdateSessionSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewSessionSettings()
 	err := addOptionalSessionSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -222,7 +207,7 @@ func updateSessionSettings(ctx context.Context, req resource.UpdateRequest, resp
 		tflog.Debug(ctx, "Update request: "+string(requestJson))
 	}
 	updateSessionSettings = updateSessionSettings.Body(*createUpdateRequest)
-	updateSessionSettingsResponse, httpResp, err := apiClient.SessionApi.UpdateSessionSettingsExecute(updateSessionSettings)
+	updateSessionSettingsResponse, httpResp, err := r.apiClient.SessionApi.UpdateSessionSettingsExecute(updateSessionSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating SessionSettings", err, httpResp)
 		return
@@ -238,10 +223,6 @@ func updateSessionSettings(ctx context.Context, req resource.UpdateRequest, resp
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // This config object is edit-only, so Terraform can't delete it.
@@ -249,9 +230,6 @@ func (r *sessionSettingsResource) Delete(ctx context.Context, req resource.Delet
 }
 
 func (r *sessionSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	importSessionSettingsLocation(ctx, req, resp)
-}
-func importSessionSettingsLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

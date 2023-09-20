@@ -96,3 +96,12 @@ Optional:
 Optional:
 
 - `enable_wreply_validation_slo` (Boolean) Enable wreply validation for SLO.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "redirectValidationId" should be "id"
+terraform import pingfederate_redirect_validation.myRedirectValidation redirectValidationId
+```

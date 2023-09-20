@@ -48,10 +48,6 @@ type sessionAuthenticationSessionPoliciesGlobalResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *sessionAuthenticationSessionPoliciesGlobalResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	sessionAuthenticationSessionPoliciesGlobalResourceSchema(ctx, req, resp, false)
-}
-
-func sessionAuthenticationSessionPoliciesGlobalResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
 	schema := schema.Schema{
 		Description: "Manages a SessionAuthenticationSessionPoliciesGlobal.",
 		Attributes: map[string]schema.Attribute{
@@ -106,10 +102,6 @@ func sessionAuthenticationSessionPoliciesGlobalResourceSchema(ctx context.Contex
 		},
 	}
 
-	// Set attributes in string list
-	if setOptionalToComputed {
-		config.SetAllAttributesToOptionalAndComputed(&schema, []string{"enable_sessions"})
-	}
 	config.AddCommonSchema(&schema, false)
 	resp.Schema = schema
 }
@@ -205,16 +197,9 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Create(ctx context.
 	readSessionAuthenticationSessionPoliciesGlobalResponse(ctx, sessionAuthenticationSessionPoliciesGlobalResponse, &state, &plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *sessionAuthenticationSessionPoliciesGlobalResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	readSessionAuthenticationSessionPoliciesGlobal(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func readSessionAuthenticationSessionPoliciesGlobal(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	var state sessionAuthenticationSessionPoliciesGlobalResourceModel
 
 	diags := req.State.Get(ctx, &state)
@@ -222,10 +207,14 @@ func readSessionAuthenticationSessionPoliciesGlobal(ctx context.Context, req res
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadSessionAuthenticationSessionPoliciesGlobal, httpResp, err := apiClient.SessionApi.GetGlobalPolicy(config.ProviderBasicAuthContext(ctx, providerConfig)).Execute()
-
+	apiReadSessionAuthenticationSessionPoliciesGlobal, httpResp, err := r.apiClient.SessionApi.GetGlobalPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a SessionAuthenticationSessionPoliciesGlobal", err, httpResp)
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while a Session Authentication Session Policies Global", err, httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Session Authentication Session Policies Global", err, httpResp)
+		}
 		return
 	}
 	// Log response JSON
@@ -240,18 +229,10 @@ func readSessionAuthenticationSessionPoliciesGlobal(ctx context.Context, req res
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *sessionAuthenticationSessionPoliciesGlobalResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	updateSessionAuthenticationSessionPoliciesGlobal(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func updateSessionAuthenticationSessionPoliciesGlobal(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	// Retrieve values from plan
 	var plan sessionAuthenticationSessionPoliciesGlobalResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -263,7 +244,7 @@ func updateSessionAuthenticationSessionPoliciesGlobal(ctx context.Context, req r
 	// Get the current state to see how any attributes are changing
 	var state sessionAuthenticationSessionPoliciesGlobalResourceModel
 	req.State.Get(ctx, &state)
-	updateSessionAuthenticationSessionPoliciesGlobal := apiClient.SessionApi.UpdateGlobalPolicy(config.ProviderBasicAuthContext(ctx, providerConfig))
+	updateSessionAuthenticationSessionPoliciesGlobal := r.apiClient.SessionApi.UpdateGlobalPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewGlobalAuthenticationSessionPolicy(plan.EnableSessions.ValueBool())
 	err := addOptionalSessionAuthenticationSessionPoliciesGlobalFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -275,7 +256,7 @@ func updateSessionAuthenticationSessionPoliciesGlobal(ctx context.Context, req r
 		tflog.Debug(ctx, "Update request: "+string(requestJson))
 	}
 	updateSessionAuthenticationSessionPoliciesGlobal = updateSessionAuthenticationSessionPoliciesGlobal.Body(*createUpdateRequest)
-	updateSessionAuthenticationSessionPoliciesGlobalResponse, httpResp, err := apiClient.SessionApi.UpdateGlobalPolicyExecute(updateSessionAuthenticationSessionPoliciesGlobal)
+	updateSessionAuthenticationSessionPoliciesGlobalResponse, httpResp, err := r.apiClient.SessionApi.UpdateGlobalPolicyExecute(updateSessionAuthenticationSessionPoliciesGlobal)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating SessionAuthenticationSessionPoliciesGlobal", err, httpResp)
 		return
@@ -291,10 +272,6 @@ func updateSessionAuthenticationSessionPoliciesGlobal(ctx context.Context, req r
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // This config object is edit-only, so Terraform can't delete it.
@@ -302,9 +279,6 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Delete(ctx context.
 }
 
 func (r *sessionAuthenticationSessionPoliciesGlobalResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	importSessionAuthenticationSessionPoliciesGlobalLocation(ctx, req, resp)
-}
-func importSessionAuthenticationSessionPoliciesGlobalLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

@@ -34,3 +34,12 @@ resource "pingfederate_oauth_issuers" "example" {
 ### Optional
 
 - `id` (String) The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "oauthIssuerId" should be the id of the OAuth Issuer to be imported
+terraform import pingfederate_oauth_issuers.myOauthIssuer oauthIssuerId
+```

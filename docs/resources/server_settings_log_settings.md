@@ -99,3 +99,12 @@ Required:
 - `enabled` (Boolean) Determines whether or not the log category is enabled. The default is false..
 - `id` (String) The ID of the log category. This field must match one of the category IDs defined in log4j-categories.xml.
 - `name` (String) The description of the log category. This field is read-only and is ignored for PUT requests.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "serverSettingsLogSettingsId" should be "id"
+terraform import pingfederate_server_settings_log_settings.myServerSettingsLogSettings serverSettingsLogSettingsId
+```

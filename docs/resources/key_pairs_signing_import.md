@@ -37,3 +37,12 @@ resource "pingfederate_key_pairs_signing_import" "keyPairsSigningImportExample" 
 
 - `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. (LOCAL, HSM)
 - `id` (String) The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "keyPairsSigningImportId" should be the id of the Signing Key Pair to be imported
+terraform import pingfederate_key_pairs_signing_import.myKeyPairsSigningImport keyPairsSigningImportId
+```

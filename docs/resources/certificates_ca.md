@@ -31,3 +31,12 @@ resource "pingfederate_certificates_ca" "example" {
 
 - `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.
 - `id` (String) The persistent, unique ID for the certificate
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "certificateCaId" should be the id of the Certificate CA to be imported
+terraform import pingfederate_certificates_ca.myCertificateCa certificateCaId
+```
