@@ -14,9 +14,11 @@ provider "pingfederate" {
   insecure_trust_all_tls = true
 }
 
-resource "pingfederate_oauth_access_token_managers" "jsonWebTokenOauthAccessTokenManagersExample2" {
-  id = "test2"
-  name = "test2"
+# WARNING! If one or more access token managers are configured, a default manager is required.
+# This can be done using the /oauth/accessTokenManagers/updateSettings endpoint or the UI.
+resource "pingfederate_oauth_access_token_managers" "jsonWebTokenOauthAccessTokenManagersExample" {
+  id = "test"
+  name = "test"
   plugin_descriptor_ref = {
     id = "com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin"
   }
@@ -179,8 +181,8 @@ resource "pingfederate_oauth_access_token_managers" "jsonWebTokenOauthAccessToke
 }
 
 resource "pingfederate_oauth_access_token_managers" "internallyManagedReferenceOauthAccessTokenManagersExample" {
-  id = "test4"
-  name = "test4"
+  id = "test3"
+  name = "test3"
   plugin_descriptor_ref = {
     id = "org.sourceid.oauth20.token.plugin.impl.ReferenceBearerAccessTokenManagementPlugin"
   }
