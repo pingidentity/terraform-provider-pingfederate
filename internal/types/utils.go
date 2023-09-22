@@ -2,6 +2,7 @@ package types
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -363,7 +364,8 @@ func ConvertToPrimitive(value attr.Value) interface{} {
 		}
 		return primitiveMap
 	}
-	return value
+
+	return fmt.Errorf("unable to convert given primitive type for %s", value)
 }
 
 // Converts the map[string]attr.Type to basetypes.ObjectValue required for Terraform
