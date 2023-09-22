@@ -108,8 +108,7 @@ func SetAllAttributesToOptionalAndComputed(s *schema.Schema, exemptAttributes []
 				continue
 			}
 			if !anyOk {
-				//lintignore:R009
-				panic("No valid schema attribute type found when setting attributes to computed: " + key)
+				return
 			}
 		}
 	}

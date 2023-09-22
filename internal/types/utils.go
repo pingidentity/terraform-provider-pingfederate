@@ -363,8 +363,7 @@ func ConvertToPrimitive(value attr.Value) interface{} {
 		}
 		return primitiveMap
 	}
-
-	panic("Panic reached. Unable to convert given primitive type.")
+	return value
 }
 
 // Converts the map[string]attr.Type to basetypes.ObjectValue required for Terraform

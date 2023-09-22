@@ -52,7 +52,7 @@ testacc:
 	PINGFEDERATE_PROVIDER_USERNAME=administrator \
 	PINGFEDERATE_PROVIDER_PASSWORD=2FederateM0re \
 	PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true \
-	TF_ACC=1 go test -timeout 10m -v ./internal/... -p 1
+	TF_ACC=1 go test -timeout 10m -v ./internal/... -p 4
 
 testacccomplete: spincontainer testacc
 
@@ -86,7 +86,6 @@ tfproviderlint:
 									-c 1 \
 									-AT001.ignored-filename-suffixes=_test.go \
 									-AT003=false \
-									-R009=false \
 									-XAT001=false \
 									-XR004=false \
 									-XS002=false ./internal/...
