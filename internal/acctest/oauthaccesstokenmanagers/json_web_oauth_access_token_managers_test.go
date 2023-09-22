@@ -20,22 +20,34 @@ const jsonWebTokenOauthAccessTokenManagersName = "jsonWebTokenExample"
 
 // Attributes to test with. Add optional properties to test here if desired.
 type jsonWebTokenOauthAccessTokenManagersResourceModel struct {
-	id   string
-	name string
-	key  string
+	id                     string
+	name                   string
+	keyId                  string
+	key                    string
+	tokenLifetime          string
+	activeSymmetricKeyId   string
+	checkValidAuthnSession bool
 }
 
 func TestAccJsonWebTokenOauthAccessTokenManagers(t *testing.T) {
 	resourceName := "myJsonWebTokenOauthAccessTokenManagers"
 	initialResourceModel := jsonWebTokenOauthAccessTokenManagersResourceModel{
-		id:   jsonWebTokenOauthAccessTokenManagersId,
-		name: jsonWebTokenOauthAccessTokenManagersName,
-		key:  "+d5OB5b+I4dqn1Mjp8YE/M/QFWvDX7Nxz3gC8mAEwRLqL67SrHcwRyMtGvZKxvIn",
+		id:                     jsonWebTokenOauthAccessTokenManagersId,
+		name:                   jsonWebTokenOauthAccessTokenManagersName,
+		keyId:                  "keyidentifier",
+		key:                    "+d5OB5b+I4dqn1Mjp8YE/M/QFWvDX7Nxz3gC8mAEwRLqL67SrHcwRyMtGvZKxvIn",
+		tokenLifetime:          "28",
+		activeSymmetricKeyId:   "keyidentifier",
+		checkValidAuthnSession: false,
 	}
 	updatedResourceModel := jsonWebTokenOauthAccessTokenManagersResourceModel{
-		id:   jsonWebTokenOauthAccessTokenManagersId,
-		name: jsonWebTokenOauthAccessTokenManagersName,
-		key:  "e1oDxOiC3Jboz3um8hBVmW3JRZNo9z7C0DMm/oj2V1gclQRcgi2gKM2DBj9N05G4",
+		id:                     jsonWebTokenOauthAccessTokenManagersId,
+		name:                   jsonWebTokenOauthAccessTokenManagersName,
+		keyId:                  "keyidentifier2",
+		key:                    "e1oDxOiC3Jboz3um8hBVmW3JRZNo9z7C0DMm/oj2V1gclQRcgi2gKM2DBj9N05G4",
+		tokenLifetime:          "56",
+		activeSymmetricKeyId:   "keyidentifier2",
+		checkValidAuthnSession: true,
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -83,11 +95,11 @@ resource "pingfederate_oauth_access_token_managers" "%[1]s" {
             fields = [
               {
                 name  = "Key ID"
-                value = "keyidentifier"
+                value = "%[4]s"
               },
               {
                 name  = "Key"
-                value = "%[4]s"
+                value = "%[5]s"
               },
               {
                 name  = "Encoding"
@@ -106,7 +118,7 @@ resource "pingfederate_oauth_access_token_managers" "%[1]s" {
     fields = [
       {
         name  = "Token Lifetime"
-        value = "120"
+        value = "%[6]s"
       },
       {
         name  = "Use Centralized Signing Key"
@@ -118,7 +130,7 @@ resource "pingfederate_oauth_access_token_managers" "%[1]s" {
       },
       {
         name  = "Active Symmetric Key ID"
-        value = "keyidentifier"
+        value = "%[7]s"
       },
       {
         name  = "Active Signing Certificate Key ID"
@@ -134,7 +146,7 @@ resource "pingfederate_oauth_access_token_managers" "%[1]s" {
       },
       {
         name  = "Active Symmetric Encryption Key ID"
-        value = "keyidentifier"
+        value = "%[7]s"
       },
       {
         name  = "Asymmetric Encryption Key"
@@ -225,7 +237,7 @@ resource "pingfederate_oauth_access_token_managers" "%[1]s" {
     restrict_clients = false
   }
   session_validation_settings = {
-    check_valid_authn_session       = false
+    check_valid_authn_session       = %[8]t
     check_session_revocation_status = false
     update_authn_session_activity   = false
     include_session_id              = false
@@ -233,7 +245,11 @@ resource "pingfederate_oauth_access_token_managers" "%[1]s" {
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.name,
+		resourceModel.keyId,
 		resourceModel.key,
+		resourceModel.tokenLifetime,
+		resourceModel.activeSymmetricKeyId,
+		resourceModel.checkValidAuthnSession,
 	)
 }
 
@@ -250,20 +266,38 @@ func testAccCheckExpectedJsonWebOauthAccessTokenManagersAttributes(config jsonWe
 		}
 
 		// Verify that attributes have expected values
+		getTables := response.Configuration.Tables
+		for _, table := range getTables {
+			for _, row := range table.Rows {
+				for _, field := range row.Fields {
+					if field.Name == "Key ID" {
+						err = acctest.TestAttributesMatchString(resourceType, &config.id, "name", config.keyId, *field.Value)
+						if err != nil {
+							return err
+						}
+					}
+				}
+			}
+		}
 		getFields := response.Configuration.Fields
 		for _, field := range getFields {
-			// if field.Name == "Token Length" {
-			// 	err = acctest.TestAttributesMatchString(resourceType, &config.id, "name", config.key, *field.Value)
-			// 	if err != nil {
-			// 		return err
-			// 	}
-			// }
-			// if field.Name == "Token Lifetime" {
-			// 	err = acctest.TestAttributesMatchString(resourceType, &config.id, "name", config.tokenLifetime, *field.Value)
-			// 	if err != nil {
-			// 		return err
-			// 	}
-			// }
+			if field.Name == "Token Lifetime" {
+				err = acctest.TestAttributesMatchString(resourceType, &config.id, "name", config.tokenLifetime, *field.Value)
+				if err != nil {
+					return err
+				}
+			}
+			if field.Name == "Active Symmetric Key ID" {
+				err = acctest.TestAttributesMatchString(resourceType, &config.id, "name", config.activeSymmetricKeyId, *field.Value)
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "check_valid_authn_session", config.checkValidAuthnSession, *response.SessionValidationSettings.CheckValidAuthnSession)
+		if err != nil {
+			return err
 		}
 
 		return nil

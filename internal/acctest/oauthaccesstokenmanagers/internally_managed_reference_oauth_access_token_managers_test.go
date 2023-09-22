@@ -17,25 +17,28 @@ const internallyManagedReferenceOauthAccessTokenManagersName = "internallyManage
 
 // Attributes to test with. Add optional properties to test here if desired.
 type internallyManagedReferenceOauthAccessTokenManagersResourceModel struct {
-	id            string
-	name          string
-	tokenLength   string
-	tokenLifetime string
+	id                           string
+	name                         string
+	tokenLength                  string
+	tokenLifetime                string
+	checkSessionRevocationStatus bool
 }
 
 func TestAccInternallyManagedReferenceOauthAccessTokenManagers(t *testing.T) {
 	resourceName := "myInternallyManagedReferenceOauthAccessTokenManagers"
 	initialResourceModel := internallyManagedReferenceOauthAccessTokenManagersResourceModel{
-		id:            internallyManagedReferenceOauthAccessTokenManagersId,
-		name:          internallyManagedReferenceOauthAccessTokenManagersName,
-		tokenLength:   "28",
-		tokenLifetime: "120",
+		id:                           internallyManagedReferenceOauthAccessTokenManagersId,
+		name:                         internallyManagedReferenceOauthAccessTokenManagersName,
+		tokenLength:                  "28",
+		tokenLifetime:                "120",
+		checkSessionRevocationStatus: false,
 	}
 	updatedResourceModel := internallyManagedReferenceOauthAccessTokenManagersResourceModel{
-		id:            internallyManagedReferenceOauthAccessTokenManagersId,
-		name:          internallyManagedReferenceOauthAccessTokenManagersName,
-		tokenLength:   "56",
-		tokenLifetime: "240",
+		id:                           internallyManagedReferenceOauthAccessTokenManagersId,
+		name:                         internallyManagedReferenceOauthAccessTokenManagersName,
+		tokenLength:                  "56",
+		tokenLifetime:                "240",
+		checkSessionRevocationStatus: true,
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -129,7 +132,7 @@ resource "pingfederate_oauth_access_token_managers" "%[1]s" {
   }
   session_validation_settings = {
     check_valid_authn_session       = false
-    check_session_revocation_status = false
+    check_session_revocation_status = %[6]t
     update_authn_session_activity   = false
     include_session_id              = false
   }
@@ -138,6 +141,7 @@ resource "pingfederate_oauth_access_token_managers" "%[1]s" {
 		resourceModel.name,
 		resourceModel.tokenLength,
 		resourceModel.tokenLifetime,
+		resourceModel.checkSessionRevocationStatus,
 	)
 }
 
@@ -153,6 +157,7 @@ func testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagersAttri
 			return err
 		}
 
+		// Verify that attributes have expected values
 		getFields := response.Configuration.Fields
 		for _, field := range getFields {
 			if field.Name == "Token Length" {
@@ -168,7 +173,12 @@ func testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagersAttri
 				}
 			}
 		}
-		// Verify that attributes have expected values
+
+		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "check_session_revocation_status", config.checkSessionRevocationStatus, *response.SessionValidationSettings.CheckSessionRevocationStatus)
+		if err != nil {
+			return err
+		}
+
 		return nil
 	}
 }
