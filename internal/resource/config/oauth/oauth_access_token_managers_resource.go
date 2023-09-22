@@ -12,9 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -105,12 +105,12 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 				Description: "Plugin instance configuration.",
 				Required:    true,
 				Attributes: map[string]schema.Attribute{
-					"tables": schema.SetNestedAttribute{
+					"tables": schema.ListNestedAttribute{
 						Description: "List of configuration tables.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
+						PlanModifiers: []planmodifier.List{
+							listplanmodifier.UseStateForUnknown(),
 						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
@@ -118,12 +118,12 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 									Description: "The name of the table.",
 									Required:    true,
 								},
-								"rows": schema.SetNestedAttribute{
+								"rows": schema.ListNestedAttribute{
 									Description: "List of table rows.",
 									Optional:    true,
 									NestedObject: schema.NestedAttributeObject{
 										Attributes: map[string]schema.Attribute{
-											"fields": schema.SetNestedAttribute{
+											"fields": schema.ListNestedAttribute{
 												Description: "The configuration fields in the row.",
 												Computed:    true,
 												Optional:    true,
@@ -173,12 +173,12 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 							},
 						},
 					},
-					"fields": schema.SetNestedAttribute{
+					"fields": schema.ListNestedAttribute{
 						Description: "List of configuration fields.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
+						PlanModifiers: []planmodifier.List{
+							listplanmodifier.UseStateForUnknown(),
 						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
@@ -218,12 +218,12 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 					objectplanmodifier.UseStateForUnknown(),
 				},
 				Attributes: map[string]schema.Attribute{
-					"core_attributes": schema.SetNestedAttribute{
+					"core_attributes": schema.ListNestedAttribute{
 						Description: "A list of core token attributes that are associated with the access token management plugin type. This field is read-only and is ignored on POST/PUT.",
 						Computed:    true,
 						Optional:    false,
-						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
+						PlanModifiers: []planmodifier.List{
+							listplanmodifier.UseStateForUnknown(),
 						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
@@ -245,12 +245,12 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 							},
 						},
 					},
-					"extended_attributes": schema.SetNestedAttribute{
+					"extended_attributes": schema.ListNestedAttribute{
 						Description: "A list of additional token attributes that are associated with this access token management plugin instance.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
+						PlanModifiers: []planmodifier.List{
+							listplanmodifier.UseStateForUnknown(),
 						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
@@ -293,7 +293,7 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 						Description: "If this token manager has a parent, this flag determines whether selection settings, such as resource URI's, are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
 						Optional:    true,
 					},
-					"resource_uris": schema.SetAttribute{
+					"resource_uris": schema.ListAttribute{
 						Description: "The list of base resource URI's which map to this token manager. A resource URI, specified via the 'aud' parameter, can be used to select a specific token manager for an OAuth request.",
 						Optional:    true,
 						ElementType: types.StringType,
@@ -314,15 +314,15 @@ func oauthAccessTokenManagersResourceSchema(ctx context.Context, req resource.Sc
 						Computed:    true,
 						Optional:    true,
 					},
-					"allowed_clients": schema.SetNestedAttribute{
+					"allowed_clients": schema.ListNestedAttribute{
 						Description: "If 'restrictClients' is true, this field defines the list of OAuth clients that are allowed to access the token manager.",
 						Computed:    true,
 						Optional:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: config.AddResourceLinkSchema(),
 						},
-						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
+						PlanModifiers: []planmodifier.List{
+							listplanmodifier.UseStateForUnknown(),
 						},
 					},
 				},
@@ -375,7 +375,7 @@ func (r *oauthAccessTokenManagersResource) ValidateConfig(ctx context.Context, r
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
 
 	if internaltypes.IsDefined(model.AttributeContract) {
-		if len(model.AttributeContract.Attributes()["extended_attributes"].(types.Set).Elements()) == 0 {
+		if len(model.AttributeContract.Attributes()["extended_attributes"].(types.List).Elements()) == 0 {
 			resp.Diagnostics.AddError("Empty set!", "Please provide valid properties within extended_attributes. The set cannot be empty.\nIf no values are necessary, remove this property from your terraform file.")
 		}
 	}
@@ -400,7 +400,7 @@ func addOptionalOauthAccessTokenManagersFields(ctx context.Context, addRequest *
 		if err != nil {
 			return err
 		}
-		extendedAttrsLength := len(plan.AttributeContract.Attributes()["extended_attributes"].(types.Set).Elements())
+		extendedAttrsLength := len(plan.AttributeContract.Attributes()["extended_attributes"].(types.List).Elements())
 		if extendedAttrsLength == 0 {
 			addRequest.AttributeContract.ExtendedAttributes = nil
 		}
@@ -475,14 +475,14 @@ func readOauthAccessTokenManagersResponse(ctx context.Context, r *client.AccessT
 	}
 
 	rowAttrType := map[string]attr.Type{
-		"fields":      basetypes.SetType{ElemType: basetypes.ObjectType{AttrTypes: fieldAttrType}},
+		"fields":      basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: fieldAttrType}},
 		"default_row": basetypes.BoolType{},
 	}
 
 	// configuration object
 	tableAttrType := map[string]attr.Type{
 		"name":      basetypes.StringType{},
-		"rows":      basetypes.SetType{ElemType: basetypes.ObjectType{AttrTypes: rowAttrType}},
+		"rows":      basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: rowAttrType}},
 		"inherited": basetypes.BoolType{},
 	}
 
@@ -498,14 +498,14 @@ func readOauthAccessTokenManagersResponse(ctx context.Context, r *client.AccessT
 			tableRows := tableElem.Rows
 			toStateTableRows := []client.ConfigRow{}
 			if configFromPlanAttrs["tables"] != nil {
-				tableIndex := configFromPlanAttrs["tables"].(types.Set).Elements()[tei].(types.Object).Attributes()
+				tableIndex := configFromPlanAttrs["tables"].(types.List).Elements()[tei].(types.Object).Attributes()
 				for tri, tr := range tableRows {
 					tableRow := client.ConfigRow{}
 					tableRow.DefaultRow = tr.DefaultRow
 					tableRowFields := tr.Fields
 					toStateTableRowFields := []client.ConfigField{}
-					tableRowIndex := tableIndex["rows"].(types.Set).Elements()[tri].(types.Object).Attributes()
-					tableRowPlanFields := tableRowIndex["fields"].(types.Set).Elements()
+					tableRowIndex := tableIndex["rows"].(types.List).Elements()[tri].(types.Object).Attributes()
+					tableRowPlanFields := tableRowIndex["fields"].(types.List).Elements()
 					for _, trf := range tableRowFields {
 						for _, tableRowInPlan := range tableRowPlanFields {
 							tableRowField := client.ConfigField{}
@@ -536,12 +536,12 @@ func readOauthAccessTokenManagersResponse(ctx context.Context, r *client.AccessT
 			}
 		}
 	}
-	tableValue, _ := types.SetValueFrom(ctx, types.ObjectType{AttrTypes: tableAttrType}, tables)
+	tableValue, _ := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: tableAttrType}, tables)
 
 	fields := []client.ConfigField{}
 	fieldsElems := r.Configuration.Fields
 	if configFromPlanAttrs["fields"] != nil {
-		fieldsFromPlan := configFromPlanAttrs["fields"].(types.Set).Elements()
+		fieldsFromPlan := configFromPlanAttrs["fields"].(types.List).Elements()
 		if len(fieldsElems) != 0 {
 			for _, cf := range fieldsElems {
 				for _, fieldInPlan := range fieldsFromPlan {
@@ -566,11 +566,11 @@ func readOauthAccessTokenManagersResponse(ctx context.Context, r *client.AccessT
 			}
 		}
 	}
-	configFieldValue, _ := types.SetValueFrom(ctx, types.ObjectType{AttrTypes: fieldAttrType}, fields)
+	configFieldValue, _ := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: fieldAttrType}, fields)
 
 	configurationAttrType := map[string]attr.Type{
-		"fields": basetypes.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrType}},
-		"tables": basetypes.SetType{ElemType: types.ObjectType{AttrTypes: tableAttrType}},
+		"fields": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: fieldAttrType}},
+		"tables": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: tableAttrType}},
 	}
 
 	configurationAttrValue := map[string]attr.Value{
@@ -596,7 +596,7 @@ func readOauthAccessTokenManagersResponse(ctx context.Context, r *client.AccessT
 		coreAttribute.MultiValued = ca.MultiValued
 		coreAttrs = append(coreAttrs, coreAttribute)
 	}
-	attributeContractCoreAttributes, _ := types.SetValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
+	attributeContractCoreAttributes, _ := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
 
 	// state.AttributeContract extended_attributes
 	attributeContractClientExtendedAttributes := attrContract.ExtendedAttributes
@@ -607,11 +607,11 @@ func readOauthAccessTokenManagersResponse(ctx context.Context, r *client.AccessT
 		extendedAttr.MultiValued = ea.MultiValued
 		extdAttrs = append(extdAttrs, extendedAttr)
 	}
-	attributeContractExtendedAttributes, _ := types.SetValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
+	attributeContractExtendedAttributes, _ := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
 
 	attributeContractTypes := map[string]attr.Type{
-		"core_attributes":           basetypes.SetType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
-		"extended_attributes":       basetypes.SetType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
+		"core_attributes":           basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
+		"extended_attributes":       basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
 		"inherited":                 basetypes.BoolType{},
 		"default_subject_attribute": basetypes.StringType{},
 	}
@@ -627,7 +627,7 @@ func readOauthAccessTokenManagersResponse(ctx context.Context, r *client.AccessT
 	// state.SelectionSettings
 	selectionSettingsAttrType := map[string]attr.Type{
 		"inherited":     basetypes.BoolType{},
-		"resource_uris": basetypes.SetType{ElemType: basetypes.StringType{}},
+		"resource_uris": basetypes.ListType{ElemType: basetypes.StringType{}},
 	}
 
 	state.SelectionSettings, _ = types.ObjectValueFrom(ctx, selectionSettingsAttrType, r.SelectionSettings)
@@ -636,7 +636,7 @@ func readOauthAccessTokenManagersResponse(ctx context.Context, r *client.AccessT
 	accessControlSettingsAttrType := map[string]attr.Type{
 		"inherited":        basetypes.BoolType{},
 		"restrict_clients": basetypes.BoolType{},
-		"allowed_clients":  basetypes.SetType{ElemType: basetypes.ObjectType{AttrTypes: internaltypes.ResourceLinkStateAttrType()}},
+		"allowed_clients":  basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: internaltypes.ResourceLinkStateAttrType()}},
 	}
 
 	state.AccessControlSettings, _ = types.ObjectValueFrom(ctx, accessControlSettingsAttrType, r.AccessControlSettings)
@@ -821,8 +821,5 @@ func (r *oauthAccessTokenManagersResource) Delete(ctx context.Context, req resou
 
 func (r *oauthAccessTokenManagersResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	// Set a placeholder id value to appease terraform.
-	// The real attributes will be imported when terraform performs a read after the import.
-	// If no value is set here, Terraform will error out when importing.
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), "id")...)
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

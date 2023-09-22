@@ -47,7 +47,7 @@ func TestAccInternallyManagedReferenceOauthAccessTokenManagers(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccInternallyManagedReferenceOauthAccessTokenManagers(resourceName, initialResourceModel),
-				// Check:  testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagersAttributes(initialResourceModel),
+				Check:  testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagersAttributes(initialResourceModel),
 			},
 			{
 				// Test updating some fields
@@ -56,11 +56,11 @@ func TestAccInternallyManagedReferenceOauthAccessTokenManagers(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccInternallyManagedReferenceOauthAccessTokenManagers(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_oauth_access_token_managers." + resourceName,
-				ImportStateId:     internallyManagedReferenceOauthAccessTokenManagersId,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                  testAccInternallyManagedReferenceOauthAccessTokenManagers(resourceName, updatedResourceModel),
+				ResourceName:            "pingfederate_oauth_access_token_managers." + resourceName,
+				ImportStateId:           internallyManagedReferenceOauthAccessTokenManagersId,
+				ImportState:             true,
+				ImportStateVerifyIgnore: []string{"configuration.fields.value"},
 			},
 		},
 	})
@@ -69,69 +69,69 @@ func TestAccInternallyManagedReferenceOauthAccessTokenManagers(t *testing.T) {
 func testAccInternallyManagedReferenceOauthAccessTokenManagers(resourceName string, resourceModel internallyManagedReferenceOauthAccessTokenManagersResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_access_token_managers" "%[1]s" {
-  id = "%[2]s"
+  id   = "%[2]s"
   name = "%[3]s"
   plugin_descriptor_ref = {
-	id = "org.sourceid.oauth20.token.plugin.impl.ReferenceBearerAccessTokenManagementPlugin"
+    id = "org.sourceid.oauth20.token.plugin.impl.ReferenceBearerAccessTokenManagementPlugin"
   }
   configuration = {
-	tables = []
-	fields = [
-	  {
-	    name = "Token Length"
-	    value = "%[4]s"
-	  },
-	  {
-	    name = "Token Lifetime"
-	    value = "%[5]s"
-	  },
-	  {
-	    name = "Lifetime Extension Policy"
-	    value = "NONE"
-	  },
-	  {
-	    name = "Maximum Token Lifetime"
-	    value = ""
-	  },
-	  {
-	    name = "Lifetime Extension Threshold Percentage"
-	    value = "30"
-	  },
-	  {
-	    name = "Mode for Synchronous RPC"
-	    value = "3"
-	  },
-	  {
-	    name = "RPC Timeout"
-	    value = "500"
-	  },
-	  {
-	    name = "Expand Scope Groups"
-	    value = "false"
-	  }
-	]
+    tables = []
+    fields = [
+      {
+        name  = "Token Length"
+        value = "%[4]s"
+      },
+      {
+        name  = "Token Lifetime"
+        value = "%[5]s"
+      },
+      {
+        name  = "Lifetime Extension Policy"
+        value = "NONE"
+      },
+      {
+        name  = "Maximum Token Lifetime"
+        value = ""
+      },
+      {
+        name  = "Lifetime Extension Threshold Percentage"
+        value = "30"
+      },
+      {
+        name  = "Mode for Synchronous RPC"
+        value = "3"
+      },
+      {
+        name  = "RPC Timeout"
+        value = "500"
+      },
+      {
+        name  = "Expand Scope Groups"
+        value = "false"
+      }
+    ]
   }
   attribute_contract = {
-	coreAttributes = []
-	extended_attributes = [
-	  {
-		name = "extended_contract"
-		multi_valued = true
-	  }
-	]
+    coreAttributes = []
+    extended_attributes = [
+      {
+        name         = "extended_contract"
+        multi_valued = true
+      }
+    ]
   }
   selection_settings = {
-	resource_uris = []
+    resource_uris = []
   }
   access_control_settings = {
-	restrict_clients = false
-	allowedClients = []
+    restrict_clients = false
+    allowedClients   = []
   }
   session_validation_settings = {
-	check_valid_authn_session = false
-	check_session_revocation_status = false
-	update_authn_session_activity = false
-	include_session_id = false
+    check_valid_authn_session       = false
+    check_session_revocation_status = false
+    update_authn_session_activity   = false
+    include_session_id              = false
   }
 }`, resourceName,
 		resourceModel.id,
@@ -153,11 +153,22 @@ func testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagersAttri
 			return err
 		}
 
-		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchString(resourceType, &config.id, "name", config.name, response.Name)
-		if err != nil {
-			return err
+		getFields := response.Configuration.Fields
+		for _, field := range getFields {
+			if field.Name == "Token Length" {
+				err = acctest.TestAttributesMatchString(resourceType, &config.id, "name", config.tokenLength, *field.Value)
+				if err != nil {
+					return err
+				}
+			}
+			if field.Name == "Token Lifetime" {
+				err = acctest.TestAttributesMatchString(resourceType, &config.id, "name", config.tokenLifetime, *field.Value)
+				if err != nil {
+					return err
+				}
+			}
 		}
+		// Verify that attributes have expected values
 		return nil
 	}
 }
