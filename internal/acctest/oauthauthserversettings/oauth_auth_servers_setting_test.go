@@ -73,7 +73,7 @@ func TestAccOauthAuthServerSettings(t *testing.T) {
 			{
 				// Test importing the resource
 				Config:            testAccOauthAuthServerSettings(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_oauth_auth_server_setting." + resourceName,
+				ResourceName:      "pingfederate_oauth_auth_server_settings." + resourceName,
 				ImportStateId:     oauthAuthServerSettingsId,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -84,7 +84,7 @@ func TestAccOauthAuthServerSettings(t *testing.T) {
 
 func testAccOauthAuthServerSettings(resourceName string, resourceModel oauthAuthServerSettingsResourceModel) string {
 	return fmt.Sprintf(`
-resource "pingfederate_oauth_auth_server_setting" "%[1]s" {
+resource "pingfederate_oauth_auth_server_settings" "%[1]s" {
   authorization_code_entropy          = %[2]d
   authorization_code_timeout          = %[3]d
   registered_authorization_path       = "%[4]s"

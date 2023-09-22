@@ -80,7 +80,7 @@ func addOptionalProtocolMetadataLifetimeSettingsFields(ctx context.Context, addR
 
 // Metadata returns the resource type name.
 func (r *protocolMetadataLifetimeSettingsResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_protocol_metadata_lifetime_setting"
+	resp.TypeName = req.ProviderTypeName + "_protocol_metadata_lifetime_settings"
 }
 
 func (r *protocolMetadataLifetimeSettingsResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {

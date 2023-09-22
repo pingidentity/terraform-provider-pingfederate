@@ -50,7 +50,7 @@ func TestAccProtocolMetadataLifetimeSettings(t *testing.T) {
 			{
 				// Test importing the resource
 				Config:            testAccProtocolMetadataLifetimeSettings(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_protocol_metadata_lifetime_setting." + resourceName,
+				ResourceName:      "pingfederate_protocol_metadata_lifetime_settings." + resourceName,
 				ImportStateId:     protocolMetadataLifetimeSettingsId,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -61,7 +61,7 @@ func TestAccProtocolMetadataLifetimeSettings(t *testing.T) {
 
 func testAccProtocolMetadataLifetimeSettings(resourceName string, resourceModel protocolMetadataLifetimeSettingsResourceModel) string {
 	return fmt.Sprintf(`
-resource "pingfederate_protocol_metadata_lifetime_setting" "%[1]s" {
+resource "pingfederate_protocol_metadata_lifetime_settings" "%[1]s" {
   cache_duration = %[2]d
   reload_delay   = %[3]d
 }`, resourceName,

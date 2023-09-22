@@ -827,7 +827,7 @@ func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *c
 
 // Metadata returns the resource type name.
 func (r *oauthAuthServerSettingsResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_oauth_auth_server_setting"
+	resp.TypeName = req.ProviderTypeName + "_oauth_auth_server_settings"
 }
 
 func (r *oauthAuthServerSettingsResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
