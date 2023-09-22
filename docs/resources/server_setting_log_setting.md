@@ -106,5 +106,5 @@ Import is supported using the following syntax:
 
 ```shell
 # "serverSettingsLogSettingsId" should be "id"
-terraform import pingfederate_server_settings_log_settings.myServerSettingsLogSettings serverSettingsLogSettingsId
+terraform import pingfederate_server_settings_log_setting.myServerSettingsLogSettings serverSettingsLogSettingsId
 ```

@@ -35,5 +35,5 @@ Import is supported using the following syntax:
 
 ```shell
 # "virtualHostNamesId" should be "id"
-terraform import pingfederate_virtual_host_names.myVirtualHostNames virtualHostNamesId
+terraform import pingfederate_virtual_host_name.myVirtualHostNames virtualHostNamesId
 ```

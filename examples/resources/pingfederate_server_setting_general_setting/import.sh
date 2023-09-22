@@ -1,2 +1,2 @@
 # "serverSettingsGeneralSettingsId" should be "id"
-terraform import pingfederate_server_settings_general_settings.myServerSettingsGeneralSettings serverSettingsGeneralSettingsId
+terraform import pingfederate_server_setting_general_setting.myServerSettingsGeneralSettings serverSettingsGeneralSettingsId

@@ -87,5 +87,5 @@ Import is supported using the following syntax:
 
 ```shell
 # "serverSettingsSystemKeysId" should be "id"
-terraform import pingfederate_server_settings_system_keys.myServerSettingsSystemKeys serverSettingsSystemKeysId
+terraform import pingfederate_server_setting_system_key.myServerSettingsSystemKeys serverSettingsSystemKeysId
 ```

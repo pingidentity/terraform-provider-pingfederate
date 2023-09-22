@@ -365,5 +365,5 @@ Import is supported using the following syntax:
 
 ```shell
 # "localIdentityIdentityProfileId" should be the id of the Local Identity Identity Profile to be imported
-terraform import pingfederate_local_identity_identity_profiles.myLocalIdentityIdentityProfile localIdentityIdentityProfileId
+terraform import pingfederate_local_identity_identity_profile.myLocalIdentityIdentityProfile localIdentityIdentityProfileId
 ```
