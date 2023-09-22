@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: install generate fmt vet test starttestcontainer removetestcontainer spincontainer clearstates kaboom testacc testacccomplete generateresource openlocalwebapi golangcilint tfproviderlint tflint terrafmtlint importfmtlint devcheck devchecknotest
+.PHONY: install generate fmt vet test starttestcontainer removetestcontainer spincontainer clearstates kaboom testacc testaccnooauthserversettings testaccoauthserversettings testacccomplete generateresource openlocalwebapi golangcilint tfproviderlint tflint terrafmtlint importfmtlint devcheck devchecknotest
 
 default: install
 
@@ -47,12 +47,13 @@ removetestcontainer:
 	
 spincontainer: removetestcontainer starttestcontainer
 
+define test_acc_env_vars 
+	PINGFEDERATE_PROVIDER_HTTPS_HOST=https://localhost:9999 PINGFEDERATE_PROVIDER_USERNAME=administrator PINGFEDERATE_PROVIDER_PASSWORD=2FederateM0re PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true
+endef
+
 testacc:
-	PINGFEDERATE_PROVIDER_HTTPS_HOST=https://localhost:9999 \
-	PINGFEDERATE_PROVIDER_USERNAME=administrator \
-	PINGFEDERATE_PROVIDER_PASSWORD=2FederateM0re \
-	PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true \
-	TF_ACC=1 go test -timeout 10m -v ./internal/... -p 4
+	$(call test_acc_env_vars) TF_ACC=1  go test `go list ./internal/... | grep -v github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/oauthauthserversettings` -timeout 10m -v -p 4; \
+	$(call test_acc_env_vars) TF_ACC=1  go test `go list ./internal/... | grep github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/oauthauthserversettings` -timeout 10m -v -p 1
 
 testacccomplete: spincontainer testacc
 
