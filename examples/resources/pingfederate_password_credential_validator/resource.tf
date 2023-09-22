@@ -2,7 +2,7 @@
 # Please refer to the link below on how to best store state files and data within. #
 # https://developer.hashicorp.com/terraform/plugin/best-practices/sensitive-state #
 
-resource "pingfederate_password_credential_validators" "simpleUsernamePasswordCredentialValidatorExample" {
+resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCredentialValidatorExample" {
   id   = "simpleUsernamePCV"
   name = "simpleUsernamePasswordCredentialValidator"
   plugin_descriptor_ref = {
@@ -132,7 +132,7 @@ resource "pingfederate_password_credential_validators" "simpleUsernamePasswordCr
   }
 }
 
-resource "pingfederate_password_credential_validators" "radiusUsernamePasswordCredentialValidatorExample" {
+resource "pingfederate_password_credential_validator" "radiusUsernamePasswordCredentialValidatorExample" {
   id   = "radiusUnPwPCV"
   name = "radiusUsernamePasswordCredentialValidator"
   plugin_descriptor_ref = {
@@ -196,7 +196,7 @@ resource "pingfederate_password_credential_validators" "radiusUsernamePasswordCr
   }
 }
 
-resource "pingfederate_password_credential_validators" "ldapUsernamePasswordCredentialValidatorExample" {
+resource "pingfederate_password_credential_validator" "ldapUsernamePasswordCredentialValidatorExample" {
   id   = "ldapUnPwPCV"
   name = "ldapUsernamePasswordCredentialValidatorExample"
   plugin_descriptor_ref = {
@@ -276,7 +276,7 @@ resource "pingfederate_password_credential_validators" "ldapUsernamePasswordCred
   }
 }
 
-resource "pingfederate_password_credential_validators" "pingIdPasswordCredentialValidatorExample" {
+resource "pingfederate_password_credential_validator" "pingIdPasswordCredentialValidatorExample" {
   id   = "pingIdPCV"
   name = "pingIdPasswordCredentialValidatorExample"
   plugin_descriptor_ref = {
@@ -512,7 +512,7 @@ resource "pingfederate_password_credential_validators" "pingIdPasswordCredential
   }
 }
 
-resource "pingfederate_password_credential_validators" "pingOneForEnterpriseDirectoryPasswordCredentialValidatorExample" {
+resource "pingfederate_password_credential_validator" "pingOneForEnterpriseDirectoryPasswordCredentialValidatorExample" {
   id   = "pingOneForEnterpriseDirectoryPCV"
   name = "pingOneForEnterpriseDirectoryPasswordCredentialValidatorExample"
   plugin_descriptor_ref = {

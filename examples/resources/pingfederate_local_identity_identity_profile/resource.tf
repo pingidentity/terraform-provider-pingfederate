@@ -1,4 +1,4 @@
-resource "pingfederate_local_identity_identity_profiles" "localIdentityIdentityProfilesExample" {
+resource "pingfederate_local_identity_identity_profile" "localIdentityIdentityProfilesExample" {
   name = "yourIdentityProfileName"
   id   = "yourid"
   apc_id = {

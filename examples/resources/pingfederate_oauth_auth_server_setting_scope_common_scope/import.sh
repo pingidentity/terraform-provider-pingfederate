@@ -1,2 +1,0 @@
-# "myOauthAuthServerSettingsScopesCommonScopeId" should be the name of the OAuth Auth Server Setting Common Scope to be imported
-terraform import pingfederate_oauth_auth_server_setting_scope_common_scope.myOauthAuthServerSettingsScopesCommonScope myOauthAuthServerSettingsScopesCommonScopeId

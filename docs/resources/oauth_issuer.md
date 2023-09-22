@@ -13,7 +13,7 @@ Manages an OAuth Issuer.
 ## Example Usage
 
 ```terraform
-resource "pingfederate_oauth_issuers" "example" {
+resource "pingfederate_oauth_issuer" "example" {
   description = "example description"
   host        = "example"
   name        = "example"

@@ -1,2 +1,0 @@
-# "sessionAuthenticationSessionPoliciesGlobalId" should be "id"
-terraform import pingfederate_session_authentication_session_policy_global.mySessionAuthenticationSessionPoliciesGlobal sessionAuthenticationSessionPoliciesGlobalId

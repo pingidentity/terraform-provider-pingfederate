@@ -1,2 +1,0 @@
-# "protocolMetadataLifetimeSettingsId" should be "id"
-terraform import pingfederate_protocol_metadata_lifetime_setting.myProtocolMetadataLifetimeSettings protocolMetadataLifetimeSettingsId
