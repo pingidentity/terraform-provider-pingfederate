@@ -17,9 +17,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/administrativeaccounts"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/administrativeaccount"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificates"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/license"
@@ -27,7 +27,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/protocolmetadata"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sessions"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -252,9 +252,9 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 // Resources defines the resources implemented in the provider.
 func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		administrativeaccounts.AdministrativeAccountResource,
+		administrativeaccount.AdministrativeAccountResource,
 		authenticationapi.AuthenticationApiSettingsResource,
-		certificates.CertificateResource,
+		certificate.CertificateResource,
 		config.AuthenticationPolicyContractsResource,
 		config.PasswordCredentialValidatorsResource,
 		config.RedirectValidationResource,
@@ -274,8 +274,8 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		serversettings.ServerSettingsLogSettingsResource,
 		serversettings.ServerSettingsResource,
 		serversettings.ServerSettingsSystemKeysResource,
-		session.SessionApplicationSessionPolicyResource,
-		session.SessionAuthenticationSessionPoliciesGlobalResource,
-		session.SessionSettingsResource,
+		sessions.SessionApplicationSessionPolicyResource,
+		sessions.SessionAuthenticationSessionPoliciesGlobalResource,
+		sessions.SessionSettingsResource,
 	}
 }
