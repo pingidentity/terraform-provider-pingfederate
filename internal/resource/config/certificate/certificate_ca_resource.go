@@ -132,7 +132,7 @@ func (r *certificatesResource) Create(ctx context.Context, req resource.CreateRe
 	createCertificate := client.NewX509File((plan.FileData.ValueString()))
 	err := addOptionalCaCertsFields(ctx, createCertificate, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for CA Certificates", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for a CA Certificate", err.Error())
 		return
 	}
 	_, requestErr := createCertificate.MarshalJSON()

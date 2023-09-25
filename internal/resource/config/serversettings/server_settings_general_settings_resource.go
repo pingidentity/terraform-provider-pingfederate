@@ -159,7 +159,7 @@ func (r *serverSettingsGeneralSettingsResource) Create(ctx context.Context, req 
 	apiCreateServerSettingsGeneralSettings = apiCreateServerSettingsGeneralSettings.Body(*createServerSettingsGeneralSettings)
 	serverSettingsGeneralSettingsResponse, httpResp, err := r.apiClient.ServerSettingsApi.UpdateGeneralSettingsExecute(apiCreateServerSettingsGeneralSettings)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the ServerSettingsGeneralSettings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Server Settings General Settings", err, httpResp)
 		return
 	}
 	_, responseErr := serverSettingsGeneralSettingsResponse.MarshalJSON()

@@ -198,7 +198,7 @@ func (r *sessionSettingsResource) Update(ctx context.Context, req resource.Updat
 	createUpdateRequest := client.NewSessionSettings()
 	err := addOptionalSessionSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for SessionSettings", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Session Settings", err.Error())
 		return
 	}
 	_, requestErr := createUpdateRequest.MarshalJSON()
@@ -208,7 +208,7 @@ func (r *sessionSettingsResource) Update(ctx context.Context, req resource.Updat
 	updateSessionSettings = updateSessionSettings.Body(*createUpdateRequest)
 	updateSessionSettingsResponse, httpResp, err := r.apiClient.SessionApi.UpdateSessionSettingsExecute(updateSessionSettings)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating SessionSettings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Session Settings", err, httpResp)
 		return
 	}
 	// Log response JSON

@@ -180,7 +180,7 @@ func (r *serverSettingsLogSettingsResource) Create(ctx context.Context, req reso
 	apiCreateServerSettingsLogSettings = apiCreateServerSettingsLogSettings.Body(*createServerSettingsLogSettings)
 	serverSettingsLogSettingsResponse, httpResp, err := r.apiClient.ServerSettingsApi.UpdateLogSettingsExecute(apiCreateServerSettingsLogSettings)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the ServerSettingsLogSettings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Server Settings Log Settings", err, httpResp)
 		return
 	}
 	_, responseErr := serverSettingsLogSettingsResponse.MarshalJSON()

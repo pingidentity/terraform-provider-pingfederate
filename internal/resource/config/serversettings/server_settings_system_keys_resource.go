@@ -322,7 +322,7 @@ func (r *serverSettingsSystemKeysResource) Update(ctx context.Context, req resou
 	apiCreateServerSettingsSystemKeys = apiCreateServerSettingsSystemKeys.Body(*createServerSettingsSystemKeys)
 	serverSettingsSystemKeysResponse, httpResp, err := r.apiClient.ServerSettingsApi.UpdateSystemKeysExecute(apiCreateServerSettingsSystemKeys)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the ServerSettingsSystemKeys", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Server Settings System Keys", err, httpResp)
 		return
 	}
 	_, responseErr := serverSettingsSystemKeysResponse.MarshalJSON()

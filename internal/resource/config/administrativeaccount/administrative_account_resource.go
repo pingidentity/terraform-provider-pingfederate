@@ -211,7 +211,7 @@ func (r *administrativeAccountsResource) Create(ctx context.Context, req resourc
 	createAdministrativeAccount := client.NewAdministrativeAccount(plan.Username.ValueString())
 	err := addOptionalAdministrativeAccountFields(ctx, createAdministrativeAccount, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for AdministrativeAccount", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Administrative Account", err.Error())
 		return
 	}
 
@@ -224,7 +224,7 @@ func (r *administrativeAccountsResource) Create(ctx context.Context, req resourc
 	apiCreateAdministrativeAccount = apiCreateAdministrativeAccount.Body(*createAdministrativeAccount)
 	administrativeAccountResponse, httpResp, err := r.apiClient.AdministrativeAccountsApi.AddAccountExecute(apiCreateAdministrativeAccount)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the AdministrativeAccount", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Administrative Account", err, httpResp)
 		return
 	}
 
@@ -289,7 +289,7 @@ func (r *administrativeAccountsResource) Update(ctx context.Context, req resourc
 	createUpdateRequest := client.NewAdministrativeAccount(plan.Username.ValueString())
 	err := addOptionalAdministrativeAccountFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for AdministrativeAccount", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Administrative Account", err.Error())
 		return
 	}
 
@@ -301,7 +301,7 @@ func (r *administrativeAccountsResource) Update(ctx context.Context, req resourc
 	updateAdministrativeAccount = updateAdministrativeAccount.Body(*createUpdateRequest)
 	updateAdministrativeAccountResponse, httpResp, err := r.apiClient.AdministrativeAccountsApi.UpdateAccountExecute(updateAdministrativeAccount)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating AdministrativeAccount", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Administrative Account", err, httpResp)
 		return
 	}
 	// Log response JSON
@@ -328,7 +328,7 @@ func (r *administrativeAccountsResource) Delete(ctx context.Context, req resourc
 	}
 	httpResp, err := r.apiClient.AdministrativeAccountsApi.DeleteAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Username.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a AdministrativeAccount", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a Administrative Account", err, httpResp)
 		return
 	}
 }

@@ -165,7 +165,7 @@ func (r *licenseResource) Update(ctx context.Context, req resource.UpdateRequest
 	updateLicense = updateLicense.Body(*createUpdateRequest)
 	updateLicenseResponse, httpResp, err := r.apiClient.LicenseApi.UpdateLicenseExecute(updateLicense)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating License", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the License", err, httpResp)
 		return
 	}
 	// Log response JSON
