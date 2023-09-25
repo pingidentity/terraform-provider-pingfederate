@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -113,23 +112,23 @@ func (r *protocolMetadataLifetimeSettingsResource) Create(ctx context.Context, r
 	createUpdateRequest := client.NewMetadataLifetimeSettings()
 	err := addOptionalProtocolMetadataLifetimeSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for ProtocolMetadataLifetimeSettings", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Protocol Metadata Lifetime Settings", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Protocol Metadata Lifetime Settings: %s", requestErr.Error())
 	}
 
 	updateProtocolMetadataLifetimeSettings = updateProtocolMetadataLifetimeSettings.Body(*createUpdateRequest)
 	protocolMetadataLifetimeSettingsResponse, httpResp, err := r.apiClient.ProtocolMetadataApi.UpdateLifetimeSettingsExecute(updateProtocolMetadataLifetimeSettings)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the ProtocolMetadataLifetimeSettings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Protocol MetadataLife timeSettings", err, httpResp)
 		return
 	}
-	responseJson, err := protocolMetadataLifetimeSettingsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := protocolMetadataLifetimeSettingsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Protocol Metadata Lifetime Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -151,17 +150,17 @@ func (r *protocolMetadataLifetimeSettingsResource) Read(ctx context.Context, req
 	apiReadProtocolMetadataLifetimeSettings, httpResp, err := r.apiClient.ProtocolMetadataApi.GetLifetimeSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the ProtocolMetadataLifetimeSettings", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Protocol Metadata Lifetime Settings", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the ProtocolMetadataLifetimeSettings", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Protocol Metadata Lifetime Settings", err, httpResp)
 		}
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadProtocolMetadataLifetimeSettings.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadProtocolMetadataLifetimeSettings.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Protocol Metadata Lifetime Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -186,23 +185,23 @@ func (r *protocolMetadataLifetimeSettingsResource) Update(ctx context.Context, r
 	createUpdateRequest := client.NewMetadataLifetimeSettings()
 	err := addOptionalProtocolMetadataLifetimeSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for ProtocolMetadataLifetimeSettings", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Protocol Metadata Lifetime Settings", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Protocol Metadata Lifetime Settings: %s", requestErr.Error())
 	}
 
 	updateProtocolMetadataLifetimeSettings = updateProtocolMetadataLifetimeSettings.Body(*createUpdateRequest)
 	protocolMetadataLifetimeSettingsResponse, httpResp, err := r.apiClient.ProtocolMetadataApi.UpdateLifetimeSettingsExecute(updateProtocolMetadataLifetimeSettings)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the ProtocolMetadataLifetimeSettings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Protocol Metadata Lifetime Settings", err, httpResp)
 		return
 	}
-	responseJson, err := protocolMetadataLifetimeSettingsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := protocolMetadataLifetimeSettingsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Protocol Metadata Lifetime Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state

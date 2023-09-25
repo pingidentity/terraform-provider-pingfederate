@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -122,24 +121,24 @@ func (r *sessionSettingsResource) Create(ctx context.Context, req resource.Creat
 	createSessionSettings := client.NewSessionSettings()
 	err := addOptionalSessionSettingsFields(ctx, createSessionSettings, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for SessionSettings", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Session Settings", err.Error())
 		return
 	}
-	requestJson, err := createSessionSettings.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createSessionSettings.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Session Settings: %s", requestErr.Error())
 	}
 
 	apiCreateSessionSettings := r.apiClient.SessionApi.UpdateSessionSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateSessionSettings = apiCreateSessionSettings.Body(*createSessionSettings)
 	sessionSettingsResponse, httpResp, err := r.apiClient.SessionApi.UpdateSessionSettingsExecute(apiCreateSessionSettings)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the SessionSettings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Session Settings", err, httpResp)
 		return
 	}
-	responseJson, err := sessionSettingsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := sessionSettingsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Session Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -169,9 +168,9 @@ func (r *sessionSettingsResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadSessionSettings.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadSessionSettings.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Session Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -202,9 +201,9 @@ func (r *sessionSettingsResource) Update(ctx context.Context, req resource.Updat
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for SessionSettings", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Session Settings: %s", requestErr.Error())
 	}
 	updateSessionSettings = updateSessionSettings.Body(*createUpdateRequest)
 	updateSessionSettingsResponse, httpResp, err := r.apiClient.SessionApi.UpdateSessionSettingsExecute(updateSessionSettings)
@@ -213,9 +212,9 @@ func (r *sessionSettingsResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateSessionSettingsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateSessionSettingsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Session Settings: %s", responseErr.Error())
 	}
 	// Read the response
 	readSessionSettingsResponse(ctx, updateSessionSettingsResponse, &state, &plan)

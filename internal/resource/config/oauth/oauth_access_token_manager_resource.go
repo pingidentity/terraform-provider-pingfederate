@@ -19,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -666,24 +665,24 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 	createOauthAccessTokenManager := client.NewAccessTokenManager(plan.Id.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
 	err := addOptionalOauthAccessTokenManagerFields(ctx, createOauthAccessTokenManager, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OauthAccessTokenManager", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Oauth Access Token Manager", err.Error())
 		return
 	}
-	requestJson, err := createOauthAccessTokenManager.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createOauthAccessTokenManager.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of an Oauth Access Token Manager: %s", requestErr.Error())
 	}
 
 	apiCreateOauthAccessTokenManager := r.apiClient.OauthAccessTokenManagersApi.CreateTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateOauthAccessTokenManager = apiCreateOauthAccessTokenManager.Body(*createOauthAccessTokenManager)
 	oauthAccessTokenManagerResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.CreateTokenManagerExecute(apiCreateOauthAccessTokenManager)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OauthAccessTokenManager", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Oauth Access Token Manager", err, httpResp)
 		return
 	}
-	responseJson, err := oauthAccessTokenManagerResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := oauthAccessTokenManagerResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of an Oauth Access Token Manager: %s", requestErr.Error())
 	}
 
 	// Read the response into the state
@@ -706,16 +705,16 @@ func (r *oauthAccessTokenManagerResource) Read(ctx context.Context, req resource
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the OauthAccessTokenManager", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Oauth Access Token Manager", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  OauthAccessTokenManager", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Oauth Access Token Manager", err, httpResp)
 		}
 	}
 	// Log response JSON
-	responseJson, err := apiReadOauthAccessTokenManager.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadOauthAccessTokenManager.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of an Oauth Access Token Manager: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -758,23 +757,23 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 	createUpdateRequest := client.NewAccessTokenManager(state.Id.ValueString(), state.Name.ValueString(), *pluginDescRefResLink, *configuration)
 	err := addOptionalOauthAccessTokenManagerFields(ctx, createUpdateRequest, state)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OauthAccessTokenManager", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Oauth Access Token Manager", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of an Oauth Access Token Manager: %s", requestErr.Error())
 	}
 	updateOauthAccessTokenManager = updateOauthAccessTokenManager.Body(*createUpdateRequest)
 	updateOauthAccessTokenManagerResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.UpdateTokenManagerExecute(updateOauthAccessTokenManager)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OauthAccessTokenManager", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an Oauth Access Token Manager", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateOauthAccessTokenManagerResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateOauthAccessTokenManagerResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of an Oauth Access Token Manager: %s", responseErr.Error())
 	}
 	// Read the response
 	readOauthAccessTokenManagerResponse(ctx, updateOauthAccessTokenManagerResponse, &state, state.Configuration)

@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -169,12 +168,12 @@ func (r *serverSettingsLogSettingsResource) Create(ctx context.Context, req reso
 	createServerSettingsLogSettings := client.NewLogSettings()
 	err := addOptionalServerSettingsLogSettingsFields(ctx, createServerSettingsLogSettings, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for ServerSettingsLogSettings", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings Log Settings", err.Error())
 		return
 	}
-	requestJson, err := createServerSettingsLogSettings.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createServerSettingsLogSettings.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Server Settings Log Settings: %s", requestErr.Error())
 	}
 
 	apiCreateServerSettingsLogSettings := r.apiClient.ServerSettingsApi.UpdateLogSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
@@ -184,9 +183,9 @@ func (r *serverSettingsLogSettingsResource) Create(ctx context.Context, req reso
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the ServerSettingsLogSettings", err, httpResp)
 		return
 	}
-	responseJson, err := serverSettingsLogSettingsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := serverSettingsLogSettingsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Server Settings Log Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -216,11 +215,10 @@ func (r *serverSettingsLogSettingsResource) Read(ctx context.Context, req resour
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadServerSettingsLogSettings.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadServerSettingsLogSettings.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Server Settings Log Settings: %s", responseErr.Error())
 	}
-
 	// Read the response into the state
 	readServerSettingsLogSettingsResponse(ctx, apiReadServerSettingsLogSettings, &state)
 
@@ -246,23 +244,23 @@ func (r *serverSettingsLogSettingsResource) Update(ctx context.Context, req reso
 	createUpdateRequest := client.NewLogSettings()
 	err := addOptionalServerSettingsLogSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for ServerSettingsLogSettings", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings Log Settings", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Server Settings Log Settings: %s", requestErr.Error())
 	}
 	updateServerSettingsLogSettings = updateServerSettingsLogSettings.Body(*createUpdateRequest)
 	updateServerSettingsLogSettingsResponse, httpResp, err := r.apiClient.ServerSettingsApi.UpdateLogSettingsExecute(updateServerSettingsLogSettings)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating ServerSettingsLogSettings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Server Settings Log Settings", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateServerSettingsLogSettingsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateServerSettingsLogSettingsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Server Settings Log Settings: %s", responseErr.Error())
 	}
 	// Read the response
 	readServerSettingsLogSettingsResponse(ctx, updateServerSettingsLogSettingsResponse, &state)

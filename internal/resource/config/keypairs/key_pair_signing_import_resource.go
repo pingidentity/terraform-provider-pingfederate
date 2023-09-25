@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -142,24 +141,24 @@ func (r *keyPairsSigningImportResource) Create(ctx context.Context, req resource
 	createKeyPairsSigningImport := client.NewKeyPairFile(plan.FileData.ValueString(), plan.Password.ValueString())
 	err := addOptionalKeyPairsSigningImportFields(ctx, createKeyPairsSigningImport, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for KeyPairsSigningImport", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for KeyPair SigningImport", err.Error())
 		return
 	}
-	requestJson, err := createKeyPairsSigningImport.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createKeyPairsSigningImport.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of the KeyPair Signing Import: %s", requestErr.Error())
 	}
 
 	apiCreateKeyPairsSigningImport := r.apiClient.KeyPairsSigningApi.ImportSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateKeyPairsSigningImport = apiCreateKeyPairsSigningImport.Body(*createKeyPairsSigningImport)
 	keyPairsSigningImportResponse, httpResp, err := r.apiClient.KeyPairsSigningApi.ImportSigningKeyPairExecute(apiCreateKeyPairsSigningImport)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the KeyPairsSigningImport", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the KeyPair SigningImport", err, httpResp)
 		return
 	}
-	responseJson, err := keyPairsSigningImportResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := keyPairsSigningImportResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of the KeyPair Signing Import: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -183,17 +182,17 @@ func (r *keyPairsSigningImportResource) Read(ctx context.Context, req resource.R
 	apiReadKeyPairsSigningImport, httpResp, err := r.apiClient.KeyPairsSigningApi.GetSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPairsSigningImport", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPair SigningImport", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPairsSigningImport", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPair SigningImport", err, httpResp)
 		}
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadKeyPairsSigningImport.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadKeyPairsSigningImport.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of the KeyPair Signing Import: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -222,7 +221,7 @@ func (r *keyPairsSigningImportResource) Delete(ctx context.Context, req resource
 	}
 	httpResp, err := r.apiClient.KeyPairsSigningApi.DeleteSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a KeyPairsSigningImport", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a KeyPair SigningImport", err, httpResp)
 		return
 	}
 

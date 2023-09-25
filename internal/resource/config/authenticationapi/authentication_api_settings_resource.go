@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -159,9 +158,9 @@ func (r *authenticationApiSettingsResource) Create(ctx context.Context, req reso
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for AuthenticationApiSettings", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of the Administrative API Settings: %s", requestErr.Error())
 	}
 	updateAuthenticationApiSettings = updateAuthenticationApiSettings.Body(*createUpdateRequest)
 	updateAuthenticationApiSettingsResponse, httpResp, err := r.apiClient.AuthenticationApiApi.UpdateAuthenticationApiSettingsExecute(updateAuthenticationApiSettings)
@@ -170,9 +169,9 @@ func (r *authenticationApiSettingsResource) Create(ctx context.Context, req reso
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateAuthenticationApiSettingsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateAuthenticationApiSettingsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of the Administrative API Settings: %s", responseErr.Error())
 	}
 	// Read the response
 	var state authenticationApiSettingsResourceModel
@@ -202,9 +201,9 @@ func (r *authenticationApiSettingsResource) Read(ctx context.Context, req resour
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadAuthenticationApiSettings.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadAuthenticationApiSettings.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of the Administrative API Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -231,9 +230,9 @@ func (r *authenticationApiSettingsResource) Update(ctx context.Context, req reso
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for AuthenticationApiSettings", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of the Administrative API Settings: %s", requestErr.Error())
 	}
 	updateAuthenticationApiSettings = updateAuthenticationApiSettings.Body(*createUpdateRequest)
 	updateAuthenticationApiSettingsResponse, httpResp, err := r.apiClient.AuthenticationApiApi.UpdateAuthenticationApiSettingsExecute(updateAuthenticationApiSettings)
@@ -242,9 +241,9 @@ func (r *authenticationApiSettingsResource) Update(ctx context.Context, req reso
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateAuthenticationApiSettingsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateAuthenticationApiSettingsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of the Administrative API Settings: %s", responseErr.Error())
 	}
 	// Read the response
 	var state authenticationApiSettingsResourceModel

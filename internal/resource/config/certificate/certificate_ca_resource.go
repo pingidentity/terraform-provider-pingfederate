@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -136,9 +135,9 @@ func (r *certificatesResource) Create(ctx context.Context, req resource.CreateRe
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for CA Certificates", err.Error())
 		return
 	}
-	requestJson, err := createCertificate.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createCertificate.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of a Certificate: %s", requestErr.Error())
 	}
 	apiCreateCertificate := r.apiClient.CertificatesCaApi.ImportTrustedCA(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateCertificate = apiCreateCertificate.Body(*createCertificate)
@@ -147,9 +146,9 @@ func (r *certificatesResource) Create(ctx context.Context, req resource.CreateRe
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating a CA Certificate", err, httpResp)
 		return
 	}
-	responseJson, err := certificateResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := certificateResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of a Certificate: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -180,11 +179,10 @@ func (r *certificatesResource) Read(ctx context.Context, req resource.ReadReques
 	}
 
 	// Log response JSON
-	responseJson, err := apiReadCertificate.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadCertificate.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of a Certificate: %s", responseErr.Error())
 	}
-
 	// Read the response into the state
 	readCertificateResponse(ctx, apiReadCertificate, &state, &state, &resp.Diagnostics, state.FileData)
 

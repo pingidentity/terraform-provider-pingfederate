@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -146,24 +145,24 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Create(ctx contex
 	createOauthAuthServerSettingsScopesExclusiveScopes := client.NewScopeEntry(plan.Name.ValueString(), plan.Description.ValueString())
 	err := addOptionalOauthAuthServerSettingsScopesExclusiveScopesFields(ctx, createOauthAuthServerSettingsScopesExclusiveScopes, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OauthAuthServerSettingsScopesExclusiveScopes", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Oauth Auth Server Settings Scopes Exclusive Scope", err.Error())
 		return
 	}
-	requestJson, err := createOauthAuthServerSettingsScopesExclusiveScopes.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createOauthAuthServerSettingsScopesExclusiveScopes.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of an Oauth Auth Server Settings Scopes Exclusive Scope: %s", requestErr.Error())
 	}
 
 	apiCreateOauthAuthServerSettingsScopesExclusiveScopes := r.apiClient.OauthAuthServerSettingsApi.AddExclusiveScope(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateOauthAuthServerSettingsScopesExclusiveScopes = apiCreateOauthAuthServerSettingsScopesExclusiveScopes.Body(*createOauthAuthServerSettingsScopesExclusiveScopes)
 	oauthAuthServerSettingsScopesExclusiveScopesResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsApi.AddExclusiveScopeExecute(apiCreateOauthAuthServerSettingsScopesExclusiveScopes)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OauthAuthServerSettingsScopesExclusiveScopes", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Oauth Auth Server Settings Scopes Exclusive Scope", err, httpResp)
 		return
 	}
-	responseJson, err := oauthAuthServerSettingsScopesExclusiveScopesResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := oauthAuthServerSettingsScopesExclusiveScopesResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of an Oauth Auth Server Settings Scopes Exclusive Scope: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -185,17 +184,17 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Read(ctx context.
 	apiReadOauthAuthServerSettingsScopesExclusiveScopes, httpResp, err := r.apiClient.OauthAuthServerSettingsApi.GetExclusiveScope(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Name.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Oauth Auth Server Settings Scopes Exclusive Scopes", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an Oauth Auth Server Settings Scopes Exclusive Scope", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Oauth Auth Server Settings Scopes Exclusive Scopes", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an Oauth Auth Server Settings Scopes Exclusive Scope", err, httpResp)
 		}
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadOauthAuthServerSettingsScopesExclusiveScopes.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadOauthAuthServerSettingsScopesExclusiveScopes.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of an Oauth Auth Server Settings Scopes Exclusive Scope: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -223,23 +222,23 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Update(ctx contex
 	createUpdateRequest := client.NewScopeEntry(plan.Name.ValueString(), plan.Description.ValueString())
 	err := addOptionalOauthAuthServerSettingsScopesExclusiveScopesFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OauthAuthServerSettingsScopesExclusiveScopes", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Oauth Auth Server Settings Scopes Exclusive Scope", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of an Oauth Auth Server Settings Scopes Exclusive Scope: %s", requestErr.Error())
 	}
 	updateOauthAuthServerSettingsScopesExclusiveScopes = updateOauthAuthServerSettingsScopesExclusiveScopes.Body(*createUpdateRequest)
 	updateOauthAuthServerSettingsScopesExclusiveScopesResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsApi.UpdateExclusiveScopeExecute(updateOauthAuthServerSettingsScopesExclusiveScopes)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OauthAuthServerSettingsScopesExclusiveScopes", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Oauth Auth Server Settings Scopes Exclusive Scope", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateOauthAuthServerSettingsScopesExclusiveScopesResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateOauthAuthServerSettingsScopesExclusiveScopesResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of an Oauth Auth Server Settings Scopes Exclusive Scope: %s", responseErr.Error())
 	}
 	// Read the response
 	readOauthAuthServerSettingsScopesExclusiveScopesResponse(ctx, updateOauthAuthServerSettingsScopesExclusiveScopesResponse, &state, &plan)
