@@ -62,7 +62,7 @@ clearstates:
 	
 kaboom: clearstates spincontainer install
 
-devchecknotest: install golangcilint tfproviderlint tflint terrafmtlint importfmtlint generate
+devchecknotest: install golangcilint generate tfproviderlint tflint terrafmtlint importfmtlint
 
 devcheck: devchecknotest kaboom testacc
 
