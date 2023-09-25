@@ -12,11 +12,11 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const internallyManagedReferenceOauthAccessTokenManagersId = "internallyManagedReferenceOatm"
-const internallyManagedReferenceOauthAccessTokenManagersName = "internallyManagedReferenceExample"
+const internallyManagedReferenceOauthAccessTokenManagerId = "internallyManagedReferenceOatm"
+const internallyManagedReferenceOauthAccessTokenManagerName = "internallyManagedReferenceExample"
 
 // Attributes to test with. Add optional properties to test here if desired.
-type internallyManagedReferenceOauthAccessTokenManagersResourceModel struct {
+type internallyManagedReferenceOauthAccessTokenManagerResourceModel struct {
 	id                           string
 	name                         string
 	tokenLength                  string
@@ -24,18 +24,18 @@ type internallyManagedReferenceOauthAccessTokenManagersResourceModel struct {
 	checkSessionRevocationStatus bool
 }
 
-func TestAccInternallyManagedReferenceOauthAccessTokenManagers(t *testing.T) {
-	resourceName := "myInternallyManagedReferenceOauthAccessTokenManagers"
-	initialResourceModel := internallyManagedReferenceOauthAccessTokenManagersResourceModel{
-		id:                           internallyManagedReferenceOauthAccessTokenManagersId,
-		name:                         internallyManagedReferenceOauthAccessTokenManagersName,
+func TestAccInternallyManagedReferenceOauthAccessTokenManager(t *testing.T) {
+	resourceName := "myInternallyManagedReferenceOauthAccessTokenManager"
+	initialResourceModel := internallyManagedReferenceOauthAccessTokenManagerResourceModel{
+		id:                           internallyManagedReferenceOauthAccessTokenManagerId,
+		name:                         internallyManagedReferenceOauthAccessTokenManagerName,
 		tokenLength:                  "28",
 		tokenLifetime:                "120",
 		checkSessionRevocationStatus: false,
 	}
-	updatedResourceModel := internallyManagedReferenceOauthAccessTokenManagersResourceModel{
-		id:                           internallyManagedReferenceOauthAccessTokenManagersId,
-		name:                         internallyManagedReferenceOauthAccessTokenManagersName,
+	updatedResourceModel := internallyManagedReferenceOauthAccessTokenManagerResourceModel{
+		id:                           internallyManagedReferenceOauthAccessTokenManagerId,
+		name:                         internallyManagedReferenceOauthAccessTokenManagerName,
 		tokenLength:                  "56",
 		tokenLifetime:                "240",
 		checkSessionRevocationStatus: true,
@@ -46,22 +46,22 @@ func TestAccInternallyManagedReferenceOauthAccessTokenManagers(t *testing.T) {
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.New()),
 		},
-		CheckDestroy: testAccCheckInternallyManagedReferenceOauthAccessTokenManagersDestroy,
+		CheckDestroy: testAccCheckInternallyManagedReferenceOauthAccessTokenManagerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccInternallyManagedReferenceOauthAccessTokenManagers(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagersAttributes(initialResourceModel),
+				Config: testAccInternallyManagedReferenceOauthAccessTokenManager(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagerAttributes(initialResourceModel),
 			},
 			{
 				// Test updating some fields
-				Config: testAccInternallyManagedReferenceOauthAccessTokenManagers(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagersAttributes(updatedResourceModel),
+				Config: testAccInternallyManagedReferenceOauthAccessTokenManager(resourceName, updatedResourceModel),
+				Check:  testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagerAttributes(updatedResourceModel),
 			},
 			{
 				// Test importing the resource
-				Config:                  testAccInternallyManagedReferenceOauthAccessTokenManagers(resourceName, updatedResourceModel),
-				ResourceName:            "pingfederate_oauth_access_token_managers." + resourceName,
-				ImportStateId:           internallyManagedReferenceOauthAccessTokenManagersId,
+				Config:                  testAccInternallyManagedReferenceOauthAccessTokenManager(resourceName, updatedResourceModel),
+				ResourceName:            "pingfederate_oauth_access_token_manager." + resourceName,
+				ImportStateId:           internallyManagedReferenceOauthAccessTokenManagerId,
 				ImportState:             true,
 				ImportStateVerifyIgnore: []string{"configuration.fields.value"},
 			},
@@ -69,9 +69,9 @@ func TestAccInternallyManagedReferenceOauthAccessTokenManagers(t *testing.T) {
 	})
 }
 
-func testAccInternallyManagedReferenceOauthAccessTokenManagers(resourceName string, resourceModel internallyManagedReferenceOauthAccessTokenManagersResourceModel) string {
+func testAccInternallyManagedReferenceOauthAccessTokenManager(resourceName string, resourceModel internallyManagedReferenceOauthAccessTokenManagerResourceModel) string {
 	return fmt.Sprintf(`
-resource "pingfederate_oauth_access_token_managers" "%[1]s" {
+resource "pingfederate_oauth_access_token_manager" "%[1]s" {
   id   = "%[2]s"
   name = "%[3]s"
   plugin_descriptor_ref = {
@@ -146,12 +146,12 @@ resource "pingfederate_oauth_access_token_managers" "%[1]s" {
 }
 
 // Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagersAttributes(config internallyManagedReferenceOauthAccessTokenManagersResourceModel) resource.TestCheckFunc {
+func testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagerAttributes(config internallyManagedReferenceOauthAccessTokenManagerResourceModel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resourceType := "OauthAccessTokenManagers"
+		resourceType := "OauthAccessTokenManager"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.OauthAccessTokenManagersApi.GetTokenManager(ctx, internallyManagedReferenceOauthAccessTokenManagersId).Execute()
+		response, _, err := testClient.OauthAccessTokenManagersApi.GetTokenManager(ctx, internallyManagedReferenceOauthAccessTokenManagerId).Execute()
 
 		if err != nil {
 			return err
@@ -184,12 +184,12 @@ func testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagersAttri
 }
 
 // Test that any objects created by the test are destroyed
-func testAccCheckInternallyManagedReferenceOauthAccessTokenManagersDestroy(s *terraform.State) error {
+func testAccCheckInternallyManagedReferenceOauthAccessTokenManagerDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.OauthAccessTokenManagersApi.DeleteTokenManager(ctx, internallyManagedReferenceOauthAccessTokenManagersId).Execute()
+	_, err := testClient.OauthAccessTokenManagersApi.DeleteTokenManager(ctx, internallyManagedReferenceOauthAccessTokenManagerId).Execute()
 	if err == nil {
-		return acctest.ExpectedDestroyError("OauthAccessTokenManagers", internallyManagedReferenceOauthAccessTokenManagersId)
+		return acctest.ExpectedDestroyError("OauthAccessTokenManager", internallyManagedReferenceOauthAccessTokenManagerId)
 	}
 	return nil
 }

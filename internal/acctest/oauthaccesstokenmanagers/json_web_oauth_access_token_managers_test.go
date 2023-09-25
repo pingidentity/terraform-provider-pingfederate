@@ -13,13 +13,13 @@ import (
 )
 
 // #nosec G101
-const jsonWebTokenOauthAccessTokenManagersId = "jsonWebTokenOatm"
+const jsonWebTokenOauthAccessTokenManagerId = "jsonWebTokenOatm"
 
 // #nosec G101
-const jsonWebTokenOauthAccessTokenManagersName = "jsonWebTokenExample"
+const jsonWebTokenOauthAccessTokenManagerName = "jsonWebTokenExample"
 
 // Attributes to test with. Add optional properties to test here if desired.
-type jsonWebTokenOauthAccessTokenManagersResourceModel struct {
+type jsonWebTokenOauthAccessTokenManagerResourceModel struct {
 	id                     string
 	name                   string
 	keyId                  string
@@ -29,20 +29,20 @@ type jsonWebTokenOauthAccessTokenManagersResourceModel struct {
 	checkValidAuthnSession bool
 }
 
-func TestAccJsonWebTokenOauthAccessTokenManagers(t *testing.T) {
-	resourceName := "myJsonWebTokenOauthAccessTokenManagers"
-	initialResourceModel := jsonWebTokenOauthAccessTokenManagersResourceModel{
-		id:                     jsonWebTokenOauthAccessTokenManagersId,
-		name:                   jsonWebTokenOauthAccessTokenManagersName,
+func TestAccJsonWebTokenOauthAccessTokenManager(t *testing.T) {
+	resourceName := "myJsonWebTokenOauthAccessTokenManager"
+	initialResourceModel := jsonWebTokenOauthAccessTokenManagerResourceModel{
+		id:                     jsonWebTokenOauthAccessTokenManagerId,
+		name:                   jsonWebTokenOauthAccessTokenManagerName,
 		keyId:                  "keyidentifier",
 		key:                    "+d5OB5b+I4dqn1Mjp8YE/M/QFWvDX7Nxz3gC8mAEwRLqL67SrHcwRyMtGvZKxvIn",
 		tokenLifetime:          "28",
 		activeSymmetricKeyId:   "keyidentifier",
 		checkValidAuthnSession: false,
 	}
-	updatedResourceModel := jsonWebTokenOauthAccessTokenManagersResourceModel{
-		id:                     jsonWebTokenOauthAccessTokenManagersId,
-		name:                   jsonWebTokenOauthAccessTokenManagersName,
+	updatedResourceModel := jsonWebTokenOauthAccessTokenManagerResourceModel{
+		id:                     jsonWebTokenOauthAccessTokenManagerId,
+		name:                   jsonWebTokenOauthAccessTokenManagerName,
 		keyId:                  "keyidentifier2",
 		key:                    "e1oDxOiC3Jboz3um8hBVmW3JRZNo9z7C0DMm/oj2V1gclQRcgi2gKM2DBj9N05G4",
 		tokenLifetime:          "56",
@@ -55,22 +55,22 @@ func TestAccJsonWebTokenOauthAccessTokenManagers(t *testing.T) {
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.New()),
 		},
-		CheckDestroy: testAccCheckJsonWebOauthAccessTokenManagersDestroy,
+		CheckDestroy: testAccCheckJsonWebOauthAccessTokenManagerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccJsonWebOauthAccessTokenManagers(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedJsonWebOauthAccessTokenManagersAttributes(initialResourceModel),
+				Config: testAccJsonWebOauthAccessTokenManager(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedJsonWebOauthAccessTokenManagerAttributes(initialResourceModel),
 			},
 			{
 				// Test updating some fields
-				Config: testAccJsonWebOauthAccessTokenManagers(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedJsonWebOauthAccessTokenManagersAttributes(updatedResourceModel),
+				Config: testAccJsonWebOauthAccessTokenManager(resourceName, updatedResourceModel),
+				Check:  testAccCheckExpectedJsonWebOauthAccessTokenManagerAttributes(updatedResourceModel),
 			},
 			{
 				// Test importing the resource
-				Config:                  testAccJsonWebOauthAccessTokenManagers(resourceName, updatedResourceModel),
-				ResourceName:            "pingfederate_oauth_access_token_managers." + resourceName,
-				ImportStateId:           jsonWebTokenOauthAccessTokenManagersId,
+				Config:                  testAccJsonWebOauthAccessTokenManager(resourceName, updatedResourceModel),
+				ResourceName:            "pingfederate_oauth_access_token_manager." + resourceName,
+				ImportStateId:           jsonWebTokenOauthAccessTokenManagerId,
 				ImportState:             true,
 				ImportStateVerifyIgnore: []string{"configuration.fields.value"},
 			},
@@ -78,9 +78,9 @@ func TestAccJsonWebTokenOauthAccessTokenManagers(t *testing.T) {
 	})
 }
 
-func testAccJsonWebOauthAccessTokenManagers(resourceName string, resourceModel jsonWebTokenOauthAccessTokenManagersResourceModel) string {
+func testAccJsonWebOauthAccessTokenManager(resourceName string, resourceModel jsonWebTokenOauthAccessTokenManagerResourceModel) string {
 	return fmt.Sprintf(`
-resource "pingfederate_oauth_access_token_managers" "%[1]s" {
+resource "pingfederate_oauth_access_token_manager" "%[1]s" {
   id   = "%[2]s"
   name = "%[3]s"
   plugin_descriptor_ref = {
@@ -254,12 +254,12 @@ resource "pingfederate_oauth_access_token_managers" "%[1]s" {
 }
 
 // Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedJsonWebOauthAccessTokenManagersAttributes(config jsonWebTokenOauthAccessTokenManagersResourceModel) resource.TestCheckFunc {
+func testAccCheckExpectedJsonWebOauthAccessTokenManagerAttributes(config jsonWebTokenOauthAccessTokenManagerResourceModel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resourceType := "OauthAccessTokenManagers"
+		resourceType := "OauthAccessTokenManager"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.OauthAccessTokenManagersApi.GetTokenManager(ctx, jsonWebTokenOauthAccessTokenManagersId).Execute()
+		response, _, err := testClient.OauthAccessTokenManagersApi.GetTokenManager(ctx, jsonWebTokenOauthAccessTokenManagerId).Execute()
 
 		if err != nil {
 			return err
@@ -305,12 +305,12 @@ func testAccCheckExpectedJsonWebOauthAccessTokenManagersAttributes(config jsonWe
 }
 
 // Test that any objects created by the test are destroyed
-func testAccCheckJsonWebOauthAccessTokenManagersDestroy(s *terraform.State) error {
+func testAccCheckJsonWebOauthAccessTokenManagerDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.OauthAccessTokenManagersApi.DeleteTokenManager(ctx, jsonWebTokenOauthAccessTokenManagersId).Execute()
+	_, err := testClient.OauthAccessTokenManagersApi.DeleteTokenManager(ctx, jsonWebTokenOauthAccessTokenManagerId).Execute()
 	if err == nil {
-		return acctest.ExpectedDestroyError("OauthAccessTokenManagers", jsonWebTokenOauthAccessTokenManagersId)
+		return acctest.ExpectedDestroyError("OauthAccessTokenManager", jsonWebTokenOauthAccessTokenManagerId)
 	}
 	return nil
 }

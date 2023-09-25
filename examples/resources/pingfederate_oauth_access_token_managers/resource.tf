@@ -1,4 +1,4 @@
-resource "pingfederate_oauth_access_token_managers" "internallyManagedReferenceOauthAccessTokenManagersExample" {
+resource "pingfederate_oauth_access_token_manager" "internallyManagedReferenceOauthAccessTokenManagerExample" {
   id   = "internallyManagedReferenceOatm"
   name = "internallyManagedReferenceExample"
   plugin_descriptor_ref = {
@@ -65,7 +65,7 @@ resource "pingfederate_oauth_access_token_managers" "internallyManagedReferenceO
   }
 }
 
-resource "pingfederate_oauth_access_token_managers" "jsonWebTokenOauthAccessTokenManagersExample" {
+resource "pingfederate_oauth_access_token_manager" "jsonWebTokenOauthAccessTokenManagerExample" {
   id   = "jsonWebTokenOatm"
   name = "jsonWebTokenExample"
   plugin_descriptor_ref = {
