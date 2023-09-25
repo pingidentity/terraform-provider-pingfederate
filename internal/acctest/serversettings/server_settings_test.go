@@ -93,11 +93,11 @@ func TestAccServerSettings(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccServerSettings(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_server_settings." + resourceName,
-				ImportStateId:     sessionSettingsId,
-				ImportState:       true,
-				ImportStateVerify: false,
+				Config:                  testAccServerSettings(resourceName, updatedResourceModel),
+				ResourceName:            "pingfederate_server_settings." + resourceName,
+				ImportStateId:           sessionSettingsId,
+				ImportState:             true,
+				ImportStateVerifyIgnore: []string{"email_server"},
 			},
 		},
 	})

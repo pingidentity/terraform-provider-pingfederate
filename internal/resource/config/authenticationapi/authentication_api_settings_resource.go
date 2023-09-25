@@ -261,6 +261,6 @@ func (r *authenticationApiSettingsResource) Delete(ctx context.Context, req reso
 }
 
 func (r *authenticationApiSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// Set a placeholder id value to appease terraform.
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), "id")...)
 }

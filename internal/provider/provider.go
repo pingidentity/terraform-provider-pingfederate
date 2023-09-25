@@ -265,6 +265,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		license.LicenseAgreementResource,
 		license.LicenseResource,
 		localidentity.LocalIdentityIdentityProfilesResource,
+		oauth.OauthAccessTokenManagerResource,
 		oauth.OauthAuthServerSettingsResource,
 		oauth.OauthAuthServerSettingsScopesCommonScopesResource,
 		oauth.OauthAuthServerSettingsScopesExclusiveScopesResource,
