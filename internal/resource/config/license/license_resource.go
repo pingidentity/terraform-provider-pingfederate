@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -87,9 +86,9 @@ func (r *licenseResource) Create(ctx context.Context, req resource.CreateRequest
 	}
 
 	createLicense := client.NewLicenseFile(plan.FileData.ValueString())
-	requestJson, err := createLicense.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createLicense.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of the License: %s", requestErr.Error())
 	}
 
 	apiCreateLicense := r.apiClient.LicenseApi.UpdateLicense(config.ProviderBasicAuthContext(ctx, r.providerConfig))
@@ -99,9 +98,9 @@ func (r *licenseResource) Create(ctx context.Context, req resource.CreateRequest
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the License", err, httpResp)
 		return
 	}
-	responseJson, err := licenseResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := licenseResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of the License: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -131,9 +130,9 @@ func (r *licenseResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadLicense.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadLicense.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the request of the License: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -159,20 +158,20 @@ func (r *licenseResource) Update(ctx context.Context, req resource.UpdateRequest
 	req.State.Get(ctx, &state)
 	updateLicense := r.apiClient.LicenseApi.UpdateLicense(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewLicenseFile(plan.FileData.ValueString())
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of the License: %s", requestErr.Error())
 	}
 	updateLicense = updateLicense.Body(*createUpdateRequest)
 	updateLicenseResponse, httpResp, err := r.apiClient.LicenseApi.UpdateLicenseExecute(updateLicense)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating License", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the License", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateLicenseResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateLicenseResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of the License: %s", responseErr.Error())
 	}
 	// Read the response
 	readLicenseResponse(ctx, updateLicenseResponse, &state, &state, plan.FileData)

@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -111,24 +110,24 @@ func (r *sessionApplicationSessionPolicyResource) Create(ctx context.Context, re
 	createSessionApplicationSessionPolicy := client.NewApplicationSessionPolicy()
 	err := addOptionalSessionApplicationSessionPolicyFields(ctx, createSessionApplicationSessionPolicy, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for SessionApplicationSessionPolicy", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Session Application Session Policy", err.Error())
 		return
 	}
-	requestJson, err := createSessionApplicationSessionPolicy.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createSessionApplicationSessionPolicy.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Session Application Session Policy: %s", requestErr.Error())
 	}
 
 	apiCreateSessionApplicationSessionPolicy := r.apiClient.SessionApi.UpdateApplicationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateSessionApplicationSessionPolicy = apiCreateSessionApplicationSessionPolicy.Body(*createSessionApplicationSessionPolicy)
 	sessionApplicationSessionPolicyResponse, httpResp, err := r.apiClient.SessionApi.UpdateApplicationPolicyExecute(apiCreateSessionApplicationSessionPolicy)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the SessionApplicationSessionPolicy", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Session Application Session Policy", err, httpResp)
 		return
 	}
-	responseJson, err := sessionApplicationSessionPolicyResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := sessionApplicationSessionPolicyResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Session Application Session Policy: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -150,7 +149,7 @@ func (r *sessionApplicationSessionPolicyResource) Read(ctx context.Context, req 
 	apiReadSessionApplicationSessionPolicy, httpResp, err := r.apiClient.SessionApi.GetApplicationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a SessionApplicationSessionPolicy", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a Session Application Session Policy", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Session Application Session Policy", err, httpResp)
@@ -158,9 +157,9 @@ func (r *sessionApplicationSessionPolicyResource) Read(ctx context.Context, req 
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadSessionApplicationSessionPolicy.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadSessionApplicationSessionPolicy.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Session Application Session Policy: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -188,23 +187,23 @@ func (r *sessionApplicationSessionPolicyResource) Update(ctx context.Context, re
 	createUpdateRequest := client.NewApplicationSessionPolicy()
 	err := addOptionalSessionApplicationSessionPolicyFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for SessionApplicationSessionPolicy", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Session Application Session Policy", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Session Application Session Policy: %s", requestErr.Error())
 	}
 	updateSessionApplicationSessionPolicy = updateSessionApplicationSessionPolicy.Body(*createUpdateRequest)
 	updateSessionApplicationSessionPolicyResponse, httpResp, err := r.apiClient.SessionApi.UpdateApplicationPolicyExecute(updateSessionApplicationSessionPolicy)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating SessionApplicationSessionPolicy", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Session Application Session Policy", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateSessionApplicationSessionPolicyResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateSessionApplicationSessionPolicyResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Session Application Session Policy: %s", responseErr.Error())
 	}
 	// Read the response
 	readSessionApplicationSessionPolicyResponse(ctx, updateSessionApplicationSessionPolicyResponse, &state, &plan)

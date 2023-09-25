@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -115,24 +114,24 @@ func (r *licenseAgreementResource) Create(ctx context.Context, req resource.Crea
 	createLicenseAgreement := client.NewLicenseAgreementInfo()
 	err := addOptionalLicenseAgreementFields(ctx, createLicenseAgreement, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for LicenseAgreement", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for License Agreement", err.Error())
 		return
 	}
-	requestJson, err := createLicenseAgreement.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createLicenseAgreement.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of the License Agreement: %s", requestErr.Error())
 	}
 
 	apiCreateLicenseAgreement := r.apiClient.LicenseApi.UpdateLicenseAgreement(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateLicenseAgreement = apiCreateLicenseAgreement.Body(*createLicenseAgreement)
 	licenseAgreementResponse, httpResp, err := r.apiClient.LicenseApi.UpdateLicenseAgreementExecute(apiCreateLicenseAgreement)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the LicenseAgreement", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the License Agreement", err, httpResp)
 		return
 	}
-	responseJson, err := licenseAgreementResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := licenseAgreementResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of the License Agreement: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -165,11 +164,10 @@ func (r *licenseAgreementResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadLicenseAgreement.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadLicenseAgreement.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of the License Agreement: %s", responseErr.Error())
 	}
-
 	// Read the response into the state
 	readLicenseAgreementResponse(ctx, apiReadLicenseAgreement, &state, &state)
 
@@ -195,23 +193,23 @@ func (r *licenseAgreementResource) Update(ctx context.Context, req resource.Upda
 	createUpdateRequest := client.NewLicenseAgreementInfo()
 	err := addOptionalLicenseAgreementFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for LicenseAgreement", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for License Agreement", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of the License Agreement: %s", requestErr.Error())
 	}
 	updateLicenseAgreement = updateLicenseAgreement.Body(*createUpdateRequest)
 	updateLicenseAgreementResponse, httpResp, err := r.apiClient.LicenseApi.UpdateLicenseAgreementExecute(updateLicenseAgreement)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating LicenseAgreement", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating License Agreement", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateLicenseAgreementResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateLicenseAgreementResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of the License Agreement: %s", requestErr.Error())
 	}
 	// Read the response
 	readLicenseAgreementResponse(ctx, updateLicenseAgreementResponse, &state, &plan)
