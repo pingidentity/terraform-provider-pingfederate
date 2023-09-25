@@ -131,7 +131,7 @@ resource "pingfederate_oauth_auth_server_settings" "oauthAuthServerSettingsExamp
 - `roll_refresh_token_values` (Boolean) The roll refresh token values default policy. The default value is true.
 - `scope_for_oauth_grant_management` (String) The OAuth scope to validate when accessing grant management service.
 - `scope_groups` (Attributes Set) The list of common scope groups. (see [below for nested schema](#nestedatt--scope_groups))
-- `scopes` (Attributes List) The list of common scopes. (see [below for nested schema](#nestedatt--scopes))
+- `scopes` (Attributes Set) The list of common scopes. (see [below for nested schema](#nestedatt--scopes))
 - `token_endpoint_base_url` (String) The token endpoint base URL used to validate the 'aud' claim during Private Key JWT Client Authentication.
 - `track_user_sessions_for_logout` (Boolean) Determines whether user sessions are tracked for logout. If this property is not provided on a PUT, the setting is left unchanged.
 - `user_authorization_consent_adapter` (String) Adapter ID of the external consent adapter to be used for the consent page user interface.
