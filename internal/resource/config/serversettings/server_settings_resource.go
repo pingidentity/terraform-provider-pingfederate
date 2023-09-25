@@ -18,7 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -706,15 +705,6 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 							stringplanmodifier.UseStateForUnknown(),
 						},
 					},
-					"encrypted_password": schema.StringAttribute{
-						Description: "For GET requests, this field contains the encrypted password, if one exists. For POST and PUT requests, if you wish to reuse the existing password, this field should be passed back unchanged.",
-						Computed:    true,
-						Optional:    false,
-						Default:     stringdefault.StaticString(""),
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
-					},
 				},
 			},
 			"captcha_settings": schema.SingleNestedAttribute{
@@ -737,15 +727,6 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Description: "Secret key for reCAPTCHA. GETs will not return this attribute. To update this field, specify the new value in this attribute.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
-					},
-					"encrypted_secret_key": schema.StringAttribute{
-						Description: "The encrypted secret key for reCAPTCHA. If you do not want to update the stored value, this attribute should be passed back unchanged.",
-						Computed:    true,
-						Optional:    false,
-						Default:     stringdefault.StaticString(""),
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
 						},
@@ -1097,7 +1078,6 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 		"use_debugging":               basetypes.BoolType{},
 		"username":                    basetypes.StringType{},
 		"password":                    basetypes.StringType{},
-		"encrypted_password":          basetypes.StringType{},
 	}
 
 	// get email creds with function
@@ -1113,7 +1093,6 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	}
 
 	// retrieve values for saving to state
-	// encrypted_password is not returned in the response, so we set it to an empty string
 	username, password := getEmailCreds()
 	emailServerAttrValue := map[string]attr.Value{
 		"source_addr":                 types.StringValue(r.EmailServer.GetSourceAddr()),
@@ -1130,7 +1109,6 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 		"use_debugging":               types.BoolValue(r.EmailServer.GetUseDebugging()),
 		"username":                    types.StringPointerValue(username),
 		"password":                    types.StringValue(password),
-		"encrypted_password":          types.StringPointerValue(&emptyString),
 	}
 
 	state.EmailServer, _ = types.ObjectValue(emailServerAttrType, emailServerAttrValue)
@@ -1139,23 +1117,20 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	// CAPTCHA SETTINGS
 	//////////////////////////////////////////////
 	captchaSettingsAttrType := map[string]attr.Type{
-		"site_key":             basetypes.StringType{},
-		"secret_key":           basetypes.StringType{},
-		"encrypted_secret_key": basetypes.StringType{},
+		"site_key":   basetypes.StringType{},
+		"secret_key": basetypes.StringType{},
 	}
 
 	var getCaptchaSettingsAttrValue = func() map[string]attr.Value {
 		if internaltypes.ObjContainsNoEmptyVals(plan.CaptchaSettings) {
 			return map[string]attr.Value{
-				"site_key":             types.StringPointerValue(r.CaptchaSettings.SiteKey),
-				"secret_key":           types.StringValue(plan.CaptchaSettings.Attributes()["secret_key"].(types.String).ValueString()),
-				"encrypted_secret_key": types.StringPointerValue(&emptyString),
+				"site_key":   types.StringPointerValue(r.CaptchaSettings.SiteKey),
+				"secret_key": types.StringValue(plan.CaptchaSettings.Attributes()["secret_key"].(types.String).ValueString()),
 			}
 		} else {
 			return map[string]attr.Value{
-				"site_key":             types.StringPointerValue(&emptyString),
-				"secret_key":           types.StringValue(emptyString),
-				"encrypted_secret_key": types.StringPointerValue(&emptyString),
+				"site_key":   types.StringPointerValue(&emptyString),
+				"secret_key": types.StringValue(emptyString),
 			}
 		}
 	}
