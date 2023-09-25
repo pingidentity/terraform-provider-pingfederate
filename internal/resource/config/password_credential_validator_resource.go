@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -124,12 +123,6 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 															Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
 															Required:    true,
 														},
-														"encrypted_value": schema.StringAttribute{
-															Description: "This value is not used in this provider due to the value changing on every GET request.",
-															Computed:    true,
-															Optional:    false,
-															Default:     stringdefault.StaticString(""),
-														},
 														"inherited": schema.BoolAttribute{
 															Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
 															Optional:    true,
@@ -176,14 +169,6 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 								"value": schema.StringAttribute{
 									Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
 									Required:    true,
-								},
-								"encrypted_value": schema.StringAttribute{
-									Description: "This value is not used in this provider due to the value changing on every GET request.",
-									Computed:    true,
-									Optional:    false,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 								"inherited": schema.BoolAttribute{
 									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
@@ -322,10 +307,9 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 
 	// state.Configuration
 	fieldAttrType := map[string]attr.Type{
-		"name":            basetypes.StringType{},
-		"value":           basetypes.StringType{},
-		"encrypted_value": basetypes.StringType{},
-		"inherited":       basetypes.BoolType{},
+		"name":      basetypes.StringType{},
+		"value":     basetypes.StringType{},
+		"inherited": basetypes.BoolType{},
 	}
 
 	rowAttrType := map[string]attr.Type{
@@ -373,8 +357,6 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 								} else {
 									tableRowField.Value = trf.Value
 								}
-								emptyString := ""
-								tableRowField.EncryptedValue = &emptyString
 								tableRowField.Inherited = trf.Inherited
 								toStateTableRowFields = append(toStateTableRowFields, tableRowField)
 							} else {
@@ -409,8 +391,6 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 							fieldValue.Value = cf.Value
 						}
 						fieldValue.Name = cf.Name
-						emptyString := ""
-						fieldValue.EncryptedValue = &emptyString
 						fieldValue.Inherited = cf.Inherited
 						fields = append(fields, fieldValue)
 					} else {
