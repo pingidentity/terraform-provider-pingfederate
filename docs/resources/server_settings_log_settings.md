@@ -13,24 +13,6 @@ LogSettings Settings related to server logging.
 ## Example Usage
 
 ```terraform
-terraform {
-  required_version = ">=1.1"
-  required_providers {
-    pingfederate = {
-      version = "~> 0.0.1"
-      source  = "pingidentity/pingfederate"
-    }
-  }
-}
-
-provider "pingfederate" {
-  username   = "administrator"
-  password   = "2FederateM0re"
-  https_host = "https://localhost:9999"
-}
-# Please do not delete any log categories from the resource file. 
-# PingFederate API does not currently support accessing logCategories by ID.
-# Please change the enabled field to desired configuration.
 resource "pingfederate_server_settings_log_settings" "serverSettingsLogSettingsExample" {
   log_categories = [
     {
