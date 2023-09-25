@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
@@ -54,7 +53,7 @@ type oauthAuthServerSettingsResource struct {
 type oauthAuthServerSettingsResourceModel struct {
 	Id                                          types.String `tfsdk:"id"`
 	DefaultScopeDescription                     types.String `tfsdk:"default_scope_description"`
-	Scopes                                      types.List   `tfsdk:"scopes"`
+	Scopes                                      types.Set    `tfsdk:"scopes"`
 	ScopeGroups                                 types.Set    `tfsdk:"scope_groups"`
 	ExclusiveScopes                             types.Set    `tfsdk:"exclusive_scopes"`
 	ExclusiveScopeGroups                        types.Set    `tfsdk:"exclusive_scope_groups"`
@@ -107,12 +106,12 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Description: "The default scope description.",
 				Required:    true,
 			},
-			"scopes": schema.ListNestedAttribute{
+			"scopes": schema.SetNestedAttribute{
 				Description: "The list of common scopes.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.List{
-					listplanmodifier.UseStateForUnknown(),
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
 				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -862,7 +861,7 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 		"description": basetypes.StringType{},
 		"dynamic":     basetypes.BoolType{},
 	}
-	state.Scopes, _ = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: scopeAttrTypes}, toStateScopes)
+	state.Scopes, _ = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: scopeAttrTypes}, toStateScopes)
 
 	// state.ScopeGroups
 	scopeGroups := r.GetScopeGroups()
