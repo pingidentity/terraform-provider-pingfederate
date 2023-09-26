@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -141,24 +140,24 @@ func (r *keyPairsSslServerImportResource) Create(ctx context.Context, req resour
 	createKeyPairsSslServerImport := client.NewKeyPairFile(plan.FileData.ValueString(), plan.Password.ValueString())
 	err := addOptionalKeyPairsSslServerImportFields(ctx, createKeyPairsSslServerImport, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for KeyPairsSslServerImport", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for KeyPair SSL Server Import", err.Error())
 		return
 	}
-	requestJson, err := createKeyPairsSslServerImport.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createKeyPairsSslServerImport.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of the KeyPair SSL Server Import: %s", requestErr.Error())
 	}
 
 	apiCreateKeyPairsSslServerImport := r.apiClient.KeyPairsSslServerApi.ImportSslServerKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateKeyPairsSslServerImport = apiCreateKeyPairsSslServerImport.Body(*createKeyPairsSslServerImport)
 	keyPairsSslServerImportResponse, httpResp, err := r.apiClient.KeyPairsSslServerApi.ImportSslServerKeyPairExecute(apiCreateKeyPairsSslServerImport)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the KeyPairsSslServerImport", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the KeyPair SSL Server Import", err, httpResp)
 		return
 	}
-	responseJson, err := keyPairsSslServerImportResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := keyPairsSslServerImportResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of the KeyPair SSL Server Import: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -184,17 +183,17 @@ func (r *keyPairsSslServerImportResource) Read(ctx context.Context, req resource
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPairsSslServerImport", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPair SSL Server Import", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPairsSslServerImport", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPair SSL Server Import", err, httpResp)
 		}
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadKeyPairsSslServerImport.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadKeyPairsSslServerImport.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of the KeyPair SSL Server Import: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -223,7 +222,7 @@ func (r *keyPairsSslServerImportResource) Delete(ctx context.Context, req resour
 	}
 	httpResp, err := r.apiClient.KeyPairsSslServerApi.DeleteSslServerKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a KeyPairsSslServerImport", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a KeyPair SSL Server Import", err, httpResp)
 		return
 	}
 }

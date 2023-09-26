@@ -16,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -310,24 +309,24 @@ func (r *redirectValidationResource) Create(ctx context.Context, req resource.Cr
 	createRedirectValidation := client.NewRedirectValidationSettings()
 	err := addOptionalRedirectValidationFields(ctx, createRedirectValidation, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for RedirectValidation", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Redirect Validation", err.Error())
 		return
 	}
-	requestJson, err := createRedirectValidation.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createRedirectValidation.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Redirect Validation: %s", requestErr.Error())
 	}
 
 	apiCreateRedirectValidation := r.apiClient.RedirectValidationApi.UpdateRedirectValidationSettings(ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateRedirectValidation = apiCreateRedirectValidation.Body(*createRedirectValidation)
 	redirectValidationResponse, httpResp, err := r.apiClient.RedirectValidationApi.UpdateRedirectValidationSettingsExecute(apiCreateRedirectValidation)
 	if err != nil {
-		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the RedirectValidation", err, httpResp)
+		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Redirect Validation", err, httpResp)
 		return
 	}
-	responseJson, err := redirectValidationResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := redirectValidationResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Redirect Validation: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -357,9 +356,9 @@ func (r *redirectValidationResource) Read(ctx context.Context, req resource.Read
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadRedirectValidation.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadRedirectValidation.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Redirect Validation: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -387,23 +386,23 @@ func (r *redirectValidationResource) Update(ctx context.Context, req resource.Up
 	createUpdateRequest := client.NewRedirectValidationSettings()
 	err := addOptionalRedirectValidationFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for RedirectValidation", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Redirect Validation", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Redirect Validation: %s", requestErr.Error())
 	}
 	updateRedirectValidation = updateRedirectValidation.Body(*createUpdateRequest)
 	updateRedirectValidationResponse, httpResp, err := r.apiClient.RedirectValidationApi.UpdateRedirectValidationSettingsExecute(updateRedirectValidation)
 	if err != nil {
-		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating RedirectValidation", err, httpResp)
+		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Redirect Validation", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateRedirectValidationResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateRedirectValidationResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Redirect Validation: %s", responseErr.Error())
 	}
 	// Read the response
 	readRedirectValidationResponse(ctx, updateRedirectValidationResponse, &state, &resp.Diagnostics)

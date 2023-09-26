@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -212,24 +211,26 @@ func (r *administrativeAccountsResource) Create(ctx context.Context, req resourc
 	createAdministrativeAccount := client.NewAdministrativeAccount(plan.Username.ValueString())
 	err := addOptionalAdministrativeAccountFields(ctx, createAdministrativeAccount, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for AdministrativeAccount", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Administrative Account", err.Error())
 		return
 	}
-	requestJson, err := createAdministrativeAccount.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+
+	_, requestErr := createAdministrativeAccount.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of an Administrative Account: %s", requestErr.Error())
 	}
 
 	apiCreateAdministrativeAccount := r.apiClient.AdministrativeAccountsApi.AddAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateAdministrativeAccount = apiCreateAdministrativeAccount.Body(*createAdministrativeAccount)
 	administrativeAccountResponse, httpResp, err := r.apiClient.AdministrativeAccountsApi.AddAccountExecute(apiCreateAdministrativeAccount)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the AdministrativeAccount", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Administrative Account", err, httpResp)
 		return
 	}
-	responseJson, err := administrativeAccountResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+
+	_, responseErr := administrativeAccountResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of an Administrative Account: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -259,9 +260,9 @@ func (r *administrativeAccountsResource) Read(ctx context.Context, req resource.
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadAdministrativeAccount.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadAdministrativeAccount.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of an Administrative Account: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -288,23 +289,25 @@ func (r *administrativeAccountsResource) Update(ctx context.Context, req resourc
 	createUpdateRequest := client.NewAdministrativeAccount(plan.Username.ValueString())
 	err := addOptionalAdministrativeAccountFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for AdministrativeAccount", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Administrative Account", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of an Administrative Account: %s", requestErr.Error())
 	}
+
 	updateAdministrativeAccount = updateAdministrativeAccount.Body(*createUpdateRequest)
 	updateAdministrativeAccountResponse, httpResp, err := r.apiClient.AdministrativeAccountsApi.UpdateAccountExecute(updateAdministrativeAccount)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating AdministrativeAccount", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Administrative Account", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateAdministrativeAccountResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateAdministrativeAccountResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of an Administrative Account: %s", responseErr.Error())
 	}
 	// Read the response
 	readAdministrativeAccountResponse(ctx, updateAdministrativeAccountResponse, &state, &plan, state.Password)
@@ -325,7 +328,7 @@ func (r *administrativeAccountsResource) Delete(ctx context.Context, req resourc
 	}
 	httpResp, err := r.apiClient.AdministrativeAccountsApi.DeleteAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Username.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a AdministrativeAccount", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a Administrative Account", err, httpResp)
 		return
 	}
 }

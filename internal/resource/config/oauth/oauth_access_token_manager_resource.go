@@ -15,12 +15,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -65,7 +63,7 @@ func (r *oauthAccessTokenManagerResource) Schema(ctx context.Context, req resour
 
 func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
 	resp.Schema = schema.Schema{
-		Description: "Manages Oauth Access Token Manager",
+		Description: "Manages OAuth Access Token Manager",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
@@ -137,12 +135,6 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 															Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
 															Required:    true,
 														},
-														"encrypted_value": schema.StringAttribute{
-															Description: "This value is not used in this provider due to the value changing on every GET request.",
-															Computed:    true,
-															Optional:    false,
-															Default:     stringdefault.StaticString(""),
-														},
 														"inherited": schema.BoolAttribute{
 															Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
 															Optional:    true,
@@ -189,14 +181,6 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 								"value": schema.StringAttribute{
 									Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
 									Required:    true,
-								},
-								"encrypted_value": schema.StringAttribute{
-									Description: "This value is not used in this provider due to the value changing on every GET request.",
-									Computed:    true,
-									Optional:    false,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 								"inherited": schema.BoolAttribute{
 									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
@@ -468,10 +452,9 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 
 	// state.Configuration
 	fieldAttrType := map[string]attr.Type{
-		"name":            basetypes.StringType{},
-		"value":           basetypes.StringType{},
-		"encrypted_value": basetypes.StringType{},
-		"inherited":       basetypes.BoolType{},
+		"name":      basetypes.StringType{},
+		"value":     basetypes.StringType{},
+		"inherited": basetypes.BoolType{},
 	}
 
 	rowAttrType := map[string]attr.Type{
@@ -519,8 +502,6 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 								} else {
 									tableRowField.Value = trf.Value
 								}
-								emptyString := ""
-								tableRowField.EncryptedValue = &emptyString
 								tableRowField.Inherited = trf.Inherited
 								toStateTableRowFields = append(toStateTableRowFields, tableRowField)
 							} else {
@@ -555,8 +536,6 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 							fieldValue.Value = cf.Value
 						}
 						fieldValue.Name = cf.Name
-						emptyString := ""
-						fieldValue.EncryptedValue = &emptyString
 						fieldValue.Inherited = cf.Inherited
 						fields = append(fields, fieldValue)
 					} else {
@@ -686,24 +665,24 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 	createOauthAccessTokenManager := client.NewAccessTokenManager(plan.Id.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
 	err := addOptionalOauthAccessTokenManagerFields(ctx, createOauthAccessTokenManager, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OauthAccessTokenManager", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Manager", err.Error())
 		return
 	}
-	requestJson, err := createOauthAccessTokenManager.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createOauthAccessTokenManager.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of an OAuth Access Token Manager: %s", requestErr.Error())
 	}
 
 	apiCreateOauthAccessTokenManager := r.apiClient.OauthAccessTokenManagersApi.CreateTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateOauthAccessTokenManager = apiCreateOauthAccessTokenManager.Body(*createOauthAccessTokenManager)
 	oauthAccessTokenManagerResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.CreateTokenManagerExecute(apiCreateOauthAccessTokenManager)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OauthAccessTokenManager", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Access Token Manager", err, httpResp)
 		return
 	}
-	responseJson, err := oauthAccessTokenManagerResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := oauthAccessTokenManagerResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of an OAuth Access Token Manager: %s", requestErr.Error())
 	}
 
 	// Read the response into the state
@@ -726,16 +705,16 @@ func (r *oauthAccessTokenManagerResource) Read(ctx context.Context, req resource
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the OauthAccessTokenManager", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Manager", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  OauthAccessTokenManager", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Manager", err, httpResp)
 		}
 	}
 	// Log response JSON
-	responseJson, err := apiReadOauthAccessTokenManager.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadOauthAccessTokenManager.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of an OAuth Access Token Manager: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -778,23 +757,23 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 	createUpdateRequest := client.NewAccessTokenManager(state.Id.ValueString(), state.Name.ValueString(), *pluginDescRefResLink, *configuration)
 	err := addOptionalOauthAccessTokenManagerFields(ctx, createUpdateRequest, state)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OauthAccessTokenManager", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Manager", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of an OAuth Access Token Manager: %s", requestErr.Error())
 	}
 	updateOauthAccessTokenManager = updateOauthAccessTokenManager.Body(*createUpdateRequest)
 	updateOauthAccessTokenManagerResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.UpdateTokenManagerExecute(updateOauthAccessTokenManager)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OauthAccessTokenManager", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an OAuth Access Token Manager", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateOauthAccessTokenManagerResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateOauthAccessTokenManagerResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of an OAuth Access Token Manager: %s", responseErr.Error())
 	}
 	// Read the response
 	readOauthAccessTokenManagerResponse(ctx, updateOauthAccessTokenManagerResponse, &state, state.Configuration)
@@ -814,7 +793,7 @@ func (r *oauthAccessTokenManagerResource) Delete(ctx context.Context, req resour
 	}
 	httpResp, err := r.apiClient.OauthAccessTokenManagersApi.DeleteTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OauthAccessTokenManager", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Access Token Manager", err, httpResp)
 		return
 	}
 }

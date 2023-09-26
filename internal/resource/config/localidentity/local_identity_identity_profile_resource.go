@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -785,12 +784,12 @@ func (r *localIdentityIdentityProfilesResource) Create(ctx context.Context, req 
 	createLocalIdentityIdentityProfiles := client.NewLocalIdentityProfile(plan.Name.ValueString(), *apcResourceLink)
 	err := addOptionalLocalIdentityIdentityProfilesFields(ctx, createLocalIdentityIdentityProfiles, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for LocalIdentityIdentityProfiles", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for a Local Identity Identity Profile", err.Error())
 		return
 	}
-	requestJson, err := createLocalIdentityIdentityProfiles.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createLocalIdentityIdentityProfiles.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of a Local Identity Identity Profile: %s", requestErr.Error())
 	}
 	apiCreateLocalIdentityIdentityProfiles := r.apiClient.LocalIdentityIdentityProfilesApi.CreateIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateLocalIdentityIdentityProfiles = apiCreateLocalIdentityIdentityProfiles.Body(*createLocalIdentityIdentityProfiles)
@@ -799,9 +798,9 @@ func (r *localIdentityIdentityProfilesResource) Create(ctx context.Context, req 
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the LocalIdentityIdentityProfiles", err, httpResp)
 		return
 	}
-	responseJson, err := localIdentityIdentityProfilesResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := localIdentityIdentityProfilesResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of a Local Identity Identity Profile: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -831,9 +830,9 @@ func (r *localIdentityIdentityProfilesResource) Read(ctx context.Context, req re
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadLocalIdentityIdentityProfiles.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadLocalIdentityIdentityProfiles.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of a Local Identity Identity Profile: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -859,23 +858,23 @@ func (r *localIdentityIdentityProfilesResource) Update(ctx context.Context, req 
 	createUpdateRequest := client.NewLocalIdentityProfile(plan.Name.ValueString(), *apcResourceLink)
 	err := addOptionalLocalIdentityIdentityProfilesFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for LocalIdentityIdentityProfiles", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Local Identity Identity Profile", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of a Local Identity Identity Profile: %s", requestErr.Error())
 	}
 	updateLocalIdentityIdentityProfiles = updateLocalIdentityIdentityProfiles.Body(*createUpdateRequest)
 	updateLocalIdentityIdentityProfilesResponse, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesApi.UpdateIdentityProfileExecute(updateLocalIdentityIdentityProfiles)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating LocalIdentityIdentityProfiles", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Local Identity Identity Profile", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateLocalIdentityIdentityProfilesResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateLocalIdentityIdentityProfilesResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of a Local Identity Identity Profile: %s", responseErr.Error())
 	}
 	// Read the response
 	readLocalIdentityIdentityProfilesResponse(ctx, updateLocalIdentityIdentityProfilesResponse, &plan, &resp.Diagnostics)

@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -198,26 +197,25 @@ func (r *authenticationPolicyContractsResource) Create(ctx context.Context, req 
 	createAuthenticationPolicyContracts := client.NewAuthenticationPolicyContract()
 	err := addAuthenticationPolicyContractsFields(ctx, createAuthenticationPolicyContracts, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for AuthenticationPolicyContracts", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for an Authentication Policy Contract", err.Error())
 		return
 	}
-	requestJson, err := createAuthenticationPolicyContracts.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createAuthenticationPolicyContracts.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of an Authentication Policy Contract: %s", requestErr.Error())
 	}
 
 	apiCreateAuthenticationPolicyContracts := r.apiClient.AuthenticationPolicyContractsApi.CreateAuthenticationPolicyContract(ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateAuthenticationPolicyContracts = apiCreateAuthenticationPolicyContracts.Body(*createAuthenticationPolicyContracts)
 	authenticationPolicyContractsResponse, httpResp, err := r.apiClient.AuthenticationPolicyContractsApi.CreateAuthenticationPolicyContractExecute(apiCreateAuthenticationPolicyContracts)
 	if err != nil {
-		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the AuthenticationPolicyContracts", err, httpResp)
+		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating an Authentication Policy Contract", err, httpResp)
 		return
 	}
-	responseJson, err := authenticationPolicyContractsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := authenticationPolicyContractsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of an Authentication Policy Contract: %s", responseErr.Error())
 	}
-
 	// Read the response into the state
 	var state authenticationPolicyContractsResourceModel
 
@@ -245,9 +243,9 @@ func (r *authenticationPolicyContractsResource) Read(ctx context.Context, req re
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadAuthenticationPolicyContracts.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadAuthenticationPolicyContracts.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of an Authentication Policy Contract: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -275,23 +273,23 @@ func (r *authenticationPolicyContractsResource) Update(ctx context.Context, req 
 	createUpdateRequest := client.NewAuthenticationPolicyContract()
 	err := addAuthenticationPolicyContractsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for AuthenticationPolicyContracts", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for an Authentication Policy Contract", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of an Authentication Policy Contract: %s", requestErr.Error())
 	}
 	updateAuthenticationPolicyContracts = updateAuthenticationPolicyContracts.Body(*createUpdateRequest)
 	updateAuthenticationPolicyContractsResponse, httpResp, err := r.apiClient.AuthenticationPolicyContractsApi.UpdateAuthenticationPolicyContractExecute(updateAuthenticationPolicyContracts)
 	if err != nil {
-		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating AuthenticationPolicyContracts", err, httpResp)
+		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an Authentication Policy Contract", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateAuthenticationPolicyContractsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateAuthenticationPolicyContractsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of an Authentication Policy Contract: %s", responseErr.Error())
 	}
 	// Read the response
 	readAuthenticationPolicyContractsResponse(ctx, updateAuthenticationPolicyContractsResponse, &state, &plan)
@@ -312,7 +310,7 @@ func (r *authenticationPolicyContractsResource) Delete(ctx context.Context, req 
 	}
 	httpResp, err := r.apiClient.AuthenticationPolicyContractsApi.DeleteAuthenticationPolicyContract(ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a AuthenticationPolicyContracts", err, httpResp)
+		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an Authentication Policy Contract", err, httpResp)
 		return
 	}
 

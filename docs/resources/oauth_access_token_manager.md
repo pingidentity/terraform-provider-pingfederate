@@ -3,12 +3,12 @@
 page_title: "pingfederate_oauth_access_token_manager Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages Oauth Access Token Manager
+  Manages OAuth Access Token Manager
 ---
 
 # pingfederate_oauth_access_token_manager (Resource)
 
-Manages Oauth Access Token Manager
+Manages OAuth Access Token Manager
 
 ## Example Usage
 
@@ -287,10 +287,6 @@ Optional:
 
 - `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 
-Read-Only:
-
-- `encrypted_value` (String) This value is not used in this provider due to the value changing on every GET request.
-
 
 <a id="nestedatt--configuration--tables"></a>
 ### Nested Schema for `configuration.tables`
@@ -323,10 +319,6 @@ Required:
 Optional:
 
 - `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
-
-Read-Only:
-
-- `encrypted_value` (String) This value is not used in this provider due to the value changing on every GET request.
 
 
 

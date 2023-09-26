@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -133,12 +132,12 @@ func (r *oauthIssuersResource) Create(ctx context.Context, req resource.CreateRe
 	oauthIssuer := client.NewIssuer(plan.Name.ValueString(), plan.Host.ValueString())
 	err := addOptionalOauthIssuersFields(ctx, oauthIssuer, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Issuers", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for an OAuth Issuer", err.Error())
 		return
 	}
-	requestJson, err := oauthIssuer.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := oauthIssuer.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of an OAuth Issuer: %s", requestErr.Error())
 	}
 
 	apiCreateOauthIssuer := r.apiClient.OauthIssuersApi.AddOauthIssuer(config.ProviderBasicAuthContext(ctx, r.providerConfig))
@@ -146,12 +145,12 @@ func (r *oauthIssuersResource) Create(ctx context.Context, req resource.CreateRe
 	oauthIssuerResponse, httpResp, err := r.apiClient.OauthIssuersApi.AddOauthIssuerExecute(apiCreateOauthIssuer)
 
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Issuers", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating an OAuth Issuer", err, httpResp)
 		return
 	}
-	responseJson, err := oauthIssuerResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := oauthIssuerResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of an OAuth Issuer: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -173,17 +172,17 @@ func (r *oauthIssuersResource) Read(ctx context.Context, req resource.ReadReques
 	apiReadOauthIssuer, httpResp, err := r.apiClient.OauthIssuersApi.GetOauthIssuerById(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Issuer", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Issuer", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Issuer", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Issuer", err, httpResp)
 		}
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadOauthIssuer.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadOauthIssuer.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of an OAuth Issuer: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -211,23 +210,23 @@ func (r *oauthIssuersResource) Update(ctx context.Context, req resource.UpdateRe
 	createUpdateRequest := client.NewIssuer(plan.Name.ValueString(), plan.Host.ValueString())
 	err := addOptionalOauthIssuersFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to update request for OAuth Issuers", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to update request for an OAuth Issuer", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of an OAuth Issuer: %s", requestErr.Error())
 	}
 	updateOauthIssuer = updateOauthIssuer.Body(*createUpdateRequest)
 	updateOauthIssuerResponse, httpResp, err := r.apiClient.OauthIssuersApi.UpdateOauthIssuerExecute(updateOauthIssuer)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OAuth Issuers", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an OAuth Issuer", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateOauthIssuerResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateOauthIssuerResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of an OAuth Issuer: %s", responseErr.Error())
 	}
 	// Read the response
 	readOauthIssuersResponse(ctx, updateOauthIssuerResponse, &state, &plan)
@@ -248,7 +247,7 @@ func (r *oauthIssuersResource) Delete(ctx context.Context, req resource.DeleteRe
 	}
 	httpResp, err := r.apiClient.OauthIssuersApi.DeleteOauthIssuer(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Issuers", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Issuer", err, httpResp)
 		return
 	}
 }

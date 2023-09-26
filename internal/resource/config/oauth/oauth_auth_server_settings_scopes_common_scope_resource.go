@@ -146,24 +146,24 @@ func (r *oauthAuthServerSettingsScopesCommonScopesResource) Create(ctx context.C
 	createOauthAuthServerSettingsScopesCommonScopes := client.NewScopeEntry(plan.Name.ValueString(), plan.Description.ValueString())
 	err := addOptionalOauthAuthServerSettingsScopesCommonScopesFields(ctx, createOauthAuthServerSettingsScopesCommonScopes, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OauthAuthServerSettingsScopesCommonScopes", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Auth Server Settings Scopes Common Scope", err.Error())
 		return
 	}
-	requestJson, err := createOauthAuthServerSettingsScopesCommonScopes.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createOauthAuthServerSettingsScopesCommonScopes.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of a OAuth Auth Server Settings Scopes Common Scope: %s", requestErr.Error())
 	}
 
 	apiCreateOauthAuthServerSettingsScopesCommonScopes := r.apiClient.OauthAuthServerSettingsApi.AddCommonScope(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateOauthAuthServerSettingsScopesCommonScopes = apiCreateOauthAuthServerSettingsScopesCommonScopes.Body(*createOauthAuthServerSettingsScopesCommonScopes)
 	oauthAuthServerSettingsScopesCommonScopesResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsApi.AddCommonScopeExecute(apiCreateOauthAuthServerSettingsScopesCommonScopes)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OauthAuthServerSettingsScopesCommonScopes", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Auth Server Settings Scopes Common Scope", err, httpResp)
 		return
 	}
-	responseJson, err := oauthAuthServerSettingsScopesCommonScopesResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := oauthAuthServerSettingsScopesCommonScopesResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of a OAuth Auth Server Settings Scopes Common Scope: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -185,10 +185,10 @@ func (r *oauthAuthServerSettingsScopesCommonScopesResource) Read(ctx context.Con
 	apiReadOauthAuthServerSettingsScopesCommonScopes, httpResp, err := r.apiClient.OauthAuthServerSettingsApi.GetCommonScope(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Name.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the OauthAuthServerSettingsScopesCommonScopes", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Auth Server Settings Scopes Common Scope", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OauthAuthServerSettingsScopesCommonScopes", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Auth Server Settings Scopes Common Scope", err, httpResp)
 		}
 		return
 	}
@@ -223,23 +223,23 @@ func (r *oauthAuthServerSettingsScopesCommonScopesResource) Update(ctx context.C
 	createUpdateRequest := client.NewScopeEntry(plan.Id.ValueString(), plan.Description.ValueString())
 	err := addOptionalOauthAuthServerSettingsScopesCommonScopesFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OauthAuthServerSettingsScopesCommonScopes", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Auth Server Settings Scopes Common Scope", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of a OAuth Auth Server Settings Scopes Common Scope: %s", requestErr.Error())
 	}
 	updateOauthAuthServerSettingsScopesCommonScopes = updateOauthAuthServerSettingsScopesCommonScopes.Body(*createUpdateRequest)
 	updateOauthAuthServerSettingsScopesCommonScopesResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsApi.UpdateCommonScopeExecute(updateOauthAuthServerSettingsScopesCommonScopes)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OauthAuthServerSettingsScopesCommonScopes", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OAuth Auth Server Settings Scopes Common Scope", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateOauthAuthServerSettingsScopesCommonScopesResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateOauthAuthServerSettingsScopesCommonScopesResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of a OAuth Auth Server Settings Scopes Common Scope: %s", responseErr.Error())
 	}
 	// Read the response
 	readOauthAuthServerSettingsScopesCommonScopesResponse(ctx, updateOauthAuthServerSettingsScopesCommonScopesResponse, &state, &plan)
@@ -260,7 +260,7 @@ func (r *oauthAuthServerSettingsScopesCommonScopesResource) Delete(ctx context.C
 	}
 	httpResp, err := r.apiClient.OauthAuthServerSettingsApi.RemoveCommonScope(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Name.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a OauthAuthServerSettingsScopesCommonScopes", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a OAuth Auth Server Settings Scopes Common Scope", err, httpResp)
 		return
 	}
 }

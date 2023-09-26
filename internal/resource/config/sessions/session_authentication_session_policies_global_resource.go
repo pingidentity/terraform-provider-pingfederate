@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -171,24 +170,24 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Create(ctx context.
 	createSessionAuthenticationSessionPoliciesGlobal := client.NewGlobalAuthenticationSessionPolicy(plan.EnableSessions.ValueBool())
 	err := addOptionalSessionAuthenticationSessionPoliciesGlobalFields(ctx, createSessionAuthenticationSessionPoliciesGlobal, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for SessionAuthenticationSessionPoliciesGlobal", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Session Authentication Session Policies Global", err.Error())
 		return
 	}
-	requestJson, err := createSessionAuthenticationSessionPoliciesGlobal.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createSessionAuthenticationSessionPoliciesGlobal.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Session Authentication Session Policies Global: %s", requestErr.Error())
 	}
 
 	apiCreateSessionAuthenticationSessionPoliciesGlobal := r.apiClient.SessionApi.UpdateGlobalPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateSessionAuthenticationSessionPoliciesGlobal = apiCreateSessionAuthenticationSessionPoliciesGlobal.Body(*createSessionAuthenticationSessionPoliciesGlobal)
 	sessionAuthenticationSessionPoliciesGlobalResponse, httpResp, err := r.apiClient.SessionApi.UpdateGlobalPolicyExecute(apiCreateSessionAuthenticationSessionPoliciesGlobal)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the SessionAuthenticationSessionPoliciesGlobal", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Session Authentication Session Policies Global", err, httpResp)
 		return
 	}
-	responseJson, err := sessionAuthenticationSessionPoliciesGlobalResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := sessionAuthenticationSessionPoliciesGlobalResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Session Authentication Session Policies Global: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -218,9 +217,9 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Read(ctx context.Co
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadSessionAuthenticationSessionPoliciesGlobal.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadSessionAuthenticationSessionPoliciesGlobal.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Session Authentication Session Policies Global: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -248,23 +247,23 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Update(ctx context.
 	createUpdateRequest := client.NewGlobalAuthenticationSessionPolicy(plan.EnableSessions.ValueBool())
 	err := addOptionalSessionAuthenticationSessionPoliciesGlobalFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for SessionAuthenticationSessionPoliciesGlobal", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Session Authentication Session Policies Global", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Session Authentication Session Policies Global: %s", requestErr.Error())
 	}
 	updateSessionAuthenticationSessionPoliciesGlobal = updateSessionAuthenticationSessionPoliciesGlobal.Body(*createUpdateRequest)
 	updateSessionAuthenticationSessionPoliciesGlobalResponse, httpResp, err := r.apiClient.SessionApi.UpdateGlobalPolicyExecute(updateSessionAuthenticationSessionPoliciesGlobal)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating SessionAuthenticationSessionPoliciesGlobal", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Session Authentication Session Policies Global", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateSessionAuthenticationSessionPoliciesGlobalResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateSessionAuthenticationSessionPoliciesGlobalResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Session Authentication Session Policies Global: %s", responseErr.Error())
 	}
 	// Read the response
 	readSessionAuthenticationSessionPoliciesGlobalResponse(ctx, updateSessionAuthenticationSessionPoliciesGlobalResponse, &state, &plan)

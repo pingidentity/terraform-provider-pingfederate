@@ -14,12 +14,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -124,12 +122,6 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 															Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
 															Required:    true,
 														},
-														"encrypted_value": schema.StringAttribute{
-															Description: "This value is not used in this provider due to the value changing on every GET request.",
-															Computed:    true,
-															Optional:    false,
-															Default:     stringdefault.StaticString(""),
-														},
 														"inherited": schema.BoolAttribute{
 															Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
 															Optional:    true,
@@ -176,14 +168,6 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 								"value": schema.StringAttribute{
 									Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
 									Required:    true,
-								},
-								"encrypted_value": schema.StringAttribute{
-									Description: "This value is not used in this provider due to the value changing on every GET request.",
-									Computed:    true,
-									Optional:    false,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 								"inherited": schema.BoolAttribute{
 									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
@@ -322,10 +306,9 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 
 	// state.Configuration
 	fieldAttrType := map[string]attr.Type{
-		"name":            basetypes.StringType{},
-		"value":           basetypes.StringType{},
-		"encrypted_value": basetypes.StringType{},
-		"inherited":       basetypes.BoolType{},
+		"name":      basetypes.StringType{},
+		"value":     basetypes.StringType{},
+		"inherited": basetypes.BoolType{},
 	}
 
 	rowAttrType := map[string]attr.Type{
@@ -373,8 +356,6 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 								} else {
 									tableRowField.Value = trf.Value
 								}
-								emptyString := ""
-								tableRowField.EncryptedValue = &emptyString
 								tableRowField.Inherited = trf.Inherited
 								toStateTableRowFields = append(toStateTableRowFields, tableRowField)
 							} else {
@@ -409,8 +390,6 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 							fieldValue.Value = cf.Value
 						}
 						fieldValue.Name = cf.Name
-						emptyString := ""
-						fieldValue.EncryptedValue = &emptyString
 						fieldValue.Inherited = cf.Inherited
 						fields = append(fields, fieldValue)
 					} else {
@@ -504,24 +483,23 @@ func (r *passwordCredentialValidatorsResource) Create(ctx context.Context, req r
 	createPasswordCredentialValidators := client.NewPasswordCredentialValidator(plan.Id.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
 	err := addOptionalPasswordCredentialValidatorsFields(ctx, createPasswordCredentialValidators, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for PasswordCredentialValidators", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for a Password Credential Validator", err.Error())
 		return
 	}
-	requestJson, err := createPasswordCredentialValidators.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createPasswordCredentialValidators.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of a Password Credential Validator: %s", requestErr.Error())
 	}
-
 	apiCreatePasswordCredentialValidators := r.apiClient.PasswordCredentialValidatorsApi.CreatePasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreatePasswordCredentialValidators = apiCreatePasswordCredentialValidators.Body(*createPasswordCredentialValidators)
 	passwordCredentialValidatorsResponse, httpResp, err := r.apiClient.PasswordCredentialValidatorsApi.CreatePasswordCredentialValidatorExecute(apiCreatePasswordCredentialValidators)
 	if err != nil {
-		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the PasswordCredentialValidators", err, httpResp)
+		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating a Password Credential Validator", err, httpResp)
 		return
 	}
-	responseJson, err := passwordCredentialValidatorsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := passwordCredentialValidatorsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of a Password Credential Validator: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -543,17 +521,17 @@ func (r *passwordCredentialValidatorsResource) Read(ctx context.Context, req res
 	apiReadPasswordCredentialValidators, httpResp, err := r.apiClient.PasswordCredentialValidatorsApi.GetPasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Password Credential Validator", err, httpResp)
+			ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a Password Credential Validator", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Password Credential Validator", err, httpResp)
+			ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Password Credential Validator", err, httpResp)
 		}
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadPasswordCredentialValidators.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadPasswordCredentialValidators.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of a Password Credential Validator: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -595,23 +573,23 @@ func (r *passwordCredentialValidatorsResource) Update(ctx context.Context, req r
 	createUpdateRequest := client.NewPasswordCredentialValidator(plan.Id.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
 	err := addOptionalPasswordCredentialValidatorsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for PasswordCredentialValidators", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for a Password Credential Validator", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of a Password Credential Validator: %s", requestErr.Error())
 	}
 	updatePasswordCredentialValidators = updatePasswordCredentialValidators.Body(*createUpdateRequest)
 	updatePasswordCredentialValidatorsResponse, httpResp, err := r.apiClient.PasswordCredentialValidatorsApi.UpdatePasswordCredentialValidatorExecute(updatePasswordCredentialValidators)
 	if err != nil {
-		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating PasswordCredentialValidators", err, httpResp)
+		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating a Password Credential Validator", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updatePasswordCredentialValidatorsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updatePasswordCredentialValidatorsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of a Password Credential Validator: %s", responseErr.Error())
 	}
 	// Read the response
 	readPasswordCredentialValidatorsResponse(ctx, updatePasswordCredentialValidatorsResponse, &plan, plan.Configuration)
@@ -631,7 +609,7 @@ func (r *passwordCredentialValidatorsResource) Delete(ctx context.Context, req r
 	}
 	httpResp, err := r.apiClient.PasswordCredentialValidatorsApi.DeletePasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a PasswordCredentialValidator", err, httpResp)
+		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a Password Credential Validator", err, httpResp)
 	}
 }
 
