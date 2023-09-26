@@ -13,24 +13,6 @@ LogSettings Settings related to server logging.
 ## Example Usage
 
 ```terraform
-terraform {
-  required_version = ">=1.1"
-  required_providers {
-    pingfederate = {
-      version = "~> 0.0.1"
-      source  = "pingidentity/pingfederate"
-    }
-  }
-}
-
-provider "pingfederate" {
-  username   = "administrator"
-  password   = "2FederateM0re"
-  https_host = "https://localhost:9999"
-}
-# Please do not delete any log categories from the resource file. 
-# PingFederate API does not currently support accessing logCategories by ID.
-# Please change the enabled field to desired configuration.
 resource "pingfederate_server_settings_log_settings" "serverSettingsLogSettingsExample" {
   log_categories = [
     {
@@ -99,3 +81,12 @@ Required:
 - `enabled` (Boolean) Determines whether or not the log category is enabled. The default is false..
 - `id` (String) The ID of the log category. This field must match one of the category IDs defined in log4j-categories.xml.
 - `name` (String) The description of the log category. This field is read-only and is ignored for PUT requests.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "serverSettingsLogSettingsId" should be "id"
+terraform import pingfederate_server_settings_log_settings.myServerSettingsLogSettings serverSettingsLogSettingsId
+```

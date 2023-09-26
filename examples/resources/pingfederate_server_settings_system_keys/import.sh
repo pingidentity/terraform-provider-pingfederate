@@ -1,0 +1,2 @@
+# "serverSettingsSystemKeysId" should be "id"
+terraform import pingfederate_server_settings_system_keys.myServerSettingsSystemKeys serverSettingsSystemKeysId
