@@ -40,7 +40,7 @@ resource "pingfederate_administrative_account" "administrativeAccountExample" {
 
 ### Read-Only
 
-- `id` (String) Computed attribute tied to the username property of this resource.
+- `id` (String) The ID of this resource.
 
 ## Import
 

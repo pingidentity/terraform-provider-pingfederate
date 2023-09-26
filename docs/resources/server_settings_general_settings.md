@@ -35,7 +35,7 @@ resource "pingfederate_server_settings_general_settings" "serverSettingsGeneralS
 
 ### Read-Only
 
-- `id` (String) Placeholder name of this object required by Terraform.
+- `id` (String) The ID of this resource.
 
 ## Import
 

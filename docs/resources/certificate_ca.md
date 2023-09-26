@@ -30,7 +30,11 @@ resource "pingfederate_certificate_ca" "example" {
 ### Optional
 
 - `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.
-- `id` (String) The persistent, unique ID for the certificate
+- `custom_id` (String) The persistent, unique ID for the certificate
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 ## Import
 

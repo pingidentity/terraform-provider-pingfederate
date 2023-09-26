@@ -140,7 +140,7 @@ resource "pingfederate_oauth_auth_server_settings" "oauthAuthServerSettingsExamp
 
 ### Read-Only
 
-- `id` (String) Placeholder name of this object required by Terraform.
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--admin_web_service_pcv_ref"></a>
 ### Nested Schema for `admin_web_service_pcv_ref`

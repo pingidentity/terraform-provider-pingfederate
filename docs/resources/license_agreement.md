@@ -29,7 +29,7 @@ resource "pingfederate_license_agreement" "licenseAgreementExample" {
 
 ### Read-Only
 
-- `id` (String) Placeholder name of this object required by Terraform.
+- `id` (String) The ID of this resource.
 
 ## Import
 
