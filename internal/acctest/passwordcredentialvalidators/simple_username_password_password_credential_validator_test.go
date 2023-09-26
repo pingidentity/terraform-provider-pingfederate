@@ -53,7 +53,7 @@ func TestAccSimpleUsernamePasswordCredentialValidators(t *testing.T) {
 			{
 				// Test importing the resource
 				Config:                  testAccPasswordCredentialValidators(resourceName, updatedResourceModel),
-				ResourceName:            "pingfederate_password_credential_validators." + resourceName,
+				ResourceName:            "pingfederate_password_credential_validator." + resourceName,
 				ImportStateId:           simpleUsernamePasswordPasswordCredentialValidatorsId,
 				ImportState:             true,
 				ImportStateVerifyIgnore: []string{"configuration.fields.value"},
@@ -64,7 +64,7 @@ func TestAccSimpleUsernamePasswordCredentialValidators(t *testing.T) {
 
 func testAccPasswordCredentialValidators(resourceName string, resourceModel simpleUsernamePasswordPasswordCredentialValidatorsResourceModel) string {
 	return fmt.Sprintf(`
-resource "pingfederate_password_credential_validators" "%[1]s" {
+resource "pingfederate_password_credential_validator" "%[1]s" {
   id   = "%[2]s"
   name = "%[3]s"
   plugin_descriptor_ref = {

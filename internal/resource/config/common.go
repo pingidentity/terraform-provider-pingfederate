@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/float64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -77,6 +78,16 @@ func SetAllAttributesToOptionalAndComputed(s *schema.Schema, exemptAttributes []
 				s.Attributes[key] = setAttr
 				continue
 			}
+			listAttr, ok := attribute.(schema.ListAttribute)
+			anyOk = ok || anyOk
+			if ok && (!listAttr.Computed || !listAttr.Optional) {
+				listAttr.Required = false
+				listAttr.Optional = true
+				listAttr.Computed = true
+				listAttr.PlanModifiers = append(listAttr.PlanModifiers, listplanmodifier.UseStateForUnknown())
+				s.Attributes[key] = listAttr
+				continue
+			}
 			boolAttr, ok := attribute.(schema.BoolAttribute)
 			anyOk = ok || anyOk
 			if ok && (!boolAttr.Computed || !boolAttr.Optional) {
@@ -108,8 +119,7 @@ func SetAllAttributesToOptionalAndComputed(s *schema.Schema, exemptAttributes []
 				continue
 			}
 			if !anyOk {
-				//lintignore:R009
-				panic("No valid schema attribute type found when setting attributes to computed: " + key)
+				return
 			}
 		}
 	}

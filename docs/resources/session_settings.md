@@ -32,3 +32,12 @@ resource "pingfederate_session_settings" "sessionSettingsExample" {
 ### Read-Only
 
 - `id` (String) Placeholder name of this object required by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "sessionSettingsId" should be "id"
+terraform import pingfederate_session_settings.mySessionSettings sessionSettingsId
+```

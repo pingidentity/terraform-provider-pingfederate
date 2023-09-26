@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -245,21 +244,21 @@ func (r *serverSettingsSystemKeysResource) Create(ctx context.Context, req resou
 	}
 	createServerSettingsSystemKeys := client.NewSystemKeysWithDefaults()
 	addServerSettingsSystemKeysFields(ctx, createServerSettingsSystemKeys, plan)
-	requestJson, err := createServerSettingsSystemKeys.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createServerSettingsSystemKeys.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Server Settings System Keys: %s", requestErr.Error())
 	}
 
 	apiCreateServerSettingsSystemKeys := r.apiClient.ServerSettingsApi.UpdateSystemKeys(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateServerSettingsSystemKeys = apiCreateServerSettingsSystemKeys.Body(*createServerSettingsSystemKeys)
 	serverSettingsSystemKeysResponse, httpResp, err := r.apiClient.ServerSettingsApi.UpdateSystemKeysExecute(apiCreateServerSettingsSystemKeys)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the ServerSettingsSystemKeys", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Server Settings System Keys", err, httpResp)
 		return
 	}
-	responseJson, err := serverSettingsSystemKeysResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := serverSettingsSystemKeysResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Server Settings System Keys: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -289,9 +288,9 @@ func (r *serverSettingsSystemKeysResource) Read(ctx context.Context, req resourc
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadServerSettingsSystemKeys.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadServerSettingsSystemKeys.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Server Settings System Keys: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -314,21 +313,21 @@ func (r *serverSettingsSystemKeysResource) Update(ctx context.Context, req resou
 	}
 	createServerSettingsSystemKeys := client.NewSystemKeysWithDefaults()
 	addServerSettingsSystemKeysFields(ctx, createServerSettingsSystemKeys, plan)
-	requestJson, err := createServerSettingsSystemKeys.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createServerSettingsSystemKeys.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Server Settings System Keys: %s", requestErr.Error())
 	}
 
 	apiCreateServerSettingsSystemKeys := r.apiClient.ServerSettingsApi.UpdateSystemKeys(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateServerSettingsSystemKeys = apiCreateServerSettingsSystemKeys.Body(*createServerSettingsSystemKeys)
 	serverSettingsSystemKeysResponse, httpResp, err := r.apiClient.ServerSettingsApi.UpdateSystemKeysExecute(apiCreateServerSettingsSystemKeys)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the ServerSettingsSystemKeys", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Server Settings System Keys", err, httpResp)
 		return
 	}
-	responseJson, err := serverSettingsSystemKeysResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := serverSettingsSystemKeysResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Server Settings System Keys: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
