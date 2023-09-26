@@ -30,22 +30,6 @@ type administrativeAccountDataSource struct {
 	apiClient      *client.APIClient
 }
 
-// Metadata returns the data source type name.
-func (r *administrativeAccountDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_administrative_account"
-}
-
-// Configure adds the provider configured client to the data source.
-func (r *administrativeAccountDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, _ *datasource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-
-	providerCfg := req.ProviderData.(internaltypes.ResourceConfiguration)
-	r.providerConfig = providerCfg.ProviderConfig
-	r.apiClient = providerCfg.ApiClient
-}
-
 type administrativeAccountDataSourceModel struct {
 	Active       types.Bool   `tfsdk:"active"`
 	Auditor      types.Bool   `tfsdk:"auditor"`
@@ -111,12 +95,28 @@ func (r *administrativeAccountDataSource) Schema(ctx context.Context, req dataso
 			},
 		},
 	}
-	config.AddCommonDataSourceSchema(&schemaDef, false)
+	config.AddCommonDataSourceSchema(&schemaDef, true)
 	resp.Schema = schemaDef
 }
 
+// Metadata returns the data source type name.
+func (r *administrativeAccountDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_administrative_account"
+}
+
+// Configure adds the provider configured client to the data source.
+func (r *administrativeAccountDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, _ *datasource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+
+	providerCfg := req.ProviderData.(internaltypes.ResourceConfiguration)
+	r.providerConfig = providerCfg.ProviderConfig
+	r.apiClient = providerCfg.ApiClient
+}
+
 // Read a DseeCompatAdministrativeAccountResponse object into the model struct
-func readDseeCompatAdministrativeAccountResponseDataSource(ctx context.Context, r *client.AdministrativeAccount, state *administrativeAccountResourceModel, expectedValues *administrativeAccountDataSourceModel, passwordPlan basetypes.StringValue) {
+func readAdministrativeAccountResponseDataSource(ctx context.Context, r *client.AdministrativeAccount, state *administrativeAccountDataSourceModel, expectedValues *administrativeAccountDataSourceModel, passwordPlan basetypes.StringValue) {
 	state.Id = types.StringValue(r.Username)
 	state.Username = types.StringValue(r.Username)
 	state.Password = types.StringValue(passwordPlan.ValueString())
@@ -131,29 +131,28 @@ func readDseeCompatAdministrativeAccountResponseDataSource(ctx context.Context, 
 
 // Read resource information
 func (r *administrativeAccountDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	// Get current state
 	var state administrativeAccountDataSourceModel
+
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	readResponse, httpResp, err := r.apiClient.AdministrativeAccountsApi.GetAccount(
-		config.ProviderBasicAuthContext(ctx, r.providerConfig), config.stateId).Execute()
+	apiReadAdministrativeAccount, httpResp, err := r.apiClient.AdministrativeAccountsApi.GetAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Username.ValueString()).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Access Control Handler", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Administrative Account", err, httpResp)
 		return
 	}
 
 	// Log response JSON
-	responseJson, err := readResponse.MarshalJSON()
+	responseJson, err := apiReadAdministrativeAccount.MarshalJSON()
 	if err == nil {
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	}
 
 	// Read the response into the state
-	readDseeCompatAdministrativeAccountResponseDataSource(ctx, readResponse, &state, state.Password)
+	readAdministrativeAccountResponseDataSource(ctx, apiReadAdministrativeAccount, &state, &state, state.Password)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

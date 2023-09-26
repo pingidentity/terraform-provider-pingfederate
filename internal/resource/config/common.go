@@ -1,6 +1,7 @@
 package config
 
 import (
+	datasourceschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/float64planmodifier"
@@ -37,26 +38,20 @@ func AddCommonSchema(s *schema.Schema, idRequired bool) {
 	}
 }
 
-func AddCommonDataSourceSchema(s *schema.Schema, idRequired bool) {
+func AddCommonDataSourceSchema(s *datasourceschema.Schema, idRequired bool) {
 	// If ID is required (for instantiable config objects) then set it as Required and
 	// require replace when changing. Otherwise, mark it as Computed.
 	if idRequired {
-		s.Attributes["id"] = schema.StringAttribute{
+		s.Attributes["id"] = datasourceschema.StringAttribute{
 			Description: "The persistent, unique ID for the resource. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.",
 			Required:    true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.RequiresReplace(),
-			},
 		}
 	} else {
-		s.Attributes["id"] = schema.StringAttribute{
+		s.Attributes["id"] = datasourceschema.StringAttribute{
 			Description: "Placeholder name of this object required by Terraform.",
 			Computed:    true,
 			Required:    false,
 			Optional:    false,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
 		}
 	}
 }
