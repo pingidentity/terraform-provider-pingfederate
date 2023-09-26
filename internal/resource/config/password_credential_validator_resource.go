@@ -44,6 +44,7 @@ type passwordCredentialValidatorsResource struct {
 type passwordCredentialValidatorsResourceModel struct {
 	AttributeContract   types.Object `tfsdk:"attribute_contract"`
 	Id                  types.String `tfsdk:"id"`
+	CustomId            types.String `tfsdk:"custom_id"`
 	Name                types.String `tfsdk:"name"`
 	PluginDescriptorRef types.Object `tfsdk:"plugin_descriptor_ref"`
 	ParentRef           types.Object `tfsdk:"parent_ref"`
@@ -52,10 +53,10 @@ type passwordCredentialValidatorsResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	schema := schema.Schema{
 		Description: "Manages Password Credential Validators",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
+			"custom_id": schema.StringAttribute{
 				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
@@ -236,6 +237,9 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 			},
 		},
 	}
+
+	AddCommonSchema(&schema)
+	resp.Schema = schema
 }
 
 func (r *passwordCredentialValidatorsResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
@@ -294,6 +298,7 @@ func (r *passwordCredentialValidatorsResource) Configure(_ context.Context, req 
 
 func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.PasswordCredentialValidator, state *passwordCredentialValidatorsResourceModel, configurationFromPlan basetypes.ObjectValue) {
 	state.Id = types.StringValue(r.Id)
+	state.CustomId = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
 
 	// state.pluginDescriptorRef
@@ -480,7 +485,7 @@ func (r *passwordCredentialValidatorsResource) Create(ctx context.Context, req r
 		return
 	}
 
-	createPasswordCredentialValidators := client.NewPasswordCredentialValidator(plan.Id.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
+	createPasswordCredentialValidators := client.NewPasswordCredentialValidator(plan.CustomId.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
 	err := addOptionalPasswordCredentialValidatorsFields(ctx, createPasswordCredentialValidators, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for a Password Credential Validator", err.Error())
@@ -518,7 +523,7 @@ func (r *passwordCredentialValidatorsResource) Read(ctx context.Context, req res
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadPasswordCredentialValidators, httpResp, err := r.apiClient.PasswordCredentialValidatorsApi.GetPasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadPasswordCredentialValidators, httpResp, err := r.apiClient.PasswordCredentialValidatorsApi.GetPasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a Password Credential Validator", err, httpResp)
@@ -569,8 +574,8 @@ func (r *passwordCredentialValidatorsResource) Update(ctx context.Context, req r
 		return
 	}
 
-	updatePasswordCredentialValidators := r.apiClient.PasswordCredentialValidatorsApi.UpdatePasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig), plan.Id.ValueString())
-	createUpdateRequest := client.NewPasswordCredentialValidator(plan.Id.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
+	updatePasswordCredentialValidators := r.apiClient.PasswordCredentialValidatorsApi.UpdatePasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig), plan.CustomId.ValueString())
+	createUpdateRequest := client.NewPasswordCredentialValidator(plan.CustomId.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
 	err := addOptionalPasswordCredentialValidatorsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for a Password Credential Validator", err.Error())
@@ -607,7 +612,7 @@ func (r *passwordCredentialValidatorsResource) Delete(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.PasswordCredentialValidatorsApi.DeletePasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	httpResp, err := r.apiClient.PasswordCredentialValidatorsApi.DeletePasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a Password Credential Validator", err, httpResp)
 	}
@@ -615,5 +620,5 @@ func (r *passwordCredentialValidatorsResource) Delete(ctx context.Context, req r
 
 func (r *passwordCredentialValidatorsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("custom_id"), req, resp)
 }

@@ -101,7 +101,7 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Schema(ctx context.
 		},
 	}
 
-	config.AddCommonSchema(&schema, false)
+	config.AddCommonSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -148,6 +148,7 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Configure(_ context
 }
 
 func readSessionAuthenticationSessionPoliciesGlobalResponse(ctx context.Context, r *client.GlobalAuthenticationSessionPolicy, state *sessionAuthenticationSessionPoliciesGlobalResourceModel, expectedValues *sessionAuthenticationSessionPoliciesGlobalResourceModel) {
+	//TODO placeholder?
 	state.Id = types.StringValue("id")
 	state.EnableSessions = types.BoolValue(r.EnableSessions)
 	state.PersistentSessions = types.BoolPointerValue(r.PersistentSessions)

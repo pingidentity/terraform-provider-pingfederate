@@ -34,6 +34,7 @@ type keyPairsSslServerImportResource struct {
 
 type keyPairsSslServerImportResourceModel struct {
 	Id             types.String `tfsdk:"id"`
+	CustomId       types.String `tfsdk:"custom_id"`
 	FileData       types.String `tfsdk:"file_data"`
 	Format         types.String `tfsdk:"format"`
 	Password       types.String `tfsdk:"password"`
@@ -42,7 +43,7 @@ type keyPairsSslServerImportResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *keyPairsSslServerImportResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	schema := schema.Schema{
 		Description: "Manages a KeyPairsSslServerImport.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -90,12 +91,15 @@ func (r *keyPairsSslServerImportResource) Schema(ctx context.Context, req resour
 			},
 		},
 	}
+
+	config.AddCommonSchema(&schema)
+	resp.Schema = schema
 }
 
 func addOptionalKeyPairsSslServerImportFields(ctx context.Context, addRequest *client.KeyPairFile, plan keyPairsSslServerImportResourceModel) error {
 
-	if internaltypes.IsDefined(plan.Id) {
-		addRequest.Id = plan.Id.ValueStringPointer()
+	if internaltypes.IsDefined(plan.CustomId) {
+		addRequest.Id = plan.CustomId.ValueStringPointer()
 	}
 	if internaltypes.IsDefined(plan.CryptoProvider) {
 		addRequest.CryptoProvider = plan.CryptoProvider.ValueStringPointer()
@@ -122,6 +126,7 @@ func (r *keyPairsSslServerImportResource) Configure(_ context.Context, req resou
 
 func readKeyPairsSslServerImportResponse(ctx context.Context, r *client.KeyPairView, state *keyPairsSslServerImportResourceModel, expectedValues *keyPairsSslServerImportResourceModel, planFileData string, planFormat string, planPassword string) {
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
+	state.CustomId = internaltypes.StringTypeOrNil(r.Id, false)
 	state.FileData = internaltypes.StringTypeOrNil(&planFileData, false)
 	state.Format = internaltypes.StringTypeOrNil(&planFormat, false)
 	state.Password = types.StringValue(planPassword)
@@ -179,7 +184,7 @@ func (r *keyPairsSslServerImportResource) Read(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadKeyPairsSslServerImport, httpResp, err := r.apiClient.KeyPairsSslServerApi.GetSslServerKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadKeyPairsSslServerImport, httpResp, err := r.apiClient.KeyPairsSslServerApi.GetSslServerKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -220,7 +225,7 @@ func (r *keyPairsSslServerImportResource) Delete(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.KeyPairsSslServerApi.DeleteSslServerKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	httpResp, err := r.apiClient.KeyPairsSslServerApi.DeleteSslServerKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a KeyPair SSL Server Import", err, httpResp)
 		return
@@ -229,5 +234,5 @@ func (r *keyPairsSslServerImportResource) Delete(ctx context.Context, req resour
 
 func (r *keyPairsSslServerImportResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("custom_id"), req, resp)
 }

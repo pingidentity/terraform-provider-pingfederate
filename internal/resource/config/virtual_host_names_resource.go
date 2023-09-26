@@ -52,7 +52,7 @@ func (r *virtualHostNamesResource) Schema(ctx context.Context, req resource.Sche
 		},
 	}
 
-	AddCommonSchema(&schema, false)
+	AddCommonSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -83,6 +83,7 @@ func (r *virtualHostNamesResource) Configure(_ context.Context, req resource.Con
 }
 
 func readVirtualHostNamesResponse(ctx context.Context, r *client.VirtualHostNameSettings, state *virtualHostNamesResourceModel) {
+	//TODO placeholder?
 	state.Id = types.StringValue("id")
 	state.VirtualHostNames = internaltypes.GetStringSet(r.VirtualHostNames)
 }

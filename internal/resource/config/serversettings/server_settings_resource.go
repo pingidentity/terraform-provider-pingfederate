@@ -734,7 +734,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 			},
 		},
 	}
-	config.AddCommonSchema(&schema, false)
+	config.AddCommonSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -897,6 +897,7 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	//////////////////////////////////////////////////
 	// emptyString is a variable initialized with an empty string value.
 	emptyString := ""
+	//TODO placeholder?
 	state.Id = types.StringValue("id")
 
 	//////////////////////////////////////////////////

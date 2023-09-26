@@ -45,6 +45,7 @@ type oauthAccessTokenManagerResource struct {
 
 type oauthAccessTokenManagerResourceModel struct {
 	Id                        types.String `tfsdk:"id"`
+	CustomId                  types.String `tfsdk:"custom_id"`
 	Name                      types.String `tfsdk:"name"`
 	PluginDescriptorRef       types.Object `tfsdk:"plugin_descriptor_ref"`
 	ParentRef                 types.Object `tfsdk:"parent_ref"`
@@ -62,10 +63,10 @@ func (r *oauthAccessTokenManagerResource) Schema(ctx context.Context, req resour
 }
 
 func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
-	resp.Schema = schema.Schema{
+	schema := schema.Schema{
 		Description: "Manages OAuth Access Token Manager",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
+			"custom_id": schema.StringAttribute{
 				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
@@ -352,6 +353,9 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 			},
 		},
 	}
+
+	config.AddCommonSchema(&schema)
+	resp.Schema = schema
 }
 
 func (r *oauthAccessTokenManagerResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
@@ -440,6 +444,7 @@ func (r *oauthAccessTokenManagerResource) Configure(_ context.Context, req resou
 
 func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagerResourceModel, configurationFromPlan basetypes.ObjectValue) {
 	state.Id = types.StringValue(r.Id)
+	state.CustomId = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
 
 	// state.pluginDescriptorRef
@@ -662,7 +667,7 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 		return
 	}
 
-	createOauthAccessTokenManager := client.NewAccessTokenManager(plan.Id.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
+	createOauthAccessTokenManager := client.NewAccessTokenManager(plan.CustomId.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
 	err := addOptionalOauthAccessTokenManagerFields(ctx, createOauthAccessTokenManager, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Manager", err.Error())
@@ -701,7 +706,7 @@ func (r *oauthAccessTokenManagerResource) Read(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthAccessTokenManager, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.GetTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadOauthAccessTokenManager, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.GetTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -753,8 +758,8 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 	}
 
 	// Get the current state to see how any attributes are changing
-	updateOauthAccessTokenManager := r.apiClient.OauthAccessTokenManagersApi.UpdateTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString())
-	createUpdateRequest := client.NewAccessTokenManager(state.Id.ValueString(), state.Name.ValueString(), *pluginDescRefResLink, *configuration)
+	updateOauthAccessTokenManager := r.apiClient.OauthAccessTokenManagersApi.UpdateTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString())
+	createUpdateRequest := client.NewAccessTokenManager(state.CustomId.ValueString(), state.Name.ValueString(), *pluginDescRefResLink, *configuration)
 	err := addOptionalOauthAccessTokenManagerFields(ctx, createUpdateRequest, state)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Manager", err.Error())
@@ -791,7 +796,7 @@ func (r *oauthAccessTokenManagerResource) Delete(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.OauthAccessTokenManagersApi.DeleteTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	httpResp, err := r.apiClient.OauthAccessTokenManagersApi.DeleteTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Access Token Manager", err, httpResp)
 		return
@@ -800,5 +805,5 @@ func (r *oauthAccessTokenManagerResource) Delete(ctx context.Context, req resour
 
 func (r *oauthAccessTokenManagerResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("custom_id"), req, resp)
 }
