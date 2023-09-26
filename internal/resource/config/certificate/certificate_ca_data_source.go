@@ -76,7 +76,7 @@ func (r *certificatesDataSource) Configure(_ context.Context, req datasource.Con
 	r.apiClient = providerCfg.ApiClient
 }
 
-// Read a DseeCompatAdministrativeAccountResponse object into the model struct
+// Read a CertificateResponse object into the model struct
 func readCertificateResponseDataSource(ctx context.Context, r *client.CertView, state *certificatesDataSourceModel, expectedValues *certificatesDataSourceModel, diagnostics *diag.Diagnostics, createPlan types.String) {
 	X509FileData := createPlan
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
@@ -96,14 +96,16 @@ func (r *certificatesDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	apiReadCertificate, httpResp, err := r.apiClient.CertificatesCaApi.GetTrustedCert(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Access Control Handler", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a Certificate", err, httpResp)
 		return
 	}
 
 	// Log response JSON
-	responseJson, err := apiReadCertificate.MarshalJSON()
-	if err == nil {
+	responseJson, responseErr := apiReadCertificate.MarshalJSON()
+	if responseErr == nil {
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	} else {
+		diags.AddError("There was an issue retrieving the response of a Certificate: %s", responseErr.Error())
 	}
 
 	// Read the response into the state

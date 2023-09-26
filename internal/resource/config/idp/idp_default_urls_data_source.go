@@ -23,7 +23,7 @@ func NewIdpDefaultUrlsDataSource() datasource.DataSource {
 	return &idpDefaultUrlsDataSource{}
 }
 
-// idpDefaultUrlDataSource is the datasource implementation.
+// idpDefaultUrlsDataSource is the datasource implementation.
 type idpDefaultUrlsDataSource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
@@ -77,7 +77,7 @@ func (r *idpDefaultUrlsDataSource) Configure(_ context.Context, req datasource.C
 	r.apiClient = providerCfg.ApiClient
 }
 
-// Read a DseeCompatAdministrativeAccountResponse object into the model struct
+// Read a IdpDefaultUrlsResponse object into the model struct
 func readIdpDefaultUrlsResponseDataSource(ctx context.Context, r *client.IdpDefaultUrl, state *idpDefaultUrlsDataSourceModel, expectedValues *idpDefaultUrlsDataSourceModel) {
 	state.Id = types.StringValue("id")
 	state.ConfirmIdpSlo = types.BoolPointerValue(r.ConfirmIdpSlo)
@@ -97,14 +97,16 @@ func (r *idpDefaultUrlsDataSource) Read(ctx context.Context, req datasource.Read
 
 	apiReadIdpDefaultUrls, httpResp, err := r.apiClient.IdpDefaultUrlsApi.GetDefaultUrl(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Access Control Handler", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Idp Default Urls", err, httpResp)
 		return
 	}
 
 	// Log response JSON
-	responseJson, err := apiReadIdpDefaultUrls.MarshalJSON()
+	responseJson, responseErr := apiReadIdpDefaultUrls.MarshalJSON()
 	if err == nil {
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	} else {
+		diags.AddError("There was an issue retrieving the response of the Idp Default Urls: %s", responseErr.Error())
 	}
 
 	// Read the response into the state

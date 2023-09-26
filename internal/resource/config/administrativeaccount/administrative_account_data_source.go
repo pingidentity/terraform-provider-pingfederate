@@ -115,7 +115,7 @@ func (r *administrativeAccountDataSource) Configure(_ context.Context, req datas
 	r.apiClient = providerCfg.ApiClient
 }
 
-// Read a DseeCompatAdministrativeAccountResponse object into the model struct
+// Read a AdministrativeAccountResponse object into the model struct
 func readAdministrativeAccountResponseDataSource(ctx context.Context, r *client.AdministrativeAccount, state *administrativeAccountDataSourceModel, expectedValues *administrativeAccountDataSourceModel, passwordPlan basetypes.StringValue) {
 	state.Id = types.StringValue(r.Username)
 	state.Username = types.StringValue(r.Username)
@@ -146,9 +146,11 @@ func (r *administrativeAccountDataSource) Read(ctx context.Context, req datasour
 	}
 
 	// Log response JSON
-	responseJson, err := apiReadAdministrativeAccount.MarshalJSON()
+	responseJson, responseErr := apiReadAdministrativeAccount.MarshalJSON()
 	if err == nil {
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	} else {
+		diags.AddError("There was an issue retrieving the response of an Administrative Account: %s", responseErr.Error())
 	}
 
 	// Read the response into the state

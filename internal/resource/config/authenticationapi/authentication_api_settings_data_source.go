@@ -91,7 +91,7 @@ func (r *authenticationApiSettingsDataSource) Schema(ctx context.Context, req da
 	resp.Schema = schemaDef
 }
 
-// Read a DseeCompatAuthenticationApiSettingsResponse object into the model struct
+// Read a AuthenticationApiSettingsResponse object into the model struct
 func readAuthenticationApiSettingsResponseDataSource(ctx context.Context, r *client.AuthnApiSettings, state *authenticationApiSettingsDataSourceModel, expectedValues *authenticationApiSettingsDataSourceModel, diags *diag.Diagnostics) {
 	state.Id = types.StringValue("id")
 	state.ApiEnabled = types.BoolValue(*r.ApiEnabled)
@@ -118,9 +118,11 @@ func (r *authenticationApiSettingsDataSource) Read(ctx context.Context, req data
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadAuthenticationApiSettings.MarshalJSON()
+	responseJson, responseErr := apiReadAuthenticationApiSettings.MarshalJSON()
 	if err == nil {
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	} else {
+		diags.AddError("There was an issue retrieving the response of the Authentication API Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state

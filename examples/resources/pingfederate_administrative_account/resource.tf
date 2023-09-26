@@ -4,7 +4,7 @@ resource "pingfederate_administrative_account" "administrativeAccountExample" {
   roles    = ["USER_ADMINISTRATOR"]
 }
 
-data "pingfederate_administrative_account" "account1"{
+data "pingfederate_administrative_account" "account1" {
   username = pingfederate_administrative_account.administrativeAccountExample.username
 }
 
