@@ -72,7 +72,7 @@ func (r *idpDefaultUrlsResource) Schema(ctx context.Context, req resource.Schema
 		},
 	}
 
-	config.AddCommonSchema(&schema, false)
+	config.AddCommonSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -107,6 +107,7 @@ func (r *idpDefaultUrlsResource) Configure(_ context.Context, req resource.Confi
 }
 
 func readIdpDefaultUrlsResponse(ctx context.Context, r *client.IdpDefaultUrl, state *idpDefaultUrlsResourceModel, expectedValues *idpDefaultUrlsResourceModel) {
+	//TODO different placholder?
 	state.Id = types.StringValue("id")
 	state.ConfirmIdpSlo = types.BoolPointerValue(r.ConfirmIdpSlo)
 	state.IdpSloSuccessUrl = internaltypes.StringTypeOrNil(r.IdpSloSuccessUrl, false)

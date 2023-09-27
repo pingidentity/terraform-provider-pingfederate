@@ -96,7 +96,7 @@ resource "pingfederate_server_settings" "serverSettingsExample" {
 
 ### Read-Only
 
-- `id` (String) Placeholder name of this object required by Terraform.
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--federation_info"></a>
 ### Nested Schema for `federation_info`

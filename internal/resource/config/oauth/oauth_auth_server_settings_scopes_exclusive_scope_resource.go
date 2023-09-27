@@ -43,16 +43,9 @@ type oauthAuthServerSettingsScopesExclusiveScopesResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	schema := schema.Schema{
 		Description: "Manages a OauthAuthServerSettingsScopesExclusiveScopes.",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "Computed attribute tied to the name property of this resource.",
-				Computed:    true,
-				Optional:    false,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown()},
-			},
 			"name": schema.StringAttribute{
 				Description: "The name of the scope.",
 				Computed:    true,
@@ -80,6 +73,9 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Schema(ctx contex
 			},
 		},
 	}
+
+	config.AddCommonSchema(&schema)
+	resp.Schema = schema
 }
 
 func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) ValidateConfig(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {

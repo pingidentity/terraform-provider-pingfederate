@@ -29,7 +29,7 @@ resource "pingfederate_protocol_metadata_lifetime_settings" "protocolMetadataLif
 
 ### Read-Only
 
-- `id` (String) Placeholder name of this object required by Terraform.
+- `id` (String) The ID of this resource.
 
 ## Import
 

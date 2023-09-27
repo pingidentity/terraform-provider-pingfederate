@@ -50,7 +50,7 @@ func (r *licenseResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 		},
 	}
-	config.AddCommonSchema(&schema, false)
+	config.AddCommonSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -70,10 +70,10 @@ func (r *licenseResource) Configure(_ context.Context, req resource.ConfigureReq
 
 }
 
-func readLicenseResponse(ctx context.Context, r *client.LicenseView, state *licenseResourceModel, expectedValues *licenseResourceModel, createPlan types.String) {
-	LicenseFileData := createPlan
+func readLicenseResponse(ctx context.Context, r *client.LicenseView, state *licenseResourceModel, expectedValues *licenseResourceModel, planFileData types.String) {
+	//TODO placeholder?
 	state.Id = types.StringValue("id")
-	state.FileData = types.StringValue(LicenseFileData.ValueString())
+	state.FileData = types.StringValue(planFileData.ValueString())
 }
 
 func (r *licenseResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

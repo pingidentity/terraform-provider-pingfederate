@@ -31,7 +31,11 @@ resource "pingfederate_authentication_policy_contract" "authenticationPolicyCont
 
 ### Optional
 
-- `id` (String) The persistent, unique ID for the authentication policy contract. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
+- `custom_id` (String) The persistent, unique ID for the authentication policy contract. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--core_attributes"></a>
 ### Nested Schema for `core_attributes`

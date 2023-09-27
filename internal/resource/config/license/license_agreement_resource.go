@@ -64,7 +64,7 @@ func (r *licenseAgreementResource) Schema(ctx context.Context, req resource.Sche
 		},
 	}
 
-	config.AddCommonSchema(&schema, false)
+	config.AddCommonSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -97,6 +97,7 @@ func (r *licenseAgreementResource) Configure(_ context.Context, req resource.Con
 }
 
 func readLicenseAgreementResponse(ctx context.Context, r *client.LicenseAgreementInfo, state *licenseAgreementResourceModel, expectedValues *licenseAgreementResourceModel) {
+	//TODO placeholder?
 	state.Id = types.StringValue("id")
 	state.LicenseAgreementUrl = internaltypes.StringTypeOrNil(r.LicenseAgreementUrl, false)
 	state.Accepted = internaltypes.BoolTypeOrNil(r.Accepted)

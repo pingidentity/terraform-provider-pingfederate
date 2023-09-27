@@ -70,7 +70,7 @@ resource "pingfederate_server_settings_log_settings" "serverSettingsLogSettingsE
 
 ### Read-Only
 
-- `id` (String) Placeholder for Terraform
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--log_categories"></a>
 ### Nested Schema for `log_categories`
