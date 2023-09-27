@@ -486,36 +486,10 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 	respDiags.Append(diags...)
 
 	// state.AttributeContract
-	attrContract := r.AttributeContract
-
 	attrType := map[string]attr.Type{
 		"name":         basetypes.StringType{},
 		"multi_valued": basetypes.BoolType{},
 	}
-
-	// state.AttributeContract core_attributes
-	attributeContractClientCoreAttributes := attrContract.CoreAttributes
-	coreAttrs := []client.AccessTokenAttribute{}
-	for _, ca := range attributeContractClientCoreAttributes {
-		coreAttribute := client.AccessTokenAttribute{}
-		coreAttribute.Name = ca.Name
-		coreAttribute.MultiValued = ca.MultiValued
-		coreAttrs = append(coreAttrs, coreAttribute)
-	}
-	attributeContractCoreAttributes, diags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
-	respDiags.Append(diags...)
-
-	// state.AttributeContract extended_attributes
-	attributeContractClientExtendedAttributes := attrContract.ExtendedAttributes
-	extdAttrs := []client.AccessTokenAttribute{}
-	for _, ea := range attributeContractClientExtendedAttributes {
-		extendedAttr := client.AccessTokenAttribute{}
-		extendedAttr.Name = ea.Name
-		extendedAttr.MultiValued = ea.MultiValued
-		extdAttrs = append(extdAttrs, extendedAttr)
-	}
-	attributeContractExtendedAttributes, diags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
-	respDiags.Append(diags...)
 
 	attributeContractTypes := map[string]attr.Type{
 		"core_attributes":           basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
@@ -524,14 +498,44 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 		"default_subject_attribute": basetypes.StringType{},
 	}
 
-	attributeContractValues := map[string]attr.Value{
-		"core_attributes":           attributeContractCoreAttributes,
-		"extended_attributes":       attributeContractExtendedAttributes,
-		"inherited":                 types.BoolPointerValue(attrContract.Inherited),
-		"default_subject_attribute": types.StringPointerValue(attrContract.DefaultSubjectAttribute),
+	if r.AttributeContract == nil {
+		state.AttributeContract = types.ObjectNull(attributeContractTypes)
+	} else {
+		attrContract := r.AttributeContract
+
+		// state.AttributeContract core_attributes
+		attributeContractClientCoreAttributes := attrContract.CoreAttributes
+		coreAttrs := []client.AccessTokenAttribute{}
+		for _, ca := range attributeContractClientCoreAttributes {
+			coreAttribute := client.AccessTokenAttribute{}
+			coreAttribute.Name = ca.Name
+			coreAttribute.MultiValued = ca.MultiValued
+			coreAttrs = append(coreAttrs, coreAttribute)
+		}
+		attributeContractCoreAttributes, diags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
+		respDiags.Append(diags...)
+
+		// state.AttributeContract extended_attributes
+		attributeContractClientExtendedAttributes := attrContract.ExtendedAttributes
+		extdAttrs := []client.AccessTokenAttribute{}
+		for _, ea := range attributeContractClientExtendedAttributes {
+			extendedAttr := client.AccessTokenAttribute{}
+			extendedAttr.Name = ea.Name
+			extendedAttr.MultiValued = ea.MultiValued
+			extdAttrs = append(extdAttrs, extendedAttr)
+		}
+		attributeContractExtendedAttributes, diags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
+		respDiags.Append(diags...)
+
+		attributeContractValues := map[string]attr.Value{
+			"core_attributes":           attributeContractCoreAttributes,
+			"extended_attributes":       attributeContractExtendedAttributes,
+			"inherited":                 types.BoolPointerValue(attrContract.Inherited),
+			"default_subject_attribute": types.StringPointerValue(attrContract.DefaultSubjectAttribute),
+		}
+		state.AttributeContract, diags = types.ObjectValue(attributeContractTypes, attributeContractValues)
+		respDiags.Append(diags...)
 	}
-	state.AttributeContract, diags = types.ObjectValue(attributeContractTypes, attributeContractValues)
-	respDiags.Append(diags...)
 
 	// state.SelectionSettings
 	selectionSettingsAttrType := map[string]attr.Type{
@@ -539,8 +543,12 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 		"resource_uris": basetypes.ListType{ElemType: basetypes.StringType{}},
 	}
 
-	state.SelectionSettings, diags = types.ObjectValueFrom(ctx, selectionSettingsAttrType, r.SelectionSettings)
-	respDiags.Append(diags...)
+	if r.SelectionSettings == nil {
+		state.SelectionSettings = types.ObjectNull(selectionSettingsAttrType)
+	} else {
+		state.SelectionSettings, diags = types.ObjectValueFrom(ctx, selectionSettingsAttrType, r.SelectionSettings)
+		respDiags.Append(diags...)
+	}
 
 	// state.AccessControlSettings
 	accessControlSettingsAttrType := map[string]attr.Type{
@@ -549,8 +557,12 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 		"allowed_clients":  basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: internaltypes.ResourceLinkStateAttrType()}},
 	}
 
-	state.AccessControlSettings, diags = types.ObjectValueFrom(ctx, accessControlSettingsAttrType, r.AccessControlSettings)
-	respDiags.Append(diags...)
+	if r.AccessControlSettings == nil {
+		state.AccessControlSettings = types.ObjectNull(accessControlSettingsAttrType)
+	} else {
+		state.AccessControlSettings, diags = types.ObjectValueFrom(ctx, accessControlSettingsAttrType, r.AccessControlSettings)
+		respDiags.Append(diags...)
+	}
 
 	// state.SessionValidationSettings
 	sessionValidationSettingsAttrType := map[string]attr.Type{
@@ -561,8 +573,12 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 		"update_authn_session_activity":   basetypes.BoolType{},
 	}
 
-	state.SessionValidationSettings, diags = types.ObjectValueFrom(ctx, sessionValidationSettingsAttrType, r.SessionValidationSettings)
-	respDiags.Append(diags...)
+	if r.SessionValidationSettings == nil {
+		state.SessionValidationSettings = types.ObjectNull(sessionValidationSettingsAttrType)
+	} else {
+		state.SessionValidationSettings, diags = types.ObjectValueFrom(ctx, sessionValidationSettingsAttrType, r.SessionValidationSettings)
+		respDiags.Append(diags...)
+	}
 
 	// state.SequenceNumber
 	state.SequenceNumber = types.Int64PointerValue(r.SequenceNumber)

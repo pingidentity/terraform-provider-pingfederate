@@ -340,47 +340,50 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 	respDiags.Append(diags...)
 
 	// state.AttributeContract
-	attrContract := r.AttributeContract
-
 	attrType := map[string]attr.Type{
 		"name": basetypes.StringType{},
 	}
-
-	// state.AttributeContract core_attributes
-	attributeContractClientCoreAttributes := attrContract.CoreAttributes
-	coreAttrs := []client.PasswordCredentialValidatorAttribute{}
-	for _, ca := range attributeContractClientCoreAttributes {
-		coreAttribute := client.PasswordCredentialValidatorAttribute{}
-		coreAttribute.Name = ca.Name
-		coreAttrs = append(coreAttrs, coreAttribute)
-	}
-	attributeContractCoreAttributes, diags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
-	respDiags.Append(diags...)
-
-	// state.AttributeContract extended_attributes
-	attributeContractClientExtendedAttributes := attrContract.ExtendedAttributes
-	extdAttrs := []client.PasswordCredentialValidatorAttribute{}
-	for _, ea := range attributeContractClientExtendedAttributes {
-		extendedAttr := client.PasswordCredentialValidatorAttribute{}
-		extendedAttr.Name = ea.Name
-		extdAttrs = append(extdAttrs, extendedAttr)
-	}
-	attributeContractExtendedAttributes, diags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
-	respDiags.Append(diags...)
-
 	attributeContractTypes := map[string]attr.Type{
 		"core_attributes":     basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
 		"extended_attributes": basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
 		"inherited":           basetypes.BoolType{},
 	}
 
-	attributeContractValues := map[string]attr.Value{
-		"core_attributes":     attributeContractCoreAttributes,
-		"extended_attributes": attributeContractExtendedAttributes,
-		"inherited":           types.BoolPointerValue(attrContract.Inherited),
+	if r.AttributeContract == nil {
+		state.AttributeContract = types.ObjectNull(attributeContractTypes)
+	} else {
+		attrContract := r.AttributeContract
+
+		// state.AttributeContract core_attributes
+		attributeContractClientCoreAttributes := attrContract.CoreAttributes
+		coreAttrs := []client.PasswordCredentialValidatorAttribute{}
+		for _, ca := range attributeContractClientCoreAttributes {
+			coreAttribute := client.PasswordCredentialValidatorAttribute{}
+			coreAttribute.Name = ca.Name
+			coreAttrs = append(coreAttrs, coreAttribute)
+		}
+		attributeContractCoreAttributes, diags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
+		respDiags.Append(diags...)
+
+		// state.AttributeContract extended_attributes
+		attributeContractClientExtendedAttributes := attrContract.ExtendedAttributes
+		extdAttrs := []client.PasswordCredentialValidatorAttribute{}
+		for _, ea := range attributeContractClientExtendedAttributes {
+			extendedAttr := client.PasswordCredentialValidatorAttribute{}
+			extendedAttr.Name = ea.Name
+			extdAttrs = append(extdAttrs, extendedAttr)
+		}
+		attributeContractExtendedAttributes, diags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
+		respDiags.Append(diags...)
+
+		attributeContractValues := map[string]attr.Value{
+			"core_attributes":     attributeContractCoreAttributes,
+			"extended_attributes": attributeContractExtendedAttributes,
+			"inherited":           types.BoolPointerValue(attrContract.Inherited),
+		}
+		state.AttributeContract, diags = types.ObjectValue(attributeContractTypes, attributeContractValues)
+		respDiags.Append(diags...)
 	}
-	state.AttributeContract, diags = types.ObjectValue(attributeContractTypes, attributeContractValues)
-	respDiags.Append(diags...)
 
 	return respDiags
 }
