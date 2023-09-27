@@ -648,8 +648,8 @@ resource "pingfederate_password_credential_validators" "pingOnePasswordCredentia
 
 Optional:
 
-- `fields` (Attributes Set) List of configuration fields. (see [below for nested schema](#nestedatt--configuration--fields))
-- `tables` (Attributes Set) List of configuration tables. (see [below for nested schema](#nestedatt--configuration--tables))
+- `fields` (Attributes List) List of configuration fields. (see [below for nested schema](#nestedatt--configuration--fields))
+- `tables` (Attributes List) List of configuration tables. (see [below for nested schema](#nestedatt--configuration--tables))
 
 <a id="nestedatt--configuration--fields"></a>
 ### Nested Schema for `configuration.fields`
@@ -674,7 +674,7 @@ Required:
 Optional:
 
 - `inherited` (Boolean) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
-- `rows` (Attributes Set) List of table rows. (see [below for nested schema](#nestedatt--configuration--tables--rows))
+- `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--configuration--tables--rows))
 
 <a id="nestedatt--configuration--tables--rows"></a>
 ### Nested Schema for `configuration.tables.rows`
@@ -682,7 +682,7 @@ Optional:
 Optional:
 
 - `default_row` (Boolean) Whether this row is the default.
-- `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables--rows--fields))
+- `fields` (Attributes List) The configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables--rows--fields))
 
 <a id="nestedatt--configuration--tables--rows--fields"></a>
 ### Nested Schema for `configuration.tables.rows.fields`
@@ -717,12 +717,12 @@ Read-Only:
 
 Optional:
 
-- `extended_attributes` (Attributes Set) A list of additional attributes that can be returned by the password credential validator. The extended attributes are only used if the adapter supports them. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
+- `extended_attributes` (Attributes List) A list of additional attributes that can be returned by the password credential validator. The extended attributes are only used if the adapter supports them. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
 - `inherited` (Boolean) Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.
 
 Read-Only:
 
-- `core_attributes` (Attributes Set) A list of read-only attributes that are automatically populated by the password credential validator descriptor. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
+- `core_attributes` (Attributes List) A list of read-only attributes that are automatically populated by the password credential validator descriptor. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
 
 <a id="nestedatt--attribute_contract--extended_attributes"></a>
 ### Nested Schema for `attribute_contract.extended_attributes`
