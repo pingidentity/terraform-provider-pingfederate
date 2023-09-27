@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -212,6 +213,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 		caCertPool = x509.NewCertPool()
 		for _, pemFilename := range caCertPemFiles {
 			// Load CA cert
+			pemFilename := filepath.Clean(pemFilename)
 			caCert, err := os.ReadFile(pemFilename)
 			if err != nil {
 				resp.Diagnostics.AddError("Failed to read CA PEM certificate file: "+pemFilename, err.Error())
