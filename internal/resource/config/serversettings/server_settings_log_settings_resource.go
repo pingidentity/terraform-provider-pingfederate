@@ -45,17 +45,9 @@ type serverSettingsLogSettingsResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *serverSettingsLogSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	schema := schema.Schema{
 		Description: "LogSettings Settings related to server logging.",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "Placeholder for Terraform",
-				Computed:    true,
-				Optional:    false,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
 			"log_categories": schema.SetNestedAttribute{
 				Description: "The log categories defined for the system and whether they are enabled. On a PUT request, if a category is not included in the list, it will be disabled.",
 				Required:    true,
@@ -97,6 +89,9 @@ func (r *serverSettingsLogSettingsResource) Schema(ctx context.Context, req reso
 			},
 		},
 	}
+
+	config.AddCommonSchema(&schema)
+	resp.Schema = schema
 }
 
 func addOptionalServerSettingsLogSettingsFields(ctx context.Context, addRequest *client.LogSettings, plan serverSettingsLogSettingsResourceModel) error {
@@ -132,6 +127,7 @@ func (r *serverSettingsLogSettingsResource) Configure(_ context.Context, req res
 }
 
 func readServerSettingsLogSettingsResponse(ctx context.Context, r *client.LogSettings, state *serverSettingsLogSettingsResourceModel) {
+	//TODO placeholder?
 	state.Id = types.StringValue("id")
 	logCategoriesAttrTypes := map[string]attr.Type{
 		"id":          basetypes.StringType{},

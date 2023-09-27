@@ -68,7 +68,7 @@ func (r *sessionSettingsResource) Schema(ctx context.Context, req resource.Schem
 			},
 		},
 	}
-	config.AddCommonSchema(&schema, false)
+	config.AddCommonSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -103,6 +103,7 @@ func (r *sessionSettingsResource) Configure(_ context.Context, req resource.Conf
 }
 
 func readSessionSettingsResponse(ctx context.Context, r *client.SessionSettings, state *sessionSettingsResourceModel, expectedValues *sessionSettingsResourceModel) {
+	//TODO placeholder?
 	state.Id = types.StringValue("id")
 	state.TrackAdapterSessionsForLogout = types.BoolPointerValue(r.TrackAdapterSessionsForLogout)
 	state.RevokeUserSessionOnLogout = types.BoolPointerValue(r.RevokeUserSessionOnLogout)

@@ -251,7 +251,7 @@ resource "pingfederate_oauth_access_token_manager" "jsonWebTokenOauthAccessToken
 ### Required
 
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--configuration))
-- `id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
+- `custom_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
 - `name` (String) The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
 - `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
 
@@ -265,6 +265,7 @@ resource "pingfederate_oauth_access_token_manager" "jsonWebTokenOauthAccessToken
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `sequence_number` (Number) Number added to an access token to identify which Access Token Manager issued the token.
 
 <a id="nestedatt--configuration"></a>

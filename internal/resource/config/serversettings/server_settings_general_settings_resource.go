@@ -86,7 +86,7 @@ func (r *serverSettingsGeneralSettingsResource) Schema(ctx context.Context, req 
 		},
 	}
 
-	config.AddCommonSchema(&schema, false)
+	config.AddCommonSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -127,6 +127,7 @@ func (r *serverSettingsGeneralSettingsResource) Configure(_ context.Context, req
 }
 
 func readServerSettingsGeneralSettingsResponse(ctx context.Context, r *client.GeneralSettings, state *serverSettingsGeneralSettingsResourceModel, expectedValues *serverSettingsGeneralSettingsResourceModel) {
+	//TODO placeholder?
 	state.Id = types.StringValue("id")
 	state.DisableAutomaticConnectionValidation = types.BoolPointerValue(r.DisableAutomaticConnectionValidation)
 	state.IdpConnectionTransactionLoggingOverride = internaltypes.StringTypeOrNil(r.IdpConnectionTransactionLoggingOverride, true)

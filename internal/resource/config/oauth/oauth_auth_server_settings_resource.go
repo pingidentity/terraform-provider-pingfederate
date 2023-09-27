@@ -590,7 +590,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 		},
 	}
 
-	config.AddCommonSchema(&schema, false)
+	config.AddCommonSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -841,6 +841,7 @@ func (r *oauthAuthServerSettingsResource) Configure(_ context.Context, req resou
 }
 
 func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsResourceModel, diags *diag.Diagnostics) {
+	//TODO placeholder
 	state.Id = types.StringValue("id")
 	state.DefaultScopeDescription = types.StringValue(r.DefaultScopeDescription)
 

@@ -42,7 +42,7 @@ resource "pingfederate_session_authentication_session_policies_global" "sessionA
 
 ### Read-Only
 
-- `id` (String) Placeholder name of this object required by Terraform.
+- `id` (String) The ID of this resource.
 
 ## Import
 

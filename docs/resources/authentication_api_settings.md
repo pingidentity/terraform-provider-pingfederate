@@ -40,7 +40,7 @@ resource "pingfederate_authentication_api_settings" "authenticationApiSettingsEx
 
 ### Read-Only
 
-- `id` (String) Placeholder name of this object required by Terraform.
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--default_application_ref"></a>
 ### Nested Schema for `default_application_ref`

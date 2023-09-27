@@ -47,17 +47,9 @@ type redirectValidationResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *redirectValidationResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	schema := schema.Schema{
 		Description: "Manages a RedirectValidation.",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "Placeholder for Terraform",
-				Computed:    true,
-				Optional:    false,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
 			"redirect_validation_local_settings": schema.SingleNestedAttribute{
 				Description: "Settings for local redirect validation.",
 				Computed:    true,
@@ -195,6 +187,9 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 			},
 		},
 	}
+
+	AddCommonSchema(&schema)
+	resp.Schema = schema
 }
 
 func addOptionalRedirectValidationFields(ctx context.Context, addRequest *client.RedirectValidationSettings, plan redirectValidationResourceModel) error {
@@ -233,6 +228,7 @@ func (r *redirectValidationResource) Configure(_ context.Context, req resource.C
 }
 
 func readRedirectValidationResponse(ctx context.Context, r *client.RedirectValidationSettings, state *redirectValidationResourceModel, diags *diag.Diagnostics) {
+	//TODO placeholder?
 	state.Id = types.StringValue("id")
 	whiteListAttrTypes := map[string]attr.Type{
 		"target_resource_sso":      basetypes.BoolType{},

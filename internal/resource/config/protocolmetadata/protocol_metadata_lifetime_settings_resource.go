@@ -61,7 +61,7 @@ func (r *protocolMetadataLifetimeSettingsResource) Schema(ctx context.Context, r
 		},
 	}
 
-	config.AddCommonSchema(&schema, false)
+	config.AddCommonSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -94,6 +94,7 @@ func (r *protocolMetadataLifetimeSettingsResource) Configure(_ context.Context, 
 }
 
 func readProtocolMetadataLifetimeSettingsResponse(ctx context.Context, r *client.MetadataLifetimeSettings, state *protocolMetadataLifetimeSettingsResourceModel, expectedValues *protocolMetadataLifetimeSettingsResourceModel) {
+	//TODO placeholder?
 	state.Id = types.StringValue("id")
 	state.CacheDuration = types.Int64Value(*r.CacheDuration)
 	state.ReloadDelay = types.Int64Value(*r.ReloadDelay)

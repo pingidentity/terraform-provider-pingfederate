@@ -34,7 +34,7 @@ resource "pingfederate_oauth_auth_server_settings_scopes_common_scope" "oauthAut
 
 ### Read-Only
 
-- `id` (String) Computed attribute tied to the name property of this resource.
+- `id` (String) The ID of this resource.
 
 ## Import
 
