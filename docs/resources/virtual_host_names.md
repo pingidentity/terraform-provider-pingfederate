@@ -27,4 +27,13 @@ resource "pingfederate_virtual_host_names" "virtualHostNamesExample" {
 
 ### Read-Only
 
-- `id` (String) Placeholder name of this object required by Terraform.
+- `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "virtualHostNamesId" should be "id"
+terraform import pingfederate_virtual_host_names.myVirtualHostNames virtualHostNamesId
+```

@@ -41,7 +41,7 @@ resource "pingfederate_server_settings_system_keys" "serverSettingsSystemKeysExa
 
 ### Read-Only
 
-- `id` (String) The ID of this resource
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--current"></a>
 ### Nested Schema for `current`
@@ -80,3 +80,12 @@ Read-Only:
 
 - `creation_date` (String) Creation time of the key.
 - `key_data` (String) The clear text system key base 64 encoded. The system key must be 32 bytes before base 64 encoding
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "serverSettingsSystemKeysId" should be "id"
+terraform import pingfederate_server_settings_system_keys.myServerSettingsSystemKeys serverSettingsSystemKeysId
+```

@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -92,7 +91,7 @@ func (r *authenticationApiSettingsResource) Schema(ctx context.Context, req reso
 		},
 	}
 
-	config.AddCommonSchema(&schema, false)
+	config.AddCommonSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -134,6 +133,7 @@ func (r *authenticationApiSettingsResource) Configure(_ context.Context, req res
 }
 
 func readAuthenticationApiSettingsResponse(ctx context.Context, r *client.AuthnApiSettings, state *authenticationApiSettingsResourceModel, expectedValues *authenticationApiSettingsResourceModel, diags *diag.Diagnostics) {
+	//TODO different placeholder?
 	state.Id = types.StringValue("id")
 	state.ApiEnabled = types.BoolValue(*r.ApiEnabled)
 	state.EnableApiDescriptions = types.BoolValue(*r.EnableApiDescriptions)
@@ -156,23 +156,23 @@ func (r *authenticationApiSettingsResource) Create(ctx context.Context, req reso
 	createUpdateRequest := client.NewAuthnApiSettings()
 	err := addAuthenticationApiSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for AuthenticationApiSettings", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Authentication Api Settings", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of the Authentication API Settings: %s", requestErr.Error())
 	}
 	updateAuthenticationApiSettings = updateAuthenticationApiSettings.Body(*createUpdateRequest)
 	updateAuthenticationApiSettingsResponse, httpResp, err := r.apiClient.AuthenticationApiApi.UpdateAuthenticationApiSettingsExecute(updateAuthenticationApiSettings)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating AuthenticationApiSettings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Authentication Api Settings", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateAuthenticationApiSettingsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateAuthenticationApiSettingsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of the Authentication API Settings: %s", responseErr.Error())
 	}
 	// Read the response
 	var state authenticationApiSettingsResourceModel
@@ -181,16 +181,9 @@ func (r *authenticationApiSettingsResource) Create(ctx context.Context, req reso
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *authenticationApiSettingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	readAuthenticationApiSettings(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func readAuthenticationApiSettings(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	var state authenticationApiSettingsResourceModel
 
 	diags := req.State.Get(ctx, &state)
@@ -198,15 +191,20 @@ func readAuthenticationApiSettings(ctx context.Context, req resource.ReadRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadAuthenticationApiSettings, httpResp, err := apiClient.AuthenticationApiApi.GetAuthenticationApiSettings(config.ProviderBasicAuthContext(ctx, providerConfig)).Execute()
+	apiReadAuthenticationApiSettings, httpResp, err := r.apiClient.AuthenticationApiApi.GetAuthenticationApiSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a AuthenticationApiSettings", err, httpResp)
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a Authentication Api Settings", err, httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Authentication Api Settings", err, httpResp)
+		}
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadAuthenticationApiSettings.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadAuthenticationApiSettings.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of the Authentication API Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -215,19 +213,10 @@ func readAuthenticationApiSettings(ctx context.Context, req resource.ReadRequest
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *authenticationApiSettingsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	updateAuthenticationApiSettings(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-// Update updates the resource and sets the updated Terraform state on success.
-func updateAuthenticationApiSettings(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	var plan authenticationApiSettingsResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -235,27 +224,27 @@ func updateAuthenticationApiSettings(ctx context.Context, req resource.UpdateReq
 		return
 	}
 	// Get the current state to see how any attributes are changing
-	updateAuthenticationApiSettings := apiClient.AuthenticationApiApi.UpdateAuthenticationApiSettings(config.ProviderBasicAuthContext(ctx, providerConfig))
+	updateAuthenticationApiSettings := r.apiClient.AuthenticationApiApi.UpdateAuthenticationApiSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewAuthnApiSettings()
 	err := addAuthenticationApiSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for AuthenticationApiSettings", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Authentication Api Settings", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of the Authentication API Settings: %s", requestErr.Error())
 	}
 	updateAuthenticationApiSettings = updateAuthenticationApiSettings.Body(*createUpdateRequest)
-	updateAuthenticationApiSettingsResponse, httpResp, err := apiClient.AuthenticationApiApi.UpdateAuthenticationApiSettingsExecute(updateAuthenticationApiSettings)
+	updateAuthenticationApiSettingsResponse, httpResp, err := r.apiClient.AuthenticationApiApi.UpdateAuthenticationApiSettingsExecute(updateAuthenticationApiSettings)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating AuthenticationApiSettings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Authentication Api Settings", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateAuthenticationApiSettingsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateAuthenticationApiSettingsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of the Authentication API Settings: %s", responseErr.Error())
 	}
 	// Read the response
 	var state authenticationApiSettingsResourceModel
@@ -264,9 +253,6 @@ func updateAuthenticationApiSettings(ctx context.Context, req resource.UpdateReq
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 // Delete deletes the resource and removes the Terraform state on success.
@@ -275,9 +261,6 @@ func (r *authenticationApiSettingsResource) Delete(ctx context.Context, req reso
 }
 
 func (r *authenticationApiSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	importAuthenticationApiSettingsLocation(ctx, req, resp)
-}
-func importAuthenticationApiSettingsLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// Set a placeholder id value to appease terraform.
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), "id")...)
 }

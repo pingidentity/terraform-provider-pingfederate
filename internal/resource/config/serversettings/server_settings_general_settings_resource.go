@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -46,10 +45,6 @@ type serverSettingsGeneralSettingsResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *serverSettingsGeneralSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	serverSettingsGeneralSettingsResourceSchema(ctx, req, resp, false)
-}
-
-func serverSettingsGeneralSettingsResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
 	schema := schema.Schema{
 		Description: "Manages a ServerSettingsGeneralSettings.",
 		Attributes: map[string]schema.Attribute{
@@ -91,11 +86,7 @@ func serverSettingsGeneralSettingsResourceSchema(ctx context.Context, req resour
 		},
 	}
 
-	// Set attributes in string list
-	if setOptionalToComputed {
-		config.SetAllAttributesToOptionalAndComputed(&schema, []string{""})
-	}
-	config.AddCommonSchema(&schema, false)
+	config.AddCommonSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -136,6 +127,7 @@ func (r *serverSettingsGeneralSettingsResource) Configure(_ context.Context, req
 }
 
 func readServerSettingsGeneralSettingsResponse(ctx context.Context, r *client.GeneralSettings, state *serverSettingsGeneralSettingsResourceModel, expectedValues *serverSettingsGeneralSettingsResourceModel) {
+	//TODO placeholder?
 	state.Id = types.StringValue("id")
 	state.DisableAutomaticConnectionValidation = types.BoolPointerValue(r.DisableAutomaticConnectionValidation)
 	state.IdpConnectionTransactionLoggingOverride = internaltypes.StringTypeOrNil(r.IdpConnectionTransactionLoggingOverride, true)
@@ -156,24 +148,24 @@ func (r *serverSettingsGeneralSettingsResource) Create(ctx context.Context, req 
 	createServerSettingsGeneralSettings := client.NewGeneralSettings()
 	err := addOptionalServerSettingsGeneralSettingsFields(ctx, createServerSettingsGeneralSettings, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for ServerSettingsGeneralSettings", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings General Settings", err.Error())
 		return
 	}
-	requestJson, err := createServerSettingsGeneralSettings.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createServerSettingsGeneralSettings.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Server Settings General Settings: %s", requestErr.Error())
 	}
 
 	apiCreateServerSettingsGeneralSettings := r.apiClient.ServerSettingsApi.UpdateGeneralSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateServerSettingsGeneralSettings = apiCreateServerSettingsGeneralSettings.Body(*createServerSettingsGeneralSettings)
 	serverSettingsGeneralSettingsResponse, httpResp, err := r.apiClient.ServerSettingsApi.UpdateGeneralSettingsExecute(apiCreateServerSettingsGeneralSettings)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the ServerSettingsGeneralSettings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Server Settings General Settings", err, httpResp)
 		return
 	}
-	responseJson, err := serverSettingsGeneralSettingsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := serverSettingsGeneralSettingsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Server Settings General Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -182,16 +174,9 @@ func (r *serverSettingsGeneralSettingsResource) Create(ctx context.Context, req 
 	readServerSettingsGeneralSettingsResponse(ctx, serverSettingsGeneralSettingsResponse, &state, &plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *serverSettingsGeneralSettingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	readServerSettingsGeneralSettings(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func readServerSettingsGeneralSettings(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	var state serverSettingsGeneralSettingsResourceModel
 
 	diags := req.State.Get(ctx, &state)
@@ -199,36 +184,32 @@ func readServerSettingsGeneralSettings(ctx context.Context, req resource.ReadReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadServerSettingsGeneralSettings, httpResp, err := apiClient.ServerSettingsApi.GetGeneralSettings(config.ProviderBasicAuthContext(ctx, providerConfig)).Execute()
-
+	apiReadServerSettingsGeneralSettings, httpResp, err := r.apiClient.ServerSettingsApi.GetGeneralSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a ServerSettingsGeneralSettings", err, httpResp)
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings General Settings", err, httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings General Settings", err, httpResp)
+		}
 		return
 	}
-	// Log response JSON
-	responseJson, err := apiReadServerSettingsGeneralSettings.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
-	}
 
+	// Log response JSON
+	_, responseErr := apiReadServerSettingsGeneralSettings.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Server Settings General Settings: %s", responseErr.Error())
+	}
 	// Read the response into the state
 	readServerSettingsGeneralSettingsResponse(ctx, apiReadServerSettingsGeneralSettings, &state, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *serverSettingsGeneralSettingsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	updateServerSettingsGeneralSettings(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func updateServerSettingsGeneralSettings(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	// Retrieve values from plan
 	var plan serverSettingsGeneralSettingsResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -240,27 +221,27 @@ func updateServerSettingsGeneralSettings(ctx context.Context, req resource.Updat
 	// Get the current state to see how any attributes are changing
 	var state serverSettingsGeneralSettingsResourceModel
 	req.State.Get(ctx, &state)
-	updateServerSettingsGeneralSettings := apiClient.ServerSettingsApi.UpdateGeneralSettings(config.ProviderBasicAuthContext(ctx, providerConfig))
+	updateServerSettingsGeneralSettings := r.apiClient.ServerSettingsApi.UpdateGeneralSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewGeneralSettings()
 	err := addOptionalServerSettingsGeneralSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for ServerSettingsGeneralSettings", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings General Settings", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Server Settings General Settings: %s", requestErr.Error())
 	}
 	updateServerSettingsGeneralSettings = updateServerSettingsGeneralSettings.Body(*createUpdateRequest)
-	updateServerSettingsGeneralSettingsResponse, httpResp, err := apiClient.ServerSettingsApi.UpdateGeneralSettingsExecute(updateServerSettingsGeneralSettings)
+	updateServerSettingsGeneralSettingsResponse, httpResp, err := r.apiClient.ServerSettingsApi.UpdateGeneralSettingsExecute(updateServerSettingsGeneralSettings)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating ServerSettingsGeneralSettings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Server Settings General Settings", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateServerSettingsGeneralSettingsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateServerSettingsGeneralSettingsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Server Settings General Settings: %s", responseErr.Error())
 	}
 	// Read the response
 	readServerSettingsGeneralSettingsResponse(ctx, updateServerSettingsGeneralSettingsResponse, &state, &plan)
@@ -268,10 +249,6 @@ func updateServerSettingsGeneralSettings(ctx context.Context, req resource.Updat
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // This config object is edit-only, so Terraform can't delete it.
@@ -279,9 +256,6 @@ func (r *serverSettingsGeneralSettingsResource) Delete(ctx context.Context, req 
 }
 
 func (r *serverSettingsGeneralSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	importServerSettingsGeneralSettingsLocation(ctx, req, resp)
-}
-func importServerSettingsGeneralSettingsLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
