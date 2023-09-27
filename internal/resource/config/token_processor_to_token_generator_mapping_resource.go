@@ -14,6 +14,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -25,8 +26,8 @@ var (
 	_ resource.ResourceWithImportState = &tokenProcessorToTokenGeneratorMappingsResource{}
 )
 
-// TokenProcessorToTokenGeneratorMappingsResource is a helper function to simplify the provider implementation.
-func TokenProcessorToTokenGeneratorMappingsResource() resource.Resource {
+// TokenProcessorToTokenGeneratorMappingResource is a helper function to simplify the provider implementation.
+func TokenProcessorToTokenGeneratorMappingResource() resource.Resource {
 	return &tokenProcessorToTokenGeneratorMappingsResource{}
 }
 
@@ -37,7 +38,7 @@ type tokenProcessorToTokenGeneratorMappingsResource struct {
 }
 
 type tokenProcessorToTokenGeneratorMappingsResourceModel struct {
-	// AttributeSources                 types.List   `tfsdk:"attribute_sources"`
+	AttributeSources                 types.List   `tfsdk:"attribute_sources"`
 	AttributeContractFulfillment     types.Map    `tfsdk:"attribute_contract_fulfillment"`
 	IssuanceCriteria                 types.Object `tfsdk:"issuance_criteria"`
 	SourceId                         types.String `tfsdk:"source_id"`
@@ -61,7 +62,7 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Schema(ctx context.Cont
 				},
 			},
 			"attribute_contract_fulfillment": attributecontractfulfillment.AttributeContractFulfillmentSchema(),
-			// "attribute_sources":              common.AttributeSourcesSchema(),
+			"attribute_sources":              attributesources.AttributeSourcesSchema(),
 			"default_target_resource": schema.StringAttribute{
 				Description: "Default target URL for this Token Processor to Token Generator mapping configuration.",
 				Optional:    true,
@@ -83,25 +84,31 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Schema(ctx context.Cont
 	}
 }
 
-func addOptionalTokenProcessorToTokenGeneratorMappingsFields(ctx context.Context, addRequest *client.TokenToTokenMapping, plan tokenProcessorToTokenGeneratorMappingsResourceModel) error {
+func addOptionalTokenProcessorToTokenGeneratorMappingFields(ctx context.Context, addRequest *client.TokenToTokenMapping, plan tokenProcessorToTokenGeneratorMappingsResourceModel) error {
 
-	// if internaltypes.IsDefined(plan.AttributeSources) {
-	// 	addRequest.AttributeSources = []client.AttributeSource{}
-	// 	for _, attrSource := range plan.AttributeSources.Elements() {
-	// 		// if attrSource
-	// 		// addRequest.AttributeSources = append(addRequest.AttributeSources, attrSource)
-	// 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeSources, false)), attrSource)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 	}
-	// }
+	if internaltypes.IsDefined(plan.AttributeSources) {
+		addRequest.AttributeSources = []client.AttributeSource{}
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeSources, false)), &addRequest.AttributeSources)
+		if err != nil {
+			return err
+		}
+	}
 
 	if internaltypes.IsDefined(plan.IssuanceCriteria) {
 		addRequest.IssuanceCriteria = client.NewIssuanceCriteria()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.IssuanceCriteria, true)), addRequest.IssuanceCriteria)
-		if err != nil {
-			return err
+		if internaltypes.IsDefined(plan.IssuanceCriteria.Attributes()["conditional_criteria"]) {
+			addRequest.IssuanceCriteria.ConditionalCriteria = []client.ConditionalIssuanceCriteriaEntry{}
+			conditionalCriteriaErr := json.Unmarshal([]byte(internaljson.FromValue(plan.IssuanceCriteria.Attributes()["conditional_criteria"].(types.List), true)), &addRequest.IssuanceCriteria.ConditionalCriteria)
+			if conditionalCriteriaErr != nil {
+				return conditionalCriteriaErr
+			}
+		}
+		if internaltypes.IsDefined(plan.IssuanceCriteria.Attributes()["expression_criteria"]) {
+			addRequest.IssuanceCriteria.ExpressionCriteria = []client.ExpressionIssuanceCriteriaEntry{}
+			expressionCriteriaErr := json.Unmarshal([]byte(internaljson.FromValue(plan.IssuanceCriteria.Attributes()["expression_criteria"].(types.List), true)), &addRequest.IssuanceCriteria.ExpressionCriteria)
+			if expressionCriteriaErr != nil {
+				return expressionCriteriaErr
+			}
 		}
 	}
 
@@ -123,7 +130,7 @@ func addOptionalTokenProcessorToTokenGeneratorMappingsFields(ctx context.Context
 
 // Metadata returns the resource type name.
 func (r *tokenProcessorToTokenGeneratorMappingsResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_token_processor_to_token_generator_mappings"
+	resp.TypeName = req.ProviderTypeName + "_token_processor_to_token_generator_mapping"
 }
 
 func (r *tokenProcessorToTokenGeneratorMappingsResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
@@ -137,7 +144,7 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Configure(_ context.Con
 
 }
 
-func readTokenProcessorToTokenGeneratorMappingsResponse(ctx context.Context, r *client.TokenToTokenMapping, state *tokenProcessorToTokenGeneratorMappingsResourceModel) {
+func readTokenProcessorToTokenGeneratorMappingResponse(ctx context.Context, r *client.TokenToTokenMapping, state *tokenProcessorToTokenGeneratorMappingsResourceModel) {
 	// state.AttributeSources = internaltypes.GetCorrectMethodFromInternalTypesForThis(r.AttributeSources)
 	state.AttributeContractFulfillment = attributecontractfulfillment.AttributeContractFulfillmentToState(ctx, r.AttributeContractFulfillment)
 	state.IssuanceCriteria = issuancecriteria.IssuanceCriteriaToState(ctx, r.IssuanceCriteria)
@@ -163,22 +170,22 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Create(ctx context.Cont
 		resp.Diagnostics.AddError("Failed to build attribute contract fulfillment request object:", attributeContractFulfillmentErr.Error())
 		return
 	}
-	createTokenProcessorToTokenGeneratorMappings := client.NewTokenToTokenMapping(*attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
-	err := addOptionalTokenProcessorToTokenGeneratorMappingsFields(ctx, createTokenProcessorToTokenGeneratorMappings, plan)
+	createTokenProcessorToTokenGeneratorMapping := client.NewTokenToTokenMapping(*attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
+	err := addOptionalTokenProcessorToTokenGeneratorMappingFields(ctx, createTokenProcessorToTokenGeneratorMapping, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for TokenProcessorToTokenGeneratorMappings", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for TokenProcessorToTokenGeneratorMapping", err.Error())
 		return
 	}
-	requestJson, err := createTokenProcessorToTokenGeneratorMappings.MarshalJSON()
+	requestJson, err := createTokenProcessorToTokenGeneratorMapping.MarshalJSON()
 	if err == nil {
 		tflog.Debug(ctx, "Add request: "+string(requestJson))
 	}
 
-	apiCreateTokenProcessorToTokenGeneratorMappings := r.apiClient.TokenProcessorToTokenGeneratorMappingsApi.CreateTokenToTokenMapping(ProviderBasicAuthContext(ctx, r.providerConfig))
-	apiCreateTokenProcessorToTokenGeneratorMappings = apiCreateTokenProcessorToTokenGeneratorMappings.Body(*createTokenProcessorToTokenGeneratorMappings)
-	tokenProcessorToTokenGeneratorMappingsResponse, httpResp, err := r.apiClient.TokenProcessorToTokenGeneratorMappingsApi.CreateTokenToTokenMappingExecute(apiCreateTokenProcessorToTokenGeneratorMappings)
+	apiCreateTokenProcessorToTokenGeneratorMapping := r.apiClient.TokenProcessorToTokenGeneratorMappingsApi.CreateTokenToTokenMapping(ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateTokenProcessorToTokenGeneratorMapping = apiCreateTokenProcessorToTokenGeneratorMapping.Body(*createTokenProcessorToTokenGeneratorMapping)
+	tokenProcessorToTokenGeneratorMappingsResponse, httpResp, err := r.apiClient.TokenProcessorToTokenGeneratorMappingsApi.CreateTokenToTokenMappingExecute(apiCreateTokenProcessorToTokenGeneratorMapping)
 	if err != nil {
-		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the TokenProcessorToTokenGeneratorMappings", err, httpResp)
+		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the TokenProcessorToTokenGeneratorMapping", err, httpResp)
 		return
 	}
 	responseJson, err := tokenProcessorToTokenGeneratorMappingsResponse.MarshalJSON()
@@ -189,7 +196,7 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Create(ctx context.Cont
 	// Read the response into the state
 	var state tokenProcessorToTokenGeneratorMappingsResourceModel
 
-	readTokenProcessorToTokenGeneratorMappingsResponse(ctx, tokenProcessorToTokenGeneratorMappingsResponse, &state)
+	readTokenProcessorToTokenGeneratorMappingResponse(ctx, tokenProcessorToTokenGeneratorMappingsResponse, &state)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -202,24 +209,24 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Read(ctx context.Contex
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadTokenProcessorToTokenGeneratorMappings, httpResp, err := r.apiClient.TokenProcessorToTokenGeneratorMappingsApi.GetTokenToTokenMappingById(ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadTokenProcessorToTokenGeneratorMapping, httpResp, err := r.apiClient.TokenProcessorToTokenGeneratorMappingsApi.GetTokenToTokenMappingById(ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the TokenProcessorToTokenGeneratorMappings", err, httpResp)
+			ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the TokenProcessorToTokenGeneratorMapping", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  TokenProcessorToTokenGeneratorMappings", err, httpResp)
+			ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  TokenProcessorToTokenGeneratorMapping", err, httpResp)
 		}
 	}
 	// Log response JSON
-	responseJson, err := apiReadTokenProcessorToTokenGeneratorMappings.MarshalJSON()
+	responseJson, err := apiReadTokenProcessorToTokenGeneratorMapping.MarshalJSON()
 	if err == nil {
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	}
 
 	// Read the response into the state
-	readTokenProcessorToTokenGeneratorMappingsResponse(ctx, apiReadTokenProcessorToTokenGeneratorMappings, &state)
+	readTokenProcessorToTokenGeneratorMappingResponse(ctx, apiReadTokenProcessorToTokenGeneratorMapping, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -246,30 +253,30 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Update(ctx context.Cont
 		resp.Diagnostics.AddError("Failed to build attribute contract fulfillment request object:", attributeContractFulfillmentErr.Error())
 		return
 	}
-	updateTokenProcessorToTokenGeneratorMappings := r.apiClient.TokenProcessorToTokenGeneratorMappingsApi.UpdateTokenToTokenMappingById(ProviderBasicAuthContext(ctx, r.providerConfig), plan.Id.ValueString())
+	updateTokenProcessorToTokenGeneratorMapping := r.apiClient.TokenProcessorToTokenGeneratorMappingsApi.UpdateTokenToTokenMappingById(ProviderBasicAuthContext(ctx, r.providerConfig), plan.Id.ValueString())
 	createUpdateRequest := client.NewTokenToTokenMapping(*attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
-	err := addOptionalTokenProcessorToTokenGeneratorMappingsFields(ctx, createUpdateRequest, plan)
+	err := addOptionalTokenProcessorToTokenGeneratorMappingFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for TokenProcessorToTokenGeneratorMappings", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for TokenProcessorToTokenGeneratorMapping", err.Error())
 		return
 	}
 	requestJson, err := createUpdateRequest.MarshalJSON()
 	if err == nil {
 		tflog.Debug(ctx, "Update request: "+string(requestJson))
 	}
-	updateTokenProcessorToTokenGeneratorMappings = updateTokenProcessorToTokenGeneratorMappings.Body(*createUpdateRequest)
-	updateTokenProcessorToTokenGeneratorMappingsResponse, httpResp, err := r.apiClient.TokenProcessorToTokenGeneratorMappingsApi.UpdateTokenToTokenMappingByIdExecute(updateTokenProcessorToTokenGeneratorMappings)
+	updateTokenProcessorToTokenGeneratorMapping = updateTokenProcessorToTokenGeneratorMapping.Body(*createUpdateRequest)
+	updateTokenProcessorToTokenGeneratorMappingResponse, httpResp, err := r.apiClient.TokenProcessorToTokenGeneratorMappingsApi.UpdateTokenToTokenMappingByIdExecute(updateTokenProcessorToTokenGeneratorMapping)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating TokenProcessorToTokenGeneratorMappings", err, httpResp)
+		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating TokenProcessorToTokenGeneratorMapping", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateTokenProcessorToTokenGeneratorMappingsResponse.MarshalJSON()
+	responseJson, err := updateTokenProcessorToTokenGeneratorMappingResponse.MarshalJSON()
 	if err == nil {
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	}
 	// Read the response
-	readTokenProcessorToTokenGeneratorMappingsResponse(ctx, updateTokenProcessorToTokenGeneratorMappingsResponse, &state)
+	readTokenProcessorToTokenGeneratorMappingResponse(ctx, updateTokenProcessorToTokenGeneratorMappingResponse, &state)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
