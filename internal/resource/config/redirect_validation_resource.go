@@ -16,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -48,11 +47,7 @@ type redirectValidationResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *redirectValidationResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	redirectValidationResourceSchema(ctx, req, resp, false)
-}
-
-func redirectValidationResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
-	schema := schema.Schema{
+	resp.Schema = schema.Schema{
 		Description: "Manages a RedirectValidation.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -200,9 +195,8 @@ func redirectValidationResourceSchema(ctx context.Context, req resource.SchemaRe
 			},
 		},
 	}
-
-	resp.Schema = schema
 }
+
 func addOptionalRedirectValidationFields(ctx context.Context, addRequest *client.RedirectValidationSettings, plan redirectValidationResourceModel) error {
 	if internaltypes.IsDefined(plan.RedirectValidationLocalSettings) {
 		addRequest.RedirectValidationLocalSettings = client.NewRedirectValidationLocalSettings()
@@ -315,24 +309,24 @@ func (r *redirectValidationResource) Create(ctx context.Context, req resource.Cr
 	createRedirectValidation := client.NewRedirectValidationSettings()
 	err := addOptionalRedirectValidationFields(ctx, createRedirectValidation, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for RedirectValidation", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Redirect Validation", err.Error())
 		return
 	}
-	requestJson, err := createRedirectValidation.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createRedirectValidation.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Redirect Validation: %s", requestErr.Error())
 	}
 
 	apiCreateRedirectValidation := r.apiClient.RedirectValidationApi.UpdateRedirectValidationSettings(ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateRedirectValidation = apiCreateRedirectValidation.Body(*createRedirectValidation)
 	redirectValidationResponse, httpResp, err := r.apiClient.RedirectValidationApi.UpdateRedirectValidationSettingsExecute(apiCreateRedirectValidation)
 	if err != nil {
-		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the RedirectValidation", err, httpResp)
+		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Redirect Validation", err, httpResp)
 		return
 	}
-	responseJson, err := redirectValidationResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := redirectValidationResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Redirect Validation: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -341,16 +335,9 @@ func (r *redirectValidationResource) Create(ctx context.Context, req resource.Cr
 	readRedirectValidationResponse(ctx, redirectValidationResponse, &state, &resp.Diagnostics)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *redirectValidationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	readRedirectValidation(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func readRedirectValidation(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	var state redirectValidationResourceModel
 
 	diags := req.State.Get(ctx, &state)
@@ -358,16 +345,20 @@ func readRedirectValidation(ctx context.Context, req resource.ReadRequest, resp 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadRedirectValidation, httpResp, err := apiClient.RedirectValidationApi.GetRedirectValidationSettings(ProviderBasicAuthContext(ctx, providerConfig)).Execute()
-
+	apiReadRedirectValidation, httpResp, err := r.apiClient.RedirectValidationApi.GetRedirectValidationSettings(ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
-		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a RedirectValidation", err, httpResp)
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Redirect Validation", err, httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Redirect Validation", err, httpResp)
+		}
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadRedirectValidation.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadRedirectValidation.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Redirect Validation: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -376,18 +367,10 @@ func readRedirectValidation(ctx context.Context, req resource.ReadRequest, resp 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *redirectValidationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	updateRedirectValidation(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func updateRedirectValidation(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	// Retrieve values from plan
 	var plan redirectValidationResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -399,27 +382,27 @@ func updateRedirectValidation(ctx context.Context, req resource.UpdateRequest, r
 	// Get the current state to see how any attributes are changing
 	var state redirectValidationResourceModel
 	req.State.Get(ctx, &state)
-	updateRedirectValidation := apiClient.RedirectValidationApi.UpdateRedirectValidationSettings(ProviderBasicAuthContext(ctx, providerConfig))
+	updateRedirectValidation := r.apiClient.RedirectValidationApi.UpdateRedirectValidationSettings(ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewRedirectValidationSettings()
 	err := addOptionalRedirectValidationFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for RedirectValidation", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Redirect Validation", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Redirect Validation: %s", requestErr.Error())
 	}
 	updateRedirectValidation = updateRedirectValidation.Body(*createUpdateRequest)
-	updateRedirectValidationResponse, httpResp, err := apiClient.RedirectValidationApi.UpdateRedirectValidationSettingsExecute(updateRedirectValidation)
+	updateRedirectValidationResponse, httpResp, err := r.apiClient.RedirectValidationApi.UpdateRedirectValidationSettingsExecute(updateRedirectValidation)
 	if err != nil {
-		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating RedirectValidation", err, httpResp)
+		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Redirect Validation", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateRedirectValidationResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateRedirectValidationResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Redirect Validation: %s", responseErr.Error())
 	}
 	// Read the response
 	readRedirectValidationResponse(ctx, updateRedirectValidationResponse, &state, &resp.Diagnostics)
@@ -427,10 +410,6 @@ func updateRedirectValidation(ctx context.Context, req resource.UpdateRequest, r
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // This config object is edit-only, so Terraform can't delete it.
@@ -438,9 +417,6 @@ func (r *redirectValidationResource) Delete(ctx context.Context, req resource.De
 }
 
 func (r *redirectValidationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	importLocation(ctx, req, resp)
-}
-func importLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

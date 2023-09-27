@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -43,10 +42,6 @@ type idpDefaultUrlsResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *idpDefaultUrlsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	idpDefaultUrlsResourceSchema(ctx, req, resp, false)
-}
-
-func idpDefaultUrlsResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
 	schema := schema.Schema{
 		Description: "Manages a IdpDefaultUrls.",
 		Attributes: map[string]schema.Attribute{
@@ -77,10 +72,6 @@ func idpDefaultUrlsResourceSchema(ctx context.Context, req resource.SchemaReques
 		},
 	}
 
-	// Set attributes in string list
-	if setOptionalToComputed {
-		config.SetAllAttributesToOptionalAndComputed(&schema, []string{"idp_error_msg"})
-	}
 	config.AddCommonSchema(&schema, false)
 	resp.Schema = schema
 }
@@ -137,21 +128,21 @@ func (r *idpDefaultUrlsResource) Create(ctx context.Context, req resource.Create
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdpDefaultUrls", err.Error())
 		return
 	}
-	requestJson, err := createIdpDefaultUrls.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createIdpDefaultUrls.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of the IdpDefaultUrls: %s", requestErr.Error())
 	}
 
 	apiCreateIdpDefaultUrls := r.apiClient.IdpDefaultUrlsApi.UpdateDefaultUrlSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateIdpDefaultUrls = apiCreateIdpDefaultUrls.Body(*createIdpDefaultUrls)
 	idpDefaultUrlsResponse, httpResp, err := r.apiClient.IdpDefaultUrlsApi.UpdateDefaultUrlSettingsExecute(apiCreateIdpDefaultUrls)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the IdpDefaultUrls", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Idp Default Urls", err, httpResp)
 		return
 	}
-	responseJson, err := idpDefaultUrlsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := idpDefaultUrlsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of the Idp Default Urls: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -160,16 +151,9 @@ func (r *idpDefaultUrlsResource) Create(ctx context.Context, req resource.Create
 	readIdpDefaultUrlsResponse(ctx, idpDefaultUrlsResponse, &state, &plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *idpDefaultUrlsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	readIdpDefaultUrls(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func readIdpDefaultUrls(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	var state idpDefaultUrlsResourceModel
 
 	diags := req.State.Get(ctx, &state)
@@ -177,16 +161,21 @@ func readIdpDefaultUrls(ctx context.Context, req resource.ReadRequest, resp *res
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadIdpDefaultUrls, httpResp, err := apiClient.IdpDefaultUrlsApi.GetDefaultUrl(config.ProviderBasicAuthContext(ctx, providerConfig)).Execute()
-
+	apiReadIdpDefaultUrls, httpResp, err := r.apiClient.IdpDefaultUrlsApi.GetDefaultUrl(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a IdpDefaultUrls", err, httpResp)
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Idp Default Urls", err, httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Idp Default Urls", err, httpResp)
+		}
 		return
 	}
+
 	// Log response JSON
-	responseJson, err := apiReadIdpDefaultUrls.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadIdpDefaultUrls.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of the Idp Default Urls: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -195,18 +184,10 @@ func readIdpDefaultUrls(ctx context.Context, req resource.ReadRequest, resp *res
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *idpDefaultUrlsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	updateIdpDefaultUrls(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func updateIdpDefaultUrls(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	// Retrieve values from plan
 	var plan idpDefaultUrlsResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -218,27 +199,27 @@ func updateIdpDefaultUrls(ctx context.Context, req resource.UpdateRequest, resp 
 	// Get the current state to see how any attributes are changing
 	var state idpDefaultUrlsResourceModel
 	req.State.Get(ctx, &state)
-	updateIdpDefaultUrls := apiClient.IdpDefaultUrlsApi.UpdateDefaultUrlSettings(config.ProviderBasicAuthContext(ctx, providerConfig))
+	updateIdpDefaultUrls := r.apiClient.IdpDefaultUrlsApi.UpdateDefaultUrlSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewIdpDefaultUrl(plan.IdpErrorMsg.ValueString())
 	err := addOptionalIdpDefaultUrlsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdpDefaultUrls", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Idp Default Urls", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of the Idp Default Urls: %s", requestErr.Error())
 	}
 	updateIdpDefaultUrls = updateIdpDefaultUrls.Body(*createUpdateRequest)
-	updateIdpDefaultUrlsResponse, httpResp, err := apiClient.IdpDefaultUrlsApi.UpdateDefaultUrlSettingsExecute(updateIdpDefaultUrls)
+	updateIdpDefaultUrlsResponse, httpResp, err := r.apiClient.IdpDefaultUrlsApi.UpdateDefaultUrlSettingsExecute(updateIdpDefaultUrls)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating IdpDefaultUrls", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Idp Default Urls", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateIdpDefaultUrlsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateIdpDefaultUrlsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of the Idp Default Urls: %s", responseErr.Error())
 	}
 	// Read the response
 	readIdpDefaultUrlsResponse(ctx, updateIdpDefaultUrlsResponse, &state, &plan)
@@ -246,10 +227,6 @@ func updateIdpDefaultUrls(ctx context.Context, req resource.UpdateRequest, resp 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // This config object is edit-only, so Terraform can't delete it.
@@ -257,9 +234,6 @@ func (r *idpDefaultUrlsResource) Delete(ctx context.Context, req resource.Delete
 }
 
 func (r *idpDefaultUrlsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	importIdpDefaultUrlsLocation(ctx, req, resp)
-}
-func importIdpDefaultUrlsLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

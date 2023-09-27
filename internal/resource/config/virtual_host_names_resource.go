@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -39,10 +38,6 @@ type virtualHostNamesResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *virtualHostNamesResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	virtualHostNamesResourceSchema(ctx, req, resp, false)
-}
-
-func virtualHostNamesResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
 	schema := schema.Schema{
 		Description: "Manages a VirtualHostNames.",
 		Attributes: map[string]schema.Attribute{
@@ -57,13 +52,10 @@ func virtualHostNamesResourceSchema(ctx context.Context, req resource.SchemaRequ
 		},
 	}
 
-	// Set attributes in string list
-	if setOptionalToComputed {
-		SetAllAttributesToOptionalAndComputed(&schema, []string{""})
-	}
 	AddCommonSchema(&schema, false)
 	resp.Schema = schema
 }
+
 func addOptionalVirtualHostNamesFields(ctx context.Context, addRequest *client.VirtualHostNameSettings, plan virtualHostNamesResourceModel) error {
 	if internaltypes.IsDefined(plan.VirtualHostNames) {
 		var slice []string
@@ -107,24 +99,24 @@ func (r *virtualHostNamesResource) Create(ctx context.Context, req resource.Crea
 	createVirtualHostNames := client.NewVirtualHostNameSettings()
 	err := addOptionalVirtualHostNamesFields(ctx, createVirtualHostNames, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for VirtualHostNames", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Virtual Host Names", err.Error())
 		return
 	}
-	requestJson, err := createVirtualHostNames.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createVirtualHostNames.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Virtual Host Names: %s", requestErr.Error())
 	}
 
 	apiCreateVirtualHostNames := r.apiClient.VirtualHostNamesApi.UpdateVirtualHostNamesSettings(ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateVirtualHostNames = apiCreateVirtualHostNames.Body(*createVirtualHostNames)
 	virtualHostNamesResponse, httpResp, err := r.apiClient.VirtualHostNamesApi.UpdateVirtualHostNamesSettingsExecute(apiCreateVirtualHostNames)
 	if err != nil {
-		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the VirtualHostNames", err, httpResp)
+		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Virtual Host Names", err, httpResp)
 		return
 	}
-	responseJson, err := virtualHostNamesResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := virtualHostNamesResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Virtual Host Names: %s", requestErr.Error())
 	}
 
 	// Read the response into the state
@@ -133,16 +125,9 @@ func (r *virtualHostNamesResource) Create(ctx context.Context, req resource.Crea
 	readVirtualHostNamesResponse(ctx, virtualHostNamesResponse, &state)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *virtualHostNamesResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	readVirtualHostNames(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func readVirtualHostNames(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	var state virtualHostNamesResourceModel
 
 	diags := req.State.Get(ctx, &state)
@@ -150,16 +135,20 @@ func readVirtualHostNames(ctx context.Context, req resource.ReadRequest, resp *r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadVirtualHostNames, httpResp, err := apiClient.VirtualHostNamesApi.GetVirtualHostNamesSettings(ProviderBasicAuthContext(ctx, providerConfig)).Execute()
-
+	apiReadVirtualHostNames, httpResp, err := r.apiClient.VirtualHostNamesApi.GetVirtualHostNamesSettings(ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
-		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a VirtualHostNames", err, httpResp)
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a Virtual Host Names", err, httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Virtual Host Names", err, httpResp)
+		}
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadVirtualHostNames.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadVirtualHostNames.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Virtual Host Names: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -168,18 +157,10 @@ func readVirtualHostNames(ctx context.Context, req resource.ReadRequest, resp *r
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *virtualHostNamesResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	updateVirtualHostNames(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func updateVirtualHostNames(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	// Retrieve values from plan
 	var plan virtualHostNamesResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -191,27 +172,27 @@ func updateVirtualHostNames(ctx context.Context, req resource.UpdateRequest, res
 	// Get the current state to see how any attributes are changing
 	var state virtualHostNamesResourceModel
 	req.State.Get(ctx, &state)
-	updateVirtualHostNames := apiClient.VirtualHostNamesApi.UpdateVirtualHostNamesSettings(ProviderBasicAuthContext(ctx, providerConfig))
+	updateVirtualHostNames := r.apiClient.VirtualHostNamesApi.UpdateVirtualHostNamesSettings(ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewVirtualHostNameSettings()
 	err := addOptionalVirtualHostNamesFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for VirtualHostNames", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Virtual Host Names", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Virtual Host Names: %s", requestErr.Error())
 	}
 	updateVirtualHostNames = updateVirtualHostNames.Body(*createUpdateRequest)
-	updateVirtualHostNamesResponse, httpResp, err := apiClient.VirtualHostNamesApi.UpdateVirtualHostNamesSettingsExecute(updateVirtualHostNames)
+	updateVirtualHostNamesResponse, httpResp, err := r.apiClient.VirtualHostNamesApi.UpdateVirtualHostNamesSettingsExecute(updateVirtualHostNames)
 	if err != nil {
-		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating VirtualHostNames", err, httpResp)
+		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Virtual Host Names", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateVirtualHostNamesResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateVirtualHostNamesResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Virtual Host Names: %s", responseErr.Error())
 	}
 	// Read the response
 	readVirtualHostNamesResponse(ctx, updateVirtualHostNamesResponse, &state)
@@ -219,10 +200,6 @@ func updateVirtualHostNames(ctx context.Context, req resource.UpdateRequest, res
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // This config object is edit-only, so Terraform can't delete it.
@@ -230,9 +207,6 @@ func (r *virtualHostNamesResource) Delete(ctx context.Context, req resource.Dele
 }
 
 func (r *virtualHostNamesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	importVirtualHostNamesLocation(ctx, req, resp)
-}
-func importVirtualHostNamesLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

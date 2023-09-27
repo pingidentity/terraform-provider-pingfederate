@@ -30,3 +30,12 @@ resource "pingfederate_protocol_metadata_lifetime_settings" "protocolMetadataLif
 ### Read-Only
 
 - `id` (String) Placeholder name of this object required by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "protocolMetadataLifetimeSettingsId" should be "id"
+terraform import pingfederate_protocol_metadata_lifetime_settings.myProtocolMetadataLifetimeSettings protocolMetadataLifetimeSettingsId
+```

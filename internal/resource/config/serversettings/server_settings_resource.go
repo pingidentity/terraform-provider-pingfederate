@@ -18,12 +18,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -707,15 +705,6 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 							stringplanmodifier.UseStateForUnknown(),
 						},
 					},
-					"encrypted_password": schema.StringAttribute{
-						Description: "For GET requests, this field contains the encrypted password, if one exists. For POST and PUT requests, if you wish to reuse the existing password, this field should be passed back unchanged.",
-						Computed:    true,
-						Optional:    false,
-						Default:     stringdefault.StaticString(""),
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
-					},
 				},
 			},
 			"captcha_settings": schema.SingleNestedAttribute{
@@ -738,15 +727,6 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Description: "Secret key for reCAPTCHA. GETs will not return this attribute. To update this field, specify the new value in this attribute.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
-					},
-					"encrypted_secret_key": schema.StringAttribute{
-						Description: "The encrypted secret key for reCAPTCHA. If you do not want to update the stored value, this attribute should be passed back unchanged.",
-						Computed:    true,
-						Optional:    false,
-						Default:     stringdefault.StaticString(""),
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
 						},
@@ -1098,7 +1078,6 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 		"use_debugging":               basetypes.BoolType{},
 		"username":                    basetypes.StringType{},
 		"password":                    basetypes.StringType{},
-		"encrypted_password":          basetypes.StringType{},
 	}
 
 	// get email creds with function
@@ -1114,7 +1093,6 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	}
 
 	// retrieve values for saving to state
-	// encrypted_password is not returned in the response, so we set it to an empty string
 	username, password := getEmailCreds()
 	emailServerAttrValue := map[string]attr.Value{
 		"source_addr":                 types.StringValue(r.EmailServer.GetSourceAddr()),
@@ -1131,7 +1109,6 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 		"use_debugging":               types.BoolValue(r.EmailServer.GetUseDebugging()),
 		"username":                    types.StringPointerValue(username),
 		"password":                    types.StringValue(password),
-		"encrypted_password":          types.StringPointerValue(&emptyString),
 	}
 
 	state.EmailServer, _ = types.ObjectValue(emailServerAttrType, emailServerAttrValue)
@@ -1140,23 +1117,20 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	// CAPTCHA SETTINGS
 	//////////////////////////////////////////////
 	captchaSettingsAttrType := map[string]attr.Type{
-		"site_key":             basetypes.StringType{},
-		"secret_key":           basetypes.StringType{},
-		"encrypted_secret_key": basetypes.StringType{},
+		"site_key":   basetypes.StringType{},
+		"secret_key": basetypes.StringType{},
 	}
 
 	var getCaptchaSettingsAttrValue = func() map[string]attr.Value {
 		if internaltypes.ObjContainsNoEmptyVals(plan.CaptchaSettings) {
 			return map[string]attr.Value{
-				"site_key":             types.StringPointerValue(r.CaptchaSettings.SiteKey),
-				"secret_key":           types.StringValue(plan.CaptchaSettings.Attributes()["secret_key"].(types.String).ValueString()),
-				"encrypted_secret_key": types.StringPointerValue(&emptyString),
+				"site_key":   types.StringPointerValue(r.CaptchaSettings.SiteKey),
+				"secret_key": types.StringValue(plan.CaptchaSettings.Attributes()["secret_key"].(types.String).ValueString()),
 			}
 		} else {
 			return map[string]attr.Value{
-				"site_key":             types.StringPointerValue(&emptyString),
-				"secret_key":           types.StringValue(emptyString),
-				"encrypted_secret_key": types.StringPointerValue(&emptyString),
+				"site_key":   types.StringPointerValue(&emptyString),
+				"secret_key": types.StringValue(emptyString),
 			}
 		}
 	}
@@ -1176,24 +1150,24 @@ func (r *serverSettingsResource) Create(ctx context.Context, req resource.Create
 	createServerSettings := client.NewServerSettings()
 	err := addOptionalServerSettingsFields(ctx, createServerSettings, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for ServerSettings", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings", err.Error())
 		return
 	}
-	requestJson, err := createServerSettings.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createServerSettings.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Server Settings: %s", requestErr.Error())
 	}
 
 	apiCreateServerSettings := r.apiClient.ServerSettingsApi.UpdateServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateServerSettings = apiCreateServerSettings.Body(*createServerSettings)
 	serverSettingsResponse, httpResp, err := r.apiClient.ServerSettingsApi.UpdateServerSettingsExecute(apiCreateServerSettings)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the ServerSettings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Server Settings", err, httpResp)
 		return
 	}
-	responseJson, err := serverSettingsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := serverSettingsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Server Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -1230,9 +1204,9 @@ func (r *serverSettingsResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadServerSettings.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadServerSettings.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Server Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -1260,23 +1234,23 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 	createUpdateRequest := client.NewServerSettings()
 	err := addOptionalServerSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for ServerSettings", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Server Settings: %s", requestErr.Error())
 	}
 	updateServerSettings = updateServerSettings.Body(*createUpdateRequest)
 	updateServerSettingsResponse, httpResp, err := r.apiClient.ServerSettingsApi.UpdateServerSettingsExecute(updateServerSettings)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating ServerSettings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Server Settings", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateServerSettingsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateServerSettingsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Server Settings: %s", responseErr.Error())
 	}
 	// Read the response
 	readServerSettingsResponse(ctx, updateServerSettingsResponse, &state, &plan)

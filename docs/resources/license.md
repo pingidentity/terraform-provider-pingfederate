@@ -30,3 +30,12 @@ resource "pingfederate_license" "licenseExample" {
 ### Read-Only
 
 - `id` (String) Placeholder name of this object required by Terraform.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "licenseId" should be "id"
+terraform import pingfederate_license.myLicense licenseId
+```

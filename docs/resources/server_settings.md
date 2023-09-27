@@ -125,10 +125,6 @@ Optional:
 - `secret_key` (String) Secret key for reCAPTCHA. GETs will not return this attribute. To update this field, specify the new value in this attribute.
 - `site_key` (String) Site key for reCAPTCHA.
 
-Read-Only:
-
-- `encrypted_secret_key` (String) The encrypted secret key for reCAPTCHA. If you do not want to update the stored value, this attribute should be passed back unchanged.
-
 
 <a id="nestedatt--contact_info"></a>
 ### Nested Schema for `contact_info`
@@ -164,10 +160,6 @@ Optional:
 - `use_tls` (Boolean) Requires the use of the STARTTLS protocol on the port specified by 'port'.
 - `username` (String) Authorized email username. Required if the password is provided.
 - `verify_hostname` (Boolean) If useSSL or useTLS is enabled, this flag determines whether the email server hostname is verified against the server's SMTPS certificate.
-
-Read-Only:
-
-- `encrypted_password` (String) For GET requests, this field contains the encrypted password, if one exists. For POST and PUT requests, if you wish to reuse the existing password, this field should be passed back unchanged.
 
 
 <a id="nestedatt--notifications"></a>
@@ -332,3 +324,12 @@ Read-Only:
 - `enable` (Boolean) Enable SAML2.0 profile.
 - `enable_auto_connect` (Boolean) This property has been deprecated and no longer used.
 - `enable_xasp` (Boolean) Enable Attribute Requester Mapping for X.509 Attribute Sharing Profile (XASP)
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "serverSettingsId" should be "id"
+terraform import pingfederate_server_settings.myServerSettings serverSettingsId
+```

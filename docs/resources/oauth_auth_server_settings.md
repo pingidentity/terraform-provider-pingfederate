@@ -3,12 +3,12 @@
 page_title: "pingfederate_oauth_auth_server_settings Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages Oauth Auth Server Settings
+  Manages OAuth Auth Server Settings
 ---
 
 # pingfederate_oauth_auth_server_settings (Resource)
 
-Manages Oauth Auth Server Settings
+Manages OAuth Auth Server Settings
 
 ## Example Usage
 
@@ -226,3 +226,12 @@ Required:
 Optional:
 
 - `dynamic` (Boolean) True if the scope is dynamic. (Defaults to false)
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "oauthAuthServerSettingsId" should be "id"
+terraform import pingfederate_oauth_auth_server_settings.myOauthAuthServerSettings oauthAuthServerSettingsId
+```

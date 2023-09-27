@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -46,11 +45,7 @@ type serverSettingsLogSettingsResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *serverSettingsLogSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	serverSettingsLogSettingsResourceSchema(ctx, req, resp, false)
-}
-
-func serverSettingsLogSettingsResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
-	schema := schema.Schema{
+	resp.Schema = schema.Schema{
 		Description: "LogSettings Settings related to server logging.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
@@ -102,7 +97,6 @@ func serverSettingsLogSettingsResourceSchema(ctx context.Context, req resource.S
 			},
 		},
 	}
-	resp.Schema = schema
 }
 
 func addOptionalServerSettingsLogSettingsFields(ctx context.Context, addRequest *client.LogSettings, plan serverSettingsLogSettingsResourceModel) error {
@@ -174,24 +168,24 @@ func (r *serverSettingsLogSettingsResource) Create(ctx context.Context, req reso
 	createServerSettingsLogSettings := client.NewLogSettings()
 	err := addOptionalServerSettingsLogSettingsFields(ctx, createServerSettingsLogSettings, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for ServerSettingsLogSettings", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings Log Settings", err.Error())
 		return
 	}
-	requestJson, err := createServerSettingsLogSettings.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createServerSettingsLogSettings.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Server Settings Log Settings: %s", requestErr.Error())
 	}
 
 	apiCreateServerSettingsLogSettings := r.apiClient.ServerSettingsApi.UpdateLogSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateServerSettingsLogSettings = apiCreateServerSettingsLogSettings.Body(*createServerSettingsLogSettings)
 	serverSettingsLogSettingsResponse, httpResp, err := r.apiClient.ServerSettingsApi.UpdateLogSettingsExecute(apiCreateServerSettingsLogSettings)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the ServerSettingsLogSettings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Server Settings Log Settings", err, httpResp)
 		return
 	}
-	responseJson, err := serverSettingsLogSettingsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := serverSettingsLogSettingsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Server Settings Log Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -200,16 +194,9 @@ func (r *serverSettingsLogSettingsResource) Create(ctx context.Context, req reso
 	readServerSettingsLogSettingsResponse(ctx, serverSettingsLogSettingsResponse, &state)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 }
 
 func (r *serverSettingsLogSettingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	readServerSettingsLogSettings(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func readServerSettingsLogSettings(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	var state serverSettingsLogSettingsResourceModel
 
 	diags := req.State.Get(ctx, &state)
@@ -217,35 +204,31 @@ func readServerSettingsLogSettings(ctx context.Context, req resource.ReadRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadServerSettingsLogSettings, httpResp, err := apiClient.ServerSettingsApi.GetLogSettings(config.ProviderBasicAuthContext(ctx, providerConfig)).Execute()
+	apiReadServerSettingsLogSettings, httpResp, err := r.apiClient.ServerSettingsApi.GetLogSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a ServerSettingsLogSettings", err, httpResp)
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings Log Settings", err, httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings Log Settings", err, httpResp)
+		}
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadServerSettingsLogSettings.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadServerSettingsLogSettings.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Server Settings Log Settings: %s", responseErr.Error())
 	}
-
 	// Read the response into the state
 	readServerSettingsLogSettingsResponse(ctx, apiReadServerSettingsLogSettings, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *serverSettingsLogSettingsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	updateServerSettingsLogSettings(ctx, req, resp, r.apiClient, r.providerConfig)
-}
-
-func updateServerSettingsLogSettings(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, apiClient *client.APIClient, providerConfig internaltypes.ProviderConfiguration) {
 	// Retrieve values from plan
 	var plan serverSettingsLogSettingsResourceModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -257,27 +240,27 @@ func updateServerSettingsLogSettings(ctx context.Context, req resource.UpdateReq
 	// Get the current state to see how any attributes are changing
 	var state serverSettingsLogSettingsResourceModel
 	req.State.Get(ctx, &state)
-	updateServerSettingsLogSettings := apiClient.ServerSettingsApi.UpdateLogSettings(config.ProviderBasicAuthContext(ctx, providerConfig))
+	updateServerSettingsLogSettings := r.apiClient.ServerSettingsApi.UpdateLogSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewLogSettings()
 	err := addOptionalServerSettingsLogSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for ServerSettingsLogSettings", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings Log Settings", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of Server Settings Log Settings: %s", requestErr.Error())
 	}
 	updateServerSettingsLogSettings = updateServerSettingsLogSettings.Body(*createUpdateRequest)
-	updateServerSettingsLogSettingsResponse, httpResp, err := apiClient.ServerSettingsApi.UpdateLogSettingsExecute(updateServerSettingsLogSettings)
+	updateServerSettingsLogSettingsResponse, httpResp, err := r.apiClient.ServerSettingsApi.UpdateLogSettingsExecute(updateServerSettingsLogSettings)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating ServerSettingsLogSettings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Server Settings Log Settings", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateServerSettingsLogSettingsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateServerSettingsLogSettingsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of Server Settings Log Settings: %s", responseErr.Error())
 	}
 	// Read the response
 	readServerSettingsLogSettingsResponse(ctx, updateServerSettingsLogSettingsResponse, &state)
@@ -285,10 +268,6 @@ func updateServerSettingsLogSettings(ctx context.Context, req resource.UpdateReq
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 }
 
 // This config object is edit-only, so Terraform can't delete it.
@@ -296,9 +275,6 @@ func (r *serverSettingsLogSettingsResource) Delete(ctx context.Context, req reso
 }
 
 func (r *serverSettingsLogSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	importServerSettingsLogSettingsLocation(ctx, req, resp)
-}
-func importServerSettingsLogSettingsLocation(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
