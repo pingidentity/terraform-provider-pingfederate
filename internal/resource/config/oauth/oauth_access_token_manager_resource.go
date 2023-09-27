@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -442,7 +443,7 @@ func (r *oauthAccessTokenManagerResource) Configure(_ context.Context, req resou
 
 }
 
-func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagerResourceModel, configurationFromPlan basetypes.ObjectValue) {
+func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagerResourceModel, configurationFromPlan basetypes.ObjectValue) diag.Diagnostics {
 	state.Id = types.StringValue(r.Id)
 	state.CustomId = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
@@ -456,112 +457,38 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 	state.ParentRef = internaltypes.ToStateResourceLink(ctx, parentRef)
 
 	// state.Configuration
-	fieldAttrType := map[string]attr.Type{
-		"name":      basetypes.StringType{},
-		"value":     basetypes.StringType{},
-		"inherited": basetypes.BoolType{},
-	}
-
-	rowAttrType := map[string]attr.Type{
-		"fields":      basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: fieldAttrType}},
-		"default_row": basetypes.BoolType{},
-	}
-
-	// configuration object
-	tableAttrType := map[string]attr.Type{
-		"name":      basetypes.StringType{},
-		"rows":      basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: rowAttrType}},
-		"inherited": basetypes.BoolType{},
-	}
-
-	getClientConfig := r.Configuration
-	configFromPlanAttrs := configurationFromPlan.Attributes()
-	tables := []client.ConfigTable{}
-	tablesElems := getClientConfig.Tables
-	if len(tablesElems) != 0 {
-		for tei, tableElem := range tablesElems {
-			tableValue := client.ConfigTable{}
-			tableValue.Name = tableElem.Name
-			tableValue.Inherited = tableElem.Inherited
-			tableRows := tableElem.Rows
-			toStateTableRows := []client.ConfigRow{}
-			if configFromPlanAttrs["tables"] != nil {
-				tableIndex := configFromPlanAttrs["tables"].(types.List).Elements()[tei].(types.Object).Attributes()
-				for tri, tr := range tableRows {
-					tableRow := client.ConfigRow{}
-					tableRow.DefaultRow = tr.DefaultRow
-					tableRowFields := tr.Fields
-					toStateTableRowFields := []client.ConfigField{}
-					tableRowIndex := tableIndex["rows"].(types.List).Elements()[tri].(types.Object).Attributes()
-					tableRowPlanFields := tableRowIndex["fields"].(types.List).Elements()
-					for _, trf := range tableRowFields {
-						for _, tableRowInPlan := range tableRowPlanFields {
-							tableRowField := client.ConfigField{}
-							nameFromPlan := tableRowInPlan.(types.Object).Attributes()["name"].(types.String).ValueString()
-							if trf.Name == nameFromPlan {
-								tableRowField.Name = trf.Name
-								tableRowFieldValueFromPlan := tableRowInPlan.(types.Object).Attributes()["value"].(types.String).ValueStringPointer()
-								if trf.Value == nil {
-									// Get plain-text value from plan for passwords
-									tableRowField.Value = tableRowFieldValueFromPlan
-								} else {
-									tableRowField.Value = trf.Value
-								}
-								tableRowField.Inherited = trf.Inherited
-								toStateTableRowFields = append(toStateTableRowFields, tableRowField)
-							} else {
-								continue
-							}
-						}
-					}
-					tableRow.Fields = toStateTableRowFields
-					toStateTableRows = append(toStateTableRows, tableRow)
-				}
-				tableValue.Rows = toStateTableRows
-				tables = append(tables, tableValue)
-			}
-		}
-	}
-	tableValue, _ := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: tableAttrType}, tables)
-
-	fields := []client.ConfigField{}
-	fieldsElems := r.Configuration.Fields
-	if configFromPlanAttrs["fields"] != nil {
-		fieldsFromPlan := configFromPlanAttrs["fields"].(types.List).Elements()
-		if len(fieldsElems) != 0 {
-			for _, cf := range fieldsElems {
-				for _, fieldInPlan := range fieldsFromPlan {
-					fieldValue := client.ConfigField{}
-					fieldNameFromPlan := fieldInPlan.(types.Object).Attributes()["name"].(types.String).ValueString()
-					if fieldNameFromPlan == cf.Name {
-						if cf.Value == nil {
-							// Get plain-text value from plan for passwords
-							fieldValue.Value = fieldInPlan.(types.Object).Attributes()["value"].(types.String).ValueStringPointer()
-						} else {
-							fieldValue.Value = cf.Value
-						}
-						fieldValue.Name = cf.Name
-						fieldValue.Inherited = cf.Inherited
-						fields = append(fields, fieldValue)
-					} else {
-						continue
-					}
-				}
-			}
-		}
-	}
-	configFieldValue, _ := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: fieldAttrType}, fields)
-
 	configurationAttrType := map[string]attr.Type{
-		"fields": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: fieldAttrType}},
-		"tables": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: tableAttrType}},
+		"fields": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.FieldAttrTypes()}},
+		"tables": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.TableAttrTypes()}},
+	}
+
+	planFields := types.ListNull(types.ObjectType{AttrTypes: config.FieldAttrTypes()})
+	planTables := types.ListNull(types.ObjectType{AttrTypes: config.TableAttrTypes()})
+
+	planFieldsValue, ok := configurationFromPlan.Attributes()["fields"]
+	if ok {
+		planFields = planFieldsValue.(types.List)
+	}
+	planTablesValue, ok := configurationFromPlan.Attributes()["tables"]
+	if ok {
+		planTables = planTablesValue.(types.List)
+	}
+
+	var diags diag.Diagnostics
+	fieldsAttrValue := config.ToFieldsListValue(r.Configuration.Fields, planFields, &diags)
+	tablesAttrValue := config.ToTablesListValue(r.Configuration.Tables, planTables, &diags)
+	if diags.HasError() {
+		return diags
 	}
 
 	configurationAttrValue := map[string]attr.Value{
-		"fields": configFieldValue,
-		"tables": tableValue,
+		"fields": fieldsAttrValue,
+		"tables": tablesAttrValue,
 	}
-	state.Configuration, _ = types.ObjectValue(configurationAttrType, configurationAttrValue)
+	state.Configuration, diags = types.ObjectValue(configurationAttrType, configurationAttrValue)
+	if diags.HasError() {
+		return diags
+	}
 
 	// state.AttributeContract
 	attrContract := r.AttributeContract
@@ -638,6 +565,8 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 
 	// state.SequenceNumber
 	state.SequenceNumber = types.Int64PointerValue(r.SequenceNumber)
+
+	return diags
 }
 
 func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -693,7 +622,12 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 	// Read the response into the state
 	var state oauthAccessTokenManagerResourceModel
 
-	readOauthAccessTokenManagerResponse(ctx, oauthAccessTokenManagerResponse, &state, plan.Configuration)
+	diags = readOauthAccessTokenManagerResponse(ctx, oauthAccessTokenManagerResponse, &state, plan.Configuration)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -723,7 +657,11 @@ func (r *oauthAccessTokenManagerResource) Read(ctx context.Context, req resource
 	}
 
 	// Read the response into the state
-	readOauthAccessTokenManagerResponse(ctx, apiReadOauthAccessTokenManager, &state, state.Configuration)
+	diags = readOauthAccessTokenManagerResponse(ctx, apiReadOauthAccessTokenManager, &state, state.Configuration)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -781,7 +719,11 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 		diags.AddError("There was an issue retrieving the response of an OAuth Access Token Manager: %s", responseErr.Error())
 	}
 	// Read the response
-	readOauthAccessTokenManagerResponse(ctx, updateOauthAccessTokenManagerResponse, &state, state.Configuration)
+	diags = readOauthAccessTokenManagerResponse(ctx, updateOauthAccessTokenManagerResponse, &state, state.Configuration)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
