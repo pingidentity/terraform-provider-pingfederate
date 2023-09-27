@@ -7,13 +7,14 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -91,12 +92,12 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 				Description: "Plugin instance configuration.",
 				Required:    true,
 				Attributes: map[string]schema.Attribute{
-					"tables": schema.SetNestedAttribute{
+					"tables": schema.ListNestedAttribute{
 						Description: "List of configuration tables.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
+						PlanModifiers: []planmodifier.List{
+							listplanmodifier.UseStateForUnknown(),
 						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
@@ -104,12 +105,12 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 									Description: "The name of the table.",
 									Required:    true,
 								},
-								"rows": schema.SetNestedAttribute{
+								"rows": schema.ListNestedAttribute{
 									Description: "List of table rows.",
 									Optional:    true,
 									NestedObject: schema.NestedAttributeObject{
 										Attributes: map[string]schema.Attribute{
-											"fields": schema.SetNestedAttribute{
+											"fields": schema.ListNestedAttribute{
 												Description: "The configuration fields in the row.",
 												Computed:    true,
 												Optional:    true,
@@ -153,12 +154,12 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 							},
 						},
 					},
-					"fields": schema.SetNestedAttribute{
+					"fields": schema.ListNestedAttribute{
 						Description: "List of configuration fields.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
+						PlanModifiers: []planmodifier.List{
+							listplanmodifier.UseStateForUnknown(),
 						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
@@ -190,12 +191,12 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 					objectplanmodifier.UseStateForUnknown(),
 				},
 				Attributes: map[string]schema.Attribute{
-					"core_attributes": schema.SetNestedAttribute{
+					"core_attributes": schema.ListNestedAttribute{
 						Description: "A list of read-only attributes that are automatically populated by the password credential validator descriptor.",
 						Computed:    true,
 						Optional:    false,
-						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
+						PlanModifiers: []planmodifier.List{
+							listplanmodifier.UseStateForUnknown(),
 						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
@@ -210,12 +211,12 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 							},
 						},
 					},
-					"extended_attributes": schema.SetNestedAttribute{
+					"extended_attributes": schema.ListNestedAttribute{
 						Description: "A list of additional attributes that can be returned by the password credential validator. The extended attributes are only used if the adapter supports them.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
+						PlanModifiers: []planmodifier.List{
+							listplanmodifier.UseStateForUnknown(),
 						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
@@ -247,8 +248,8 @@ func (r *passwordCredentialValidatorsResource) ValidateConfig(ctx context.Contex
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
 
 	if internaltypes.IsDefined(model.AttributeContract) {
-		if len(model.AttributeContract.Attributes()["extended_attributes"].(types.Set).Elements()) == 0 {
-			resp.Diagnostics.AddError("Empty set!", "Please provide valid properties within extended_attributes. The set cannot be empty.\nIf no values are necessary, remove this property from your terraform file.")
+		if len(model.AttributeContract.Attributes()["extended_attributes"].(types.List).Elements()) == 0 {
+			resp.Diagnostics.AddError("Empty list!", "Please provide valid properties within extended_attributes. The list cannot be empty.\nIf no values are necessary, remove this property from your terraform file.")
 		}
 	}
 }
@@ -272,7 +273,7 @@ func addOptionalPasswordCredentialValidatorsFields(ctx context.Context, addReque
 		if err != nil {
 			return err
 		}
-		extendedAttrsLength := len(plan.AttributeContract.Attributes()["extended_attributes"].(types.Set).Elements())
+		extendedAttrsLength := len(plan.AttributeContract.Attributes()["extended_attributes"].(types.List).Elements())
 		if extendedAttrsLength == 0 {
 			addRequest.AttributeContract.ExtendedAttributes = nil
 		}
@@ -296,7 +297,7 @@ func (r *passwordCredentialValidatorsResource) Configure(_ context.Context, req 
 
 }
 
-func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.PasswordCredentialValidator, state *passwordCredentialValidatorsResourceModel, configurationFromPlan basetypes.ObjectValue) {
+func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.PasswordCredentialValidator, state *passwordCredentialValidatorsResourceModel, configurationFromPlan basetypes.ObjectValue) diag.Diagnostics {
 	state.Id = types.StringValue(r.Id)
 	state.CustomId = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
@@ -310,112 +311,33 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 	state.ParentRef = internaltypes.ToStateResourceLink(ctx, parentRef)
 
 	// state.Configuration
-	fieldAttrType := map[string]attr.Type{
-		"name":      basetypes.StringType{},
-		"value":     basetypes.StringType{},
-		"inherited": basetypes.BoolType{},
-	}
-
-	rowAttrType := map[string]attr.Type{
-		"fields":      basetypes.SetType{ElemType: basetypes.ObjectType{AttrTypes: fieldAttrType}},
-		"default_row": basetypes.BoolType{},
-	}
-
-	// configuration object
-	tableAttrType := map[string]attr.Type{
-		"name":      basetypes.StringType{},
-		"rows":      basetypes.SetType{ElemType: basetypes.ObjectType{AttrTypes: rowAttrType}},
-		"inherited": basetypes.BoolType{},
-	}
-
-	getClientConfig := r.Configuration
-	configFromPlanAttrs := configurationFromPlan.Attributes()
-	tables := []client.ConfigTable{}
-	tablesElems := getClientConfig.Tables
-	if len(tablesElems) != 0 {
-		for tei, tableElem := range tablesElems {
-			tableValue := client.ConfigTable{}
-			tableValue.Name = tableElem.Name
-			tableValue.Inherited = tableElem.Inherited
-			tableRows := tableElem.Rows
-			toStateTableRows := []client.ConfigRow{}
-			if configFromPlanAttrs["tables"] != nil {
-				tableIndex := configFromPlanAttrs["tables"].(types.Set).Elements()[tei].(types.Object).Attributes()
-				for tri, tr := range tableRows {
-					tableRow := client.ConfigRow{}
-					tableRow.DefaultRow = tr.DefaultRow
-					tableRowFields := tr.Fields
-					toStateTableRowFields := []client.ConfigField{}
-					tableRowIndex := tableIndex["rows"].(types.Set).Elements()[tri].(types.Object).Attributes()
-					tableRowPlanFields := tableRowIndex["fields"].(types.Set).Elements()
-					for _, trf := range tableRowFields {
-						for _, tableRowInPlan := range tableRowPlanFields {
-							tableRowField := client.ConfigField{}
-							nameFromPlan := tableRowInPlan.(types.Object).Attributes()["name"].(types.String).ValueString()
-							if trf.Name == nameFromPlan {
-								tableRowField.Name = trf.Name
-								tableRowFieldValueFromPlan := tableRowInPlan.(types.Object).Attributes()["value"].(types.String).ValueStringPointer()
-								if trf.Value == nil {
-									// Get plain-text value from plan for passwords
-									tableRowField.Value = tableRowFieldValueFromPlan
-								} else {
-									tableRowField.Value = trf.Value
-								}
-								tableRowField.Inherited = trf.Inherited
-								toStateTableRowFields = append(toStateTableRowFields, tableRowField)
-							} else {
-								continue
-							}
-						}
-					}
-					tableRow.Fields = toStateTableRowFields
-					toStateTableRows = append(toStateTableRows, tableRow)
-				}
-				tableValue.Rows = toStateTableRows
-				tables = append(tables, tableValue)
-			}
-		}
-	}
-	tableValue, _ := types.SetValueFrom(ctx, types.ObjectType{AttrTypes: tableAttrType}, tables)
-
-	fields := []client.ConfigField{}
-	fieldsElems := r.Configuration.Fields
-	if configFromPlanAttrs["fields"] != nil {
-		fieldsFromPlan := configFromPlanAttrs["fields"].(types.Set).Elements()
-		if len(fieldsElems) != 0 {
-			for _, cf := range fieldsElems {
-				for _, fieldInPlan := range fieldsFromPlan {
-					fieldValue := client.ConfigField{}
-					fieldNameFromPlan := fieldInPlan.(types.Object).Attributes()["name"].(types.String).ValueString()
-					if fieldNameFromPlan == cf.Name {
-						if cf.Value == nil {
-							// Get plain-text value from plan for passwords
-							fieldValue.Value = fieldInPlan.(types.Object).Attributes()["value"].(types.String).ValueStringPointer()
-						} else {
-							fieldValue.Value = cf.Value
-						}
-						fieldValue.Name = cf.Name
-						fieldValue.Inherited = cf.Inherited
-						fields = append(fields, fieldValue)
-					} else {
-						continue
-					}
-				}
-			}
-		}
-	}
-	configFieldValue, _ := types.SetValueFrom(ctx, types.ObjectType{AttrTypes: fieldAttrType}, fields)
-
 	configurationAttrType := map[string]attr.Type{
-		"fields": basetypes.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrType}},
-		"tables": basetypes.SetType{ElemType: types.ObjectType{AttrTypes: tableAttrType}},
+		"fields": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: FieldAttrTypes()}},
+		"tables": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: TableAttrTypes()}},
 	}
+
+	planFields := types.ListNull(types.ObjectType{AttrTypes: FieldAttrTypes()})
+	planTables := types.ListNull(types.ObjectType{AttrTypes: TableAttrTypes()})
+
+	planFieldsValue, ok := configurationFromPlan.Attributes()["fields"]
+	if ok {
+		planFields = planFieldsValue.(types.List)
+	}
+	planTablesValue, ok := configurationFromPlan.Attributes()["tables"]
+	if ok {
+		planTables = planTablesValue.(types.List)
+	}
+
+	var respDiags, diags diag.Diagnostics
+	fieldsAttrValue := ToFieldsListValue(r.Configuration.Fields, planFields, &diags)
+	tablesAttrValue := ToTablesListValue(r.Configuration.Tables, planTables, &diags)
 
 	configurationAttrValue := map[string]attr.Value{
-		"fields": configFieldValue,
-		"tables": tableValue,
+		"fields": fieldsAttrValue,
+		"tables": tablesAttrValue,
 	}
-	state.Configuration, _ = types.ObjectValue(configurationAttrType, configurationAttrValue)
+	state.Configuration, diags = types.ObjectValue(configurationAttrType, configurationAttrValue)
+	respDiags.Append(diags...)
 
 	// state.AttributeContract
 	attrContract := r.AttributeContract
@@ -432,7 +354,8 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 		coreAttribute.Name = ca.Name
 		coreAttrs = append(coreAttrs, coreAttribute)
 	}
-	attributeContractCoreAttributes, _ := types.SetValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
+	attributeContractCoreAttributes, diags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
+	respDiags.Append(diags...)
 
 	// state.AttributeContract extended_attributes
 	attributeContractClientExtendedAttributes := attrContract.ExtendedAttributes
@@ -442,11 +365,12 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 		extendedAttr.Name = ea.Name
 		extdAttrs = append(extdAttrs, extendedAttr)
 	}
-	attributeContractExtendedAttributes, _ := types.SetValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
+	attributeContractExtendedAttributes, diags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
+	respDiags.Append(diags...)
 
 	attributeContractTypes := map[string]attr.Type{
-		"core_attributes":     basetypes.SetType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
-		"extended_attributes": basetypes.SetType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
+		"core_attributes":     basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
+		"extended_attributes": basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
 		"inherited":           basetypes.BoolType{},
 	}
 
@@ -455,7 +379,10 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 		"extended_attributes": attributeContractExtendedAttributes,
 		"inherited":           types.BoolPointerValue(attrContract.Inherited),
 	}
-	state.AttributeContract, _ = types.ObjectValue(attributeContractTypes, attributeContractValues)
+	state.AttributeContract, diags = types.ObjectValue(attributeContractTypes, attributeContractValues)
+	respDiags.Append(diags...)
+
+	return respDiags
 }
 
 func (r *passwordCredentialValidatorsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -510,7 +437,8 @@ func (r *passwordCredentialValidatorsResource) Create(ctx context.Context, req r
 	// Read the response into the state
 	var state passwordCredentialValidatorsResourceModel
 
-	readPasswordCredentialValidatorsResponse(ctx, passwordCredentialValidatorsResponse, &state, plan.Configuration)
+	diags = readPasswordCredentialValidatorsResponse(ctx, passwordCredentialValidatorsResponse, &state, plan.Configuration)
+	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -540,7 +468,8 @@ func (r *passwordCredentialValidatorsResource) Read(ctx context.Context, req res
 	}
 
 	// Read the response into the state
-	readPasswordCredentialValidatorsResponse(ctx, apiReadPasswordCredentialValidators, &state, state.Configuration)
+	diags = readPasswordCredentialValidatorsResponse(ctx, apiReadPasswordCredentialValidators, &state, state.Configuration)
+	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -597,7 +526,8 @@ func (r *passwordCredentialValidatorsResource) Update(ctx context.Context, req r
 		diags.AddError("There was an issue retrieving the response of a Password Credential Validator: %s", responseErr.Error())
 	}
 	// Read the response
-	readPasswordCredentialValidatorsResponse(ctx, updatePasswordCredentialValidatorsResponse, &plan, plan.Configuration)
+	diags = readPasswordCredentialValidatorsResponse(ctx, updatePasswordCredentialValidatorsResponse, &plan, plan.Configuration)
+	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, plan)

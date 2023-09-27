@@ -474,21 +474,16 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 		planTables = planTablesValue.(types.List)
 	}
 
-	var diags diag.Diagnostics
+	var respDiags, diags diag.Diagnostics
 	fieldsAttrValue := config.ToFieldsListValue(r.Configuration.Fields, planFields, &diags)
 	tablesAttrValue := config.ToTablesListValue(r.Configuration.Tables, planTables, &diags)
-	if diags.HasError() {
-		return diags
-	}
 
 	configurationAttrValue := map[string]attr.Value{
 		"fields": fieldsAttrValue,
 		"tables": tablesAttrValue,
 	}
 	state.Configuration, diags = types.ObjectValue(configurationAttrType, configurationAttrValue)
-	if diags.HasError() {
-		return diags
-	}
+	respDiags.Append(diags...)
 
 	// state.AttributeContract
 	attrContract := r.AttributeContract
@@ -507,7 +502,8 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 		coreAttribute.MultiValued = ca.MultiValued
 		coreAttrs = append(coreAttrs, coreAttribute)
 	}
-	attributeContractCoreAttributes, _ := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
+	attributeContractCoreAttributes, diags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
+	respDiags.Append(diags...)
 
 	// state.AttributeContract extended_attributes
 	attributeContractClientExtendedAttributes := attrContract.ExtendedAttributes
@@ -518,7 +514,8 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 		extendedAttr.MultiValued = ea.MultiValued
 		extdAttrs = append(extdAttrs, extendedAttr)
 	}
-	attributeContractExtendedAttributes, _ := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
+	attributeContractExtendedAttributes, diags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
+	respDiags.Append(diags...)
 
 	attributeContractTypes := map[string]attr.Type{
 		"core_attributes":           basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
@@ -533,7 +530,8 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 		"inherited":                 types.BoolPointerValue(attrContract.Inherited),
 		"default_subject_attribute": types.StringPointerValue(attrContract.DefaultSubjectAttribute),
 	}
-	state.AttributeContract, _ = types.ObjectValue(attributeContractTypes, attributeContractValues)
+	state.AttributeContract, diags = types.ObjectValue(attributeContractTypes, attributeContractValues)
+	respDiags.Append(diags...)
 
 	// state.SelectionSettings
 	selectionSettingsAttrType := map[string]attr.Type{
@@ -541,7 +539,8 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 		"resource_uris": basetypes.ListType{ElemType: basetypes.StringType{}},
 	}
 
-	state.SelectionSettings, _ = types.ObjectValueFrom(ctx, selectionSettingsAttrType, r.SelectionSettings)
+	state.SelectionSettings, diags = types.ObjectValueFrom(ctx, selectionSettingsAttrType, r.SelectionSettings)
+	respDiags.Append(diags...)
 
 	// state.AccessControlSettings
 	accessControlSettingsAttrType := map[string]attr.Type{
@@ -550,7 +549,8 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 		"allowed_clients":  basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: internaltypes.ResourceLinkStateAttrType()}},
 	}
 
-	state.AccessControlSettings, _ = types.ObjectValueFrom(ctx, accessControlSettingsAttrType, r.AccessControlSettings)
+	state.AccessControlSettings, diags = types.ObjectValueFrom(ctx, accessControlSettingsAttrType, r.AccessControlSettings)
+	respDiags.Append(diags...)
 
 	// state.SessionValidationSettings
 	sessionValidationSettingsAttrType := map[string]attr.Type{
@@ -561,12 +561,13 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 		"update_authn_session_activity":   basetypes.BoolType{},
 	}
 
-	state.SessionValidationSettings, _ = types.ObjectValueFrom(ctx, sessionValidationSettingsAttrType, r.SessionValidationSettings)
+	state.SessionValidationSettings, diags = types.ObjectValueFrom(ctx, sessionValidationSettingsAttrType, r.SessionValidationSettings)
+	respDiags.Append(diags...)
 
 	// state.SequenceNumber
 	state.SequenceNumber = types.Int64PointerValue(r.SequenceNumber)
 
-	return diags
+	return respDiags
 }
 
 func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -649,6 +650,7 @@ func (r *oauthAccessTokenManagerResource) Read(ctx context.Context, req resource
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Manager", err, httpResp)
 		}
+		return
 	}
 	// Log response JSON
 	_, responseErr := apiReadOauthAccessTokenManager.MarshalJSON()
