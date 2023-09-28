@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client"
+	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
