@@ -22,4 +22,4 @@ Manages a SessionApplicationSessionPolicy.
 
 ### Read-Only
 
-- `id` (String) Placeholder name of this object required by Terraform.
+- `id` (String) The ID of this resource.

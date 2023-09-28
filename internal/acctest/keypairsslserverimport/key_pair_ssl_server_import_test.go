@@ -37,7 +37,7 @@ func TestAccKeyPairsSslServerImport(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
-			"pingfederate": providerserver.NewProtocol6WithError(provider.New()),
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
 		CheckDestroy: testAccCheckKeyPairsSslServerImportDestroy,
 		Steps: []resource.TestStep{
@@ -60,7 +60,7 @@ func TestAccKeyPairsSslServerImport(t *testing.T) {
 func testAccKeyPairsSslServerImport(resourceName string, resourceModel keyPairsSslServerImportResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_key_pair_ssl_server_import" "%[1]s" {
-  id        = "%[2]s"
+  custom_id = "%[2]s"
   file_data = "%[3]s"
   format    = "%[4]s"
   password  = "%[5]s"

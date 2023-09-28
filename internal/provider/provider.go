@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -16,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	client "github.com/pingidentity/pingfederate-go-client"
+	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/administrativeaccount"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi"
@@ -38,8 +39,17 @@ var (
 )
 
 // New is a helper function to simplify provider server and testing implementation.
-func New() provider.Provider {
-	return &pingfederateProvider{}
+func NewFactory(version string) func() provider.Provider {
+	return func() provider.Provider {
+		return &pingfederateProvider{
+			version: version,
+		}
+	}
+}
+
+// NewTestProvider is a helper function to simplify testing implementation.
+func NewTestProvider() provider.Provider {
+	return NewFactory("test")()
 }
 
 // PingFederate ProviderModel maps provider schema data to a Go type.
@@ -52,7 +62,9 @@ type pingfederateProviderModel struct {
 }
 
 // pingfederateProvider is the provider implementation.
-type pingfederateProvider struct{}
+type pingfederateProvider struct {
+	version string
+}
 
 // Metadata returns the provider type name.
 func (p *pingfederateProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -240,6 +252,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	}
 	httpClient := &http.Client{Transport: tr}
 	clientConfig.HTTPClient = httpClient
+	clientConfig.UserAgent = fmt.Sprintf("pingtools terraform-provider-pingfederate/%s go", p.version)
 	resourceConfig.ApiClient = client.NewAPIClient(clientConfig)
 	resp.ResourceData = resourceConfig
 

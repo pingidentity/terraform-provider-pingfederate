@@ -33,7 +33,11 @@ resource "pingfederate_oauth_issuer" "example" {
 
 ### Optional
 
-- `id` (String) The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
+- `custom_id` (String) The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 ## Import
 

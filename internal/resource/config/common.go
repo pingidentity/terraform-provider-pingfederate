@@ -1,6 +1,10 @@
 package config
 
 import (
+	"fmt"
+
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/float64planmodifier"
@@ -9,31 +13,47 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
+var (
+	fieldAttrTypes = map[string]attr.Type{
+		"name":      basetypes.StringType{},
+		"value":     basetypes.StringType{},
+		"inherited": basetypes.BoolType{},
+	}
+	rowAttrTypes = map[string]attr.Type{
+		"fields":      basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: fieldAttrTypes}},
+		"default_row": basetypes.BoolType{},
+	}
+	tableAttrTypes = map[string]attr.Type{
+		"name":      basetypes.StringType{},
+		"rows":      basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: rowAttrTypes}},
+		"inherited": basetypes.BoolType{},
+	}
+)
+
+func FieldAttrTypes() map[string]attr.Type {
+	return fieldAttrTypes
+}
+
+func TableAttrTypes() map[string]attr.Type {
+	return tableAttrTypes
+}
+
 // Get schema elements common to all resources
-func AddCommonSchema(s *schema.Schema, idRequired bool) {
-	// If ID is required (for instantiable config objects) then set it as Required and
-	// require replace when changing. Otherwise, mark it as Computed.
-	if idRequired {
-		s.Attributes["id"] = schema.StringAttribute{
-			Description: "The persistent, unique ID for the resource. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.",
-			Required:    true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.RequiresReplace(),
-			},
-		}
-	} else {
-		s.Attributes["id"] = schema.StringAttribute{
-			Description: "Placeholder name of this object required by Terraform.",
-			Computed:    true,
-			Required:    false,
-			Optional:    false,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
-		}
+func AddCommonSchema(s *schema.Schema) {
+	s.Attributes["id"] = schema.StringAttribute{
+		Description: "The ID of this resource.",
+		Computed:    true,
+		Required:    false,
+		Optional:    false,
+		PlanModifiers: []planmodifier.String{
+			stringplanmodifier.UseStateForUnknown(),
+		},
 	}
 }
 
@@ -106,4 +126,94 @@ func SetAllAttributesToOptionalAndComputed(s *schema.Schema, exemptAttributes []
 			}
 		}
 	}
+}
+
+func ToFieldsListValue(fields []client.ConfigField, planFields types.List, diags *diag.Diagnostics) types.List {
+	objValues := []attr.Value{}
+	planFieldsElements := planFields.Elements()
+	if len(planFieldsElements) > len(fields) {
+		diags.AddError("Plan fields length is greater than response fields length",
+			fmt.Sprintf("Plan fields: %d, response fields: %d", len(planFieldsElements), len(fields)))
+		return types.ListNull(types.ObjectType{AttrTypes: fieldAttrTypes})
+	}
+	for i := 0; i < len(planFieldsElements); i++ {
+		attrValues := map[string]attr.Value{}
+		attrValues["name"] = types.StringValue(fields[i].Name)
+		if fields[i].Value == nil {
+			// This must be an encrypted field. Use the value from the plan
+			planField := planFieldsElements[i].(types.Object)
+			planFieldValue := planField.Attributes()["value"].(types.String)
+			attrValues["value"] = types.StringValue(planFieldValue.ValueString())
+		} else {
+			attrValues["value"] = types.StringPointerValue(fields[i].Value)
+		}
+		attrValues["inherited"] = types.BoolPointerValue(fields[i].Inherited)
+		objVal, newDiags := types.ObjectValue(fieldAttrTypes, attrValues)
+		diags.Append(newDiags...)
+		objValues = append(objValues, objVal)
+	}
+	listVal, newDiags := types.ListValue(types.ObjectType{
+		AttrTypes: fieldAttrTypes,
+	}, objValues)
+	diags.Append(newDiags...)
+	return listVal
+}
+
+func ToRowsListValue(rows []client.ConfigRow, planRows types.List, diags *diag.Diagnostics) types.List {
+	objValues := []attr.Value{}
+	planRowsElements := planRows.Elements()
+	if len(planRowsElements) > len(rows) {
+		diags.AddError("Plan rows length is greater than response rows length",
+			fmt.Sprintf("Plan tables: %d, response tables: %d", len(planRowsElements), len(rows)))
+		return types.ListNull(types.ObjectType{AttrTypes: rowAttrTypes})
+	}
+	for i := 0; i < len(planRowsElements); i++ {
+		attrValues := map[string]attr.Value{}
+		attrValues["default_row"] = types.BoolPointerValue(rows[i].DefaultRow)
+		planRow := planRowsElements[i].(types.Object)
+		planRowFields := types.ListNull(types.ObjectType{AttrTypes: fieldAttrTypes})
+		planRowFieldsVal, ok := planRow.Attributes()["fields"]
+		if ok {
+			planRowFields = planRowFieldsVal.(types.List)
+		}
+		attrValues["fields"] = ToFieldsListValue(rows[i].Fields, planRowFields, diags)
+		rowObjVal, newDiags := types.ObjectValue(rowAttrTypes, attrValues)
+		diags.Append(newDiags...)
+		objValues = append(objValues, rowObjVal)
+	}
+	listVal, newDiags := types.ListValue(types.ObjectType{
+		AttrTypes: rowAttrTypes,
+	}, objValues)
+	diags.Append(newDiags...)
+	return listVal
+}
+
+func ToTablesListValue(tables []client.ConfigTable, planTables types.List, diags *diag.Diagnostics) types.List {
+	objValues := []attr.Value{}
+	planTablesElements := planTables.Elements()
+	if len(planTablesElements) > len(tables) {
+		diags.AddError("Plan tables length is greater than response tables length",
+			fmt.Sprintf("Plan tables: %d, response tables: %d", len(planTablesElements), len(tables)))
+		return types.ListNull(types.ObjectType{AttrTypes: rowAttrTypes})
+	}
+	for i := 0; i < len(planTablesElements); i++ {
+		attrValues := map[string]attr.Value{}
+		attrValues["inherited"] = types.BoolPointerValue(tables[i].Inherited)
+		attrValues["name"] = types.StringValue(tables[i].Name)
+		planTable := planTablesElements[i].(types.Object)
+		planTableRows := types.ListNull(types.ObjectType{AttrTypes: rowAttrTypes})
+		planTableRowsVal, ok := planTable.Attributes()["rows"]
+		if ok {
+			planTableRows = planTableRowsVal.(types.List)
+		}
+		attrValues["rows"] = ToRowsListValue(tables[i].Rows, planTableRows, diags)
+		tableObjValue, newDiags := types.ObjectValue(tableAttrTypes, attrValues)
+		diags.Append(newDiags...)
+		objValues = append(objValues, tableObjValue)
+	}
+	listVal, newDiags := types.ListValue(types.ObjectType{
+		AttrTypes: tableAttrTypes,
+	}, objValues)
+	diags.Append(newDiags...)
+	return listVal
 }

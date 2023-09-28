@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client"
+	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -36,16 +36,17 @@ type certificatesResource struct {
 
 type certificatesResourceModel struct {
 	Id             types.String `tfsdk:"id"`
+	CustomId       types.String `tfsdk:"custom_id"`
 	FileData       types.String `tfsdk:"file_data"`
 	CryptoProvider types.String `tfsdk:"crypto_provider"`
 }
 
 // GetSchema defines the schema for the resource.
 func (r *certificatesResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	schema := schema.Schema{
 		Description: "Manages CertificateCA Import.",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
+			"custom_id": schema.StringAttribute{
 				Description: "The persistent, unique ID for the certificate",
 				Optional:    true,
 				Computed:    true,
@@ -75,12 +76,15 @@ func (r *certificatesResource) Schema(ctx context.Context, req resource.SchemaRe
 			},
 		},
 	}
+
+	config.AddCommonSchema(&schema)
+	resp.Schema = schema
 }
 
 func addOptionalCaCertsFields(ctx context.Context, addRequest *client.X509File, plan certificatesResourceModel) error {
 	// Empty strings are treated as equivalent to null
-	if internaltypes.IsDefined(plan.Id) {
-		addRequest.Id = plan.Id.ValueStringPointer()
+	if internaltypes.IsDefined(plan.CustomId) {
+		addRequest.Id = plan.CustomId.ValueStringPointer()
 	}
 	if internaltypes.IsDefined(plan.CryptoProvider) {
 		addRequest.CryptoProvider = plan.CryptoProvider.ValueStringPointer()
@@ -116,6 +120,7 @@ func (r *certificatesResource) ValidateConfig(ctx context.Context, req resource.
 
 func readCertificateResponse(ctx context.Context, r *client.CertView, state *certificatesResourceModel, expectedValues *certificatesResourceModel, diagnostics *diag.Diagnostics, createPlan types.String) {
 	X509FileData := createPlan
+	state.CustomId = internaltypes.StringTypeOrNil(r.Id, false)
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
 	state.CryptoProvider = internaltypes.StringTypeOrNil(r.CryptoProvider, false)
 	state.FileData = types.StringValue(X509FileData.ValueString())
@@ -167,7 +172,7 @@ func (r *certificatesResource) Read(ctx context.Context, req resource.ReadReques
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadCertificate, httpResp, err := r.apiClient.CertificatesCaApi.GetTrustedCert(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadCertificate, httpResp, err := r.apiClient.CertificatesCaApi.GetTrustedCert(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while looking for a Certificate", err, httpResp)
@@ -204,7 +209,7 @@ func (r *certificatesResource) Delete(ctx context.Context, req resource.DeleteRe
 		return
 	}
 
-	httpResp, err := r.apiClient.CertificatesCaApi.DeleteTrustedCA(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	httpResp, err := r.apiClient.CertificatesCaApi.DeleteTrustedCA(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a CA Certificate", err, httpResp)
 		return
@@ -212,5 +217,5 @@ func (r *certificatesResource) Delete(ctx context.Context, req resource.DeleteRe
 }
 
 func (r *certificatesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("custom_id"), req, resp)
 }

@@ -43,7 +43,7 @@ func TestAccRadiusPasswordCredentialValidators(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
-			"pingfederate": providerserver.NewProtocol6WithError(provider.New()),
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
 		CheckDestroy: testAccCheckRadiusPasswordCredentialValidatorsDestroy,
 		Steps: []resource.TestStep{
@@ -71,8 +71,8 @@ func TestAccRadiusPasswordCredentialValidators(t *testing.T) {
 func testAccRadiusPasswordCredentialValidators(resourceName string, resourceModel radiusPasswordCredentialValidatorsResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_password_credential_validator" "%[1]s" {
-  id   = "%[2]s"
-  name = "%[3]s"
+  custom_id = "%[2]s"
+  name      = "%[3]s"
   plugin_descriptor_ref = {
     id = "org.sourceid.saml20.domain.RadiusUsernamePasswordCredentialValidator"
   }

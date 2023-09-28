@@ -31,7 +31,7 @@ func TestAccCertificate(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
-			"pingfederate": providerserver.NewProtocol6WithError(provider.New()),
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
 		CheckDestroy: testAccCheckCertificateDestroy,
 		Steps: []resource.TestStep{
@@ -54,7 +54,7 @@ func TestAccCertificate(t *testing.T) {
 func testAccCertificate(resourceName string, resourceModel certificatesResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_certificate_ca" "%[1]s" {
-  id        = "%[2]s"
+  custom_id = "%[2]s"
   file_data = "%[3]s"
 }`, resourceName,
 		resourceModel.id,
