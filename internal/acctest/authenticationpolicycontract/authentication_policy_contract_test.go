@@ -41,7 +41,7 @@ func TestAccAuthenticationPolicyContracts(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
-			"pingfederate": providerserver.NewProtocol6WithError(provider.New()),
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
 		CheckDestroy: testAccCheckAuthenticationPolicyContractsDestroy,
 		Steps: []resource.TestStep{
@@ -69,7 +69,7 @@ func TestAccAuthenticationPolicyContracts(t *testing.T) {
 func testAccAuthenticationPolicyContracts(resourceName string, resourceModel authenticationPolicyContractsResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_policy_contract" "%[1]s" {
-  id                  = "%[2]s"
+  custom_id           = "%[2]s"
   core_attributes     = %[3]s
   extended_attributes = %[4]s
   name                = "%[5]s"

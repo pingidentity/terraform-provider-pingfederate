@@ -42,7 +42,7 @@ func TestAccOauthIssuer(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
-			"pingfederate": providerserver.NewProtocol6WithError(provider.New()),
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
 		Steps: []resource.TestStep{
 			{
@@ -69,7 +69,7 @@ func TestAccOauthIssuer(t *testing.T) {
 func testAccOauthIssuer(resourceName string, resourceModel oauthIssuerResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_issuer" "%[1]s" {
-  id          = "%[2]s"
+  custom_id   = "%[2]s"
   description = "%[3]s"
   host        = "%[4]s"
   name        = "%[5]s"

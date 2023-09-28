@@ -41,7 +41,7 @@ resource "pingfederate_server_settings_system_keys" "serverSettingsSystemKeysExa
 
 ### Read-Only
 
-- `id` (String) The ID of this resource
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--current"></a>
 ### Nested Schema for `current`

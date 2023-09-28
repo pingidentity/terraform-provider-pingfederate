@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -19,7 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client"
+	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -45,6 +46,7 @@ type oauthAccessTokenManagerResource struct {
 
 type oauthAccessTokenManagerResourceModel struct {
 	Id                        types.String `tfsdk:"id"`
+	CustomId                  types.String `tfsdk:"custom_id"`
 	Name                      types.String `tfsdk:"name"`
 	PluginDescriptorRef       types.Object `tfsdk:"plugin_descriptor_ref"`
 	ParentRef                 types.Object `tfsdk:"parent_ref"`
@@ -62,10 +64,10 @@ func (r *oauthAccessTokenManagerResource) Schema(ctx context.Context, req resour
 }
 
 func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
-	resp.Schema = schema.Schema{
+	schema := schema.Schema{
 		Description: "Manages OAuth Access Token Manager",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
+			"custom_id": schema.StringAttribute{
 				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
@@ -352,6 +354,9 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 			},
 		},
 	}
+
+	config.AddCommonSchema(&schema)
+	resp.Schema = schema
 }
 
 func (r *oauthAccessTokenManagerResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
@@ -438,8 +443,9 @@ func (r *oauthAccessTokenManagerResource) Configure(_ context.Context, req resou
 
 }
 
-func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagerResourceModel, configurationFromPlan basetypes.ObjectValue) {
+func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagerResourceModel, configurationFromPlan basetypes.ObjectValue) diag.Diagnostics {
 	state.Id = types.StringValue(r.Id)
+	state.CustomId = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
 
 	// state.pluginDescriptorRef
@@ -451,142 +457,39 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 	state.ParentRef = internaltypes.ToStateResourceLink(ctx, parentRef)
 
 	// state.Configuration
-	fieldAttrType := map[string]attr.Type{
-		"name":      basetypes.StringType{},
-		"value":     basetypes.StringType{},
-		"inherited": basetypes.BoolType{},
-	}
-
-	rowAttrType := map[string]attr.Type{
-		"fields":      basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: fieldAttrType}},
-		"default_row": basetypes.BoolType{},
-	}
-
-	// configuration object
-	tableAttrType := map[string]attr.Type{
-		"name":      basetypes.StringType{},
-		"rows":      basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: rowAttrType}},
-		"inherited": basetypes.BoolType{},
-	}
-
-	getClientConfig := r.Configuration
-	configFromPlanAttrs := configurationFromPlan.Attributes()
-	tables := []client.ConfigTable{}
-	tablesElems := getClientConfig.Tables
-	if len(tablesElems) != 0 {
-		for tei, tableElem := range tablesElems {
-			tableValue := client.ConfigTable{}
-			tableValue.Name = tableElem.Name
-			tableValue.Inherited = tableElem.Inherited
-			tableRows := tableElem.Rows
-			toStateTableRows := []client.ConfigRow{}
-			if configFromPlanAttrs["tables"] != nil {
-				tableIndex := configFromPlanAttrs["tables"].(types.List).Elements()[tei].(types.Object).Attributes()
-				for tri, tr := range tableRows {
-					tableRow := client.ConfigRow{}
-					tableRow.DefaultRow = tr.DefaultRow
-					tableRowFields := tr.Fields
-					toStateTableRowFields := []client.ConfigField{}
-					tableRowIndex := tableIndex["rows"].(types.List).Elements()[tri].(types.Object).Attributes()
-					tableRowPlanFields := tableRowIndex["fields"].(types.List).Elements()
-					for _, trf := range tableRowFields {
-						for _, tableRowInPlan := range tableRowPlanFields {
-							tableRowField := client.ConfigField{}
-							nameFromPlan := tableRowInPlan.(types.Object).Attributes()["name"].(types.String).ValueString()
-							if trf.Name == nameFromPlan {
-								tableRowField.Name = trf.Name
-								tableRowFieldValueFromPlan := tableRowInPlan.(types.Object).Attributes()["value"].(types.String).ValueStringPointer()
-								if trf.Value == nil {
-									// Get plain-text value from plan for passwords
-									tableRowField.Value = tableRowFieldValueFromPlan
-								} else {
-									tableRowField.Value = trf.Value
-								}
-								tableRowField.Inherited = trf.Inherited
-								toStateTableRowFields = append(toStateTableRowFields, tableRowField)
-							} else {
-								continue
-							}
-						}
-					}
-					tableRow.Fields = toStateTableRowFields
-					toStateTableRows = append(toStateTableRows, tableRow)
-				}
-				tableValue.Rows = toStateTableRows
-				tables = append(tables, tableValue)
-			}
-		}
-	}
-	tableValue, _ := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: tableAttrType}, tables)
-
-	fields := []client.ConfigField{}
-	fieldsElems := r.Configuration.Fields
-	if configFromPlanAttrs["fields"] != nil {
-		fieldsFromPlan := configFromPlanAttrs["fields"].(types.List).Elements()
-		if len(fieldsElems) != 0 {
-			for _, cf := range fieldsElems {
-				for _, fieldInPlan := range fieldsFromPlan {
-					fieldValue := client.ConfigField{}
-					fieldNameFromPlan := fieldInPlan.(types.Object).Attributes()["name"].(types.String).ValueString()
-					if fieldNameFromPlan == cf.Name {
-						if cf.Value == nil {
-							// Get plain-text value from plan for passwords
-							fieldValue.Value = fieldInPlan.(types.Object).Attributes()["value"].(types.String).ValueStringPointer()
-						} else {
-							fieldValue.Value = cf.Value
-						}
-						fieldValue.Name = cf.Name
-						fieldValue.Inherited = cf.Inherited
-						fields = append(fields, fieldValue)
-					} else {
-						continue
-					}
-				}
-			}
-		}
-	}
-	configFieldValue, _ := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: fieldAttrType}, fields)
-
 	configurationAttrType := map[string]attr.Type{
-		"fields": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: fieldAttrType}},
-		"tables": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: tableAttrType}},
+		"fields": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.FieldAttrTypes()}},
+		"tables": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.TableAttrTypes()}},
 	}
+
+	planFields := types.ListNull(types.ObjectType{AttrTypes: config.FieldAttrTypes()})
+	planTables := types.ListNull(types.ObjectType{AttrTypes: config.TableAttrTypes()})
+
+	planFieldsValue, ok := configurationFromPlan.Attributes()["fields"]
+	if ok {
+		planFields = planFieldsValue.(types.List)
+	}
+	planTablesValue, ok := configurationFromPlan.Attributes()["tables"]
+	if ok {
+		planTables = planTablesValue.(types.List)
+	}
+
+	var respDiags, diags diag.Diagnostics
+	fieldsAttrValue := config.ToFieldsListValue(r.Configuration.Fields, planFields, &diags)
+	tablesAttrValue := config.ToTablesListValue(r.Configuration.Tables, planTables, &diags)
 
 	configurationAttrValue := map[string]attr.Value{
-		"fields": configFieldValue,
-		"tables": tableValue,
+		"fields": fieldsAttrValue,
+		"tables": tablesAttrValue,
 	}
-	state.Configuration, _ = types.ObjectValue(configurationAttrType, configurationAttrValue)
+	state.Configuration, diags = types.ObjectValue(configurationAttrType, configurationAttrValue)
+	respDiags.Append(diags...)
 
 	// state.AttributeContract
-	attrContract := r.AttributeContract
-
 	attrType := map[string]attr.Type{
 		"name":         basetypes.StringType{},
 		"multi_valued": basetypes.BoolType{},
 	}
-
-	// state.AttributeContract core_attributes
-	attributeContractClientCoreAttributes := attrContract.CoreAttributes
-	coreAttrs := []client.AccessTokenAttribute{}
-	for _, ca := range attributeContractClientCoreAttributes {
-		coreAttribute := client.AccessTokenAttribute{}
-		coreAttribute.Name = ca.Name
-		coreAttribute.MultiValued = ca.MultiValued
-		coreAttrs = append(coreAttrs, coreAttribute)
-	}
-	attributeContractCoreAttributes, _ := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
-
-	// state.AttributeContract extended_attributes
-	attributeContractClientExtendedAttributes := attrContract.ExtendedAttributes
-	extdAttrs := []client.AccessTokenAttribute{}
-	for _, ea := range attributeContractClientExtendedAttributes {
-		extendedAttr := client.AccessTokenAttribute{}
-		extendedAttr.Name = ea.Name
-		extendedAttr.MultiValued = ea.MultiValued
-		extdAttrs = append(extdAttrs, extendedAttr)
-	}
-	attributeContractExtendedAttributes, _ := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
 
 	attributeContractTypes := map[string]attr.Type{
 		"core_attributes":           basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
@@ -595,13 +498,44 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 		"default_subject_attribute": basetypes.StringType{},
 	}
 
-	attributeContractValues := map[string]attr.Value{
-		"core_attributes":           attributeContractCoreAttributes,
-		"extended_attributes":       attributeContractExtendedAttributes,
-		"inherited":                 types.BoolPointerValue(attrContract.Inherited),
-		"default_subject_attribute": types.StringPointerValue(attrContract.DefaultSubjectAttribute),
+	if r.AttributeContract == nil {
+		state.AttributeContract = types.ObjectNull(attributeContractTypes)
+	} else {
+		attrContract := r.AttributeContract
+
+		// state.AttributeContract core_attributes
+		attributeContractClientCoreAttributes := attrContract.CoreAttributes
+		coreAttrs := []client.AccessTokenAttribute{}
+		for _, ca := range attributeContractClientCoreAttributes {
+			coreAttribute := client.AccessTokenAttribute{}
+			coreAttribute.Name = ca.Name
+			coreAttribute.MultiValued = ca.MultiValued
+			coreAttrs = append(coreAttrs, coreAttribute)
+		}
+		attributeContractCoreAttributes, diags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
+		respDiags.Append(diags...)
+
+		// state.AttributeContract extended_attributes
+		attributeContractClientExtendedAttributes := attrContract.ExtendedAttributes
+		extdAttrs := []client.AccessTokenAttribute{}
+		for _, ea := range attributeContractClientExtendedAttributes {
+			extendedAttr := client.AccessTokenAttribute{}
+			extendedAttr.Name = ea.Name
+			extendedAttr.MultiValued = ea.MultiValued
+			extdAttrs = append(extdAttrs, extendedAttr)
+		}
+		attributeContractExtendedAttributes, diags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
+		respDiags.Append(diags...)
+
+		attributeContractValues := map[string]attr.Value{
+			"core_attributes":           attributeContractCoreAttributes,
+			"extended_attributes":       attributeContractExtendedAttributes,
+			"inherited":                 types.BoolPointerValue(attrContract.Inherited),
+			"default_subject_attribute": types.StringPointerValue(attrContract.DefaultSubjectAttribute),
+		}
+		state.AttributeContract, diags = types.ObjectValue(attributeContractTypes, attributeContractValues)
+		respDiags.Append(diags...)
 	}
-	state.AttributeContract, _ = types.ObjectValue(attributeContractTypes, attributeContractValues)
 
 	// state.SelectionSettings
 	selectionSettingsAttrType := map[string]attr.Type{
@@ -609,7 +543,12 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 		"resource_uris": basetypes.ListType{ElemType: basetypes.StringType{}},
 	}
 
-	state.SelectionSettings, _ = types.ObjectValueFrom(ctx, selectionSettingsAttrType, r.SelectionSettings)
+	if r.SelectionSettings == nil {
+		state.SelectionSettings = types.ObjectNull(selectionSettingsAttrType)
+	} else {
+		state.SelectionSettings, diags = types.ObjectValueFrom(ctx, selectionSettingsAttrType, r.SelectionSettings)
+		respDiags.Append(diags...)
+	}
 
 	// state.AccessControlSettings
 	accessControlSettingsAttrType := map[string]attr.Type{
@@ -618,7 +557,12 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 		"allowed_clients":  basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: internaltypes.ResourceLinkStateAttrType()}},
 	}
 
-	state.AccessControlSettings, _ = types.ObjectValueFrom(ctx, accessControlSettingsAttrType, r.AccessControlSettings)
+	if r.AccessControlSettings == nil {
+		state.AccessControlSettings = types.ObjectNull(accessControlSettingsAttrType)
+	} else {
+		state.AccessControlSettings, diags = types.ObjectValueFrom(ctx, accessControlSettingsAttrType, r.AccessControlSettings)
+		respDiags.Append(diags...)
+	}
 
 	// state.SessionValidationSettings
 	sessionValidationSettingsAttrType := map[string]attr.Type{
@@ -629,10 +573,17 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 		"update_authn_session_activity":   basetypes.BoolType{},
 	}
 
-	state.SessionValidationSettings, _ = types.ObjectValueFrom(ctx, sessionValidationSettingsAttrType, r.SessionValidationSettings)
+	if r.SessionValidationSettings == nil {
+		state.SessionValidationSettings = types.ObjectNull(sessionValidationSettingsAttrType)
+	} else {
+		state.SessionValidationSettings, diags = types.ObjectValueFrom(ctx, sessionValidationSettingsAttrType, r.SessionValidationSettings)
+		respDiags.Append(diags...)
+	}
 
 	// state.SequenceNumber
 	state.SequenceNumber = types.Int64PointerValue(r.SequenceNumber)
+
+	return respDiags
 }
 
 func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -662,7 +613,7 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 		return
 	}
 
-	createOauthAccessTokenManager := client.NewAccessTokenManager(plan.Id.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
+	createOauthAccessTokenManager := client.NewAccessTokenManager(plan.CustomId.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
 	err := addOptionalOauthAccessTokenManagerFields(ctx, createOauthAccessTokenManager, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Manager", err.Error())
@@ -688,7 +639,12 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 	// Read the response into the state
 	var state oauthAccessTokenManagerResourceModel
 
-	readOauthAccessTokenManagerResponse(ctx, oauthAccessTokenManagerResponse, &state, plan.Configuration)
+	diags = readOauthAccessTokenManagerResponse(ctx, oauthAccessTokenManagerResponse, &state, plan.Configuration)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -701,7 +657,7 @@ func (r *oauthAccessTokenManagerResource) Read(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthAccessTokenManager, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.GetTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadOauthAccessTokenManager, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.GetTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -710,6 +666,7 @@ func (r *oauthAccessTokenManagerResource) Read(ctx context.Context, req resource
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Manager", err, httpResp)
 		}
+		return
 	}
 	// Log response JSON
 	_, responseErr := apiReadOauthAccessTokenManager.MarshalJSON()
@@ -718,7 +675,11 @@ func (r *oauthAccessTokenManagerResource) Read(ctx context.Context, req resource
 	}
 
 	// Read the response into the state
-	readOauthAccessTokenManagerResponse(ctx, apiReadOauthAccessTokenManager, &state, state.Configuration)
+	diags = readOauthAccessTokenManagerResponse(ctx, apiReadOauthAccessTokenManager, &state, state.Configuration)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -753,8 +714,8 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 	}
 
 	// Get the current state to see how any attributes are changing
-	updateOauthAccessTokenManager := r.apiClient.OauthAccessTokenManagersApi.UpdateTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString())
-	createUpdateRequest := client.NewAccessTokenManager(state.Id.ValueString(), state.Name.ValueString(), *pluginDescRefResLink, *configuration)
+	updateOauthAccessTokenManager := r.apiClient.OauthAccessTokenManagersApi.UpdateTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString())
+	createUpdateRequest := client.NewAccessTokenManager(state.CustomId.ValueString(), state.Name.ValueString(), *pluginDescRefResLink, *configuration)
 	err := addOptionalOauthAccessTokenManagerFields(ctx, createUpdateRequest, state)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Manager", err.Error())
@@ -776,7 +737,11 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 		diags.AddError("There was an issue retrieving the response of an OAuth Access Token Manager: %s", responseErr.Error())
 	}
 	// Read the response
-	readOauthAccessTokenManagerResponse(ctx, updateOauthAccessTokenManagerResponse, &state, state.Configuration)
+	diags = readOauthAccessTokenManagerResponse(ctx, updateOauthAccessTokenManagerResponse, &state, state.Configuration)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
@@ -791,7 +756,7 @@ func (r *oauthAccessTokenManagerResource) Delete(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.OauthAccessTokenManagersApi.DeleteTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	httpResp, err := r.apiClient.OauthAccessTokenManagersApi.DeleteTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Access Token Manager", err, httpResp)
 		return
@@ -800,5 +765,5 @@ func (r *oauthAccessTokenManagerResource) Delete(ctx context.Context, req resour
 
 func (r *oauthAccessTokenManagerResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("custom_id"), req, resp)
 }

@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client"
+	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -43,6 +43,7 @@ type localIdentityIdentityProfilesResource struct {
 
 type localIdentityIdentityProfilesResourceModel struct {
 	Id                      types.String `tfsdk:"id"`
+	CustomId                types.String `tfsdk:"custom_id"`
 	Name                    types.String `tfsdk:"name"`
 	ApcId                   types.Object `tfsdk:"apc_id"`
 	AuthSources             types.Set    `tfsdk:"auth_sources"`
@@ -58,10 +59,10 @@ type localIdentityIdentityProfilesResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	schema := schema.Schema{
 		Description: "Manages Local Identity Identity Profiles",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
+			"custom_id": schema.StringAttribute{
 				Description: "The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
 				Optional:    true,
 				Computed:    true,
@@ -453,12 +454,15 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 			},
 		},
 	}
+
+	config.AddCommonSchema(&schema)
+	resp.Schema = schema
 }
 
 func addOptionalLocalIdentityIdentityProfilesFields(ctx context.Context, addRequest *client.LocalIdentityProfile, plan localIdentityIdentityProfilesResourceModel) error {
 
-	if internaltypes.IsDefined(plan.Id) {
-		addRequest.Id = plan.Id.ValueStringPointer()
+	if internaltypes.IsDefined(plan.CustomId) {
+		addRequest.Id = plan.CustomId.ValueStringPointer()
 	}
 
 	if internaltypes.IsDefined(plan.Name) {
@@ -652,6 +656,7 @@ func (r *localIdentityIdentityProfilesResource) ValidateConfig(ctx context.Conte
 
 func readLocalIdentityIdentityProfilesResponse(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfilesResourceModel, diags *diag.Diagnostics) {
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
+	state.CustomId = internaltypes.StringTypeOrNil(r.Id, false)
 	state.Name = types.StringValue(r.Name)
 	state.ApcId = internaltypes.ToStateResourceLink(ctx, r.GetApcId())
 
@@ -819,7 +824,7 @@ func (r *localIdentityIdentityProfilesResource) Read(ctx context.Context, req re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadLocalIdentityIdentityProfiles, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesApi.GetIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadLocalIdentityIdentityProfiles, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesApi.GetIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 	if err != nil {
 		if httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Local Identity Profile", err, httpResp)
@@ -852,7 +857,7 @@ func (r *localIdentityIdentityProfilesResource) Update(ctx context.Context, req 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	updateLocalIdentityIdentityProfiles := r.apiClient.LocalIdentityIdentityProfilesApi.UpdateIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Id.ValueString())
+	updateLocalIdentityIdentityProfiles := r.apiClient.LocalIdentityIdentityProfilesApi.UpdateIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.CustomId.ValueString())
 	apcId := plan.ApcId.Attributes()["id"].(types.String).ValueString()
 	apcResourceLink := client.NewResourceLink(apcId)
 	createUpdateRequest := client.NewLocalIdentityProfile(plan.Name.ValueString(), *apcResourceLink)
@@ -892,7 +897,7 @@ func (r *localIdentityIdentityProfilesResource) Delete(ctx context.Context, req 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.LocalIdentityIdentityProfilesApi.DeleteIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	httpResp, err := r.apiClient.LocalIdentityIdentityProfilesApi.DeleteIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting Local Identity Profile", err, httpResp)
 	}
@@ -901,5 +906,5 @@ func (r *localIdentityIdentityProfilesResource) Delete(ctx context.Context, req 
 func (r *localIdentityIdentityProfilesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// The real attributes will be imported when terraform performs a read after the import.
 	// If no value is set here, Terraform will error out when importing.
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("custom_id"), req, resp)
 }

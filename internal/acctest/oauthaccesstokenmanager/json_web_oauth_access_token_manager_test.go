@@ -53,7 +53,7 @@ func TestAccJsonWebTokenOauthAccessTokenManager(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
-			"pingfederate": providerserver.NewProtocol6WithError(provider.New()),
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
 		CheckDestroy: testAccCheckJsonWebOauthAccessTokenManagerDestroy,
 		Steps: []resource.TestStep{
@@ -81,8 +81,8 @@ func TestAccJsonWebTokenOauthAccessTokenManager(t *testing.T) {
 func testAccJsonWebOauthAccessTokenManager(resourceName string, resourceModel jsonWebTokenOauthAccessTokenManagerResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_access_token_manager" "%[1]s" {
-  id   = "%[2]s"
-  name = "%[3]s"
+  custom_id = "%[2]s"
+  name      = "%[3]s"
   plugin_descriptor_ref = {
     id = "com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin"
   }
