@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client"
+	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 )
 
 func ToRequestResourceLink(con context.Context, planObj basetypes.ObjectValue) *client.ResourceLink {
