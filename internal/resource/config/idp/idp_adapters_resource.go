@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	client "github.com/pingidentity/pingfederate-go-client"
+	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -544,6 +544,8 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 	}
 
 	if r.AttributeMapping != nil {
+		//TODO manually converting this stuff
+
 		state.AttributeMapping, objectValueFromDiags = types.ObjectValueFrom(ctx, attributeMappingAttrTypes, r.AttributeMapping)
 		diags.Append(objectValueFromDiags...)
 	}
