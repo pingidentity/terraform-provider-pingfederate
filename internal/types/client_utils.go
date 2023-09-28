@@ -38,3 +38,7 @@ func ToStateResourceLink(ctx context.Context, r *client.ResourceLink, diags *dia
 	diags.Append(objectValueFromDiags...)
 	return linkObjectValue
 }
+
+func ResourceLinkStateAttrType() map[string]attr.Type {
+	return resourceLinkAttrTypes
+}
