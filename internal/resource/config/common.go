@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	datasourceschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -45,27 +46,24 @@ func TableAttrTypes() map[string]attr.Type {
 }
 
 // Get schema elements common to all resources
-func AddCommonSchema(s *schema.Schema, idRequired bool) {
-	// If ID is required (for instantiable config objects) then set it as Required and
-	// require replace when changing. Otherwise, mark it as Computed.
-	if idRequired {
-		s.Attributes["id"] = schema.StringAttribute{
-			Description: "The persistent, unique ID for the resource. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.",
-			Required:    true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.RequiresReplace(),
-			},
-		}
-	} else {
-		s.Attributes["id"] = schema.StringAttribute{
-			Description: "Placeholder name of this object required by Terraform.",
-			Computed:    true,
-			Required:    false,
-			Optional:    false,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
-		}
+func AddCommonSchema(s *schema.Schema) {
+	s.Attributes["id"] = schema.StringAttribute{
+		Description: "The ID of this resource.",
+		Computed:    true,
+		Required:    false,
+		Optional:    false,
+		PlanModifiers: []planmodifier.String{
+			stringplanmodifier.UseStateForUnknown(),
+		},
+	}
+}
+
+func AddCommonDataSourceSchema(s *datasourceschema.Schema) {
+	s.Attributes["id"] = datasourceschema.StringAttribute{
+		Description: "The ID of this resource.",
+		Computed:    true,
+		Required:    false,
+		Optional:    false,
 	}
 }
 
