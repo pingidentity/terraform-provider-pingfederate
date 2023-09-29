@@ -154,9 +154,9 @@ func (r *keyPairsSigningImportResource) Create(ctx context.Context, req resource
 		diags.AddError("There was an issue retrieving the request of the KeyPair Signing Import: %s", requestErr.Error())
 	}
 
-	apiCreateKeyPairsSigningImport := r.apiClient.KeyPairsSigningApi.ImportSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateKeyPairsSigningImport := r.apiClient.KeyPairsSigningAPI.ImportSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateKeyPairsSigningImport = apiCreateKeyPairsSigningImport.Body(*createKeyPairsSigningImport)
-	keyPairsSigningImportResponse, httpResp, err := r.apiClient.KeyPairsSigningApi.ImportSigningKeyPairExecute(apiCreateKeyPairsSigningImport)
+	keyPairsSigningImportResponse, httpResp, err := r.apiClient.KeyPairsSigningAPI.ImportSigningKeyPairExecute(apiCreateKeyPairsSigningImport)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the KeyPair Signing Import", err, httpResp)
 		return
@@ -184,7 +184,7 @@ func (r *keyPairsSigningImportResource) Read(ctx context.Context, req resource.R
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadKeyPairsSigningImport, httpResp, err := r.apiClient.KeyPairsSigningApi.GetSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	apiReadKeyPairsSigningImport, httpResp, err := r.apiClient.KeyPairsSigningAPI.GetSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPair Signing Import", err, httpResp)
@@ -224,7 +224,7 @@ func (r *keyPairsSigningImportResource) Delete(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.KeyPairsSigningApi.DeleteSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	httpResp, err := r.apiClient.KeyPairsSigningAPI.DeleteSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a KeyPair Signing Import", err, httpResp)
 		return

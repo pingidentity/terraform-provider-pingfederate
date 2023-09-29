@@ -995,9 +995,9 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 		tflog.Debug(ctx, "Add request: "+string(requestJson))
 	}
 
-	apiCreateIdpAdapter := r.apiClient.IdpAdaptersApi.CreateIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateIdpAdapter := r.apiClient.IdpAdaptersAPI.CreateIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateIdpAdapter = apiCreateIdpAdapter.Body(*createIdpAdapter)
-	idpAdapterResponse, httpResp, err := r.apiClient.IdpAdaptersApi.CreateIdpAdapterExecute(apiCreateIdpAdapter)
+	idpAdapterResponse, httpResp, err := r.apiClient.IdpAdaptersAPI.CreateIdpAdapterExecute(apiCreateIdpAdapter)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the IdpAdapter", err, httpResp)
 		return
@@ -1023,7 +1023,7 @@ func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadIdpAdapter, httpResp, err := r.apiClient.IdpAdaptersApi.GetIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadIdpAdapter, httpResp, err := r.apiClient.IdpAdaptersAPI.GetIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for an IdpAdapter", err, httpResp)
@@ -1055,7 +1055,7 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	// Get the current state to see how any attributes are changing
-	updateIdpAdapter := r.apiClient.IdpAdaptersApi.UpdateIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Id.ValueString())
+	updateIdpAdapter := r.apiClient.IdpAdaptersAPI.UpdateIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Id.ValueString())
 
 	var pluginDescriptorRef client.ResourceLink
 	err := json.Unmarshal([]byte(internaljson.FromValue(plan.PluginDescriptorRef, false)), &pluginDescriptorRef)
@@ -1083,7 +1083,7 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 		tflog.Debug(ctx, "Update request: "+string(requestJson))
 	}
 	updateIdpAdapter = updateIdpAdapter.Body(*createUpdateRequest)
-	updateIdpAdapterResponse, httpResp, err := r.apiClient.IdpAdaptersApi.UpdateIdpAdapterExecute(updateIdpAdapter)
+	updateIdpAdapterResponse, httpResp, err := r.apiClient.IdpAdaptersAPI.UpdateIdpAdapterExecute(updateIdpAdapter)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating IdpAdapter", err, httpResp)
 		return

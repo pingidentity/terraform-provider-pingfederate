@@ -210,9 +210,9 @@ func (r *authenticationPolicyContractsResource) Create(ctx context.Context, req 
 		diags.AddError("There was an issue retrieving the request of an Authentication Policy Contract: %s", requestErr.Error())
 	}
 
-	apiCreateAuthenticationPolicyContracts := r.apiClient.AuthenticationPolicyContractsApi.CreateAuthenticationPolicyContract(ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateAuthenticationPolicyContracts := r.apiClient.AuthenticationPolicyContractsAPI.CreateAuthenticationPolicyContract(ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateAuthenticationPolicyContracts = apiCreateAuthenticationPolicyContracts.Body(*createAuthenticationPolicyContracts)
-	authenticationPolicyContractsResponse, httpResp, err := r.apiClient.AuthenticationPolicyContractsApi.CreateAuthenticationPolicyContractExecute(apiCreateAuthenticationPolicyContracts)
+	authenticationPolicyContractsResponse, httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.CreateAuthenticationPolicyContractExecute(apiCreateAuthenticationPolicyContracts)
 	if err != nil {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating an Authentication Policy Contract", err, httpResp)
 		return
@@ -237,7 +237,7 @@ func (r *authenticationPolicyContractsResource) Read(ctx context.Context, req re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadAuthenticationPolicyContracts, httpResp, err := r.apiClient.AuthenticationPolicyContractsApi.GetAuthenticationPolicyContract(ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	apiReadAuthenticationPolicyContracts, httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.GetAuthenticationPolicyContract(ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a Authentication Policy Contract", err, httpResp)
@@ -274,7 +274,7 @@ func (r *authenticationPolicyContractsResource) Update(ctx context.Context, req 
 	// Get the current state to see how any attributes are changing
 	var state authenticationPolicyContractsResourceModel
 	req.State.Get(ctx, &state)
-	updateAuthenticationPolicyContracts := r.apiClient.AuthenticationPolicyContractsApi.UpdateAuthenticationPolicyContract(ProviderBasicAuthContext(ctx, r.providerConfig), plan.CustomId.ValueString())
+	updateAuthenticationPolicyContracts := r.apiClient.AuthenticationPolicyContractsAPI.UpdateAuthenticationPolicyContract(ProviderBasicAuthContext(ctx, r.providerConfig), plan.CustomId.ValueString())
 	createUpdateRequest := client.NewAuthenticationPolicyContract()
 	err := addAuthenticationPolicyContractsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -286,7 +286,7 @@ func (r *authenticationPolicyContractsResource) Update(ctx context.Context, req 
 		diags.AddError("There was an issue retrieving the request of an Authentication Policy Contract: %s", requestErr.Error())
 	}
 	updateAuthenticationPolicyContracts = updateAuthenticationPolicyContracts.Body(*createUpdateRequest)
-	updateAuthenticationPolicyContractsResponse, httpResp, err := r.apiClient.AuthenticationPolicyContractsApi.UpdateAuthenticationPolicyContractExecute(updateAuthenticationPolicyContracts)
+	updateAuthenticationPolicyContractsResponse, httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.UpdateAuthenticationPolicyContractExecute(updateAuthenticationPolicyContracts)
 	if err != nil {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an Authentication Policy Contract", err, httpResp)
 		return
@@ -313,7 +313,7 @@ func (r *authenticationPolicyContractsResource) Delete(ctx context.Context, req 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.AuthenticationPolicyContractsApi.DeleteAuthenticationPolicyContract(ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.DeleteAuthenticationPolicyContract(ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an Authentication Policy Contract", err, httpResp)
 		return

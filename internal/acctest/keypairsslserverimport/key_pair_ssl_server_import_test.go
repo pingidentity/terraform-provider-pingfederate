@@ -78,7 +78,7 @@ func testAccCheckExpectedKeyPairsSslServerImportAttributes(config keyPairsSslSer
 		resourceType := "KeyPairsSslServerImport"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.KeyPairsSslServerApi.GetSslServerKeyPair(ctx, keyPairsSslServerImportId).Execute()
+		response, _, err := testClient.KeyPairsSslServerAPI.GetSslServerKeyPair(ctx, keyPairsSslServerImportId).Execute()
 		if err != nil {
 			return err
 		}
@@ -96,7 +96,7 @@ func testAccCheckExpectedKeyPairsSslServerImportAttributes(config keyPairsSslSer
 func testAccCheckKeyPairsSslServerImportDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.KeyPairsSslClientApi.DeleteSslClientKeyPair(ctx, keyPairsSslServerImportId).Execute()
+	_, err := testClient.KeyPairsSslClientAPI.DeleteSslClientKeyPair(ctx, keyPairsSslServerImportId).Execute()
 	if err == nil {
 		return acctest.ExpectedDestroyError("KeyPairsSslServerImport", keyPairsSslServerImportId)
 	}

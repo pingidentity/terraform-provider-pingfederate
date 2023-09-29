@@ -90,7 +90,7 @@ func testAccCheckExpectedIdpAdaptersAttributes(config idpAdaptersResourceModel) 
 		//resourceType := "IdpAdapters"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		_, _, err := testClient.IdpAdaptersApi.GetIdpAdapters(ctx).Execute()
+		_, _, err := testClient.IdpAdaptersAPI.GetIdpAdapters(ctx).Execute()
 
 		if err != nil {
 			return err
@@ -107,7 +107,7 @@ func testAccCheckExpectedIdpAdaptersAttributes(config idpAdaptersResourceModel) 
 func testAccCheckIdpAdaptersDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.IdpAdaptersApi.DeleteIdpAdapter(ctx, idpAdaptersId).Execute()
+	_, err := testClient.IdpAdaptersAPI.DeleteIdpAdapter(ctx, idpAdaptersId).Execute()
 	if err == nil {
 		return acctest.ExpectedDestroyError("IdpAdapters", idpAdaptersId)
 	}

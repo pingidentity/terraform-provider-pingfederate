@@ -625,9 +625,9 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 		diags.AddError("There was an issue retrieving the request of an OAuth Access Token Manager: %s", requestErr.Error())
 	}
 
-	apiCreateOauthAccessTokenManager := r.apiClient.OauthAccessTokenManagersApi.CreateTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateOauthAccessTokenManager := r.apiClient.OauthAccessTokenManagersAPI.CreateTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateOauthAccessTokenManager = apiCreateOauthAccessTokenManager.Body(*createOauthAccessTokenManager)
-	oauthAccessTokenManagerResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.CreateTokenManagerExecute(apiCreateOauthAccessTokenManager)
+	oauthAccessTokenManagerResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.CreateTokenManagerExecute(apiCreateOauthAccessTokenManager)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Access Token Manager", err, httpResp)
 		return
@@ -658,7 +658,7 @@ func (r *oauthAccessTokenManagerResource) Read(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthAccessTokenManager, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.GetTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	apiReadOauthAccessTokenManager, httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.GetTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -715,7 +715,7 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 	}
 
 	// Get the current state to see how any attributes are changing
-	updateOauthAccessTokenManager := r.apiClient.OauthAccessTokenManagersApi.UpdateTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString())
+	updateOauthAccessTokenManager := r.apiClient.OauthAccessTokenManagersAPI.UpdateTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString())
 	createUpdateRequest := client.NewAccessTokenManager(state.CustomId.ValueString(), state.Name.ValueString(), *pluginDescRefResLink, *configuration)
 	err := addOptionalOauthAccessTokenManagerFields(ctx, createUpdateRequest, state)
 	if err != nil {
@@ -727,7 +727,7 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 		diags.AddError("There was an issue retrieving the request of an OAuth Access Token Manager: %s", requestErr.Error())
 	}
 	updateOauthAccessTokenManager = updateOauthAccessTokenManager.Body(*createUpdateRequest)
-	updateOauthAccessTokenManagerResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.UpdateTokenManagerExecute(updateOauthAccessTokenManager)
+	updateOauthAccessTokenManagerResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.UpdateTokenManagerExecute(updateOauthAccessTokenManager)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an OAuth Access Token Manager", err, httpResp)
 		return
@@ -757,7 +757,7 @@ func (r *oauthAccessTokenManagerResource) Delete(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.OauthAccessTokenManagersApi.DeleteTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.DeleteTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Access Token Manager", err, httpResp)
 		return

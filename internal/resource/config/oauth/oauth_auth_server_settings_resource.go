@@ -1016,9 +1016,9 @@ func (r *oauthAuthServerSettingsResource) Create(ctx context.Context, req resour
 		diags.AddError("There was an issue retrieving the request of OAuth Auth Server Settings: %s", requestErr.Error())
 	}
 
-	apiCreateOauthAuthServerSettings := r.apiClient.OauthAuthServerSettingsApi.UpdateAuthorizationServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateOauthAuthServerSettings := r.apiClient.OauthAuthServerSettingsAPI.UpdateAuthorizationServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateOauthAuthServerSettings = apiCreateOauthAuthServerSettings.Body(*createOauthAuthServerSettings)
-	oauthAuthServerSettingsResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsApi.UpdateAuthorizationServerSettingsExecute(apiCreateOauthAuthServerSettings)
+	oauthAuthServerSettingsResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.UpdateAuthorizationServerSettingsExecute(apiCreateOauthAuthServerSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Auth Server Settings", err, httpResp)
 		return
@@ -1044,7 +1044,7 @@ func (r *oauthAuthServerSettingsResource) Read(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthAuthServerSettings, httpResp, err := r.apiClient.OauthAuthServerSettingsApi.GetAuthorizationServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadOauthAuthServerSettings, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.GetAuthorizationServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 
 	if err != nil {
 		if httpResp.StatusCode == 404 {
@@ -1082,7 +1082,7 @@ func (r *oauthAuthServerSettingsResource) Update(ctx context.Context, req resour
 	// Get the current state to see how any attributes are changing
 	var state oauthAuthServerSettingsResourceModel
 	req.State.Get(ctx, &state)
-	updateOauthAuthServerSettings := r.apiClient.OauthAuthServerSettingsApi.UpdateAuthorizationServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateOauthAuthServerSettings := r.apiClient.OauthAuthServerSettingsAPI.UpdateAuthorizationServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewAuthorizationServerSettings(plan.DefaultScopeDescription.ValueString(), plan.AuthorizationCodeTimeout.ValueInt64(), plan.AuthorizationCodeEntropy.ValueInt64(), plan.RefreshTokenLength.ValueInt64(), plan.RefreshRollingInterval.ValueInt64(), plan.RegisteredAuthorizationPath.ValueString(), plan.PendingAuthorizationTimeout.ValueInt64(), plan.DevicePollingInterval.ValueInt64(), plan.BypassActivationCodeConfirmation.ValueBool())
 	err := addOptionalOauthAuthServerSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -1094,7 +1094,7 @@ func (r *oauthAuthServerSettingsResource) Update(ctx context.Context, req resour
 		diags.AddError("There was an issue retrieving the request of a OAuth Auth Server Settings: %s", requestErr.Error())
 	}
 	updateOauthAuthServerSettings = updateOauthAuthServerSettings.Body(*createUpdateRequest)
-	updateOauthAuthServerSettingsResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsApi.UpdateAuthorizationServerSettingsExecute(updateOauthAuthServerSettings)
+	updateOauthAuthServerSettingsResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.UpdateAuthorizationServerSettingsExecute(updateOauthAuthServerSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OAuth Auth Server Settings", err, httpResp)
 		return

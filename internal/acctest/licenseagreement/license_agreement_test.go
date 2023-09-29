@@ -70,7 +70,7 @@ func testAccCheckExpectedLicenseAgreementAttributes(config licenseAgreementResou
 		resourceType := "LicenseAgreement"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.LicenseApi.GetLicenseAgreement(ctx).Execute()
+		response, _, err := testClient.LicenseAPI.GetLicenseAgreement(ctx).Execute()
 
 		if err != nil {
 			return err

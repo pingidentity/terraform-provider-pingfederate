@@ -179,9 +179,9 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Create(ctx context.
 		diags.AddError("There was an issue retrieving the request of Session Authentication Session Policies Global: %s", requestErr.Error())
 	}
 
-	apiCreateSessionAuthenticationSessionPoliciesGlobal := r.apiClient.SessionApi.UpdateGlobalPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateSessionAuthenticationSessionPoliciesGlobal := r.apiClient.SessionAPI.UpdateGlobalPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateSessionAuthenticationSessionPoliciesGlobal = apiCreateSessionAuthenticationSessionPoliciesGlobal.Body(*createSessionAuthenticationSessionPoliciesGlobal)
-	sessionAuthenticationSessionPoliciesGlobalResponse, httpResp, err := r.apiClient.SessionApi.UpdateGlobalPolicyExecute(apiCreateSessionAuthenticationSessionPoliciesGlobal)
+	sessionAuthenticationSessionPoliciesGlobalResponse, httpResp, err := r.apiClient.SessionAPI.UpdateGlobalPolicyExecute(apiCreateSessionAuthenticationSessionPoliciesGlobal)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Session Authentication Session Policies Global", err, httpResp)
 		return
@@ -207,7 +207,7 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Read(ctx context.Co
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadSessionAuthenticationSessionPoliciesGlobal, httpResp, err := r.apiClient.SessionApi.GetGlobalPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadSessionAuthenticationSessionPoliciesGlobal, httpResp, err := r.apiClient.SessionAPI.GetGlobalPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while a Session Authentication Session Policies Global", err, httpResp)
@@ -244,7 +244,7 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Update(ctx context.
 	// Get the current state to see how any attributes are changing
 	var state sessionAuthenticationSessionPoliciesGlobalResourceModel
 	req.State.Get(ctx, &state)
-	updateSessionAuthenticationSessionPoliciesGlobal := r.apiClient.SessionApi.UpdateGlobalPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateSessionAuthenticationSessionPoliciesGlobal := r.apiClient.SessionAPI.UpdateGlobalPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewGlobalAuthenticationSessionPolicy(plan.EnableSessions.ValueBool())
 	err := addOptionalSessionAuthenticationSessionPoliciesGlobalFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -256,7 +256,7 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Update(ctx context.
 		diags.AddError("There was an issue retrieving the request of Session Authentication Session Policies Global: %s", requestErr.Error())
 	}
 	updateSessionAuthenticationSessionPoliciesGlobal = updateSessionAuthenticationSessionPoliciesGlobal.Body(*createUpdateRequest)
-	updateSessionAuthenticationSessionPoliciesGlobalResponse, httpResp, err := r.apiClient.SessionApi.UpdateGlobalPolicyExecute(updateSessionAuthenticationSessionPoliciesGlobal)
+	updateSessionAuthenticationSessionPoliciesGlobalResponse, httpResp, err := r.apiClient.SessionAPI.UpdateGlobalPolicyExecute(updateSessionAuthenticationSessionPoliciesGlobal)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Session Authentication Session Policies Global", err, httpResp)
 		return

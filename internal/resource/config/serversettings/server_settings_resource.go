@@ -1158,9 +1158,9 @@ func (r *serverSettingsResource) Create(ctx context.Context, req resource.Create
 		diags.AddError("There was an issue retrieving the request of Server Settings: %s", requestErr.Error())
 	}
 
-	apiCreateServerSettings := r.apiClient.ServerSettingsApi.UpdateServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateServerSettings := r.apiClient.ServerSettingsAPI.UpdateServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateServerSettings = apiCreateServerSettings.Body(*createServerSettings)
-	serverSettingsResponse, httpResp, err := r.apiClient.ServerSettingsApi.UpdateServerSettingsExecute(apiCreateServerSettings)
+	serverSettingsResponse, httpResp, err := r.apiClient.ServerSettingsAPI.UpdateServerSettingsExecute(apiCreateServerSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Server Settings", err, httpResp)
 		return
@@ -1192,7 +1192,7 @@ func (r *serverSettingsResource) Read(ctx context.Context, req resource.ReadRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadServerSettings, httpResp, err := r.apiClient.ServerSettingsApi.GetServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadServerSettings, httpResp, err := r.apiClient.ServerSettingsAPI.GetServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -1230,7 +1230,7 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 	// Get the current state to see how any attributes are changing
 	var state serverSettingsResourceModel
 	req.State.Get(ctx, &state)
-	updateServerSettings := r.apiClient.ServerSettingsApi.UpdateServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateServerSettings := r.apiClient.ServerSettingsAPI.UpdateServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewServerSettings()
 	err := addOptionalServerSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -1242,7 +1242,7 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 		diags.AddError("There was an issue retrieving the request of Server Settings: %s", requestErr.Error())
 	}
 	updateServerSettings = updateServerSettings.Body(*createUpdateRequest)
-	updateServerSettingsResponse, httpResp, err := r.apiClient.ServerSettingsApi.UpdateServerSettingsExecute(updateServerSettings)
+	updateServerSettingsResponse, httpResp, err := r.apiClient.ServerSettingsAPI.UpdateServerSettingsExecute(updateServerSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Server Settings", err, httpResp)
 		return

@@ -119,9 +119,9 @@ func (r *sessionApplicationSessionPolicyResource) Create(ctx context.Context, re
 		diags.AddError("There was an issue retrieving the request of Session Application Session Policy: %s", requestErr.Error())
 	}
 
-	apiCreateSessionApplicationSessionPolicy := r.apiClient.SessionApi.UpdateApplicationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateSessionApplicationSessionPolicy := r.apiClient.SessionAPI.UpdateApplicationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateSessionApplicationSessionPolicy = apiCreateSessionApplicationSessionPolicy.Body(*createSessionApplicationSessionPolicy)
-	sessionApplicationSessionPolicyResponse, httpResp, err := r.apiClient.SessionApi.UpdateApplicationPolicyExecute(apiCreateSessionApplicationSessionPolicy)
+	sessionApplicationSessionPolicyResponse, httpResp, err := r.apiClient.SessionAPI.UpdateApplicationPolicyExecute(apiCreateSessionApplicationSessionPolicy)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Session Application Session Policy", err, httpResp)
 		return
@@ -147,7 +147,7 @@ func (r *sessionApplicationSessionPolicyResource) Read(ctx context.Context, req 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadSessionApplicationSessionPolicy, httpResp, err := r.apiClient.SessionApi.GetApplicationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadSessionApplicationSessionPolicy, httpResp, err := r.apiClient.SessionAPI.GetApplicationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a Session Application Session Policy", err, httpResp)
@@ -184,7 +184,7 @@ func (r *sessionApplicationSessionPolicyResource) Update(ctx context.Context, re
 	// Get the current state to see how any attributes are changing
 	var state sessionApplicationSessionPolicyResourceModel
 	req.State.Get(ctx, &state)
-	updateSessionApplicationSessionPolicy := r.apiClient.SessionApi.UpdateApplicationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateSessionApplicationSessionPolicy := r.apiClient.SessionAPI.UpdateApplicationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewApplicationSessionPolicy()
 	err := addOptionalSessionApplicationSessionPolicyFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -196,7 +196,7 @@ func (r *sessionApplicationSessionPolicyResource) Update(ctx context.Context, re
 		diags.AddError("There was an issue retrieving the request of Session Application Session Policy: %s", requestErr.Error())
 	}
 	updateSessionApplicationSessionPolicy = updateSessionApplicationSessionPolicy.Body(*createUpdateRequest)
-	updateSessionApplicationSessionPolicyResponse, httpResp, err := r.apiClient.SessionApi.UpdateApplicationPolicyExecute(updateSessionApplicationSessionPolicy)
+	updateSessionApplicationSessionPolicyResponse, httpResp, err := r.apiClient.SessionAPI.UpdateApplicationPolicyExecute(updateSessionApplicationSessionPolicy)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Session Application Session Policy", err, httpResp)
 		return

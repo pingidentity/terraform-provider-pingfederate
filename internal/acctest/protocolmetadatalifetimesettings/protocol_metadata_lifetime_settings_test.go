@@ -76,7 +76,7 @@ func testAccCheckExpectedProtocolMetadataLifetimeSettingsAttributes(config proto
 		resourceType := "ProtocolMetadataLifetimeSettings"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.ProtocolMetadataApi.GetLifetimeSettings(ctx).Execute()
+		response, _, err := testClient.ProtocolMetadataAPI.GetLifetimeSettings(ctx).Execute()
 
 		if err != nil {
 			return err

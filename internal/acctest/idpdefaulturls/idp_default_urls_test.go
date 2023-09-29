@@ -84,7 +84,7 @@ func testAccCheckExpectedIdpDefaultUrlsAttributes(config idpDefaultUrlsResourceM
 		resourceType := "IdpDefaultUrls"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.IdpDefaultUrlsApi.GetDefaultUrl(ctx).Execute()
+		response, _, err := testClient.IdpDefaultUrlsAPI.GetDefaultUrl(ctx).Execute()
 
 		if err != nil {
 			return err

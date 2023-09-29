@@ -76,7 +76,7 @@ func testAccCheckExpectedSessionApplicationSessionPolicyAttributes(config sessio
 		resourceType := "SessionApplicationSessionPolicy"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.SessionApi.GetApplicationPolicy(ctx).Execute()
+		response, _, err := testClient.SessionAPI.GetApplicationPolicy(ctx).Execute()
 
 		if err != nil {
 			return err

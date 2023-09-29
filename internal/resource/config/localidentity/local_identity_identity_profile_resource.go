@@ -796,9 +796,9 @@ func (r *localIdentityIdentityProfilesResource) Create(ctx context.Context, req 
 	if requestErr != nil {
 		diags.AddError("There was an issue retrieving the request of a Local Identity Identity Profile: %s", requestErr.Error())
 	}
-	apiCreateLocalIdentityIdentityProfiles := r.apiClient.LocalIdentityIdentityProfilesApi.CreateIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateLocalIdentityIdentityProfiles := r.apiClient.LocalIdentityIdentityProfilesAPI.CreateIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateLocalIdentityIdentityProfiles = apiCreateLocalIdentityIdentityProfiles.Body(*createLocalIdentityIdentityProfiles)
-	localIdentityIdentityProfilesResponse, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesApi.CreateIdentityProfileExecute(apiCreateLocalIdentityIdentityProfiles)
+	localIdentityIdentityProfilesResponse, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.CreateIdentityProfileExecute(apiCreateLocalIdentityIdentityProfiles)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the LocalIdentityIdentityProfiles", err, httpResp)
 		return
@@ -824,7 +824,7 @@ func (r *localIdentityIdentityProfilesResource) Read(ctx context.Context, req re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadLocalIdentityIdentityProfiles, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesApi.GetIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	apiReadLocalIdentityIdentityProfiles, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.GetIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 	if err != nil {
 		if httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Local Identity Profile", err, httpResp)
@@ -857,7 +857,7 @@ func (r *localIdentityIdentityProfilesResource) Update(ctx context.Context, req 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	updateLocalIdentityIdentityProfiles := r.apiClient.LocalIdentityIdentityProfilesApi.UpdateIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.CustomId.ValueString())
+	updateLocalIdentityIdentityProfiles := r.apiClient.LocalIdentityIdentityProfilesAPI.UpdateIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.CustomId.ValueString())
 	apcId := plan.ApcId.Attributes()["id"].(types.String).ValueString()
 	apcResourceLink := client.NewResourceLink(apcId)
 	createUpdateRequest := client.NewLocalIdentityProfile(plan.Name.ValueString(), *apcResourceLink)
@@ -871,7 +871,7 @@ func (r *localIdentityIdentityProfilesResource) Update(ctx context.Context, req 
 		diags.AddError("There was an issue retrieving the request of a Local Identity Identity Profile: %s", requestErr.Error())
 	}
 	updateLocalIdentityIdentityProfiles = updateLocalIdentityIdentityProfiles.Body(*createUpdateRequest)
-	updateLocalIdentityIdentityProfilesResponse, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesApi.UpdateIdentityProfileExecute(updateLocalIdentityIdentityProfiles)
+	updateLocalIdentityIdentityProfilesResponse, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.UpdateIdentityProfileExecute(updateLocalIdentityIdentityProfiles)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Local Identity Identity Profile", err, httpResp)
 		return
@@ -897,7 +897,7 @@ func (r *localIdentityIdentityProfilesResource) Delete(ctx context.Context, req 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.LocalIdentityIdentityProfilesApi.DeleteIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.DeleteIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting Local Identity Profile", err, httpResp)
 	}
