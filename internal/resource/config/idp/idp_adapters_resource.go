@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -349,17 +350,261 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					//TODO add attribute_sources
-					/*"attribute_sources": schema.ListNestedAttribute{
-						Description: "",
+					"attribute_sources": schema.ListNestedAttribute{
+						Description: "A list of configured data stores to look up attributes from.",
 						NestedObject: schema.NestedAttributeObject{
-							"ldap_attr_source": schema.SingleNestedAttribute{
-								//TODO ldap specific schema here
-							},
-							"jdbc_attr_source": schema.SingleNestedAttribute{
-								//TODO jdbc specific schema here
-							},
-							"custom_attr_source": schema.SingleNestedAttribute{
-								//TODO custom specific schema here
+							Attributes: map[string]schema.Attribute{
+								"custom_attr_source": schema.SingleNestedAttribute{
+									Description: "The configured settings to look up attributes from an associated data store.",
+									Attributes: map[string]schema.Attribute{
+										"type": schema.StringAttribute{
+											Description: "The data store type of this attribute source.",
+											Required:    true,
+											//TODO is this type attribute really required? Why are there 4 possible types and only 3 attribute source implementations
+											Validators: []validator.String{
+												stringvalidator.OneOf("LDAP", "PING_ONE_LDAP_GATEWAY", "JDBC", "CUSTOM"),
+											},
+										},
+										//TODO use shared schema
+										"data_source_ref": schema.SingleNestedAttribute{
+											Description: "Reference to the associated data store.",
+											Required:    true,
+											Attributes: map[string]schema.Attribute{
+												"id": schema.StringAttribute{
+													Description: "The ID of the resource.",
+													Required:    true,
+												},
+												"location": schema.StringAttribute{
+													Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
+													Optional:    false,
+													Computed:    true,
+												},
+											},
+										},
+										"id": schema.StringAttribute{
+											Description: "The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.",
+											Optional:    true,
+										},
+										"description": schema.StringAttribute{
+											Description: "The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping. Note: Required for APC-to-SP Adapter Mappings",
+											Optional:    true,
+										},
+										"attribute_contract_fullfilment": schema.MapNestedAttribute{
+											Description: "A list of mappings from attribute names to their fulfillment values. This field is only valid for the SP Connection's Browser SSO mappings",
+											Optional:    true,
+											NestedObject: schema.NestedAttributeObject{
+												Attributes: map[string]schema.Attribute{
+													"source": schema.SingleNestedAttribute{
+														Description: "The attribute value source.",
+														Required:    true,
+														Attributes: map[string]schema.Attribute{
+															"type": schema.StringAttribute{
+																Required:    true,
+																Description: "The source type of this key.",
+																//TODO enum validator
+															},
+															"id": schema.StringAttribute{
+																Description: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+																Optional:    true,
+															},
+														},
+													},
+												},
+											},
+										},
+										"filter_fields": schema.ListNestedAttribute{
+											Description: "The list of fields that can be used to filter a request to the custom data store.",
+											Optional:    true,
+											NestedObject: schema.NestedAttributeObject{
+												Attributes: map[string]schema.Attribute{
+													"value": schema.StringAttribute{
+														Description: "The value of this field. Whether or not the value is required will be determined by plugin validation checks.",
+														Optional:    true,
+													},
+													"name": schema.StringAttribute{
+														Description: "The name of this field.",
+														Required:    true,
+													},
+												},
+											},
+										},
+									},
+								},
+								"jdbc_attr_source": schema.SingleNestedAttribute{
+									Description: "The configured settings to look up attributes from a JDBC data store.",
+									Attributes: map[string]schema.Attribute{
+										"type": schema.StringAttribute{
+											Description: "The data store type of this attribute source.",
+											Required:    true,
+											//TODO is this type attribute really required? Why are there 4 possible types and only 3 attribute source implementations
+											Validators: []validator.String{
+												stringvalidator.OneOf("LDAP", "PING_ONE_LDAP_GATEWAY", "JDBC", "CUSTOM"),
+											},
+										},
+										//TODO use shared schema
+										"data_source_ref": schema.SingleNestedAttribute{
+											Description: "Reference to the associated data store.",
+											Required:    true,
+											Attributes: map[string]schema.Attribute{
+												"id": schema.StringAttribute{
+													Description: "The ID of the resource.",
+													Required:    true,
+												},
+												"location": schema.StringAttribute{
+													Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
+													Optional:    false,
+													Computed:    true,
+												},
+											},
+										},
+										"id": schema.StringAttribute{
+											Description: "The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.",
+											Optional:    true,
+										},
+										"description": schema.StringAttribute{
+											Description: "The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping. Note: Required for APC-to-SP Adapter Mappings",
+											Optional:    true,
+										},
+										"attribute_contract_fullfilment": schema.MapNestedAttribute{
+											Description: "A list of mappings from attribute names to their fulfillment values. This field is only valid for the SP Connection's Browser SSO mappings",
+											Optional:    true,
+											NestedObject: schema.NestedAttributeObject{
+												Attributes: map[string]schema.Attribute{
+													"source": schema.SingleNestedAttribute{
+														Description: "The attribute value source.",
+														Required:    true,
+														Attributes: map[string]schema.Attribute{
+															"type": schema.StringAttribute{
+																Required:    true,
+																Description: "The source type of this key.",
+																//TODO enum validator
+															},
+															"id": schema.StringAttribute{
+																Description: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+																Optional:    true,
+															},
+														},
+													},
+												},
+											},
+										},
+										"schema": schema.StringAttribute{
+											Description: "Lists the table structure that stores information within a database. Some databases, such as Oracle, require a schema for a JDBC query. Other databases, such as MySQL, do not require a schema.",
+											Optional:    true,
+										},
+										"table": schema.StringAttribute{
+											Description: "The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.",
+											Required:    true,
+										},
+										"columnNames": schema.ListAttribute{
+											Description: "A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.",
+											ElementType: types.StringType,
+											Optional:    true,
+										},
+										"filter": schema.StringAttribute{
+											Description: "The JDBC WHERE clause used to query your data store to locate a user record.",
+											Required:    true,
+										},
+									},
+								},
+								"ldap_attr_source": schema.SingleNestedAttribute{
+									Description: "The configured settings to look up attributes from a LDAP data store.",
+									Attributes: map[string]schema.Attribute{
+										"type": schema.StringAttribute{
+											Description: "The data store type of this attribute source.",
+											Required:    true,
+											//TODO is this type attribute really required? Why are there 4 possible types and only 3 attribute source implementations
+											Validators: []validator.String{
+												stringvalidator.OneOf("LDAP", "PING_ONE_LDAP_GATEWAY", "JDBC", "CUSTOM"),
+											},
+										},
+										//TODO use shared schema
+										"data_source_ref": schema.SingleNestedAttribute{
+											Description: "Reference to the associated data store.",
+											Required:    true,
+											Attributes: map[string]schema.Attribute{
+												"id": schema.StringAttribute{
+													Description: "The ID of the resource.",
+													Required:    true,
+												},
+												"location": schema.StringAttribute{
+													Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
+													Optional:    false,
+													Computed:    true,
+												},
+											},
+										},
+										"id": schema.StringAttribute{
+											Description: "The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.",
+											Optional:    true,
+										},
+										"description": schema.StringAttribute{
+											Description: "The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping. Note: Required for APC-to-SP Adapter Mappings",
+											Optional:    true,
+										},
+										"attribute_contract_fullfilment": schema.MapNestedAttribute{
+											Description: "A list of mappings from attribute names to their fulfillment values. This field is only valid for the SP Connection's Browser SSO mappings",
+											Optional:    true,
+											NestedObject: schema.NestedAttributeObject{
+												Attributes: map[string]schema.Attribute{
+													"source": schema.SingleNestedAttribute{
+														Description: "The attribute value source.",
+														Required:    true,
+														Attributes: map[string]schema.Attribute{
+															"type": schema.StringAttribute{
+																Required:    true,
+																Description: "The source type of this key.",
+																//TODO enum validator
+															},
+															"id": schema.StringAttribute{
+																Description: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+																Optional:    true,
+															},
+														},
+													},
+												},
+											},
+										},
+										"search_filter": schema.StringAttribute{
+											Description: "The LDAP filter that will be used to lookup the objects from the directory.",
+											Required:    true,
+										},
+										"search_scope": schema.StringAttribute{
+											Description: "Determines the node depth of the query.",
+											Required:    true,
+											Validators: []validator.String{
+												stringvalidator.OneOf("OBJECT", "ONE_LEVEL", "SUBTREE"),
+											},
+										},
+										"member_of_nested_group": schema.BoolAttribute{
+											Description: "Set this to true to return transitive group memberships for the 'memberOf' attribute. This only applies for Active Directory data sources. All other data sources will be set to false.",
+											Optional:    true,
+										},
+										"base_dn": schema.StringAttribute{
+											Description: "The base DN to search from. If not specified, the search will start at the LDAP's root.",
+											Optional:    true,
+										},
+										"binary_attribute_settings": schema.MapNestedAttribute{
+											Description: "The advanced settings for binary LDAP attributes.",
+											Optional:    true,
+											NestedObject: schema.NestedAttributeObject{
+												Attributes: map[string]schema.Attribute{
+													"binary_encoding": schema.StringAttribute{
+														Description: "Get the encoding type for this attribute. If not specified, the default is BASE64.",
+														Validators: []validator.String{
+															stringvalidator.OneOf("OBJECT", "ONE_LEVEL", "SUBTREE"),
+														},
+													},
+												},
+											},
+										},
+										"search_attributes": schema.ListAttribute{
+											Description: "A list of LDAP attributes returned from search and available for mapping.",
+											Optional:    true,
+											ElementType: types.StringType,
+										},
+									},
+								},
 							},
 							Validators: []validator.Object{
 								objectvalidator.AtLeastOneOf(
@@ -368,7 +613,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 									path.MatchRoot("custom_attr_source")),
 							},
 						},
-					},*/
+					},
 					"attribute_contract_fulfillment": schema.MapNestedAttribute{
 						Description: "A list of mappings from attribute names to their fulfillment values.",
 						Required:    true,
