@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -711,12 +710,13 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 									},
 								},
 							},
-							Validators: []validator.Object{
+							//TODO get these validators working
+							/*Validators: []validator.Object{
 								objectvalidator.ExactlyOneOf(
-									path.MatchRoot("ldap_attribute_source"),
-									path.MatchRoot("jdbc_attribute_source"),
-									path.MatchRoot("custom_attribute_source")),
-							},
+									path.MatchRelative().AtName("ldap_attribute_source"),
+									path.MatchRelative().AtName("jdbc_attribute_source"),
+									path.MatchRelative().AtName("custom_attribute_source")),
+							},*/
 						},
 					},
 					"attribute_contract_fulfillment": schema.MapNestedAttribute{
@@ -858,11 +858,11 @@ func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdap
 		}
 
 		attributeSourcesAttr := planAttrs["attribute_sources"].(types.List)
-		addRequest.AttributeMapping.AttributeSources = []client.IdpAdapterContractMappingAttributeSourcesInner{}
+		addRequest.AttributeMapping.AttributeSources = []client.AttributeSourceAggregation{}
 		for _, source := range attributeSourcesAttr.Elements() {
 			//Determine which attribute source type this is
 			sourceAttrs := source.(types.Object).Attributes()
-			attributeSourceInner := client.IdpAdapterContractMappingAttributeSourcesInner{}
+			attributeSourceInner := client.AttributeSourceAggregation{}
 			if internaltypes.IsDefined(sourceAttrs["custom_attribute_source"]) {
 				attributeSourceInner.CustomAttributeSource = &client.CustomAttributeSource{}
 				err = json.Unmarshal([]byte(internaljson.FromValue(sourceAttrs["custom_attribute_source"], true)), attributeSourceInner.CustomAttributeSource)
