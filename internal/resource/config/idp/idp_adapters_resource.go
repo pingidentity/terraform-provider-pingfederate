@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
@@ -341,10 +342,6 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 															Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
 															Optional:    true,
 														},
-														"encrypted_value": schema.StringAttribute{
-															Description: "For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. If you do not want to update the stored value, this attribute should be passed back unchanged.",
-															Optional:    true,
-														},
 														"inherited": schema.BoolAttribute{
 															Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
 															Optional:    true,
@@ -377,10 +374,6 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 								},
 								"value": schema.StringAttribute{
 									Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
-									Optional:    true,
-								},
-								"encrypted_value": schema.StringAttribute{
-									Description: "For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. If you do not want to update the stored value, this attribute should be passed back unchanged.",
 									Optional:    true,
 								},
 								"inherited": schema.BoolAttribute{
@@ -882,7 +875,7 @@ func (r *idpAdapterResource) Configure(_ context.Context, req resource.Configure
 
 }
 
-func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *idpAdapterResourceModel, diags *diag.Diagnostics) {
+func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *idpAdapterResourceModel, configurationFromPlan basetypes.ObjectValue, diags *diag.Diagnostics) {
 	state.AuthnCtxClassRef = internaltypes.StringTypeOrNil(r.AuthnCtxClassRef, false)
 	state.Id = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
@@ -891,9 +884,34 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 
 	var objectValueFromDiags diag.Diagnostics
 
-	//TODO probably need some logic to handle encryptedValues in tables/fields here
-	// That logic should probably be shared across the provider.
-	state.Configuration, objectValueFromDiags = types.ObjectValueFrom(ctx, configurationAttrTypes, r.Configuration)
+	// Configuration
+	//TODO move into common method
+	//TODO unify how we handle diagnostics in these methods
+	configurationAttrType := map[string]attr.Type{
+		"fields": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.FieldAttrTypes()}},
+		"tables": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.TableAttrTypes()}},
+	}
+
+	planFields := types.ListNull(types.ObjectType{AttrTypes: config.FieldAttrTypes()})
+	planTables := types.ListNull(types.ObjectType{AttrTypes: config.TableAttrTypes()})
+
+	planFieldsValue, ok := configurationFromPlan.Attributes()["fields"]
+	if ok {
+		planFields = planFieldsValue.(types.List)
+	}
+	planTablesValue, ok := configurationFromPlan.Attributes()["tables"]
+	if ok {
+		planTables = planTablesValue.(types.List)
+	}
+
+	fieldsAttrValue := config.ToFieldsListValue(r.Configuration.Fields, planFields, diags)
+	tablesAttrValue := config.ToTablesListValue(r.Configuration.Tables, planTables, diags)
+
+	configurationAttrValue := map[string]attr.Value{
+		"fields": fieldsAttrValue,
+		"tables": tablesAttrValue,
+	}
+	state.Configuration, objectValueFromDiags = types.ObjectValue(configurationAttrType, configurationAttrValue)
 	diags.Append(objectValueFromDiags...)
 
 	if r.AttributeContract != nil {
@@ -915,11 +933,11 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 		// Build issuance_criteria value
 		issuanceCritieraAttrTypes := attributeMappingAttrTypes["issuance_criteria"].(types.ObjectType).AttrTypes
 		if r.AttributeMapping.IssuanceCriteria != nil {
-			attributeMappingValues["issuance_critiera"], objectValueFromDiags = types.ObjectValueFrom(ctx,
+			attributeMappingValues["issuance_criteria"], objectValueFromDiags = types.ObjectValueFrom(ctx,
 				issuanceCritieraAttrTypes, r.AttributeMapping.IssuanceCriteria)
 			diags.Append(objectValueFromDiags...)
 		} else {
-			attributeMappingValues["issuance_critiera"] = types.ObjectNull(issuanceCritieraAttrTypes)
+			attributeMappingValues["issuance_criteria"] = types.ObjectNull(issuanceCritieraAttrTypes)
 		}
 
 		// Build attribute_sources value
@@ -1010,7 +1028,7 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 	// Read the response into the state
 	var state idpAdapterResourceModel
 
-	readIdpAdapterResponse(ctx, idpAdapterResponse, &state, &resp.Diagnostics)
+	readIdpAdapterResponse(ctx, idpAdapterResponse, &state, plan.Configuration, &resp.Diagnostics)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -1036,7 +1054,7 @@ func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// Read the response into the state
-	readIdpAdapterResponse(ctx, apiReadIdpAdapter, &state, &resp.Diagnostics)
+	readIdpAdapterResponse(ctx, apiReadIdpAdapter, &state, state.Configuration, &resp.Diagnostics)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -1095,7 +1113,7 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 	// Read the response
 	var state idpAdapterResourceModel
-	readIdpAdapterResponse(ctx, updateIdpAdapterResponse, &state, &resp.Diagnostics)
+	readIdpAdapterResponse(ctx, updateIdpAdapterResponse, &state, plan.Configuration, &resp.Diagnostics)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
