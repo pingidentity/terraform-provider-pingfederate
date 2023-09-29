@@ -43,7 +43,18 @@ resource "pingfederate_idp_adapters" "idpAdaptersExample" {
                 value  = "username"
             }
         },
-        attribute_sources = [],
+        attribute_sources = [
+            {
+                jdbc_attribute_source = {
+                    type = "JDBC"
+                    data_store_ref = {
+                        id = "ProvisionerDS"
+                    }
+                    table = "example"
+                    filter = "id = 4"
+                }
+            }
+        ],
         issuance_criteria = {
             conditional_criteria = []
         }

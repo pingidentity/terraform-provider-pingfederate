@@ -91,7 +91,7 @@ var (
 
 	customAttrSourceAttrTypes = map[string]attr.Type{
 		"type": types.StringType,
-		"data_source_ref": types.ObjectType{
+		"data_store_ref": types.ObjectType{
 			AttrTypes: internaltypes.ResourceLinkStateAttrType(),
 		},
 		"id":          types.StringType,
@@ -120,7 +120,7 @@ var (
 
 	jdbcAttrSourceAttrTypes = map[string]attr.Type{
 		"type": types.StringType,
-		"data_source_ref": types.ObjectType{
+		"data_store_ref": types.ObjectType{
 			AttrTypes: internaltypes.ResourceLinkStateAttrType(),
 		},
 		"id":          types.StringType,
@@ -147,7 +147,7 @@ var (
 
 	ldapAttrSourceAttrTypes = map[string]attr.Type{
 		"type": types.StringType,
-		"data_source_ref": types.ObjectType{
+		"data_store_ref": types.ObjectType{
 			AttrTypes: internaltypes.ResourceLinkStateAttrType(),
 		},
 		"id":          types.StringType,
@@ -468,7 +468,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 											},
 										},
 										//TODO use shared schema
-										"data_source_ref": schema.SingleNestedAttribute{
+										"data_store_ref": schema.SingleNestedAttribute{
 											Description: "Reference to the associated data store.",
 											Required:    true,
 											Attributes: map[string]schema.Attribute{
@@ -545,7 +545,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 											},
 										},
 										//TODO use shared schema
-										"data_source_ref": schema.SingleNestedAttribute{
+										"data_store_ref": schema.SingleNestedAttribute{
 											Description: "Reference to the associated data store.",
 											Required:    true,
 											Attributes: map[string]schema.Attribute{
@@ -623,7 +623,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 											},
 										},
 										//TODO use shared schema
-										"data_source_ref": schema.SingleNestedAttribute{
+										"data_store_ref": schema.SingleNestedAttribute{
 											Description: "Reference to the associated data store.",
 											Required:    true,
 											Attributes: map[string]schema.Attribute{
@@ -712,7 +712,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 								},
 							},
 							Validators: []validator.Object{
-								objectvalidator.AtLeastOneOf(
+								objectvalidator.ExactlyOneOf(
 									path.MatchRoot("ldap_attribute_source"),
 									path.MatchRoot("jdbc_attribute_source"),
 									path.MatchRoot("custom_attribute_source")),
@@ -840,11 +840,45 @@ func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdap
 
 	if internaltypes.IsDefined(plan.AttributeMapping) {
 		addRequest.AttributeMapping = &client.IdpAdapterContractMapping{}
-		//TODO
-		// Don't include non-specified attributes, since PF will complain about issuance_criteria.expression_criteria
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeMapping, true)), addRequest.AttributeMapping)
+		planAttrs := plan.AttributeMapping.Attributes()
+
+		addRequest.AttributeMapping.Inherited = planAttrs["inherited"].(types.Bool).ValueBoolPointer()
+
+		attrContractFulfillmentAttr := planAttrs["attribute_contract_fulfillment"].(types.Map)
+		err := json.Unmarshal([]byte(internaljson.FromValue(attrContractFulfillmentAttr, true)), &addRequest.AttributeMapping.AttributeContractFulfillment)
 		if err != nil {
 			return err
+		}
+
+		issuanceCriteriaAttr := planAttrs["issuance_criteria"].(types.Object)
+		addRequest.AttributeMapping.IssuanceCriteria = client.NewIssuanceCriteria()
+		err = json.Unmarshal([]byte(internaljson.FromValue(issuanceCriteriaAttr, true)), addRequest.AttributeMapping.IssuanceCriteria)
+		if err != nil {
+			return err
+		}
+
+		attributeSourcesAttr := planAttrs["attribute_sources"].(types.List)
+		addRequest.AttributeMapping.AttributeSources = []client.IdpAdapterContractMappingAttributeSourcesInner{}
+		for _, source := range attributeSourcesAttr.Elements() {
+			//Determine which attribute source type this is
+			sourceAttrs := source.(types.Object).Attributes()
+			attributeSourceInner := client.IdpAdapterContractMappingAttributeSourcesInner{}
+			if internaltypes.IsDefined(sourceAttrs["custom_attribute_source"]) {
+				attributeSourceInner.CustomAttributeSource = &client.CustomAttributeSource{}
+				err = json.Unmarshal([]byte(internaljson.FromValue(sourceAttrs["custom_attribute_source"], true)), attributeSourceInner.CustomAttributeSource)
+			}
+			if internaltypes.IsDefined(sourceAttrs["jdbc_attribute_source"]) {
+				attributeSourceInner.JdbcAttributeSource = &client.JdbcAttributeSource{}
+				err = json.Unmarshal([]byte(internaljson.FromValue(sourceAttrs["jdbc_attribute_source"], true)), attributeSourceInner.JdbcAttributeSource)
+			}
+			if internaltypes.IsDefined(sourceAttrs["ldap_attribute_source"]) {
+				attributeSourceInner.LdapAttributeSource = &client.LdapAttributeSource{}
+				err = json.Unmarshal([]byte(internaljson.FromValue(sourceAttrs["ldap_attribute_source"], true)), attributeSourceInner.LdapAttributeSource)
+			}
+			if err != nil {
+				return err
+			}
+			addRequest.AttributeMapping.AttributeSources = append(addRequest.AttributeMapping.AttributeSources, attributeSourceInner)
 		}
 	}
 
@@ -970,6 +1004,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 			diags.Append(objectValueFromDiags...)
 			attrSourceElements = append(attrSourceElements, attrSourceElement)
 		}
+		//TODO don't return empty list if plan didn't specify any attribute sources, return null list
 		attributeMappingValues["attribute_sources"], objectValueFromDiags = types.ListValue(types.ObjectType{AttrTypes: attributeSourcesElementAttrTypes}, attrSourceElements)
 		diags.Append(objectValueFromDiags...)
 
