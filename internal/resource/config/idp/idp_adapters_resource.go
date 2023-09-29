@@ -87,7 +87,114 @@ var (
 		"mask_ognl_values":          types.BoolType,
 		"inherited":                 types.BoolType,
 	}
+
+	customAttrSourceAttrTypes = map[string]attr.Type{
+		"type": types.StringType,
+		"data_source_ref": types.ObjectType{
+			AttrTypes: internaltypes.ResourceLinkStateAttrType(),
+		},
+		"id":          types.StringType,
+		"description": types.StringType,
+		"attribute_contract_fulfillment": types.MapType{
+			ElemType: types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"source": types.ObjectType{
+						AttrTypes: map[string]attr.Type{
+							"type": types.StringType,
+							"id":   types.StringType,
+						},
+					},
+				},
+			},
+		},
+		"filter_fields": types.ListType{
+			ElemType: types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"value": types.StringType,
+					"name":  types.StringType,
+				},
+			},
+		},
+	}
+
+	jdbcAttrSourceAttrTypes = map[string]attr.Type{
+		"type": types.StringType,
+		"data_source_ref": types.ObjectType{
+			AttrTypes: internaltypes.ResourceLinkStateAttrType(),
+		},
+		"id":          types.StringType,
+		"description": types.StringType,
+		"attribute_contract_fulfillment": types.MapType{
+			ElemType: types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"source": types.ObjectType{
+						AttrTypes: map[string]attr.Type{
+							"type": types.StringType,
+							"id":   types.StringType,
+						},
+					},
+				},
+			},
+		},
+		"schema": types.StringType,
+		"table":  types.StringType,
+		"column_names": types.ListType{
+			ElemType: types.StringType,
+		},
+		"filter": types.StringType,
+	}
+
+	ldapAttrSourceAttrTypes = map[string]attr.Type{
+		"type": types.StringType,
+		"data_source_ref": types.ObjectType{
+			AttrTypes: internaltypes.ResourceLinkStateAttrType(),
+		},
+		"id":          types.StringType,
+		"description": types.StringType,
+		"attribute_contract_fulfillment": types.MapType{
+			ElemType: types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"source": types.ObjectType{
+						AttrTypes: map[string]attr.Type{
+							"type": types.StringType,
+							"id":   types.StringType,
+						},
+					},
+				},
+			},
+		},
+		"search_filter":          types.StringType,
+		"search_scope":           types.StringType,
+		"member_of_nested_group": types.BoolType,
+		"base_dn":                types.StringType,
+		"binary_attribute_settings": types.MapType{
+			ElemType: types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"binary_encoding": types.StringType,
+				},
+			},
+		},
+		"search_attributes": types.ListType{
+			ElemType: types.StringType,
+		},
+	}
+
 	attributeMappingAttrTypes = map[string]attr.Type{
+		"attribute_sources": types.ListType{
+			ElemType: types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"custom_attribute_source": types.ObjectType{
+						AttrTypes: customAttrSourceAttrTypes,
+					},
+					"jdbc_attribute_source": types.ObjectType{
+						AttrTypes: jdbcAttrSourceAttrTypes,
+					},
+					"ldap_attribute_source": types.ObjectType{
+						AttrTypes: ldapAttrSourceAttrTypes,
+					},
+				},
+			},
+		},
 		"attribute_contract_fulfillment": types.MapType{
 			ElemType: types.ObjectType{
 				AttrTypes: map[string]attr.Type{
@@ -351,10 +458,12 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Attributes: map[string]schema.Attribute{
 					//TODO add attribute_sources
 					"attribute_sources": schema.ListNestedAttribute{
+						Optional:    true,
 						Description: "A list of configured data stores to look up attributes from.",
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
-								"custom_attr_source": schema.SingleNestedAttribute{
+								"custom_attribute_source": schema.SingleNestedAttribute{
+									Optional:    true,
 									Description: "The configured settings to look up attributes from an associated data store.",
 									Attributes: map[string]schema.Attribute{
 										"type": schema.StringAttribute{
@@ -389,7 +498,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 											Description: "The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping. Note: Required for APC-to-SP Adapter Mappings",
 											Optional:    true,
 										},
-										"attribute_contract_fullfilment": schema.MapNestedAttribute{
+										"attribute_contract_fulfillment": schema.MapNestedAttribute{
 											Description: "A list of mappings from attribute names to their fulfillment values. This field is only valid for the SP Connection's Browser SSO mappings",
 											Optional:    true,
 											NestedObject: schema.NestedAttributeObject{
@@ -430,7 +539,8 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 										},
 									},
 								},
-								"jdbc_attr_source": schema.SingleNestedAttribute{
+								"jdbc_attribute_source": schema.SingleNestedAttribute{
+									Optional:    true,
 									Description: "The configured settings to look up attributes from a JDBC data store.",
 									Attributes: map[string]schema.Attribute{
 										"type": schema.StringAttribute{
@@ -465,7 +575,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 											Description: "The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping. Note: Required for APC-to-SP Adapter Mappings",
 											Optional:    true,
 										},
-										"attribute_contract_fullfilment": schema.MapNestedAttribute{
+										"attribute_contract_fulfillment": schema.MapNestedAttribute{
 											Description: "A list of mappings from attribute names to their fulfillment values. This field is only valid for the SP Connection's Browser SSO mappings",
 											Optional:    true,
 											NestedObject: schema.NestedAttributeObject{
@@ -496,7 +606,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 											Description: "The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.",
 											Required:    true,
 										},
-										"columnNames": schema.ListAttribute{
+										"column_names": schema.ListAttribute{
 											Description: "A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.",
 											ElementType: types.StringType,
 											Optional:    true,
@@ -507,7 +617,8 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 										},
 									},
 								},
-								"ldap_attr_source": schema.SingleNestedAttribute{
+								"ldap_attribute_source": schema.SingleNestedAttribute{
+									Optional:    true,
 									Description: "The configured settings to look up attributes from a LDAP data store.",
 									Attributes: map[string]schema.Attribute{
 										"type": schema.StringAttribute{
@@ -542,7 +653,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 											Description: "The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping. Note: Required for APC-to-SP Adapter Mappings",
 											Optional:    true,
 										},
-										"attribute_contract_fullfilment": schema.MapNestedAttribute{
+										"attribute_contract_fulfillment": schema.MapNestedAttribute{
 											Description: "A list of mappings from attribute names to their fulfillment values. This field is only valid for the SP Connection's Browser SSO mappings",
 											Optional:    true,
 											NestedObject: schema.NestedAttributeObject{
@@ -590,6 +701,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 											NestedObject: schema.NestedAttributeObject{
 												Attributes: map[string]schema.Attribute{
 													"binary_encoding": schema.StringAttribute{
+														Optional:    true,
 														Description: "Get the encoding type for this attribute. If not specified, the default is BASE64.",
 														Validators: []validator.String{
 															stringvalidator.OneOf("OBJECT", "ONE_LEVEL", "SUBTREE"),
@@ -608,9 +720,9 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 							},
 							Validators: []validator.Object{
 								objectvalidator.AtLeastOneOf(
-									path.MatchRoot("ldap_attr_source"),
-									path.MatchRoot("jdbc_attr_source"),
-									path.MatchRoot("custom_attr_source")),
+									path.MatchRoot("ldap_attribute_source"),
+									path.MatchRoot("jdbc_attribute_source"),
+									path.MatchRoot("custom_attribute_source")),
 							},
 						},
 					},
@@ -735,6 +847,7 @@ func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdap
 
 	if internaltypes.IsDefined(plan.AttributeMapping) {
 		addRequest.AttributeMapping = &client.IdpAdapterContractMapping{}
+		//TODO
 		// Don't include non-specified attributes, since PF will complain about issuance_criteria.expression_criteria
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeMapping, true)), addRequest.AttributeMapping)
 		if err != nil {
@@ -789,9 +902,61 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 	}
 
 	if r.AttributeMapping != nil {
-		//TODO manually converting this stuff
+		attributeMappingValues := map[string]attr.Value{
+			"inherited": types.BoolPointerValue(r.AttributeMapping.Inherited),
+		}
 
-		state.AttributeMapping, objectValueFromDiags = types.ObjectValueFrom(ctx, attributeMappingAttrTypes, r.AttributeMapping)
+		// Build attribute_contract_fulfillment value
+		attributeContractFulfillmentElementAttrTypes := attributeMappingAttrTypes["attribute_contract_fulfillment"].(types.MapType).ElemType.(types.ObjectType).AttrTypes
+		attributeMappingValues["attribute_contract_fulfillment"], objectValueFromDiags = types.MapValueFrom(ctx,
+			types.ObjectType{AttrTypes: attributeContractFulfillmentElementAttrTypes}, r.AttributeMapping.AttributeContractFulfillment)
+		diags.Append(objectValueFromDiags...)
+
+		// Build issuance_criteria value
+		issuanceCritieraAttrTypes := attributeMappingAttrTypes["issuance_criteria"].(types.ObjectType).AttrTypes
+		if r.AttributeMapping.IssuanceCriteria != nil {
+			attributeMappingValues["issuance_critiera"], objectValueFromDiags = types.ObjectValueFrom(ctx,
+				issuanceCritieraAttrTypes, r.AttributeMapping.IssuanceCriteria)
+			diags.Append(objectValueFromDiags...)
+		} else {
+			attributeMappingValues["issuance_critiera"] = types.ObjectNull(issuanceCritieraAttrTypes)
+		}
+
+		// Build attribute_sources value
+		attributeSourcesElementAttrTypes := attributeMappingAttrTypes["attribute_sources"].(types.ListType).ElemType.(types.ObjectType).AttrTypes
+		attrSourceElements := []attr.Value{}
+		for _, attrSource := range r.AttributeMapping.AttributeSources {
+			attrSourceValues := map[string]attr.Value{}
+			if attrSource.CustomAttributeSource != nil {
+				//TODO this may not be right
+				attrSourceValues["custom_attribute_source"], objectValueFromDiags = types.ObjectValueFrom(ctx, customAttrSourceAttrTypes, attrSource.CustomAttributeSource)
+				diags.Append(objectValueFromDiags...)
+			} else {
+				attrSourceValues["custom_attribute_source"] = types.ObjectNull(customAttrSourceAttrTypes)
+			}
+			if attrSource.JdbcAttributeSource != nil {
+				//TODO this may not be right
+				attrSourceValues["jdbc_attribute_source"], objectValueFromDiags = types.ObjectValueFrom(ctx, jdbcAttrSourceAttrTypes, attrSource.JdbcAttributeSource)
+				diags.Append(objectValueFromDiags...)
+			} else {
+				attrSourceValues["jdbc_attribute_source"] = types.ObjectNull(jdbcAttrSourceAttrTypes)
+			}
+			if attrSource.LdapAttributeSource != nil {
+				//TODO this may not be right
+				attrSourceValues["ldap_attribute_source"], objectValueFromDiags = types.ObjectValueFrom(ctx, ldapAttrSourceAttrTypes, attrSource.LdapAttributeSource)
+				diags.Append(objectValueFromDiags...)
+			} else {
+				attrSourceValues["ldap_attribute_source"] = types.ObjectNull(ldapAttrSourceAttrTypes)
+			}
+			attrSourceElement, objectValueFromDiags := types.ObjectValue(attributeSourcesElementAttrTypes, attrSourceValues)
+			diags.Append(objectValueFromDiags...)
+			attrSourceElements = append(attrSourceElements, attrSourceElement)
+		}
+		attributeMappingValues["attribute_sources"], objectValueFromDiags = types.ListValue(types.ObjectType{AttrTypes: attributeSourcesElementAttrTypes}, attrSourceElements)
+		diags.Append(objectValueFromDiags...)
+
+		// Build complete attribute mapping value
+		state.AttributeMapping, objectValueFromDiags = types.ObjectValue(attributeMappingAttrTypes, attributeMappingValues)
 		diags.Append(objectValueFromDiags...)
 	}
 }
