@@ -25,8 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
-	client "github.com/pingidentity/pingfederate-go-client"
+	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -100,7 +99,7 @@ type oauthAuthServerSettingsResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages Oauth Auth Server Settings",
+		Description: "Manages OAuth Auth Server Settings",
 		Attributes: map[string]schema.Attribute{
 			"default_scope_description": schema.StringAttribute{
 				Description: "The default scope description.",
@@ -591,7 +590,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 		},
 	}
 
-	config.AddCommonSchema(&schema, false)
+	config.AddCommonSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -841,7 +840,8 @@ func (r *oauthAuthServerSettingsResource) Configure(_ context.Context, req resou
 
 }
 
-func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsResourceModel) {
+func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsResourceModel, diags *diag.Diagnostics) {
+	//TODO placeholder
 	state.Id = types.StringValue("id")
 	state.DefaultScopeDescription = types.StringValue(r.DefaultScopeDescription)
 
@@ -975,7 +975,7 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 	state.BypassAuthorizationForApprovedGrants = types.BoolPointerValue(r.BypassAuthorizationForApprovedGrants)
 	state.AllowUnidentifiedClientROCreds = types.BoolPointerValue(r.AllowUnidentifiedClientROCreds)
 	state.AllowUnidentifiedClientExtensionGrants = types.BoolPointerValue(r.AllowUnidentifiedClientExtensionGrants)
-	state.AdminWebServicePcvRef = internaltypes.ToStateResourceLink(r.AdminWebServicePcvRef, diag.Diagnostics{})
+	state.AdminWebServicePcvRef = internaltypes.ToStateResourceLink(ctx, r.GetAdminWebServicePcvRef())
 	state.AtmIdForOAuthGrantManagement = types.StringPointerValue(r.AtmIdForOAuthGrantManagement)
 	state.ScopeForOAuthGrantManagement = types.StringPointerValue(r.ScopeForOAuthGrantManagement)
 	state.AllowedOrigins = internaltypes.GetStringSet(r.AllowedOrigins)
@@ -1008,30 +1008,30 @@ func (r *oauthAuthServerSettingsResource) Create(ctx context.Context, req resour
 	createOauthAuthServerSettings := client.NewAuthorizationServerSettings(plan.DefaultScopeDescription.ValueString(), plan.AuthorizationCodeTimeout.ValueInt64(), plan.AuthorizationCodeEntropy.ValueInt64(), plan.RefreshTokenLength.ValueInt64(), plan.RefreshRollingInterval.ValueInt64(), plan.RegisteredAuthorizationPath.ValueString(), plan.PendingAuthorizationTimeout.ValueInt64(), plan.DevicePollingInterval.ValueInt64(), plan.BypassActivationCodeConfirmation.ValueBool())
 	err := addOptionalOauthAuthServerSettingsFields(ctx, createOauthAuthServerSettings, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OauthAuthServerSettings", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Auth Server Settings", err.Error())
 		return
 	}
-	requestJson, err := createOauthAuthServerSettings.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createOauthAuthServerSettings.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of OAuth Auth Server Settings: %s", requestErr.Error())
 	}
 
 	apiCreateOauthAuthServerSettings := r.apiClient.OauthAuthServerSettingsApi.UpdateAuthorizationServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateOauthAuthServerSettings = apiCreateOauthAuthServerSettings.Body(*createOauthAuthServerSettings)
 	oauthAuthServerSettingsResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsApi.UpdateAuthorizationServerSettingsExecute(apiCreateOauthAuthServerSettings)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OauthAuthServerSettings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Auth Server Settings", err, httpResp)
 		return
 	}
-	responseJson, err := oauthAuthServerSettingsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := oauthAuthServerSettingsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of OAuth Auth Server Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
 	var state oauthAuthServerSettingsResourceModel
 
-	readOauthAuthServerSettingsResponse(ctx, oauthAuthServerSettingsResponse, &state)
+	readOauthAuthServerSettingsResponse(ctx, oauthAuthServerSettingsResponse, &state, &resp.Diagnostics)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -1056,13 +1056,13 @@ func (r *oauthAuthServerSettingsResource) Read(ctx context.Context, req resource
 		return
 	}
 	// Log response JSON
-	responseJson, err := apiReadOauthAuthServerSettings.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadOauthAuthServerSettings.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of OAuth Auth Server Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
-	readOauthAuthServerSettingsResponse(ctx, apiReadOauthAuthServerSettings, &state)
+	readOauthAuthServerSettingsResponse(ctx, apiReadOauthAuthServerSettings, &state, &resp.Diagnostics)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -1086,26 +1086,26 @@ func (r *oauthAuthServerSettingsResource) Update(ctx context.Context, req resour
 	createUpdateRequest := client.NewAuthorizationServerSettings(plan.DefaultScopeDescription.ValueString(), plan.AuthorizationCodeTimeout.ValueInt64(), plan.AuthorizationCodeEntropy.ValueInt64(), plan.RefreshTokenLength.ValueInt64(), plan.RefreshRollingInterval.ValueInt64(), plan.RegisteredAuthorizationPath.ValueString(), plan.PendingAuthorizationTimeout.ValueInt64(), plan.DevicePollingInterval.ValueInt64(), plan.BypassActivationCodeConfirmation.ValueBool())
 	err := addOptionalOauthAuthServerSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OauthAuthServerSettings", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Auth Server Settings", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of a OAuth Auth Server Settings: %s", requestErr.Error())
 	}
 	updateOauthAuthServerSettings = updateOauthAuthServerSettings.Body(*createUpdateRequest)
 	updateOauthAuthServerSettingsResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsApi.UpdateAuthorizationServerSettingsExecute(updateOauthAuthServerSettings)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OauthAuthServerSettings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OAuth Auth Server Settings", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateOauthAuthServerSettingsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateOauthAuthServerSettingsResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of a OAuth Auth Server Settings: %s", responseErr.Error())
 	}
 	// Read the response
-	readOauthAuthServerSettingsResponse(ctx, updateOauthAuthServerSettingsResponse, &state)
+	readOauthAuthServerSettingsResponse(ctx, updateOauthAuthServerSettingsResponse, &state, &resp.Diagnostics)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

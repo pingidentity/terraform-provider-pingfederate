@@ -47,12 +47,13 @@ removetestcontainer:
 	
 spincontainer: removetestcontainer starttestcontainer
 
+define test_acc_env_vars 
+	PINGFEDERATE_PROVIDER_HTTPS_HOST=https://localhost:9999 PINGFEDERATE_PROVIDER_USERNAME=administrator PINGFEDERATE_PROVIDER_PASSWORD=2FederateM0re PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true
+endef
+
 testacc:
-	PINGFEDERATE_PROVIDER_HTTPS_HOST=https://localhost:9999 \
-	PINGFEDERATE_PROVIDER_USERNAME=administrator \
-	PINGFEDERATE_PROVIDER_PASSWORD=2FederateM0re \
-	PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true \
-	TF_ACC=1 go test -timeout 10m -v ./internal/... -p 1
+	$(call test_acc_env_vars) TF_ACC=1  go test `go list ./internal/... | grep -v github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/oauthauthserversettings` -timeout 10m -v -p 4 && \
+	$(call test_acc_env_vars) TF_ACC=1  go test `go list ./internal/... | grep github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/oauthauthserversettings` -timeout 10m -v -p 1
 
 testacccomplete: spincontainer testacc
 
@@ -61,16 +62,16 @@ clearstates:
 	
 kaboom: clearstates spincontainer install
 
-devchecknotest: install golangcilint tfproviderlint tflint terrafmtlint importfmtlint generate
+devchecknotest: install golangcilint generate tfproviderlint tflint terrafmtlint importfmtlint
 
 devcheck: devchecknotest kaboom testacc
 
 generateresource:
-	PINGFEDERATE_GENERATED_ENDPOINT=oauth/authServerSettings/scopes/exclusiveScopes \
-	PINGFEDERATE_RESOURCE_DEFINITION_NAME=ScopeEntry \
+	PINGFEDERATE_GENERATED_ENDPOINT=serverSettings \
+	PINGFEDERATE_RESOURCE_DEFINITION_NAME=ServerSettings \
 	PINGFEDERATE_ALLOW_REQUIRED_BYPASS=False \
 	OVERWRITE_EXISTING_RESOURCE_FILE=False \
-	PINGFEDERATE_PUT_ONLY_RESOURCE=False \
+	PINGFEDERATE_PUT_ONLY_RESOURCE=True \
 	GENERATE_SCHEMA=True \
 	python3 scripts/generate_resource.py
 	make fmt
@@ -86,7 +87,6 @@ tfproviderlint:
 									-c 1 \
 									-AT001.ignored-filename-suffixes=_test.go \
 									-AT003=false \
-									-R009=false \
 									-XAT001=false \
 									-XR004=false \
 									-XS002=false ./internal/...

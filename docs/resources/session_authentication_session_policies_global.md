@@ -42,4 +42,13 @@ resource "pingfederate_session_authentication_session_policies_global" "sessionA
 
 ### Read-Only
 
-- `id` (String) Placeholder name of this object required by Terraform.
+- `id` (String) The ID of this resource.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "sessionAuthenticationSessionPoliciesGlobalId" should be "id"
+terraform import pingfederate_session_authentication_session_policies_global.mySessionAuthenticationSessionPoliciesGlobal sessionAuthenticationSessionPoliciesGlobalId
+```

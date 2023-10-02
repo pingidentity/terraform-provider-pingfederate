@@ -32,7 +32,7 @@ func TestAccVirtualHostNames(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
-			"pingfederate": providerserver.NewProtocol6WithError(provider.New()),
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
 		Steps: []resource.TestStep{
 			{

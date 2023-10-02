@@ -2,7 +2,7 @@
 The PingFederate Terraform provider is a plugin for [Terraform](https://www.terraform.io/) that supports the management of PingFederate configuration. This provider is maintained internally by the Ping Identity team.
 
 # Disclaimer - Provider in Development
-The PingFederate Terraform provider is still in development, and breaking changes are likely. The MVP for this provider is set to release at the end of Q3 in 2023. To see the current resources, navigate to the [Changelog](CHANGELOG.md). The resource types added to this repository are considered complete, however will undergo additional testing before this provider is published to the Terraform Registry.
+The PingFederate Terraform provider is still in development, and breaking changes are likely. This provider is currently Early Access. To see the current resources, navigate to the [Changelog](CHANGELOG.md). The resource types added to this repository are considered complete, however will undergo additional testing before this provider is published to the Terraform Registry.
 
 ## Requirements
 * Terraform 1.1+

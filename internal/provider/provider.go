@@ -4,8 +4,10 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -15,11 +17,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	client "github.com/pingidentity/pingfederate-go-client"
+	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/administrativeaccounts"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/administrativeaccount"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificates"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/license"
@@ -27,7 +29,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/protocolmetadata"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sessions"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -37,8 +39,17 @@ var (
 )
 
 // New is a helper function to simplify provider server and testing implementation.
-func New() provider.Provider {
-	return &pingfederateProvider{}
+func NewFactory(version string) func() provider.Provider {
+	return func() provider.Provider {
+		return &pingfederateProvider{
+			version: version,
+		}
+	}
+}
+
+// NewTestProvider is a helper function to simplify testing implementation.
+func NewTestProvider() provider.Provider {
+	return NewFactory("test")()
 }
 
 // PingFederate ProviderModel maps provider schema data to a Go type.
@@ -51,7 +62,9 @@ type pingfederateProviderModel struct {
 }
 
 // pingfederateProvider is the provider implementation.
-type pingfederateProvider struct{}
+type pingfederateProvider struct {
+	version string
+}
 
 // Metadata returns the provider type name.
 func (p *pingfederateProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -196,6 +209,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 		caCertPool = x509.NewCertPool()
 		for _, pemFilename := range caCertPemFiles {
 			// Load CA cert
+			pemFilename := filepath.Clean(pemFilename)
 			caCert, err := os.ReadFile(pemFilename)
 			if err != nil {
 				resp.Diagnostics.AddError("Failed to read CA PEM certificate file: "+pemFilename, err.Error())
@@ -238,6 +252,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	}
 	httpClient := &http.Client{Transport: tr}
 	clientConfig.HTTPClient = httpClient
+	clientConfig.UserAgent = fmt.Sprintf("pingtools terraform-provider-pingfederate/%s go", p.version)
 	resourceConfig.ApiClient = client.NewAPIClient(clientConfig)
 	resp.ResourceData = resourceConfig
 
@@ -252,10 +267,11 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 // Resources defines the resources implemented in the provider.
 func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		administrativeaccounts.AdministrativeAccountResource,
+		administrativeaccount.AdministrativeAccountResource,
 		authenticationapi.AuthenticationApiSettingsResource,
-		certificates.CertificateResource,
+		certificate.CertificateResource,
 		config.AuthenticationPolicyContractsResource,
+		config.PasswordCredentialValidatorsResource,
 		config.RedirectValidationResource,
 		config.VirtualHostNamesResource,
 		idp.IdpDefaultUrlsResource,
@@ -264,6 +280,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		license.LicenseAgreementResource,
 		license.LicenseResource,
 		localidentity.LocalIdentityIdentityProfilesResource,
+		oauth.OauthAccessTokenManagerResource,
 		oauth.OauthAuthServerSettingsResource,
 		oauth.OauthAuthServerSettingsScopesCommonScopesResource,
 		oauth.OauthAuthServerSettingsScopesExclusiveScopesResource,
@@ -271,9 +288,10 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		protocolmetadata.ProtocolMetadataLifetimeSettingsResource,
 		serversettings.ServerSettingsGeneralSettingsResource,
 		serversettings.ServerSettingsLogSettingsResource,
+		serversettings.ServerSettingsResource,
 		serversettings.ServerSettingsSystemKeysResource,
-		session.SessionApplicationSessionPolicyResource,
-		session.SessionAuthenticationSessionPoliciesGlobalResource,
-		session.SessionSettingsResource,
+		sessions.SessionApplicationSessionPolicyResource,
+		sessions.SessionAuthenticationSessionPoliciesGlobalResource,
+		sessions.SessionSettingsResource,
 	}
 }

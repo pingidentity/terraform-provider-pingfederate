@@ -58,7 +58,7 @@ resource "pingfederate_redirect_validation" "redirectValidationExample" {
 
 ### Read-Only
 
-- `id` (String) Placeholder for Terraform
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--redirect_validation_local_settings"></a>
 ### Nested Schema for `redirect_validation_local_settings`
@@ -96,3 +96,12 @@ Optional:
 Optional:
 
 - `enable_wreply_validation_slo` (Boolean) Enable wreply validation for SLO.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "redirectValidationId" should be "id"
+terraform import pingfederate_redirect_validation.myRedirectValidation redirectValidationId
+```

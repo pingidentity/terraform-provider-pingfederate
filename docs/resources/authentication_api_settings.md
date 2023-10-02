@@ -40,12 +40,24 @@ resource "pingfederate_authentication_api_settings" "authenticationApiSettingsEx
 
 ### Read-Only
 
-- `id` (String) Placeholder name of this object required by Terraform.
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--default_application_ref"></a>
 ### Nested Schema for `default_application_ref`
 
-Optional:
+Required:
 
-- `id` (String)
-- `location` (String)
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "authenticationApiSettingsId" should be "id"
+terraform import pingfederate_authentication_api_settings.myAuthenticationApiSettings authenticationApiSettingsId
+```
