@@ -16,7 +16,7 @@ provider "pingfederate" {
 }
 
 resource "pingfederate_idp_adapters" "idpAdaptersExample" {
-	id = "HTMLFormPD"
+	custom_id = "HTMLFormPD"
     name = "HTMLFormPD"
     plugin_descriptor_ref = {
         location = "https://localhost:9999/pf-admin-api/v1/idp/adapters/descriptors/com.pingidentity.adapters.htmlform.idp.HtmlFormIdpAuthnAdapter",
@@ -45,13 +45,13 @@ resource "pingfederate_idp_adapters" "idpAdaptersExample" {
         },
         attribute_sources = [
             {
-                jdbc_attribute_source = {
-                    type = "JDBC"
+                ldap_attribute_source = {
+                    type = "LDAP"
                     data_store_ref = {
-                        id = "ProvisionerDS"
+                        id = "LDAP-D803C87FAB2ADFB4B0A947B64BA6F0C6093A5CA3"
                     }
-                    table = "example"
-                    filter = "id = 4"
+                    search_filter = "(&)"
+                    search_scope = "SUBTREE"
                 }
             }
         ],

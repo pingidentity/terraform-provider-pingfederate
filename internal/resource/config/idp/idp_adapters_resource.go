@@ -255,6 +255,7 @@ type idpAdapterResource struct {
 type idpAdapterResourceModel struct {
 	AuthnCtxClassRef    types.String `tfsdk:"authn_ctx_class_ref"`
 	Id                  types.String `tfsdk:"id"`
+	CustomId            types.String `tfsdk:"custom_id"`
 	Name                types.String `tfsdk:"name"`
 	PluginDescriptorRef types.Object `tfsdk:"plugin_descriptor_ref"`
 	ParentRef           types.Object `tfsdk:"parent_ref"`
@@ -265,15 +266,14 @@ type idpAdapterResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
+	schema := schema.Schema{
 		Description: "Manages an Idp Adapter",
 		Attributes: map[string]schema.Attribute{
 			"authn_ctx_class_ref": schema.StringAttribute{
 				Description: "The fixed value that indicates how the user was authenticated.",
 				Optional:    true,
 			},
-			//TODO don't add id in common schema
-			"id": schema.StringAttribute{
+			"custom_id": schema.StringAttribute{
 				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
 			},
@@ -458,6 +458,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 									Optional:    true,
 									Description: "The configured settings to look up attributes from an associated data store.",
 									Attributes: map[string]schema.Attribute{
+										//TODO only need type on ldap dat source, others are implicit
 										"type": schema.StringAttribute{
 											Description: "The data store type of this attribute source.",
 											Required:    true,
@@ -823,6 +824,9 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 			},
 		},
 	}
+
+	config.AddCommonSchema(&schema)
+	resp.Schema = schema
 }
 
 func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdapter, plan idpAdapterResourceModel) error {
@@ -909,8 +913,9 @@ func (r *idpAdapterResource) Configure(_ context.Context, req resource.Configure
 
 }
 
-func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *idpAdapterResourceModel, configurationFromPlan basetypes.ObjectValue, diags *diag.Diagnostics) {
+func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *idpAdapterResourceModel, plan idpAdapterResourceModel, diags *diag.Diagnostics) {
 	state.AuthnCtxClassRef = internaltypes.StringTypeOrNil(r.AuthnCtxClassRef, false)
+	state.CustomId = types.StringValue(r.Id)
 	state.Id = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
 	state.PluginDescriptorRef = internaltypes.ToStateResourceLink(ctx, &r.PluginDescriptorRef, diags)
@@ -929,11 +934,11 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 	planFields := types.ListNull(types.ObjectType{AttrTypes: config.FieldAttrTypes()})
 	planTables := types.ListNull(types.ObjectType{AttrTypes: config.TableAttrTypes()})
 
-	planFieldsValue, ok := configurationFromPlan.Attributes()["fields"]
+	planFieldsValue, ok := plan.Configuration.Attributes()["fields"]
 	if ok {
 		planFields = planFieldsValue.(types.List)
 	}
-	planTablesValue, ok := configurationFromPlan.Attributes()["tables"]
+	planTablesValue, ok := plan.Configuration.Attributes()["tables"]
 	if ok {
 		planTables = planTablesValue.(types.List)
 	}
@@ -976,37 +981,38 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 
 		// Build attribute_sources value
 		attributeSourcesElementAttrTypes := attributeMappingAttrTypes["attribute_sources"].(types.ListType).ElemType.(types.ObjectType).AttrTypes
-		attrSourceElements := []attr.Value{}
-		for _, attrSource := range r.AttributeMapping.AttributeSources {
-			attrSourceValues := map[string]attr.Value{}
-			if attrSource.CustomAttributeSource != nil {
-				//TODO this may not be right
-				attrSourceValues["custom_attribute_source"], objectValueFromDiags = types.ObjectValueFrom(ctx, customAttrSourceAttrTypes, attrSource.CustomAttributeSource)
+		if internaltypes.IsDefined(plan.AttributeMapping) && !internaltypes.IsDefined(plan.AttributeMapping.Attributes()["attribute_sources"]) {
+			// don't return empty list if plan didn't specify any attribute sources, return null list
+			attributeMappingValues["attribute_sources"] = types.ListNull(types.ObjectType{AttrTypes: attributeSourcesElementAttrTypes})
+		} else {
+			attrSourceElements := []attr.Value{}
+			for _, attrSource := range r.AttributeMapping.AttributeSources {
+				attrSourceValues := map[string]attr.Value{}
+				if attrSource.CustomAttributeSource != nil {
+					attrSourceValues["custom_attribute_source"], objectValueFromDiags = types.ObjectValueFrom(ctx, customAttrSourceAttrTypes, attrSource.CustomAttributeSource)
+					diags.Append(objectValueFromDiags...)
+				} else {
+					attrSourceValues["custom_attribute_source"] = types.ObjectNull(customAttrSourceAttrTypes)
+				}
+				if attrSource.JdbcAttributeSource != nil {
+					attrSourceValues["jdbc_attribute_source"], objectValueFromDiags = types.ObjectValueFrom(ctx, jdbcAttrSourceAttrTypes, attrSource.JdbcAttributeSource)
+					diags.Append(objectValueFromDiags...)
+				} else {
+					attrSourceValues["jdbc_attribute_source"] = types.ObjectNull(jdbcAttrSourceAttrTypes)
+				}
+				if attrSource.LdapAttributeSource != nil {
+					attrSourceValues["ldap_attribute_source"], objectValueFromDiags = types.ObjectValueFrom(ctx, ldapAttrSourceAttrTypes, attrSource.LdapAttributeSource)
+					diags.Append(objectValueFromDiags...)
+				} else {
+					attrSourceValues["ldap_attribute_source"] = types.ObjectNull(ldapAttrSourceAttrTypes)
+				}
+				attrSourceElement, objectValueFromDiags := types.ObjectValue(attributeSourcesElementAttrTypes, attrSourceValues)
 				diags.Append(objectValueFromDiags...)
-			} else {
-				attrSourceValues["custom_attribute_source"] = types.ObjectNull(customAttrSourceAttrTypes)
+				attrSourceElements = append(attrSourceElements, attrSourceElement)
 			}
-			if attrSource.JdbcAttributeSource != nil {
-				//TODO this may not be right
-				attrSourceValues["jdbc_attribute_source"], objectValueFromDiags = types.ObjectValueFrom(ctx, jdbcAttrSourceAttrTypes, attrSource.JdbcAttributeSource)
-				diags.Append(objectValueFromDiags...)
-			} else {
-				attrSourceValues["jdbc_attribute_source"] = types.ObjectNull(jdbcAttrSourceAttrTypes)
-			}
-			if attrSource.LdapAttributeSource != nil {
-				//TODO this may not be right
-				attrSourceValues["ldap_attribute_source"], objectValueFromDiags = types.ObjectValueFrom(ctx, ldapAttrSourceAttrTypes, attrSource.LdapAttributeSource)
-				diags.Append(objectValueFromDiags...)
-			} else {
-				attrSourceValues["ldap_attribute_source"] = types.ObjectNull(ldapAttrSourceAttrTypes)
-			}
-			attrSourceElement, objectValueFromDiags := types.ObjectValue(attributeSourcesElementAttrTypes, attrSourceValues)
+			attributeMappingValues["attribute_sources"], objectValueFromDiags = types.ListValue(types.ObjectType{AttrTypes: attributeSourcesElementAttrTypes}, attrSourceElements)
 			diags.Append(objectValueFromDiags...)
-			attrSourceElements = append(attrSourceElements, attrSourceElement)
 		}
-		//TODO don't return empty list if plan didn't specify any attribute sources, return null list
-		attributeMappingValues["attribute_sources"], objectValueFromDiags = types.ListValue(types.ObjectType{AttrTypes: attributeSourcesElementAttrTypes}, attrSourceElements)
-		diags.Append(objectValueFromDiags...)
 
 		// Build complete attribute mapping value
 		state.AttributeMapping, objectValueFromDiags = types.ObjectValue(attributeMappingAttrTypes, attributeMappingValues)
@@ -1037,7 +1043,7 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	createIdpAdapter := client.NewIdpAdapter(plan.Id.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, configuration)
+	createIdpAdapter := client.NewIdpAdapter(plan.CustomId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, configuration)
 	err = addOptionalIdpAdapterFields(ctx, createIdpAdapter, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdpAdapter", err.Error())
@@ -1063,7 +1069,7 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 	// Read the response into the state
 	var state idpAdapterResourceModel
 
-	readIdpAdapterResponse(ctx, idpAdapterResponse, &state, plan.Configuration, &resp.Diagnostics)
+	readIdpAdapterResponse(ctx, idpAdapterResponse, &state, plan, &resp.Diagnostics)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -1076,7 +1082,7 @@ func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadIdpAdapter, httpResp, err := r.apiClient.IdpAdaptersAPI.GetIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadIdpAdapter, httpResp, err := r.apiClient.IdpAdaptersAPI.GetIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for an IdpAdapter", err, httpResp)
@@ -1089,7 +1095,7 @@ func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// Read the response into the state
-	readIdpAdapterResponse(ctx, apiReadIdpAdapter, &state, state.Configuration, &resp.Diagnostics)
+	readIdpAdapterResponse(ctx, apiReadIdpAdapter, &state, state, &resp.Diagnostics)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -1108,7 +1114,7 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	// Get the current state to see how any attributes are changing
-	updateIdpAdapter := r.apiClient.IdpAdaptersAPI.UpdateIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Id.ValueString())
+	updateIdpAdapter := r.apiClient.IdpAdaptersAPI.UpdateIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.CustomId.ValueString())
 
 	var pluginDescriptorRef client.ResourceLink
 	err := json.Unmarshal([]byte(internaljson.FromValue(plan.PluginDescriptorRef, false)), &pluginDescriptorRef)
@@ -1124,7 +1130,7 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	createUpdateRequest := client.NewIdpAdapter(plan.Id.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, configuration)
+	createUpdateRequest := client.NewIdpAdapter(plan.CustomId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, configuration)
 
 	err = addOptionalIdpAdapterFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -1148,7 +1154,7 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 	// Read the response
 	var state idpAdapterResourceModel
-	readIdpAdapterResponse(ctx, updateIdpAdapterResponse, &state, plan.Configuration, &resp.Diagnostics)
+	readIdpAdapterResponse(ctx, updateIdpAdapterResponse, &state, plan, &resp.Diagnostics)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
@@ -1156,8 +1162,19 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 
 }
 
-// This config object is edit-only, so Terraform can't delete it. This method will just remove it from state
+// Delete the Idp Adapter
 func (r *idpAdapterResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// Retrieve values from state
+	var state idpAdapterResourceModel
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	httpResp, err := r.apiClient.IdpAdaptersAPI.DeleteIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the Idp Adapter", err, httpResp)
+	}
 }
 
 func (r *idpAdapterResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
