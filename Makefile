@@ -22,6 +22,7 @@ vet:
 test:
 	go test -parallel=4 ./...
 
+#TODO see what profile works for tests
 starttestcontainer:
 	docker run --name pingfederate_terraform_provider_container \
 		-d -p 9031:9031 \
