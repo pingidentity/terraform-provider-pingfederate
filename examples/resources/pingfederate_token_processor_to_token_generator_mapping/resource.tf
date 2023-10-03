@@ -29,7 +29,7 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "tokenProcess
         filter       = "CONDITION"
         column_names = ["GRANTEE", "IS_GRANTABLE", "ROLE_NAME"]
       }
-    },
+    }
   ]
   attribute_contract_fulfillment = {
     "SAML_SUBJECT" = {

@@ -122,6 +122,7 @@ func LdapAttributeSourceSchemaAttributes() map[string]schema.Attribute {
 	}
 	ldapAttributeSourceSchema["member_of_nested_group"] = schema.BoolAttribute{
 		Description: "Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.",
+		Computed:    true,
 		Optional:    true,
 		PlanModifiers: []planmodifier.Bool{
 			boolplanmodifier.UseStateForUnknown(),

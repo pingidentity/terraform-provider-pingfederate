@@ -169,7 +169,7 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Configure(_ context.Con
 
 func readTokenProcessorToTokenGeneratorMappingResponse(ctx context.Context, r *client.TokenToTokenMapping, state *tokenProcessorToTokenGeneratorMappingsResourceModel, plan tokenProcessorToTokenGeneratorMappingsResourceModel, diags *diag.Diagnostics) {
 	if !internaltypes.IsDefined(plan.AttributeSources) {
-		state.AttributeSources = types.ListNull(types.ObjectType{AttrTypes: attributesources.AttributeSourcesAttrType()})
+		state.AttributeSources = types.ListNull(types.ObjectType{AttrTypes: attributesources.AttributeSourcesElemAttrType()})
 	} else {
 		state.AttributeSources = attributesources.AttributeSourcesToState(ctx, r.AttributeSources, plan.AttributeSources.Elements(), diags)
 	}
