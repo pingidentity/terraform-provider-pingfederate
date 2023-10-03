@@ -2,54 +2,106 @@ package acctest_test
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
 const idpAdaptersId = "2"
 
 // Attributes to test with. Add optional properties to test here if desired.
 type idpAdaptersResourceModel struct {
-	id               string
-	authnCtxClassRef string
-	name             string
-	/*pluginDescriptorRef
-	parentRef
-	configuration
-	attributeMapping
-	attributeContract*/
+	id                    string
+	name                  string
+	pluginDescriptorRefId string
+	configuration         client.PluginConfiguration
+	//attributeMapping      *client.IdpAdapterContractMapping
+	attributeContract client.IdpAdapterAttributeContract
+}
+
+func boolPointer(val bool) *bool {
+	return &val
 }
 
 func TestAccIdpAdapters(t *testing.T) {
-	/*resourceName := "myIdpAdapters"
+	resourceName := "myIdpAdapters"
+	attributeContract := client.NewIdpAdapterAttributeContract([]client.IdpAdapterAttribute{})
+	attributeContract.SetMaskOgnlValues(false)
+	attributeContract.CoreAttributes = append(attributeContract.CoreAttributes, client.IdpAdapterAttribute{
+		Name:      "username",
+		Pseudonym: boolPointer(true),
+	})
+	//TODO pointer string method
+	rowFieldVal := "pingdirectory"
+	fieldVal := "3"
 	initialResourceModel := idpAdaptersResourceModel{
-		authnCtxClassRef: fill in test value,
-		id: fill in test value,
-		name: fill in test value,
-		pluginDescriptorRef: fill in test value,
-		parentRef: fill in test value,
-		configuration: fill in test value,
-		attributeMapping: fill in test value,
-		attributeContract: fill in test value,
+		id:                    "test",
+		name:                  "testIdpAdapter",
+		pluginDescriptorRefId: "com.pingidentity.adapters.htmlform.idp.HtmlFormIdpAuthnAdapter",
+		configuration: client.PluginConfiguration{
+			Tables: []client.ConfigTable{
+				{
+					Name: "Credential Validators",
+					Rows: []client.ConfigRow{
+						{
+							DefaultRow: boolPointer(false),
+							Fields: []client.ConfigField{
+								{
+									Name:  "Password Credential Validator Instance",
+									Value: &rowFieldVal,
+								},
+							},
+						},
+					},
+				},
+			},
+			Fields: []client.ConfigField{},
+		},
+		attributeContract: *attributeContract,
 	}
 	updatedResourceModel := idpAdaptersResourceModel{
-		authnCtxClassRef: fill in test value,
-		id: fill in test value,
-		name: fill in test value,
-		pluginDescriptorRef: fill in test value,
-		parentRef: fill in test value,
-		configuration: fill in test value,
-		attributeMapping: fill in test value,
-		attributeContract: fill in test value,
+		id:                    "test",
+		name:                  "testIdpAdapterNewName",
+		pluginDescriptorRefId: "com.pingidentity.adapters.htmlform.idp.HtmlFormIdpAuthnAdapter",
+		configuration: client.PluginConfiguration{
+			Tables: []client.ConfigTable{
+				{
+					Name: "Credential Validators",
+					Rows: []client.ConfigRow{
+						{
+							DefaultRow: boolPointer(false),
+							Fields: []client.ConfigField{
+								{
+									Name:  "Password Credential Validator Instance",
+									Value: &rowFieldVal,
+								},
+							},
+						},
+					},
+				},
+			},
+			Fields: []client.ConfigField{
+				{
+					Name:  "Challenge Retries",
+					Value: &fieldVal,
+				},
+			},
+		},
+		attributeContract: *attributeContract,
 	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
-			"pingfederate": providerserver.NewProtocol6WithError(provider.New()),
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
 		CheckDestroy: testAccCheckIdpAdaptersDestroy,
 		Steps: []resource.TestStep{
@@ -64,23 +116,147 @@ func TestAccIdpAdapters(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:                  testAccIdpAdapters(resourceName, updatedResourceModel),
-				ResourceName:            "pingfederate_idp_adapters." + resourceName,
-				ImportStateId:           idpAdaptersId,
-				ImportState:             true,
-				ImportStateVerify:       true,
+				Config:            testAccIdpAdapters(resourceName, updatedResourceModel),
+				ResourceName:      "pingfederate_idp_adapters." + resourceName,
+				ImportStateId:     idpAdaptersId,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
-	})*/
+	})
+}
+
+func configurationHclBlock(configuration client.PluginConfiguration) string {
+	var builder strings.Builder
+	builder.WriteString("configuration = {\n")
+	builder.WriteString("    tables = [\n")
+	for _, table := range configuration.Tables {
+		builder.WriteString("       {\n")
+		builder.WriteString("           name = \"")
+		builder.WriteString(table.Name)
+		builder.WriteString("\"\n")
+		builder.WriteString("           rows = [\n")
+		for _, row := range table.Rows {
+			builder.WriteString("               {\n")
+			if row.DefaultRow != nil {
+				builder.WriteString("                   default_row = ")
+				builder.WriteString(strconv.FormatBool(*row.DefaultRow))
+				builder.WriteRune('\n')
+			}
+			builder.WriteString("                   fields = [\n")
+			for _, field := range row.Fields {
+				builder.WriteString("                       {\n")
+				builder.WriteString("                           name = \"")
+				builder.WriteString(field.Name)
+				builder.WriteString("\"\n")
+				if field.Value != nil {
+					builder.WriteString("                           value = \"")
+					builder.WriteString(*field.Value)
+					builder.WriteString("\"\n")
+				}
+				builder.WriteString("                       },\n")
+			}
+			builder.WriteString("                   ]\n")
+			builder.WriteString("               }\n")
+		}
+		builder.WriteString("           ]\n")
+		builder.WriteString("       },\n")
+	}
+	builder.WriteString("    ]\n")
+	builder.WriteString("    fields = [\n")
+	for _, field := range configuration.Fields {
+		builder.WriteString("        {\n")
+		builder.WriteString("            name = \"")
+		builder.WriteString(field.Name)
+		builder.WriteString("\"\n")
+		if field.Value != nil {
+			builder.WriteString("            value = \"")
+			builder.WriteString(*field.Value)
+			builder.WriteString("\"\n")
+		}
+		builder.WriteString("        },\n")
+	}
+	builder.WriteString("    ]\n")
+	builder.WriteString("}\n")
+	return builder.String()
+}
+
+func attributeContractHclBlock(attributeContract client.IdpAdapterAttributeContract) string {
+	var builder strings.Builder
+	builder.WriteString("attribute_contract = {\n")
+	if attributeContract.MaskOgnlValues != nil {
+		builder.WriteString("    mask_ognl_values = ")
+		builder.WriteString(strconv.FormatBool(*attributeContract.MaskOgnlValues))
+		builder.WriteRune('\n')
+	}
+	if attributeContract.Inherited != nil {
+		builder.WriteString("    inherited = ")
+		builder.WriteString(strconv.FormatBool(*attributeContract.Inherited))
+		builder.WriteRune('\n')
+	}
+	if attributeContract.UniqueUserKeyAttribute != nil {
+		builder.WriteString("    unique_user_key_attribute = \"")
+		builder.WriteString(*attributeContract.UniqueUserKeyAttribute)
+		builder.WriteString("\"\n")
+	}
+	builder.WriteString("    core_attributes = [\n")
+	for _, attr := range attributeContract.CoreAttributes {
+		builder.WriteString("        {\n")
+		builder.WriteString("            name = \"")
+		builder.WriteString(attr.Name)
+		builder.WriteString("\"\n")
+		if attr.Masked != nil {
+			builder.WriteString("            masked = ")
+			builder.WriteString(strconv.FormatBool(*attr.Masked))
+			builder.WriteRune('\n')
+		}
+		if attr.Pseudonym != nil {
+			builder.WriteString("            pseudonym = ")
+			builder.WriteString(strconv.FormatBool(*attr.Pseudonym))
+			builder.WriteRune('\n')
+		}
+		builder.WriteString("        },\n")
+	}
+	builder.WriteString("    ]\n")
+	builder.WriteString("    extended_attributes = [\n")
+	for _, attr := range attributeContract.ExtendedAttributes {
+		builder.WriteString("        {\n")
+		builder.WriteString("            name = \"")
+		builder.WriteString(attr.Name)
+		builder.WriteString("\"\n")
+		if attr.Masked != nil {
+			builder.WriteString("            masked = ")
+			builder.WriteString(strconv.FormatBool(*attr.Masked))
+			builder.WriteRune('\n')
+		}
+		if attr.Pseudonym != nil {
+			builder.WriteString("            pseudonym = ")
+			builder.WriteString(strconv.FormatBool(*attr.Pseudonym))
+			builder.WriteRune('\n')
+		}
+		builder.WriteString("        },\n")
+	}
+	builder.WriteString("    ]\n")
+	builder.WriteString("}\n")
+	return builder.String()
 }
 
 func testAccIdpAdapters(resourceName string, resourceModel idpAdaptersResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_idp_adapters" "%[1]s" {
-	id = "%[2]s"
-	FILL THIS IN
+	custom_id = "%[2]s"
+	name = "%[3]s"
+	plugin_descriptor_ref = {
+        id = "%[4]s"
+    }
+	%[5]s
+	%[6]s
 }`, resourceName,
 		resourceModel.id,
+		resourceModel.name,
+		resourceModel.pluginDescriptorRefId,
+		configurationHclBlock(resourceModel.configuration),
+		attributeContractHclBlock(resourceModel.attributeContract),
 	)
 }
 

@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -67,24 +68,20 @@ var (
 			},
 		},
 	}
+	attributesAttrType = map[string]attr.Type{
+		"name":      types.StringType,
+		"pseudonym": types.BoolType,
+		"masked":    types.BoolType,
+	}
 	attributeContractAttrTypes = map[string]attr.Type{
 		"core_attributes": types.SetType{
 			ElemType: types.ObjectType{
-				AttrTypes: map[string]attr.Type{
-					"name":      types.StringType,
-					"pseudonym": types.BoolType,
-					"masked":    types.BoolType,
-				},
+				AttrTypes: attributesAttrType,
 			},
 		},
 		"extended_attributes": types.SetType{
 			ElemType: types.ObjectType{
-				//TODO more duplication
-				AttrTypes: map[string]attr.Type{
-					"name":      types.StringType,
-					"pseudonym": types.BoolType,
-					"masked":    types.BoolType,
-				},
+				AttrTypes: attributesAttrType,
 			},
 		},
 		"unique_user_key_attribute": types.StringType,
@@ -284,6 +281,10 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 					"location": schema.StringAttribute{
 						Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
 						Optional:    true,
+						Computed:    true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
 					},
 				},
 			},
@@ -381,6 +382,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Description: "The list of attributes that the IdP adapter provides.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
+					//TODO plan modifier to add defaults to this
 					"core_attributes": schema.SetNestedAttribute{
 						Description: "A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type.",
 						Required:    true,
@@ -397,6 +399,10 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 								"masked": schema.BoolAttribute{
 									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
 									Optional:    true,
+									Computed:    true,
+									PlanModifiers: []planmodifier.Bool{
+										boolplanmodifier.UseStateForUnknown(),
+									},
 								},
 							},
 						},
@@ -439,6 +445,10 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"attribute_mapping": schema.SingleNestedAttribute{
 				Description: "The attributes mapping from attribute sources to attribute targets.",
 				Optional:    true,
+				Computed:    true,
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
 				Attributes: map[string]schema.Attribute{
 					//TODO add attribute_sources
 					"attribute_sources": schema.ListNestedAttribute{
@@ -967,8 +977,14 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 	diags.Append(valueFromDiags...)
 
 	if r.AttributeContract != nil {
+		planExtendedAttrsValue, ok := plan.AttributeContract.Attributes()["extended_attributes"]
+		if ok && !internaltypes.IsDefined(planExtendedAttrsValue) {
+			// Set the empty slice to nil to avoid mismatch with plan if plan is null/unknown
+			r.AttributeContract.ExtendedAttributes = nil
+		}
 		state.AttributeContract, valueFromDiags = types.ObjectValueFrom(ctx, attributeContractAttrTypes, r.AttributeContract)
 		diags.Append(valueFromDiags...)
+
 	}
 
 	if r.AttributeMapping != nil {
@@ -994,7 +1010,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 
 		// Build attribute_sources value
 		attributeSourcesElementAttrTypes := attributeMappingAttrTypes["attribute_sources"].(types.ListType).ElemType.(types.ObjectType).AttrTypes
-		if internaltypes.IsDefined(plan.AttributeMapping) && !internaltypes.IsDefined(plan.AttributeMapping.Attributes()["attribute_sources"]) {
+		if !internaltypes.IsDefined(plan.AttributeMapping) || !internaltypes.IsDefined(plan.AttributeMapping.Attributes()["attribute_sources"]) {
 			// don't return empty list if plan didn't specify any attribute sources, return null list
 			attributeMappingValues["attribute_sources"] = types.ListNull(types.ObjectType{AttrTypes: attributeSourcesElementAttrTypes})
 		} else {
