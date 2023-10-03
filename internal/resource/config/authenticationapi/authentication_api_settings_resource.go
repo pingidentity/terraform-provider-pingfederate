@@ -2,6 +2,7 @@ package authenticationapi
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -12,6 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -70,7 +73,7 @@ func (r *authenticationApiSettingsResource) Schema(ctx context.Context, req reso
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
-				Attributes: config.AddResourceLinkSchema(),
+				Attributes: resourcelink.ResourceLinkSchema(),
 			},
 			"restrict_access_to_redirectless_mode": schema.BoolAttribute{
 				Description: "Enable restrict access to redirectless mode",
@@ -109,8 +112,13 @@ func addAuthenticationApiSettingsFields(ctx context.Context, addRequest *client.
 		addRequest.IncludeRequestContext = plan.IncludeRequestContext.ValueBoolPointer()
 	}
 	if internaltypes.IsDefined(plan.DefaultApplicationRef) {
-		addRequestNewLinkObj := internaltypes.ToRequestResourceLink(ctx, plan.DefaultApplicationRef)
-		addRequest.DefaultApplicationRef = addRequestNewLinkObj
+		defaultAppRefId := plan.DefaultApplicationRef.Attributes()["id"].(types.String).ValueString()
+		defaultAppRefResLink := client.NewResourceLinkWithDefaults()
+		defaultAppRefResLink.Id = defaultAppRefId
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.DefaultApplicationRef, false)), defaultAppRefResLink)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 
@@ -139,7 +147,7 @@ func readAuthenticationApiSettingsResponse(ctx context.Context, r *client.AuthnA
 	state.EnableApiDescriptions = types.BoolValue(*r.EnableApiDescriptions)
 	state.RestrictAccessToRedirectlessMode = types.BoolValue(*r.RestrictAccessToRedirectlessMode)
 	state.IncludeRequestContext = types.BoolValue(*r.IncludeRequestContext)
-	resourceLinkObjectValue := internaltypes.ToStateResourceLink(ctx, r.GetDefaultApplicationRef())
+	resourceLinkObjectValue := resourcelink.ToStateResourceLink(ctx, r.GetDefaultApplicationRef())
 	state.DefaultApplicationRef = resourceLinkObjectValue
 }
 
@@ -152,7 +160,7 @@ func (r *authenticationApiSettingsResource) Create(ctx context.Context, req reso
 		return
 	}
 	// Get the current state to see how any attributes are changing
-	updateAuthenticationApiSettings := r.apiClient.AuthenticationApiApi.UpdateAuthenticationApiSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateAuthenticationApiSettings := r.apiClient.AuthenticationApiAPI.UpdateAuthenticationApiSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewAuthnApiSettings()
 	err := addAuthenticationApiSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -164,7 +172,7 @@ func (r *authenticationApiSettingsResource) Create(ctx context.Context, req reso
 		diags.AddError("There was an issue retrieving the request of the Authentication API Settings: %s", requestErr.Error())
 	}
 	updateAuthenticationApiSettings = updateAuthenticationApiSettings.Body(*createUpdateRequest)
-	updateAuthenticationApiSettingsResponse, httpResp, err := r.apiClient.AuthenticationApiApi.UpdateAuthenticationApiSettingsExecute(updateAuthenticationApiSettings)
+	updateAuthenticationApiSettingsResponse, httpResp, err := r.apiClient.AuthenticationApiAPI.UpdateAuthenticationApiSettingsExecute(updateAuthenticationApiSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Authentication Api Settings", err, httpResp)
 		return
@@ -191,7 +199,7 @@ func (r *authenticationApiSettingsResource) Read(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadAuthenticationApiSettings, httpResp, err := r.apiClient.AuthenticationApiApi.GetAuthenticationApiSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadAuthenticationApiSettings, httpResp, err := r.apiClient.AuthenticationApiAPI.GetAuthenticationApiSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a Authentication Api Settings", err, httpResp)
@@ -224,7 +232,7 @@ func (r *authenticationApiSettingsResource) Update(ctx context.Context, req reso
 		return
 	}
 	// Get the current state to see how any attributes are changing
-	updateAuthenticationApiSettings := r.apiClient.AuthenticationApiApi.UpdateAuthenticationApiSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateAuthenticationApiSettings := r.apiClient.AuthenticationApiAPI.UpdateAuthenticationApiSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewAuthnApiSettings()
 	err := addAuthenticationApiSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -236,7 +244,7 @@ func (r *authenticationApiSettingsResource) Update(ctx context.Context, req reso
 		diags.AddError("There was an issue retrieving the request of the Authentication API Settings: %s", requestErr.Error())
 	}
 	updateAuthenticationApiSettings = updateAuthenticationApiSettings.Body(*createUpdateRequest)
-	updateAuthenticationApiSettingsResponse, httpResp, err := r.apiClient.AuthenticationApiApi.UpdateAuthenticationApiSettingsExecute(updateAuthenticationApiSettings)
+	updateAuthenticationApiSettingsResponse, httpResp, err := r.apiClient.AuthenticationApiAPI.UpdateAuthenticationApiSettingsExecute(updateAuthenticationApiSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Authentication Api Settings", err, httpResp)
 		return

@@ -22,6 +22,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -90,7 +91,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
 				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
-				Attributes:  config.AddResourceLinkSchema(),
+				Attributes:  resourcelink.ResourceLinkSchema(),
 			},
 			"parent_ref": schema.SingleNestedAttribute{
 				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
@@ -99,7 +100,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
-				Attributes: config.AddResourceLinkSchema(),
+				Attributes: resourcelink.ResourceLinkSchema(),
 			},
 			"configuration": schema.SingleNestedAttribute{
 				Description: "Plugin instance configuration.",
@@ -305,7 +306,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 						Computed:    true,
 						Optional:    true,
 						NestedObject: schema.NestedAttributeObject{
-							Attributes: config.AddResourceLinkSchema(),
+							Attributes: resourcelink.ResourceLinkSchema(),
 						},
 						PlanModifiers: []planmodifier.List{
 							listplanmodifier.UseStateForUnknown(),
@@ -450,11 +451,11 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 
 	// state.pluginDescriptorRef
 	pluginDescRef := r.GetPluginDescriptorRef()
-	state.PluginDescriptorRef = internaltypes.ToStateResourceLink(ctx, pluginDescRef)
+	state.PluginDescriptorRef = resourcelink.ToStateResourceLink(ctx, pluginDescRef)
 
 	// state.parentRef
 	parentRef := r.GetParentRef()
-	state.ParentRef = internaltypes.ToStateResourceLink(ctx, parentRef)
+	state.ParentRef = resourcelink.ToStateResourceLink(ctx, parentRef)
 
 	// state.Configuration
 	configurationAttrType := map[string]attr.Type{
@@ -554,7 +555,7 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 	accessControlSettingsAttrType := map[string]attr.Type{
 		"inherited":        basetypes.BoolType{},
 		"restrict_clients": basetypes.BoolType{},
-		"allowed_clients":  basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: internaltypes.ResourceLinkStateAttrType()}},
+		"allowed_clients":  basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: resourcelink.ResourceLinkStateAttrType()}},
 	}
 
 	if r.AccessControlSettings == nil {
@@ -624,9 +625,9 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 		diags.AddError("There was an issue retrieving the request of an OAuth Access Token Manager: %s", requestErr.Error())
 	}
 
-	apiCreateOauthAccessTokenManager := r.apiClient.OauthAccessTokenManagersApi.CreateTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateOauthAccessTokenManager := r.apiClient.OauthAccessTokenManagersAPI.CreateTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateOauthAccessTokenManager = apiCreateOauthAccessTokenManager.Body(*createOauthAccessTokenManager)
-	oauthAccessTokenManagerResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.CreateTokenManagerExecute(apiCreateOauthAccessTokenManager)
+	oauthAccessTokenManagerResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.CreateTokenManagerExecute(apiCreateOauthAccessTokenManager)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Access Token Manager", err, httpResp)
 		return
@@ -657,7 +658,7 @@ func (r *oauthAccessTokenManagerResource) Read(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthAccessTokenManager, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.GetTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	apiReadOauthAccessTokenManager, httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.GetTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -714,7 +715,7 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 	}
 
 	// Get the current state to see how any attributes are changing
-	updateOauthAccessTokenManager := r.apiClient.OauthAccessTokenManagersApi.UpdateTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString())
+	updateOauthAccessTokenManager := r.apiClient.OauthAccessTokenManagersAPI.UpdateTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString())
 	createUpdateRequest := client.NewAccessTokenManager(state.CustomId.ValueString(), state.Name.ValueString(), *pluginDescRefResLink, *configuration)
 	err := addOptionalOauthAccessTokenManagerFields(ctx, createUpdateRequest, state)
 	if err != nil {
@@ -726,7 +727,7 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 		diags.AddError("There was an issue retrieving the request of an OAuth Access Token Manager: %s", requestErr.Error())
 	}
 	updateOauthAccessTokenManager = updateOauthAccessTokenManager.Body(*createUpdateRequest)
-	updateOauthAccessTokenManagerResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersApi.UpdateTokenManagerExecute(updateOauthAccessTokenManager)
+	updateOauthAccessTokenManagerResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.UpdateTokenManagerExecute(updateOauthAccessTokenManager)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an OAuth Access Token Manager", err, httpResp)
 		return
@@ -756,7 +757,7 @@ func (r *oauthAccessTokenManagerResource) Delete(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.OauthAccessTokenManagersApi.DeleteTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.DeleteTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Access Token Manager", err, httpResp)
 		return

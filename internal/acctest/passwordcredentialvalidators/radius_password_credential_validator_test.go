@@ -147,7 +147,7 @@ func testAccCheckExpectedRadiusPasswordCredentialValidatorsAttributes(config rad
 		resourceType := "PasswordCredentialValidators"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.PasswordCredentialValidatorsApi.GetPasswordCredentialValidator(ctx, radiusPasswordCredentialValidatorsId).Execute()
+		response, _, err := testClient.PasswordCredentialValidatorsAPI.GetPasswordCredentialValidator(ctx, radiusPasswordCredentialValidatorsId).Execute()
 
 		if err != nil {
 			return err
@@ -194,7 +194,7 @@ func testAccCheckExpectedRadiusPasswordCredentialValidatorsAttributes(config rad
 func testAccCheckRadiusPasswordCredentialValidatorsDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.PasswordCredentialValidatorsApi.DeletePasswordCredentialValidator(ctx, radiusPasswordCredentialValidatorsId).Execute()
+	_, err := testClient.PasswordCredentialValidatorsAPI.DeletePasswordCredentialValidator(ctx, radiusPasswordCredentialValidatorsId).Execute()
 	if err == nil {
 		return acctest.ExpectedDestroyError("PasswordCredentialValidators", radiusPasswordCredentialValidatorsId)
 	}

@@ -101,7 +101,7 @@ func testAccCheckExpectedSessionAuthenticationSessionPoliciesGlobalAttributes(co
 		resourceType := "SessionAuthenticationSessionPoliciesGlobal"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.SessionApi.GetGlobalPolicy(ctx).Execute()
+		response, _, err := testClient.SessionAPI.GetGlobalPolicy(ctx).Execute()
 
 		if err != nil {
 			return err

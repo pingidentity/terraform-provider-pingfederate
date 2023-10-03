@@ -247,9 +247,9 @@ func (r *serverSettingsSystemKeysResource) Create(ctx context.Context, req resou
 		diags.AddError("There was an issue retrieving the request of Server Settings System Keys: %s", requestErr.Error())
 	}
 
-	apiCreateServerSettingsSystemKeys := r.apiClient.ServerSettingsApi.UpdateSystemKeys(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateServerSettingsSystemKeys := r.apiClient.ServerSettingsAPI.UpdateSystemKeys(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateServerSettingsSystemKeys = apiCreateServerSettingsSystemKeys.Body(*createServerSettingsSystemKeys)
-	serverSettingsSystemKeysResponse, httpResp, err := r.apiClient.ServerSettingsApi.UpdateSystemKeysExecute(apiCreateServerSettingsSystemKeys)
+	serverSettingsSystemKeysResponse, httpResp, err := r.apiClient.ServerSettingsAPI.UpdateSystemKeysExecute(apiCreateServerSettingsSystemKeys)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Server Settings System Keys", err, httpResp)
 		return
@@ -275,7 +275,7 @@ func (r *serverSettingsSystemKeysResource) Read(ctx context.Context, req resourc
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadServerSettingsSystemKeys, httpResp, err := r.apiClient.ServerSettingsApi.GetSystemKeys(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadServerSettingsSystemKeys, httpResp, err := r.apiClient.ServerSettingsAPI.GetSystemKeys(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings System Keys", err, httpResp)
@@ -316,9 +316,9 @@ func (r *serverSettingsSystemKeysResource) Update(ctx context.Context, req resou
 		diags.AddError("There was an issue retrieving the request of Server Settings System Keys: %s", requestErr.Error())
 	}
 
-	apiCreateServerSettingsSystemKeys := r.apiClient.ServerSettingsApi.UpdateSystemKeys(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateServerSettingsSystemKeys := r.apiClient.ServerSettingsAPI.UpdateSystemKeys(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateServerSettingsSystemKeys = apiCreateServerSettingsSystemKeys.Body(*createServerSettingsSystemKeys)
-	serverSettingsSystemKeysResponse, httpResp, err := r.apiClient.ServerSettingsApi.UpdateSystemKeysExecute(apiCreateServerSettingsSystemKeys)
+	serverSettingsSystemKeysResponse, httpResp, err := r.apiClient.ServerSettingsAPI.UpdateSystemKeysExecute(apiCreateServerSettingsSystemKeys)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Server Settings System Keys", err, httpResp)
 		return

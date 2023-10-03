@@ -108,9 +108,9 @@ func (r *virtualHostNamesResource) Create(ctx context.Context, req resource.Crea
 		diags.AddError("There was an issue retrieving the request of Virtual Host Names: %s", requestErr.Error())
 	}
 
-	apiCreateVirtualHostNames := r.apiClient.VirtualHostNamesApi.UpdateVirtualHostNamesSettings(ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateVirtualHostNames := r.apiClient.VirtualHostNamesAPI.UpdateVirtualHostNamesSettings(ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateVirtualHostNames = apiCreateVirtualHostNames.Body(*createVirtualHostNames)
-	virtualHostNamesResponse, httpResp, err := r.apiClient.VirtualHostNamesApi.UpdateVirtualHostNamesSettingsExecute(apiCreateVirtualHostNames)
+	virtualHostNamesResponse, httpResp, err := r.apiClient.VirtualHostNamesAPI.UpdateVirtualHostNamesSettingsExecute(apiCreateVirtualHostNames)
 	if err != nil {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Virtual Host Names", err, httpResp)
 		return
@@ -136,7 +136,7 @@ func (r *virtualHostNamesResource) Read(ctx context.Context, req resource.ReadRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadVirtualHostNames, httpResp, err := r.apiClient.VirtualHostNamesApi.GetVirtualHostNamesSettings(ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadVirtualHostNames, httpResp, err := r.apiClient.VirtualHostNamesAPI.GetVirtualHostNamesSettings(ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a Virtual Host Names", err, httpResp)
@@ -173,7 +173,7 @@ func (r *virtualHostNamesResource) Update(ctx context.Context, req resource.Upda
 	// Get the current state to see how any attributes are changing
 	var state virtualHostNamesResourceModel
 	req.State.Get(ctx, &state)
-	updateVirtualHostNames := r.apiClient.VirtualHostNamesApi.UpdateVirtualHostNamesSettings(ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateVirtualHostNames := r.apiClient.VirtualHostNamesAPI.UpdateVirtualHostNamesSettings(ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewVirtualHostNameSettings()
 	err := addOptionalVirtualHostNamesFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -185,7 +185,7 @@ func (r *virtualHostNamesResource) Update(ctx context.Context, req resource.Upda
 		diags.AddError("There was an issue retrieving the request of Virtual Host Names: %s", requestErr.Error())
 	}
 	updateVirtualHostNames = updateVirtualHostNames.Body(*createUpdateRequest)
-	updateVirtualHostNamesResponse, httpResp, err := r.apiClient.VirtualHostNamesApi.UpdateVirtualHostNamesSettingsExecute(updateVirtualHostNames)
+	updateVirtualHostNamesResponse, httpResp, err := r.apiClient.VirtualHostNamesAPI.UpdateVirtualHostNamesSettingsExecute(updateVirtualHostNames)
 	if err != nil {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Virtual Host Names", err, httpResp)
 		return

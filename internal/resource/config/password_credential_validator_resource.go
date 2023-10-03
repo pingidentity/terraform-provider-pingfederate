@@ -21,6 +21,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -77,7 +78,7 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
 				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
-				Attributes:  AddResourceLinkSchema(),
+				Attributes:  resourcelink.ResourceLinkSchema(),
 			},
 			"parent_ref": schema.SingleNestedAttribute{
 				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
@@ -86,7 +87,7 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
-				Attributes: AddResourceLinkSchema(),
+				Attributes: resourcelink.ResourceLinkSchema(),
 			},
 			"configuration": schema.SingleNestedAttribute{
 				Description: "Plugin instance configuration.",
@@ -303,12 +304,10 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 	state.Name = types.StringValue(r.Name)
 
 	// state.pluginDescriptorRef
-	pluginDescRef := r.GetPluginDescriptorRef()
-	state.PluginDescriptorRef = internaltypes.ToStateResourceLink(ctx, pluginDescRef)
+	state.PluginDescriptorRef = resourcelink.ToStateResourceLink(ctx, r.GetPluginDescriptorRef())
 
 	// state.parentRef
-	parentRef := r.GetParentRef()
-	state.ParentRef = internaltypes.ToStateResourceLink(ctx, parentRef)
+	state.ParentRef = resourcelink.ToStateResourceLink(ctx, r.GetParentRef())
 
 	// state.Configuration
 	configurationAttrType := map[string]attr.Type{
@@ -425,9 +424,9 @@ func (r *passwordCredentialValidatorsResource) Create(ctx context.Context, req r
 	if requestErr != nil {
 		diags.AddError("There was an issue retrieving the request of a Password Credential Validator: %s", requestErr.Error())
 	}
-	apiCreatePasswordCredentialValidators := r.apiClient.PasswordCredentialValidatorsApi.CreatePasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreatePasswordCredentialValidators := r.apiClient.PasswordCredentialValidatorsAPI.CreatePasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreatePasswordCredentialValidators = apiCreatePasswordCredentialValidators.Body(*createPasswordCredentialValidators)
-	passwordCredentialValidatorsResponse, httpResp, err := r.apiClient.PasswordCredentialValidatorsApi.CreatePasswordCredentialValidatorExecute(apiCreatePasswordCredentialValidators)
+	passwordCredentialValidatorsResponse, httpResp, err := r.apiClient.PasswordCredentialValidatorsAPI.CreatePasswordCredentialValidatorExecute(apiCreatePasswordCredentialValidators)
 	if err != nil {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating a Password Credential Validator", err, httpResp)
 		return
@@ -454,7 +453,7 @@ func (r *passwordCredentialValidatorsResource) Read(ctx context.Context, req res
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadPasswordCredentialValidators, httpResp, err := r.apiClient.PasswordCredentialValidatorsApi.GetPasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	apiReadPasswordCredentialValidators, httpResp, err := r.apiClient.PasswordCredentialValidatorsAPI.GetPasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a Password Credential Validator", err, httpResp)
@@ -506,7 +505,7 @@ func (r *passwordCredentialValidatorsResource) Update(ctx context.Context, req r
 		return
 	}
 
-	updatePasswordCredentialValidators := r.apiClient.PasswordCredentialValidatorsApi.UpdatePasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig), plan.CustomId.ValueString())
+	updatePasswordCredentialValidators := r.apiClient.PasswordCredentialValidatorsAPI.UpdatePasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig), plan.CustomId.ValueString())
 	createUpdateRequest := client.NewPasswordCredentialValidator(plan.CustomId.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
 	err := addOptionalPasswordCredentialValidatorsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -518,7 +517,7 @@ func (r *passwordCredentialValidatorsResource) Update(ctx context.Context, req r
 		diags.AddError("There was an issue retrieving the request of a Password Credential Validator: %s", requestErr.Error())
 	}
 	updatePasswordCredentialValidators = updatePasswordCredentialValidators.Body(*createUpdateRequest)
-	updatePasswordCredentialValidatorsResponse, httpResp, err := r.apiClient.PasswordCredentialValidatorsApi.UpdatePasswordCredentialValidatorExecute(updatePasswordCredentialValidators)
+	updatePasswordCredentialValidatorsResponse, httpResp, err := r.apiClient.PasswordCredentialValidatorsAPI.UpdatePasswordCredentialValidatorExecute(updatePasswordCredentialValidators)
 	if err != nil {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating a Password Credential Validator", err, httpResp)
 		return
@@ -545,7 +544,7 @@ func (r *passwordCredentialValidatorsResource) Delete(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.PasswordCredentialValidatorsApi.DeletePasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	httpResp, err := r.apiClient.PasswordCredentialValidatorsAPI.DeletePasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a Password Credential Validator", err, httpResp)
 	}

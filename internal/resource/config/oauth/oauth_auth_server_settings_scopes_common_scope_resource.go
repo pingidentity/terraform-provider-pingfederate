@@ -150,9 +150,9 @@ func (r *oauthAuthServerSettingsScopesCommonScopesResource) Create(ctx context.C
 		diags.AddError("There was an issue retrieving the request of a OAuth Auth Server Settings Scopes Common Scope: %s", requestErr.Error())
 	}
 
-	apiCreateOauthAuthServerSettingsScopesCommonScopes := r.apiClient.OauthAuthServerSettingsApi.AddCommonScope(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateOauthAuthServerSettingsScopesCommonScopes := r.apiClient.OauthAuthServerSettingsAPI.AddCommonScope(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateOauthAuthServerSettingsScopesCommonScopes = apiCreateOauthAuthServerSettingsScopesCommonScopes.Body(*createOauthAuthServerSettingsScopesCommonScopes)
-	oauthAuthServerSettingsScopesCommonScopesResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsApi.AddCommonScopeExecute(apiCreateOauthAuthServerSettingsScopesCommonScopes)
+	oauthAuthServerSettingsScopesCommonScopesResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.AddCommonScopeExecute(apiCreateOauthAuthServerSettingsScopesCommonScopes)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Auth Server Settings Scopes Common Scope", err, httpResp)
 		return
@@ -178,7 +178,7 @@ func (r *oauthAuthServerSettingsScopesCommonScopesResource) Read(ctx context.Con
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthAuthServerSettingsScopesCommonScopes, httpResp, err := r.apiClient.OauthAuthServerSettingsApi.GetCommonScope(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Name.ValueString()).Execute()
+	apiReadOauthAuthServerSettingsScopesCommonScopes, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.GetCommonScope(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Name.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Auth Server Settings Scopes Common Scope", err, httpResp)
@@ -215,7 +215,7 @@ func (r *oauthAuthServerSettingsScopesCommonScopesResource) Update(ctx context.C
 	// Get the current state to see how any attributes are changing
 	var state oauthAuthServerSettingsScopesCommonScopesResourceModel
 	req.State.Get(ctx, &state)
-	updateOauthAuthServerSettingsScopesCommonScopes := r.apiClient.OauthAuthServerSettingsApi.UpdateCommonScope(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Name.ValueString())
+	updateOauthAuthServerSettingsScopesCommonScopes := r.apiClient.OauthAuthServerSettingsAPI.UpdateCommonScope(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Name.ValueString())
 	createUpdateRequest := client.NewScopeEntry(plan.Name.ValueString(), plan.Description.ValueString())
 	err := addOptionalOauthAuthServerSettingsScopesCommonScopesFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -227,7 +227,7 @@ func (r *oauthAuthServerSettingsScopesCommonScopesResource) Update(ctx context.C
 		diags.AddError("There was an issue retrieving the request of a OAuth Auth Server Settings Scopes Common Scope: %s", requestErr.Error())
 	}
 	updateOauthAuthServerSettingsScopesCommonScopes = updateOauthAuthServerSettingsScopesCommonScopes.Body(*createUpdateRequest)
-	updateOauthAuthServerSettingsScopesCommonScopesResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsApi.UpdateCommonScopeExecute(updateOauthAuthServerSettingsScopesCommonScopes)
+	updateOauthAuthServerSettingsScopesCommonScopesResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.UpdateCommonScopeExecute(updateOauthAuthServerSettingsScopesCommonScopes)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OAuth Auth Server Settings Scopes Common Scope", err, httpResp)
 		return
@@ -254,7 +254,7 @@ func (r *oauthAuthServerSettingsScopesCommonScopesResource) Delete(ctx context.C
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.OauthAuthServerSettingsApi.RemoveCommonScope(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Name.ValueString()).Execute()
+	httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.RemoveCommonScope(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Name.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a OAuth Auth Server Settings Scopes Common Scope", err, httpResp)
 		return

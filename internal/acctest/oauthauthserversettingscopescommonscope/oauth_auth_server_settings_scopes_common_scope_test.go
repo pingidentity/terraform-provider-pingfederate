@@ -85,7 +85,7 @@ func testAccCheckExpectedOauthAuthServerSettingsScopesCommonScopesAttributes(con
 		resourceType := "OauthAuthServerSettingsScopesCommonScopes"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.OauthAuthServerSettingsApi.GetCommonScope(ctx, oauthAuthServerSettingsScopesCommonScopesId).Execute()
+		response, _, err := testClient.OauthAuthServerSettingsAPI.GetCommonScope(ctx, oauthAuthServerSettingsScopesCommonScopesId).Execute()
 		if err != nil {
 			return err
 		}
@@ -108,7 +108,7 @@ func testAccCheckExpectedOauthAuthServerSettingsScopesCommonScopesAttributes(con
 func testAccCheckOauthAuthServerSettingsScopesCommonScopesDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.OauthAuthServerSettingsApi.RemoveCommonScope(ctx, oauthAuthServerSettingsScopesCommonScopesId).Execute()
+	_, err := testClient.OauthAuthServerSettingsAPI.RemoveCommonScope(ctx, oauthAuthServerSettingsScopesCommonScopesId).Execute()
 	if err == nil {
 		return acctest.ExpectedDestroyError("OauthAuthServerSettingsScopesCommonScopes", oauthAuthServerSettingsScopesCommonScopesId)
 	}

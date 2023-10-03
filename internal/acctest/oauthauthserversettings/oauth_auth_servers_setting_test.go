@@ -113,7 +113,7 @@ func testAccCheckExpectedOauthAuthServerSettingsAttributes(config oauthAuthServe
 		resourceType := "OauthAuthServerSettings"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.OauthAuthServerSettingsApi.GetAuthorizationServerSettings(ctx).Execute()
+		response, _, err := testClient.OauthAuthServerSettingsAPI.GetAuthorizationServerSettings(ctx).Execute()
 
 		if err != nil {
 			return err

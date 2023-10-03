@@ -96,7 +96,7 @@ func testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(config localIde
 		resourceType := "LocalIdentityIdentityProfiles"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.LocalIdentityIdentityProfilesApi.GetIdentityProfile(ctx, localIdentityIdentityProfilesId).Execute()
+		response, _, err := testClient.LocalIdentityIdentityProfilesAPI.GetIdentityProfile(ctx, localIdentityIdentityProfilesId).Execute()
 
 		if err != nil {
 			return err
@@ -133,7 +133,7 @@ func testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(config localIde
 func testAccCheckLocalIdentityIdentityProfilesDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.LocalIdentityIdentityProfilesApi.DeleteIdentityProfile(ctx, localIdentityIdentityProfilesId).Execute()
+	_, err := testClient.LocalIdentityIdentityProfilesAPI.DeleteIdentityProfile(ctx, localIdentityIdentityProfilesId).Execute()
 	if err == nil {
 		return acctest.ExpectedDestroyError("LocalIdentityIdentityProfiles", localIdentityIdentityProfilesId)
 	}
