@@ -89,7 +89,7 @@ func testAccCheckExpectedOauthIssuerAttributes(config oauthIssuerResourceModel) 
 		resourceType := "OauthIssuer"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.OauthIssuersApi.GetOauthIssuerById(ctx, config.stateId).Execute()
+		response, _, err := testClient.OauthIssuersAPI.GetOauthIssuerById(ctx, config.stateId).Execute()
 		if err != nil {
 			return err
 		}

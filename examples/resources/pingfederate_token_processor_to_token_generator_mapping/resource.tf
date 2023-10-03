@@ -2,7 +2,7 @@ terraform {
   required_version = ">=1.1"
   required_providers {
     pingfederate = {
-      version = "~> 0.0.1"
+      version = "~> 0.1.0"
       source  = "pingidentity/pingfederate"
     }
   }
@@ -16,22 +16,21 @@ provider "pingfederate" {
 }
 
 resource "pingfederate_token_processor_to_token_generator_mapping" "tokenProcessorToTokenGeneratorMappingsExample" {
-  # attribute_sources = [
-  # 	{
-  # 		jdbc_attribute_source = {
-  # 			type = "JDBC"
-  # 			data_store_ref = {
-  # 				id = "ProvisionerDS"
-  # 			}
-  # 			id = "attributesourceid"
-  # 			description = "description"
-  # 			schema = "INFORMATION_SCHEMA"
-  # 			table = "ADMINISTRABLE_ROLE_AUTHORIZATIONS"
-  # 			filter = "CONDITION"
-  # 			column_names = ["GRANTEE","IS_GRANTABLE","ROLE_NAME"]
-  # 		}
-  # 	}
-  # ]
+  attribute_sources = [
+    {
+      jdbc_attribute_source = {
+        data_store_ref = {
+          id = "ProvisionerDS"
+        }
+        id           = "attributesourceid"
+        description  = "description"
+        schema       = "INFORMATION_SCHEMA"
+        table        = "ADMINISTRABLE_ROLE_AUTHORIZATIONS"
+        filter       = "CONDITION"
+        column_names = ["GRANTEE", "IS_GRANTABLE", "ROLE_NAME"]
+      }
+    },
+  ]
   attribute_contract_fulfillment = {
     "SAML_SUBJECT" = {
       source = {
@@ -49,7 +48,7 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "tokenProcess
         }
         attribute_name = "ClientIp"
         condition      = "EQUALS"
-        value          = "value"
+        value          = "value2"
       }
     ]
   }

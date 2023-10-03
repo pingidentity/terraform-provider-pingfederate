@@ -259,7 +259,7 @@ func testAccCheckExpectedJsonWebOauthAccessTokenManagerAttributes(config jsonWeb
 		resourceType := "OauthAccessTokenManager"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.OauthAccessTokenManagersApi.GetTokenManager(ctx, jsonWebTokenOauthAccessTokenManagerId).Execute()
+		response, _, err := testClient.OauthAccessTokenManagersAPI.GetTokenManager(ctx, jsonWebTokenOauthAccessTokenManagerId).Execute()
 
 		if err != nil {
 			return err
@@ -308,7 +308,7 @@ func testAccCheckExpectedJsonWebOauthAccessTokenManagerAttributes(config jsonWeb
 func testAccCheckJsonWebOauthAccessTokenManagerDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.OauthAccessTokenManagersApi.DeleteTokenManager(ctx, jsonWebTokenOauthAccessTokenManagerId).Execute()
+	_, err := testClient.OauthAccessTokenManagersAPI.DeleteTokenManager(ctx, jsonWebTokenOauthAccessTokenManagerId).Execute()
 	if err == nil {
 		return acctest.ExpectedDestroyError("OauthAccessTokenManager", jsonWebTokenOauthAccessTokenManagerId)
 	}

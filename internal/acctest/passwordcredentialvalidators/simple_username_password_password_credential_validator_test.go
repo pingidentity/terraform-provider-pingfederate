@@ -138,7 +138,7 @@ func testAccCheckExpectedPasswordCredentialValidatorsAttributes(config simpleUse
 		resourceType := "PasswordCredentialValidators"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.PasswordCredentialValidatorsApi.GetPasswordCredentialValidator(ctx, simpleUsernamePasswordPasswordCredentialValidatorsId).Execute()
+		response, _, err := testClient.PasswordCredentialValidatorsAPI.GetPasswordCredentialValidator(ctx, simpleUsernamePasswordPasswordCredentialValidatorsId).Execute()
 
 		if err != nil {
 			return err
@@ -157,7 +157,7 @@ func testAccCheckExpectedPasswordCredentialValidatorsAttributes(config simpleUse
 func testAccCheckPasswordCredentialValidatorsDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.PasswordCredentialValidatorsApi.DeletePasswordCredentialValidator(ctx, simpleUsernamePasswordPasswordCredentialValidatorsId).Execute()
+	_, err := testClient.PasswordCredentialValidatorsAPI.DeletePasswordCredentialValidator(ctx, simpleUsernamePasswordPasswordCredentialValidatorsId).Execute()
 	if err == nil {
 		return acctest.ExpectedDestroyError("PasswordCredentialValidators", simpleUsernamePasswordPasswordCredentialValidatorsId)
 	}

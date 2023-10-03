@@ -144,9 +144,9 @@ func (r *certificatesResource) Create(ctx context.Context, req resource.CreateRe
 	if requestErr != nil {
 		diags.AddError("There was an issue retrieving the request of a Certificate: %s", requestErr.Error())
 	}
-	apiCreateCertificate := r.apiClient.CertificatesCaApi.ImportTrustedCA(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateCertificate := r.apiClient.CertificatesCaAPI.ImportTrustedCA(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateCertificate = apiCreateCertificate.Body(*createCertificate)
-	certificateResponse, httpResp, err := r.apiClient.CertificatesCaApi.ImportTrustedCAExecute(apiCreateCertificate)
+	certificateResponse, httpResp, err := r.apiClient.CertificatesCaAPI.ImportTrustedCAExecute(apiCreateCertificate)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating a CA Certificate", err, httpResp)
 		return
@@ -172,7 +172,7 @@ func (r *certificatesResource) Read(ctx context.Context, req resource.ReadReques
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadCertificate, httpResp, err := r.apiClient.CertificatesCaApi.GetTrustedCert(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	apiReadCertificate, httpResp, err := r.apiClient.CertificatesCaAPI.GetTrustedCert(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while looking for a Certificate", err, httpResp)
@@ -209,7 +209,7 @@ func (r *certificatesResource) Delete(ctx context.Context, req resource.DeleteRe
 		return
 	}
 
-	httpResp, err := r.apiClient.CertificatesCaApi.DeleteTrustedCA(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	httpResp, err := r.apiClient.CertificatesCaAPI.DeleteTrustedCA(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a CA Certificate", err, httpResp)
 		return

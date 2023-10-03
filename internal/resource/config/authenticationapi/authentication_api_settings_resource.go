@@ -160,7 +160,7 @@ func (r *authenticationApiSettingsResource) Create(ctx context.Context, req reso
 		return
 	}
 	// Get the current state to see how any attributes are changing
-	updateAuthenticationApiSettings := r.apiClient.AuthenticationApiApi.UpdateAuthenticationApiSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateAuthenticationApiSettings := r.apiClient.AuthenticationApiAPI.UpdateAuthenticationApiSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewAuthnApiSettings()
 	err := addAuthenticationApiSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -172,7 +172,7 @@ func (r *authenticationApiSettingsResource) Create(ctx context.Context, req reso
 		diags.AddError("There was an issue retrieving the request of the Authentication API Settings: %s", requestErr.Error())
 	}
 	updateAuthenticationApiSettings = updateAuthenticationApiSettings.Body(*createUpdateRequest)
-	updateAuthenticationApiSettingsResponse, httpResp, err := r.apiClient.AuthenticationApiApi.UpdateAuthenticationApiSettingsExecute(updateAuthenticationApiSettings)
+	updateAuthenticationApiSettingsResponse, httpResp, err := r.apiClient.AuthenticationApiAPI.UpdateAuthenticationApiSettingsExecute(updateAuthenticationApiSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Authentication Api Settings", err, httpResp)
 		return
@@ -199,7 +199,7 @@ func (r *authenticationApiSettingsResource) Read(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadAuthenticationApiSettings, httpResp, err := r.apiClient.AuthenticationApiApi.GetAuthenticationApiSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadAuthenticationApiSettings, httpResp, err := r.apiClient.AuthenticationApiAPI.GetAuthenticationApiSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a Authentication Api Settings", err, httpResp)
@@ -232,7 +232,7 @@ func (r *authenticationApiSettingsResource) Update(ctx context.Context, req reso
 		return
 	}
 	// Get the current state to see how any attributes are changing
-	updateAuthenticationApiSettings := r.apiClient.AuthenticationApiApi.UpdateAuthenticationApiSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateAuthenticationApiSettings := r.apiClient.AuthenticationApiAPI.UpdateAuthenticationApiSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewAuthnApiSettings()
 	err := addAuthenticationApiSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -244,7 +244,7 @@ func (r *authenticationApiSettingsResource) Update(ctx context.Context, req reso
 		diags.AddError("There was an issue retrieving the request of the Authentication API Settings: %s", requestErr.Error())
 	}
 	updateAuthenticationApiSettings = updateAuthenticationApiSettings.Body(*createUpdateRequest)
-	updateAuthenticationApiSettingsResponse, httpResp, err := r.apiClient.AuthenticationApiApi.UpdateAuthenticationApiSettingsExecute(updateAuthenticationApiSettings)
+	updateAuthenticationApiSettingsResponse, httpResp, err := r.apiClient.AuthenticationApiAPI.UpdateAuthenticationApiSettingsExecute(updateAuthenticationApiSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Authentication Api Settings", err, httpResp)
 		return

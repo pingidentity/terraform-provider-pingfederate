@@ -83,7 +83,7 @@ func testAccCheckExpectedServerSettingsSystemKeysAttributes(config serverSetting
 		resourceType := "ServerSettingsSystemKeys"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.ServerSettingsApi.GetSystemKeys(ctx).Execute()
+		response, _, err := testClient.ServerSettingsAPI.GetSystemKeys(ctx).Execute()
 
 		if err != nil {
 			return err

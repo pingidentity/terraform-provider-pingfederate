@@ -215,9 +215,9 @@ func (r *administrativeAccountsResource) Create(ctx context.Context, req resourc
 		diags.AddError("There was an issue retrieving the request of an Administrative Account: %s", requestErr.Error())
 	}
 
-	apiCreateAdministrativeAccount := r.apiClient.AdministrativeAccountsApi.AddAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateAdministrativeAccount := r.apiClient.AdministrativeAccountsAPI.AddAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateAdministrativeAccount = apiCreateAdministrativeAccount.Body(*createAdministrativeAccount)
-	administrativeAccountResponse, httpResp, err := r.apiClient.AdministrativeAccountsApi.AddAccountExecute(apiCreateAdministrativeAccount)
+	administrativeAccountResponse, httpResp, err := r.apiClient.AdministrativeAccountsAPI.AddAccountExecute(apiCreateAdministrativeAccount)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Administrative Account", err, httpResp)
 		return
@@ -244,7 +244,7 @@ func (r *administrativeAccountsResource) Read(ctx context.Context, req resource.
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadAdministrativeAccount, httpResp, err := r.apiClient.AdministrativeAccountsApi.GetAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Username.ValueString()).Execute()
+	apiReadAdministrativeAccount, httpResp, err := r.apiClient.AdministrativeAccountsAPI.GetAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Username.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an Administrative Account", err, httpResp)
@@ -280,7 +280,7 @@ func (r *administrativeAccountsResource) Update(ctx context.Context, req resourc
 	// Get the current state to see how any attributes are changing
 	var state administrativeAccountResourceModel
 	req.State.Get(ctx, &state)
-	updateAdministrativeAccount := r.apiClient.AdministrativeAccountsApi.UpdateAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Username.ValueString())
+	updateAdministrativeAccount := r.apiClient.AdministrativeAccountsAPI.UpdateAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Username.ValueString())
 	createUpdateRequest := client.NewAdministrativeAccount(plan.Username.ValueString())
 	err := addOptionalAdministrativeAccountFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -294,7 +294,7 @@ func (r *administrativeAccountsResource) Update(ctx context.Context, req resourc
 	}
 
 	updateAdministrativeAccount = updateAdministrativeAccount.Body(*createUpdateRequest)
-	updateAdministrativeAccountResponse, httpResp, err := r.apiClient.AdministrativeAccountsApi.UpdateAccountExecute(updateAdministrativeAccount)
+	updateAdministrativeAccountResponse, httpResp, err := r.apiClient.AdministrativeAccountsAPI.UpdateAccountExecute(updateAdministrativeAccount)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Administrative Account", err, httpResp)
 		return
@@ -321,7 +321,7 @@ func (r *administrativeAccountsResource) Delete(ctx context.Context, req resourc
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.AdministrativeAccountsApi.DeleteAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Username.ValueString()).Execute()
+	httpResp, err := r.apiClient.AdministrativeAccountsAPI.DeleteAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Username.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a Administrative Account", err, httpResp)
 		return
