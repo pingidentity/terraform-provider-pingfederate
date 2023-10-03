@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	datasourceschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -54,6 +55,16 @@ func AddCommonSchema(s *schema.Schema) {
 		PlanModifiers: []planmodifier.String{
 			stringplanmodifier.UseStateForUnknown(),
 		},
+	}
+}
+
+// Get schema elements common to all resources
+func AddCommonDataSourceSchema(s *datasourceschema.Schema) {
+	s.Attributes["id"] = schema.StringAttribute{
+		Description: "The ID of this resource.",
+		Computed:    true,
+		Required:    false,
+		Optional:    false,
 	}
 }
 
