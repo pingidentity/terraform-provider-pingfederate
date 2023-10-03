@@ -8,7 +8,7 @@ import (
 func AttributeContractFulfillmentSchema() schema.MapNestedAttribute {
 	return schema.MapNestedAttribute{
 		Description: "Defines how an attribute in an attribute contract should be populated.",
-		Required:    true,
+		Optional:    true,
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
 				"source": sourcetypeidkey.SourceTypeIdKeySchema(),

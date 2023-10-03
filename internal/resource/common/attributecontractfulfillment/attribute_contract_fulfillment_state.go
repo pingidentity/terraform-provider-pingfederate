@@ -10,18 +10,24 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 )
 
-func AttributeContractFulfillmentAttrType() basetypes.ObjectType {
+func AttributeContractFulfillmentAttrType() map[string]attr.Type {
+	attributeContractFulfillmentAttrType := map[string]attr.Type{}
+	attributeContractFulfillmentAttrType["source"] = basetypes.ObjectType{AttrTypes: sourcetypeidkey.SourceTypeIdKeyAttrType()}
+	attributeContractFulfillmentAttrType["value"] = basetypes.StringType{}
+	return attributeContractFulfillmentAttrType
+}
+
+func AttributeContractFulfillmentObjType() basetypes.ObjectType {
 	return basetypes.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"source": basetypes.ObjectType{
-				AttrTypes: sourcetypeidkey.SourceTypeIdKeyAttrType(),
-			},
-			"value": basetypes.StringType{},
-		},
+		AttrTypes: AttributeContractFulfillmentAttrType(),
 	}
 }
 
+func AttributeContractFulfillmentMapType() basetypes.MapType {
+	return basetypes.MapType{ElemType: types.ObjectType{AttrTypes: AttributeContractFulfillmentAttrType()}}
+}
+
 func AttributeContractFulfillmentToState(con context.Context, attributeContractFulfillmentFromClient map[string]client.AttributeFulfillmentValue) basetypes.MapValue {
-	attributeContractFulfillmentToState, _ := types.MapValueFrom(con, AttributeContractFulfillmentAttrType(), attributeContractFulfillmentFromClient)
+	attributeContractFulfillmentToState, _ := types.MapValueFrom(con, AttributeContractFulfillmentObjType(), attributeContractFulfillmentFromClient)
 	return attributeContractFulfillmentToState
 }

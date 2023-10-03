@@ -1,4 +1,7 @@
-# v0.1.0 (Unreleased)
+# v0.2.0 (Unreleased)
+### Features
+
+# v0.1.0 September 28, 2023
 
 ### FEATURES
 * **New Resource:** `pingfederate_administrative_account` => [Initial Commit](https://github.com/pingidentity/terraform-provider-pingfederate/commit/fe35b53aac7146d2a75eeb70f4e21aaf52995a96)
