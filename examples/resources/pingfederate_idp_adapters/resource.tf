@@ -87,11 +87,11 @@ resource "pingfederate_idp_adapters" "idpAdaptersExample" {
     attribute_contract = {
         mask_ognl_values = false
         core_attributes = [
-            /*{
+            {
                 masked = false
                 name = "policy.action"
                 pseudonym = false
-            },*/
+            },
             {
                 //masked = false
                 name = "username"
