@@ -282,10 +282,7 @@ func attributeMappingHclBlock(attributeMapping *client.IdpAdapterContractMapping
 	}
 	var builder strings.Builder
 	builder.WriteString("attribute_mapping = {\n")
-	//TODO attribute sources
-	/*if attributeMapping.AttributeSources != nil && len(attributeMapping.AttributeSources) > 0 {
-
-	}*/
+	//TODO attribute sources if we want to test them
 	if attributeMapping.AttributeContractFulfillment != nil {
 		builder.WriteString("    attribute_contract_fulfillment = {\n")
 		for key, val := range attributeMapping.AttributeContractFulfillment {
@@ -309,12 +306,7 @@ func attributeMappingHclBlock(attributeMapping *client.IdpAdapterContractMapping
 		}
 		builder.WriteString("    }\n")
 	}
-	//TODO issuance_criteria
-	/*if attributeMapping.IssuanceCriteria != nil {
-		builder.WriteString("    issuance_criteria = ")
-		builder.WriteString(strconv.FormatBool(*attributeContract.MaskOgnlValues))
-		builder.WriteRune('\n')
-	}*/
+	//TODO issuance_criteria if we want to test them
 	if attributeMapping.Inherited != nil {
 		builder.WriteString("    inherited = ")
 		builder.WriteString(strconv.FormatBool(*attributeMapping.Inherited))
@@ -356,13 +348,6 @@ func testAccCheckExpectedIdpAdaptersAttributes(config idpAdaptersResourceModel) 
 		if err != nil {
 			return err
 		}
-
-		/*
-			name                  string
-			pluginDescriptorRefId string
-			configuration         client.PluginConfiguration
-			attributeMapping      *client.IdpAdapterContractMapping
-			attributeContract     client.IdpAdapterAttributeContract*/
 
 		// Verify that attributes have expected values
 		err = acctest.TestAttributesMatchString(resourceType, stringPointer(idpAdapterId), "name", config.name, resp.Name)
