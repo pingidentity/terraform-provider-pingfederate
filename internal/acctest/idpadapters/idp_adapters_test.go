@@ -15,7 +15,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const idpAdaptersId = "idpAdapterId"
+const idpAdapterId = "idpAdapterId"
 
 // Attributes to test with. Add optional properties to test here if desired.
 type idpAdaptersResourceModel struct {
@@ -152,7 +152,7 @@ func TestAccIdpAdapters(t *testing.T) {
 				// Test importing the resource
 				Config:        testAccIdpAdapters(resourceName, updatedResourceModel),
 				ResourceName:  "pingfederate_idp_adapters." + resourceName,
-				ImportStateId: idpAdaptersId,
+				ImportStateId: idpAdapterId,
 				ImportState:   true,
 				//TODO need to re-enable this once we have a way to store fields/tables/attrs/etc. that PF generates itself and returns
 				//ImportStateVerify: true,
@@ -336,7 +336,7 @@ resource "pingfederate_idp_adapters" "%[1]s" {
 	%[6]s
 	%[7]s
 }`, resourceName,
-		idpAdaptersId,
+		idpAdapterId,
 		resourceModel.name,
 		resourceModel.pluginDescriptorRefId,
 		configurationHclBlock(resourceModel.configuration),
@@ -348,17 +348,59 @@ resource "pingfederate_idp_adapters" "%[1]s" {
 // Test that the expected attributes are set on the PingFederate server
 func testAccCheckExpectedIdpAdaptersAttributes(config idpAdaptersResourceModel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		//resourceType := "IdpAdapters"
+		resourceType := "IdpAdapter"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		_, _, err := testClient.IdpAdaptersAPI.GetIdpAdapters(ctx).Execute()
+		resp, _, err := testClient.IdpAdaptersAPI.GetIdpAdapter(ctx, idpAdapterId).Execute()
 
 		if err != nil {
 			return err
 		}
 
+		/*
+			name                  string
+			pluginDescriptorRefId string
+			configuration         client.PluginConfiguration
+			attributeMapping      *client.IdpAdapterContractMapping
+			attributeContract     client.IdpAdapterAttributeContract*/
+
 		// Verify that attributes have expected values
-		//FILL THESE in!
+		err = acctest.TestAttributesMatchString(resourceType, stringPointer(idpAdapterId), "name", config.name, resp.Name)
+		if err != nil {
+			return err
+		}
+
+		// Plugin descriptor
+		err = acctest.TestAttributesMatchString(resourceType, stringPointer(idpAdapterId), "plugin_descriptor_ref.id", config.pluginDescriptorRefId, resp.PluginDescriptorRef.Id)
+		if err != nil {
+			return err
+		}
+
+		//TODO could check configuration too
+
+		// Attribute mapping attribute contract fullfilment - verify the keys are present in the response
+		if config.attributeMapping != nil {
+			for configKey, _ := range config.attributeMapping.AttributeContractFulfillment {
+				_, ok := resp.AttributeMapping.AttributeContractFulfillment[configKey]
+				if !ok {
+					return fmt.Errorf("Attribute contract fullfilment %s not found in server response", configKey)
+				}
+			}
+		}
+
+		// Attribute contract - verify the attribute names are in the response
+		for _, configAttr := range config.attributeContract.CoreAttributes {
+			found := false
+			for _, respAttr := range resp.AttributeContract.CoreAttributes {
+				if respAttr.Name == configAttr.Name {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return fmt.Errorf("Core attribute %s not found in server response", configAttr.Name)
+			}
+		}
 
 		return nil
 	}
@@ -368,9 +410,9 @@ func testAccCheckExpectedIdpAdaptersAttributes(config idpAdaptersResourceModel) 
 func testAccCheckIdpAdaptersDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.IdpAdaptersAPI.DeleteIdpAdapter(ctx, idpAdaptersId).Execute()
+	_, err := testClient.IdpAdaptersAPI.DeleteIdpAdapter(ctx, idpAdapterId).Execute()
 	if err == nil {
-		return acctest.ExpectedDestroyError("IdpAdapters", idpAdaptersId)
+		return acctest.ExpectedDestroyError("IdpAdapters", idpAdapterId)
 	}
 	return nil
 }
