@@ -34,8 +34,7 @@ func stringPointer(val string) *string {
 	return &val
 }
 
-func TestAccIdpAdapters(t *testing.T) {
-	resourceName := "myIdpAdapters"
+func basicAttributeContract() *client.IdpAdapterAttributeContract {
 	attributeContract := client.NewIdpAdapterAttributeContract([]client.IdpAdapterAttribute{})
 	attributeContract.SetMaskOgnlValues(false)
 	attributeContract.CoreAttributes = append(attributeContract.CoreAttributes, client.IdpAdapterAttribute{
@@ -45,6 +44,11 @@ func TestAccIdpAdapters(t *testing.T) {
 		Name:      "policy.action",
 		Pseudonym: boolPointer(true),
 	})
+	return attributeContract
+}
+
+func TestAccIdpAdapters(t *testing.T) {
+	resourceName := "myIdpAdapters"
 	initialResourceModel := idpAdaptersResourceModel{
 		name:                  "testIdpAdapter",
 		pluginDescriptorRefId: "com.pingidentity.adapters.htmlform.idp.HtmlFormIdpAuthnAdapter",
@@ -67,7 +71,7 @@ func TestAccIdpAdapters(t *testing.T) {
 			},
 			Fields: []client.ConfigField{},
 		},
-		attributeContract: *attributeContract,
+		attributeContract: *basicAttributeContract(),
 	}
 
 	attributeMapping := client.NewIdpAdapterContractMapping(map[string]client.AttributeFulfillmentValue{
@@ -91,6 +95,12 @@ func TestAccIdpAdapters(t *testing.T) {
 		},
 	})
 	attributeMapping.Inherited = boolPointer(false)
+	attributeContract := basicAttributeContract()
+	attributeContract.ExtendedAttributes = append(attributeContract.ExtendedAttributes, client.IdpAdapterAttribute{
+		Name:      "entryUUID",
+		Pseudonym: boolPointer(false),
+		Masked:    boolPointer(false),
+	})
 	updatedResourceModel := idpAdaptersResourceModel{
 		name:                  "testIdpAdapterNewName",
 		pluginDescriptorRefId: "com.pingidentity.adapters.htmlform.idp.HtmlFormIdpAuthnAdapter",
@@ -266,63 +276,50 @@ func attributeContractHclBlock(attributeContract client.IdpAdapterAttributeContr
 	return builder.String()
 }
 
-func attributeMappingHclBlock(attributeMapping client.IdpAdapterContractMapping) string {
+func attributeMappingHclBlock(attributeMapping *client.IdpAdapterContractMapping) string {
+	if attributeMapping == nil {
+		return ""
+	}
 	var builder strings.Builder
-	//TODO
-	/*builder.WriteString("attribute_contract = {\n")
-	if attributeContract.MaskOgnlValues != nil {
-		builder.WriteString("    mask_ognl_values = ")
+	builder.WriteString("attribute_mapping = {\n")
+	//TODO attribute sources
+	/*if attributeMapping.AttributeSources != nil && len(attributeMapping.AttributeSources) > 0 {
+
+	}*/
+	if attributeMapping.AttributeContractFulfillment != nil {
+		builder.WriteString("    attribute_contract_fulfillment = {\n")
+		for key, val := range attributeMapping.AttributeContractFulfillment {
+			builder.WriteString("        \"")
+			builder.WriteString(key)
+			builder.WriteString("\" = {\n")
+			builder.WriteString("            source = {\n")
+			builder.WriteString("                type = \"")
+			builder.WriteString(val.Source.Type)
+			builder.WriteString("\"\n")
+			if val.Source.Id != nil {
+				builder.WriteString("                id = \"")
+				builder.WriteString(*val.Source.Id)
+				builder.WriteString("\"\n")
+			}
+			builder.WriteString("            }\n")
+			builder.WriteString("            value = \"")
+			builder.WriteString(val.Value)
+			builder.WriteString("\"\n")
+			builder.WriteString("        }\n")
+		}
+		builder.WriteString("    }\n")
+	}
+	//TODO issuance_criteria
+	/*if attributeMapping.IssuanceCriteria != nil {
+		builder.WriteString("    issuance_criteria = ")
 		builder.WriteString(strconv.FormatBool(*attributeContract.MaskOgnlValues))
 		builder.WriteRune('\n')
-	}
-	if attributeContract.Inherited != nil {
+	}*/
+	if attributeMapping.Inherited != nil {
 		builder.WriteString("    inherited = ")
-		builder.WriteString(strconv.FormatBool(*attributeContract.Inherited))
+		builder.WriteString(strconv.FormatBool(*attributeMapping.Inherited))
 		builder.WriteRune('\n')
 	}
-	if attributeContract.UniqueUserKeyAttribute != nil {
-		builder.WriteString("    unique_user_key_attribute = \"")
-		builder.WriteString(*attributeContract.UniqueUserKeyAttribute)
-		builder.WriteString("\"\n")
-	}
-	builder.WriteString("    core_attributes = [\n")
-	for _, attr := range attributeContract.CoreAttributes {
-		builder.WriteString("        {\n")
-		builder.WriteString("            name = \"")
-		builder.WriteString(attr.Name)
-		builder.WriteString("\"\n")
-		if attr.Masked != nil {
-			builder.WriteString("            masked = ")
-			builder.WriteString(strconv.FormatBool(*attr.Masked))
-			builder.WriteRune('\n')
-		}
-		if attr.Pseudonym != nil {
-			builder.WriteString("            pseudonym = ")
-			builder.WriteString(strconv.FormatBool(*attr.Pseudonym))
-			builder.WriteRune('\n')
-		}
-		builder.WriteString("        },\n")
-	}
-	builder.WriteString("    ]\n")
-	builder.WriteString("    extended_attributes = [\n")
-	for _, attr := range attributeContract.ExtendedAttributes {
-		builder.WriteString("        {\n")
-		builder.WriteString("            name = \"")
-		builder.WriteString(attr.Name)
-		builder.WriteString("\"\n")
-		if attr.Masked != nil {
-			builder.WriteString("            masked = ")
-			builder.WriteString(strconv.FormatBool(*attr.Masked))
-			builder.WriteRune('\n')
-		}
-		if attr.Pseudonym != nil {
-			builder.WriteString("            pseudonym = ")
-			builder.WriteString(strconv.FormatBool(*attr.Pseudonym))
-			builder.WriteRune('\n')
-		}
-		builder.WriteString("        },\n")
-	}
-	builder.WriteString("    ]\n")*/
 	builder.WriteString("}\n")
 	return builder.String()
 }
@@ -337,12 +334,14 @@ resource "pingfederate_idp_adapters" "%[1]s" {
     }
 	%[5]s
 	%[6]s
+	%[7]s
 }`, resourceName,
 		idpAdaptersId,
 		resourceModel.name,
 		resourceModel.pluginDescriptorRefId,
 		configurationHclBlock(resourceModel.configuration),
 		attributeContractHclBlock(resourceModel.attributeContract),
+		attributeMappingHclBlock(resourceModel.attributeMapping),
 	)
 }
 

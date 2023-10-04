@@ -93,7 +93,7 @@ resource "pingfederate_idp_adapters" "idpAdaptersExample" {
                 pseudonym = false
             },
             {
-                //masked = false
+                masked = false
                 name = "username"
                 pseudonym = true
             }

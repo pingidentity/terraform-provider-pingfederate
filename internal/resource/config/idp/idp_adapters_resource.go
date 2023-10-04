@@ -856,6 +856,8 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 					},
 					"inherited": schema.BoolAttribute{
 						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
 						Description: "Whether this attribute mapping is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
 					},
 				},
@@ -1006,6 +1008,10 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 		attributeMappingValues := map[string]attr.Value{
 			"inherited": types.BoolPointerValue(r.AttributeMapping.Inherited),
 		}
+		// The PF API won't return inherited if it is false
+		if r.AttributeMapping.Inherited == nil {
+			attributeMappingValues["inherited"] = types.BoolValue(false)
+		}
 
 		// Build attribute_contract_fulfillment value
 		attributeContractFulfillmentElementAttrTypes := attributeMappingAttrTypes["attribute_contract_fulfillment"].(types.MapType).ElemType.(types.ObjectType).AttrTypes
@@ -1015,12 +1021,13 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 
 		// Build issuance_criteria value
 		issuanceCritieraAttrTypes := attributeMappingAttrTypes["issuance_criteria"].(types.ObjectType).AttrTypes
-		if r.AttributeMapping.IssuanceCriteria != nil {
+		if !internaltypes.IsDefined(plan.AttributeMapping) || !internaltypes.IsDefined(plan.AttributeMapping.Attributes()["issuance_criteria"]) {
+			// don't return object value if plan didn't specify any issuance criteria, return null object
+			attributeMappingValues["issuance_criteria"] = types.ObjectNull(issuanceCritieraAttrTypes)
+		} else {
 			attributeMappingValues["issuance_criteria"], valueFromDiags = types.ObjectValueFrom(ctx,
 				issuanceCritieraAttrTypes, r.AttributeMapping.IssuanceCriteria)
 			diags.Append(valueFromDiags...)
-		} else {
-			attributeMappingValues["issuance_criteria"] = types.ObjectNull(issuanceCritieraAttrTypes)
 		}
 
 		// Build attribute_sources value
