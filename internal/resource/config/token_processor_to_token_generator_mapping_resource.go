@@ -64,7 +64,7 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Schema(ctx context.Cont
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"attribute_contract_fulfillment": attributecontractfulfillment.AttributeContractFulfillmentSchema(),
+			"attribute_contract_fulfillment": attributecontractfulfillment.AttributeContractFulfillmentSchema(false),
 			"attribute_sources":              attributesources.AttributeSourcesSchema(),
 			"default_target_resource": schema.StringAttribute{
 				Description: "Default target URL for this Token Processor to Token Generator mapping configuration.",

@@ -29,7 +29,7 @@ func CommonAttributeSourceSchema() map[string]schema.Attribute {
 		Optional:    true,
 		Description: "The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings",
 	}
-	commonAttributeSourceSchema["attribute_contract_fulfillment"] = attributecontractfulfillment.AttributeContractFulfillmentSchema()
+	commonAttributeSourceSchema["attribute_contract_fulfillment"] = attributecontractfulfillment.AttributeContractFulfillmentSchema(false)
 	return commonAttributeSourceSchema
 }
 
