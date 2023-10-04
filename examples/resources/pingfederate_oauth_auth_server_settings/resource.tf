@@ -1,3 +1,20 @@
+terraform {
+  required_version = ">=1.1"
+  required_providers {
+    pingfederate = {
+      version = "~> 0.0.1"
+      source = "pingidentity/pingfederate"
+    }
+  }
+}
+
+provider "pingfederate" {
+  username = "administrator"
+  password = "2FederateM0re"
+  https_host = "https://localhost:9999"
+  insecure_trust_all_tls = true
+}
+
 resource "pingfederate_oauth_auth_server_settings" "oauthAuthServerSettingsExample" {
   authorization_code_entropy          = 20
   authorization_code_timeout          = 50
@@ -8,7 +25,7 @@ resource "pingfederate_oauth_auth_server_settings" "oauthAuthServerSettingsExamp
   refresh_rolling_interval            = 1
   refresh_token_length                = 40
   registered_authorization_path       = "/example"
-  scopes = [
+  /*scopes = [
     {
       name        = "examplescope",
       description = "example scope",
@@ -67,5 +84,5 @@ resource "pingfederate_oauth_auth_server_settings" "oauthAuthServerSettingsExamp
   par_reference_length                             = 24
   par_status                                       = "ENABLED"
   client_secret_retention_period                   = 0
-  jwt_secured_authorization_response_mode_lifetime = 600
+  jwt_secured_authorization_response_mode_lifetime = 600*/
 }

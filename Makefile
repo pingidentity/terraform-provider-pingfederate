@@ -53,7 +53,7 @@ define test_acc_env_vars
 endef
 
 testacc:
-	$(call test_acc_env_vars) TF_ACC=1  go test `go list ./internal/... | grep -v github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/oauthauthserversettings` -timeout 10m -v -p 4 -run TestAccIdpAdapters
+	$(call test_acc_env_vars) TF_ACC=1  go test `go list ./internal/...` -run TestAccOauthAuthServerSettings -timeout 10m -v -p 4
 
 testacccomplete: spincontainer testacc
 
