@@ -22,7 +22,7 @@ resource "pingfederate_idp_adapters" "idpAdaptersExample" {
         //location = "https://localhost:9999/pf-admin-api/v1/idp/adapters/descriptors/com.pingidentity.adapters.htmlform.idp.HtmlFormIdpAuthnAdapter",
         id = "com.pingidentity.adapters.htmlform.idp.HtmlFormIdpAuthnAdapter"
     }
-    /*attribute_mapping = {
+    attribute_mapping = {
         attribute_contract_fulfillment = {
             "entryUUID" = {
                 source = {
@@ -58,7 +58,7 @@ resource "pingfederate_idp_adapters" "idpAdaptersExample" {
         issuance_criteria = {
             conditional_criteria = []
         }
-    }*/
+    }
     configuration = {
         tables = [
             {
@@ -98,13 +98,13 @@ resource "pingfederate_idp_adapters" "idpAdaptersExample" {
                 pseudonym = true
             }
         ]
-        /*extended_attributes = [
+        extended_attributes = [
             {
                 masked = false
                 name = "entryUUID"
                 pseudonym = false
             }
-        ]*/
+        ]
     }
 }
 

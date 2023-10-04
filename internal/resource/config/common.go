@@ -148,26 +148,44 @@ func SetAllAttributesToOptionalAndComputed(s *schema.Schema, exemptAttributes []
 func ToFieldsListValue(fields []client.ConfigField, planFields types.List, diags *diag.Diagnostics) types.List {
 	objValues := []attr.Value{}
 	planFieldsElements := planFields.Elements()
-	if len(planFieldsElements) > len(fields) {
-		diags.AddError("Plan fields length is greater than response fields length",
-			fmt.Sprintf("Plan fields: %d, response fields: %d", len(planFieldsElements), len(fields)))
-		return types.ListNull(types.ObjectType{AttrTypes: fieldAttrTypes})
-	}
-	for i := 0; i < len(planFieldsElements); i++ {
-		attrValues := map[string]attr.Value{}
-		attrValues["name"] = types.StringValue(fields[i].Name)
-		if fields[i].Value == nil {
-			// This must be an encrypted field. Use the value from the plan
-			planField := planFieldsElements[i].(types.Object)
-			planFieldValue := planField.Attributes()["value"].(types.String)
-			attrValues["value"] = types.StringValue(planFieldValue.ValueString())
-		} else {
-			attrValues["value"] = types.StringPointerValue(fields[i].Value)
+	// If fields is null in the plan, just return everything. Otherwise only return fields corresponding with the plan
+	//TODO We will want to change this in the future so that we store everything the server returns in state in some way
+	if !internaltypes.IsDefined(planFields) {
+		for _, field := range fields {
+			attrValues := map[string]attr.Value{}
+			attrValues["name"] = types.StringValue(field.Name)
+			if field.Value == nil {
+				attrValues["value"] = types.StringNull()
+			} else {
+				attrValues["value"] = types.StringPointerValue(field.Value)
+			}
+			attrValues["inherited"] = types.BoolPointerValue(field.Inherited)
+			objVal, newDiags := types.ObjectValue(fieldAttrTypes, attrValues)
+			diags.Append(newDiags...)
+			objValues = append(objValues, objVal)
 		}
-		attrValues["inherited"] = types.BoolPointerValue(fields[i].Inherited)
-		objVal, newDiags := types.ObjectValue(fieldAttrTypes, attrValues)
-		diags.Append(newDiags...)
-		objValues = append(objValues, objVal)
+	} else {
+		if len(planFieldsElements) > len(fields) {
+			diags.AddError("Plan fields length is greater than response fields length",
+				fmt.Sprintf("Plan fields: %d, response fields: %d", len(planFieldsElements), len(fields)))
+			return types.ListNull(types.ObjectType{AttrTypes: fieldAttrTypes})
+		}
+		for i := 0; i < len(planFieldsElements); i++ {
+			attrValues := map[string]attr.Value{}
+			attrValues["name"] = types.StringValue(fields[i].Name)
+			if fields[i].Value == nil {
+				// This must be an encrypted field. Use the value from the plan
+				planField := planFieldsElements[i].(types.Object)
+				planFieldValue := planField.Attributes()["value"].(types.String)
+				attrValues["value"] = types.StringValue(planFieldValue.ValueString())
+			} else {
+				attrValues["value"] = types.StringPointerValue(fields[i].Value)
+			}
+			attrValues["inherited"] = types.BoolPointerValue(fields[i].Inherited)
+			objVal, newDiags := types.ObjectValue(fieldAttrTypes, attrValues)
+			diags.Append(newDiags...)
+			objValues = append(objValues, objVal)
+		}
 	}
 	listVal, newDiags := types.ListValue(types.ObjectType{
 		AttrTypes: fieldAttrTypes,
@@ -179,24 +197,37 @@ func ToFieldsListValue(fields []client.ConfigField, planFields types.List, diags
 func ToRowsListValue(rows []client.ConfigRow, planRows types.List, diags *diag.Diagnostics) types.List {
 	objValues := []attr.Value{}
 	planRowsElements := planRows.Elements()
-	if len(planRowsElements) > len(rows) {
-		diags.AddError("Plan rows length is greater than response rows length",
-			fmt.Sprintf("Plan tables: %d, response tables: %d", len(planRowsElements), len(rows)))
-		return types.ListNull(types.ObjectType{AttrTypes: rowAttrTypes})
-	}
-	for i := 0; i < len(planRowsElements); i++ {
-		attrValues := map[string]attr.Value{}
-		attrValues["default_row"] = types.BoolPointerValue(rows[i].DefaultRow)
-		planRow := planRowsElements[i].(types.Object)
-		planRowFields := types.ListNull(types.ObjectType{AttrTypes: fieldAttrTypes})
-		planRowFieldsVal, ok := planRow.Attributes()["fields"]
-		if ok {
-			planRowFields = planRowFieldsVal.(types.List)
+	// If rows is null in the plan, just return everything. Otherwise only return rows corresponding with the plan
+	//TODO We will want to change this in the future so that we store everything the server returns in state in some way
+	if !internaltypes.IsDefined(planRows) {
+		for _, row := range rows {
+			attrValues := map[string]attr.Value{}
+			attrValues["default_row"] = types.BoolPointerValue(row.DefaultRow)
+			attrValues["fields"] = ToFieldsListValue(row.Fields, types.ListNull(types.ObjectType{AttrTypes: fieldAttrTypes}), diags)
+			rowObjVal, newDiags := types.ObjectValue(rowAttrTypes, attrValues)
+			diags.Append(newDiags...)
+			objValues = append(objValues, rowObjVal)
 		}
-		attrValues["fields"] = ToFieldsListValue(rows[i].Fields, planRowFields, diags)
-		rowObjVal, newDiags := types.ObjectValue(rowAttrTypes, attrValues)
-		diags.Append(newDiags...)
-		objValues = append(objValues, rowObjVal)
+	} else {
+		if len(planRowsElements) > len(rows) {
+			diags.AddError("Plan rows length is greater than response rows length",
+				fmt.Sprintf("Plan tables: %d, response tables: %d", len(planRowsElements), len(rows)))
+			return types.ListNull(types.ObjectType{AttrTypes: rowAttrTypes})
+		}
+		for i := 0; i < len(planRowsElements); i++ {
+			attrValues := map[string]attr.Value{}
+			attrValues["default_row"] = types.BoolPointerValue(rows[i].DefaultRow)
+			planRow := planRowsElements[i].(types.Object)
+			planRowFields := types.ListNull(types.ObjectType{AttrTypes: fieldAttrTypes})
+			planRowFieldsVal, ok := planRow.Attributes()["fields"]
+			if ok {
+				planRowFields = planRowFieldsVal.(types.List)
+			}
+			attrValues["fields"] = ToFieldsListValue(rows[i].Fields, planRowFields, diags)
+			rowObjVal, newDiags := types.ObjectValue(rowAttrTypes, attrValues)
+			diags.Append(newDiags...)
+			objValues = append(objValues, rowObjVal)
+		}
 	}
 	listVal, newDiags := types.ListValue(types.ObjectType{
 		AttrTypes: rowAttrTypes,
@@ -208,25 +239,39 @@ func ToRowsListValue(rows []client.ConfigRow, planRows types.List, diags *diag.D
 func ToTablesListValue(tables []client.ConfigTable, planTables types.List, diags *diag.Diagnostics) types.List {
 	objValues := []attr.Value{}
 	planTablesElements := planTables.Elements()
-	if len(planTablesElements) > len(tables) {
-		diags.AddError("Plan tables length is greater than response tables length",
-			fmt.Sprintf("Plan tables: %d, response tables: %d", len(planTablesElements), len(tables)))
-		return types.ListNull(types.ObjectType{AttrTypes: rowAttrTypes})
-	}
-	for i := 0; i < len(planTablesElements); i++ {
-		attrValues := map[string]attr.Value{}
-		attrValues["inherited"] = types.BoolPointerValue(tables[i].Inherited)
-		attrValues["name"] = types.StringValue(tables[i].Name)
-		planTable := planTablesElements[i].(types.Object)
-		planTableRows := types.ListNull(types.ObjectType{AttrTypes: rowAttrTypes})
-		planTableRowsVal, ok := planTable.Attributes()["rows"]
-		if ok {
-			planTableRows = planTableRowsVal.(types.List)
+	// If tables is null in the plan, just return everything. Otherwise only return tables corresponding with the plan
+	//TODO We will want to change this in the future so that we store everything the server returns in state in some way
+	if !internaltypes.IsDefined(planTables) {
+		for _, table := range tables {
+			attrValues := map[string]attr.Value{}
+			attrValues["inherited"] = types.BoolPointerValue(table.Inherited)
+			attrValues["name"] = types.StringValue(table.Name)
+			attrValues["rows"] = ToRowsListValue(table.Rows, types.ListNull(types.ObjectType{AttrTypes: rowAttrTypes}), diags)
+			tableObjValue, newDiags := types.ObjectValue(tableAttrTypes, attrValues)
+			diags.Append(newDiags...)
+			objValues = append(objValues, tableObjValue)
 		}
-		attrValues["rows"] = ToRowsListValue(tables[i].Rows, planTableRows, diags)
-		tableObjValue, newDiags := types.ObjectValue(tableAttrTypes, attrValues)
-		diags.Append(newDiags...)
-		objValues = append(objValues, tableObjValue)
+	} else {
+		if len(planTablesElements) > len(tables) {
+			diags.AddError("Plan tables length is greater than response tables length",
+				fmt.Sprintf("Plan tables: %d, response tables: %d", len(planTablesElements), len(tables)))
+			return types.ListNull(types.ObjectType{AttrTypes: rowAttrTypes})
+		}
+		for i := 0; i < len(planTablesElements); i++ {
+			attrValues := map[string]attr.Value{}
+			attrValues["inherited"] = types.BoolPointerValue(tables[i].Inherited)
+			attrValues["name"] = types.StringValue(tables[i].Name)
+			planTable := planTablesElements[i].(types.Object)
+			planTableRows := types.ListNull(types.ObjectType{AttrTypes: rowAttrTypes})
+			planTableRowsVal, ok := planTable.Attributes()["rows"]
+			if ok {
+				planTableRows = planTableRowsVal.(types.List)
+			}
+			attrValues["rows"] = ToRowsListValue(tables[i].Rows, planTableRows, diags)
+			tableObjValue, newDiags := types.ObjectValue(tableAttrTypes, attrValues)
+			diags.Append(newDiags...)
+			objValues = append(objValues, tableObjValue)
+		}
 	}
 	listVal, newDiags := types.ListValue(types.ObjectType{
 		AttrTypes: tableAttrTypes,

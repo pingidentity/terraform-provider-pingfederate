@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -399,16 +400,21 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 								"pseudonym": schema.BoolAttribute{
 									Description: "Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to false.",
 									Optional:    true,
+									Computed:    true,
+									//TODO issue with using defaults here
+									//Default:     booldefault.StaticBool(false),
 								},
 								"masked": schema.BoolAttribute{
 									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
 									Optional:    true,
 									Computed:    true,
-									PlanModifiers: []planmodifier.Bool{
-										boolplanmodifier.UseStateForUnknown(),
-									},
+									//TODO issue with using defaults here
+									//Default:     booldefault.StaticBool(false),
 								},
 							},
+						},
+						PlanModifiers: []planmodifier.Set{
+							setplanmodifier.UseStateForUnknown(),
 						},
 					},
 					"extended_attributes": schema.SetNestedAttribute{
@@ -423,10 +429,16 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 								"pseudonym": schema.BoolAttribute{
 									Description: "Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to false.",
 									Optional:    true,
+									Computed:    true,
+									//TODO issue with using defaults here
+									//Default:     booldefault.StaticBool(false),
 								},
 								"masked": schema.BoolAttribute{
 									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
 									Optional:    true,
+									Computed:    true,
+									//TODO issue with using defaults here
+									//Default:     booldefault.StaticBool(false),
 								},
 							},
 						},
@@ -454,7 +466,6 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 					objectplanmodifier.UseStateForUnknown(),
 				},
 				Attributes: map[string]schema.Attribute{
-					//TODO add attribute_sources
 					"attribute_sources": schema.ListNestedAttribute{
 						Optional:    true,
 						Description: "A list of configured data stores to look up attributes from.",
@@ -464,7 +475,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 									Optional:    true,
 									Description: "The configured settings to look up attributes from an associated data store.",
 									Attributes: map[string]schema.Attribute{
-										//TODO only need type on ldap dat source, others are implicit
+										//TODO only need type on ldap dat source, others are implicit. Make the others readonly
 										"type": schema.StringAttribute{
 											Description: "The data store type of this attribute source.",
 											Required:    true,
@@ -1267,5 +1278,5 @@ func (r *idpAdapterResource) Delete(ctx context.Context, req resource.DeleteRequ
 
 func (r *idpAdapterResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("custom_id"), req, resp)
 }
