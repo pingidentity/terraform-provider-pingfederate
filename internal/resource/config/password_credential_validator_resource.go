@@ -299,6 +299,8 @@ func (r *passwordCredentialValidatorsResource) Configure(_ context.Context, req 
 }
 
 func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.PasswordCredentialValidator, state *passwordCredentialValidatorsResourceModel, configurationFromPlan basetypes.ObjectValue) diag.Diagnostics {
+	var respDiags, diags diag.Diagnostics
+
 	state.Id = types.StringValue(r.Id)
 	state.CustomId = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
@@ -327,7 +329,6 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 		planTables = planTablesValue.(types.List)
 	}
 
-	var respDiags, diags diag.Diagnostics
 	fieldsAttrValue := ToFieldsListValue(r.Configuration.Fields, planFields, &diags)
 	tablesAttrValue := ToTablesListValue(r.Configuration.Tables, planTables, &diags)
 

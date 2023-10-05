@@ -445,17 +445,19 @@ func (r *oauthAccessTokenManagerResource) Configure(_ context.Context, req resou
 }
 
 func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagerResourceModel, configurationFromPlan basetypes.ObjectValue) diag.Diagnostics {
+	var respDiags, diags diag.Diagnostics
+
 	state.Id = types.StringValue(r.Id)
 	state.CustomId = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
 
 	// state.pluginDescriptorRef
 	pluginDescRef := r.GetPluginDescriptorRef()
-	state.PluginDescriptorRef = resourcelink.ToStateResourceLink(ctx, pluginDescRef)
+	state.PluginDescriptorRef = internaltypes.ToStateResourceLink(ctx, &pluginDescRef, &respDiags)
 
 	// state.parentRef
 	parentRef := r.GetParentRef()
-	state.ParentRef = resourcelink.ToStateResourceLink(ctx, parentRef)
+	state.ParentRef = internaltypes.ToStateResourceLink(ctx, &parentRef, &respDiags)
 
 	// state.Configuration
 	configurationAttrType := map[string]attr.Type{
@@ -475,7 +477,6 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 		planTables = planTablesValue.(types.List)
 	}
 
-	var respDiags, diags diag.Diagnostics
 	fieldsAttrValue := config.ToFieldsListValue(r.Configuration.Fields, planFields, &diags)
 	tablesAttrValue := config.ToTablesListValue(r.Configuration.Tables, planTables, &diags)
 

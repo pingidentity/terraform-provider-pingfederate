@@ -2,7 +2,6 @@ package authenticationapi
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -13,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -112,13 +110,8 @@ func addAuthenticationApiSettingsFields(ctx context.Context, addRequest *client.
 		addRequest.IncludeRequestContext = plan.IncludeRequestContext.ValueBoolPointer()
 	}
 	if internaltypes.IsDefined(plan.DefaultApplicationRef) {
-		defaultAppRefId := plan.DefaultApplicationRef.Attributes()["id"].(types.String).ValueString()
-		defaultAppRefResLink := client.NewResourceLinkWithDefaults()
-		defaultAppRefResLink.Id = defaultAppRefId
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.DefaultApplicationRef, false)), defaultAppRefResLink)
-		if err != nil {
-			return err
-		}
+		addRequestNewLinkObj := internaltypes.ToRequestResourceLink(plan.DefaultApplicationRef)
+		addRequest.DefaultApplicationRef = addRequestNewLinkObj
 	}
 	return nil
 

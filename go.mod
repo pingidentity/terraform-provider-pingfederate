@@ -13,7 +13,7 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.5.1
 	github.com/katbyte/terrafmt v0.5.2
 	github.com/pavius/impi v0.0.3
-	github.com/pingidentity/pingfederate-go-client/v1125 v1125.0.0
+	github.com/pingidentity/pingfederate-go-client/v1125 v1125.1.0
 	github.com/terraform-linters/tflint v0.48.0
 )
 

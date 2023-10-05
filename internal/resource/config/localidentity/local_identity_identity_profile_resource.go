@@ -19,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -659,7 +658,7 @@ func readLocalIdentityIdentityProfilesResponse(ctx context.Context, r *client.Lo
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
 	state.CustomId = internaltypes.StringTypeOrNil(r.Id, false)
 	state.Name = types.StringValue(r.Name)
-	state.ApcId = resourcelink.ToStateResourceLink(ctx, r.GetApcId())
+	state.ApcId = internaltypes.ToStateResourceLink(ctx, &r.ApcId, diags)
 
 	authSourceUpdatePolicy := r.AuthSourceUpdatePolicy
 	authSourceUpdatePolicyAttrTypes := map[string]attr.Type{
