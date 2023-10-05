@@ -10,10 +10,12 @@ import (
 func IssuanceCriteriaSchema() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Description: "The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled.",
+		Computed:    true,
 		Optional:    true,
 		Attributes: map[string]schema.Attribute{
 			"conditional_criteria": schema.ListNestedAttribute{
 				Description: "A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue.",
+				Computed:    true,
 				Optional:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{

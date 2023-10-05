@@ -64,7 +64,7 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Schema(ctx context.Cont
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"attribute_contract_fulfillment": attributecontractfulfillment.AttributeContractFulfillmentSchema(),
+			"attribute_contract_fulfillment": attributecontractfulfillment.AttributeContractFulfillmentSchema(false),
 			"attribute_sources":              attributesources.AttributeSourcesSchema(),
 			"default_target_resource": schema.StringAttribute{
 				Description: "Default target URL for this Token Processor to Token Generator mapping configuration.",
@@ -169,7 +169,7 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Configure(_ context.Con
 
 func readTokenProcessorToTokenGeneratorMappingResponse(ctx context.Context, r *client.TokenToTokenMapping, state *tokenProcessorToTokenGeneratorMappingsResourceModel, plan tokenProcessorToTokenGeneratorMappingsResourceModel, diags *diag.Diagnostics) {
 	if !internaltypes.IsDefined(plan.AttributeSources) {
-		state.AttributeSources = types.ListNull(types.ObjectType{AttrTypes: attributesources.AttributeSourcesAttrType()})
+		state.AttributeSources = types.ListNull(types.ObjectType{AttrTypes: attributesources.AttributeSourcesElemAttrType()})
 	} else {
 		state.AttributeSources = attributesources.AttributeSourcesToState(ctx, r.AttributeSources, plan.AttributeSources.Elements(), diags)
 	}
