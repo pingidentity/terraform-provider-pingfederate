@@ -87,7 +87,7 @@ func testAccCheckExpectedAdministrativeAccountAttributes(config administrativeAc
 		resourceType := "AdministrativeAccount"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.AdministrativeAccountsApi.GetAccount(ctx, config.stateId).Execute()
+		response, _, err := testClient.AdministrativeAccountsAPI.GetAccount(ctx, config.stateId).Execute()
 		if err != nil {
 			return err
 		}

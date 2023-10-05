@@ -151,7 +151,7 @@ func testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagerAttrib
 		resourceType := "OauthAccessTokenManager"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.OauthAccessTokenManagersApi.GetTokenManager(ctx, internallyManagedReferenceOauthAccessTokenManagerId).Execute()
+		response, _, err := testClient.OauthAccessTokenManagersAPI.GetTokenManager(ctx, internallyManagedReferenceOauthAccessTokenManagerId).Execute()
 
 		if err != nil {
 			return err
@@ -187,7 +187,7 @@ func testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagerAttrib
 func testAccCheckInternallyManagedReferenceOauthAccessTokenManagerDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.OauthAccessTokenManagersApi.DeleteTokenManager(ctx, internallyManagedReferenceOauthAccessTokenManagerId).Execute()
+	_, err := testClient.OauthAccessTokenManagersAPI.DeleteTokenManager(ctx, internallyManagedReferenceOauthAccessTokenManagerId).Execute()
 	if err == nil {
 		return acctest.ExpectedDestroyError("OauthAccessTokenManager", internallyManagedReferenceOauthAccessTokenManagerId)
 	}

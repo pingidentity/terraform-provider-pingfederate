@@ -172,9 +172,9 @@ func (r *serverSettingsLogSettingsResource) Create(ctx context.Context, req reso
 		diags.AddError("There was an issue retrieving the request of Server Settings Log Settings: %s", requestErr.Error())
 	}
 
-	apiCreateServerSettingsLogSettings := r.apiClient.ServerSettingsApi.UpdateLogSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateServerSettingsLogSettings := r.apiClient.ServerSettingsAPI.UpdateLogSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateServerSettingsLogSettings = apiCreateServerSettingsLogSettings.Body(*createServerSettingsLogSettings)
-	serverSettingsLogSettingsResponse, httpResp, err := r.apiClient.ServerSettingsApi.UpdateLogSettingsExecute(apiCreateServerSettingsLogSettings)
+	serverSettingsLogSettingsResponse, httpResp, err := r.apiClient.ServerSettingsAPI.UpdateLogSettingsExecute(apiCreateServerSettingsLogSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Server Settings Log Settings", err, httpResp)
 		return
@@ -200,7 +200,7 @@ func (r *serverSettingsLogSettingsResource) Read(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadServerSettingsLogSettings, httpResp, err := r.apiClient.ServerSettingsApi.GetLogSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadServerSettingsLogSettings, httpResp, err := r.apiClient.ServerSettingsAPI.GetLogSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings Log Settings", err, httpResp)
@@ -236,7 +236,7 @@ func (r *serverSettingsLogSettingsResource) Update(ctx context.Context, req reso
 	// Get the current state to see how any attributes are changing
 	var state serverSettingsLogSettingsResourceModel
 	req.State.Get(ctx, &state)
-	updateServerSettingsLogSettings := r.apiClient.ServerSettingsApi.UpdateLogSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateServerSettingsLogSettings := r.apiClient.ServerSettingsAPI.UpdateLogSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewLogSettings()
 	err := addOptionalServerSettingsLogSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -248,7 +248,7 @@ func (r *serverSettingsLogSettingsResource) Update(ctx context.Context, req reso
 		diags.AddError("There was an issue retrieving the request of Server Settings Log Settings: %s", requestErr.Error())
 	}
 	updateServerSettingsLogSettings = updateServerSettingsLogSettings.Body(*createUpdateRequest)
-	updateServerSettingsLogSettingsResponse, httpResp, err := r.apiClient.ServerSettingsApi.UpdateLogSettingsExecute(updateServerSettingsLogSettings)
+	updateServerSettingsLogSettingsResponse, httpResp, err := r.apiClient.ServerSettingsAPI.UpdateLogSettingsExecute(updateServerSettingsLogSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Server Settings Log Settings", err, httpResp)
 		return

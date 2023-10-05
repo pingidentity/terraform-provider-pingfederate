@@ -87,7 +87,7 @@ func testAccCheckExpectedAuthenticationPolicyContractsAttributes(config authenti
 		resourceType := "AuthenticationPolicyContracts"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.AuthenticationPolicyContractsApi.GetAuthenticationPolicyContract(ctx, authenticationPolicyContractsId).Execute()
+		response, _, err := testClient.AuthenticationPolicyContractsAPI.GetAuthenticationPolicyContract(ctx, authenticationPolicyContractsId).Execute()
 		if err != nil {
 			return err
 		}
@@ -117,7 +117,7 @@ func testAccCheckExpectedAuthenticationPolicyContractsAttributes(config authenti
 func testAccCheckAuthenticationPolicyContractsDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, _, err := testClient.AuthenticationPolicyContractsApi.GetAuthenticationPolicyContract(ctx, authenticationPolicyContractsId).Execute()
+	_, _, err := testClient.AuthenticationPolicyContractsAPI.GetAuthenticationPolicyContract(ctx, authenticationPolicyContractsId).Execute()
 	if err == nil {
 		return acctest.ExpectedDestroyError("AuthenticationPolicyContracts", authenticationPolicyContractsId)
 	}

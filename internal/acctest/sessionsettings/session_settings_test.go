@@ -80,7 +80,7 @@ func testAccCheckExpectedSessionSettingsAttributes(config sessionSettingsResourc
 		resourceType := "SessionSettings"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.SessionApi.GetSessionSettings(ctx).Execute()
+		response, _, err := testClient.SessionAPI.GetSessionSettings(ctx).Execute()
 
 		if err != nil {
 			return err

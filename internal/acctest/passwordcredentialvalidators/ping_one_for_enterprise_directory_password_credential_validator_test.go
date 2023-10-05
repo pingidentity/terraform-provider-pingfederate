@@ -124,7 +124,7 @@ func testAccCheckExpectedPingOneForEnterpriseDirectoryPasswordCredentialValidato
 		resourceType := "PasswordCredentialValidators"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.PasswordCredentialValidatorsApi.GetPasswordCredentialValidator(ctx, pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId).Execute()
+		response, _, err := testClient.PasswordCredentialValidatorsAPI.GetPasswordCredentialValidator(ctx, pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId).Execute()
 
 		if err != nil {
 			return err
@@ -153,7 +153,7 @@ func testAccCheckExpectedPingOneForEnterpriseDirectoryPasswordCredentialValidato
 func testAccCheckPingOneForEnterpriseDirectoryPasswordCredentialValidatorsDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.PasswordCredentialValidatorsApi.DeletePasswordCredentialValidator(ctx, pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId).Execute()
+	_, err := testClient.PasswordCredentialValidatorsAPI.DeletePasswordCredentialValidator(ctx, pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId).Execute()
 	if err == nil {
 		return acctest.ExpectedDestroyError("PasswordCredentialValidators", pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId)
 	}

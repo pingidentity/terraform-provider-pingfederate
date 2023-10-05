@@ -85,7 +85,7 @@ func testAccCheckExpectedOauthAuthServerSettingsScopesExclusiveScopesAttributes(
 		resourceType := "OauthAuthServerSettingsScopesExclusiveScopes"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.OauthAuthServerSettingsApi.GetExclusiveScope(ctx, oauthAuthServerSettingsScopesExclusiveScopesId).Execute()
+		response, _, err := testClient.OauthAuthServerSettingsAPI.GetExclusiveScope(ctx, oauthAuthServerSettingsScopesExclusiveScopesId).Execute()
 
 		if err != nil {
 			return err
@@ -109,7 +109,7 @@ func testAccCheckExpectedOauthAuthServerSettingsScopesExclusiveScopesAttributes(
 func testAccCheckOauthAuthServerSettingsScopesExclusiveScopesDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.OauthAuthServerSettingsApi.RemoveExclusiveScope(ctx, oauthAuthServerSettingsScopesExclusiveScopesId).Execute()
+	_, err := testClient.OauthAuthServerSettingsAPI.RemoveExclusiveScope(ctx, oauthAuthServerSettingsScopesExclusiveScopesId).Execute()
 	if err == nil {
 		return acctest.ExpectedDestroyError("OauthAuthServerSettingsScopesExclusiveScopes", oauthAuthServerSettingsScopesExclusiveScopesId)
 	}

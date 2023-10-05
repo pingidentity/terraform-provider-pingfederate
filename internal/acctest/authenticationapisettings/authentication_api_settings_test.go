@@ -82,7 +82,7 @@ func testAccCheckExpectedAuthenticationApiSettingsAttributes(config authenticati
 		resourceType := "AuthenticationApiSettings"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.AuthenticationApiApi.GetAuthenticationApiSettings(ctx).Execute()
+		response, _, err := testClient.AuthenticationApiAPI.GetAuthenticationApiSettings(ctx).Execute()
 
 		if err != nil {
 			return err

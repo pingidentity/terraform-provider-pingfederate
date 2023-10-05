@@ -115,7 +115,8 @@ resource "pingfederate_server_settings" "%[1]s" {
   }
 
   federation_info = {
-    base_url = "%[7]s"
+    base_url         = "%[7]s"
+    saml_2_entity_id = "pingidentity.com"
   }
 
   email_server = {
@@ -142,7 +143,7 @@ func testAccCheckExpectedServerSettingsAttributes(config serverSettingsResourceM
 		resourceType := "ServerSettings"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.ServerSettingsApi.GetServerSettings(ctx).Execute()
+		response, _, err := testClient.ServerSettingsAPI.GetServerSettings(ctx).Execute()
 
 		if err != nil {
 			return err
