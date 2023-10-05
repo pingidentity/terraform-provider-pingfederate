@@ -1,4 +1,4 @@
-resource "pingfederate_idp_adapters" "idpAdaptersExample" {
+resource "pingfederate_idp_adapter" "idpAdaptersExample" {
   custom_id = "HTMLFormPD"
   name      = "HTMLFormPD"
   plugin_descriptor_ref = {

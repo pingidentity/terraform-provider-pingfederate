@@ -151,7 +151,7 @@ func TestAccIdpAdapters(t *testing.T) {
 			{
 				// Test importing the resource
 				Config:        testAccIdpAdapters(resourceName, updatedResourceModel),
-				ResourceName:  "pingfederate_idp_adapters." + resourceName,
+				ResourceName:  "pingfederate_idp_adapter." + resourceName,
 				ImportStateId: idpAdapterId,
 				ImportState:   true,
 				//TODO need to re-enable this once we have a way to store fields/tables/attrs/etc. that PF generates itself and returns
@@ -319,7 +319,7 @@ func attributeMappingHclBlock(attributeMapping *client.IdpAdapterContractMapping
 
 func testAccIdpAdapters(resourceName string, resourceModel idpAdaptersResourceModel) string {
 	return fmt.Sprintf(`
-resource "pingfederate_idp_adapters" "%[1]s" {
+resource "pingfederate_idp_adapter" "%[1]s" {
   custom_id = "%[2]s"
   name      = "%[3]s"
   plugin_descriptor_ref = {
