@@ -255,6 +255,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	clientConfig.UserAgent = fmt.Sprintf("pingtools terraform-provider-pingfederate/%s go", p.version)
 	resourceConfig.ApiClient = client.NewAPIClient(clientConfig)
 	resp.ResourceData = resourceConfig
+	resp.DataSourceData = resourceConfig
 
 	tflog.Info(ctx, "Configured PingFederate client", map[string]interface{}{"success": true})
 }
@@ -266,6 +267,11 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		authenticationapi.NewAuthenticationApiSettingsDataSource,
 		certificate.NewCertificateDataSource,
 		idp.NewIdpDefaultUrlsDataSource,
+		keypairs.NewKeyPairsSigningImportDataSource,
+		keypairs.NewKeyPairsSslServerImportDataSource,
+		license.NewLicenseAgreementDataSource,
+		license.NewLicenseDataSource,
+		localidentity.NewLocalIdentityIdentityProfilesDataSource,
 	}
 }
 
