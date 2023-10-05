@@ -38,40 +38,6 @@ var (
 
 // Define attribute types for object types
 var (
-	fieldsAttrTypes = map[string]attr.Type{
-		"name":            types.StringType,
-		"value":           types.StringType,
-		"encrypted_value": types.StringType,
-		"inherited":       types.BoolType,
-	}
-	tablesAttrTypes = map[string]attr.Type{
-		"name": types.StringType,
-		"rows": types.ListType{
-			ElemType: types.ObjectType{
-				AttrTypes: map[string]attr.Type{
-					"fields": types.ListType{
-						ElemType: types.ObjectType{
-							AttrTypes: fieldsAttrTypes,
-						},
-					},
-					"default_row": types.BoolType,
-				},
-			},
-		},
-		"inherited": types.BoolType,
-	}
-	configurationAttrTypes = map[string]attr.Type{
-		"tables": types.ListType{
-			ElemType: types.ObjectType{
-				AttrTypes: tablesAttrTypes,
-			},
-		},
-		"fields": types.ListType{
-			ElemType: types.ObjectType{
-				AttrTypes: fieldsAttrTypes,
-			},
-		},
-	}
 	attributesAttrType = map[string]attr.Type{
 		"name":      types.StringType,
 		"pseudonym": types.BoolType,

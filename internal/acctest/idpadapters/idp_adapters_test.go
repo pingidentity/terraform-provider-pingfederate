@@ -320,11 +320,11 @@ func attributeMappingHclBlock(attributeMapping *client.IdpAdapterContractMapping
 func testAccIdpAdapters(resourceName string, resourceModel idpAdaptersResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_idp_adapters" "%[1]s" {
-	custom_id = "%[2]s"
-	name = "%[3]s"
-	plugin_descriptor_ref = {
-        id = "%[4]s"
-    }
+  custom_id = "%[2]s"
+  name      = "%[3]s"
+  plugin_descriptor_ref = {
+    id = "%[4]s"
+  }
 	%[5]s
 	%[6]s
 	%[7]s
@@ -366,7 +366,7 @@ func testAccCheckExpectedIdpAdaptersAttributes(config idpAdaptersResourceModel) 
 
 		// Attribute mapping attribute contract fullfilment - verify the keys are present in the response
 		if config.attributeMapping != nil {
-			for configKey, _ := range config.attributeMapping.AttributeContractFulfillment {
+			for configKey := range config.attributeMapping.AttributeContractFulfillment {
 				_, ok := resp.AttributeMapping.AttributeContractFulfillment[configKey]
 				if !ok {
 					return fmt.Errorf("Attribute contract fullfilment %s not found in server response", configKey)
