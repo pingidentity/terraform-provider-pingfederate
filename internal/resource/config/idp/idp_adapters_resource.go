@@ -97,6 +97,7 @@ var (
 				"id":   types.StringType,
 			},
 		},
+		"value": types.StringType,
 	}
 
 	customAttrSourceAttrTypes = map[string]attr.Type{
@@ -189,7 +190,7 @@ var (
 			ElemType: types.ObjectType{
 				AttrTypes: map[string]attr.Type{
 					"source": types.ObjectType{
-						//TODO remove this duplication?
+						//TODO remove this duplication
 						AttrTypes: map[string]attr.Type{
 							"type": types.StringType,
 							"id":   types.StringType,
@@ -532,6 +533,10 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 															},
 														},
 													},
+													"value": schema.StringAttribute{
+														Description: "The value for this attribute.",
+														Required:    true,
+													},
 												},
 											},
 										},
@@ -612,6 +617,10 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 																Optional:    true,
 															},
 														},
+													},
+													"value": schema.StringAttribute{
+														Description: "The value for this attribute.",
+														Required:    true,
 													},
 												},
 											},
@@ -694,6 +703,10 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 																Optional:    true,
 															},
 														},
+													},
+													"value": schema.StringAttribute{
+														Description: "The value for this attribute.",
+														Required:    true,
 													},
 												},
 											},
@@ -796,7 +809,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 								Optional:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
-										//TODO any way to share these definitions
+										//TODO share these definitions
 										"source": schema.SingleNestedAttribute{
 											Description: "The attribute value source.",
 											Required:    true,
