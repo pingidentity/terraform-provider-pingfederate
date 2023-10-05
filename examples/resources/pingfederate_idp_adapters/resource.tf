@@ -1,3 +1,20 @@
+terraform {
+  required_version = ">=1.1"
+  required_providers {
+    pingfederate = {
+      version = "~> 0.0.1"
+      source = "pingidentity/pingfederate"
+    }
+  }
+}
+
+provider "pingfederate" {
+  username = "administrator"
+  password = "2FederateM0re"
+  https_host = "https://localhost:9999"
+  insecure_trust_all_tls = true
+}
+
 resource "pingfederate_idp_adapters" "idpAdaptersExample" {
 	custom_id = "HTMLFormPD"
     name = "HTMLFormPD"
@@ -25,7 +42,18 @@ resource "pingfederate_idp_adapters" "idpAdaptersExample" {
                 value  = "username"
             }
         },
-        attribute_sources = [],
+        attribute_sources = [
+            {
+                ldap_attribute_source = {
+                    type = "LDAP"
+                    data_store_ref = {
+                        id = "LDAP-D803C87FAB2ADFB4B0A947B64BA6F0C6093A5CA3"
+                    }
+                    search_filter = "(&)"
+                    search_scope = "SUBTREE"
+                }
+            }
+        ],
         issuance_criteria = {
             conditional_criteria = []
         }
@@ -52,7 +80,7 @@ resource "pingfederate_idp_adapters" "idpAdaptersExample" {
                 name = "Challenge Retries"
                 value = 3
             },
-            {
+            /*{
                 name = "Session State",
                 value = "None"
             },
@@ -239,7 +267,7 @@ resource "pingfederate_idp_adapters" "idpAdaptersExample" {
             {
                 name = "CAPTCHA for Username recovery",
                 value = "false"
-            }
+            }*/
         ]
     }
     attribute_contract = {
