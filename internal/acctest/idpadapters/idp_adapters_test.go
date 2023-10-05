@@ -156,6 +156,7 @@ func TestAccIdpAdapters(t *testing.T) {
 				ImportState:   true,
 				//TODO need to re-enable this once we have a way to store fields/tables/attrs/etc. that PF generates itself and returns
 				//ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{"configuration.fields"},
 			},
 		},
 	})
