@@ -116,6 +116,7 @@ resource "pingfederate_server_settings" "%[1]s" {
 
   federation_info = {
     base_url = "%[7]s"
+	saml_2_entity_id = "pingidentity.com"
   }
 
   email_server = {

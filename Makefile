@@ -22,14 +22,14 @@ vet:
 test:
 	go test -parallel=4 ./...
 
-#TODO see what profile works for tests
 starttestcontainer:
 	docker run --name pingfederate_terraform_provider_container \
 		-d -p 9031:9031 \
 		-d -p 9999:9999 \
 		--env-file "${HOME}/.pingidentity/config" \
-		-e SERVER_PROFILE_URL=https://github.com/henryrecker-pingidentity/pingidentity-server-profiles.git \
-		-e SERVER_PROFILE_PATH=baseline/pingfederate \
+		-e SERVER_PROFILE_URL=https://github.com/pingidentity/pingidentity-server-profiles.git \
+		-e SERVER_PROFILE_BRANCH=terraform-provider-pingfederate-1125 \
+		-e SERVER_PROFILE_PATH=terraform-provider-pingfederate/pingfederate \
 		pingidentity/pingfederate:2305-11.2.5
 # Wait for the instance to become ready
 	sleep 1
@@ -53,7 +53,8 @@ define test_acc_env_vars
 endef
 
 testacc:
-	$(call test_acc_env_vars) TF_ACC=1  go test `go list ./internal/...` -run TestAccOauthAuthServerSettings -timeout 10m -v -p 4
+	$(call test_acc_env_vars) TF_ACC=1  go test `go list ./internal/... | grep -v github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/oauthauthserversettings` -timeout 10m -v -p 4 && \
+	$(call test_acc_env_vars) TF_ACC=1  go test `go list ./internal/... | grep github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/oauthauthserversettings` -timeout 10m -v -p 1
 
 testacccomplete: spincontainer testacc
 
