@@ -64,6 +64,15 @@ resource "pingfederate_key_pair_ssl_server_import" "%[1]s" {
   file_data = "%[3]s"
   format    = "%[4]s"
   password  = "%[5]s"
+}
+
+data "pingfederate_key_pair_ssl_server_import" "%[1]s"{
+  file_data = "%[3]s"
+  format    = "%[4]s"
+  password  = "%[5]s"
+  depends_on = [
+	pingfederate_key_pair_ssl_server_import.%[1]s
+  ]
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.fileData,
@@ -78,7 +87,7 @@ func testAccCheckExpectedKeyPairsSslServerImportAttributes(config keyPairsSslSer
 		resourceType := "KeyPairsSslServerImport"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.KeyPairsSslServerApi.GetSslServerKeyPair(ctx, keyPairsSslServerImportId).Execute()
+		response, _, err := testClient.KeyPairsSslServerAPI.GetSslServerKeyPair(ctx, keyPairsSslServerImportId).Execute()
 		if err != nil {
 			return err
 		}
@@ -96,7 +105,7 @@ func testAccCheckExpectedKeyPairsSslServerImportAttributes(config keyPairsSslSer
 func testAccCheckKeyPairsSslServerImportDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.KeyPairsSslClientApi.DeleteSslClientKeyPair(ctx, keyPairsSslServerImportId).Execute()
+	_, err := testClient.KeyPairsSslClientAPI.DeleteSslClientKeyPair(ctx, keyPairsSslServerImportId).Execute()
 	if err == nil {
 		return acctest.ExpectedDestroyError("KeyPairsSslServerImport", keyPairsSslServerImportId)
 	}

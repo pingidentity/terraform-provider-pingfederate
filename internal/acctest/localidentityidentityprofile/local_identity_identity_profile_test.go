@@ -82,6 +82,16 @@ resource "pingfederate_local_identity_identity_profile" "%[1]s" {
   registration_enabled = %[4]t
   profile_enabled      = %[5]t
 
+}
+
+data "pingfederate_local_identity_identity_profile" "%[1]s"{
+  name      = "%[3]s"
+  apc_id = {
+    id = pingfederate_authentication_policy_contract.authenticationPolicyContractsExample.id
+  }
+  depends_on = [
+	pingfederate_local_identity_identity_profile.%[1]s
+  ]
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.name,
@@ -96,7 +106,7 @@ func testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(config localIde
 		resourceType := "LocalIdentityIdentityProfiles"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.LocalIdentityIdentityProfilesApi.GetIdentityProfile(ctx, localIdentityIdentityProfilesId).Execute()
+		response, _, err := testClient.LocalIdentityIdentityProfilesAPI.GetIdentityProfile(ctx, localIdentityIdentityProfilesId).Execute()
 
 		if err != nil {
 			return err
@@ -133,7 +143,7 @@ func testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(config localIde
 func testAccCheckLocalIdentityIdentityProfilesDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.LocalIdentityIdentityProfilesApi.DeleteIdentityProfile(ctx, localIdentityIdentityProfilesId).Execute()
+	_, err := testClient.LocalIdentityIdentityProfilesAPI.DeleteIdentityProfile(ctx, localIdentityIdentityProfilesId).Execute()
 	if err == nil {
 		return acctest.ExpectedDestroyError("LocalIdentityIdentityProfiles", localIdentityIdentityProfilesId)
 	}

@@ -91,7 +91,7 @@ func testAccCheckExpectedRedirectValidationAttributes(config redirectValidationR
 		resourceType := "RedirectValidation"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.RedirectValidationApi.GetRedirectValidationSettings(ctx).Execute()
+		response, _, err := testClient.RedirectValidationAPI.GetRedirectValidationSettings(ctx).Execute()
 
 		if err != nil {
 			return err

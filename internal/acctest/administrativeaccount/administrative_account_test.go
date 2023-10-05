@@ -72,6 +72,15 @@ resource "pingfederate_administrative_account" "%[1]s" {
   roles       = %[4]s
   password    = "%[5]s"
   username    = "%[6]s"
+}
+
+data "pingfederate_administrative_account" "%[1]s"{
+  roles       = %[4]s
+  password    = "%[5]s"
+  username = "%[6]s"
+  depends_on = [
+    pingfederate_administrative_account.%[1]s
+  ]
 }`, resourceName,
 		resourceModel.active,
 		resourceModel.description,
@@ -87,7 +96,7 @@ func testAccCheckExpectedAdministrativeAccountAttributes(config administrativeAc
 		resourceType := "AdministrativeAccount"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.AdministrativeAccountsApi.GetAccount(ctx, config.stateId).Execute()
+		response, _, err := testClient.AdministrativeAccountsAPI.GetAccount(ctx, config.stateId).Execute()
 		if err != nil {
 			return err
 		}

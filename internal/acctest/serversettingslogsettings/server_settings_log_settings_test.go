@@ -116,7 +116,7 @@ func testAccCheckExpectedServerSettingsLogSettingsAttributes(config serverSettin
 		resourceType := "ServerSettingsLogSettings"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.ServerSettingsApi.GetLogSettings(ctx).Execute()
+		response, _, err := testClient.ServerSettingsAPI.GetLogSettings(ctx).Execute()
 
 		if err != nil {
 			return err

@@ -106,7 +106,7 @@ func (r *keyPairsSigningImportDataSource) Read(ctx context.Context, req datasour
 		return
 	}
 
-	apiReadKeyPairsSigningImport, httpResp, err := r.apiClient.KeyPairsSigningApi.GetSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadKeyPairsSigningImport, httpResp, err := r.apiClient.KeyPairsSigningAPI.GetSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPair Signing Import", err, httpResp)
 		return

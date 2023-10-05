@@ -71,7 +71,7 @@ func testAccCheckExpectedVirtualHostNamesAttributes(config virtualHostNamesResou
 		resourceType := "VirtualHostNames"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.VirtualHostNamesApi.GetVirtualHostNamesSettings(ctx).Execute()
+		response, _, err := testClient.VirtualHostNamesAPI.GetVirtualHostNamesSettings(ctx).Execute()
 		if err != nil {
 			return err
 		}

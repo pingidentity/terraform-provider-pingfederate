@@ -123,9 +123,9 @@ func (r *licenseAgreementResource) Create(ctx context.Context, req resource.Crea
 		diags.AddError("There was an issue retrieving the request of the License Agreement: %s", requestErr.Error())
 	}
 
-	apiCreateLicenseAgreement := r.apiClient.LicenseApi.UpdateLicenseAgreement(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateLicenseAgreement := r.apiClient.LicenseAPI.UpdateLicenseAgreement(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateLicenseAgreement = apiCreateLicenseAgreement.Body(*createLicenseAgreement)
-	licenseAgreementResponse, httpResp, err := r.apiClient.LicenseApi.UpdateLicenseAgreementExecute(apiCreateLicenseAgreement)
+	licenseAgreementResponse, httpResp, err := r.apiClient.LicenseAPI.UpdateLicenseAgreementExecute(apiCreateLicenseAgreement)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the License Agreement", err, httpResp)
 		return
@@ -154,7 +154,7 @@ func (r *licenseAgreementResource) Read(ctx context.Context, req resource.ReadRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadLicenseAgreement, httpResp, err := r.apiClient.LicenseApi.GetLicenseAgreement(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadLicenseAgreement, httpResp, err := r.apiClient.LicenseAPI.GetLicenseAgreement(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the License Agreement", err, httpResp)
@@ -190,7 +190,7 @@ func (r *licenseAgreementResource) Update(ctx context.Context, req resource.Upda
 	// Get the current state to see how any attributes are changing
 	var state licenseAgreementResourceModel
 	req.State.Get(ctx, &state)
-	updateLicenseAgreement := r.apiClient.LicenseApi.UpdateLicenseAgreement(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateLicenseAgreement := r.apiClient.LicenseAPI.UpdateLicenseAgreement(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewLicenseAgreementInfo()
 	err := addOptionalLicenseAgreementFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -202,7 +202,7 @@ func (r *licenseAgreementResource) Update(ctx context.Context, req resource.Upda
 		diags.AddError("There was an issue retrieving the request of the License Agreement: %s", requestErr.Error())
 	}
 	updateLicenseAgreement = updateLicenseAgreement.Body(*createUpdateRequest)
-	updateLicenseAgreementResponse, httpResp, err := r.apiClient.LicenseApi.UpdateLicenseAgreementExecute(updateLicenseAgreement)
+	updateLicenseAgreementResponse, httpResp, err := r.apiClient.LicenseAPI.UpdateLicenseAgreementExecute(updateLicenseAgreement)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating License Agreement", err, httpResp)
 		return

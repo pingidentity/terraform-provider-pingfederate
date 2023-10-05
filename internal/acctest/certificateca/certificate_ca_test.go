@@ -56,6 +56,13 @@ func testAccCertificate(resourceName string, resourceModel certificatesResourceM
 resource "pingfederate_certificate_ca" "%[1]s" {
   custom_id = "%[2]s"
   file_data = "%[3]s"
+}
+
+data "pingfederate_certificate_ca" "%[1]s"{
+  file_data = "%[3]s"
+  depends_on = [
+	pingfederate_certificate_ca.%[1]s
+  ]
 }`, resourceName,
 		resourceModel.id,
 		fileData,
@@ -68,7 +75,7 @@ func testAccCheckExpectedCertificateAttributes(config certificatesResourceModel)
 		resourceType := "Certificate"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.CertificatesCaApi.GetTrustedCert(ctx, config.stateId).Execute()
+		response, _, err := testClient.CertificatesCaAPI.GetTrustedCert(ctx, config.stateId).Execute()
 		if err != nil {
 			return err
 		}
@@ -86,7 +93,7 @@ func testAccCheckExpectedCertificateAttributes(config certificatesResourceModel)
 func testAccCheckCertificateDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.CertificatesCaApi.DeleteTrustedCA(ctx, certificateId).Execute()
+	_, err := testClient.CertificatesCaAPI.DeleteTrustedCA(ctx, certificateId).Execute()
 	if err == nil {
 		return acctest.ExpectedDestroyError("Certificate", certificateId)
 	}

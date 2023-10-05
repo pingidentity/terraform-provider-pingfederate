@@ -64,6 +64,15 @@ resource "pingfederate_key_pair_signing_import" "%[1]s" {
   file_data = "%[3]s"
   format    = "%[4]s"
   password  = "%[5]s"
+}
+
+data "pingfederate_key_pair_signing_import" "%[1]s"{
+  file_data = "%[3]s"
+  format    = "%[4]s"
+  password  = "%[5]s"
+  depends_on = [
+	pingfederate_key_pair_signing_import.%[1]s
+  ]
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.fileData,
@@ -79,7 +88,7 @@ func testAccCheckExpectedKeyPairsSigningImportAttributes(config keyPairsSigningI
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
 
-		response, _, err := testClient.KeyPairsSigningApi.GetSigningKeyPair(ctx, keyPairsSigningImportId).Execute()
+		response, _, err := testClient.KeyPairsSigningAPI.GetSigningKeyPair(ctx, keyPairsSigningImportId).Execute()
 		if err != nil {
 			return err
 		}
@@ -97,7 +106,7 @@ func testAccCheckExpectedKeyPairsSigningImportAttributes(config keyPairsSigningI
 func testAccCheckKeyPairsSigningImportDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.KeyPairsSigningApi.DeleteSigningKeyPair(ctx, keyPairsSigningImportId).Execute()
+	_, err := testClient.KeyPairsSigningAPI.DeleteSigningKeyPair(ctx, keyPairsSigningImportId).Execute()
 	if err == nil {
 		return acctest.ExpectedDestroyError("KeyPairsSigningImport", keyPairsSigningImportId)
 	}

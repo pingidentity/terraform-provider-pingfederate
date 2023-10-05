@@ -68,6 +68,16 @@ resource "pingfederate_authentication_api_settings" "%[1]s" {
   enable_api_descriptions              = %[3]t
   restrict_access_to_redirectless_mode = %[4]t
   include_request_context              = %[5]t
+}
+
+data "pingfederate_authentication_api_settings" "%[1]s"{
+  default_application_ref = {
+	id       = ""
+	location = ""
+  }
+  depends_on = [
+    pingfederate_authentication_api_settings.%[1]s
+  ]
 }`, resourceName,
 		resourceModel.apiEnabled,
 		resourceModel.enableApiDescriptions,
@@ -82,7 +92,7 @@ func testAccCheckExpectedAuthenticationApiSettingsAttributes(config authenticati
 		resourceType := "AuthenticationApiSettings"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.AuthenticationApiApi.GetAuthenticationApiSettings(ctx).Execute()
+		response, _, err := testClient.AuthenticationApiAPI.GetAuthenticationApiSettings(ctx).Execute()
 
 		if err != nil {
 			return err

@@ -71,6 +71,13 @@ resource "pingfederate_idp_default_urls" "%[1]s" {
   confirm_idp_slo     = %[2]t
   idp_error_msg       = "%[3]s"
   idp_slo_success_url = "%[4]s"
+}
+
+data "pingfederate_idp_default_urls" "%[1]s"{
+  idp_error_msg       = "%[3]s"
+  depends_on = [
+	pingfederate_idp_default_urls.%[1]s
+  ]
 }`, resourceName,
 		resourceModel.confirmIdpSlo,
 		resourceModel.idpErrorMsg,
@@ -84,7 +91,7 @@ func testAccCheckExpectedIdpDefaultUrlsAttributes(config idpDefaultUrlsResourceM
 		resourceType := "IdpDefaultUrls"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.IdpDefaultUrlsApi.GetDefaultUrl(ctx).Execute()
+		response, _, err := testClient.IdpDefaultUrlsAPI.GetDefaultUrl(ctx).Execute()
 
 		if err != nil {
 			return err

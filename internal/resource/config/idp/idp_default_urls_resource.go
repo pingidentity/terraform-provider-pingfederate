@@ -134,9 +134,9 @@ func (r *idpDefaultUrlsResource) Create(ctx context.Context, req resource.Create
 		diags.AddError("There was an issue retrieving the request of the IdpDefaultUrls: %s", requestErr.Error())
 	}
 
-	apiCreateIdpDefaultUrls := r.apiClient.IdpDefaultUrlsApi.UpdateDefaultUrlSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateIdpDefaultUrls := r.apiClient.IdpDefaultUrlsAPI.UpdateDefaultUrlSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateIdpDefaultUrls = apiCreateIdpDefaultUrls.Body(*createIdpDefaultUrls)
-	idpDefaultUrlsResponse, httpResp, err := r.apiClient.IdpDefaultUrlsApi.UpdateDefaultUrlSettingsExecute(apiCreateIdpDefaultUrls)
+	idpDefaultUrlsResponse, httpResp, err := r.apiClient.IdpDefaultUrlsAPI.UpdateDefaultUrlSettingsExecute(apiCreateIdpDefaultUrls)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Idp Default Urls", err, httpResp)
 		return
@@ -162,7 +162,7 @@ func (r *idpDefaultUrlsResource) Read(ctx context.Context, req resource.ReadRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadIdpDefaultUrls, httpResp, err := r.apiClient.IdpDefaultUrlsApi.GetDefaultUrl(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadIdpDefaultUrls, httpResp, err := r.apiClient.IdpDefaultUrlsAPI.GetDefaultUrl(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Idp Default Urls", err, httpResp)
@@ -200,7 +200,7 @@ func (r *idpDefaultUrlsResource) Update(ctx context.Context, req resource.Update
 	// Get the current state to see how any attributes are changing
 	var state idpDefaultUrlsResourceModel
 	req.State.Get(ctx, &state)
-	updateIdpDefaultUrls := r.apiClient.IdpDefaultUrlsApi.UpdateDefaultUrlSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateIdpDefaultUrls := r.apiClient.IdpDefaultUrlsAPI.UpdateDefaultUrlSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewIdpDefaultUrl(plan.IdpErrorMsg.ValueString())
 	err := addOptionalIdpDefaultUrlsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -212,7 +212,7 @@ func (r *idpDefaultUrlsResource) Update(ctx context.Context, req resource.Update
 		diags.AddError("There was an issue retrieving the request of the Idp Default Urls: %s", requestErr.Error())
 	}
 	updateIdpDefaultUrls = updateIdpDefaultUrls.Body(*createUpdateRequest)
-	updateIdpDefaultUrlsResponse, httpResp, err := r.apiClient.IdpDefaultUrlsApi.UpdateDefaultUrlSettingsExecute(updateIdpDefaultUrls)
+	updateIdpDefaultUrlsResponse, httpResp, err := r.apiClient.IdpDefaultUrlsAPI.UpdateDefaultUrlSettingsExecute(updateIdpDefaultUrls)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Idp Default Urls", err, httpResp)
 		return

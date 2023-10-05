@@ -106,7 +106,7 @@ func (r *keyPairsSslServerImportDataSource) Read(ctx context.Context, req dataso
 		return
 	}
 
-	apiReadKeyPairsSslServerImport, httpResp, err := r.apiClient.KeyPairsSslServerApi.GetSslServerKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadKeyPairsSslServerImport, httpResp, err := r.apiClient.KeyPairsSslServerAPI.GetSslServerKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPair SSL Server Import", err, httpResp)
 		return

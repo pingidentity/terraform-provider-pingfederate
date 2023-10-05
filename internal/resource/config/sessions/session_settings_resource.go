@@ -130,9 +130,9 @@ func (r *sessionSettingsResource) Create(ctx context.Context, req resource.Creat
 		diags.AddError("There was an issue retrieving the request of Session Settings: %s", requestErr.Error())
 	}
 
-	apiCreateSessionSettings := r.apiClient.SessionApi.UpdateSessionSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateSessionSettings := r.apiClient.SessionAPI.UpdateSessionSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateSessionSettings = apiCreateSessionSettings.Body(*createSessionSettings)
-	sessionSettingsResponse, httpResp, err := r.apiClient.SessionApi.UpdateSessionSettingsExecute(apiCreateSessionSettings)
+	sessionSettingsResponse, httpResp, err := r.apiClient.SessionAPI.UpdateSessionSettingsExecute(apiCreateSessionSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Session Settings", err, httpResp)
 		return
@@ -158,7 +158,7 @@ func (r *sessionSettingsResource) Read(ctx context.Context, req resource.ReadReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadSessionSettings, httpResp, err := r.apiClient.SessionApi.GetSessionSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadSessionSettings, httpResp, err := r.apiClient.SessionAPI.GetSessionSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Session Settings", err, httpResp)
@@ -195,7 +195,7 @@ func (r *sessionSettingsResource) Update(ctx context.Context, req resource.Updat
 	// Get the current state to see how any attributes are changing
 	var state sessionSettingsResourceModel
 	req.State.Get(ctx, &state)
-	updateSessionSettings := r.apiClient.SessionApi.UpdateSessionSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateSessionSettings := r.apiClient.SessionAPI.UpdateSessionSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewSessionSettings()
 	err := addOptionalSessionSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -207,7 +207,7 @@ func (r *sessionSettingsResource) Update(ctx context.Context, req resource.Updat
 		diags.AddError("There was an issue retrieving the request of Session Settings: %s", requestErr.Error())
 	}
 	updateSessionSettings = updateSessionSettings.Body(*createUpdateRequest)
-	updateSessionSettingsResponse, httpResp, err := r.apiClient.SessionApi.UpdateSessionSettingsExecute(updateSessionSettings)
+	updateSessionSettingsResponse, httpResp, err := r.apiClient.SessionAPI.UpdateSessionSettingsExecute(updateSessionSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Session Settings", err, httpResp)
 		return

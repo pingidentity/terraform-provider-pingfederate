@@ -52,6 +52,13 @@ func testAccLicense(resourceName string, resourceModel licenseResourceModel) str
 	return fmt.Sprintf(`
 resource "pingfederate_license" "%[1]s" {
   file_data = "%[2]s"
+}
+
+data "pingfederate_license" "%[1]s"{
+  file_data = "%[2]s"
+  depends_on = [
+	pingfederate_license.%[1]s
+  ]
 }`, resourceName,
 		fileData,
 	)

@@ -88,6 +88,7 @@ func (r *administrativeAccountDataSource) Schema(ctx context.Context, req dataso
 			"roles": schema.SetAttribute{
 				Description: "Roles available for an administrator. USER_ADMINISTRATOR - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. CRYPTO_ADMINISTRATOR - Can manage local keys and certificates. ADMINISTRATOR - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. EXPRESSION_ADMINISTRATOR - Can add and update OGNL expressions.",
 				Required:    true,
+				ElementType: types.StringType,
 			},
 			"username": schema.StringAttribute{
 				Description: "Username for the Administrative Account.",
@@ -139,7 +140,7 @@ func (r *administrativeAccountDataSource) Read(ctx context.Context, req datasour
 		return
 	}
 
-	apiReadAdministrativeAccount, httpResp, err := r.apiClient.AdministrativeAccountsApi.GetAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Username.ValueString()).Execute()
+	apiReadAdministrativeAccount, httpResp, err := r.apiClient.AdministrativeAccountsAPI.GetAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Username.ValueString()).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Administrative Account", err, httpResp)
 		return

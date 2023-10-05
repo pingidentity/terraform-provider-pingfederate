@@ -109,7 +109,7 @@ func (r *protocolMetadataLifetimeSettingsResource) Create(ctx context.Context, r
 		return
 	}
 
-	updateProtocolMetadataLifetimeSettings := r.apiClient.ProtocolMetadataApi.UpdateLifetimeSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateProtocolMetadataLifetimeSettings := r.apiClient.ProtocolMetadataAPI.UpdateLifetimeSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewMetadataLifetimeSettings()
 	err := addOptionalProtocolMetadataLifetimeSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -122,7 +122,7 @@ func (r *protocolMetadataLifetimeSettingsResource) Create(ctx context.Context, r
 	}
 
 	updateProtocolMetadataLifetimeSettings = updateProtocolMetadataLifetimeSettings.Body(*createUpdateRequest)
-	protocolMetadataLifetimeSettingsResponse, httpResp, err := r.apiClient.ProtocolMetadataApi.UpdateLifetimeSettingsExecute(updateProtocolMetadataLifetimeSettings)
+	protocolMetadataLifetimeSettingsResponse, httpResp, err := r.apiClient.ProtocolMetadataAPI.UpdateLifetimeSettingsExecute(updateProtocolMetadataLifetimeSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Protocol Metadata Lifetime Settings", err, httpResp)
 		return
@@ -148,7 +148,7 @@ func (r *protocolMetadataLifetimeSettingsResource) Read(ctx context.Context, req
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadProtocolMetadataLifetimeSettings, httpResp, err := r.apiClient.ProtocolMetadataApi.GetLifetimeSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadProtocolMetadataLifetimeSettings, httpResp, err := r.apiClient.ProtocolMetadataAPI.GetLifetimeSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Protocol Metadata Lifetime Settings", err, httpResp)
@@ -182,7 +182,7 @@ func (r *protocolMetadataLifetimeSettingsResource) Update(ctx context.Context, r
 		return
 	}
 
-	updateProtocolMetadataLifetimeSettings := r.apiClient.ProtocolMetadataApi.UpdateLifetimeSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateProtocolMetadataLifetimeSettings := r.apiClient.ProtocolMetadataAPI.UpdateLifetimeSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewMetadataLifetimeSettings()
 	err := addOptionalProtocolMetadataLifetimeSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -195,7 +195,7 @@ func (r *protocolMetadataLifetimeSettingsResource) Update(ctx context.Context, r
 	}
 
 	updateProtocolMetadataLifetimeSettings = updateProtocolMetadataLifetimeSettings.Body(*createUpdateRequest)
-	protocolMetadataLifetimeSettingsResponse, httpResp, err := r.apiClient.ProtocolMetadataApi.UpdateLifetimeSettingsExecute(updateProtocolMetadataLifetimeSettings)
+	protocolMetadataLifetimeSettingsResponse, httpResp, err := r.apiClient.ProtocolMetadataAPI.UpdateLifetimeSettingsExecute(updateProtocolMetadataLifetimeSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Protocol Metadata Lifetime Settings", err, httpResp)
 		return

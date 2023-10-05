@@ -156,9 +156,9 @@ func (r *serverSettingsGeneralSettingsResource) Create(ctx context.Context, req 
 		diags.AddError("There was an issue retrieving the request of Server Settings General Settings: %s", requestErr.Error())
 	}
 
-	apiCreateServerSettingsGeneralSettings := r.apiClient.ServerSettingsApi.UpdateGeneralSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateServerSettingsGeneralSettings := r.apiClient.ServerSettingsAPI.UpdateGeneralSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateServerSettingsGeneralSettings = apiCreateServerSettingsGeneralSettings.Body(*createServerSettingsGeneralSettings)
-	serverSettingsGeneralSettingsResponse, httpResp, err := r.apiClient.ServerSettingsApi.UpdateGeneralSettingsExecute(apiCreateServerSettingsGeneralSettings)
+	serverSettingsGeneralSettingsResponse, httpResp, err := r.apiClient.ServerSettingsAPI.UpdateGeneralSettingsExecute(apiCreateServerSettingsGeneralSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Server Settings General Settings", err, httpResp)
 		return
@@ -184,7 +184,7 @@ func (r *serverSettingsGeneralSettingsResource) Read(ctx context.Context, req re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadServerSettingsGeneralSettings, httpResp, err := r.apiClient.ServerSettingsApi.GetGeneralSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadServerSettingsGeneralSettings, httpResp, err := r.apiClient.ServerSettingsAPI.GetGeneralSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings General Settings", err, httpResp)
@@ -221,7 +221,7 @@ func (r *serverSettingsGeneralSettingsResource) Update(ctx context.Context, req 
 	// Get the current state to see how any attributes are changing
 	var state serverSettingsGeneralSettingsResourceModel
 	req.State.Get(ctx, &state)
-	updateServerSettingsGeneralSettings := r.apiClient.ServerSettingsApi.UpdateGeneralSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateServerSettingsGeneralSettings := r.apiClient.ServerSettingsAPI.UpdateGeneralSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewGeneralSettings()
 	err := addOptionalServerSettingsGeneralSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -233,7 +233,7 @@ func (r *serverSettingsGeneralSettingsResource) Update(ctx context.Context, req 
 		diags.AddError("There was an issue retrieving the request of Server Settings General Settings: %s", requestErr.Error())
 	}
 	updateServerSettingsGeneralSettings = updateServerSettingsGeneralSettings.Body(*createUpdateRequest)
-	updateServerSettingsGeneralSettingsResponse, httpResp, err := r.apiClient.ServerSettingsApi.UpdateGeneralSettingsExecute(updateServerSettingsGeneralSettings)
+	updateServerSettingsGeneralSettingsResponse, httpResp, err := r.apiClient.ServerSettingsAPI.UpdateGeneralSettingsExecute(updateServerSettingsGeneralSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Server Settings General Settings", err, httpResp)
 		return

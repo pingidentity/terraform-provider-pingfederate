@@ -453,7 +453,7 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 
 // Metadata returns the data source type name.
 func (r *localIdentityIdentityProfilesDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_local_identity_identity_profiles"
+	resp.TypeName = req.ProviderTypeName + "_local_identity_identity_profile"
 }
 
 // Configure adds the provider configured client to the data source.
@@ -598,7 +598,7 @@ func (r *localIdentityIdentityProfilesDataSource) Read(ctx context.Context, req 
 		return
 	}
 
-	apiReadLocalIdentityIdentityProfiles, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesApi.GetIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadLocalIdentityIdentityProfiles, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.GetIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Local Identity Profile", err, httpResp)
 		return
