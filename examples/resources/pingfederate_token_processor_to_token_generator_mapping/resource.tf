@@ -48,11 +48,11 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "tokenProcess
         }
         attribute_name = "ClientIp"
         condition      = "EQUALS"
-        value          = "value2"
+        value          = "value"
       }
     ]
   }
   source_id = "tokenprocessor"
   target_id = "tokengenerator"
-  # id = "tokenprocessor|tokengenerator"
+  custom_id = "tokenprocessor|tokengenerator"
 }

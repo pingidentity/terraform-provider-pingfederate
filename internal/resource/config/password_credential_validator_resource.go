@@ -306,10 +306,10 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 	state.Name = types.StringValue(r.Name)
 
 	// state.pluginDescriptorRef
-	state.PluginDescriptorRef = resourcelink.ToStateResourceLink(ctx, r.GetPluginDescriptorRef())
+	state.PluginDescriptorRef = resourcelink.ToStateResourceLink(ctx, &r.PluginDescriptorRef, &diags)
 
 	// state.parentRef
-	state.ParentRef = resourcelink.ToStateResourceLink(ctx, r.GetParentRef())
+	state.ParentRef = resourcelink.ToStateResourceLink(ctx, &r.PluginDescriptorRef, &diags)
 
 	// state.Configuration
 	configurationAttrType := map[string]attr.Type{

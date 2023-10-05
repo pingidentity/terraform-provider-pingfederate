@@ -110,7 +110,7 @@ func addAuthenticationApiSettingsFields(ctx context.Context, addRequest *client.
 		addRequest.IncludeRequestContext = plan.IncludeRequestContext.ValueBoolPointer()
 	}
 	if internaltypes.IsDefined(plan.DefaultApplicationRef) {
-		addRequestNewLinkObj := internaltypes.ToRequestResourceLink(plan.DefaultApplicationRef)
+		addRequestNewLinkObj := resourcelink.ToRequestResourceLink(plan.DefaultApplicationRef)
 		addRequest.DefaultApplicationRef = addRequestNewLinkObj
 	}
 	return nil
@@ -140,7 +140,7 @@ func readAuthenticationApiSettingsResponse(ctx context.Context, r *client.AuthnA
 	state.EnableApiDescriptions = types.BoolValue(*r.EnableApiDescriptions)
 	state.RestrictAccessToRedirectlessMode = types.BoolValue(*r.RestrictAccessToRedirectlessMode)
 	state.IncludeRequestContext = types.BoolValue(*r.IncludeRequestContext)
-	resourceLinkObjectValue := resourcelink.ToStateResourceLink(ctx, r.GetDefaultApplicationRef())
+	resourceLinkObjectValue := resourcelink.ToStateResourceLink(ctx, r.DefaultApplicationRef, diags)
 	state.DefaultApplicationRef = resourceLinkObjectValue
 }
 

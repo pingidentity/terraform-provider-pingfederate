@@ -453,11 +453,11 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 
 	// state.pluginDescriptorRef
 	pluginDescRef := r.GetPluginDescriptorRef()
-	state.PluginDescriptorRef = internaltypes.ToStateResourceLink(ctx, &pluginDescRef, &respDiags)
+	state.PluginDescriptorRef = resourcelink.ToStateResourceLink(ctx, &pluginDescRef, &respDiags)
 
 	// state.parentRef
 	parentRef := r.GetParentRef()
-	state.ParentRef = internaltypes.ToStateResourceLink(ctx, &parentRef, &respDiags)
+	state.ParentRef = resourcelink.ToStateResourceLink(ctx, &parentRef, &respDiags)
 
 	// state.Configuration
 	configurationAttrType := map[string]attr.Type{
