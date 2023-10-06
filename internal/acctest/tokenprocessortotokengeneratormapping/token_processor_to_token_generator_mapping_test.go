@@ -107,6 +107,7 @@ func attributeSourcesHclBlock(attrSource *client.JdbcAttributeSource) string {
 func issuanceCriteria() *client.ConditionalIssuanceCriteriaEntry {
 	conditionalIssuanceCriteriaEntry := client.NewConditionalIssuanceCriteriaEntry(
 		*client.NewSourceTypeIdKey("CONTEXT"), "ClientIp", "EQUALS", "value")
+	conditionalIssuanceCriteriaEntry.ErrorResult = stringPointer("error")
 	return conditionalIssuanceCriteriaEntry
 }
 
@@ -117,7 +118,9 @@ func issuanceCriteriaHclBlock(conditionalIssuanceCriteriaEntry *client.Condition
 	}
 	if conditionalIssuanceCriteriaEntry != nil {
 		builder.WriteString("  issuance_criteria = {\n    conditional_criteria = [\n      {\n")
-		builder.WriteString("        error_result = \"error\"\n        source = {\n          type = \"")
+		builder.WriteString("        error_result = \"")
+		builder.WriteString(*conditionalIssuanceCriteriaEntry.ErrorResult)
+		builder.WriteString("\"\n        source = {\n          type = \"")
 		builder.WriteString(conditionalIssuanceCriteriaEntry.Source.Type)
 		builder.WriteString("\"\n        }\n        attribute_name = \"")
 		builder.WriteString(conditionalIssuanceCriteriaEntry.AttributeName)

@@ -17,13 +17,6 @@ var (
 	}
 )
 
-func ResourceLinkStateAttrType() map[string]attr.Type {
-	return map[string]attr.Type{
-		"id":       basetypes.StringType{},
-		"location": basetypes.StringType{},
-	}
-}
-
 func ToStateResourceLink(ctx context.Context, r *client.ResourceLink, diags *diag.Diagnostics) basetypes.ObjectValue {
 	if r == nil {
 		return types.ObjectNull(resourceLinkAttrTypes)
@@ -31,4 +24,8 @@ func ToStateResourceLink(ctx context.Context, r *client.ResourceLink, diags *dia
 	linkObjectValue, objectValueFromDiags := types.ObjectValueFrom(ctx, resourceLinkAttrTypes, r)
 	diags.Append(objectValueFromDiags...)
 	return linkObjectValue
+}
+
+func ResourceLinkStateAttrType() map[string]attr.Type {
+	return resourceLinkAttrTypes
 }
