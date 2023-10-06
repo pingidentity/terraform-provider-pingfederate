@@ -71,7 +71,7 @@ func (r *authenticationApiSettingsResource) Schema(ctx context.Context, req reso
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
-				Attributes: resourcelink.ResourceLinkSchema(),
+				Attributes: resourcelink.Schema(),
 			},
 			"restrict_access_to_redirectless_mode": schema.BoolAttribute{
 				Description: "Enable restrict access to redirectless mode",
@@ -110,7 +110,7 @@ func addAuthenticationApiSettingsFields(ctx context.Context, addRequest *client.
 		addRequest.IncludeRequestContext = plan.IncludeRequestContext.ValueBoolPointer()
 	}
 	if internaltypes.IsDefined(plan.DefaultApplicationRef) {
-		addRequestNewLinkObj := resourcelink.ToRequestResourceLink(plan.DefaultApplicationRef)
+		addRequestNewLinkObj := resourcelink.ToRequest(plan.DefaultApplicationRef)
 		addRequest.DefaultApplicationRef = addRequestNewLinkObj
 	}
 	return nil
@@ -140,7 +140,7 @@ func readAuthenticationApiSettingsResponse(ctx context.Context, r *client.AuthnA
 	state.EnableApiDescriptions = types.BoolValue(*r.EnableApiDescriptions)
 	state.RestrictAccessToRedirectlessMode = types.BoolValue(*r.RestrictAccessToRedirectlessMode)
 	state.IncludeRequestContext = types.BoolValue(*r.IncludeRequestContext)
-	resourceLinkObjectValue := resourcelink.ToStateResourceLink(ctx, r.DefaultApplicationRef, diags)
+	resourceLinkObjectValue := resourcelink.ToState(ctx, r.DefaultApplicationRef, diags)
 	state.DefaultApplicationRef = resourceLinkObjectValue
 }
 

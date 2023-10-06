@@ -52,8 +52,9 @@ define test_acc_env_vars
 	PINGFEDERATE_PROVIDER_HTTPS_HOST=https://localhost:9999 PINGFEDERATE_PROVIDER_USERNAME=administrator PINGFEDERATE_PROVIDER_PASSWORD=2FederateM0re PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true
 endef
 
-testoneacc:
-	$(call test_acc_env_vars) TF_ACC=1 go test ./... -timeout 10m --run TestAccTokenProcessorToTokenGeneratorMapping -v -p 4 --count=1
+# Set ACC_TEST_NAME to name of test in cli
+testoneacc: spincontainer
+	$(call test_acc_env_vars) TF_ACC=1 go test ./... -timeout 10m --run ${ACC_TEST_NAME} -v -p 4 --count=1
 
 testacc:
 	$(call test_acc_env_vars) TF_ACC=1 go test `go list ./internal/... | grep -v github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/oauthauthserversettings` -timeout 10m -v -p 4 && \

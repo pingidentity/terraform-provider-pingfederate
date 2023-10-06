@@ -973,7 +973,7 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 	state.BypassAuthorizationForApprovedGrants = types.BoolPointerValue(r.BypassAuthorizationForApprovedGrants)
 	state.AllowUnidentifiedClientROCreds = types.BoolPointerValue(r.AllowUnidentifiedClientROCreds)
 	state.AllowUnidentifiedClientExtensionGrants = types.BoolPointerValue(r.AllowUnidentifiedClientExtensionGrants)
-	state.AdminWebServicePcvRef = resourcelink.ToStateResourceLink(ctx, r.AdminWebServicePcvRef, diags)
+	state.AdminWebServicePcvRef = resourcelink.ToState(ctx, r.AdminWebServicePcvRef, diags)
 	state.AtmIdForOAuthGrantManagement = types.StringPointerValue(r.AtmIdForOAuthGrantManagement)
 	state.ScopeForOAuthGrantManagement = types.StringPointerValue(r.ScopeForOAuthGrantManagement)
 	state.AllowedOrigins = internaltypes.GetStringSet(r.AllowedOrigins)

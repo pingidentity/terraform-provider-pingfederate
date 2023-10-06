@@ -659,7 +659,7 @@ func readLocalIdentityIdentityProfilesResponse(ctx context.Context, r *client.Lo
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
 	state.CustomId = internaltypes.StringTypeOrNil(r.Id, false)
 	state.Name = types.StringValue(r.Name)
-	state.ApcId = resourcelink.ToStateResourceLink(ctx, &r.ApcId, diags)
+	state.ApcId = resourcelink.ToState(ctx, &r.ApcId, diags)
 
 	authSourceUpdatePolicy := r.AuthSourceUpdatePolicy
 	authSourceUpdatePolicyAttrTypes := map[string]attr.Type{

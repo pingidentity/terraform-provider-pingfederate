@@ -166,11 +166,12 @@ func TestAccTokenProcessorToTokenGeneratorMapping(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccTokenProcessorToTokenGeneratorMapping(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_token_processor_to_token_generator_mapping." + resourceName,
-				ImportStateId:     tokenProcessorToTokenGeneratorMappingId,
-				ImportState:       false,
-				ImportStateVerify: false,
+				Config:                  testAccTokenProcessorToTokenGeneratorMapping(resourceName, updatedResourceModel),
+				ResourceName:            "pingfederate_token_processor_to_token_generator_mapping." + resourceName,
+				ImportStateId:           tokenProcessorToTokenGeneratorMappingId,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"attribute_sources"},
 			},
 		},
 	})

@@ -7,7 +7,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 )
 
-func IssuanceCriteriaSchema() schema.SingleNestedAttribute {
+func Schema() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Description: "The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled.",
 		Computed:    true,
@@ -19,7 +19,7 @@ func IssuanceCriteriaSchema() schema.SingleNestedAttribute {
 				Optional:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"source": sourcetypeidkey.SourceTypeIdKeySchema(),
+						"source": sourcetypeidkey.Schema(),
 						"attribute_name": schema.StringAttribute{
 							Description: "The name of the attribute to use in this issuance criterion.",
 							Required:    true,

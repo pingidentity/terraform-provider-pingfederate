@@ -1,20 +1,3 @@
-terraform {
-  required_version = ">=1.1"
-  required_providers {
-    pingfederate = {
-      version = "~> 0.1.0"
-      source  = "pingidentity/pingfederate"
-    }
-  }
-}
-
-provider "pingfederate" {
-  username               = "administrator"
-  password               = "2FederateM0re"
-  https_host             = "https://localhost:9999"
-  insecure_trust_all_tls = true
-}
-
 resource "pingfederate_token_processor_to_token_generator_mapping" "tokenProcessorToTokenGeneratorMappingsExample" {
   attribute_sources = [
     {

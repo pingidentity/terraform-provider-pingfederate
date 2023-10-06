@@ -5,7 +5,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 )
 
-func ToRequestResourceLink(planObj basetypes.ObjectValue) *client.ResourceLink {
+func ToRequest(planObj basetypes.ObjectValue) *client.ResourceLink {
 	objValues := planObj.Attributes()
 	objId := objValues["id"]
 	objLoc := objValues["location"]

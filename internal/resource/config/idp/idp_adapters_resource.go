@@ -73,7 +73,7 @@ var (
 	customAttrSourceAttrTypes = map[string]attr.Type{
 		"type": types.StringType,
 		"data_store_ref": types.ObjectType{
-			AttrTypes: resourcelink.ResourceLinkStateAttrType(),
+			AttrTypes: resourcelink.AttrType(),
 		},
 		"id":          types.StringType,
 		"description": types.StringType,
@@ -95,7 +95,7 @@ var (
 	jdbcAttrSourceAttrTypes = map[string]attr.Type{
 		"type": types.StringType,
 		"data_store_ref": types.ObjectType{
-			AttrTypes: resourcelink.ResourceLinkStateAttrType(),
+			AttrTypes: resourcelink.AttrType(),
 		},
 		"id":          types.StringType,
 		"description": types.StringType,
@@ -115,7 +115,7 @@ var (
 	ldapAttrSourceAttrTypes = map[string]attr.Type{
 		"type": types.StringType,
 		"data_store_ref": types.ObjectType{
-			AttrTypes: resourcelink.ResourceLinkStateAttrType(),
+			AttrTypes: resourcelink.AttrType(),
 		},
 		"id":          types.StringType,
 		"description": types.StringType,
@@ -963,8 +963,8 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 	state.CustomId = types.StringValue(r.Id)
 	state.Id = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
-	state.PluginDescriptorRef = resourcelink.ToStateResourceLink(ctx, &r.PluginDescriptorRef, diags)
-	state.ParentRef = resourcelink.ToStateResourceLink(ctx, r.ParentRef, diags)
+	state.PluginDescriptorRef = resourcelink.ToState(ctx, &r.PluginDescriptorRef, diags)
+	state.ParentRef = resourcelink.ToState(ctx, r.ParentRef, diags)
 
 	var valueFromDiags diag.Diagnostics
 
@@ -1036,7 +1036,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 				diags.Append(valueFromDiags...)
 
 				customAttrSourceValues["type"] = types.StringValue(attrSource.CustomAttributeSource.Type)
-				customAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValueFrom(ctx, resourcelink.ResourceLinkStateAttrType(), attrSource.CustomAttributeSource.DataStoreRef)
+				customAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValueFrom(ctx, resourcelink.AttrType(), attrSource.CustomAttributeSource.DataStoreRef)
 				diags.Append(valueFromDiags...)
 				customAttrSourceValues["id"] = types.StringPointerValue(attrSource.CustomAttributeSource.Id)
 				customAttrSourceValues["description"] = types.StringPointerValue(attrSource.CustomAttributeSource.Description)
@@ -1057,7 +1057,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 				jdbcAttrSourceValues["filter"] = types.StringValue(attrSource.JdbcAttributeSource.Filter)
 
 				jdbcAttrSourceValues["type"] = types.StringValue(attrSource.JdbcAttributeSource.Type)
-				jdbcAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValueFrom(ctx, resourcelink.ResourceLinkStateAttrType(), attrSource.JdbcAttributeSource.DataStoreRef)
+				jdbcAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValueFrom(ctx, resourcelink.AttrType(), attrSource.JdbcAttributeSource.DataStoreRef)
 				diags.Append(valueFromDiags...)
 				jdbcAttrSourceValues["id"] = types.StringPointerValue(attrSource.JdbcAttributeSource.Id)
 				jdbcAttrSourceValues["description"] = types.StringPointerValue(attrSource.JdbcAttributeSource.Description)
@@ -1082,7 +1082,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 				ldapAttrSourceValues["member_of_nested_group"] = types.BoolPointerValue(attrSource.LdapAttributeSource.MemberOfNestedGroup)
 
 				ldapAttrSourceValues["type"] = types.StringValue(attrSource.LdapAttributeSource.Type)
-				ldapAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValueFrom(ctx, resourcelink.ResourceLinkStateAttrType(), attrSource.LdapAttributeSource.DataStoreRef)
+				ldapAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValueFrom(ctx, resourcelink.AttrType(), attrSource.LdapAttributeSource.DataStoreRef)
 				diags.Append(valueFromDiags...)
 				ldapAttrSourceValues["id"] = types.StringPointerValue(attrSource.LdapAttributeSource.Id)
 				ldapAttrSourceValues["description"] = types.StringPointerValue(attrSource.LdapAttributeSource.Description)

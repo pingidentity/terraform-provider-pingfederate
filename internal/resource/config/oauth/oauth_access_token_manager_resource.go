@@ -91,7 +91,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
 				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
-				Attributes:  resourcelink.ResourceLinkSchema(),
+				Attributes:  resourcelink.Schema(),
 			},
 			"parent_ref": schema.SingleNestedAttribute{
 				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
@@ -100,7 +100,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
-				Attributes: resourcelink.ResourceLinkSchema(),
+				Attributes: resourcelink.Schema(),
 			},
 			"configuration": schema.SingleNestedAttribute{
 				Description: "Plugin instance configuration.",
@@ -306,7 +306,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 						Computed:    true,
 						Optional:    true,
 						NestedObject: schema.NestedAttributeObject{
-							Attributes: resourcelink.ResourceLinkSchema(),
+							Attributes: resourcelink.Schema(),
 						},
 						PlanModifiers: []planmodifier.List{
 							listplanmodifier.UseStateForUnknown(),
@@ -453,11 +453,11 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 
 	// state.pluginDescriptorRef
 	pluginDescRef := r.GetPluginDescriptorRef()
-	state.PluginDescriptorRef = resourcelink.ToStateResourceLink(ctx, &pluginDescRef, &respDiags)
+	state.PluginDescriptorRef = resourcelink.ToState(ctx, &pluginDescRef, &respDiags)
 
 	// state.parentRef
 	parentRef := r.GetParentRef()
-	state.ParentRef = resourcelink.ToStateResourceLink(ctx, &parentRef, &respDiags)
+	state.ParentRef = resourcelink.ToState(ctx, &parentRef, &respDiags)
 
 	// state.Configuration
 	configurationAttrType := map[string]attr.Type{
@@ -556,7 +556,7 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 	accessControlSettingsAttrType := map[string]attr.Type{
 		"inherited":        basetypes.BoolType{},
 		"restrict_clients": basetypes.BoolType{},
-		"allowed_clients":  basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: resourcelink.ResourceLinkStateAttrType()}},
+		"allowed_clients":  basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: resourcelink.AttrType()}},
 	}
 
 	if r.AccessControlSettings == nil {

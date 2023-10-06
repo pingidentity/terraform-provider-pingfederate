@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 )
 
-func ResourceLinkSchema() map[string]schema.Attribute {
+func Schema() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
 		"id": schema.StringAttribute{
 			Description: "The ID of the resource.",
