@@ -24,6 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -921,13 +922,13 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 		"email_address":              basetypes.StringType{},
 		"initial_warning_period":     basetypes.Int64Type{},
 		"final_warning_period":       basetypes.Int64Type{},
-		"notification_publisher_ref": basetypes.ObjectType{AttrTypes: internaltypes.ResourceLinkStateAttrType()},
+		"notification_publisher_ref": basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
 	}
 
 	// nested object
 	notificationSettingsAttrType := map[string]attr.Type{
 		"email_address":              basetypes.StringType{},
-		"notification_publisher_ref": basetypes.ObjectType{AttrTypes: internaltypes.ResourceLinkStateAttrType()},
+		"notification_publisher_ref": basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
 	}
 
 	// build object map for notifications from pieces above
@@ -935,7 +936,7 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 		"license_events":                             basetypes.ObjectType{AttrTypes: notificationSettingsAttrType},
 		"certificate_expirations":                    basetypes.ObjectType{AttrTypes: certificateExpirationsAttrType},
 		"notify_admin_user_password_changes":         basetypes.BoolType{},
-		"account_changes_notification_publisher_ref": basetypes.ObjectType{AttrTypes: internaltypes.ResourceLinkStateAttrType()},
+		"account_changes_notification_publisher_ref": basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
 		"metadata_notification_settings":             basetypes.ObjectType{AttrTypes: notificationSettingsAttrType},
 	}
 

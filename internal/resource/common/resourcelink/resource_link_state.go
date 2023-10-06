@@ -1,4 +1,4 @@
-package types
+package resourcelink
 
 import (
 	"context"
@@ -17,20 +17,7 @@ var (
 	}
 )
 
-func ToRequestResourceLink(planObj basetypes.ObjectValue) *client.ResourceLink {
-	objValues := planObj.Attributes()
-	objId := objValues["id"]
-	objLoc := objValues["location"]
-	idStrValue := objId.(basetypes.StringValue)
-	locStrValue := objLoc.(basetypes.StringValue)
-	newLink := client.NewResourceLinkWithDefaults()
-	newLink.SetId(idStrValue.ValueString())
-	newLink.SetLocation(locStrValue.ValueString())
-
-	return newLink
-}
-
-func ToStateResourceLink(ctx context.Context, r *client.ResourceLink, diags *diag.Diagnostics) basetypes.ObjectValue {
+func ToState(ctx context.Context, r *client.ResourceLink, diags *diag.Diagnostics) basetypes.ObjectValue {
 	if r == nil {
 		return types.ObjectNull(resourceLinkAttrTypes)
 	}
@@ -39,6 +26,6 @@ func ToStateResourceLink(ctx context.Context, r *client.ResourceLink, diags *dia
 	return linkObjectValue
 }
 
-func ResourceLinkStateAttrType() map[string]attr.Type {
+func AttrType() map[string]attr.Type {
 	return resourceLinkAttrTypes
 }

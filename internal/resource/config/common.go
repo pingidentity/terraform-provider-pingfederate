@@ -57,23 +57,6 @@ func AddCommonSchema(s *schema.Schema) {
 	}
 }
 
-func AddResourceLinkSchema() map[string]schema.Attribute {
-	return map[string]schema.Attribute{
-		"id": schema.StringAttribute{
-			Description: "The ID of the resource.",
-			Required:    true,
-		},
-		"location": schema.StringAttribute{
-			Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-			Computed:    true,
-			Optional:    false,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
-		},
-	}
-}
-
 func SetAllAttributesToOptionalAndComputed(s *schema.Schema, exemptAttributes []string) {
 	for key, attribute := range s.Attributes {
 		// If more attribute types are used by this provider, this method will need to be updated
