@@ -71,10 +71,6 @@ resource "pingfederate_authentication_api_settings" "%[1]s" {
 }
 
 data "pingfederate_authentication_api_settings" "%[1]s"{
-  default_application_ref = {
-	id       = ""
-	location = ""
-  }
   depends_on = [
     pingfederate_authentication_api_settings.%[1]s
   ]

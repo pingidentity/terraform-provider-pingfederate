@@ -1,2 +1,2 @@
-data "pingfederate_idp_default_urls" "myIdpDefaultUrls" {
+data "pingfederate_idp_default_urls" "myIdpDefaultUrl" {
 }
