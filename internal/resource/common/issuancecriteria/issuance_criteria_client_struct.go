@@ -10,7 +10,7 @@ import (
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
-func ConditionalCriteriaToRequest(issuanceCriteria basetypes.ObjectValue) ([]client.ConditionalIssuanceCriteriaEntry, error) {
+func ConditionalCriteriaClientStruct(issuanceCriteria basetypes.ObjectValue) ([]client.ConditionalIssuanceCriteriaEntry, error) {
 	conditionalCriteria := []client.ConditionalIssuanceCriteriaEntry{}
 	conditionalCriteriaErr := json.Unmarshal([]byte(internaljson.FromValue(issuanceCriteria.Attributes()["conditional_criteria"].(types.List), true)), &conditionalCriteria)
 	if conditionalCriteriaErr != nil {
@@ -19,7 +19,7 @@ func ConditionalCriteriaToRequest(issuanceCriteria basetypes.ObjectValue) ([]cli
 	return conditionalCriteria, nil
 }
 
-func ExpressionCriteriaToRequest(issuanceCriteria basetypes.ObjectValue) ([]client.ExpressionIssuanceCriteriaEntry, error) {
+func ExpressionCriteriaClientStruct(issuanceCriteria basetypes.ObjectValue) ([]client.ExpressionIssuanceCriteriaEntry, error) {
 	expressionCriteria := []client.ExpressionIssuanceCriteriaEntry{}
 	expressionCriteriaErr := json.Unmarshal([]byte(internaljson.FromValue(issuanceCriteria.Attributes()["expression_criteria"].(types.List), true)), &expressionCriteria)
 	if expressionCriteriaErr != nil {
@@ -28,12 +28,12 @@ func ExpressionCriteriaToRequest(issuanceCriteria basetypes.ObjectValue) ([]clie
 	return expressionCriteria, nil
 }
 
-func ToRequest(issuanceCriteria basetypes.ObjectValue) (*client.IssuanceCriteria, error) {
+func ClientStruct(issuanceCriteria basetypes.ObjectValue) (*client.IssuanceCriteria, error) {
 	// conditional criteria
 	var conditionalCriteriaErr error
 	newIssuanceCriteria := client.NewIssuanceCriteriaWithDefaults()
 	if internaltypes.IsDefined(issuanceCriteria.Attributes()["conditional_criteria"]) {
-		newIssuanceCriteria.ConditionalCriteria, conditionalCriteriaErr = ConditionalCriteriaToRequest(issuanceCriteria)
+		newIssuanceCriteria.ConditionalCriteria, conditionalCriteriaErr = ConditionalCriteriaClientStruct(issuanceCriteria)
 		if conditionalCriteriaErr != nil {
 			return nil, conditionalCriteriaErr
 		}
@@ -42,7 +42,7 @@ func ToRequest(issuanceCriteria basetypes.ObjectValue) (*client.IssuanceCriteria
 	// expression criteria
 	var expressionCriteriaErr error
 	if internaltypes.IsDefined(issuanceCriteria.Attributes()["expression_criteria"]) {
-		newIssuanceCriteria.ExpressionCriteria, expressionCriteriaErr = ExpressionCriteriaToRequest(issuanceCriteria)
+		newIssuanceCriteria.ExpressionCriteria, expressionCriteriaErr = ExpressionCriteriaClientStruct(issuanceCriteria)
 		if expressionCriteriaErr != nil {
 			return nil, expressionCriteriaErr
 		}

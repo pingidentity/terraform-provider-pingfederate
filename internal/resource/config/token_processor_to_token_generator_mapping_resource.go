@@ -93,7 +93,7 @@ func addOptionalTokenProcessorToTokenGeneratorMappingFields(ctx context.Context,
 	if internaltypes.IsDefined(plan.AttributeSources) {
 		addRequest.AttributeSources = []client.AttributeSourceAggregation{}
 		var attributeSourcesErr error
-		addRequest.AttributeSources, attributeSourcesErr = attributesources.ToRequest(plan.AttributeSources)
+		addRequest.AttributeSources, attributeSourcesErr = attributesources.ClientStruct(plan.AttributeSources)
 		if attributeSourcesErr != nil {
 			return attributeSourcesErr
 		}
@@ -102,14 +102,14 @@ func addOptionalTokenProcessorToTokenGeneratorMappingFields(ctx context.Context,
 	if internaltypes.IsDefined(plan.IssuanceCriteria) {
 		addRequest.IssuanceCriteria = client.NewIssuanceCriteria()
 		var issuanceCriteriaErr error
-		addRequest.IssuanceCriteria, issuanceCriteriaErr = issuancecriteria.ToRequest(plan.IssuanceCriteria)
+		addRequest.IssuanceCriteria, issuanceCriteriaErr = issuancecriteria.ClientStruct(plan.IssuanceCriteria)
 		if issuanceCriteriaErr != nil {
 			return issuanceCriteriaErr
 		}
 	}
 
-	if internaltypes.IsDefined(plan.Id) {
-		addRequest.Id = plan.Id.ValueStringPointer()
+	if internaltypes.IsDefined(plan.CustomId) {
+		addRequest.Id = plan.CustomId.ValueStringPointer()
 	}
 
 	if internaltypes.IsDefined(plan.DefaultTargetResource) {
@@ -141,11 +141,7 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Configure(_ context.Con
 }
 
 func readTokenProcessorToTokenGeneratorMappingResponse(ctx context.Context, r *client.TokenToTokenMapping, state *tokenProcessorToTokenGeneratorMappingsResourceModel, plan tokenProcessorToTokenGeneratorMappingsResourceModel, diags *diag.Diagnostics) {
-	if !internaltypes.IsDefined(plan.AttributeSources) {
-		state.AttributeSources = types.ListNull(types.ObjectType{AttrTypes: attributesources.ElemAttrType()})
-	} else {
-		state.AttributeSources = attributesources.ToState(ctx, r.AttributeSources, plan.AttributeSources.Elements(), diags)
-	}
+	state.AttributeSources = attributesources.ToState(ctx, r.AttributeSources, diags)
 	state.AttributeContractFulfillment = attributecontractfulfillment.ToState(ctx, r.AttributeContractFulfillment)
 	state.IssuanceCriteria = issuancecriteria.ToState(ctx, r.IssuanceCriteria)
 	state.SourceId = types.StringValue(r.SourceId)
@@ -273,10 +269,11 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Update(ctx context.Cont
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	}
 	// Read the response
-	readTokenProcessorToTokenGeneratorMappingResponse(ctx, updateTokenProcessorToTokenGeneratorMappingResponse, &plan, plan, &resp.Diagnostics)
+	var state tokenProcessorToTokenGeneratorMappingsResourceModel
+	readTokenProcessorToTokenGeneratorMappingResponse(ctx, updateTokenProcessorToTokenGeneratorMappingResponse, &state, plan, &resp.Diagnostics)
 
 	// Update computed values
-	diags = resp.State.Set(ctx, plan)
+	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 

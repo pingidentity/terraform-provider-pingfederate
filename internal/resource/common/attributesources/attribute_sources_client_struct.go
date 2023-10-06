@@ -10,7 +10,7 @@ import (
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
-func ToRequest(attributeSourcesAttr basetypes.ListValue) ([]client.AttributeSourceAggregation, error) {
+func ClientStruct(attributeSourcesAttr basetypes.ListValue) ([]client.AttributeSourceAggregation, error) {
 	attributeSourceAggregation := []client.AttributeSourceAggregation{}
 	for _, source := range attributeSourcesAttr.Elements() {
 		//Determine which attribute source type this is

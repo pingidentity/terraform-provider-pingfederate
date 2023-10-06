@@ -10,7 +10,6 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
-	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
 func CommonAttributeSourceAttrType() map[string]attr.Type {
@@ -92,17 +91,16 @@ func ElemAttrType() map[string]attr.Type {
 	}
 }
 
-func ToState(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation, planAttrSources []attr.Value, diags *diag.Diagnostics) basetypes.ListValue {
+func ToState(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation, diags *diag.Diagnostics) basetypes.ListValue {
 	var customAttrSourceAttrTypes = CustomAttributeSourceAttrType()
 	var jdbcAttrSourceAttrTypes = JdbcAttributeSourceAttrType()
 	var ldapAttrSourceAttrTypes = LdapAttributeSourceAttrType()
 	var valueFromDiags diag.Diagnostics
 
 	// Build attribute_sources value
-	// attributeSourcesElementAttrTypes := attributeSourcesAttrTypes["attribute_sources"].(types.ListType).ElemType.(types.ObjectType).AttrTypes
 	attrSourceElements := []attr.Value{}
 	// This is assuming there won't be any default attribute sources returned by PF and that they will be returned in the same order
-	for i, attrSource := range attributeSourcesFromClient {
+	for _, attrSource := range attributeSourcesFromClient {
 		attrSourceValues := map[string]attr.Value{}
 		if attrSource.CustomAttributeSource != nil {
 			customAttrSourceValues := map[string]attr.Value{}
@@ -147,7 +145,7 @@ func ToState(con context.Context, attributeSourcesFromClient []client.AttributeS
 			ldapAttrSourceValues["search_filter"] = types.StringValue(attrSource.LdapAttributeSource.SearchFilter)
 			ldapAttrSourceValues["search_attributes"], valueFromDiags = types.ListValueFrom(con, types.StringType, attrSource.LdapAttributeSource.SearchAttributes)
 			diags.Append(valueFromDiags...)
-			if attrSource.LdapAttributeSource.BinaryAttributeSettings == nil || !internaltypes.IsDefined(planAttrSources[i].(types.Object).Attributes()["ldap_attribute_source"].(types.Object).Attributes()["binary_attribute_settings"]) {
+			if attrSource.LdapAttributeSource.BinaryAttributeSettings == nil {
 				ldapAttrSourceValues["binary_attribute_settings"] = types.MapNull(ldapAttrSourceAttrTypes["binary_attribute_settings"].(types.MapType).ElemType)
 			} else {
 				ldapAttrSourceValues["binary_attribute_settings"], valueFromDiags = types.MapValueFrom(con, ldapAttrSourceAttrTypes["binary_attribute_settings"].(types.MapType).ElemType, attrSource.LdapAttributeSource.BinaryAttributeSettings)

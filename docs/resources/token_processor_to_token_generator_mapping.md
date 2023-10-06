@@ -13,7 +13,7 @@ Manages Token Processor To Token Generator Mappings
 ## Example Usage
 
 ```terraform
-resource "pingfederate_token_processor_to_token_generator_mapping" "tokenProcessorToTokenGeneratorMappingsExample" {
+resource "pingfederate_token_processor_to_token_generator_mapping" "tokenProcessorToTokenGeneratorMappingExample" {
   attribute_sources = [
     {
       jdbc_attribute_source = {
@@ -346,3 +346,12 @@ Required:
 Optional:
 
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
+
+## Import
+
+Import is supported using the following syntax:
+
+```shell
+# "tokenProcessorToTokenGeneratorMappingId" should be the id of the Token Processor To Token Generator Mapping to be imported
+terraform import pingfederate_token_processor_to_token_generator_mapping.tokenProcessorToTokenGeneratorMapping tokenProcessorToTokenGeneratorMappingId
+```

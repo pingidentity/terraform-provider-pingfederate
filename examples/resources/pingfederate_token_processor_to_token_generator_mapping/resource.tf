@@ -1,4 +1,4 @@
-resource "pingfederate_token_processor_to_token_generator_mapping" "tokenProcessorToTokenGeneratorMappingsExample" {
+resource "pingfederate_token_processor_to_token_generator_mapping" "tokenProcessorToTokenGeneratorMappingExample" {
   attribute_sources = [
     {
       jdbc_attribute_source = {
