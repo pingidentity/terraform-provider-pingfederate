@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -45,6 +46,11 @@ var (
 	}
 	attributeContractAttrTypes = map[string]attr.Type{
 		"core_attributes": types.SetType{
+			ElemType: types.ObjectType{
+				AttrTypes: attributesAttrType,
+			},
+		},
+		"core_attributes_all": types.SetType{
 			ElemType: types.ObjectType{
 				AttrTypes: attributesAttrType,
 			},
@@ -252,6 +258,9 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"custom_id": schema.StringAttribute{
 				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Description: "The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
@@ -353,11 +362,35 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 								},
 								"value": schema.StringAttribute{
 									Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
-									Optional:    true,
+									Required:    true,
 								},
 								"inherited": schema.BoolAttribute{
 									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
 									Optional:    true,
+								},
+							},
+						},
+					},
+					"fields_all": schema.ListNestedAttribute{
+						Description: "List of configuration fields. This attribute will include any values set by default by PingFederate.",
+						Computed:    true,
+						Optional:    false,
+						PlanModifiers: []planmodifier.List{
+							listplanmodifier.UseStateForUnknown(),
+						},
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"name": schema.StringAttribute{
+									Description: "The name of the configuration field.",
+									Required:    true,
+								},
+								"value": schema.StringAttribute{
+									Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
+									Optional:    true,
+								},
+								"inherited": schema.BoolAttribute{
+									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
+									Required:    true,
 								},
 							},
 						},
@@ -396,6 +429,30 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 									Computed:    true,
 									//TODO issue with using defaults here
 									//Default:     booldefault.StaticBool(false),
+								},
+							},
+						},
+						PlanModifiers: []planmodifier.Set{
+							setplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"core_attributes_all": schema.SetNestedAttribute{
+						Description: "A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type. This attribute will include any values set by default by PingFederate.",
+						Computed:    true,
+						Optional:    false,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"name": schema.StringAttribute{
+									Description: "The name of this attribute.",
+									Required:    true,
+								},
+								"pseudonym": schema.BoolAttribute{
+									Description: "Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to false.",
+									Required:    true,
+								},
+								"masked": schema.BoolAttribute{
+									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
+									Required:    true,
 								},
 							},
 						},
@@ -931,6 +988,7 @@ func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdap
 	}
 
 	if internaltypes.IsDefined(plan.AttributeContract) {
+		//TODO make sure this works on subsequent applies even with defaulted core attributes
 		addRequest.AttributeContract = &client.IdpAdapterAttributeContract{}
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContract, false)), addRequest.AttributeContract)
 		if err != nil {
@@ -971,8 +1029,9 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 	//TODO move into common method
 	//TODO unify how we handle diagnostics in these methods
 	configurationAttrType := map[string]attr.Type{
-		"fields": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.FieldAttrTypes()}},
-		"tables": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.TableAttrTypes()}},
+		"fields":     basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.FieldAttrTypes()}},
+		"fields_all": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.FieldAttrTypes()}},
+		"tables":     basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.TableAttrTypes()}},
 	}
 
 	planFields := types.ListNull(types.ObjectType{AttrTypes: config.FieldAttrTypes()})
@@ -987,18 +1046,49 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 		planTables = planTablesValue.(types.List)
 	}
 
-	fieldsAttrValue := config.ToFieldsListValue(r.Configuration.Fields, planFields, diags)
+	fieldsAttrValue, fieldsAllAttrValue := config.ToFieldsListValue(r.Configuration.Fields, planFields, diags)
 	tablesAttrValue := config.ToTablesListValue(r.Configuration.Tables, planTables, diags)
 
 	configurationAttrValue := map[string]attr.Value{
-		"fields": fieldsAttrValue,
-		"tables": tablesAttrValue,
+		"fields":     fieldsAttrValue,
+		"fields_all": fieldsAllAttrValue,
+		"tables":     tablesAttrValue,
 	}
 	state.Configuration, valueFromDiags = types.ObjectValue(configurationAttrType, configurationAttrValue)
 	diags.Append(valueFromDiags...)
 
 	if r.AttributeContract != nil {
-		state.AttributeContract, valueFromDiags = types.ObjectValueFrom(ctx, attributeContractAttrTypes, r.AttributeContract)
+		attributeContractValues := map[string]attr.Value{}
+		attributeContractValues["extended_attributes"], valueFromDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attributesAttrType}, r.AttributeContract.ExtendedAttributes)
+		diags.Append(valueFromDiags...)
+		attributeContractValues["core_attributes_all"], valueFromDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attributesAttrType}, r.AttributeContract.CoreAttributes)
+		diags.Append(valueFromDiags...)
+		attributeContractValues["unique_user_key_attribute"] = types.StringPointerValue(r.AttributeContract.UniqueUserKeyAttribute)
+		attributeContractValues["mask_ognl_values"] = types.BoolPointerValue(r.AttributeContract.MaskOgnlValues)
+		attributeContractValues["inherited"] = types.BoolPointerValue(r.AttributeContract.Inherited)
+
+		// Only include core_attributes specified in the plan in the response
+		if internaltypes.IsDefined(plan.AttributeContract) && internaltypes.IsDefined(plan.AttributeContract.Attributes()["core_attributes"]) {
+			coreAttributes := []attr.Value{}
+			planCoreAttributeNames := map[string]bool{}
+			for _, planCoreAttr := range plan.AttributeContract.Attributes()["core_attributes"].(types.Set).Elements() {
+				planCoreAttributeNames[planCoreAttr.(types.Object).Attributes()["name"].(types.String).ValueString()] = true
+			}
+			for _, coreAttr := range r.AttributeContract.CoreAttributes {
+				_, attrInPlan := planCoreAttributeNames[coreAttr.Name]
+				if attrInPlan {
+					attrObjVal, valueFromDiags := types.ObjectValueFrom(ctx, attributesAttrType, coreAttr)
+					diags.Append(valueFromDiags...)
+					coreAttributes = append(coreAttributes, attrObjVal)
+				}
+			}
+			attributeContractValues["core_attributes"], valueFromDiags = types.SetValue(types.ObjectType{AttrTypes: attributesAttrType}, coreAttributes)
+			diags.Append(valueFromDiags...)
+		} else {
+			attributeContractValues["core_attributes"] = types.SetNull(types.ObjectType{AttrTypes: attributesAttrType})
+		}
+
+		state.AttributeContract, valueFromDiags = types.ObjectValue(attributeContractAttrTypes, attributeContractValues)
 		diags.Append(valueFromDiags...)
 
 	}
@@ -1123,6 +1213,7 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	var configuration client.PluginConfiguration
+	//TODO make sure this works on subsequent applies even with defaulted core attributes
 	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, false)), &configuration)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to read configuration from plan", err.Error())

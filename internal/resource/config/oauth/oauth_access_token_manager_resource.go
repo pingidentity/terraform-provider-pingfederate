@@ -476,7 +476,8 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 		planTables = planTablesValue.(types.List)
 	}
 
-	fieldsAttrValue := config.ToFieldsListValue(r.Configuration.Fields, planFields, &diags)
+	//TODO
+	fieldsAttrValue, _ := config.ToFieldsListValue(r.Configuration.Fields, planFields, &diags)
 	tablesAttrValue := config.ToTablesListValue(r.Configuration.Tables, planTables, &diags)
 
 	configurationAttrValue := map[string]attr.Value{

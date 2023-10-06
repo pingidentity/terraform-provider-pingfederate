@@ -330,7 +330,8 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 		planTables = planTablesValue.(types.List)
 	}
 
-	fieldsAttrValue := ToFieldsListValue(r.Configuration.Fields, planFields, &diags)
+	//TODO
+	fieldsAttrValue, _ := ToFieldsListValue(r.Configuration.Fields, planFields, &diags)
 	tablesAttrValue := ToTablesListValue(r.Configuration.Tables, planTables, &diags)
 
 	configurationAttrValue := map[string]attr.Value{

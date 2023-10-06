@@ -1,3 +1,21 @@
+terraform {
+  required_version = ">=1.1"
+  required_providers {
+    pingfederate = {
+      version = "~> 1.0.0"
+      source  = "pingidentity/pingfederate"
+    }
+  }
+}
+
+provider "pingfederate" {
+  username   = "administrator"
+  password   = "2FederateM0re"
+  https_host = "https://localhost:9999"
+  # Warning: The insecure_trust_all_tls attribute configures the provider to trust any certificate presented by the PingDirectory server.
+  insecure_trust_all_tls = true
+}
+
 resource "pingfederate_idp_adapter" "idpAdaptersExample" {
   custom_id = "HTMLFormPD"
   name      = "HTMLFormPD"
@@ -96,13 +114,13 @@ resource "pingfederate_idp_adapter" "idpAdaptersExample" {
         name  = "Account Unlock",
         value = "false"
       },
-      {
+      /*{
         name  = "Local Identity Profile",
         value = "RBSQIwi5KWYN9ZGK"
-      },
+      },*/
       {
         name  = "Enable Username Recovery",
-        value = "false"
+        value = "true"
       },
       {
         name  = "Login Template",
