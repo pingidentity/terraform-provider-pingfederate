@@ -28,6 +28,31 @@ var (
 	_ resource.ResourceWithImportState = &redirectValidationResource{}
 )
 
+var (
+	whiteListAttrTypes = map[string]attr.Type{
+		"target_resource_sso":      basetypes.BoolType{},
+		"target_resource_slo":      basetypes.BoolType{},
+		"in_error_resource":        basetypes.BoolType{},
+		"idp_discovery":            basetypes.BoolType{},
+		"valid_domain":             basetypes.StringType{},
+		"valid_path":               basetypes.StringType{},
+		"allow_query_and_fragment": basetypes.BoolType{},
+		"require_https":            basetypes.BoolType{},
+	}
+
+	redirectValidationLocalSettingsAttrTypes = map[string]attr.Type{
+		"enable_target_resource_validation_for_sso":           basetypes.BoolType{},
+		"enable_target_resource_validation_for_slo":           basetypes.BoolType{},
+		"enable_target_resource_validation_for_idp_discovery": basetypes.BoolType{},
+		"enable_in_error_resource_validation":                 basetypes.BoolType{},
+		"white_list":                                          basetypes.SetType{ElemType: basetypes.ObjectType{AttrTypes: whiteListAttrTypes}},
+	}
+
+	redirectValidationPartnerSettingsAttrTypes = map[string]attr.Type{
+		"enable_wreply_validation_slo": basetypes.BoolType{},
+	}
+)
+
 // RedirectValidationResource is a helper function to simplify the provider implementation.
 func RedirectValidationResource() resource.Resource {
 	return &redirectValidationResource{}
@@ -230,17 +255,6 @@ func (r *redirectValidationResource) Configure(_ context.Context, req resource.C
 func readRedirectValidationResponse(ctx context.Context, r *client.RedirectValidationSettings, state *redirectValidationResourceModel, diags *diag.Diagnostics) {
 	//TODO placeholder?
 	state.Id = types.StringValue("id")
-	whiteListAttrTypes := map[string]attr.Type{
-		"target_resource_sso":      basetypes.BoolType{},
-		"target_resource_slo":      basetypes.BoolType{},
-		"in_error_resource":        basetypes.BoolType{},
-		"idp_discovery":            basetypes.BoolType{},
-		"valid_domain":             basetypes.StringType{},
-		"valid_path":               basetypes.StringType{},
-		"allow_query_and_fragment": basetypes.BoolType{},
-		"require_https":            basetypes.BoolType{},
-	}
-
 	whiteListAttrs := r.GetRedirectValidationLocalSettings().WhiteList
 	var whiteListSliceAttrVal = []attr.Value{}
 	whiteListSliceType := types.ObjectType{AttrTypes: whiteListAttrTypes}
@@ -259,15 +273,6 @@ func readRedirectValidationResponse(ctx context.Context, r *client.RedirectValid
 		whiteListSliceAttrVal = append(whiteListSliceAttrVal, whiteListObj)
 	}
 	whiteListSlice, _ := types.SetValue(whiteListSliceType, whiteListSliceAttrVal)
-
-	redirectValidationLocalSettingsAttrTypes := map[string]attr.Type{
-		"enable_target_resource_validation_for_sso":           basetypes.BoolType{},
-		"enable_target_resource_validation_for_slo":           basetypes.BoolType{},
-		"enable_target_resource_validation_for_idp_discovery": basetypes.BoolType{},
-		"enable_in_error_resource_validation":                 basetypes.BoolType{},
-		"white_list":                                          basetypes.SetType{ElemType: basetypes.ObjectType{AttrTypes: whiteListAttrTypes}},
-	}
-
 	redirectValidationLocalSettings := r.GetRedirectValidationLocalSettings()
 	redirectValidationLocalSettingsAttrVals := map[string]attr.Value{
 		"enable_target_resource_validation_for_sso":           types.BoolValue(redirectValidationLocalSettings.GetEnableTargetResourceValidationForSSO()),
@@ -277,18 +282,12 @@ func readRedirectValidationResponse(ctx context.Context, r *client.RedirectValid
 		"white_list":                                          whiteListSlice,
 	}
 	redirectValidationLocalSettingsObjVal := internaltypes.MaptoObjValue(redirectValidationLocalSettingsAttrTypes, redirectValidationLocalSettingsAttrVals, diags)
-
-	redirectValidationPartnerSettingsAttrTypes := map[string]attr.Type{
-		"enable_wreply_validation_slo": basetypes.BoolType{},
-	}
-
 	redirectValidationPartnerSettingsSlo := r.GetRedirectValidationPartnerSettings().EnableWreplyValidationSLO
 	redirectValidationPartnerSettingsAttrVals := map[string]attr.Value{
 		"enable_wreply_validation_slo": types.BoolPointerValue(redirectValidationPartnerSettingsSlo),
 	}
 
 	redirectValidationPartnerSettingsObjVal := internaltypes.MaptoObjValue(redirectValidationPartnerSettingsAttrTypes, redirectValidationPartnerSettingsAttrVals, diags)
-
 	state.RedirectValidationLocalSettings = redirectValidationLocalSettingsObjVal
 	state.RedirectValidationPartnerSettings = redirectValidationPartnerSettingsObjVal
 }

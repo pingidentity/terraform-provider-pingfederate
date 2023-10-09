@@ -29,6 +29,8 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopeentry"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopegroupentry"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -847,73 +849,10 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 	//TODO placeholder
 	state.Id = types.StringValue("id")
 	state.DefaultScopeDescription = types.StringValue(r.DefaultScopeDescription)
-
-	// state.Scopes
-	scopes := r.GetScopes()
-	toStateScopes := []client.ScopeEntry{}
-	for _, scope := range scopes {
-		scopeEntry := client.ScopeEntry{}
-		scopeEntry.Name = scope.Name
-		scopeEntry.Description = scope.Description
-		scopeEntry.Dynamic = scope.Dynamic
-		toStateScopes = append(toStateScopes, scopeEntry)
-	}
-
-	state.Scopes, _ = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: scopeAttrTypes}, toStateScopes)
-
-	// state.ScopeGroups
-	scopeGroups := r.GetScopeGroups()
-	toStateScopeGroups := []client.ScopeGroupEntry{}
-	for _, scopeGroup := range scopeGroups {
-		scopeGroupEntry := client.ScopeGroupEntry{}
-		scopeGroupEntry.Name = scopeGroup.Name
-		scopeGroupEntry.Description = scopeGroup.Description
-		scopeGroupEntry.Scopes = scopeGroup.Scopes
-		toStateScopeGroups = append(toStateScopeGroups, scopeGroupEntry)
-	}
-
-	scopeGroupAttrTypes := map[string]attr.Type{
-		"name":        basetypes.StringType{},
-		"description": basetypes.StringType{},
-		"scopes":      basetypes.SetType{ElemType: types.StringType},
-	}
-	state.ScopeGroups, _ = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: scopeGroupAttrTypes}, toStateScopeGroups)
-
-	// state.ExclusiveScopes
-	exclusiveScopes := r.GetExclusiveScopes()
-	toStateExclusiveScopes := []client.ScopeEntry{}
-	for _, exclusiveScope := range exclusiveScopes {
-		exclusiveScopeEntry := client.ScopeEntry{}
-		exclusiveScopeEntry.Name = exclusiveScope.Name
-		exclusiveScopeEntry.Description = exclusiveScope.Description
-		exclusiveScopeEntry.Dynamic = exclusiveScope.Dynamic
-		toStateExclusiveScopes = append(toStateExclusiveScopes, exclusiveScopeEntry)
-	}
-
-	exclusiveScopeAttrTypes := map[string]attr.Type{
-		"name":        basetypes.StringType{},
-		"description": basetypes.StringType{},
-		"dynamic":     basetypes.BoolType{},
-	}
-	state.ExclusiveScopes, _ = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: exclusiveScopeAttrTypes}, toStateExclusiveScopes)
-
-	// state.ScopeGroups
-	exclusiveScopeGroups := r.GetExclusiveScopeGroups()
-	toStateExclusiveScopeGroups := []client.ScopeGroupEntry{}
-	for _, exclusiveScopeGroup := range exclusiveScopeGroups {
-		exclusiveScopeGroupEntry := client.ScopeGroupEntry{}
-		exclusiveScopeGroupEntry.Name = exclusiveScopeGroup.Name
-		exclusiveScopeGroupEntry.Description = exclusiveScopeGroup.Description
-		exclusiveScopeGroupEntry.Scopes = exclusiveScopeGroup.Scopes
-		toStateExclusiveScopeGroups = append(toStateExclusiveScopeGroups, exclusiveScopeGroupEntry)
-	}
-
-	exclusiveScopeGroupAttrTypes := map[string]attr.Type{
-		"name":        basetypes.StringType{},
-		"description": basetypes.StringType{},
-		"scopes":      basetypes.SetType{ElemType: types.StringType},
-	}
-	state.ExclusiveScopeGroups, _ = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: exclusiveScopeGroupAttrTypes}, toStateExclusiveScopeGroups)
+	state.Scopes, _ = scopeentry.ToState(ctx, r.Scopes)
+	state.ScopeGroups, _ = scopegroupentry.ToState(ctx, r.ScopeGroups)
+	state.ExclusiveScopes, _ = scopeentry.ToState(ctx, r.ExclusiveScopes)
+	state.ExclusiveScopeGroups, _ = scopegroupentry.ToState(ctx, r.ExclusiveScopeGroups)
 
 	// state.PersistentGrantContract
 	getPersistentGrantContract := r.GetPersistentGrantContract()
@@ -954,7 +893,6 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 
 	persistentGrantContract, _ := types.ObjectValue(persistentGrantObjContractTypes, persistentGrantObjContractVals)
 	state.PersistentGrantContract = persistentGrantContract
-
 	state.AuthorizationCodeTimeout = types.Int64Value(r.AuthorizationCodeTimeout)
 	state.AuthorizationCodeEntropy = types.Int64Value(r.AuthorizationCodeEntropy)
 	state.DisallowPlainPKCE = types.BoolPointerValue(r.DisallowPlainPKCE)

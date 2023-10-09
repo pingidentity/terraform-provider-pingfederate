@@ -36,6 +36,111 @@ var (
 	_ resource.ResourceWithImportState = &serverSettingsResource{}
 )
 
+var (
+	contactInfoAttrType = map[string]attr.Type{
+		"company":    basetypes.StringType{},
+		"email":      basetypes.StringType{},
+		"first_name": basetypes.StringType{},
+		"last_name":  basetypes.StringType{},
+		"phone":      basetypes.StringType{},
+	}
+
+	certificateExpirationsAttrType = map[string]attr.Type{
+		"email_address":              basetypes.StringType{},
+		"initial_warning_period":     basetypes.Int64Type{},
+		"final_warning_period":       basetypes.Int64Type{},
+		"notification_publisher_ref": basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
+	}
+
+	notificationSettingsAttrType = map[string]attr.Type{
+		"email_address":              basetypes.StringType{},
+		"notification_publisher_ref": basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
+	}
+
+	notificationsAttrType = map[string]attr.Type{
+		"license_events":                             basetypes.ObjectType{AttrTypes: notificationSettingsAttrType},
+		"certificate_expirations":                    basetypes.ObjectType{AttrTypes: certificateExpirationsAttrType},
+		"notify_admin_user_password_changes":         basetypes.BoolType{},
+		"account_changes_notification_publisher_ref": basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"metadata_notification_settings":             basetypes.ObjectType{AttrTypes: notificationSettingsAttrType},
+	}
+
+	oauthRoleAttrType = map[string]attr.Type{
+		"enable_oauth":           basetypes.BoolType{},
+		"enable_open_id_connect": basetypes.BoolType{},
+	}
+
+	idpSaml20ProfileAttrType = map[string]attr.Type{
+		"enable":              basetypes.BoolType{},
+		"enable_auto_connect": basetypes.BoolType{},
+	}
+
+	spSaml20ProfileAttrType = map[string]attr.Type{
+		"enable":              basetypes.BoolType{},
+		"enable_auto_connect": basetypes.BoolType{},
+		"enable_xasp":         basetypes.BoolType{},
+	}
+
+	idpRoleAttrType = map[string]attr.Type{
+		"enable":                       basetypes.BoolType{},
+		"enable_saml_1_1":              basetypes.BoolType{},
+		"enable_saml_1_0":              basetypes.BoolType{},
+		"enable_ws_fed":                basetypes.BoolType{},
+		"enable_ws_trust":              basetypes.BoolType{},
+		"saml_2_0_profile":             basetypes.ObjectType{AttrTypes: idpSaml20ProfileAttrType},
+		"enable_outbound_provisioning": basetypes.BoolType{},
+	}
+
+	spRoleAttrType = map[string]attr.Type{
+		"enable":                      basetypes.BoolType{},
+		"enable_saml_1_1":             basetypes.BoolType{},
+		"enable_saml_1_0":             basetypes.BoolType{},
+		"enable_ws_fed":               basetypes.BoolType{},
+		"enable_ws_trust":             basetypes.BoolType{},
+		"saml_2_0_profile":            basetypes.ObjectType{AttrTypes: spSaml20ProfileAttrType},
+		"enable_open_id_connect":      basetypes.BoolType{},
+		"enable_inbound_provisioning": basetypes.BoolType{},
+	}
+
+	rolesAndProtocolsAttrType = map[string]attr.Type{
+		"oauth_role":           basetypes.ObjectType{AttrTypes: oauthRoleAttrType},
+		"idp_role":             basetypes.ObjectType{AttrTypes: idpRoleAttrType},
+		"sp_role":              basetypes.ObjectType{AttrTypes: spRoleAttrType},
+		"enable_idp_discovery": basetypes.BoolType{},
+	}
+
+	federationInfoAttrType = map[string]attr.Type{
+		"base_url":               basetypes.StringType{},
+		"saml_2_entity_id":       basetypes.StringType{},
+		"auto_connect_entity_id": basetypes.StringType{},
+		"saml_1x_issuer_id":      basetypes.StringType{},
+		"saml_1x_source_id":      basetypes.StringType{},
+		"wsfed_realm":            basetypes.StringType{},
+	}
+
+	emailServerAttrType = map[string]attr.Type{
+		"source_addr":                 basetypes.StringType{},
+		"email_server":                basetypes.StringType{},
+		"port":                        basetypes.Int64Type{},
+		"ssl_port":                    basetypes.Int64Type{},
+		"timeout":                     basetypes.Int64Type{},
+		"retry_attempts":              basetypes.Int64Type{},
+		"retry_delay":                 basetypes.Int64Type{},
+		"use_ssl":                     basetypes.BoolType{},
+		"use_tls":                     basetypes.BoolType{},
+		"verify_hostname":             basetypes.BoolType{},
+		"enable_utf8_message_headers": basetypes.BoolType{},
+		"use_debugging":               basetypes.BoolType{},
+		"username":                    basetypes.StringType{},
+		"password":                    basetypes.StringType{},
+	}
+
+	captchaSettingsAttrType = map[string]attr.Type{
+		"site_key":   basetypes.StringType{},
+		"secret_key": basetypes.StringType{},
+	}
+)
+
 // ServerSettingsResource is a helper function to simplify the provider implementation.
 func ServerSettingsResource() resource.Resource {
 	return &serverSettingsResource{}
@@ -900,88 +1005,13 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	emptyString := ""
 	//TODO placeholder?
 	state.Id = types.StringValue("id")
-
-	//////////////////////////////////////////////////
-	// CONTACT INFO
-	//////////////////////////////////////////////////
-	contactInfoAttrType := map[string]attr.Type{
-		"company":    basetypes.StringType{},
-		"email":      basetypes.StringType{},
-		"first_name": basetypes.StringType{},
-		"last_name":  basetypes.StringType{},
-		"phone":      basetypes.StringType{},
-	}
-	// add to state
 	state.ContactInfo, _ = types.ObjectValueFrom(ctx, contactInfoAttrType, r.ContactInfo)
-
-	//////////////////////////////////////////////
-	// NOTIFICATIONS
-	//////////////////////////////////////////////
-	// nested object
-	certificateExpirationsAttrType := map[string]attr.Type{
-		"email_address":              basetypes.StringType{},
-		"initial_warning_period":     basetypes.Int64Type{},
-		"final_warning_period":       basetypes.Int64Type{},
-		"notification_publisher_ref": basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
-	}
-
-	// nested object
-	notificationSettingsAttrType := map[string]attr.Type{
-		"email_address":              basetypes.StringType{},
-		"notification_publisher_ref": basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
-	}
-
-	// build object map for notifications from pieces above
-	notificationsAttrType := map[string]attr.Type{
-		"license_events":                             basetypes.ObjectType{AttrTypes: notificationSettingsAttrType},
-		"certificate_expirations":                    basetypes.ObjectType{AttrTypes: certificateExpirationsAttrType},
-		"notify_admin_user_password_changes":         basetypes.BoolType{},
-		"account_changes_notification_publisher_ref": basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
-		"metadata_notification_settings":             basetypes.ObjectType{AttrTypes: notificationSettingsAttrType},
-	}
-
 	state.Notifications, _ = types.ObjectValueFrom(ctx, notificationsAttrType, r.Notifications)
 
 	//////////////////////////////////////////////
 	// ROLES AND PROTOCOLS
 	//////////////////////////////////////////////
-	// nested object
-	oauthRoleAttrType := map[string]attr.Type{
-		"enable_oauth":           basetypes.BoolType{},
-		"enable_open_id_connect": basetypes.BoolType{},
-	}
-	//	retrieve values for saving to state
-	oauthRoleVal, _ := types.ObjectValueFrom(ctx, oauthRoleAttrType, r.RolesAndProtocols.OauthRole)
-
-	// nested object
-	idpSaml20ProfileAttrType := map[string]attr.Type{
-		"enable":              basetypes.BoolType{},
-		"enable_auto_connect": basetypes.BoolType{},
-	}
-	// retrieve values for saving to state
 	idpSaml20ProfileVal, _ := types.ObjectValueFrom(ctx, idpSaml20ProfileAttrType, r.RolesAndProtocols.IdpRole.Saml20Profile)
-
-	// nested object
-	spSaml20ProfileAttrType := map[string]attr.Type{
-		"enable":              basetypes.BoolType{},
-		"enable_auto_connect": basetypes.BoolType{},
-		"enable_xasp":         basetypes.BoolType{},
-	}
-	// retrieve values for saving to state
-	spSaml20ProfileVal, _ := types.ObjectValueFrom(ctx, spSaml20ProfileAttrType, r.RolesAndProtocols.SpRole.Saml20Profile)
-
-	// nested object
-	idpRoleAttrType := map[string]attr.Type{
-		"enable":                       basetypes.BoolType{},
-		"enable_saml_1_1":              basetypes.BoolType{},
-		"enable_saml_1_0":              basetypes.BoolType{},
-		"enable_ws_fed":                basetypes.BoolType{},
-		"enable_ws_trust":              basetypes.BoolType{},
-		"saml_2_0_profile":             basetypes.ObjectType{AttrTypes: idpSaml20ProfileAttrType},
-		"enable_outbound_provisioning": basetypes.BoolType{},
-	}
-
-	// retrieve values for saving to state
 	idpRoleAttrValue := map[string]attr.Value{
 		"enable":                       types.BoolPointerValue(r.RolesAndProtocols.IdpRole.Enable),
 		"enable_saml_1_1":              types.BoolPointerValue(r.RolesAndProtocols.IdpRole.EnableSaml11),
@@ -991,23 +1021,9 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 		"saml_2_0_profile":             idpSaml20ProfileVal,
 		"enable_outbound_provisioning": types.BoolPointerValue(r.RolesAndProtocols.IdpRole.EnableOutboundProvisioning),
 	}
-
-	// save IDP role to state
 	idpRoleVal, _ := types.ObjectValue(idpRoleAttrType, idpRoleAttrValue)
 
-	// nested object
-	spRoleAttrType := map[string]attr.Type{
-		"enable":                      basetypes.BoolType{},
-		"enable_saml_1_1":             basetypes.BoolType{},
-		"enable_saml_1_0":             basetypes.BoolType{},
-		"enable_ws_fed":               basetypes.BoolType{},
-		"enable_ws_trust":             basetypes.BoolType{},
-		"saml_2_0_profile":            basetypes.ObjectType{AttrTypes: spSaml20ProfileAttrType},
-		"enable_open_id_connect":      basetypes.BoolType{},
-		"enable_inbound_provisioning": basetypes.BoolType{},
-	}
-
-	// 	retrieve values for saving to state
+	spSaml20ProfileVal, _ := types.ObjectValueFrom(ctx, spSaml20ProfileAttrType, r.RolesAndProtocols.SpRole.Saml20Profile)
 	spRoleAttrValue := map[string]attr.Value{
 		"enable":                      types.BoolPointerValue(r.RolesAndProtocols.SpRole.Enable),
 		"enable_saml_1_1":             types.BoolPointerValue(r.RolesAndProtocols.SpRole.EnableSaml11),
@@ -1021,15 +1037,7 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	// save SP role to state
 	spRoleVal, _ := types.ObjectValue(spRoleAttrType, spRoleAttrValue)
 
-	// build object map for roles and protocols from pieces above
-	rolesAndProtocolsAttrType := map[string]attr.Type{
-		"oauth_role":           basetypes.ObjectType{AttrTypes: oauthRoleAttrType},
-		"idp_role":             basetypes.ObjectType{AttrTypes: idpRoleAttrType},
-		"sp_role":              basetypes.ObjectType{AttrTypes: spRoleAttrType},
-		"enable_idp_discovery": basetypes.BoolType{},
-	}
-
-	// put the values together into state
+	oauthRoleVal, _ := types.ObjectValueFrom(ctx, oauthRoleAttrType, r.RolesAndProtocols.OauthRole)
 	rolesAndProtocolsAttrTypeValues := map[string]attr.Value{
 		"oauth_role":           oauthRoleVal,
 		"idp_role":             idpRoleVal,
@@ -1041,15 +1049,6 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	//////////////////////////////////////////////
 	// FEDERATION INFO
 	//////////////////////////////////////////////
-	federationInfoAttrType := map[string]attr.Type{
-		"base_url":               basetypes.StringType{},
-		"saml_2_entity_id":       basetypes.StringType{},
-		"auto_connect_entity_id": basetypes.StringType{},
-		"saml_1x_issuer_id":      basetypes.StringType{},
-		"saml_1x_source_id":      basetypes.StringType{},
-		"wsfed_realm":            basetypes.StringType{},
-	}
-
 	federationInfoAttrValue := map[string]attr.Value{
 		"base_url":               types.StringPointerValue(r.FederationInfo.BaseUrl),
 		"saml_2_entity_id":       types.StringPointerValue(r.FederationInfo.Saml2EntityId),
@@ -1064,23 +1063,6 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	//////////////////////////////////////////////
 	// EMAIL SERVER
 	//////////////////////////////////////////////
-	emailServerAttrType := map[string]attr.Type{
-		"source_addr":                 basetypes.StringType{},
-		"email_server":                basetypes.StringType{},
-		"port":                        basetypes.Int64Type{},
-		"ssl_port":                    basetypes.Int64Type{},
-		"timeout":                     basetypes.Int64Type{},
-		"retry_attempts":              basetypes.Int64Type{},
-		"retry_delay":                 basetypes.Int64Type{},
-		"use_ssl":                     basetypes.BoolType{},
-		"use_tls":                     basetypes.BoolType{},
-		"verify_hostname":             basetypes.BoolType{},
-		"enable_utf8_message_headers": basetypes.BoolType{},
-		"use_debugging":               basetypes.BoolType{},
-		"username":                    basetypes.StringType{},
-		"password":                    basetypes.StringType{},
-	}
-
 	// get email creds with function
 	// if username and password are not set, return null values
 	var getEmailCreds = func() (*string, string) {
@@ -1117,11 +1099,6 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	//////////////////////////////////////////////
 	// CAPTCHA SETTINGS
 	//////////////////////////////////////////////
-	captchaSettingsAttrType := map[string]attr.Type{
-		"site_key":   basetypes.StringType{},
-		"secret_key": basetypes.StringType{},
-	}
-
 	var getCaptchaSettingsAttrValue = func() map[string]attr.Value {
 		if internaltypes.ObjContainsNoEmptyVals(plan.CaptchaSettings) {
 			return map[string]attr.Value{
@@ -1135,7 +1112,6 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 			}
 		}
 	}
-
 	state.CaptchaSettings, _ = types.ObjectValue(captchaSettingsAttrType, getCaptchaSettingsAttrValue())
 }
 

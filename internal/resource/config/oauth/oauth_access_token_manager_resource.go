@@ -22,6 +22,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -102,101 +103,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				},
 				Attributes: resourcelink.Schema(),
 			},
-			"configuration": schema.SingleNestedAttribute{
-				Description: "Plugin instance configuration.",
-				Required:    true,
-				Attributes: map[string]schema.Attribute{
-					"tables": schema.ListNestedAttribute{
-						Description: "List of configuration tables.",
-						Computed:    true,
-						Optional:    true,
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.UseStateForUnknown(),
-						},
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"name": schema.StringAttribute{
-									Description: "The name of the table.",
-									Required:    true,
-								},
-								"rows": schema.ListNestedAttribute{
-									Description: "List of table rows.",
-									Optional:    true,
-									NestedObject: schema.NestedAttributeObject{
-										Attributes: map[string]schema.Attribute{
-											"fields": schema.ListNestedAttribute{
-												Description: "The configuration fields in the row.",
-												Computed:    true,
-												Optional:    true,
-												NestedObject: schema.NestedAttributeObject{
-													Attributes: map[string]schema.Attribute{
-														"name": schema.StringAttribute{
-															Description: "The name of the configuration field.",
-															Required:    true,
-														},
-														"value": schema.StringAttribute{
-															Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
-															Required:    true,
-														},
-														"inherited": schema.BoolAttribute{
-															Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-															Optional:    true,
-															PlanModifiers: []planmodifier.Bool{
-																boolplanmodifier.UseStateForUnknown(),
-															},
-														},
-													},
-												},
-											},
-											"default_row": schema.BoolAttribute{
-												Description: "Whether this row is the default.",
-												Optional:    true,
-												PlanModifiers: []planmodifier.Bool{
-													boolplanmodifier.UseStateForUnknown(),
-												},
-											},
-										},
-									},
-								},
-								"inherited": schema.BoolAttribute{
-									Description: "Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.",
-									Optional:    true,
-									PlanModifiers: []planmodifier.Bool{
-										boolplanmodifier.UseStateForUnknown(),
-									},
-								},
-							},
-						},
-					},
-					"fields": schema.ListNestedAttribute{
-						Description: "List of configuration fields.",
-						Computed:    true,
-						Optional:    true,
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.UseStateForUnknown(),
-						},
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"name": schema.StringAttribute{
-									Description: "The name of the configuration field.",
-									Required:    true,
-								},
-								"value": schema.StringAttribute{
-									Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
-									Required:    true,
-								},
-								"inherited": schema.BoolAttribute{
-									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-									Optional:    true,
-									PlanModifiers: []planmodifier.Bool{
-										boolplanmodifier.UseStateForUnknown(),
-									},
-								},
-							},
-						},
-					},
-				},
-			},
+			"configuration": pluginconfiguration.Schema(),
 			"attribute_contract": schema.SingleNestedAttribute{
 				Description: "The list of attributes that will be added to an access token.",
 				Computed:    true,
@@ -450,41 +357,9 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 	state.Id = types.StringValue(r.Id)
 	state.CustomId = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
-
-	// state.pluginDescriptorRef
-	pluginDescRef := r.GetPluginDescriptorRef()
-	state.PluginDescriptorRef = resourcelink.ToState(ctx, &pluginDescRef, &respDiags)
-
-	// state.parentRef
-	parentRef := r.GetParentRef()
-	state.ParentRef = resourcelink.ToState(ctx, &parentRef, &respDiags)
-
-	// state.Configuration
-	configurationAttrType := map[string]attr.Type{
-		"fields": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.FieldAttrTypes()}},
-		"tables": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.TableAttrTypes()}},
-	}
-
-	planFields := types.ListNull(types.ObjectType{AttrTypes: config.FieldAttrTypes()})
-	planTables := types.ListNull(types.ObjectType{AttrTypes: config.TableAttrTypes()})
-
-	planFieldsValue, ok := configurationFromPlan.Attributes()["fields"]
-	if ok {
-		planFields = planFieldsValue.(types.List)
-	}
-	planTablesValue, ok := configurationFromPlan.Attributes()["tables"]
-	if ok {
-		planTables = planTablesValue.(types.List)
-	}
-
-	fieldsAttrValue := config.ToFieldsListValue(r.Configuration.Fields, planFields, &diags)
-	tablesAttrValue := config.ToTablesListValue(r.Configuration.Tables, planTables, &diags)
-
-	configurationAttrValue := map[string]attr.Value{
-		"fields": fieldsAttrValue,
-		"tables": tablesAttrValue,
-	}
-	state.Configuration, diags = types.ObjectValue(configurationAttrType, configurationAttrValue)
+	state.PluginDescriptorRef = resourcelink.ToState(ctx, &r.PluginDescriptorRef, &respDiags)
+	state.ParentRef = resourcelink.ToState(ctx, r.ParentRef, &respDiags)
+	state.Configuration, diags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration)
 	respDiags.Append(diags...)
 
 	// state.AttributeContract

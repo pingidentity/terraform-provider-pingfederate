@@ -25,6 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -290,7 +291,6 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 					},
 				},
 			},
-
 			"configuration": schema.SingleNestedAttribute{
 				Description: "Plugin instance configuration.",
 				Required:    true,
@@ -972,12 +972,12 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 	//TODO move into common method
 	//TODO unify how we handle diagnostics in these methods
 	configurationAttrType := map[string]attr.Type{
-		"fields": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.FieldAttrTypes()}},
-		"tables": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.TableAttrTypes()}},
+		"fields": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: pluginconfiguration.FieldAttrTypes()}},
+		"tables": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: pluginconfiguration.TableAttrTypes()}},
 	}
 
-	planFields := types.ListNull(types.ObjectType{AttrTypes: config.FieldAttrTypes()})
-	planTables := types.ListNull(types.ObjectType{AttrTypes: config.TableAttrTypes()})
+	planFields := types.ListNull(types.ObjectType{AttrTypes: pluginconfiguration.FieldAttrTypes()})
+	planTables := types.ListNull(types.ObjectType{AttrTypes: pluginconfiguration.TableAttrTypes()})
 
 	planFieldsValue, ok := plan.Configuration.Attributes()["fields"]
 	if ok {
@@ -988,8 +988,8 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 		planTables = planTablesValue.(types.List)
 	}
 
-	fieldsAttrValue := config.ToFieldsListValue(r.Configuration.Fields, planFields, diags)
-	tablesAttrValue := config.ToTablesListValue(r.Configuration.Tables, planTables, diags)
+	fieldsAttrValue := pluginconfiguration.ToFieldsListValue(r.Configuration.Fields, planFields, diags)
+	tablesAttrValue := pluginconfiguration.ToTablesListValue(r.Configuration.Tables, planTables, diags)
 
 	configurationAttrValue := map[string]attr.Value{
 		"fields": fieldsAttrValue,
