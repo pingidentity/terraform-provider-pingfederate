@@ -140,16 +140,21 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Configure(_ context.Con
 
 }
 
-func readTokenProcessorToTokenGeneratorMappingResponse(ctx context.Context, r *client.TokenToTokenMapping, state *tokenProcessorToTokenGeneratorMappingsResourceModel, plan tokenProcessorToTokenGeneratorMappingsResourceModel, diags *diag.Diagnostics) {
-	state.AttributeSources = attributesources.ToState(ctx, r.AttributeSources, diags)
-	state.AttributeContractFulfillment = attributecontractfulfillment.ToState(ctx, r.AttributeContractFulfillment)
-	state.IssuanceCriteria = issuancecriteria.ToState(ctx, r.IssuanceCriteria)
+func readTokenProcessorToTokenGeneratorMappingResponse(ctx context.Context, r *client.TokenToTokenMapping, state *tokenProcessorToTokenGeneratorMappingsResourceModel, plan tokenProcessorToTokenGeneratorMappingsResourceModel) diag.Diagnostics {
+	var diags, respDiags diag.Diagnostics
+	state.AttributeSources, respDiags = attributesources.ToState(ctx, r.AttributeSources)
+	diags.Append(respDiags...)
+	state.AttributeContractFulfillment, respDiags = attributecontractfulfillment.ToState(ctx, r.AttributeContractFulfillment)
+	diags.Append(respDiags...)
+	state.IssuanceCriteria, respDiags = issuancecriteria.ToState(ctx, r.IssuanceCriteria)
+	diags.Append(respDiags...)
 	state.SourceId = types.StringValue(r.SourceId)
 	state.TargetId = types.StringValue(r.TargetId)
 	state.Id = types.StringPointerValue(r.Id)
 	state.CustomId = types.StringPointerValue(r.Id)
 	state.DefaultTargetResource = types.StringPointerValue(r.DefaultTargetResource)
 	state.LicenseConnectionGroupAssignment = types.StringPointerValue(r.LicenseConnectionGroupAssignment)
+	return diags
 }
 
 func (r *tokenProcessorToTokenGeneratorMappingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -193,7 +198,9 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Create(ctx context.Cont
 	// Read the response into the state
 	var state tokenProcessorToTokenGeneratorMappingsResourceModel
 
-	readTokenProcessorToTokenGeneratorMappingResponse(ctx, tokenProcessorToTokenGeneratorMappingsResponse, &state, plan, &resp.Diagnostics)
+	diags = readTokenProcessorToTokenGeneratorMappingResponse(ctx, tokenProcessorToTokenGeneratorMappingsResponse, &state, plan)
+	resp.Diagnostics.Append(diags...)
+
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -223,7 +230,8 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Read(ctx context.Contex
 	}
 
 	// Read the response into the state
-	readTokenProcessorToTokenGeneratorMappingResponse(ctx, apiReadTokenProcessorToTokenGeneratorMapping, &state, state, &resp.Diagnostics)
+	diags = readTokenProcessorToTokenGeneratorMappingResponse(ctx, apiReadTokenProcessorToTokenGeneratorMapping, &state, state)
+	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -270,7 +278,8 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Update(ctx context.Cont
 	}
 	// Read the response
 	var state tokenProcessorToTokenGeneratorMappingsResourceModel
-	readTokenProcessorToTokenGeneratorMappingResponse(ctx, updateTokenProcessorToTokenGeneratorMappingResponse, &state, plan, &resp.Diagnostics)
+	diags = readTokenProcessorToTokenGeneratorMappingResponse(ctx, updateTokenProcessorToTokenGeneratorMappingResponse, &state, plan)
+	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

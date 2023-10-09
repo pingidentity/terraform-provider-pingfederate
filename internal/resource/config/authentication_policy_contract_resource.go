@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -156,7 +157,8 @@ func (r *authenticationPolicyContractsResource) Configure(_ context.Context, req
 
 }
 
-func readAuthenticationPolicyContractsResponse(ctx context.Context, r *client.AuthenticationPolicyContract, state *authenticationPolicyContractsResourceModel, expectedValues *authenticationPolicyContractsResourceModel) {
+func readAuthenticationPolicyContractsResponse(ctx context.Context, r *client.AuthenticationPolicyContract, state *authenticationPolicyContractsResourceModel, expectedValues *authenticationPolicyContractsResourceModel) diag.Diagnostics {
+	var diags, respDiags diag.Diagnostics
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
 	state.CustomId = internaltypes.StringTypeOrNil(r.Id, false)
 	state.Name = internaltypes.StringTypeOrNil(r.Name, false)
@@ -171,7 +173,8 @@ func readAuthenticationPolicyContractsResponse(ctx context.Context, r *client.Au
 		newCaObj, _ := types.ObjectValue(attrType, cAnameVal)
 		caSlice = append(caSlice, newCaObj)
 	}
-	caSliceOfObj, _ := types.SetValue(cAobjSlice, caSlice)
+	caSliceOfObj, respDiags := types.SetValue(cAobjSlice, caSlice)
+	diags.Append(respDiags...)
 
 	clientExtAttributes := r.GetExtendedAttributes()
 	var eaSlice = []attr.Value{}
@@ -182,12 +185,14 @@ func readAuthenticationPolicyContractsResponse(ctx context.Context, r *client.Au
 		newEaObj, _ := types.ObjectValue(attrType, eAnameVal)
 		eaSlice = append(eaSlice, newEaObj)
 	}
-	eaSliceOfObj, _ := types.SetValue(eAobjSlice, eaSlice)
+	eaSliceOfObj, respDiags := types.SetValue(eAobjSlice, eaSlice)
+	diags.Append(respDiags...)
 
 	state.CoreAttributes = basetypes.SetValue{}
 	state.CoreAttributes = caSliceOfObj
 	state.ExtendedAttributes = basetypes.SetValue{}
 	state.ExtendedAttributes = eaSliceOfObj
+	return diags
 }
 
 func (r *authenticationPolicyContractsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -254,7 +259,8 @@ func (r *authenticationPolicyContractsResource) Read(ctx context.Context, req re
 	}
 
 	// Read the response into the state
-	readAuthenticationPolicyContractsResponse(ctx, apiReadAuthenticationPolicyContracts, &state, &state)
+	diags = readAuthenticationPolicyContractsResponse(ctx, apiReadAuthenticationPolicyContracts, &state, &state)
+	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -297,7 +303,8 @@ func (r *authenticationPolicyContractsResource) Update(ctx context.Context, req 
 		diags.AddError("There was an issue retrieving the response of an Authentication Policy Contract: %s", responseErr.Error())
 	}
 	// Read the response
-	readAuthenticationPolicyContractsResponse(ctx, updateAuthenticationPolicyContractsResponse, &state, &plan)
+	diags = readAuthenticationPolicyContractsResponse(ctx, updateAuthenticationPolicyContractsResponse, &state, &plan)
+	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
