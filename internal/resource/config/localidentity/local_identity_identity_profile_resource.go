@@ -793,7 +793,8 @@ func (r *localIdentityIdentityProfilesResource) Create(ctx context.Context, req 
 	// Read the response into the state
 	var state localIdentityIdentityProfilesResourceModel
 
-	readLocalIdentityIdentityProfilesResponse(ctx, localIdentityIdentityProfilesResponse, &state)
+	diags = readLocalIdentityIdentityProfilesResponse(ctx, localIdentityIdentityProfilesResponse, &state)
+	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -823,7 +824,8 @@ func (r *localIdentityIdentityProfilesResource) Read(ctx context.Context, req re
 	}
 
 	// Read the response into the state
-	readLocalIdentityIdentityProfilesResponse(ctx, apiReadLocalIdentityIdentityProfiles, &state)
+	diags = readLocalIdentityIdentityProfilesResponse(ctx, apiReadLocalIdentityIdentityProfiles, &state)
+	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -863,7 +865,8 @@ func (r *localIdentityIdentityProfilesResource) Update(ctx context.Context, req 
 		diags.AddError("There was an issue retrieving the response of a Local Identity Identity Profile: %s", responseErr.Error())
 	}
 	// Read the response
-	readLocalIdentityIdentityProfilesResponse(ctx, updateLocalIdentityIdentityProfilesResponse, &plan)
+	diags = readLocalIdentityIdentityProfilesResponse(ctx, updateLocalIdentityIdentityProfilesResponse, &plan)
+	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, plan)

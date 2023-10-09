@@ -198,7 +198,9 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Create(ctx context.Cont
 	// Read the response into the state
 	var state tokenProcessorToTokenGeneratorMappingsResourceModel
 
-	readTokenProcessorToTokenGeneratorMappingResponse(ctx, tokenProcessorToTokenGeneratorMappingsResponse, &state, plan)
+	diags = readTokenProcessorToTokenGeneratorMappingResponse(ctx, tokenProcessorToTokenGeneratorMappingsResponse, &state, plan)
+	resp.Diagnostics.Append(diags...)
+
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -228,7 +230,8 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Read(ctx context.Contex
 	}
 
 	// Read the response into the state
-	readTokenProcessorToTokenGeneratorMappingResponse(ctx, apiReadTokenProcessorToTokenGeneratorMapping, &state, state)
+	diags = readTokenProcessorToTokenGeneratorMappingResponse(ctx, apiReadTokenProcessorToTokenGeneratorMapping, &state, state)
+	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -275,7 +278,8 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Update(ctx context.Cont
 	}
 	// Read the response
 	var state tokenProcessorToTokenGeneratorMappingsResourceModel
-	readTokenProcessorToTokenGeneratorMappingResponse(ctx, updateTokenProcessorToTokenGeneratorMappingResponse, &state, plan)
+	diags = readTokenProcessorToTokenGeneratorMappingResponse(ctx, updateTokenProcessorToTokenGeneratorMappingResponse, &state, plan)
+	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

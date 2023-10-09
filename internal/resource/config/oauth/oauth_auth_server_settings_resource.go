@@ -974,7 +974,8 @@ func (r *oauthAuthServerSettingsResource) Create(ctx context.Context, req resour
 	// Read the response into the state
 	var state oauthAuthServerSettingsResourceModel
 
-	readOauthAuthServerSettingsResponse(ctx, oauthAuthServerSettingsResponse, &state)
+	diags = readOauthAuthServerSettingsResponse(ctx, oauthAuthServerSettingsResponse, &state)
+	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -1005,7 +1006,8 @@ func (r *oauthAuthServerSettingsResource) Read(ctx context.Context, req resource
 	}
 
 	// Read the response into the state
-	readOauthAuthServerSettingsResponse(ctx, apiReadOauthAuthServerSettings, &state)
+	diags = readOauthAuthServerSettingsResponse(ctx, apiReadOauthAuthServerSettings, &state)
+	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -1048,7 +1050,8 @@ func (r *oauthAuthServerSettingsResource) Update(ctx context.Context, req resour
 		diags.AddError("There was an issue retrieving the response of a OAuth Auth Server Settings: %s", responseErr.Error())
 	}
 	// Read the response
-	readOauthAuthServerSettingsResponse(ctx, updateOauthAuthServerSettingsResponse, &state)
+	diags = readOauthAuthServerSettingsResponse(ctx, updateOauthAuthServerSettingsResponse, &state)
+	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

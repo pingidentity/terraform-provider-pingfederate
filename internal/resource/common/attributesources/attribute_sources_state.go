@@ -165,9 +165,11 @@ func ToState(con context.Context, attributeSourcesFromClient []client.AttributeS
 		} else {
 			attrSourceValues["ldap_attribute_source"] = types.ObjectNull(ldapAttrSourceAttrTypes)
 		}
-		attrSourceElement, objectValueFromDiags := types.ObjectValue(ElemAttrType(), attrSourceValues)
-		diags.Append(objectValueFromDiags...)
+		attrSourceElement, valueFromDiags := types.ObjectValue(ElemAttrType(), attrSourceValues)
+		diags.Append(valueFromDiags...)
 		attrSourceElements = append(attrSourceElements, attrSourceElement)
 	}
-	return types.ListValue(types.ObjectType{AttrTypes: ElemAttrType()}, attrSourceElements)
+	attrToState, valueFromDiags := types.ListValue(types.ObjectType{AttrTypes: ElemAttrType()}, attrSourceElements)
+	diags.Append(valueFromDiags...)
+	return attrToState, diags
 }

@@ -464,7 +464,7 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 	// state.SequenceNumber
 	state.SequenceNumber = types.Int64PointerValue(r.SequenceNumber)
 
-	return respDiags
+	return diags
 }
 
 func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -521,10 +521,7 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 	var state oauthAccessTokenManagerResourceModel
 
 	diags = readOauthAccessTokenManagerResponse(ctx, oauthAccessTokenManagerResponse, &state, plan.Configuration)
-	if diags.HasError() {
-		resp.Diagnostics.Append(diags...)
-		return
-	}
+	resp.Diagnostics.Append(diags...)
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)

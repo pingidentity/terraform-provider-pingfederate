@@ -1155,7 +1155,8 @@ func (r *serverSettingsResource) Create(ctx context.Context, req resource.Create
 	// Read the response into the state
 	var state serverSettingsResourceModel
 
-	readServerSettingsResponse(ctx, serverSettingsResponse, &state, &plan)
+	diags = readServerSettingsResponse(ctx, serverSettingsResponse, &state, &plan)
+	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -1192,7 +1193,8 @@ func (r *serverSettingsResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Read the response into the state
-	readServerSettingsResponse(ctx, apiReadServerSettings, &state, &state)
+	diags = readServerSettingsResponse(ctx, apiReadServerSettings, &state, &state)
+	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -1235,7 +1237,8 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 		diags.AddError("There was an issue retrieving the response of Server Settings: %s", responseErr.Error())
 	}
 	// Read the response
-	readServerSettingsResponse(ctx, updateServerSettingsResponse, &state, &plan)
+	diags = readServerSettingsResponse(ctx, updateServerSettingsResponse, &state, &plan)
+	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

@@ -135,7 +135,6 @@ func (r *authenticationApiSettingsResource) Configure(_ context.Context, req res
 
 func readAuthenticationApiSettingsResponse(ctx context.Context, r *client.AuthnApiSettings, state *authenticationApiSettingsResourceModel, expectedValues *authenticationApiSettingsResourceModel) diag.Diagnostics {
 	//TODO different placeholder?
-	var diags diag.Diagnostics
 	state.Id = types.StringValue("id")
 	state.ApiEnabled = types.BoolValue(*r.ApiEnabled)
 	state.EnableApiDescriptions = types.BoolValue(*r.EnableApiDescriptions)
@@ -143,9 +142,8 @@ func readAuthenticationApiSettingsResponse(ctx context.Context, r *client.AuthnA
 	state.IncludeRequestContext = types.BoolValue(*r.IncludeRequestContext)
 	var valueFromDiags diag.Diagnostics
 	resourceLinkObjectValue, valueFromDiags := resourcelink.ToState(ctx, r.DefaultApplicationRef)
-	diags.Append(valueFromDiags...)
 	state.DefaultApplicationRef = resourceLinkObjectValue
-	return diags
+	return valueFromDiags
 }
 
 func (r *authenticationApiSettingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -181,7 +179,8 @@ func (r *authenticationApiSettingsResource) Create(ctx context.Context, req reso
 	}
 	// Read the response
 	var state authenticationApiSettingsResourceModel
-	readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, &plan)
+	diags = readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, &plan)
+	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
@@ -213,7 +212,8 @@ func (r *authenticationApiSettingsResource) Read(ctx context.Context, req resour
 	}
 
 	// Read the response into the state
-	readAuthenticationApiSettingsResponse(ctx, apiReadAuthenticationApiSettings, &state, &state)
+	diags = readAuthenticationApiSettingsResponse(ctx, apiReadAuthenticationApiSettings, &state, &state)
+	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -253,7 +253,8 @@ func (r *authenticationApiSettingsResource) Update(ctx context.Context, req reso
 	}
 	// Read the response
 	var state authenticationApiSettingsResourceModel
-	readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, &plan)
+	diags = readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, &plan)
+	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

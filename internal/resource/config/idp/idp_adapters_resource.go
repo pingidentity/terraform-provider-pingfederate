@@ -989,8 +989,10 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 		planTables = planTablesValue.(types.List)
 	}
 
-	fieldsAttrValue := pluginconfiguration.ToFieldsListValue(r.Configuration.Fields, planFields, &diags)
-	tablesAttrValue := pluginconfiguration.ToTablesListValue(r.Configuration.Tables, planTables, &diags)
+	fieldsAttrValue, valueFromDiags := pluginconfiguration.ToFieldsListValue(r.Configuration.Fields, planFields, &diags)
+	diags.Append(valueFromDiags...)
+	tablesAttrValue, valueFromDiags := pluginconfiguration.ToTablesListValue(r.Configuration.Tables, planTables, &diags)
+	diags.Append(valueFromDiags...)
 
 	configurationAttrValue := map[string]attr.Value{
 		"fields": fieldsAttrValue,

@@ -12,8 +12,6 @@ import (
 )
 
 var (
-	diags = diag.Diagnostics{}
-
 	fieldAttrTypes = map[string]attr.Type{
 		"name":      basetypes.StringType{},
 		"value":     basetypes.StringType{},
@@ -40,7 +38,7 @@ func TableAttrTypes() map[string]attr.Type {
 	return tableAttrTypes
 }
 
-func ToFieldsListValue(fields []client.ConfigField, planFields types.List, diags *diag.Diagnostics) types.List {
+func ToFieldsListValue(fields []client.ConfigField, planFields types.List, diags *diag.Diagnostics) (types.List, diag.Diagnostics) {
 	objValues := []attr.Value{}
 	planFieldsElements := planFields.Elements()
 	// If fields is null in the plan, just return everything. Otherwise only return fields corresponding with the plan
@@ -63,7 +61,7 @@ func ToFieldsListValue(fields []client.ConfigField, planFields types.List, diags
 		if len(planFieldsElements) > len(fields) {
 			diags.AddError("Plan fields length is greater than response fields length",
 				fmt.Sprintf("Plan fields: %d, response fields: %d", len(planFieldsElements), len(fields)))
-			return types.ListNull(types.ObjectType{AttrTypes: fieldAttrTypes})
+			return types.ListNull(types.ObjectType{AttrTypes: fieldAttrTypes}), nil
 		}
 		for i := 0; i < len(planFieldsElements); i++ {
 			attrValues := map[string]attr.Value{}
@@ -86,7 +84,7 @@ func ToFieldsListValue(fields []client.ConfigField, planFields types.List, diags
 		AttrTypes: fieldAttrTypes,
 	}, objValues)
 	diags.Append(newDiags...)
-	return listVal
+	return listVal, *diags
 }
 
 func ToRowsListValue(rows []client.ConfigRow, planRows types.List, diags *diag.Diagnostics) types.List {
@@ -98,7 +96,9 @@ func ToRowsListValue(rows []client.ConfigRow, planRows types.List, diags *diag.D
 		for _, row := range rows {
 			attrValues := map[string]attr.Value{}
 			attrValues["default_row"] = types.BoolPointerValue(row.DefaultRow)
-			attrValues["fields"] = ToFieldsListValue(row.Fields, types.ListNull(types.ObjectType{AttrTypes: fieldAttrTypes}), diags)
+			fieldVal, newDiags := ToFieldsListValue(row.Fields, types.ListNull(types.ObjectType{AttrTypes: fieldAttrTypes}), diags)
+			attrValues["fields"] = fieldVal
+			diags.Append(newDiags...)
 			rowObjVal, newDiags := types.ObjectValue(rowAttrTypes, attrValues)
 			diags.Append(newDiags...)
 			objValues = append(objValues, rowObjVal)
@@ -118,7 +118,9 @@ func ToRowsListValue(rows []client.ConfigRow, planRows types.List, diags *diag.D
 			if ok {
 				planRowFields = planRowFieldsVal.(types.List)
 			}
-			attrValues["fields"] = ToFieldsListValue(rows[i].Fields, planRowFields, diags)
+			fieldsVal, newDiags := ToFieldsListValue(rows[i].Fields, planRowFields, diags)
+			attrValues["fields"] = fieldsVal
+			diags.Append(newDiags...)
 			rowObjVal, newDiags := types.ObjectValue(rowAttrTypes, attrValues)
 			diags.Append(newDiags...)
 			objValues = append(objValues, rowObjVal)
@@ -131,7 +133,7 @@ func ToRowsListValue(rows []client.ConfigRow, planRows types.List, diags *diag.D
 	return listVal
 }
 
-func ToTablesListValue(tables []client.ConfigTable, planTables types.List, diags *diag.Diagnostics) types.List {
+func ToTablesListValue(tables []client.ConfigTable, planTables types.List, diags *diag.Diagnostics) (types.List, diag.Diagnostics) {
 	objValues := []attr.Value{}
 	planTablesElements := planTables.Elements()
 	// If tables is null in the plan, just return everything. Otherwise only return tables corresponding with the plan
@@ -150,7 +152,7 @@ func ToTablesListValue(tables []client.ConfigTable, planTables types.List, diags
 		if len(planTablesElements) > len(tables) {
 			diags.AddError("Plan tables length is greater than response tables length",
 				fmt.Sprintf("Plan tables: %d, response tables: %d", len(planTablesElements), len(tables)))
-			return types.ListNull(types.ObjectType{AttrTypes: rowAttrTypes})
+			return types.ListNull(types.ObjectType{AttrTypes: rowAttrTypes}), nil
 		}
 		for i := 0; i < len(planTablesElements); i++ {
 			attrValues := map[string]attr.Value{}
@@ -172,10 +174,11 @@ func ToTablesListValue(tables []client.ConfigTable, planTables types.List, diags
 		AttrTypes: tableAttrTypes,
 	}, objValues)
 	diags.Append(newDiags...)
-	return listVal
+	return listVal, *diags
 }
 
 func ToState(configFromPlan basetypes.ObjectValue, configuration *client.PluginConfiguration) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags, methodDiags diag.Diagnostics
 	configurationAttrType := map[string]attr.Type{
 		"fields": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: FieldAttrTypes()}},
 		"tables": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: TableAttrTypes()}},
@@ -192,12 +195,15 @@ func ToState(configFromPlan basetypes.ObjectValue, configuration *client.PluginC
 	if ok {
 		planTables = planTablesValue.(types.List)
 	}
-	fieldsAttrValue := ToFieldsListValue(configuration.Fields, planFields, &diags)
-	tablesAttrValue := ToTablesListValue(configuration.Tables, planTables, &diags)
+	fieldsAttrValue, methodDiags := ToFieldsListValue(configuration.Fields, planFields, &diags)
+	diags.Append(methodDiags...)
+	tablesAttrValue, methodDiags := ToTablesListValue(configuration.Tables, planTables, &diags)
+	diags.Append(methodDiags...)
 
 	configurationAttrValue := map[string]attr.Value{
 		"fields": fieldsAttrValue,
 		"tables": tablesAttrValue,
 	}
-	return types.ObjectValue(configurationAttrType, configurationAttrValue)
+	configurationToStateObj, methodDiags := types.ObjectValue(configurationAttrType, configurationAttrValue)
+	return configurationToStateObj, methodDiags
 }

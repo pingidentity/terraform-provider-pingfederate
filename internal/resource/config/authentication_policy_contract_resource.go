@@ -259,7 +259,8 @@ func (r *authenticationPolicyContractsResource) Read(ctx context.Context, req re
 	}
 
 	// Read the response into the state
-	readAuthenticationPolicyContractsResponse(ctx, apiReadAuthenticationPolicyContracts, &state, &state)
+	diags = readAuthenticationPolicyContractsResponse(ctx, apiReadAuthenticationPolicyContracts, &state, &state)
+	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -302,7 +303,8 @@ func (r *authenticationPolicyContractsResource) Update(ctx context.Context, req 
 		diags.AddError("There was an issue retrieving the response of an Authentication Policy Contract: %s", responseErr.Error())
 	}
 	// Read the response
-	readAuthenticationPolicyContractsResponse(ctx, updateAuthenticationPolicyContractsResponse, &state, &plan)
+	diags = readAuthenticationPolicyContractsResponse(ctx, updateAuthenticationPolicyContractsResponse, &state, &plan)
+	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
