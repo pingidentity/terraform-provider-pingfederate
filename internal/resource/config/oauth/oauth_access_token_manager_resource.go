@@ -22,6 +22,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -90,7 +91,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
 				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
-				Attributes:  config.AddResourceLinkSchema(),
+				Attributes:  resourcelink.Schema(),
 			},
 			"parent_ref": schema.SingleNestedAttribute{
 				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
@@ -99,7 +100,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
-				Attributes: config.AddResourceLinkSchema(),
+				Attributes: resourcelink.Schema(),
 			},
 			"configuration": schema.SingleNestedAttribute{
 				Description: "Plugin instance configuration.",
@@ -305,7 +306,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 						Computed:    true,
 						Optional:    true,
 						NestedObject: schema.NestedAttributeObject{
-							Attributes: config.AddResourceLinkSchema(),
+							Attributes: resourcelink.Schema(),
 						},
 						PlanModifiers: []planmodifier.List{
 							listplanmodifier.UseStateForUnknown(),
@@ -444,17 +445,19 @@ func (r *oauthAccessTokenManagerResource) Configure(_ context.Context, req resou
 }
 
 func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagerResourceModel, configurationFromPlan basetypes.ObjectValue) diag.Diagnostics {
+	var respDiags, diags diag.Diagnostics
+
 	state.Id = types.StringValue(r.Id)
 	state.CustomId = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
 
 	// state.pluginDescriptorRef
 	pluginDescRef := r.GetPluginDescriptorRef()
-	state.PluginDescriptorRef = internaltypes.ToStateResourceLink(ctx, pluginDescRef)
+	state.PluginDescriptorRef = resourcelink.ToState(ctx, &pluginDescRef, &respDiags)
 
 	// state.parentRef
 	parentRef := r.GetParentRef()
-	state.ParentRef = internaltypes.ToStateResourceLink(ctx, parentRef)
+	state.ParentRef = resourcelink.ToState(ctx, &parentRef, &respDiags)
 
 	// state.Configuration
 	configurationAttrType := map[string]attr.Type{
@@ -474,7 +477,6 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 		planTables = planTablesValue.(types.List)
 	}
 
-	var respDiags, diags diag.Diagnostics
 	fieldsAttrValue := config.ToFieldsListValue(r.Configuration.Fields, planFields, &diags)
 	tablesAttrValue := config.ToTablesListValue(r.Configuration.Tables, planTables, &diags)
 
@@ -554,7 +556,7 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 	accessControlSettingsAttrType := map[string]attr.Type{
 		"inherited":        basetypes.BoolType{},
 		"restrict_clients": basetypes.BoolType{},
-		"allowed_clients":  basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: internaltypes.ResourceLinkStateAttrType()}},
+		"allowed_clients":  basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: resourcelink.AttrType()}},
 	}
 
 	if r.AccessControlSettings == nil {

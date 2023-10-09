@@ -19,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -27,6 +28,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -36,6 +38,12 @@ var (
 	_ resource.Resource                = &oauthAuthServerSettingsResource{}
 	_ resource.ResourceWithConfigure   = &oauthAuthServerSettingsResource{}
 	_ resource.ResourceWithImportState = &oauthAuthServerSettingsResource{}
+
+	scopeAttrTypes = map[string]attr.Type{
+		"name":        basetypes.StringType{},
+		"description": basetypes.StringType{},
+		"dynamic":     basetypes.BoolType{},
+	}
 )
 
 // OauthAuthServerSettingsResource is a helper function to simplify the provider implementation.
@@ -98,6 +106,7 @@ type oauthAuthServerSettingsResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	emptyScopesSet, _ := types.SetValue(types.ObjectType{AttrTypes: scopeAttrTypes}, []attr.Value{})
 	schema := schema.Schema{
 		Description: "Manages OAuth Auth Server Settings",
 		Attributes: map[string]schema.Attribute{
@@ -109,9 +118,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Description: "The list of common scopes.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
-				},
+				Default:     setdefault.StaticValue(emptyScopesSet),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
@@ -418,11 +425,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 			},
 			"admin_web_service_pcv_ref": schema.SingleNestedAttribute{
 				Description: "The password credential validator reference that is used for authenticating access to the OAuth Administrative Web Service.",
-				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Description: "The ID of the resource.",
@@ -856,11 +859,6 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 		toStateScopes = append(toStateScopes, scopeEntry)
 	}
 
-	scopeAttrTypes := map[string]attr.Type{
-		"name":        basetypes.StringType{},
-		"description": basetypes.StringType{},
-		"dynamic":     basetypes.BoolType{},
-	}
 	state.Scopes, _ = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: scopeAttrTypes}, toStateScopes)
 
 	// state.ScopeGroups
@@ -975,7 +973,7 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 	state.BypassAuthorizationForApprovedGrants = types.BoolPointerValue(r.BypassAuthorizationForApprovedGrants)
 	state.AllowUnidentifiedClientROCreds = types.BoolPointerValue(r.AllowUnidentifiedClientROCreds)
 	state.AllowUnidentifiedClientExtensionGrants = types.BoolPointerValue(r.AllowUnidentifiedClientExtensionGrants)
-	state.AdminWebServicePcvRef = internaltypes.ToStateResourceLink(ctx, r.GetAdminWebServicePcvRef())
+	state.AdminWebServicePcvRef = resourcelink.ToState(ctx, r.AdminWebServicePcvRef, diags)
 	state.AtmIdForOAuthGrantManagement = types.StringPointerValue(r.AtmIdForOAuthGrantManagement)
 	state.ScopeForOAuthGrantManagement = types.StringPointerValue(r.ScopeForOAuthGrantManagement)
 	state.AllowedOrigins = internaltypes.GetStringSet(r.AllowedOrigins)
