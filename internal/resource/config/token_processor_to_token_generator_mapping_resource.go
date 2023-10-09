@@ -8,8 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
@@ -55,15 +53,6 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Schema(ctx context.Cont
 	schema := schema.Schema{
 		Description: "Manages Token Processor To Token Generator Mappings",
 		Attributes: map[string]schema.Attribute{
-			"custom_id": schema.StringAttribute{
-				Description: "The ID of the token processor to token generator mapping. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
-				Computed:    true,
-				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-					stringplanmodifier.RequiresReplace(),
-				},
-			},
 			"attribute_contract_fulfillment": attributecontractfulfillment.Schema(true),
 			"attribute_sources":              attributesources.Schema(),
 			"default_target_resource": schema.StringAttribute{
@@ -86,6 +75,8 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Schema(ctx context.Cont
 		},
 	}
 	AddCommonSchema(&schema)
+	AddCustomId(&schema, false, false,
+		"The id of the Token Processor to Token Generator mapping. This field is read-only and is ignored when passed in with the payload.")
 	resp.Schema = schema
 }
 

@@ -46,15 +46,6 @@ func (r *oauthIssuersResource) Schema(ctx context.Context, req resource.SchemaRe
 	schema := schema.Schema{
 		Description: "Manages an OAuth Issuer.",
 		Attributes: map[string]schema.Attribute{
-			"custom_id": schema.StringAttribute{
-				Description: "The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
-				Computed:    true,
-				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
 			"name": schema.StringAttribute{
 				Required: true,
 				PlanModifiers: []planmodifier.String{
@@ -83,6 +74,8 @@ func (r *oauthIssuersResource) Schema(ctx context.Context, req resource.SchemaRe
 	}
 
 	config.AddCommonSchema(&schema)
+	config.AddCustomId(&schema, false, true,
+		"The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.")
 	resp.Schema = schema
 }
 func addOptionalOauthIssuersFields(ctx context.Context, addRequest *client.Issuer, plan oauthIssuersResourceModel) error {

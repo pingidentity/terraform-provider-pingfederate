@@ -30,6 +30,7 @@ import (
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/validators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -606,17 +607,12 @@ func (r *oauthAuthServerSettingsResource) ValidateConfig(ctx context.Context, re
 	if internaltypes.IsDefined(model.AllowedOrigins) {
 		aoElems := model.AllowedOrigins.Elements()
 		for _, aoElem := range aoElems {
-			aoElemString := aoElem.(basetypes.StringValue).ValueString()
-			isElemUrl := internaltypes.IsUrlFormat(aoElemString)
-			if !isElemUrl {
-				resp.Diagnostics.AddError("Invalid URL Format!", fmt.Sprintf("Please provide a valid origin. Origin \"%s\" needs to be in a valid URL-like format - \"http(s)//:<value>.<domain>\"", aoElemString))
-			}
+			validators.IsUrlFormat(aoElem, resp)
 		}
 	}
 
 	// Scope list for comparing values in matchNameBtwnScopes variable
 	scopeNames := []string{}
-
 	// Test scope names for dynamic true, string must be prepended with *
 	if internaltypes.IsDefined(model.Scopes) {
 		scopeElems := model.Scopes.Elements()
