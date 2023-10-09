@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-func SourceTypeIdKeySchema() schema.SingleNestedAttribute {
+func Schema() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Description: "The attribute value source.",
 		Required:    true,

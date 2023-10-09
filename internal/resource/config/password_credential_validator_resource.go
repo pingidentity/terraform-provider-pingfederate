@@ -78,7 +78,7 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
 				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
-				Attributes:  resourcelink.ResourceLinkSchema(),
+				Attributes:  resourcelink.Schema(),
 			},
 			"parent_ref": schema.SingleNestedAttribute{
 				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
@@ -87,7 +87,7 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
-				Attributes: resourcelink.ResourceLinkSchema(),
+				Attributes: resourcelink.Schema(),
 			},
 			"configuration": schema.SingleNestedAttribute{
 				Description: "Plugin instance configuration.",
@@ -299,15 +299,19 @@ func (r *passwordCredentialValidatorsResource) Configure(_ context.Context, req 
 }
 
 func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.PasswordCredentialValidator, state *passwordCredentialValidatorsResourceModel, configurationFromPlan basetypes.ObjectValue) diag.Diagnostics {
+	var respDiags, diags diag.Diagnostics
+
 	state.Id = types.StringValue(r.Id)
 	state.CustomId = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
 
 	// state.pluginDescriptorRef
-	state.PluginDescriptorRef = resourcelink.ToStateResourceLink(ctx, r.GetPluginDescriptorRef())
+	pluginDescRef := r.GetPluginDescriptorRef()
+	state.PluginDescriptorRef = resourcelink.ToState(ctx, &pluginDescRef, &respDiags)
 
 	// state.parentRef
-	state.ParentRef = resourcelink.ToStateResourceLink(ctx, r.GetParentRef())
+	parentRef := r.GetParentRef()
+	state.ParentRef = resourcelink.ToState(ctx, &parentRef, &respDiags)
 
 	// state.Configuration
 	configurationAttrType := map[string]attr.Type{
@@ -327,7 +331,6 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 		planTables = planTablesValue.(types.List)
 	}
 
-	var respDiags, diags diag.Diagnostics
 	fieldsAttrValue := ToFieldsListValue(r.Configuration.Fields, planFields, &diags)
 	tablesAttrValue := ToTablesListValue(r.Configuration.Tables, planTables, &diags)
 

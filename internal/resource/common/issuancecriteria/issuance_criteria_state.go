@@ -10,13 +10,13 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 )
 
-func IssuanceCriteriaAttrType() map[string]attr.Type {
+func AttrType() map[string]attr.Type {
 	return map[string]attr.Type{
 		"conditional_criteria": basetypes.ListType{
 			ElemType: basetypes.ObjectType{
 				AttrTypes: map[string]attr.Type{
 					"source": basetypes.ObjectType{
-						AttrTypes: sourcetypeidkey.SourceTypeIdKeyAttrType(),
+						AttrTypes: sourcetypeidkey.AttrType(),
 					},
 					"attribute_name": basetypes.StringType{},
 					"condition":      basetypes.StringType{},
@@ -36,7 +36,7 @@ func IssuanceCriteriaAttrType() map[string]attr.Type {
 	}
 }
 
-func IssuanceCriteriaToState(con context.Context, issuanceCriteriaFromClient *client.IssuanceCriteria) basetypes.ObjectValue {
-	issuanceCriteriaObj, _ := types.ObjectValueFrom(con, IssuanceCriteriaAttrType(), issuanceCriteriaFromClient)
+func ToState(con context.Context, issuanceCriteriaFromClient *client.IssuanceCriteria) basetypes.ObjectValue {
+	issuanceCriteriaObj, _ := types.ObjectValueFrom(con, AttrType(), issuanceCriteriaFromClient)
 	return issuanceCriteriaObj
 }

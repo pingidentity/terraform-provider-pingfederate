@@ -2,24 +2,29 @@ package attributesources
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 )
+
+var attributeSourcesEmptyList, _ = types.ListValue(types.ObjectType{AttrTypes: ElemAttrType()}, []attr.Value{})
 
 func CommonAttributeSourceSchema() map[string]schema.Attribute {
 	commonAttributeSourceSchema := map[string]schema.Attribute{}
 	commonAttributeSourceSchema["data_store_ref"] = schema.SingleNestedAttribute{
 		Required:    true,
 		Description: "Reference to the associated data store.",
-		Attributes:  resourcelink.ResourceLinkSchema(),
+		Attributes:  resourcelink.Schema(),
 	}
 	commonAttributeSourceSchema["id"] = schema.StringAttribute{
 		Optional:    true,
@@ -29,7 +34,7 @@ func CommonAttributeSourceSchema() map[string]schema.Attribute {
 		Optional:    true,
 		Description: "The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings",
 	}
-	commonAttributeSourceSchema["attribute_contract_fulfillment"] = attributecontractfulfillment.AttributeContractFulfillmentSchema(false)
+	commonAttributeSourceSchema["attribute_contract_fulfillment"] = attributecontractfulfillment.Schema(false)
 	return commonAttributeSourceSchema
 }
 
@@ -144,11 +149,12 @@ func LdapAttributeSourceSchemaAttributes() map[string]schema.Attribute {
 	return ldapAttributeSourceSchema
 }
 
-func AttributeSourcesSchema() schema.ListNestedAttribute {
+func Schema() schema.ListNestedAttribute {
 	return schema.ListNestedAttribute{
 		Description: "A list of configured data stores to look up attributes from.",
 		Computed:    true,
 		Optional:    true,
+		Default:     listdefault.StaticValue(attributeSourcesEmptyList),
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
 				"custom_attribute_source": schema.SingleNestedAttribute{

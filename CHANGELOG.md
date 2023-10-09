@@ -1,5 +1,6 @@
 # v0.2.0 (Unreleased)
-### Features
+### FEATURES
+* **New Resource:** `pingfederate_idp_adapter` (#64)
 
 # v0.1.0 September 28, 2023
 

@@ -64,8 +64,8 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Schema(ctx context.Cont
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"attribute_contract_fulfillment": attributecontractfulfillment.AttributeContractFulfillmentSchema(false),
-			"attribute_sources":              attributesources.AttributeSourcesSchema(),
+			"attribute_contract_fulfillment": attributecontractfulfillment.Schema(true),
+			"attribute_sources":              attributesources.Schema(),
 			"default_target_resource": schema.StringAttribute{
 				Description: "Default target URL for this Token Processor to Token Generator mapping configuration.",
 				Optional:    true,
@@ -82,7 +82,7 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Schema(ctx context.Cont
 				Description: "The id of the Token Processor.",
 				Required:    true,
 			},
-			"issuance_criteria": issuancecriteria.IssuanceCriteriaSchema(),
+			"issuance_criteria": issuancecriteria.Schema(),
 		},
 	}
 	AddCommonSchema(&schema)
@@ -90,53 +90,26 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Schema(ctx context.Cont
 }
 
 func addOptionalTokenProcessorToTokenGeneratorMappingFields(ctx context.Context, addRequest *client.TokenToTokenMapping, plan tokenProcessorToTokenGeneratorMappingsResourceModel) error {
-	var err error
 	if internaltypes.IsDefined(plan.AttributeSources) {
-		attributeSourcesAttr := plan.AttributeSources.Elements()
 		addRequest.AttributeSources = []client.AttributeSourceAggregation{}
-		for _, source := range attributeSourcesAttr {
-			//Determine which attribute source type this is
-			sourceAttrs := source.(types.Object).Attributes()
-			attributeSourceInner := client.AttributeSourceAggregation{}
-			if internaltypes.IsDefined(sourceAttrs["custom_attribute_source"]) {
-				attributeSourceInner.CustomAttributeSource = &client.CustomAttributeSource{}
-				err = json.Unmarshal([]byte(internaljson.FromValue(sourceAttrs["custom_attribute_source"], true)), attributeSourceInner.CustomAttributeSource)
-			}
-			if internaltypes.IsDefined(sourceAttrs["jdbc_attribute_source"]) {
-				attributeSourceInner.JdbcAttributeSource = &client.JdbcAttributeSource{}
-				err = json.Unmarshal([]byte(internaljson.FromValue(sourceAttrs["jdbc_attribute_source"], true)), attributeSourceInner.JdbcAttributeSource)
-			}
-			if internaltypes.IsDefined(sourceAttrs["ldap_attribute_source"]) {
-				attributeSourceInner.LdapAttributeSource = &client.LdapAttributeSource{}
-				err = json.Unmarshal([]byte(internaljson.FromValue(sourceAttrs["ldap_attribute_source"], true)), attributeSourceInner.LdapAttributeSource)
-			}
-			if err != nil {
-				return err
-			}
-			addRequest.AttributeSources = append(addRequest.AttributeSources, attributeSourceInner)
+		var attributeSourcesErr error
+		addRequest.AttributeSources, attributeSourcesErr = attributesources.ClientStruct(plan.AttributeSources)
+		if attributeSourcesErr != nil {
+			return attributeSourcesErr
 		}
 	}
 
 	if internaltypes.IsDefined(plan.IssuanceCriteria) {
 		addRequest.IssuanceCriteria = client.NewIssuanceCriteria()
-		if internaltypes.IsDefined(plan.IssuanceCriteria.Attributes()["conditional_criteria"]) {
-			addRequest.IssuanceCriteria.ConditionalCriteria = []client.ConditionalIssuanceCriteriaEntry{}
-			conditionalCriteriaErr := json.Unmarshal([]byte(internaljson.FromValue(plan.IssuanceCriteria.Attributes()["conditional_criteria"].(types.List), true)), &addRequest.IssuanceCriteria.ConditionalCriteria)
-			if conditionalCriteriaErr != nil {
-				return conditionalCriteriaErr
-			}
-		}
-		if internaltypes.IsDefined(plan.IssuanceCriteria.Attributes()["expression_criteria"]) {
-			addRequest.IssuanceCriteria.ExpressionCriteria = []client.ExpressionIssuanceCriteriaEntry{}
-			expressionCriteriaErr := json.Unmarshal([]byte(internaljson.FromValue(plan.IssuanceCriteria.Attributes()["expression_criteria"].(types.List), true)), &addRequest.IssuanceCriteria.ExpressionCriteria)
-			if expressionCriteriaErr != nil {
-				return expressionCriteriaErr
-			}
+		var issuanceCriteriaErr error
+		addRequest.IssuanceCriteria, issuanceCriteriaErr = issuancecriteria.ClientStruct(plan.IssuanceCriteria)
+		if issuanceCriteriaErr != nil {
+			return issuanceCriteriaErr
 		}
 	}
 
-	if internaltypes.IsDefined(plan.Id) {
-		addRequest.Id = plan.Id.ValueStringPointer()
+	if internaltypes.IsDefined(plan.CustomId) {
+		addRequest.Id = plan.CustomId.ValueStringPointer()
 	}
 
 	if internaltypes.IsDefined(plan.DefaultTargetResource) {
@@ -168,13 +141,9 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Configure(_ context.Con
 }
 
 func readTokenProcessorToTokenGeneratorMappingResponse(ctx context.Context, r *client.TokenToTokenMapping, state *tokenProcessorToTokenGeneratorMappingsResourceModel, plan tokenProcessorToTokenGeneratorMappingsResourceModel, diags *diag.Diagnostics) {
-	if !internaltypes.IsDefined(plan.AttributeSources) {
-		state.AttributeSources = types.ListNull(types.ObjectType{AttrTypes: attributesources.AttributeSourcesElemAttrType()})
-	} else {
-		state.AttributeSources = attributesources.AttributeSourcesToState(ctx, r.AttributeSources, plan.AttributeSources.Elements(), diags)
-	}
-	state.AttributeContractFulfillment = attributecontractfulfillment.AttributeContractFulfillmentToState(ctx, r.AttributeContractFulfillment)
-	state.IssuanceCriteria = issuancecriteria.IssuanceCriteriaToState(ctx, r.IssuanceCriteria)
+	state.AttributeSources = attributesources.ToState(ctx, r.AttributeSources, diags)
+	state.AttributeContractFulfillment = attributecontractfulfillment.ToState(ctx, r.AttributeContractFulfillment)
+	state.IssuanceCriteria = issuancecriteria.ToState(ctx, r.IssuanceCriteria)
 	state.SourceId = types.StringValue(r.SourceId)
 	state.TargetId = types.StringValue(r.TargetId)
 	state.Id = types.StringPointerValue(r.Id)
@@ -271,10 +240,6 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Update(ctx context.Cont
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
-	var state tokenProcessorToTokenGeneratorMappingsResourceModel
-	req.State.Get(ctx, &state)
-
 	attributeContractFulfillment := &map[string]client.AttributeFulfillmentValue{}
 	attributeContractFulfillmentErr := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContractFulfillment, false)), attributeContractFulfillment)
 	if attributeContractFulfillmentErr != nil {
@@ -304,6 +269,7 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Update(ctx context.Cont
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	}
 	// Read the response
+	var state tokenProcessorToTokenGeneratorMappingsResourceModel
 	readTokenProcessorToTokenGeneratorMappingResponse(ctx, updateTokenProcessorToTokenGeneratorMappingResponse, &state, plan, &resp.Diagnostics)
 
 	// Update computed values
@@ -320,7 +286,7 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Delete(ctx context.Cont
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.TokenProcessorToTokenGeneratorMappingsAPI.DeleteTokenToTokenMappingById(ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	httpResp, err := r.apiClient.TokenProcessorToTokenGeneratorMappingsAPI.DeleteTokenToTokenMappingById(ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a Token Processor to Token Generator Mapping", err, httpResp)
 		return
