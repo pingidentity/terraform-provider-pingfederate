@@ -62,13 +62,12 @@ func IsUrlFormat(aV attr.Value, validateConfigResp *resource.ValidateConfigRespo
 	basetypesStringVal := aV.(types.String)
 	re, _ := regexp.Compile(`^(https?:\/\/)?([\da-z\.-]+)(\.[a-z]{2,6}(\.[a-z]{2,6})?)?(:[0-9]{2,5})?(\/)?(\/[^\s]*)?$`)
 	isUrl := re.MatchString(strings.ToLower(aV.(types.String).ValueString()))
-	if internaltypes.IsNonEmptyString(basetypesStringVal) && isUrl {
-		return nil
-	} else {
+	if !internaltypes.IsNonEmptyString(basetypesStringVal) && !isUrl {
 		diag := validateConfigResp.Diagnostics
 		diag.AddError("Invalid URL Format!", fmt.Sprintf("Please provide a valid origin. Origin \"%s\" needs to be in a valid URL-like format - \"http(s)//:<value>.<domain>\"", basetypesStringVal.ValueString()))
 		return diag
 	}
+	return nil
 }
 
 func IsEmailFormat(aV attr.Value, validateConfigResp *resource.ValidateConfigResponse) diag.Diagnostics {
@@ -102,13 +101,12 @@ func IsEmailFormat(aV attr.Value, validateConfigResp *resource.ValidateConfigRes
 	basetypesStringVal := aV.(types.String)
 	re, _ := regexp.Compile(`^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$`)
 	isEmailString := re.MatchString(strings.ToLower(basetypesStringVal.ValueString()))
-	if internaltypes.IsNonEmptyString(basetypesStringVal) && isEmailString {
-		return nil
-	} else {
+	if !internaltypes.IsNonEmptyString(basetypesStringVal) && !isEmailString {
 		diag := validateConfigResp.Diagnostics
 		diag.AddError("Invalid Email Format!", fmt.Sprintf("Please provide a valid email address - \"%s\" needs to be in a valid email format according to RFC 5322.  For example, \"<user>@<company>.<tld>\"", basetypesStringVal.ValueString()))
 		return diag
 	}
+	return nil
 }
 
 func IsValidHostnameOrIp(aV attr.Value, validateConfigResp *resource.ValidateConfigResponse) diag.Diagnostics {
@@ -128,11 +126,10 @@ func IsValidHostnameOrIp(aV attr.Value, validateConfigResp *resource.ValidateCon
 	re, _ := regexp.Compile(`^([a-z0-9]+(-[a-z0-9]+)*\.)*[a-z0-9]+(-[a-z0-9]+)*$`)
 	isValidHostnameOrIp := re.MatchString(strings.ToLower(basetypesStringVal.ValueString()))
 
-	if internaltypes.IsNonEmptyString(basetypesStringVal) && isValidHostnameOrIp {
-		return nil
-	} else {
+	if !internaltypes.IsNonEmptyString(basetypesStringVal) && !isValidHostnameOrIp {
 		diag := validateConfigResp.Diagnostics
 		diag.AddError("Invalid hostname or IP!", fmt.Sprintf("Please provide a valid hostname or IP address - \"%s\" is invalid", basetypesStringVal.ValueString()))
 		return diag
 	}
+	return nil
 }
