@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -38,6 +39,7 @@ type localIdentityIdentityProfilesDataSource struct {
 
 type localIdentityIdentityProfilesDataSourceModel struct {
 	Id                      types.String `tfsdk:"id"`
+	CustomId                types.String `tfsdk:"custom_id"`
 	Name                    types.String `tfsdk:"name"`
 	ApcId                   types.Object `tfsdk:"apc_id"`
 	AuthSources             types.Set    `tfsdk:"auth_sources"`
@@ -56,7 +58,7 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 	schemaDef := schema.Schema{
 		Description: "Manages Local Identity Identity Profiles",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
+			"custom_id": schema.StringAttribute{
 				Description: "The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
 				Optional:    true,
 				Computed:    true,
@@ -470,8 +472,9 @@ func (r *localIdentityIdentityProfilesDataSource) Configure(_ context.Context, r
 // Read a DseeCompatAdministrativeAccountResponse object into the model struct
 func readLocalIdentityIdentityProfilesResponseDataSource(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfilesDataSourceModel, diags *diag.Diagnostics) {
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
+	state.CustomId = internaltypes.StringTypeOrNil(r.Id, false)
 	state.Name = types.StringValue(r.Name)
-	state.ApcId = internaltypes.ToStateResourceLink(ctx, r.GetApcId())
+	state.ApcId = resourcelink.ToState(ctx, &r.ApcId, diags)
 
 	authSourceUpdatePolicy := r.AuthSourceUpdatePolicy
 	authSourceUpdatePolicyAttrTypes := map[string]attr.Type{

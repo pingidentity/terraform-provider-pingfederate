@@ -13,7 +13,41 @@ Manages Local Identity Identity Profiles
 ## Example Usage
 
 ```terraform
+terraform {
+  required_version = ">=1.1"
+  required_providers {
+    pingfederate = {
+      version = "~> 0.0.1"
+      source  = "pingidentity/pingfederate"
+    }
+  }
+}
+
+provider "pingfederate" {
+  username               = "administrator"
+  password               = "2FederateM0re"
+  https_host             = "https://localhost:9999"
+  insecure_trust_all_tls = true
+}
+
+resource "pingfederate_local_identity_identity_profile" "myLocalIdentityIdentityProfile" {
+  name = "yourIdentityProfileName"
+  apc_id = {
+    id = "apcid"
+  }
+}
+
 data "pingfederate_local_identity_identity_profile" "myLocalIdentityIdentityProfile" {
+  name = pingfederate_local_identity_identity_profile.myLocalIdentityIdentityProfile.name
+  apc_id = {
+    id = "apcid"
+  }
+}
+resource "pingfederate_local_identity_identity_profile" "localIdentityIdentityProfileExample" {
+  name = "${data.pingfederate_local_identity_identity_profile.myLocalIdentityIdentityProfile.name}2"
+  apc_id = {
+    id = "apcid"
+  }
 }
 ```
 
@@ -29,6 +63,7 @@ data "pingfederate_local_identity_identity_profile" "myLocalIdentityIdentityProf
 
 - `auth_source_update_policy` (Attributes) The attribute update policy for authentication sources. (see [below for nested schema](#nestedatt--auth_source_update_policy))
 - `auth_sources` (Attributes Set) The local identity authentication sources. Sources are unique. (see [below for nested schema](#nestedatt--auth_sources))
+- `custom_id` (String) The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
 - `data_store_config` (Attributes) The local identity profile data store configuration. (see [below for nested schema](#nestedatt--data_store_config))
 - `email_verification_config` (Attributes) The local identity email verification configuration. (see [below for nested schema](#nestedatt--email_verification_config))
 - `field_config` (Attributes) The local identity profile field configuration. (see [below for nested schema](#nestedatt--field_config))

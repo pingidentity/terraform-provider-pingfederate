@@ -22,7 +22,7 @@ type certificatesResourceModel struct {
 }
 
 func TestAccCertificate(t *testing.T) {
-	resourceName := "myresource"
+	resourceName := "myCertificateCa"
 	initialResourceModel := certificatesResourceModel{
 		id:      certificateId,
 		stateId: certificateId,
