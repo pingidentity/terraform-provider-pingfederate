@@ -193,7 +193,6 @@ func ToState(configFromPlan basetypes.ObjectValue, configuration *client.PluginC
 	}
 	fieldsAttrValue := ToFieldsListValue(configuration.Fields, planFields, &diags)
 	tablesAttrValue := ToTablesListValue(configuration.Tables, planTables, &diags)
-	diags.Append(methodDiags...)
 
 	configurationAttrValue := map[string]attr.Value{
 		"fields": fieldsAttrValue,
