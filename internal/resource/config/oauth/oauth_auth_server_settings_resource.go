@@ -845,14 +845,19 @@ func (r *oauthAuthServerSettingsResource) Configure(_ context.Context, req resou
 
 }
 
-func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsResourceModel, diags *diag.Diagnostics) {
+func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsResourceModel) diag.Diagnostics {
 	//TODO placeholder
+	var diags, respDiags diag.Diagnostics
 	state.Id = types.StringValue("id")
 	state.DefaultScopeDescription = types.StringValue(r.DefaultScopeDescription)
-	state.Scopes, _ = scopeentry.ToState(ctx, r.Scopes)
-	state.ScopeGroups, _ = scopegroupentry.ToState(ctx, r.ScopeGroups)
-	state.ExclusiveScopes, _ = scopeentry.ToState(ctx, r.ExclusiveScopes)
-	state.ExclusiveScopeGroups, _ = scopegroupentry.ToState(ctx, r.ExclusiveScopeGroups)
+	state.Scopes, respDiags = scopeentry.ToState(ctx, r.Scopes)
+	diags.Append(respDiags...)
+	state.ScopeGroups, respDiags = scopegroupentry.ToState(ctx, r.ScopeGroups)
+	diags.Append(respDiags...)
+	state.ExclusiveScopes, respDiags = scopeentry.ToState(ctx, r.ExclusiveScopes)
+	diags.Append(respDiags...)
+	state.ExclusiveScopeGroups, respDiags = scopegroupentry.ToState(ctx, r.ExclusiveScopeGroups)
+	diags.Append(respDiags...)
 
 	// state.PersistentGrantContract
 	getPersistentGrantContract := r.GetPersistentGrantContract()
@@ -911,7 +916,8 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 	state.BypassAuthorizationForApprovedGrants = types.BoolPointerValue(r.BypassAuthorizationForApprovedGrants)
 	state.AllowUnidentifiedClientROCreds = types.BoolPointerValue(r.AllowUnidentifiedClientROCreds)
 	state.AllowUnidentifiedClientExtensionGrants = types.BoolPointerValue(r.AllowUnidentifiedClientExtensionGrants)
-	state.AdminWebServicePcvRef = resourcelink.ToState(ctx, r.AdminWebServicePcvRef, diags)
+	state.AdminWebServicePcvRef, respDiags = resourcelink.ToState(ctx, r.AdminWebServicePcvRef)
+	diags.Append(respDiags...)
 	state.AtmIdForOAuthGrantManagement = types.StringPointerValue(r.AtmIdForOAuthGrantManagement)
 	state.ScopeForOAuthGrantManagement = types.StringPointerValue(r.ScopeForOAuthGrantManagement)
 	state.AllowedOrigins = internaltypes.GetStringSet(r.AllowedOrigins)
@@ -930,6 +936,7 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 	state.ParStatus = types.StringPointerValue(r.ParStatus)
 	state.ClientSecretRetentionPeriod = types.Int64PointerValue(r.ClientSecretRetentionPeriod)
 	state.JwtSecuredAuthorizationResponseModeLifetime = types.Int64PointerValue(r.JwtSecuredAuthorizationResponseModeLifetime)
+	return diags
 }
 
 func (r *oauthAuthServerSettingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -967,7 +974,7 @@ func (r *oauthAuthServerSettingsResource) Create(ctx context.Context, req resour
 	// Read the response into the state
 	var state oauthAuthServerSettingsResourceModel
 
-	readOauthAuthServerSettingsResponse(ctx, oauthAuthServerSettingsResponse, &state, &resp.Diagnostics)
+	readOauthAuthServerSettingsResponse(ctx, oauthAuthServerSettingsResponse, &state)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -998,7 +1005,7 @@ func (r *oauthAuthServerSettingsResource) Read(ctx context.Context, req resource
 	}
 
 	// Read the response into the state
-	readOauthAuthServerSettingsResponse(ctx, apiReadOauthAuthServerSettings, &state, &resp.Diagnostics)
+	readOauthAuthServerSettingsResponse(ctx, apiReadOauthAuthServerSettings, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -1041,7 +1048,7 @@ func (r *oauthAuthServerSettingsResource) Update(ctx context.Context, req resour
 		diags.AddError("There was an issue retrieving the response of a OAuth Auth Server Settings: %s", responseErr.Error())
 	}
 	// Read the response
-	readOauthAuthServerSettingsResponse(ctx, updateOauthAuthServerSettingsResponse, &state, &resp.Diagnostics)
+	readOauthAuthServerSettingsResponse(ctx, updateOauthAuthServerSettingsResponse, &state)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

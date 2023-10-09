@@ -35,6 +35,39 @@ var (
 	_ resource.ResourceWithImportState = &oauthAccessTokenManagerResource{}
 )
 
+var (
+	attrType = map[string]attr.Type{
+		"name":         basetypes.StringType{},
+		"multi_valued": basetypes.BoolType{},
+	}
+
+	attributeContractTypes = map[string]attr.Type{
+		"core_attributes":           basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
+		"extended_attributes":       basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
+		"inherited":                 basetypes.BoolType{},
+		"default_subject_attribute": basetypes.StringType{},
+	}
+
+	selectionSettingsAttrType = map[string]attr.Type{
+		"inherited":     basetypes.BoolType{},
+		"resource_uris": basetypes.ListType{ElemType: basetypes.StringType{}},
+	}
+
+	accessControlSettingsAttrType = map[string]attr.Type{
+		"inherited":        basetypes.BoolType{},
+		"restrict_clients": basetypes.BoolType{},
+		"allowed_clients":  basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: resourcelink.AttrType()}},
+	}
+
+	sessionValidationSettingsAttrType = map[string]attr.Type{
+		"inherited":                       basetypes.BoolType{},
+		"include_session_id":              basetypes.BoolType{},
+		"check_valid_authn_session":       basetypes.BoolType{},
+		"check_session_revocation_status": basetypes.BoolType{},
+		"update_authn_session_activity":   basetypes.BoolType{},
+	}
+)
+
 // OauthAccessTokenManagerResource is a helper function to simplify the provider implementation.
 func OauthAccessTokenManagerResource() resource.Resource {
 	return &oauthAccessTokenManagerResource{}
@@ -352,29 +385,19 @@ func (r *oauthAccessTokenManagerResource) Configure(_ context.Context, req resou
 }
 
 func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagerResourceModel, configurationFromPlan basetypes.ObjectValue) diag.Diagnostics {
-	var respDiags, diags diag.Diagnostics
+	var diags, respDiags diag.Diagnostics
 
 	state.Id = types.StringValue(r.Id)
 	state.CustomId = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
-	state.PluginDescriptorRef = resourcelink.ToState(ctx, &r.PluginDescriptorRef, &respDiags)
-	state.ParentRef = resourcelink.ToState(ctx, r.ParentRef, &respDiags)
-	state.Configuration, diags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration)
-	respDiags.Append(diags...)
+	state.PluginDescriptorRef, respDiags = resourcelink.ToState(ctx, &r.PluginDescriptorRef)
+	diags.Append(respDiags...)
+	state.ParentRef, respDiags = resourcelink.ToState(ctx, r.ParentRef)
+	diags.Append(respDiags...)
+	state.Configuration, respDiags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration)
+	diags.Append(respDiags...)
 
 	// state.AttributeContract
-	attrType := map[string]attr.Type{
-		"name":         basetypes.StringType{},
-		"multi_valued": basetypes.BoolType{},
-	}
-
-	attributeContractTypes := map[string]attr.Type{
-		"core_attributes":           basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
-		"extended_attributes":       basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
-		"inherited":                 basetypes.BoolType{},
-		"default_subject_attribute": basetypes.StringType{},
-	}
-
 	if r.AttributeContract == nil {
 		state.AttributeContract = types.ObjectNull(attributeContractTypes)
 	} else {
@@ -389,8 +412,8 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 			coreAttribute.MultiValued = ca.MultiValued
 			coreAttrs = append(coreAttrs, coreAttribute)
 		}
-		attributeContractCoreAttributes, diags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
-		respDiags.Append(diags...)
+		attributeContractCoreAttributes, respDiags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
+		diags.Append(respDiags...)
 
 		// state.AttributeContract extended_attributes
 		attributeContractClientExtendedAttributes := attrContract.ExtendedAttributes
@@ -401,8 +424,8 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 			extendedAttr.MultiValued = ea.MultiValued
 			extdAttrs = append(extdAttrs, extendedAttr)
 		}
-		attributeContractExtendedAttributes, diags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
-		respDiags.Append(diags...)
+		attributeContractExtendedAttributes, respDiags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
+		diags.Append(respDiags...)
 
 		attributeContractValues := map[string]attr.Value{
 			"core_attributes":           attributeContractCoreAttributes,
@@ -410,51 +433,32 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 			"inherited":                 types.BoolPointerValue(attrContract.Inherited),
 			"default_subject_attribute": types.StringPointerValue(attrContract.DefaultSubjectAttribute),
 		}
-		state.AttributeContract, diags = types.ObjectValue(attributeContractTypes, attributeContractValues)
-		respDiags.Append(diags...)
+		state.AttributeContract, respDiags = types.ObjectValue(attributeContractTypes, attributeContractValues)
+		diags.Append(respDiags...)
 	}
 
 	// state.SelectionSettings
-	selectionSettingsAttrType := map[string]attr.Type{
-		"inherited":     basetypes.BoolType{},
-		"resource_uris": basetypes.ListType{ElemType: basetypes.StringType{}},
-	}
-
 	if r.SelectionSettings == nil {
 		state.SelectionSettings = types.ObjectNull(selectionSettingsAttrType)
 	} else {
-		state.SelectionSettings, diags = types.ObjectValueFrom(ctx, selectionSettingsAttrType, r.SelectionSettings)
-		respDiags.Append(diags...)
+		state.SelectionSettings, respDiags = types.ObjectValueFrom(ctx, selectionSettingsAttrType, r.SelectionSettings)
+		diags.Append(respDiags...)
 	}
 
 	// state.AccessControlSettings
-	accessControlSettingsAttrType := map[string]attr.Type{
-		"inherited":        basetypes.BoolType{},
-		"restrict_clients": basetypes.BoolType{},
-		"allowed_clients":  basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: resourcelink.AttrType()}},
-	}
-
 	if r.AccessControlSettings == nil {
 		state.AccessControlSettings = types.ObjectNull(accessControlSettingsAttrType)
 	} else {
-		state.AccessControlSettings, diags = types.ObjectValueFrom(ctx, accessControlSettingsAttrType, r.AccessControlSettings)
-		respDiags.Append(diags...)
+		state.AccessControlSettings, respDiags = types.ObjectValueFrom(ctx, accessControlSettingsAttrType, r.AccessControlSettings)
+		diags.Append(respDiags...)
 	}
 
 	// state.SessionValidationSettings
-	sessionValidationSettingsAttrType := map[string]attr.Type{
-		"inherited":                       basetypes.BoolType{},
-		"include_session_id":              basetypes.BoolType{},
-		"check_valid_authn_session":       basetypes.BoolType{},
-		"check_session_revocation_status": basetypes.BoolType{},
-		"update_authn_session_activity":   basetypes.BoolType{},
-	}
-
 	if r.SessionValidationSettings == nil {
 		state.SessionValidationSettings = types.ObjectNull(sessionValidationSettingsAttrType)
 	} else {
-		state.SessionValidationSettings, diags = types.ObjectValueFrom(ctx, sessionValidationSettingsAttrType, r.SessionValidationSettings)
-		respDiags.Append(diags...)
+		state.SessionValidationSettings, respDiags = types.ObjectValueFrom(ctx, sessionValidationSettingsAttrType, r.SessionValidationSettings)
+		diags.Append(respDiags...)
 	}
 
 	// state.SequenceNumber

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
@@ -27,7 +28,6 @@ func MapType() basetypes.MapType {
 	return basetypes.MapType{ElemType: types.ObjectType{AttrTypes: AttrType()}}
 }
 
-func ToState(con context.Context, attributeContractFulfillmentFromClient map[string]client.AttributeFulfillmentValue) basetypes.MapValue {
-	attributeContractFulfillmentToState, _ := types.MapValueFrom(con, ObjType(), attributeContractFulfillmentFromClient)
-	return attributeContractFulfillmentToState
+func ToState(con context.Context, attributeContractFulfillmentFromClient map[string]client.AttributeFulfillmentValue) (basetypes.MapValue, diag.Diagnostics) {
+	return types.MapValueFrom(con, ObjType(), attributeContractFulfillmentFromClient)
 }

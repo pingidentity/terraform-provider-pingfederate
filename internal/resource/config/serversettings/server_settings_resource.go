@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -996,22 +997,20 @@ func (r *serverSettingsResource) Configure(_ context.Context, req resource.Confi
 
 }
 
-func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, state *serverSettingsResourceModel, plan *serverSettingsResourceModel) {
-
-	//////////////////////////////////////////////////
-	// variables for read response
-	//////////////////////////////////////////////////
-	// emptyString is a variable initialized with an empty string value.
+func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, state *serverSettingsResourceModel, plan *serverSettingsResourceModel) diag.Diagnostics {
+	var diags, respDiags diag.Diagnostics
 	emptyString := ""
 	//TODO placeholder?
 	state.Id = types.StringValue("id")
-	state.ContactInfo, _ = types.ObjectValueFrom(ctx, contactInfoAttrType, r.ContactInfo)
-	state.Notifications, _ = types.ObjectValueFrom(ctx, notificationsAttrType, r.Notifications)
-
+	state.ContactInfo, respDiags = types.ObjectValueFrom(ctx, contactInfoAttrType, r.ContactInfo)
+	diags.Append(respDiags...)
+	state.Notifications, respDiags = types.ObjectValueFrom(ctx, notificationsAttrType, r.Notifications)
+	diags.Append(respDiags...)
 	//////////////////////////////////////////////
 	// ROLES AND PROTOCOLS
 	//////////////////////////////////////////////
-	idpSaml20ProfileVal, _ := types.ObjectValueFrom(ctx, idpSaml20ProfileAttrType, r.RolesAndProtocols.IdpRole.Saml20Profile)
+	idpSaml20ProfileVal, respDiags := types.ObjectValueFrom(ctx, idpSaml20ProfileAttrType, r.RolesAndProtocols.IdpRole.Saml20Profile)
+	diags.Append(respDiags...)
 	idpRoleAttrValue := map[string]attr.Value{
 		"enable":                       types.BoolPointerValue(r.RolesAndProtocols.IdpRole.Enable),
 		"enable_saml_1_1":              types.BoolPointerValue(r.RolesAndProtocols.IdpRole.EnableSaml11),
@@ -1021,9 +1020,12 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 		"saml_2_0_profile":             idpSaml20ProfileVal,
 		"enable_outbound_provisioning": types.BoolPointerValue(r.RolesAndProtocols.IdpRole.EnableOutboundProvisioning),
 	}
-	idpRoleVal, _ := types.ObjectValue(idpRoleAttrType, idpRoleAttrValue)
+	idpRoleVal, respDiags := types.ObjectValue(idpRoleAttrType, idpRoleAttrValue)
+	diags.Append(respDiags...)
 
-	spSaml20ProfileVal, _ := types.ObjectValueFrom(ctx, spSaml20ProfileAttrType, r.RolesAndProtocols.SpRole.Saml20Profile)
+	spSaml20ProfileVal, respDiags := types.ObjectValueFrom(ctx, spSaml20ProfileAttrType, r.RolesAndProtocols.SpRole.Saml20Profile)
+	diags.Append(respDiags...)
+
 	spRoleAttrValue := map[string]attr.Value{
 		"enable":                      types.BoolPointerValue(r.RolesAndProtocols.SpRole.Enable),
 		"enable_saml_1_1":             types.BoolPointerValue(r.RolesAndProtocols.SpRole.EnableSaml11),
@@ -1035,17 +1037,18 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 		"enable_inbound_provisioning": types.BoolPointerValue(r.RolesAndProtocols.SpRole.EnableInboundProvisioning),
 	}
 	// save SP role to state
-	spRoleVal, _ := types.ObjectValue(spRoleAttrType, spRoleAttrValue)
-
-	oauthRoleVal, _ := types.ObjectValueFrom(ctx, oauthRoleAttrType, r.RolesAndProtocols.OauthRole)
+	spRoleVal, respDiags := types.ObjectValue(spRoleAttrType, spRoleAttrValue)
+	diags.Append(respDiags...)
+	oauthRoleVal, respDiags := types.ObjectValueFrom(ctx, oauthRoleAttrType, r.RolesAndProtocols.OauthRole)
+	diags.Append(respDiags...)
 	rolesAndProtocolsAttrTypeValues := map[string]attr.Value{
 		"oauth_role":           oauthRoleVal,
 		"idp_role":             idpRoleVal,
 		"sp_role":              spRoleVal,
 		"enable_idp_discovery": types.BoolPointerValue(r.RolesAndProtocols.EnableIdpDiscovery),
 	}
-	state.RolesAndProtocols, _ = types.ObjectValue(rolesAndProtocolsAttrType, rolesAndProtocolsAttrTypeValues)
-
+	state.RolesAndProtocols, respDiags = types.ObjectValue(rolesAndProtocolsAttrType, rolesAndProtocolsAttrTypeValues)
+	diags.Append(respDiags...)
 	//////////////////////////////////////////////
 	// FEDERATION INFO
 	//////////////////////////////////////////////
@@ -1058,8 +1061,8 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 		"wsfed_realm":            types.StringPointerValue(r.FederationInfo.WsfedRealm),
 	}
 
-	state.FederationInfo, _ = types.ObjectValue(federationInfoAttrType, federationInfoAttrValue)
-
+	state.FederationInfo, respDiags = types.ObjectValue(federationInfoAttrType, federationInfoAttrValue)
+	diags.Append(respDiags...)
 	//////////////////////////////////////////////
 	// EMAIL SERVER
 	//////////////////////////////////////////////
@@ -1094,8 +1097,8 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 		"password":                    types.StringValue(password),
 	}
 
-	state.EmailServer, _ = types.ObjectValue(emailServerAttrType, emailServerAttrValue)
-
+	state.EmailServer, respDiags = types.ObjectValue(emailServerAttrType, emailServerAttrValue)
+	diags.Append(respDiags...)
 	//////////////////////////////////////////////
 	// CAPTCHA SETTINGS
 	//////////////////////////////////////////////
@@ -1112,7 +1115,9 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 			}
 		}
 	}
-	state.CaptchaSettings, _ = types.ObjectValue(captchaSettingsAttrType, getCaptchaSettingsAttrValue())
+	state.CaptchaSettings, respDiags = types.ObjectValue(captchaSettingsAttrType, getCaptchaSettingsAttrValue())
+	diags.Append(respDiags...)
+	return diags
 }
 
 func (r *serverSettingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

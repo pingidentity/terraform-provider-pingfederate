@@ -958,15 +958,16 @@ func (r *idpAdapterResource) Configure(_ context.Context, req resource.Configure
 
 }
 
-func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *idpAdapterResourceModel, plan idpAdapterResourceModel, diags *diag.Diagnostics) {
+func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *idpAdapterResourceModel, plan idpAdapterResourceModel) diag.Diagnostics {
+	var diags, valueFromDiags diag.Diagnostics
 	state.AuthnCtxClassRef = internaltypes.StringTypeOrNil(r.AuthnCtxClassRef, false)
 	state.CustomId = types.StringValue(r.Id)
 	state.Id = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
-	state.PluginDescriptorRef = resourcelink.ToState(ctx, &r.PluginDescriptorRef, diags)
-	state.ParentRef = resourcelink.ToState(ctx, r.ParentRef, diags)
-
-	var valueFromDiags diag.Diagnostics
+	state.PluginDescriptorRef, valueFromDiags = resourcelink.ToState(ctx, &r.PluginDescriptorRef)
+	diags.Append(valueFromDiags...)
+	state.ParentRef, valueFromDiags = resourcelink.ToState(ctx, r.ParentRef)
+	diags.Append(valueFromDiags...)
 
 	// Configuration
 	//TODO move into common method
@@ -988,8 +989,8 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 		planTables = planTablesValue.(types.List)
 	}
 
-	fieldsAttrValue := pluginconfiguration.ToFieldsListValue(r.Configuration.Fields, planFields, diags)
-	tablesAttrValue := pluginconfiguration.ToTablesListValue(r.Configuration.Tables, planTables, diags)
+	fieldsAttrValue := pluginconfiguration.ToFieldsListValue(r.Configuration.Fields, planFields, &diags)
+	tablesAttrValue := pluginconfiguration.ToTablesListValue(r.Configuration.Tables, planTables, &diags)
 
 	configurationAttrValue := map[string]attr.Value{
 		"fields": fieldsAttrValue,
@@ -1105,6 +1106,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 		state.AttributeMapping, valueFromDiags = types.ObjectValue(attributeMappingAttrTypes, attributeMappingValues)
 		diags.Append(valueFromDiags...)
 	}
+	return diags
 }
 
 func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -1156,7 +1158,7 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 	// Read the response into the state
 	var state idpAdapterResourceModel
 
-	readIdpAdapterResponse(ctx, idpAdapterResponse, &state, plan, &resp.Diagnostics)
+	readIdpAdapterResponse(ctx, idpAdapterResponse, &state, plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -1182,7 +1184,7 @@ func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// Read the response into the state
-	readIdpAdapterResponse(ctx, apiReadIdpAdapter, &state, state, &resp.Diagnostics)
+	readIdpAdapterResponse(ctx, apiReadIdpAdapter, &state, state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -1241,7 +1243,7 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 	// Read the response
 	var state idpAdapterResourceModel
-	readIdpAdapterResponse(ctx, updateIdpAdapterResponse, &state, plan, &resp.Diagnostics)
+	readIdpAdapterResponse(ctx, updateIdpAdapterResponse, &state, plan)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

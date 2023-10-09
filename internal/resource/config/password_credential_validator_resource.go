@@ -217,14 +217,16 @@ func (r *passwordCredentialValidatorsResource) Configure(_ context.Context, req 
 }
 
 func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.PasswordCredentialValidator, state *passwordCredentialValidatorsResourceModel, configurationFromPlan basetypes.ObjectValue) diag.Diagnostics {
-	var respDiags, diags diag.Diagnostics
+	var diags, respDiags diag.Diagnostics
 	state.Id = types.StringValue(r.Id)
 	state.CustomId = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
-	state.PluginDescriptorRef = resourcelink.ToState(ctx, &r.PluginDescriptorRef, &respDiags)
-	state.ParentRef = resourcelink.ToState(ctx, r.ParentRef, &respDiags)
-	state.Configuration, diags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration)
-	respDiags.Append(diags...)
+	state.PluginDescriptorRef, respDiags = resourcelink.ToState(ctx, &r.PluginDescriptorRef)
+	diags.Append(respDiags...)
+	state.ParentRef, respDiags = resourcelink.ToState(ctx, r.ParentRef)
+	diags.Append(respDiags...)
+	state.Configuration, respDiags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration)
+	diags.Append(respDiags...)
 
 	// state.AttributeContract
 	if r.AttributeContract == nil {
@@ -239,8 +241,8 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 			coreAttribute.Name = ca.Name
 			coreAttrs = append(coreAttrs, coreAttribute)
 		}
-		attributeContractCoreAttributes, diags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
-		respDiags.Append(diags...)
+		attributeContractCoreAttributes, respDiags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
+		diags.Append(respDiags...)
 
 		// state.AttributeContract extended_attributes
 		attributeContractClientExtendedAttributes := attrContract.ExtendedAttributes
@@ -250,19 +252,19 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 			extendedAttr.Name = ea.Name
 			extdAttrs = append(extdAttrs, extendedAttr)
 		}
-		attributeContractExtendedAttributes, diags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
-		respDiags.Append(diags...)
+		attributeContractExtendedAttributes, respDiags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
+		diags.Append(respDiags...)
 
 		attributeContractValues := map[string]attr.Value{
 			"core_attributes":     attributeContractCoreAttributes,
 			"extended_attributes": attributeContractExtendedAttributes,
 			"inherited":           types.BoolPointerValue(attrContract.Inherited),
 		}
-		state.AttributeContract, diags = types.ObjectValue(attributeContractTypes, attributeContractValues)
-		respDiags.Append(diags...)
+		state.AttributeContract, respDiags = types.ObjectValue(attributeContractTypes, attributeContractValues)
+		diags.Append(respDiags...)
 	}
 
-	return respDiags
+	return diags
 }
 
 func (r *passwordCredentialValidatorsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

@@ -702,11 +702,13 @@ func (r *localIdentityIdentityProfilesResource) ValidateConfig(ctx context.Conte
 	}
 }
 
-func readLocalIdentityIdentityProfilesResponse(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfilesResourceModel, diags *diag.Diagnostics) {
+func readLocalIdentityIdentityProfilesResponse(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfilesResourceModel) diag.Diagnostics {
+	var diags, respDiags diag.Diagnostics
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
 	state.CustomId = internaltypes.StringTypeOrNil(r.Id, false)
 	state.Name = types.StringValue(r.Name)
-	state.ApcId = resourcelink.ToState(ctx, &r.ApcId, diags)
+	state.ApcId, respDiags = resourcelink.ToState(ctx, &r.ApcId)
+	diags.Append(respDiags...)
 
 	// auth source update policy
 	authSourceUpdatePolicy := r.AuthSourceUpdatePolicy
@@ -754,6 +756,7 @@ func readLocalIdentityIdentityProfilesResponse(ctx context.Context, r *client.Lo
 	state.DataStoreConfig, _ = types.ObjectValueFrom(ctx, dsConfigAttrTypes, dsConfig)
 
 	state.ProfileEnabled = types.BoolPointerValue(r.ProfileEnabled)
+	return diags
 }
 
 func (r *localIdentityIdentityProfilesResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -790,7 +793,7 @@ func (r *localIdentityIdentityProfilesResource) Create(ctx context.Context, req 
 	// Read the response into the state
 	var state localIdentityIdentityProfilesResourceModel
 
-	readLocalIdentityIdentityProfilesResponse(ctx, localIdentityIdentityProfilesResponse, &state, &resp.Diagnostics)
+	readLocalIdentityIdentityProfilesResponse(ctx, localIdentityIdentityProfilesResponse, &state)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -820,7 +823,7 @@ func (r *localIdentityIdentityProfilesResource) Read(ctx context.Context, req re
 	}
 
 	// Read the response into the state
-	readLocalIdentityIdentityProfilesResponse(ctx, apiReadLocalIdentityIdentityProfiles, &state, &resp.Diagnostics)
+	readLocalIdentityIdentityProfilesResponse(ctx, apiReadLocalIdentityIdentityProfiles, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -860,7 +863,7 @@ func (r *localIdentityIdentityProfilesResource) Update(ctx context.Context, req 
 		diags.AddError("There was an issue retrieving the response of a Local Identity Identity Profile: %s", responseErr.Error())
 	}
 	// Read the response
-	readLocalIdentityIdentityProfilesResponse(ctx, updateLocalIdentityIdentityProfilesResponse, &plan, &resp.Diagnostics)
+	readLocalIdentityIdentityProfilesResponse(ctx, updateLocalIdentityIdentityProfilesResponse, &plan)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, plan)

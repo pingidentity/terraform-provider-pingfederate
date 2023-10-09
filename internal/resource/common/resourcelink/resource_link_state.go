@@ -17,13 +17,11 @@ var (
 	}
 )
 
-func ToState(ctx context.Context, r *client.ResourceLink, diags *diag.Diagnostics) basetypes.ObjectValue {
+func ToState(ctx context.Context, r *client.ResourceLink) (basetypes.ObjectValue, diag.Diagnostics) {
 	if r == nil {
-		return types.ObjectNull(resourceLinkAttrTypes)
+		return types.ObjectNull(resourceLinkAttrTypes), nil
 	}
-	linkObjectValue, objectValueFromDiags := types.ObjectValueFrom(ctx, resourceLinkAttrTypes, r)
-	diags.Append(objectValueFromDiags...)
-	return linkObjectValue
+	return types.ObjectValueFrom(ctx, resourceLinkAttrTypes, r)
 }
 
 func AttrType() map[string]attr.Type {
