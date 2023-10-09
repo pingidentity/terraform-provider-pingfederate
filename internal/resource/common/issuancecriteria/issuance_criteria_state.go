@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
@@ -36,7 +37,6 @@ func AttrType() map[string]attr.Type {
 	}
 }
 
-func ToState(con context.Context, issuanceCriteriaFromClient *client.IssuanceCriteria) basetypes.ObjectValue {
-	issuanceCriteriaObj, _ := types.ObjectValueFrom(con, AttrType(), issuanceCriteriaFromClient)
-	return issuanceCriteriaObj
+func ToState(con context.Context, issuanceCriteriaFromClient *client.IssuanceCriteria) (basetypes.ObjectValue, diag.Diagnostics) {
+	return types.ObjectValueFrom(con, AttrType(), issuanceCriteriaFromClient)
 }

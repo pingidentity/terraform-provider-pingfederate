@@ -75,7 +75,6 @@ resource "pingfederate_server_settings" "serverSettingsExample" {
     site_key   = "mySiteKey"
     secret_key = "mySiteKeySecret"
   }
-
 }
 ```
 

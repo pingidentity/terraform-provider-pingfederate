@@ -19,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -29,6 +30,39 @@ var (
 	_ resource.Resource                = &oauthAccessTokenManagerResource{}
 	_ resource.ResourceWithConfigure   = &oauthAccessTokenManagerResource{}
 	_ resource.ResourceWithImportState = &oauthAccessTokenManagerResource{}
+)
+
+var (
+	attrType = map[string]attr.Type{
+		"name":         basetypes.StringType{},
+		"multi_valued": basetypes.BoolType{},
+	}
+
+	attributeContractTypes = map[string]attr.Type{
+		"core_attributes":           basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
+		"extended_attributes":       basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
+		"inherited":                 basetypes.BoolType{},
+		"default_subject_attribute": basetypes.StringType{},
+	}
+
+	selectionSettingsAttrType = map[string]attr.Type{
+		"inherited":     basetypes.BoolType{},
+		"resource_uris": basetypes.ListType{ElemType: basetypes.StringType{}},
+	}
+
+	accessControlSettingsAttrType = map[string]attr.Type{
+		"inherited":        basetypes.BoolType{},
+		"restrict_clients": basetypes.BoolType{},
+		"allowed_clients":  basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: resourcelink.AttrType()}},
+	}
+
+	sessionValidationSettingsAttrType = map[string]attr.Type{
+		"inherited":                       basetypes.BoolType{},
+		"include_session_id":              basetypes.BoolType{},
+		"check_valid_authn_session":       basetypes.BoolType{},
+		"check_session_revocation_status": basetypes.BoolType{},
+		"update_authn_session_activity":   basetypes.BoolType{},
+	}
 )
 
 // OauthAccessTokenManagerResource is a helper function to simplify the provider implementation.
@@ -86,101 +120,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				},
 				Attributes: resourcelink.Schema(),
 			},
-			"configuration": schema.SingleNestedAttribute{
-				Description: "Plugin instance configuration.",
-				Required:    true,
-				Attributes: map[string]schema.Attribute{
-					"tables": schema.ListNestedAttribute{
-						Description: "List of configuration tables.",
-						Computed:    true,
-						Optional:    true,
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.UseStateForUnknown(),
-						},
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"name": schema.StringAttribute{
-									Description: "The name of the table.",
-									Required:    true,
-								},
-								"rows": schema.ListNestedAttribute{
-									Description: "List of table rows.",
-									Optional:    true,
-									NestedObject: schema.NestedAttributeObject{
-										Attributes: map[string]schema.Attribute{
-											"fields": schema.ListNestedAttribute{
-												Description: "The configuration fields in the row.",
-												Computed:    true,
-												Optional:    true,
-												NestedObject: schema.NestedAttributeObject{
-													Attributes: map[string]schema.Attribute{
-														"name": schema.StringAttribute{
-															Description: "The name of the configuration field.",
-															Required:    true,
-														},
-														"value": schema.StringAttribute{
-															Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
-															Required:    true,
-														},
-														"inherited": schema.BoolAttribute{
-															Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-															Optional:    true,
-															PlanModifiers: []planmodifier.Bool{
-																boolplanmodifier.UseStateForUnknown(),
-															},
-														},
-													},
-												},
-											},
-											"default_row": schema.BoolAttribute{
-												Description: "Whether this row is the default.",
-												Optional:    true,
-												PlanModifiers: []planmodifier.Bool{
-													boolplanmodifier.UseStateForUnknown(),
-												},
-											},
-										},
-									},
-								},
-								"inherited": schema.BoolAttribute{
-									Description: "Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.",
-									Optional:    true,
-									PlanModifiers: []planmodifier.Bool{
-										boolplanmodifier.UseStateForUnknown(),
-									},
-								},
-							},
-						},
-					},
-					"fields": schema.ListNestedAttribute{
-						Description: "List of configuration fields.",
-						Computed:    true,
-						Optional:    true,
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.UseStateForUnknown(),
-						},
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"name": schema.StringAttribute{
-									Description: "The name of the configuration field.",
-									Required:    true,
-								},
-								"value": schema.StringAttribute{
-									Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
-									Required:    true,
-								},
-								"inherited": schema.BoolAttribute{
-									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-									Optional:    true,
-									PlanModifiers: []planmodifier.Bool{
-										boolplanmodifier.UseStateForUnknown(),
-									},
-								},
-							},
-						},
-					},
-				},
-			},
+			"configuration": pluginconfiguration.Schema(),
 			"attribute_contract": schema.SingleNestedAttribute{
 				Description: "The list of attributes that will be added to an access token.",
 				Computed:    true,
@@ -431,61 +371,19 @@ func (r *oauthAccessTokenManagerResource) Configure(_ context.Context, req resou
 }
 
 func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagerResourceModel, configurationFromPlan basetypes.ObjectValue) diag.Diagnostics {
-	var respDiags, diags diag.Diagnostics
+	var diags, respDiags diag.Diagnostics
 
 	state.Id = types.StringValue(r.Id)
 	state.CustomId = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
-
-	// state.pluginDescriptorRef
-	pluginDescRef := r.GetPluginDescriptorRef()
-	state.PluginDescriptorRef = resourcelink.ToState(ctx, &pluginDescRef, &respDiags)
-
-	// state.parentRef
-	parentRef := r.GetParentRef()
-	state.ParentRef = resourcelink.ToState(ctx, &parentRef, &respDiags)
-
-	// state.Configuration
-	configurationAttrType := map[string]attr.Type{
-		"fields": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.FieldAttrTypes()}},
-		"tables": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.TableAttrTypes()}},
-	}
-
-	planFields := types.ListNull(types.ObjectType{AttrTypes: config.FieldAttrTypes()})
-	planTables := types.ListNull(types.ObjectType{AttrTypes: config.TableAttrTypes()})
-
-	planFieldsValue, ok := configurationFromPlan.Attributes()["fields"]
-	if ok {
-		planFields = planFieldsValue.(types.List)
-	}
-	planTablesValue, ok := configurationFromPlan.Attributes()["tables"]
-	if ok {
-		planTables = planTablesValue.(types.List)
-	}
-
-	fieldsAttrValue := config.ToFieldsListValue(r.Configuration.Fields, planFields, &diags)
-	tablesAttrValue := config.ToTablesListValue(r.Configuration.Tables, planTables, &diags)
-
-	configurationAttrValue := map[string]attr.Value{
-		"fields": fieldsAttrValue,
-		"tables": tablesAttrValue,
-	}
-	state.Configuration, diags = types.ObjectValue(configurationAttrType, configurationAttrValue)
-	respDiags.Append(diags...)
+	state.PluginDescriptorRef, respDiags = resourcelink.ToState(ctx, &r.PluginDescriptorRef)
+	diags.Append(respDiags...)
+	state.ParentRef, respDiags = resourcelink.ToState(ctx, r.ParentRef)
+	diags.Append(respDiags...)
+	state.Configuration, respDiags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration)
+	diags.Append(respDiags...)
 
 	// state.AttributeContract
-	attrType := map[string]attr.Type{
-		"name":         basetypes.StringType{},
-		"multi_valued": basetypes.BoolType{},
-	}
-
-	attributeContractTypes := map[string]attr.Type{
-		"core_attributes":           basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
-		"extended_attributes":       basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
-		"inherited":                 basetypes.BoolType{},
-		"default_subject_attribute": basetypes.StringType{},
-	}
-
 	if r.AttributeContract == nil {
 		state.AttributeContract = types.ObjectNull(attributeContractTypes)
 	} else {
@@ -500,8 +398,8 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 			coreAttribute.MultiValued = ca.MultiValued
 			coreAttrs = append(coreAttrs, coreAttribute)
 		}
-		attributeContractCoreAttributes, diags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
-		respDiags.Append(diags...)
+		attributeContractCoreAttributes, respDiags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
+		diags.Append(respDiags...)
 
 		// state.AttributeContract extended_attributes
 		attributeContractClientExtendedAttributes := attrContract.ExtendedAttributes
@@ -512,8 +410,8 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 			extendedAttr.MultiValued = ea.MultiValued
 			extdAttrs = append(extdAttrs, extendedAttr)
 		}
-		attributeContractExtendedAttributes, diags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
-		respDiags.Append(diags...)
+		attributeContractExtendedAttributes, respDiags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
+		diags.Append(respDiags...)
 
 		attributeContractValues := map[string]attr.Value{
 			"core_attributes":           attributeContractCoreAttributes,
@@ -521,57 +419,38 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 			"inherited":                 types.BoolPointerValue(attrContract.Inherited),
 			"default_subject_attribute": types.StringPointerValue(attrContract.DefaultSubjectAttribute),
 		}
-		state.AttributeContract, diags = types.ObjectValue(attributeContractTypes, attributeContractValues)
-		respDiags.Append(diags...)
+		state.AttributeContract, respDiags = types.ObjectValue(attributeContractTypes, attributeContractValues)
+		diags.Append(respDiags...)
 	}
 
 	// state.SelectionSettings
-	selectionSettingsAttrType := map[string]attr.Type{
-		"inherited":     basetypes.BoolType{},
-		"resource_uris": basetypes.ListType{ElemType: basetypes.StringType{}},
-	}
-
 	if r.SelectionSettings == nil {
 		state.SelectionSettings = types.ObjectNull(selectionSettingsAttrType)
 	} else {
-		state.SelectionSettings, diags = types.ObjectValueFrom(ctx, selectionSettingsAttrType, r.SelectionSettings)
-		respDiags.Append(diags...)
+		state.SelectionSettings, respDiags = types.ObjectValueFrom(ctx, selectionSettingsAttrType, r.SelectionSettings)
+		diags.Append(respDiags...)
 	}
 
 	// state.AccessControlSettings
-	accessControlSettingsAttrType := map[string]attr.Type{
-		"inherited":        basetypes.BoolType{},
-		"restrict_clients": basetypes.BoolType{},
-		"allowed_clients":  basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: resourcelink.AttrType()}},
-	}
-
 	if r.AccessControlSettings == nil {
 		state.AccessControlSettings = types.ObjectNull(accessControlSettingsAttrType)
 	} else {
-		state.AccessControlSettings, diags = types.ObjectValueFrom(ctx, accessControlSettingsAttrType, r.AccessControlSettings)
-		respDiags.Append(diags...)
+		state.AccessControlSettings, respDiags = types.ObjectValueFrom(ctx, accessControlSettingsAttrType, r.AccessControlSettings)
+		diags.Append(respDiags...)
 	}
 
 	// state.SessionValidationSettings
-	sessionValidationSettingsAttrType := map[string]attr.Type{
-		"inherited":                       basetypes.BoolType{},
-		"include_session_id":              basetypes.BoolType{},
-		"check_valid_authn_session":       basetypes.BoolType{},
-		"check_session_revocation_status": basetypes.BoolType{},
-		"update_authn_session_activity":   basetypes.BoolType{},
-	}
-
 	if r.SessionValidationSettings == nil {
 		state.SessionValidationSettings = types.ObjectNull(sessionValidationSettingsAttrType)
 	} else {
-		state.SessionValidationSettings, diags = types.ObjectValueFrom(ctx, sessionValidationSettingsAttrType, r.SessionValidationSettings)
-		respDiags.Append(diags...)
+		state.SessionValidationSettings, respDiags = types.ObjectValueFrom(ctx, sessionValidationSettingsAttrType, r.SessionValidationSettings)
+		diags.Append(respDiags...)
 	}
 
 	// state.SequenceNumber
 	state.SequenceNumber = types.Int64PointerValue(r.SequenceNumber)
 
-	return respDiags
+	return diags
 }
 
 func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -628,10 +507,7 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 	var state oauthAccessTokenManagerResourceModel
 
 	diags = readOauthAccessTokenManagerResponse(ctx, oauthAccessTokenManagerResponse, &state, plan.Configuration)
-	if diags.HasError() {
-		resp.Diagnostics.Append(diags...)
-		return
-	}
+	resp.Diagnostics.Append(diags...)
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
