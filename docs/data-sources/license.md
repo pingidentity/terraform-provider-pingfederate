@@ -30,9 +30,6 @@ provider "pingfederate" {
   insecure_trust_all_tls = true
 }
 
-data "pingfederate_license" "myLicense" {
-}
-
 resource "pingfederate_license" "myLicense" {
   # this property needs to contain base64 encoded value of your license.
   file_data = ""

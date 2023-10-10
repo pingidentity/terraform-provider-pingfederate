@@ -16,21 +16,12 @@ provider "pingfederate" {
 }
 
 resource "pingfederate_key_pair_ssl_server_import" "myKeyPairsSslServerImport" {
-  file_data = "example"
-  format    = "PKCS12"
-  # This value will be stored into your state file 
-  password = "example"
+  id    = "example"
 }
 
 data "pingfederate_key_pair_ssl_server_import" "myKeyPairsSslServerImport" {
-  file_data = pingfederate_key_pair_ssl_server_import.myKeyPairsSslServerImport.file_data
-  format    = "PKCS12"
-  # This value will be stored into your state file 
-  password = "example"
+  id    = "example"
 }
 resource "pingfederate_key_pair_ssl_server_import" "keyPairsSslServerImportExample" {
-  file_data = "${data.pingfederate_key_pair_ssl_server_import.myKeyPairsSslServerImport.file_data}2"
-  format    = "PKCS12"
-  # This value will be stored into your state file 
-  password = "example"
+  id    = "example"
 }

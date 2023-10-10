@@ -16,12 +16,12 @@ provider "pingfederate" {
 }
 
 resource "pingfederate_certificate_ca" "myCertificateCa" {
-  file_data = ""
+  status = "example"
 }
 
 data "pingfederate_certificate_ca" "myCertificateCa" {
-  file_data = pingfederate_certificate_ca.myCertificateCa.file_data
+  status = "pingfederate_certificate_ca.myCertificateCa.id"
 }
 resource "pingfederate_certificate_ca" "certificateCaExample" {
-  file_data = "data.pingfederate_certificate_ca.myCertificateCa.file_data"
+  status = "${data.pingfederate_certificate_ca.myCertificateCa.id}2"
 }

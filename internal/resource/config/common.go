@@ -58,13 +58,17 @@ func AddCommonSchema(s *schema.Schema) {
 	}
 }
 
-func AddCommonDataSourceSchema(s *datasourceschema.Schema) {
-	s.Attributes["id"] = datasourceschema.StringAttribute{
-		Description: "The ID of this resource.",
-		Computed:    true,
-		Required:    false,
-		Optional:    false,
+func AddCommonDataSourceSchema(s *datasourceschema.Schema, required bool, description string) {
+	idSchemaAttr := datasourceschema.StringAttribute{}
+	idSchemaAttr.Description = description
+	if required {
+		idSchemaAttr.Required = true
+	} else {
+		idSchemaAttr.Computed = true
+		idSchemaAttr.Required = false
+		idSchemaAttr.Optional = false
 	}
+	s.Attributes["id"] = idSchemaAttr
 }
 
 func AddResourceLinkSchema() map[string]schema.Attribute {

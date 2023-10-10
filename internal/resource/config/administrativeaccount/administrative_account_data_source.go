@@ -31,16 +31,17 @@ type administrativeAccountDataSource struct {
 }
 
 type administrativeAccountDataSourceModel struct {
-	Active       types.Bool   `tfsdk:"active"`
-	Auditor      types.Bool   `tfsdk:"auditor"`
-	Department   types.String `tfsdk:"department"`
-	Description  types.String `tfsdk:"description"`
-	EmailAddress types.String `tfsdk:"email_address"`
-	Id           types.String `tfsdk:"id"`
-	Password     types.String `tfsdk:"password"`
-	PhoneNumber  types.String `tfsdk:"phone_number"`
-	Roles        types.Set    `tfsdk:"roles"`
-	Username     types.String `tfsdk:"username"`
+	Active            types.Bool   `tfsdk:"active"`
+	Auditor           types.Bool   `tfsdk:"auditor"`
+	Department        types.String `tfsdk:"department"`
+	Description       types.String `tfsdk:"description"`
+	EmailAddress      types.String `tfsdk:"email_address"`
+	Id                types.String `tfsdk:"id"`
+	EncryptedPassword types.String `tfsdk:"encrypted_password"`
+	Password          types.String `tfsdk:"password"`
+	PhoneNumber       types.String `tfsdk:"phone_number"`
+	Roles             types.Set    `tfsdk:"roles"`
+	Username          types.String `tfsdk:"username"`
 }
 
 // GetSchema defines the schema for the datasource.
@@ -48,55 +49,70 @@ func (r *administrativeAccountDataSource) Schema(ctx context.Context, req dataso
 	schemaDef := schema.Schema{
 		Description: "Describes a Administrative Account.",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "Computed attribute tied to the username property of this resource.",
-				Optional:    false,
-				Computed:    true,
-			},
 			"active": schema.BoolAttribute{
 				Description: "Indicates whether the account is active or not.",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
 			},
 			"auditor": schema.BoolAttribute{
 				Description: "Indicates whether the account belongs to an Auditor. An Auditor has View-only permissions for all administrative functions. An Auditor cannot have any administrative roles.",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
 			},
 			"department": schema.StringAttribute{
 				Description: "The Department name of account user.",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 			},
 			"description": schema.StringAttribute{
 				Description: "Description of the account.",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 			},
 			"email_address": schema.StringAttribute{
 				Description: "Email address associated with the account.",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"encrypted_password": schema.StringAttribute{
+				Description: "For GET requests, this field contains the encrypted account password. For POST and PUT requests, if you wish to re-use the password from an API response to this endpoint, this field should be passed back unchanged.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
 			},
 			"password": schema.StringAttribute{
 				Description: "Password for the Account. This field is only applicable during a POST operation.",
-				Required:    true,
-				Sensitive:   true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 			},
 			"phone_number": schema.StringAttribute{
 				Description: "Phone number associated with the account.",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 			},
 			"roles": schema.SetAttribute{
 				Description: "Roles available for an administrator. USER_ADMINISTRATOR - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. CRYPTO_ADMINISTRATOR - Can manage local keys and certificates. ADMINISTRATOR - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. EXPRESSION_ADMINISTRATOR - Can add and update OGNL expressions.",
-				Required:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 				ElementType: types.StringType,
 			},
 			"username": schema.StringAttribute{
 				Description: "Username for the Administrative Account.",
 				Required:    true,
+				Optional:    false,
+				Computed:    true,
 			},
 		},
 	}
-	config.AddCommonDataSourceSchema(&schemaDef)
+	config.AddCommonDataSourceSchema(&schemaDef, true, "Computed attribute tied to the username property of this resource")
 	resp.Schema = schemaDef
 }
 
@@ -120,7 +136,7 @@ func (r *administrativeAccountDataSource) Configure(_ context.Context, req datas
 func readAdministrativeAccountResponseDataSource(ctx context.Context, r *client.AdministrativeAccount, state *administrativeAccountDataSourceModel, expectedValues *administrativeAccountDataSourceModel, passwordPlan basetypes.StringValue) {
 	state.Id = types.StringValue(r.Username)
 	state.Username = types.StringValue(r.Username)
-	state.Password = types.StringValue(passwordPlan.ValueString())
+	state.EncryptedPassword = types.StringPointerValue(r.EncryptedPassword)
 	state.Active = types.BoolValue(*r.Active)
 	state.Description = internaltypes.StringTypeOrNil(r.Description, false)
 	state.Auditor = types.BoolValue(*r.Auditor)

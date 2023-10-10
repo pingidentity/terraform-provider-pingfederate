@@ -2,10 +2,13 @@ package license
 
 import (
 	"context"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -30,8 +33,25 @@ type licenseDataSource struct {
 }
 
 type licenseDataSourceModel struct {
-	Id       types.String `tfsdk:"id"`
-	FileData types.String `tfsdk:"file_data"`
+	Id                  types.String `tfsdk:"id"`
+	Name                types.String `tfsdk:"name"`
+	MaxConnections      types.Int64  `tfsdk:"max_connections"`
+	UsedConnections     types.Int64  `tfsdk:"used_connections"`
+	Tier                types.String `tfsdk:"tier"`
+	IssueDate           types.String `tfsdk:"issue_date"`
+	ExpirationDate      types.String `tfsdk:"expiration_date"`
+	EnforcementType     types.String `tfsdk:"enforcement_type"`
+	Version             types.String `tfsdk:"version"`
+	Product             types.String `tfsdk:"product"`
+	Organization        types.String `tfsdk:"organization"`
+	GracePeriod         types.Int64  `tfsdk:"grace_period"`
+	NodeLimit           types.Int64  `tfsdk:"node_limit"`
+	LicenseGroups       types.Set    `tfsdk:"license_groups"`
+	OauthEnabled        types.Bool   `tfsdk:"oauth_enabled"`
+	WsTrustEnabled      types.Bool   `tfsdk:"ws_trust_enabled"`
+	ProvisioningEnabled types.Bool   `tfsdk:"provisioning_enabled"`
+	BridgeMode          types.Bool   `tfsdk:"bridge_mode"`
+	Features            types.Set    `tfsdk:"features"`
 }
 
 // GetSchema defines the schema for the datasource.
@@ -39,13 +59,162 @@ func (r *licenseDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 	schemaDef := schema.Schema{
 		Description: "Manages a License.",
 		Attributes: map[string]schema.Attribute{
-			"file_data": schema.StringAttribute{
-				Required: true,
+			"name": schema.StringAttribute{
+				Description: "Name of the person the license was issued to.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"max_connections": schema.Int64Attribute{
+				Description: "The public key size",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"used_connections": schema.Int64Attribute{
+				Description: "The public key size",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"tier": schema.StringAttribute{
+				Description: "Name of the person the license was issued to.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"issue_date": schema.StringAttribute{
+				Description: "Name of the person the license was issued to.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"expiration_date": schema.StringAttribute{
+				Description: "Name of the person the license was issued to.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"enforcement_type": schema.StringAttribute{
+				Description: "Name of the person the license was issued to.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"version": schema.StringAttribute{
+				Description: "Name of the person the license was issued to.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"product": schema.StringAttribute{
+				Description: "Name of the person the license was issued to.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"organization": schema.StringAttribute{
+				Description: "Name of the person the license was issued to.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"grace_period": schema.Int64Attribute{
+				Description: "The public key size",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"node_limit": schema.Int64Attribute{
+				Description: "The public key size",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"license_groups": schema.SetNestedAttribute{
+				Description: "The subject alternative names (SAN)",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"name": schema.StringAttribute{
+							Description: "The persistent, unique ID for the local identity authentication source. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
+							Required:    false,
+							Optional:    false,
+							Computed:    true,
+						},
+						"connection_count": schema.Int64Attribute{
+							Description: "The public key size",
+							Required:    false,
+							Optional:    false,
+							Computed:    true,
+						},
+						"start_date": schema.StringAttribute{
+							Description: "The persistent, unique ID for the local identity authentication source. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
+							Required:    false,
+							Optional:    false,
+							Computed:    true,
+						},
+						"end_date": schema.StringAttribute{
+							Description: "The persistent, unique ID for the local identity authentication source. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
+							Required:    false,
+							Optional:    false,
+							Computed:    true,
+						},
+					},
+				},
+			},
+			"oauth_enabled": schema.BoolAttribute{
+				Description: "Indicates whether license agreement has been accepted. The default value is false.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"ws_trust_enabled": schema.BoolAttribute{
+				Description: "Indicates whether license agreement has been accepted. The default value is false.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"provisioning_enabled": schema.BoolAttribute{
+				Description: "Indicates whether license agreement has been accepted. The default value is false.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"bridgeMode": schema.BoolAttribute{
+				Description: "Indicates whether license agreement has been accepted. The default value is false.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"features": schema.SetNestedAttribute{
+				Description: "The subject alternative names (SAN)",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"name": schema.StringAttribute{
+							Description: "The persistent, unique ID for the local identity authentication source. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
+							Required:    false,
+							Optional:    false,
+							Computed:    true,
+						},
+						"value": schema.StringAttribute{
+							Description: "The public key size",
+							Required:    false,
+							Optional:    false,
+							Computed:    true,
+						},
+					},
+				},
 			},
 		},
 	}
 
-	config.AddCommonDataSourceSchema(&schemaDef)
+	config.AddCommonDataSourceSchema(&schemaDef, false, "Unique identifier of a license.")
 	resp.Schema = schemaDef
 }
 
@@ -67,9 +236,39 @@ func (r *licenseDataSource) Configure(_ context.Context, req datasource.Configur
 
 // Read a DseeCompatAdministrativeAccountResponse object into the model struct
 func readLicenseResponseDataSource(ctx context.Context, r *client.LicenseView, state *licenseDataSourceModel, expectedValues *licenseDataSourceModel, createPlan types.String) {
-	LicenseFileData := createPlan
 	state.Id = types.StringValue("id")
-	state.FileData = types.StringValue(LicenseFileData.ValueString())
+	state.Name = internaltypes.StringTypeOrNil(r.Name, false)
+	state.MaxConnections = internaltypes.Int64TypeOrNil(r.MaxConnections)
+	state.UsedConnections = internaltypes.Int64TypeOrNil(r.UsedConnections)
+	state.Tier = internaltypes.StringTypeOrNil(r.Tier, false)
+	state.IssueDate = types.StringValue(r.IssueDate.Format(time.Now().String()))
+	state.ExpirationDate = types.StringValue(r.ExpirationDate.Format(time.Now().String()))
+	state.EnforcementType = internaltypes.StringTypeOrNil(r.EnforcementType, false)
+	state.Version = internaltypes.StringTypeOrNil(r.Version, false)
+	state.Product = internaltypes.StringTypeOrNil(r.Product, false)
+	state.Organization = internaltypes.StringTypeOrNil(r.Organization, false)
+	state.GracePeriod = internaltypes.Int64TypeOrNil(r.GracePeriod)
+	state.NodeLimit = internaltypes.Int64TypeOrNil(r.NodeLimit)
+	state.OauthEnabled = types.BoolValue(*r.OauthEnabled)
+	state.WsTrustEnabled = types.BoolValue(*r.WsTrustEnabled)
+	state.ProvisioningEnabled = types.BoolValue(*r.ProvisioningEnabled)
+	state.BridgeMode = types.BoolValue(*r.BridgeMode)
+
+	licenseGroups := r.LicenseGroups
+	licenseGroupsAttrTypes := map[string]attr.Type{
+		"name":             basetypes.StringType{},
+		"connection_count": basetypes.Int64Type{},
+		"start_date":       basetypes.StringType{},
+		"end_date":         basetypes.StringType{},
+	}
+	state.LicenseGroups, _ = types.ObjectValueFrom(ctx, licenseGroupsAttrTypes, licenseGroups)
+
+	features := r.Features
+	featuresAttrTypes := map[string]attr.Type{
+		"name":  basetypes.StringType{},
+		"value": basetypes.StringType{},
+	}
+	state.Features, _ = types.ObjectValueFrom(ctx, featuresAttrTypes, features)
 }
 
 // Read resource information

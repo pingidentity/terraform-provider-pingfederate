@@ -2,10 +2,15 @@ package keypairs
 
 import (
 	"context"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -30,11 +35,22 @@ type keyPairsSslServerImportDataSource struct {
 }
 
 type keyPairsSslServerImportDataSourceModel struct {
-	Id             types.String `tfsdk:"id"`
-	FileData       types.String `tfsdk:"file_data"`
-	Format         types.String `tfsdk:"format"`
-	Password       types.String `tfsdk:"password"`
-	CryptoProvider types.String `tfsdk:"crypto_provider"`
+	Id                      types.String `tfsdk:"id"`
+	SerialNumber            types.String `tfsdk:"serial_number"`
+	SubjectDN               types.String `tfsdk:"subject_dn"`
+	SubjectAlternativeNames types.Set    `tfsdk:"subjectAlternative_names"`
+	IssuerDN                types.String `tfsdk:"issuer_dn"`
+	ValidFrom               types.String `tfsdk:"valid_from"`
+	Expires                 types.String `tfsdk:"expires"`
+	KeyAlgorithm            types.String `tfsdk:"key_algorithm"`
+	KeySize                 types.Int64  `tfsdk:"key_size"`
+	SignatureAlgorithm      types.String `tfsdk:"signature_algorithm"`
+	Version                 types.Int64  `tfsdk:"version"`
+	Sha1Fingerprint         types.String `tfsdk:"sha1_fingerprint"`
+	Sha256Fingerprint       types.String `tfsdk:"sha256_fingerprint"`
+	Status                  types.String `tfsdk:"status"`
+	CryptoProvider          types.String `tfsdk:"crypto_provider"`
+	RotationSettings        types.Object `tfsdk:"rotation_settings"`
 }
 
 // GetSchema defines the schema for the datasource.
@@ -42,32 +58,148 @@ func (r *keyPairsSslServerImportDataSource) Schema(ctx context.Context, req data
 	schemaDef := schema.Schema{
 		Description: "Manages a KeyPairsSslServerImport.",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.",
+			"serial_number": schema.StringAttribute{
+				Description: "The serial number assigned by the CA",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
 			},
-			"file_data": schema.StringAttribute{
-				Description: "Base-64 encoded PKCS12 or PEM file data. In the case of PEM, the raw (non-base-64) data is also accepted. In BCFIPS mode, only PEM with PBES2 and AES or Triple DES encryption is accepted and 128-bit salt is required.",
-				Required:    true,
+			"subject_dn": schema.StringAttribute{
+				Description: "The subject's distinguished name",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 			},
-			"format": schema.StringAttribute{
-				Description: "Key pair file format. If specified, this field will control what file format is expected, otherwise the format will be auto-detected. In BCFIPS mode, only PEM is supported. (PKCS12, PEM)",
-				Required:    true,
+			"subject_alternative_names": schema.SetAttribute{
+				Description: "The subject alternative names (SAN)",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+				ElementType: types.StringType,
 			},
-			"password": schema.StringAttribute{
-				Description: "Password for the file. In BCFIPS mode, the password must be at least 14 characters.",
-				Required:    true,
-				Sensitive:   true,
+			"issuer_dn": schema.StringAttribute{
+				Description: "The issuer's distinguished name",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"valid_from": schema.StringAttribute{
+				Description: "The start date from which the item is valid, in ISO 8601 format (UTC)",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"expires": schema.StringAttribute{
+				Description: "The end date up until which the item is valid, in ISO 8601 format (UTC)",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"key_algorithm": schema.StringAttribute{
+				Description: "The public key algorithm",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"key_size": schema.Int64Attribute{
+				Description: "The public key size",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"signature_algorithm": schema.StringAttribute{
+				Description: "The signature algorithm",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"version": schema.Int64Attribute{
+				Description: "The X.509 version to which the item conforms",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"sha1_fingerprint": schema.StringAttribute{
+				Description: "SHA-1 fingerprint in Hex encoding",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"sha256_fingerprint": schema.StringAttribute{
+				Description: "SHA-256 fingerprint in Hex encoding",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"status": schema.StringAttribute{
+				Description: "Status of the item.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOf([]string{"VALID", "EXPIRED", "NOT_YET_VALID", "REVOKED"}...),
+				},
 			},
 			"crypto_provider": schema.StringAttribute{
-				Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. (LOCAL, HSM)",
+				Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOf([]string{"LOCAL", "HSM"}...),
+				},
+			},
+			"rotation_settings": schema.SingleNestedAttribute{
+				Description: "The local identity profile data store configuration.",
 				Optional:    true,
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Description: "The base DN to search from. If not specified, the search will start at the LDAP's root.",
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
+					},
+					"creation_buffer_days": schema.Int64Attribute{
+						Description: "Buffer days before key pair expiration for creation of a new key pair.",
+						Required:    true,
+						Optional:    false,
+						Computed:    true,
+					},
+					"activation_buffer_days": schema.Int64Attribute{
+						Description: "Buffer days before key pair expiration for activation of the new key pair.",
+						Required:    true,
+						Optional:    false,
+						Computed:    true,
+					},
+					"valid_days": schema.Int64Attribute{
+						Description: "Valid days for the new key pair to be created. If this property is unset, the validity days of the original key pair will be used.",
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
+					},
+					"key_algorithm": schema.StringAttribute{
+						Description: "Key algorithm to be used while creating a new key pair. If this property is unset, the key algorithm of the original key pair will be used. Supported algorithms are available through the /keyPairs/keyAlgorithms endpoint.						",
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
+					},
+					"key_size": schema.Int64Attribute{
+						Description: "Key size, in bits. If this property is unset, the key size of the original key pair will be used. Supported key sizes are available through the /keyPairs/keyAlgorithms endpoint.",
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
+					},
+					"signature_algorithm": schema.StringAttribute{
+						Description: "Required if the original key pair used SHA1 algorithm. If this property is unset, the default signature algorithm of the original key pair will be used. Supported signature algorithms are available through the /keyPairs/keyAlgorithms endpoint.",
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
+					},
+				},
 			},
 		},
 	}
-	config.AddCommonDataSourceSchema(&schemaDef)
+	config.AddCommonDataSourceSchema(&schemaDef, true, "The persistent, unique ID for the certificate.")
 	resp.Schema = schemaDef
 }
 
@@ -88,12 +220,34 @@ func (r *keyPairsSslServerImportDataSource) Configure(_ context.Context, req dat
 }
 
 // Read a DseeCompatAdministrativeAccountResponse object into the model struct
-func readKeyPairsSslServerImportResponseDataSource(ctx context.Context, r *client.KeyPairView, state *keyPairsSslServerImportDataSourceModel, expectedValues *keyPairsSslServerImportDataSourceModel, planFileData string, planFormat string, planPassword string) {
+func readKeyPairsSslServerImportResponseDataSource(ctx context.Context, r *client.KeyPairView, state *keyPairsSslServerImportDataSourceModel, expectedValues *keyPairsSslServerImportDataSourceModel) {
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
-	state.FileData = internaltypes.StringTypeOrNil(&planFileData, false)
-	state.Format = internaltypes.StringTypeOrNil(&planFormat, false)
-	state.Password = types.StringValue(planPassword)
+	state.SerialNumber = internaltypes.StringTypeOrNil(r.SerialNumber, false)
+	state.SubjectDN = internaltypes.StringTypeOrNil(r.SubjectDN, false)
+	state.SubjectAlternativeNames = internaltypes.GetStringSet(r.SubjectAlternativeNames)
+	state.IssuerDN = internaltypes.StringTypeOrNil(r.IssuerDN, false)
+	state.ValidFrom = types.StringValue(r.ValidFrom.Format(time.Now().String()))
+	state.Expires = types.StringValue(r.Expires.Format(time.Now().String()))
+	state.KeyAlgorithm = internaltypes.StringTypeOrNil(r.KeyAlgorithm, false)
+	state.KeySize = internaltypes.Int64TypeOrNil(r.KeySize)
+	state.SignatureAlgorithm = internaltypes.StringTypeOrNil(r.SignatureAlgorithm, false)
+	state.Version = internaltypes.Int64TypeOrNil(r.Version)
+	state.Sha1Fingerprint = internaltypes.StringTypeOrNil(r.Sha1Fingerprint, false)
+	state.Sha256Fingerprint = internaltypes.StringTypeOrNil(r.Sha256Fingerprint, false)
+	state.Status = internaltypes.StringTypeOrNil(r.Status, false)
 	state.CryptoProvider = internaltypes.StringTypeOrNil(r.CryptoProvider, false)
+
+	rotationSettings := r.RotationSettings
+	rotationSettingsAttrTypes := map[string]attr.Type{
+		"id":                     basetypes.StringType{},
+		"creation_buffer_days":   basetypes.Int64Type{},
+		"activation_buffer_days": basetypes.Int64Type{},
+		"valid_days":             basetypes.Int64Type{},
+		"key_algorithm":          basetypes.StringType{},
+		"key_size":               basetypes.Int64Type{},
+		"signature_algorithm":    basetypes.StringType{},
+	}
+	state.RotationSettings, _ = types.ObjectValueFrom(ctx, rotationSettingsAttrTypes, rotationSettings)
 }
 
 // Read resource information
@@ -121,10 +275,7 @@ func (r *keyPairsSslServerImportDataSource) Read(ctx context.Context, req dataso
 	}
 
 	// Read the response into the state
-	stateFileData := state.FileData.ValueString()
-	stateFormat := state.Format.ValueString()
-	statePassword := state.Password.ValueString()
-	readKeyPairsSslServerImportResponseDataSource(ctx, apiReadKeyPairsSslServerImport, &state, &state, stateFileData, stateFormat, statePassword)
+	readKeyPairsSslServerImportResponseDataSource(ctx, apiReadKeyPairsSslServerImport, &state, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

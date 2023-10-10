@@ -2,10 +2,13 @@ package certificate
 
 import (
 	"context"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
@@ -31,9 +34,21 @@ type certificatesDataSource struct {
 }
 
 type certificatesDataSourceModel struct {
-	Id             types.String `tfsdk:"id"`
-	FileData       types.String `tfsdk:"file_data"`
-	CryptoProvider types.String `tfsdk:"crypto_provider"`
+	Id                      types.String `tfsdk:"id"`
+	SerialNumber            types.String `tfsdk:"serial_number"`
+	SubjectDN               types.String `tfsdk:"subject_dn"`
+	SubjectAlternativeNames types.Set    `tfsdk:"subjectAlternative_names"`
+	IssuerDN                types.String `tfsdk:"issuer_dn"`
+	ValidFrom               types.String `tfsdk:"valid_from"`
+	Expires                 types.String `tfsdk:"expires"`
+	KeyAlgorithm            types.String `tfsdk:"key_algorithm"`
+	KeySize                 types.Int64  `tfsdk:"key_size"`
+	SignatureAlgorithm      types.String `tfsdk:"signature_algorithm"`
+	Version                 types.Int64  `tfsdk:"version"`
+	Sha1Fingerprint         types.String `tfsdk:"sha1_fingerprint"`
+	Sha256Fingerprint       types.String `tfsdk:"sha256_fingerprint"`
+	Status                  types.String `tfsdk:"status"`
+	CryptoProvider          types.String `tfsdk:"crypto_provider"`
 }
 
 // GetSchema defines the schema for the datasource.
@@ -41,22 +56,100 @@ func (r *certificatesDataSource) Schema(ctx context.Context, req datasource.Sche
 	schemaDef := schema.Schema{
 		Description: "Manages CertificateCA Import.",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "The persistent, unique ID for the certificate",
-				Optional:    true,
+			"serial_number": schema.StringAttribute{
+				Description: "The serial number assigned by the CA",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
+			},
+			"subject_dn": schema.StringAttribute{
+				Description: "The subject's distinguished name",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"subject_alternative_names": schema.SetAttribute{
+				Description: "The subject alternative names (SAN)",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+				ElementType: types.StringType,
+			},
+			"issuer_dn": schema.StringAttribute{
+				Description: "The issuer's distinguished name",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"valid_from": schema.StringAttribute{
+				Description: "The start date from which the item is valid, in ISO 8601 format (UTC)",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"expires": schema.StringAttribute{
+				Description: "The end date up until which the item is valid, in ISO 8601 format (UTC)",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"key_algorithm": schema.StringAttribute{
+				Description: "The public key algorithm",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"key_size": schema.Int64Attribute{
+				Description: "The public key size",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"signature_algorithm": schema.StringAttribute{
+				Description: "The signature algorithm",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"version": schema.Int64Attribute{
+				Description: "The X.509 version to which the item conforms",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"sha1_fingerprint": schema.StringAttribute{
+				Description: "SHA-1 fingerprint in Hex encoding",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"sha256_fingerprint": schema.StringAttribute{
+				Description: "SHA-256 fingerprint in Hex encoding",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"status": schema.StringAttribute{
+				Description: "Status of the item.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOf([]string{"VALID", "EXPIRED", "NOT_YET_VALID", "REVOKED"}...),
+				},
 			},
 			"crypto_provider": schema.StringAttribute{
 				Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
-				Optional:    true,
-			},
-			"file_data": schema.StringAttribute{
-				Description: "The certificate data in PEM format. New line characters should be omitted or encoded in this value.",
-				Required:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOf([]string{"LOCAL", "HSM"}...),
+				},
 			},
 		},
 	}
-	config.AddCommonDataSourceSchema(&schemaDef)
+	config.AddCommonDataSourceSchema(&schemaDef, true, "The persistent, unique ID for the certificate")
 	resp.Schema = schemaDef
 }
 
@@ -77,11 +170,22 @@ func (r *certificatesDataSource) Configure(_ context.Context, req datasource.Con
 }
 
 // Read a CertificateResponse object into the model struct
-func readCertificateResponseDataSource(ctx context.Context, r *client.CertView, state *certificatesDataSourceModel, expectedValues *certificatesDataSourceModel, diagnostics *diag.Diagnostics, createPlan types.String) {
-	X509FileData := createPlan
+func readCertificateResponseDataSource(ctx context.Context, r *client.CertView, state *certificatesDataSourceModel, expectedValues *certificatesDataSourceModel, diagnostics *diag.Diagnostics) {
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
+	state.SerialNumber = internaltypes.StringTypeOrNil(r.SerialNumber, false)
+	state.SubjectDN = internaltypes.StringTypeOrNil(r.SubjectDN, false)
+	state.SubjectAlternativeNames = internaltypes.GetStringSet(r.SubjectAlternativeNames)
+	state.IssuerDN = internaltypes.StringTypeOrNil(r.IssuerDN, false)
+	state.ValidFrom = types.StringValue(r.ValidFrom.Format(time.Now().String()))
+	state.Expires = types.StringValue(r.Expires.Format(time.Now().String()))
+	state.KeyAlgorithm = internaltypes.StringTypeOrNil(r.KeyAlgorithm, false)
+	state.KeySize = internaltypes.Int64TypeOrNil(r.KeySize)
+	state.SignatureAlgorithm = internaltypes.StringTypeOrNil(r.SignatureAlgorithm, false)
+	state.Version = internaltypes.Int64TypeOrNil(r.Version)
+	state.Sha1Fingerprint = internaltypes.StringTypeOrNil(r.Sha1Fingerprint, false)
+	state.Sha256Fingerprint = internaltypes.StringTypeOrNil(r.Sha256Fingerprint, false)
+	state.Status = internaltypes.StringTypeOrNil(r.Status, false)
 	state.CryptoProvider = internaltypes.StringTypeOrNil(r.CryptoProvider, false)
-	state.FileData = types.StringValue(X509FileData.ValueString())
 }
 
 // Read resource information
@@ -109,7 +213,7 @@ func (r *certificatesDataSource) Read(ctx context.Context, req datasource.ReadRe
 	}
 
 	// Read the response into the state
-	readCertificateResponseDataSource(ctx, apiReadCertificate, &state, &state, &resp.Diagnostics, state.FileData)
+	readCertificateResponseDataSource(ctx, apiReadCertificate, &state, &state, &resp.Diagnostics)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

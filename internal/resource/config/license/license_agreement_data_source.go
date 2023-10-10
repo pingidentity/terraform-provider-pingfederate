@@ -42,18 +42,20 @@ func (r *licenseAgreementDataSource) Schema(ctx context.Context, req datasource.
 		Attributes: map[string]schema.Attribute{
 			"license_agreement_url": schema.StringAttribute{
 				Description: "URL to license agreement",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
 			},
 			"accepted": schema.BoolAttribute{
 				Description: "Indicates whether license agreement has been accepted. The default value is false.",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
 			},
 		},
 	}
 
-	config.AddCommonDataSourceSchema(&schemaDef)
+	config.AddCommonDataSourceSchema(&schemaDef, false, "The ID of this resource.")
 	resp.Schema = schemaDef
 }
 

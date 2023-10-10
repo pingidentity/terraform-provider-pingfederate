@@ -63,33 +63,38 @@ func (r *authenticationApiSettingsDataSource) Schema(ctx context.Context, req da
 		Attributes: map[string]schema.Attribute{
 			"api_enabled": schema.BoolAttribute{
 				Description: "Enable Authentication API",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
 			},
 			"enable_api_descriptions": schema.BoolAttribute{
 				Description: "Enable API descriptions",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
 			},
 			"default_application_ref": schema.SingleNestedAttribute{
 				Description: "Enable API descriptions",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
 				Attributes:  config.AddResourceLinkDataSourceSchema(),
 			},
 			"restrict_access_to_redirectless_mode": schema.BoolAttribute{
 				Description: "Enable restrict access to redirectless mode",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
 			},
 			"include_request_context": schema.BoolAttribute{
 				Description: "Includes request context in API responses",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
 			},
 		},
 	}
-	config.AddCommonDataSourceSchema(&schemaDef)
+	config.AddCommonDataSourceSchema(&schemaDef, false, "The ID of this resource.")
 	resp.Schema = schemaDef
 }
 

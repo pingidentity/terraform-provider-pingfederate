@@ -60,7 +60,8 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 		Attributes: map[string]schema.Attribute{
 			"custom_id": schema.StringAttribute{
 				Description: "The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
 				Validators: []validator.String{
 					stringvalidator.RegexMatches(
@@ -72,17 +73,24 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 			"name": schema.StringAttribute{
 				Description: "The local identity profile name. Name is unique.",
 				Required:    true,
+				Optional:    false,
+				Computed:    true,
 			},
 			"apc_id": schema.SingleNestedAttribute{
 				Description: "The reference to the authentication policy contract to use for this local identity profile.",
 				Required:    true,
+				Optional:    false,
+				Computed:    true,
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Description: "The ID of the resource.",
 						Required:    true,
+						Optional:    false,
+						Computed:    true,
 					},
 					"location": schema.StringAttribute{
 						Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
+						Required:    false,
 						Optional:    false,
 						Computed:    true,
 					},
@@ -90,70 +98,91 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 			},
 			"auth_sources": schema.SetNestedAttribute{
 				Description: "The local identity authentication sources. Sources are unique.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
 							Description: "The persistent, unique ID for the local identity authentication source. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
+							Required:    false,
+							Optional:    false,
 							Computed:    true,
-							Optional:    true,
 						},
 						"source": schema.StringAttribute{
 							Description: "The local identity authentication source. Source is unique.",
+							Required:    false,
+							Optional:    false,
 							Computed:    true,
-							Optional:    true,
 						},
 					},
 				},
 			},
 			"auth_source_update_policy": schema.SingleNestedAttribute{
 				Description: "The attribute update policy for authentication sources.",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 				Attributes: map[string]schema.Attribute{
 					"store_attributes": schema.BoolAttribute{
 						Description: "Whether or not to store attributes that came from authentication sources.",
-						Optional:    true,
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
 					},
 					"retain_attributes": schema.BoolAttribute{
 						Description: "Whether or not to keep attributes after user disconnects.",
-						Optional:    true,
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
 					},
 					"update_attributes": schema.BoolAttribute{
 						Description: "Whether or not to update attributes when users authenticate.",
-						Optional:    true,
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
 					},
 					"update_interval": schema.Int64Attribute{
 						Description: "The minimum number of days between updates.",
-						Optional:    true,
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
 					},
 				},
 			},
 			"registration_enabled": schema.BoolAttribute{
 				Description: "Whether the registration configuration is enabled or not.",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
 			},
 			"registration_config": schema.SingleNestedAttribute{
 				Description: "The local identity profile registration configuration.",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 				Attributes: map[string]schema.Attribute{
 					"captcha_enabled": schema.BoolAttribute{
 						Description: "Whether CAPTCHA is enabled or not in the registration configuration.",
+						Required:    false,
+						Optional:    false,
 						Computed:    true,
-						Optional:    true,
 					},
 					"captcha_provider_ref": schema.SingleNestedAttribute{
 						Description: "Reference to the associated CAPTCHA provider.",
+						Required:    false,
+						Optional:    false,
 						Computed:    true,
-						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"id": schema.StringAttribute{
 								Description: "The ID of the resource.",
 								Required:    true,
+								Optional:    false,
+								Computed:    true,
 							},
 							"location": schema.StringAttribute{
 								Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
+								Required:    false,
 								Optional:    false,
 								Computed:    true,
 							},
@@ -162,32 +191,42 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 					"template_name": schema.StringAttribute{
 						Description: "The template name for the registration configuration.",
 						Required:    true,
+						Optional:    false,
+						Computed:    true,
 					},
 					"create_authn_session_after_registration": schema.BoolAttribute{
 						Description: "Whether to create an Authentication Session when registering a local account. Default is true.",
+						Required:    false,
+						Optional:    false,
 						Computed:    true,
-						Optional:    true,
 					},
 					"username_field": schema.StringAttribute{
 						Description: "When creating an Authentication Session after registering a local account, PingFederate will pass the Unique ID field's value as the username. If the Unique ID value is not the username, then override which field's value will be used as the username.",
+						Required:    false,
+						Optional:    false,
 						Computed:    true,
-						Optional:    true,
 					},
 					"this_is_my_device_enabled": schema.BoolAttribute{
 						Description: "Allows users to indicate whether their device is shared or private. In this mode, PingFederate Authentication Sessions will not be stored unless the user indicates the device is private.",
+						Required:    false,
+						Optional:    false,
 						Computed:    true,
-						Optional:    true,
 					},
 					"registration_workflow": schema.SingleNestedAttribute{
 						Description: "The policy fragment to be executed as part of the registration workflow.",
-						Optional:    true,
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
 						Attributes: map[string]schema.Attribute{
 							"id": schema.StringAttribute{
 								Description: "The ID of the resource.",
 								Required:    true,
+								Optional:    false,
+								Computed:    true,
 							},
 							"location": schema.StringAttribute{
 								Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
+								Required:    false,
 								Optional:    false,
 								Computed:    true,
 							},
@@ -195,8 +234,9 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 					},
 					"execute_workflow": schema.StringAttribute{
 						Description: "This setting indicates whether PingFederate should execute the workflow before or after account creation. The default is to run the registration workflow after account creation.",
+						Required:    false,
+						Optional:    false,
 						Computed:    true,
-						Optional:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOf([]string{"BEFORE_ACCOUNT_CREATION", "AFTER_ACCOUNT_CREATION"}...),
 						},
@@ -205,32 +245,42 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 			},
 			"profile_config": schema.SingleNestedAttribute{
 				Description: "The local identity profile management configuration.",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 				Attributes: map[string]schema.Attribute{
 					"delete_identity_enabled": schema.BoolAttribute{
 						Description: "Whether the end user is allowed to use delete functionality.",
+						Required:    false,
+						Optional:    false,
 						Computed:    true,
-						Optional:    true,
 					},
 					"template_name": schema.StringAttribute{
 						Description: "The template name for end-user profile management.",
 						Required:    true,
+						Optional:    false,
+						Computed:    true,
 					},
 				},
 			},
 			"field_config": schema.SingleNestedAttribute{
 				Description: "The local identity profile field configuration.",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
 					"fields": schema.SetNestedAttribute{
 						Description: "The field configuration for the local identity profile.",
-						Optional:    true,
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"type": schema.StringAttribute{
 									Description: "The type of the local identity field.",
 									Required:    true,
+									Optional:    false,
+									Computed:    true,
 									Validators: []validator.String{
 										stringvalidator.OneOf([]string{"CHECKBOX", "CHECKBOX_GROUP", "DATE", "DROP_DOWN", "EMAIL", "PHONE", "TEXT", "HIDDEN"}...),
 									},
@@ -238,23 +288,32 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 								"id": schema.StringAttribute{
 									Description: "Id of the local identity field.",
 									Required:    true,
+									Optional:    false,
+									Computed:    true,
 								},
 								"label": schema.StringAttribute{
 									Description: "Label of the local identity field.",
 									Required:    true,
+									Optional:    false,
+									Computed:    true,
 								},
 								"registration_page_field": schema.BoolAttribute{
 									Description: "Whether this is a registration page field or not.",
-									Optional:    true,
+									Required:    false,
+									Optional:    false,
+									Computed:    true,
 								},
 								"profile_page_field": schema.BoolAttribute{
 									Description: "Whether this is a profile page field or not.",
-									Optional:    true,
+									Required:    false,
+									Optional:    false,
+									Computed:    true,
 								},
 								"attributes": schema.MapAttribute{
 									Description: "Attributes of the local identity field.",
+									Required:    false,
+									Optional:    false,
 									Computed:    true,
-									Optional:    true,
 									ElementType: types.BoolType,
 								},
 							},
@@ -262,97 +321,123 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 					},
 					"strip_space_from_unique_field": schema.BoolAttribute{
 						Description: "Strip leading/trailing spaces from unique ID field. Default is true.",
+						Required:    false,
+						Optional:    false,
 						Computed:    true,
-						Optional:    true,
 					},
 				},
 			},
 			"email_verification_config": schema.SingleNestedAttribute{
 				Description: "The local identity email verification configuration.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"email_verification_enabled": schema.BoolAttribute{
 						Description: "Whether the email ownership verification is enabled.",
+						Required:    false,
+						Optional:    false,
 						Computed:    true,
-						Optional:    true,
 					},
 					"verify_email_template_name": schema.StringAttribute{
 						Description: "The template name for verify email. The default is message-template-email-ownership-verification.html.",
+						Required:    false,
+						Optional:    false,
 						Computed:    true,
-						Optional:    true,
 					},
 					"email_verification_sent_template_name": schema.StringAttribute{
 						Description: "The template name for email verification sent. The default is local.identity.email.verification.sent.html. Note:Only applicable if EmailVerificationType is OTL.",
+						Required:    false,
+						Optional:    false,
 						Computed:    true,
-						Optional:    true,
 					},
 					"email_verification_success_template_name": schema.StringAttribute{
 						Description: "The template name for email verification success. The default is local.identity.email.verification.success.html.",
+						Required:    false,
+						Optional:    false,
 						Computed:    true,
-						Optional:    true,
 					},
 					"email_verification_error_template_name": schema.StringAttribute{
 						Description: "The template name for email verification error. The default is local.identity.email.verification.error.html.",
+						Required:    false,
+						Optional:    false,
 						Computed:    true,
-						Optional:    true,
 					},
 					"email_verification_type": schema.StringAttribute{
 						Description: "Email Verification Type.",
-						Optional:    true,
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOf([]string{"OTP", "OTL"}...),
 						},
 					},
 					"otp_length": schema.Int64Attribute{
 						Description: "The OTP length generated for email verification. The default is 8. Note: Only applicable if EmailVerificationType is OTP.",
-						Optional:    true,
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
 						Validators: []validator.Int64{
 							int64validator.Between(5, 100),
 						},
 					},
 					"otp_retry_attempts": schema.Int64Attribute{
 						Description: "The number of OTP retry attempts for email verification. The default is 3. Note: Only applicable if EmailVerificationType is OTP.",
-						Optional:    true,
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
 					},
 					"allowed_otp_character_set": schema.StringAttribute{
 						Description: "The allowed character set used to generate the OTP. The default is 23456789BCDFGHJKMNPQRSTVWXZbcdfghjkmnpqrstvwxz. Note: Only applicable if EmailVerificationType is OTP.",
-						Optional:    true,
+						Required:    false,
+						Optional:    false,
 						Computed:    true,
 					},
 					"otp_time_to_live": schema.Int64Attribute{
 						Description: "Field used OTP time to live. The default is 15. Note: Only applicable if EmailVerificationType is OTP.",
+						Required:    false,
+						Optional:    false,
 						Computed:    true,
-						Optional:    true,
 					},
 					"email_verification_otp_template_name": schema.StringAttribute{
 						Description: "The template name for email verification OTP verification. The default is local.identity.email.verification.otp.html. Note: Only applicable if EmailVerificationType is OTP.",
-						Optional:    true,
+						Required:    false,
+						Optional:    false,
 						Computed:    true,
 					},
 					"otl_time_to_live": schema.Int64Attribute{
 						Description: "Field used OTL time to live. The default is 1440. Note: Only applicable if EmailVerificationType is OTL.",
+						Required:    false,
+						Optional:    false,
 						Computed:    true,
-						Optional:    true,
 					},
 					"field_for_email_to_verify": schema.StringAttribute{
 						Description: "Field used for email ownership verification. Note: Not required when emailVerificationEnabled is set to false.",
 						Required:    true,
+						Optional:    false,
+						Computed:    true,
 					},
 					"field_storing_verification_status": schema.StringAttribute{
 						Description: "Field used for storing email verification status. Note: Not required when emailVerificationEnabled is set to false.",
 						Required:    true,
+						Optional:    false,
+						Computed:    true,
 					},
 					"notification_publisher_ref": schema.SingleNestedAttribute{
 						Description: "Reference to the associated notification publisher.",
-						Optional:    true,
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
 						Attributes: map[string]schema.Attribute{
 							"id": schema.StringAttribute{
 								Description: "The ID of the resource.",
 								Required:    true,
+								Optional:    false,
+								Computed:    true,
 							},
 							"location": schema.StringAttribute{
 								Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
+								Required:    false,
 								Optional:    false,
 								Computed:    true,
 							},
@@ -360,27 +445,35 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 					},
 					"require_verified_email": schema.BoolAttribute{
 						Description: "Whether the user must verify their email address before they can complete a single sign-on transaction. The default is false.",
+						Required:    false,
+						Optional:    false,
 						Computed:    true,
-						Optional:    true,
 					},
 					"require_verified_email_template_name": schema.StringAttribute{
 						Description: "The template to render when the user must verify their email address before they can complete a single sign-on transaction. The default is local.identity.email.verification.required.html. Note:Only applicable if EmailVerificationType is OTL and requireVerifiedEmail is true.",
+						Required:    false,
+						Optional:    false,
 						Computed:    true,
-						Optional:    true,
 					},
 				},
 			},
 			"data_store_config": schema.SingleNestedAttribute{
 				Description: "The local identity profile data store configuration.",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 				Attributes: map[string]schema.Attribute{
 					"base_dn": schema.StringAttribute{
 						Description: "The base DN to search from. If not specified, the search will start at the LDAP's root.",
 						Required:    true,
+						Optional:    false,
+						Computed:    true,
 					},
 					"type": schema.StringAttribute{
 						Description: "The data store config type.",
 						Required:    true,
+						Optional:    false,
+						Computed:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOf([]string{"LDAP", "PING_ONE_LDAP_GATEWAY", "JDBC", "CUSTOM"}...),
 						},
@@ -388,13 +481,18 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 					"data_store_ref": schema.SingleNestedAttribute{
 						Description: "Reference to the associated data store.",
 						Required:    true,
+						Optional:    false,
+						Computed:    true,
 						Attributes: map[string]schema.Attribute{
 							"id": schema.StringAttribute{
 								Description: "The ID of the resource.",
 								Required:    true,
+								Optional:    false,
+								Computed:    true,
 							},
 							"location": schema.StringAttribute{
 								Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
+								Required:    false,
 								Optional:    false,
 								Computed:    true,
 							},
@@ -403,11 +501,15 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 					"data_store_mapping": schema.MapNestedAttribute{
 						Description: "The data store mapping.",
 						Required:    true,
+						Optional:    false,
+						Computed:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"type": schema.StringAttribute{
 									Description: "The data store attribute type.",
 									Required:    true,
+									Optional:    false,
+									Computed:    true,
 									Validators: []validator.String{
 										stringvalidator.OneOf([]string{"LDAP", "PING_ONE_LDAP_GATEWAY", "JDBC", "CUSTOM"}...),
 									},
@@ -415,11 +517,14 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 								"name": schema.StringAttribute{
 									Description: "The data store attribute name.",
 									Required:    true,
+									Optional:    false,
+									Computed:    true,
 								},
 								"metadata": schema.MapAttribute{
 									Description: "The data store attribute metadata.",
+									Required:    false,
+									Optional:    false,
 									Computed:    true,
-									Optional:    true,
 									ElementType: types.StringType,
 								},
 							},
@@ -428,28 +533,34 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 					"create_pattern": schema.StringAttribute{
 						Description: "The Relative DN Pattern that will be used to create objects in the directory.",
 						Required:    true,
+						Optional:    false,
+						Computed:    true,
 					},
 					"object_class": schema.StringAttribute{
 						Description: "The Object Class used by the new objects stored in the LDAP data store.",
 						Required:    true,
+						Optional:    false,
+						Computed:    true,
 					},
 					"auxiliary_object_classes": schema.SetAttribute{
 						Description: "The Auxiliary Object Classes used by the new objects stored in the LDAP data store.",
-						Optional:    true,
-						Computed:    false,
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
 						ElementType: types.StringType,
 					},
 				},
 			},
 			"profile_enabled": schema.BoolAttribute{
 				Description: "Whether the profile configuration is enabled or not.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
 			},
 		},
 	}
 
-	config.AddCommonDataSourceSchema(&schemaDef)
+	config.AddCommonDataSourceSchema(&schemaDef, true, "The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.")
 	resp.Schema = schemaDef
 }
 

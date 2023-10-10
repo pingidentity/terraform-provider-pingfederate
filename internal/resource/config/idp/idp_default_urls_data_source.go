@@ -43,21 +43,25 @@ func (r *idpDefaultUrlsDataSource) Schema(ctx context.Context, req datasource.Sc
 		Attributes: map[string]schema.Attribute{
 			"confirm_idp_slo": schema.BoolAttribute{
 				Description: "Prompt user to confirm Single Logout (SLO).",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
 			},
 			"idp_error_msg": schema.StringAttribute{
 				Description: "Provide the error text displayed in a user's browser when an SSO operation fails.",
 				Required:    true,
+				Optional:    false,
+				Computed:    true,
 			},
 			"idp_slo_success_url": schema.StringAttribute{
 				Description: "Provide the default URL you would like to send the user to when Single Logout has succeeded.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
 			},
 		},
 	}
-	config.AddCommonDataSourceSchema(&schemaDef)
+	config.AddCommonDataSourceSchema(&schemaDef, false, "The ID of this resource.")
 	resp.Schema = schemaDef
 }
 
