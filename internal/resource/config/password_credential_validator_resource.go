@@ -81,12 +81,8 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 			},
 			"parent_ref": schema.SingleNestedAttribute{
 				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
-				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
-				Attributes: AddResourceLinkSchema(),
+				Attributes:  AddResourceLinkSchema(),
 			},
 			"configuration": schema.SingleNestedAttribute{
 				Description: "Plugin instance configuration.",
@@ -326,8 +322,7 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 	state.PluginDescriptorRef = internaltypes.ToStateResourceLink(ctx, &pluginDescRef, &respDiags)
 
 	// state.parentRef
-	parentRef := r.GetParentRef()
-	state.ParentRef = internaltypes.ToStateResourceLink(ctx, &parentRef, &respDiags)
+	state.ParentRef = internaltypes.ToStateResourceLink(ctx, r.ParentRef, &respDiags)
 
 	// state.Configuration
 	state.Configuration, diags = ConfigurationToState(configurationFromPlan, r.Configuration)
