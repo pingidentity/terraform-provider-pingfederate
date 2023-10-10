@@ -429,6 +429,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 							setplanmodifier.UseStateForUnknown(),
 						},
 					},
+					//TODO storing these
 					"core_attributes_all": schema.SetNestedAttribute{
 						Description: "A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type. This attribute will include any values set by default by PingFederate.",
 						Computed:    true,

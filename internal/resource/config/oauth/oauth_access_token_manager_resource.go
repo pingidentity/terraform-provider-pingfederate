@@ -51,7 +51,6 @@ type oauthAccessTokenManagerResourceModel struct {
 	PluginDescriptorRef       types.Object `tfsdk:"plugin_descriptor_ref"`
 	ParentRef                 types.Object `tfsdk:"parent_ref"`
 	Configuration             types.Object `tfsdk:"configuration"`
-	FieldsAll                 types.List   `tfsdk:"fields_all"`
 	AttributeContract         types.Object `tfsdk:"attribute_contract"`
 	SelectionSettings         types.Object `tfsdk:"selection_settings"`
 	AccessControlSettings     types.Object `tfsdk:"access_control_settings"`
@@ -95,12 +94,8 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 			},
 			"parent_ref": schema.SingleNestedAttribute{
 				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
-				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
-				Attributes: config.AddResourceLinkSchema(),
+				Attributes:  config.AddResourceLinkSchema(),
 			},
 			"configuration": schema.SingleNestedAttribute{
 				Description: "Plugin instance configuration.",
@@ -122,8 +117,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 										Attributes: map[string]schema.Attribute{
 											"fields": schema.ListNestedAttribute{
 												Description: "The configuration fields in the row.",
-												Computed:    true,
-												Optional:    true,
+												Required:    true,
 												NestedObject: schema.NestedAttributeObject{
 													Attributes: map[string]schema.Attribute{
 														"name": schema.StringAttribute{
@@ -132,14 +126,11 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 														},
 														"value": schema.StringAttribute{
 															Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
-															Required:    true,
+															Optional:    true,
 														},
 														"inherited": schema.BoolAttribute{
 															Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
 															Optional:    true,
-															PlanModifiers: []planmodifier.Bool{
-																boolplanmodifier.UseStateForUnknown(),
-															},
 														},
 													},
 												},
@@ -147,9 +138,6 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 											"default_row": schema.BoolAttribute{
 												Description: "Whether this row is the default.",
 												Optional:    true,
-												PlanModifiers: []planmodifier.Bool{
-													boolplanmodifier.UseStateForUnknown(),
-												},
 											},
 										},
 									},
@@ -157,20 +145,14 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 								"inherited": schema.BoolAttribute{
 									Description: "Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.",
 									Optional:    true,
-									PlanModifiers: []planmodifier.Bool{
-										boolplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 						},
 					},
 					"fields": schema.ListNestedAttribute{
 						Description: "List of configuration fields.",
-						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.UseStateForUnknown(),
-						},
+						Computed:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -184,9 +166,6 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 								"inherited": schema.BoolAttribute{
 									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
 									Optional:    true,
-									PlanModifiers: []planmodifier.Bool{
-										boolplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 						},
@@ -241,7 +220,8 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 								},
 								"multi_valued": schema.BoolAttribute{
 									Description: "Indicates whether attribute value is always returned as an array.",
-									Optional:    true,
+									Optional:    false,
+									Computed:    true,
 									PlanModifiers: []planmodifier.Bool{
 										boolplanmodifier.UseStateForUnknown(),
 									},
@@ -260,13 +240,15 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
 									Description: "The name of this attribute.",
-									Required:    true,
+									Computed:    true,
+									Optional:    true,
 									PlanModifiers: []planmodifier.String{
 										stringplanmodifier.UseStateForUnknown(),
 									},
 								},
 								"multi_valued": schema.BoolAttribute{
 									Description: "Indicates whether attribute value is always returned as an array.",
+									Computed:    true,
 									Optional:    true,
 									PlanModifiers: []planmodifier.Bool{
 										boolplanmodifier.UseStateForUnknown(),
@@ -278,10 +260,13 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 					"inherited": schema.BoolAttribute{
 						Description: "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
 						Optional:    true,
+						Computed:    true,
+						//Default:     booldefault.StaticBool(false),
 					},
 					"default_subject_attribute": schema.StringAttribute{
 						Description: "Default subject attribute to use for audit logging when validating the access token. Blank value means to use USER_KEY attribute value after grant lookup.",
 						Optional:    true,
+						Computed:    true,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
 						},
@@ -407,10 +392,6 @@ func addOptionalOauthAccessTokenManagerFields(ctx context.Context, addRequest *c
 		if err != nil {
 			return err
 		}
-		extendedAttrsLength := len(plan.AttributeContract.Attributes()["extended_attributes"].(types.List).Elements())
-		if extendedAttrsLength == 0 {
-			addRequest.AttributeContract.ExtendedAttributes = nil
-		}
 	}
 
 	if internaltypes.IsDefined(plan.SelectionSettings) {
@@ -473,8 +454,7 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 	state.PluginDescriptorRef = internaltypes.ToStateResourceLink(ctx, &pluginDescRef, &respDiags)
 
 	// state.parentRef
-	parentRef := r.GetParentRef()
-	state.ParentRef = internaltypes.ToStateResourceLink(ctx, &parentRef, &respDiags)
+	state.ParentRef = internaltypes.ToStateResourceLink(ctx, r.ParentRef, &respDiags)
 
 	// state.Configuration
 	state.Configuration, diags = config.ConfigurationToState(configurationFromPlan, r.Configuration)

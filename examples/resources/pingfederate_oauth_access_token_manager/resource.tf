@@ -1,4 +1,90 @@
-resource "pingfederate_oauth_access_token_manager" "internallyManagedReferenceOauthAccessTokenManagerExample" {
+terraform {
+  required_version = ">=1.1"
+  required_providers {
+    pingfederate = {
+      version = "~> 1.0.0"
+      source  = "pingidentity/pingfederate"
+    }
+  }
+}
+
+provider "pingfederate" {
+  username   = "administrator"
+  password   = "2FederateM0re"
+  https_host = "https://localhost:9999"
+  # Warning: The insecure_trust_all_tls attribute configures the provider to trust any certificate presented by the PingDirectory server.
+  insecure_trust_all_tls = true
+}
+
+resource "pingfederate_oauth_access_token_manager" "myInternallyManagedReferenceOauthAccessTokenManager" {
+  custom_id = "internallyManagedReferenceOatm"
+  name      = "internallyManagedReferenceExample"
+  plugin_descriptor_ref = {
+    id = "org.sourceid.oauth20.token.plugin.impl.ReferenceBearerAccessTokenManagementPlugin"
+  }
+  configuration = {
+    tables = []
+    fields = [
+      {
+        name  = "Token Length"
+        value = "28"
+      },
+      {
+        name  = "Token Lifetime"
+        value = "120"
+      },
+      {
+        name  = "Lifetime Extension Policy"
+        value = "NONE"
+      },
+      {
+        name  = "Maximum Token Lifetime"
+        value = ""
+      },
+      {
+        name  = "Lifetime Extension Threshold Percentage"
+        value = "30"
+      },
+      {
+        name  = "Mode for Synchronous RPC"
+        value = "3"
+      },
+      {
+        name  = "RPC Timeout"
+        value = "500"
+      },
+      {
+        name  = "Expand Scope Groups"
+        value = "false"
+      }
+    ]
+  }
+  attribute_contract = {
+    extended_attributes = [
+      {
+        name         = "extended_contract"
+        multi_valued = true
+      }
+    ]
+  }
+  selection_settings = {
+    resource_uris = []
+  }
+  access_control_settings = {
+    restrict_clients = false
+    allowedClients   = []
+  }
+  session_validation_settings = {
+    check_valid_authn_session       = false
+    check_session_revocation_status = false
+    update_authn_session_activity   = false
+    include_session_id              = false
+  }
+}
+
+
+
+/*resource "pingfederate_oauth_access_token_manager" "internallyManagedReferenceOauthAccessTokenManagerExample" {
   custom_id   = "internallyManagedReferenceOatm"
   name = "internallyManagedReferenceExample"
   plugin_descriptor_ref = {
@@ -227,4 +313,4 @@ resource "pingfederate_oauth_access_token_manager" "jsonWebTokenOauthAccessToken
     update_authn_session_activity   = false
     include_session_id              = false
   }
-}
+}*/
