@@ -94,11 +94,7 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 				Attributes: map[string]schema.Attribute{
 					"tables": schema.ListNestedAttribute{
 						Description: "List of configuration tables.",
-						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.UseStateForUnknown(),
-						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -177,6 +173,27 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 									PlanModifiers: []planmodifier.Bool{
 										boolplanmodifier.UseStateForUnknown(),
 									},
+								},
+							},
+						},
+					},
+					"fields_all": schema.ListNestedAttribute{
+						Description: "List of configuration fields. This attribute will include any values set by default by PingFederate.",
+						Computed:    true,
+						Optional:    false,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"name": schema.StringAttribute{
+									Description: "The name of the configuration field.",
+									Required:    true,
+								},
+								"value": schema.StringAttribute{
+									Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
+									Required:    true,
+								},
+								"inherited": schema.BoolAttribute{
+									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
+									Required:    true,
 								},
 							},
 						},
@@ -313,32 +330,7 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 	state.ParentRef = internaltypes.ToStateResourceLink(ctx, &parentRef, &respDiags)
 
 	// state.Configuration
-	configurationAttrType := map[string]attr.Type{
-		"fields": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: FieldAttrTypes()}},
-		"tables": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: TableAttrTypes()}},
-	}
-
-	planFields := types.ListNull(types.ObjectType{AttrTypes: FieldAttrTypes()})
-	planTables := types.ListNull(types.ObjectType{AttrTypes: TableAttrTypes()})
-
-	planFieldsValue, ok := configurationFromPlan.Attributes()["fields"]
-	if ok {
-		planFields = planFieldsValue.(types.List)
-	}
-	planTablesValue, ok := configurationFromPlan.Attributes()["tables"]
-	if ok {
-		planTables = planTablesValue.(types.List)
-	}
-
-	//TODO
-	fieldsAttrValue, _ := ToFieldsListValue(r.Configuration.Fields, planFields, &diags)
-	tablesAttrValue := ToTablesListValue(r.Configuration.Tables, planTables, &diags)
-
-	configurationAttrValue := map[string]attr.Value{
-		"fields": fieldsAttrValue,
-		"tables": tablesAttrValue,
-	}
-	state.Configuration, diags = types.ObjectValue(configurationAttrType, configurationAttrValue)
+	state.Configuration, diags = ConfigurationToState(configurationFromPlan, r.Configuration)
 	respDiags.Append(diags...)
 
 	// state.AttributeContract

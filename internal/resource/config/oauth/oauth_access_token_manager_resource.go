@@ -51,6 +51,7 @@ type oauthAccessTokenManagerResourceModel struct {
 	PluginDescriptorRef       types.Object `tfsdk:"plugin_descriptor_ref"`
 	ParentRef                 types.Object `tfsdk:"parent_ref"`
 	Configuration             types.Object `tfsdk:"configuration"`
+	FieldsAll                 types.List   `tfsdk:"fields_all"`
 	AttributeContract         types.Object `tfsdk:"attribute_contract"`
 	SelectionSettings         types.Object `tfsdk:"selection_settings"`
 	AccessControlSettings     types.Object `tfsdk:"access_control_settings"`
@@ -107,11 +108,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				Attributes: map[string]schema.Attribute{
 					"tables": schema.ListNestedAttribute{
 						Description: "List of configuration tables.",
-						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.UseStateForUnknown(),
-						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -190,6 +187,27 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 									PlanModifiers: []planmodifier.Bool{
 										boolplanmodifier.UseStateForUnknown(),
 									},
+								},
+							},
+						},
+					},
+					"fields_all": schema.ListNestedAttribute{
+						Description: "List of configuration fields. This attribute will include any values set by default by PingFederate.",
+						Computed:    true,
+						Optional:    false,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"name": schema.StringAttribute{
+									Description: "The name of the configuration field.",
+									Required:    true,
+								},
+								"value": schema.StringAttribute{
+									Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
+									Required:    true,
+								},
+								"inherited": schema.BoolAttribute{
+									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
+									Required:    true,
 								},
 							},
 						},
@@ -459,32 +477,7 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 	state.ParentRef = internaltypes.ToStateResourceLink(ctx, &parentRef, &respDiags)
 
 	// state.Configuration
-	configurationAttrType := map[string]attr.Type{
-		"fields": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.FieldAttrTypes()}},
-		"tables": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.TableAttrTypes()}},
-	}
-
-	planFields := types.ListNull(types.ObjectType{AttrTypes: config.FieldAttrTypes()})
-	planTables := types.ListNull(types.ObjectType{AttrTypes: config.TableAttrTypes()})
-
-	planFieldsValue, ok := configurationFromPlan.Attributes()["fields"]
-	if ok {
-		planFields = planFieldsValue.(types.List)
-	}
-	planTablesValue, ok := configurationFromPlan.Attributes()["tables"]
-	if ok {
-		planTables = planTablesValue.(types.List)
-	}
-
-	//TODO
-	fieldsAttrValue, _ := config.ToFieldsListValue(r.Configuration.Fields, planFields, &diags)
-	tablesAttrValue := config.ToTablesListValue(r.Configuration.Tables, planTables, &diags)
-
-	configurationAttrValue := map[string]attr.Value{
-		"fields": fieldsAttrValue,
-		"tables": tablesAttrValue,
-	}
-	state.Configuration, diags = types.ObjectValue(configurationAttrType, configurationAttrValue)
+	state.Configuration, diags = config.ConfigurationToState(configurationFromPlan, r.Configuration)
 	respDiags.Append(diags...)
 
 	// state.AttributeContract

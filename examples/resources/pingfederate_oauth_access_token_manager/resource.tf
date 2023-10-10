@@ -1,5 +1,5 @@
 resource "pingfederate_oauth_access_token_manager" "internallyManagedReferenceOauthAccessTokenManagerExample" {
-  id   = "internallyManagedReferenceOatm"
+  custom_id   = "internallyManagedReferenceOatm"
   name = "internallyManagedReferenceExample"
   plugin_descriptor_ref = {
     id = "org.sourceid.oauth20.token.plugin.impl.ReferenceBearerAccessTokenManagementPlugin"
@@ -66,7 +66,7 @@ resource "pingfederate_oauth_access_token_manager" "internallyManagedReferenceOa
 }
 
 resource "pingfederate_oauth_access_token_manager" "jsonWebTokenOauthAccessTokenManagerExample" {
-  id   = "jsonWebTokenOatm"
+  custom_id   = "jsonWebTokenOatm"
   name = "jsonWebTokenExample"
   plugin_descriptor_ref = {
     id = "com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin"

@@ -10,19 +10,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
@@ -175,7 +169,7 @@ var (
 		"error_result": types.StringType,
 	}
 
-	issuanceCritieriaAttrTypes = map[string]attr.Type{
+	issuanceCriteriaAttrTypes = map[string]attr.Type{
 		"conditional_criteria": types.ListType{
 			ElemType: types.ObjectType{
 				AttrTypes: conditionalCriteriaAttrTypes,
@@ -209,7 +203,7 @@ var (
 			},
 		},
 		"issuance_criteria": types.ObjectType{
-			AttrTypes: issuanceCritieriaAttrTypes,
+			AttrTypes: issuanceCriteriaAttrTypes,
 		},
 		"inherited": types.BoolType,
 	}
@@ -240,14 +234,15 @@ type idpAdapterResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	extendedAttributesEmptySet, _ := types.SetValue(types.ObjectType{AttrTypes: attributesAttrType}, []attr.Value{})
-	attributeSourcesEmptyList, _ := types.ListValue(types.ObjectType{AttrTypes: attributeSourcesElementAttrTypes}, []attr.Value{})
-	conditionalCriteriaEmptyList, _ := types.ListValue(types.ObjectType{AttrTypes: conditionalCriteriaAttrTypes}, []attr.Value{})
-	expressionCriteriaEmtpyList := types.ListNull(types.ObjectType{AttrTypes: expressionCriteriaAttrTypes})
-	issuanceCriteriaEmptyObject, _ := types.ObjectValue(issuanceCritieriaAttrTypes, map[string]attr.Value{
+	//fieldsEmptyList, _ := types.ListValue(types.ObjectType{AttrTypes: config.FieldAttrTypes()}, []attr.Value{})
+	//extendedAttributesEmptySet, _ := types.SetValue(types.ObjectType{AttrTypes: attributesAttrType}, []attr.Value{})
+	//attributeSourcesEmptyList, _ := types.ListValue(types.ObjectType{AttrTypes: attributeSourcesElementAttrTypes}, []attr.Value{})
+	//conditionalCriteriaEmptyList, _ := types.ListValue(types.ObjectType{AttrTypes: conditionalCriteriaAttrTypes}, []attr.Value{})
+	//expressionCriteriaEmtpyList := types.ListNull(types.ObjectType{AttrTypes: expressionCriteriaAttrTypes})
+	/*issuanceCriteriaEmptyObject, _ := types.ObjectValue(issuanceCritieriaAttrTypes, map[string]attr.Value{
 		"conditional_criteria": conditionalCriteriaEmptyList,
 		"expression_criteria":  expressionCriteriaEmtpyList,
-	})
+	})*/
 	schema := schema.Schema{
 		Description: "Manages an Idp Adapter",
 		Attributes: map[string]schema.Attribute{
@@ -354,6 +349,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 					"fields": schema.ListNestedAttribute{
 						Description: "List of configuration fields.",
 						Optional:    true,
+						Computed:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -375,9 +371,6 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 						Description: "List of configuration fields. This attribute will include any values set by default by PingFederate.",
 						Computed:    true,
 						Optional:    false,
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.UseStateForUnknown(),
-						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -386,7 +379,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 								},
 								"value": schema.StringAttribute{
 									Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
-									Optional:    true,
+									Required:    true,
 								},
 								"inherited": schema.BoolAttribute{
 									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
@@ -464,7 +457,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 						Description: "A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them.",
 						Optional:    true,
 						Computed:    true,
-						Default:     setdefault.StaticValue(extendedAttributesEmptySet),
+						//Default:     setdefault.StaticValue(extendedAttributesEmptySet),
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -512,9 +505,9 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 				},
 				Attributes: map[string]schema.Attribute{
 					"attribute_sources": schema.ListNestedAttribute{
-						Optional:    true,
-						Computed:    true,
-						Default:     listdefault.StaticValue(attributeSourcesEmptyList),
+						Optional: true,
+						Computed: true,
+						//Default:     listdefault.StaticValue(attributeSourcesEmptyList),
 						Description: "A list of configured data stores to look up attributes from.",
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
@@ -775,7 +768,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 											PlanModifiers: []planmodifier.Bool{
 												boolplanmodifier.UseStateForUnknown(),
 											},
-											Default: booldefault.StaticBool(false),
+											//Default: booldefault.StaticBool(false),
 										},
 										"base_dn": schema.StringAttribute{
 											Description: "The base DN to search from. If not specified, the search will start at the LDAP's root.",
@@ -819,16 +812,19 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 					},
 					"attribute_contract_fulfillment": schema.MapNestedAttribute{
 						Description: "A list of mappings from attribute names to their fulfillment values.",
-						Required:    true,
+						Optional:    true,
+						Computed:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"source": schema.SingleNestedAttribute{
 									Description: "The attribute value source.",
-									Required:    true,
+									Optional:    true,
+									Computed:    true,
 									Attributes: map[string]schema.Attribute{
 										"type": schema.StringAttribute{
 											Description: "The source type of this key.",
-											Required:    true,
+											Optional:    true,
+											Computed:    true,
 											Validators: []validator.String{
 												stringvalidator.OneOf([]string{"TOKEN_EXCHANGE_PROCESSOR_POLICY", "ACCOUNT_LINK", "ADAPTER", "ASSERTION", "CONTEXT", "CUSTOM_DATA_STORE", "EXPRESSION", "JDBC_DATA_STORE", "LDAP_DATA_STORE", "PING_ONE_LDAP_GATEWAY_DATA_STORE", "MAPPED_ATTRIBUTES", "NO_MAPPING", "TEXT", "TOKEN", "REQUEST", "OAUTH_PERSISTENT_GRANT", "SUBJECT_TOKEN", "ACTOR_TOKEN", "PASSWORD_CREDENTIAL_VALIDATOR", "IDP_CONNECTION", "AUTHENTICATION_POLICY_CONTRACT", "CLAIMS", "LOCAL_IDENTITY_PROFILE", "EXTENDED_CLIENT_METADATA", "EXTENDED_PROPERTIES", "TRACKED_HTTP_PARAMS", "FRAGMENT", "INPUTS", "ATTRIBUTE_QUERY", "IDENTITY_STORE_USER", "IDENTITY_STORE_GROUP", "SCIM_USER", "SCIM_GROUP"}...),
 											},
@@ -841,7 +837,8 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 								},
 								"value": schema.StringAttribute{
 									Description: "The value for this attribute.",
-									Required:    true,
+									Optional:    true,
+									Computed:    true,
 								},
 							},
 						},
@@ -850,11 +847,12 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 						Description: "The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled.",
 						Optional:    true,
 						Computed:    true,
-						Default:     objectdefault.StaticValue(issuanceCriteriaEmptyObject),
+						//Default:     objectdefault.StaticValue(issuanceCriteriaEmptyObject),
 						Attributes: map[string]schema.Attribute{
 							"conditional_criteria": schema.ListNestedAttribute{
 								Description: "An issuance criterion that checks a source attribute against a particular condition and the expected value. If the condition is true then this issuance criterion passes, otherwise the criterion fails.",
 								Optional:    true,
+								Computed:    true,
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										//TODO share these definitions
@@ -916,9 +914,9 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 						},
 					},
 					"inherited": schema.BoolAttribute{
-						Optional:    true,
-						Computed:    true,
-						Default:     booldefault.StaticBool(false),
+						Optional: true,
+						Computed: true,
+						//Default:     booldefault.StaticBool(false),
 						Description: "Whether this attribute mapping is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
 					},
 				},
@@ -1015,54 +1013,26 @@ func (r *idpAdapterResource) Configure(_ context.Context, req resource.Configure
 
 }
 
-func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *idpAdapterResourceModel, plan idpAdapterResourceModel, diags *diag.Diagnostics) {
+func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *idpAdapterResourceModel, plan idpAdapterResourceModel) diag.Diagnostics {
+	var respDiags, diags diag.Diagnostics
+
 	state.AuthnCtxClassRef = internaltypes.StringTypeOrNil(r.AuthnCtxClassRef, false)
 	state.CustomId = types.StringValue(r.Id)
 	state.Id = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
-	state.PluginDescriptorRef = internaltypes.ToStateResourceLink(ctx, &r.PluginDescriptorRef, diags)
-	state.ParentRef = internaltypes.ToStateResourceLink(ctx, r.ParentRef, diags)
-
-	var valueFromDiags diag.Diagnostics
+	state.PluginDescriptorRef = internaltypes.ToStateResourceLink(ctx, &r.PluginDescriptorRef, &respDiags)
+	state.ParentRef = internaltypes.ToStateResourceLink(ctx, r.ParentRef, &respDiags)
 
 	// Configuration
-	//TODO move into common method
-	//TODO unify how we handle diagnostics in these methods
-	configurationAttrType := map[string]attr.Type{
-		"fields":     basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.FieldAttrTypes()}},
-		"fields_all": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.FieldAttrTypes()}},
-		"tables":     basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.TableAttrTypes()}},
-	}
-
-	planFields := types.ListNull(types.ObjectType{AttrTypes: config.FieldAttrTypes()})
-	planTables := types.ListNull(types.ObjectType{AttrTypes: config.TableAttrTypes()})
-
-	planFieldsValue, ok := plan.Configuration.Attributes()["fields"]
-	if ok {
-		planFields = planFieldsValue.(types.List)
-	}
-	planTablesValue, ok := plan.Configuration.Attributes()["tables"]
-	if ok {
-		planTables = planTablesValue.(types.List)
-	}
-
-	fieldsAttrValue, fieldsAllAttrValue := config.ToFieldsListValue(r.Configuration.Fields, planFields, diags)
-	tablesAttrValue := config.ToTablesListValue(r.Configuration.Tables, planTables, diags)
-
-	configurationAttrValue := map[string]attr.Value{
-		"fields":     fieldsAttrValue,
-		"fields_all": fieldsAllAttrValue,
-		"tables":     tablesAttrValue,
-	}
-	state.Configuration, valueFromDiags = types.ObjectValue(configurationAttrType, configurationAttrValue)
-	diags.Append(valueFromDiags...)
+	state.Configuration, diags = config.ConfigurationToState(plan.Configuration, r.Configuration)
+	respDiags.Append(diags...)
 
 	if r.AttributeContract != nil {
 		attributeContractValues := map[string]attr.Value{}
-		attributeContractValues["extended_attributes"], valueFromDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attributesAttrType}, r.AttributeContract.ExtendedAttributes)
-		diags.Append(valueFromDiags...)
-		attributeContractValues["core_attributes_all"], valueFromDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attributesAttrType}, r.AttributeContract.CoreAttributes)
-		diags.Append(valueFromDiags...)
+		attributeContractValues["extended_attributes"], diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attributesAttrType}, r.AttributeContract.ExtendedAttributes)
+		respDiags.Append(diags...)
+		attributeContractValues["core_attributes_all"], diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attributesAttrType}, r.AttributeContract.CoreAttributes)
+		respDiags.Append(diags...)
 		attributeContractValues["unique_user_key_attribute"] = types.StringPointerValue(r.AttributeContract.UniqueUserKeyAttribute)
 		attributeContractValues["mask_ognl_values"] = types.BoolPointerValue(r.AttributeContract.MaskOgnlValues)
 		attributeContractValues["inherited"] = types.BoolPointerValue(r.AttributeContract.Inherited)
@@ -1077,20 +1047,19 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 			for _, coreAttr := range r.AttributeContract.CoreAttributes {
 				_, attrInPlan := planCoreAttributeNames[coreAttr.Name]
 				if attrInPlan {
-					attrObjVal, valueFromDiags := types.ObjectValueFrom(ctx, attributesAttrType, coreAttr)
-					diags.Append(valueFromDiags...)
+					attrObjVal, diags := types.ObjectValueFrom(ctx, attributesAttrType, coreAttr)
+					diags.Append(diags...)
 					coreAttributes = append(coreAttributes, attrObjVal)
 				}
 			}
-			attributeContractValues["core_attributes"], valueFromDiags = types.SetValue(types.ObjectType{AttrTypes: attributesAttrType}, coreAttributes)
-			diags.Append(valueFromDiags...)
+			attributeContractValues["core_attributes"], diags = types.SetValue(types.ObjectType{AttrTypes: attributesAttrType}, coreAttributes)
+			respDiags.Append(diags...)
 		} else {
 			attributeContractValues["core_attributes"] = types.SetNull(types.ObjectType{AttrTypes: attributesAttrType})
 		}
 
-		state.AttributeContract, valueFromDiags = types.ObjectValue(attributeContractAttrTypes, attributeContractValues)
-		diags.Append(valueFromDiags...)
-
+		state.AttributeContract, diags = types.ObjectValue(attributeContractAttrTypes, attributeContractValues)
+		respDiags.Append(diags...)
 	}
 
 	if r.AttributeMapping != nil {
@@ -1104,15 +1073,15 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 
 		// Build attribute_contract_fulfillment value
 		attributeContractFulfillmentElementAttrTypes := attributeMappingAttrTypes["attribute_contract_fulfillment"].(types.MapType).ElemType.(types.ObjectType).AttrTypes
-		attributeMappingValues["attribute_contract_fulfillment"], valueFromDiags = types.MapValueFrom(ctx,
+		attributeMappingValues["attribute_contract_fulfillment"], diags = types.MapValueFrom(ctx,
 			types.ObjectType{AttrTypes: attributeContractFulfillmentElementAttrTypes}, r.AttributeMapping.AttributeContractFulfillment)
-		diags.Append(valueFromDiags...)
+		respDiags.Append(diags...)
 
 		// Build issuance_criteria value
 		issuanceCritieraAttrTypes := attributeMappingAttrTypes["issuance_criteria"].(types.ObjectType).AttrTypes
-		attributeMappingValues["issuance_criteria"], valueFromDiags = types.ObjectValueFrom(ctx,
+		attributeMappingValues["issuance_criteria"], diags = types.ObjectValueFrom(ctx,
 			issuanceCritieraAttrTypes, r.AttributeMapping.IssuanceCriteria)
-		diags.Append(valueFromDiags...)
+		respDiags.Append(diags...)
 
 		// Build attribute_sources value
 		attrSourceElements := []attr.Value{}
@@ -1120,20 +1089,20 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 			attrSourceValues := map[string]attr.Value{}
 			if attrSource.CustomAttributeSource != nil {
 				customAttrSourceValues := map[string]attr.Value{}
-				customAttrSourceValues["filter_fields"], valueFromDiags = types.ListValueFrom(ctx,
+				customAttrSourceValues["filter_fields"], diags = types.ListValueFrom(ctx,
 					customAttrSourceAttrTypes["filter_fields"].(types.ListType).ElemType, attrSource.CustomAttributeSource.FilterFields)
-				diags.Append(valueFromDiags...)
+				respDiags.Append(diags...)
 
 				customAttrSourceValues["type"] = types.StringValue(attrSource.CustomAttributeSource.Type)
-				customAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValueFrom(ctx, internaltypes.ResourceLinkStateAttrType(), attrSource.CustomAttributeSource.DataStoreRef)
-				diags.Append(valueFromDiags...)
+				customAttrSourceValues["data_store_ref"], diags = types.ObjectValueFrom(ctx, internaltypes.ResourceLinkStateAttrType(), attrSource.CustomAttributeSource.DataStoreRef)
+				respDiags.Append(diags...)
 				customAttrSourceValues["id"] = types.StringPointerValue(attrSource.CustomAttributeSource.Id)
 				customAttrSourceValues["description"] = types.StringPointerValue(attrSource.CustomAttributeSource.Description)
-				customAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = types.MapValueFrom(ctx,
+				customAttrSourceValues["attribute_contract_fulfillment"], diags = types.MapValueFrom(ctx,
 					types.ObjectType{AttrTypes: attributeContractFulfillmentAttrTypes}, attrSource.CustomAttributeSource.AttributeContractFulfillment)
-				diags.Append(valueFromDiags...)
-				attrSourceValues["custom_attribute_source"], valueFromDiags = types.ObjectValue(customAttrSourceAttrTypes, customAttrSourceValues)
-				diags.Append(valueFromDiags...)
+				respDiags.Append(diags...)
+				attrSourceValues["custom_attribute_source"], diags = types.ObjectValue(customAttrSourceAttrTypes, customAttrSourceValues)
+				respDiags.Append(diags...)
 			} else {
 				attrSourceValues["custom_attribute_source"] = types.ObjectNull(customAttrSourceAttrTypes)
 			}
@@ -1141,20 +1110,20 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 				jdbcAttrSourceValues := map[string]attr.Value{}
 				jdbcAttrSourceValues["schema"] = types.StringPointerValue(attrSource.JdbcAttributeSource.Schema)
 				jdbcAttrSourceValues["table"] = types.StringValue(attrSource.JdbcAttributeSource.Table)
-				jdbcAttrSourceValues["column_names"], valueFromDiags = types.ListValueFrom(ctx, types.StringType, attrSource.JdbcAttributeSource.ColumnNames)
-				diags.Append(valueFromDiags...)
+				jdbcAttrSourceValues["column_names"], diags = types.ListValueFrom(ctx, types.StringType, attrSource.JdbcAttributeSource.ColumnNames)
+				respDiags.Append(diags...)
 				jdbcAttrSourceValues["filter"] = types.StringValue(attrSource.JdbcAttributeSource.Filter)
 
 				jdbcAttrSourceValues["type"] = types.StringValue(attrSource.JdbcAttributeSource.Type)
-				jdbcAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValueFrom(ctx, internaltypes.ResourceLinkStateAttrType(), attrSource.JdbcAttributeSource.DataStoreRef)
-				diags.Append(valueFromDiags...)
+				jdbcAttrSourceValues["data_store_ref"], diags = types.ObjectValueFrom(ctx, internaltypes.ResourceLinkStateAttrType(), attrSource.JdbcAttributeSource.DataStoreRef)
+				respDiags.Append(diags...)
 				jdbcAttrSourceValues["id"] = types.StringPointerValue(attrSource.JdbcAttributeSource.Id)
 				jdbcAttrSourceValues["description"] = types.StringPointerValue(attrSource.JdbcAttributeSource.Description)
-				jdbcAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = types.MapValueFrom(ctx,
+				jdbcAttrSourceValues["attribute_contract_fulfillment"], diags = types.MapValueFrom(ctx,
 					types.ObjectType{AttrTypes: attributeContractFulfillmentAttrTypes}, attrSource.JdbcAttributeSource.AttributeContractFulfillment)
-				diags.Append(valueFromDiags...)
-				attrSourceValues["jdbc_attribute_source"], valueFromDiags = types.ObjectValue(jdbcAttrSourceAttrTypes, jdbcAttrSourceValues)
-				diags.Append(valueFromDiags...)
+				respDiags.Append(diags...)
+				attrSourceValues["jdbc_attribute_source"], diags = types.ObjectValue(jdbcAttrSourceAttrTypes, jdbcAttrSourceValues)
+				respDiags.Append(diags...)
 			} else {
 				attrSourceValues["jdbc_attribute_source"] = types.ObjectNull(jdbcAttrSourceAttrTypes)
 			}
@@ -1163,37 +1132,38 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 				ldapAttrSourceValues["base_dn"] = types.StringPointerValue(attrSource.LdapAttributeSource.BaseDn)
 				ldapAttrSourceValues["search_scope"] = types.StringValue(attrSource.LdapAttributeSource.SearchScope)
 				ldapAttrSourceValues["search_filter"] = types.StringValue(attrSource.LdapAttributeSource.SearchFilter)
-				ldapAttrSourceValues["search_attributes"], valueFromDiags = types.ListValueFrom(ctx, types.StringType, attrSource.LdapAttributeSource.SearchAttributes)
-				diags.Append(valueFromDiags...)
-				ldapAttrSourceValues["binary_attribute_settings"], valueFromDiags = types.MapValueFrom(ctx,
+				ldapAttrSourceValues["search_attributes"], diags = types.ListValueFrom(ctx, types.StringType, attrSource.LdapAttributeSource.SearchAttributes)
+				respDiags.Append(diags...)
+				ldapAttrSourceValues["binary_attribute_settings"], diags = types.MapValueFrom(ctx,
 					ldapAttrSourceAttrTypes["binary_attribute_settings"].(types.MapType).ElemType, attrSource.LdapAttributeSource.BinaryAttributeSettings)
-				diags.Append(valueFromDiags...)
+				respDiags.Append(diags...)
 				ldapAttrSourceValues["member_of_nested_group"] = types.BoolPointerValue(attrSource.LdapAttributeSource.MemberOfNestedGroup)
 
 				ldapAttrSourceValues["type"] = types.StringValue(attrSource.LdapAttributeSource.Type)
-				ldapAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValueFrom(ctx, internaltypes.ResourceLinkStateAttrType(), attrSource.LdapAttributeSource.DataStoreRef)
-				diags.Append(valueFromDiags...)
+				ldapAttrSourceValues["data_store_ref"], diags = types.ObjectValueFrom(ctx, internaltypes.ResourceLinkStateAttrType(), attrSource.LdapAttributeSource.DataStoreRef)
+				respDiags.Append(diags...)
 				ldapAttrSourceValues["id"] = types.StringPointerValue(attrSource.LdapAttributeSource.Id)
 				ldapAttrSourceValues["description"] = types.StringPointerValue(attrSource.LdapAttributeSource.Description)
-				ldapAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = types.MapValueFrom(ctx,
+				ldapAttrSourceValues["attribute_contract_fulfillment"], diags = types.MapValueFrom(ctx,
 					types.ObjectType{AttrTypes: attributeContractFulfillmentAttrTypes}, attrSource.LdapAttributeSource.AttributeContractFulfillment)
-				diags.Append(valueFromDiags...)
-				attrSourceValues["ldap_attribute_source"], valueFromDiags = types.ObjectValue(ldapAttrSourceAttrTypes, ldapAttrSourceValues)
-				diags.Append(valueFromDiags...)
+				respDiags.Append(diags...)
+				attrSourceValues["ldap_attribute_source"], diags = types.ObjectValue(ldapAttrSourceAttrTypes, ldapAttrSourceValues)
+				respDiags.Append(diags...)
 			} else {
 				attrSourceValues["ldap_attribute_source"] = types.ObjectNull(ldapAttrSourceAttrTypes)
 			}
 			attrSourceElement, objectValueFromDiags := types.ObjectValue(attributeSourcesElementAttrTypes, attrSourceValues)
-			diags.Append(objectValueFromDiags...)
+			respDiags.Append(objectValueFromDiags...)
 			attrSourceElements = append(attrSourceElements, attrSourceElement)
 		}
-		attributeMappingValues["attribute_sources"], valueFromDiags = types.ListValue(types.ObjectType{AttrTypes: attributeSourcesElementAttrTypes}, attrSourceElements)
-		diags.Append(valueFromDiags...)
+		attributeMappingValues["attribute_sources"], diags = types.ListValue(types.ObjectType{AttrTypes: attributeSourcesElementAttrTypes}, attrSourceElements)
+		respDiags.Append(diags...)
 
 		// Build complete attribute mapping value
-		state.AttributeMapping, valueFromDiags = types.ObjectValue(attributeMappingAttrTypes, attributeMappingValues)
-		diags.Append(valueFromDiags...)
+		state.AttributeMapping, diags = types.ObjectValue(attributeMappingAttrTypes, attributeMappingValues)
+		respDiags.Append(diags...)
 	}
+	return respDiags
 }
 
 func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -1246,7 +1216,8 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 	// Read the response into the state
 	var state idpAdapterResourceModel
 
-	readIdpAdapterResponse(ctx, idpAdapterResponse, &state, plan, &resp.Diagnostics)
+	readResponseDiags := readIdpAdapterResponse(ctx, idpAdapterResponse, &state, plan)
+	resp.Diagnostics.Append(readResponseDiags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -1272,7 +1243,8 @@ func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// Read the response into the state
-	readIdpAdapterResponse(ctx, apiReadIdpAdapter, &state, state, &resp.Diagnostics)
+	readResponseDiags := readIdpAdapterResponse(ctx, apiReadIdpAdapter, &state, state)
+	resp.Diagnostics.Append(readResponseDiags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -1331,7 +1303,8 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 	// Read the response
 	var state idpAdapterResourceModel
-	readIdpAdapterResponse(ctx, updateIdpAdapterResponse, &state, plan, &resp.Diagnostics)
+	readResponseDiags := readIdpAdapterResponse(ctx, updateIdpAdapterResponse, &state, plan)
+	resp.Diagnostics.Append(readResponseDiags...)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
