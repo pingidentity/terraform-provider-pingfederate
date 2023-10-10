@@ -91,7 +91,8 @@ func ElemAttrType() map[string]attr.Type {
 	}
 }
 
-func ToState(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation, diags *diag.Diagnostics) basetypes.ListValue {
+func ToState(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation) (basetypes.ListValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	var customAttrSourceAttrTypes = CustomAttributeSourceAttrType()
 	var jdbcAttrSourceAttrTypes = JdbcAttributeSourceAttrType()
 	var ldapAttrSourceAttrTypes = LdapAttributeSourceAttrType()
@@ -164,11 +165,11 @@ func ToState(con context.Context, attributeSourcesFromClient []client.AttributeS
 		} else {
 			attrSourceValues["ldap_attribute_source"] = types.ObjectNull(ldapAttrSourceAttrTypes)
 		}
-		attrSourceElement, objectValueFromDiags := types.ObjectValue(ElemAttrType(), attrSourceValues)
-		diags.Append(objectValueFromDiags...)
+		attrSourceElement, valueFromDiags := types.ObjectValue(ElemAttrType(), attrSourceValues)
+		diags.Append(valueFromDiags...)
 		attrSourceElements = append(attrSourceElements, attrSourceElement)
 	}
-	attributeSourcesToState, valueFromDiags := types.ListValue(types.ObjectType{AttrTypes: ElemAttrType()}, attrSourceElements)
+	attrToState, valueFromDiags := types.ListValue(types.ObjectType{AttrTypes: ElemAttrType()}, attrSourceElements)
 	diags.Append(valueFromDiags...)
-	return attributeSourcesToState
+	return attrToState, diags
 }
