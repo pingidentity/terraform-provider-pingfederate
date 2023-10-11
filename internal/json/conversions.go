@@ -47,12 +47,12 @@ func FromValue(value attr.Value, skipNullOrUnknownAttrs bool) string {
 	// Maps and objects
 	mapvalue, ok := value.(basetypes.MapValue)
 	if ok {
-		writeMap(mapvalue.Elements(), &jsonString, skipNullOrUnknownAttrs)
+		writeMap(mapvalue.Elements(), &jsonString, skipNullOrUnknownAttrs, false)
 	}
 
 	objvalue, ok := value.(basetypes.ObjectValue)
 	if ok {
-		writeMap(objvalue.Attributes(), &jsonString, skipNullOrUnknownAttrs)
+		writeMap(objvalue.Attributes(), &jsonString, skipNullOrUnknownAttrs, true)
 	}
 	return jsonString.String()
 }
@@ -68,7 +68,7 @@ func writeArray(values []attr.Value, builder *strings.Builder, skipNullOrUnknown
 	builder.WriteRune(']')
 }
 
-func writeMap(values map[string]attr.Value, builder *strings.Builder, skipNullOrUnknownAttrs bool) {
+func writeMap(values map[string]attr.Value, builder *strings.Builder, skipNullOrUnknownAttrs bool, excludeUnderscore bool) {
 	builder.WriteRune('{')
 	isFirst := true
 	for attrName, attrValue := range values {
@@ -81,7 +81,11 @@ func writeMap(values map[string]attr.Value, builder *strings.Builder, skipNullOr
 			isFirst = false
 		}
 		builder.WriteRune('"')
-		builder.WriteString(underscoreToCamelCase(attrName))
+		if excludeUnderscore {
+			builder.WriteString(underscoreToCamelCase(attrName))
+		} else {
+			builder.WriteString(attrName)
+		}
 		builder.WriteString("\":")
 		builder.WriteString(FromValue(attrValue, skipNullOrUnknownAttrs))
 	}

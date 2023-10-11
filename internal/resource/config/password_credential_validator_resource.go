@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -21,6 +20,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -29,6 +30,18 @@ var (
 	_ resource.Resource                = &passwordCredentialValidatorsResource{}
 	_ resource.ResourceWithConfigure   = &passwordCredentialValidatorsResource{}
 	_ resource.ResourceWithImportState = &passwordCredentialValidatorsResource{}
+)
+
+var (
+	attrType = map[string]attr.Type{
+		"name": basetypes.StringType{},
+	}
+
+	attributeContractTypes = map[string]attr.Type{
+		"core_attributes":     basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
+		"extended_attributes": basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
+		"inherited":           basetypes.BoolType{},
+	}
 )
 
 // PasswordCredentialValidatorsResource is a helper function to simplify the provider implementation.
@@ -77,125 +90,17 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
 				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
-				Attributes:  AddResourceLinkSchema(),
+				Attributes:  resourcelink.Schema(),
 			},
 			"parent_ref": schema.SingleNestedAttribute{
 				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
 				Optional:    true,
-				Attributes:  AddResourceLinkSchema(),
-			},
-			"configuration": schema.SingleNestedAttribute{
-				Description: "Plugin instance configuration.",
-				Required:    true,
-				Attributes: map[string]schema.Attribute{
-					"tables": schema.ListNestedAttribute{
-						Description: "List of configuration tables.",
-						Optional:    true,
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"name": schema.StringAttribute{
-									Description: "The name of the table.",
-									Required:    true,
-								},
-								"rows": schema.ListNestedAttribute{
-									Description: "List of table rows.",
-									Optional:    true,
-									NestedObject: schema.NestedAttributeObject{
-										Attributes: map[string]schema.Attribute{
-											"fields": schema.ListNestedAttribute{
-												Description: "The configuration fields in the row.",
-												Computed:    true,
-												Optional:    true,
-												NestedObject: schema.NestedAttributeObject{
-													Attributes: map[string]schema.Attribute{
-														"name": schema.StringAttribute{
-															Description: "The name of the configuration field.",
-															Required:    true,
-														},
-														"value": schema.StringAttribute{
-															Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
-															Required:    true,
-														},
-														"inherited": schema.BoolAttribute{
-															Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-															Optional:    true,
-															PlanModifiers: []planmodifier.Bool{
-																boolplanmodifier.UseStateForUnknown(),
-															},
-														},
-													},
-												},
-											},
-											"default_row": schema.BoolAttribute{
-												Description: "Whether this row is the default.",
-												Optional:    true,
-												PlanModifiers: []planmodifier.Bool{
-													boolplanmodifier.UseStateForUnknown(),
-												},
-											},
-										},
-									},
-								},
-								"inherited": schema.BoolAttribute{
-									Description: "Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.",
-									Optional:    true,
-									PlanModifiers: []planmodifier.Bool{
-										boolplanmodifier.UseStateForUnknown(),
-									},
-								},
-							},
-						},
-					},
-					"fields": schema.ListNestedAttribute{
-						Description: "List of configuration fields.",
-						Computed:    true,
-						Optional:    true,
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.UseStateForUnknown(),
-						},
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"name": schema.StringAttribute{
-									Description: "The name of the configuration field.",
-									Required:    true,
-								},
-								"value": schema.StringAttribute{
-									Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
-									Required:    true,
-								},
-								"inherited": schema.BoolAttribute{
-									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-									Optional:    true,
-									PlanModifiers: []planmodifier.Bool{
-										boolplanmodifier.UseStateForUnknown(),
-									},
-								},
-							},
-						},
-					},
-					"fields_all": schema.ListNestedAttribute{
-						Description: "List of configuration fields. This attribute will include any values set by default by PingFederate.",
-						Computed:    true,
-						Optional:    false,
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"name": schema.StringAttribute{
-									Description: "The name of the configuration field.",
-									Required:    true,
-								},
-								"value": schema.StringAttribute{
-									Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
-									Required:    true,
-								},
-								"inherited": schema.BoolAttribute{
-									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-									Required:    true,
-								},
-							},
-						},
-					},
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
 				},
+				Attributes: resourcelink.Schema(),
 			},
+			"configuration": pluginconfiguration.Schema(),
 			"attribute_contract": schema.SingleNestedAttribute{
 				Description: "The list of attributes that the password credential validator provides.",
 				Computed:    true,
@@ -311,38 +216,22 @@ func (r *passwordCredentialValidatorsResource) Configure(_ context.Context, req 
 }
 
 func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.PasswordCredentialValidator, state *passwordCredentialValidatorsResourceModel, configurationFromPlan basetypes.ObjectValue) diag.Diagnostics {
-	var respDiags, diags diag.Diagnostics
-
+	var diags, respDiags diag.Diagnostics
 	state.Id = types.StringValue(r.Id)
 	state.CustomId = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
-
-	// state.pluginDescriptorRef
-	pluginDescRef := r.GetPluginDescriptorRef()
-	state.PluginDescriptorRef = internaltypes.ToStateResourceLink(ctx, &pluginDescRef, &respDiags)
-
-	// state.parentRef
-	state.ParentRef = internaltypes.ToStateResourceLink(ctx, r.ParentRef, &respDiags)
-
-	// state.Configuration
-	state.Configuration, diags = ConfigurationToState(configurationFromPlan, r.Configuration)
-	respDiags.Append(diags...)
+	state.PluginDescriptorRef, respDiags = resourcelink.ToState(ctx, &r.PluginDescriptorRef)
+	diags.Append(respDiags...)
+	state.ParentRef, respDiags = resourcelink.ToState(ctx, r.ParentRef)
+	diags.Append(respDiags...)
+	state.Configuration, respDiags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration)
+	diags.Append(respDiags...)
 
 	// state.AttributeContract
-	attrType := map[string]attr.Type{
-		"name": basetypes.StringType{},
-	}
-	attributeContractTypes := map[string]attr.Type{
-		"core_attributes":     basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
-		"extended_attributes": basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
-		"inherited":           basetypes.BoolType{},
-	}
-
 	if r.AttributeContract == nil {
 		state.AttributeContract = types.ObjectNull(attributeContractTypes)
 	} else {
 		attrContract := r.AttributeContract
-
 		// state.AttributeContract core_attributes
 		attributeContractClientCoreAttributes := attrContract.CoreAttributes
 		coreAttrs := []client.PasswordCredentialValidatorAttribute{}
@@ -351,8 +240,8 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 			coreAttribute.Name = ca.Name
 			coreAttrs = append(coreAttrs, coreAttribute)
 		}
-		attributeContractCoreAttributes, diags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
-		respDiags.Append(diags...)
+		attributeContractCoreAttributes, respDiags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
+		diags.Append(respDiags...)
 
 		// state.AttributeContract extended_attributes
 		attributeContractClientExtendedAttributes := attrContract.ExtendedAttributes
@@ -362,19 +251,19 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 			extendedAttr.Name = ea.Name
 			extdAttrs = append(extdAttrs, extendedAttr)
 		}
-		attributeContractExtendedAttributes, diags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
-		respDiags.Append(diags...)
+		attributeContractExtendedAttributes, respDiags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
+		diags.Append(respDiags...)
 
 		attributeContractValues := map[string]attr.Value{
 			"core_attributes":     attributeContractCoreAttributes,
 			"extended_attributes": attributeContractExtendedAttributes,
 			"inherited":           types.BoolPointerValue(attrContract.Inherited),
 		}
-		state.AttributeContract, diags = types.ObjectValue(attributeContractTypes, attributeContractValues)
-		respDiags.Append(diags...)
+		state.AttributeContract, respDiags = types.ObjectValue(attributeContractTypes, attributeContractValues)
+		diags.Append(respDiags...)
 	}
 
-	return respDiags
+	return diags
 }
 
 func (r *passwordCredentialValidatorsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -387,9 +276,7 @@ func (r *passwordCredentialValidatorsResource) Create(ctx context.Context, req r
 	}
 
 	// PluginDescriptorRef
-	pluginDescRefId := plan.PluginDescriptorRef.Attributes()["id"].(types.String).ValueString()
-	pluginDescRefResLink := client.NewResourceLinkWithDefaults()
-	pluginDescRefResLink.Id = pluginDescRefId
+	pluginDescRefResLink := resourcelink.ClientStruct(plan.PluginDescriptorRef)
 	pluginDescRefErr := json.Unmarshal([]byte(internaljson.FromValue(plan.PluginDescriptorRef, false)), pluginDescRefResLink)
 	if pluginDescRefErr != nil {
 		resp.Diagnostics.AddError("Failed to build plugin descriptor ref request object:", pluginDescRefErr.Error())
@@ -478,9 +365,7 @@ func (r *passwordCredentialValidatorsResource) Update(ctx context.Context, req r
 	}
 
 	// PluginDescriptorRef
-	pluginDescRefId := plan.PluginDescriptorRef.Attributes()["id"].(types.String).ValueString()
-	pluginDescRefResLink := client.NewResourceLinkWithDefaults()
-	pluginDescRefResLink.Id = pluginDescRefId
+	pluginDescRefResLink := resourcelink.ClientStruct(plan.PluginDescriptorRef)
 	pluginDescRefErr := json.Unmarshal([]byte(internaljson.FromValue(plan.PluginDescriptorRef, false)), pluginDescRefResLink)
 	if pluginDescRefErr != nil {
 		resp.Diagnostics.AddError("Failed to build plugin descriptor ref request object:", pluginDescRefErr.Error())

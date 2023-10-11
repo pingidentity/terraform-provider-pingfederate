@@ -24,6 +24,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -76,7 +78,7 @@ var (
 	customAttrSourceAttrTypes = map[string]attr.Type{
 		"type": types.StringType,
 		"data_store_ref": types.ObjectType{
-			AttrTypes: internaltypes.ResourceLinkStateAttrType(),
+			AttrTypes: resourcelink.AttrType(),
 		},
 		"id":          types.StringType,
 		"description": types.StringType,
@@ -98,7 +100,7 @@ var (
 	jdbcAttrSourceAttrTypes = map[string]attr.Type{
 		"type": types.StringType,
 		"data_store_ref": types.ObjectType{
-			AttrTypes: internaltypes.ResourceLinkStateAttrType(),
+			AttrTypes: resourcelink.AttrType(),
 		},
 		"id":          types.StringType,
 		"description": types.StringType,
@@ -118,7 +120,7 @@ var (
 	ldapAttrSourceAttrTypes = map[string]attr.Type{
 		"type": types.StringType,
 		"data_store_ref": types.ObjectType{
-			AttrTypes: internaltypes.ResourceLinkStateAttrType(),
+			AttrTypes: resourcelink.AttrType(),
 		},
 		"id":          types.StringType,
 		"description": types.StringType,
@@ -283,115 +285,9 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"parent_ref": schema.SingleNestedAttribute{
 				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
 				Optional:    true,
-				Attributes: map[string]schema.Attribute{
-					"id": schema.StringAttribute{
-						Description: "The ID of the resource.",
-						Required:    true,
-					},
-					"location": schema.StringAttribute{
-						Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-						Optional:    true,
-					},
-				},
+				Attributes:  resourcelink.Schema(),
 			},
-
-			"configuration": schema.SingleNestedAttribute{
-				Description: "Plugin instance configuration.",
-				Required:    true,
-				Attributes: map[string]schema.Attribute{
-					"tables": schema.ListNestedAttribute{
-						Description: "List of configuration tables.",
-						Optional:    true,
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"name": schema.StringAttribute{
-									Description: "The name of the table.",
-									Required:    true,
-								},
-								"rows": schema.ListNestedAttribute{
-									Description: "List of table rows.",
-									Optional:    true,
-									NestedObject: schema.NestedAttributeObject{
-										Attributes: map[string]schema.Attribute{
-											"fields": schema.ListNestedAttribute{
-												Description: "The configuration fields in the row.",
-												Required:    true,
-												NestedObject: schema.NestedAttributeObject{
-													Attributes: map[string]schema.Attribute{
-														"name": schema.StringAttribute{
-															Description: "The name of the configuration field.",
-															Required:    true,
-														},
-														"value": schema.StringAttribute{
-															Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
-															Optional:    true,
-														},
-														"inherited": schema.BoolAttribute{
-															Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-															Optional:    true,
-														},
-													},
-												},
-											},
-											"default_row": schema.BoolAttribute{
-												Description: "Whether this row is the default.",
-												Optional:    true,
-											},
-										},
-									},
-								},
-								"inherited": schema.BoolAttribute{
-									Description: "Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.",
-									Optional:    true,
-								},
-							},
-						},
-					},
-					"fields": schema.ListNestedAttribute{
-						Description: "List of configuration fields.",
-						Optional:    true,
-						Computed:    true,
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"name": schema.StringAttribute{
-									Description: "The name of the configuration field.",
-									Required:    true,
-								},
-								"value": schema.StringAttribute{
-									Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
-									Required:    true,
-								},
-								"inherited": schema.BoolAttribute{
-									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-									Optional:    true,
-								},
-							},
-						},
-					},
-					"fields_all": schema.ListNestedAttribute{
-						Description: "List of configuration fields. This attribute will include any values set by default by PingFederate.",
-						Computed:    true,
-						Optional:    false,
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"name": schema.StringAttribute{
-									Description: "The name of the configuration field.",
-									Required:    true,
-								},
-								"value": schema.StringAttribute{
-									Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
-									Required:    true,
-								},
-								"inherited": schema.BoolAttribute{
-									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-									Required:    true,
-								},
-							},
-						},
-					},
-				},
-			},
-
+			"configuration": pluginconfiguration.Schema(),
 			"attribute_contract": schema.SingleNestedAttribute{
 				Description: "The list of attributes that the IdP adapter provides.",
 				Optional:    true,
@@ -1002,17 +898,17 @@ func (r *idpAdapterResource) Configure(_ context.Context, req resource.Configure
 }
 
 func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *idpAdapterResourceModel, plan idpAdapterResourceModel) diag.Diagnostics {
-	var respDiags, diags diag.Diagnostics
-
+	var diags, respDiags diag.Diagnostics
 	state.AuthnCtxClassRef = internaltypes.StringTypeOrNil(r.AuthnCtxClassRef, false)
 	state.CustomId = types.StringValue(r.Id)
 	state.Id = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
-	state.PluginDescriptorRef = internaltypes.ToStateResourceLink(ctx, &r.PluginDescriptorRef, &respDiags)
-	state.ParentRef = internaltypes.ToStateResourceLink(ctx, r.ParentRef, &respDiags)
-
+	state.PluginDescriptorRef, diags = resourcelink.ToState(ctx, &r.PluginDescriptorRef)
+	respDiags.Append(diags...)
+	state.ParentRef, diags = resourcelink.ToState(ctx, r.ParentRef)
+	respDiags.Append(diags...)
 	// Configuration
-	state.Configuration, diags = config.ConfigurationToState(plan.Configuration, r.Configuration)
+	state.Configuration, diags = pluginconfiguration.ToState(plan.Configuration, &r.Configuration)
 	respDiags.Append(diags...)
 
 	if r.AttributeContract != nil {
@@ -1036,7 +932,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 				_, attrInPlan := planCoreAttributeNames[coreAttr.Name]
 				if attrInPlan {
 					attrObjVal, diags := types.ObjectValueFrom(ctx, attributesAttrType, coreAttr)
-					diags.Append(diags...)
+					respDiags.Append(diags...)
 					coreAttributes = append(coreAttributes, attrObjVal)
 				}
 			}
@@ -1082,7 +978,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 				respDiags.Append(diags...)
 
 				customAttrSourceValues["type"] = types.StringValue(attrSource.CustomAttributeSource.Type)
-				customAttrSourceValues["data_store_ref"], diags = types.ObjectValueFrom(ctx, internaltypes.ResourceLinkStateAttrType(), attrSource.CustomAttributeSource.DataStoreRef)
+				customAttrSourceValues["data_store_ref"], diags = types.ObjectValueFrom(ctx, resourcelink.AttrType(), attrSource.CustomAttributeSource.DataStoreRef)
 				respDiags.Append(diags...)
 				customAttrSourceValues["id"] = types.StringPointerValue(attrSource.CustomAttributeSource.Id)
 				customAttrSourceValues["description"] = types.StringPointerValue(attrSource.CustomAttributeSource.Description)
@@ -1103,7 +999,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 				jdbcAttrSourceValues["filter"] = types.StringValue(attrSource.JdbcAttributeSource.Filter)
 
 				jdbcAttrSourceValues["type"] = types.StringValue(attrSource.JdbcAttributeSource.Type)
-				jdbcAttrSourceValues["data_store_ref"], diags = types.ObjectValueFrom(ctx, internaltypes.ResourceLinkStateAttrType(), attrSource.JdbcAttributeSource.DataStoreRef)
+				jdbcAttrSourceValues["data_store_ref"], diags = types.ObjectValueFrom(ctx, resourcelink.AttrType(), attrSource.JdbcAttributeSource.DataStoreRef)
 				respDiags.Append(diags...)
 				jdbcAttrSourceValues["id"] = types.StringPointerValue(attrSource.JdbcAttributeSource.Id)
 				jdbcAttrSourceValues["description"] = types.StringPointerValue(attrSource.JdbcAttributeSource.Description)
@@ -1128,7 +1024,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 				ldapAttrSourceValues["member_of_nested_group"] = types.BoolPointerValue(attrSource.LdapAttributeSource.MemberOfNestedGroup)
 
 				ldapAttrSourceValues["type"] = types.StringValue(attrSource.LdapAttributeSource.Type)
-				ldapAttrSourceValues["data_store_ref"], diags = types.ObjectValueFrom(ctx, internaltypes.ResourceLinkStateAttrType(), attrSource.LdapAttributeSource.DataStoreRef)
+				ldapAttrSourceValues["data_store_ref"], diags = types.ObjectValueFrom(ctx, resourcelink.AttrType(), attrSource.LdapAttributeSource.DataStoreRef)
 				respDiags.Append(diags...)
 				ldapAttrSourceValues["id"] = types.StringPointerValue(attrSource.LdapAttributeSource.Id)
 				ldapAttrSourceValues["description"] = types.StringPointerValue(attrSource.LdapAttributeSource.Description)

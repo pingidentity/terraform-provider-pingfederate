@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -70,7 +71,7 @@ func (r *authenticationApiSettingsResource) Schema(ctx context.Context, req reso
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
-				Attributes: config.AddResourceLinkSchema(),
+				Attributes: resourcelink.Schema(),
 			},
 			"restrict_access_to_redirectless_mode": schema.BoolAttribute{
 				Description: "Enable restrict access to redirectless mode",
@@ -109,7 +110,7 @@ func addAuthenticationApiSettingsFields(ctx context.Context, addRequest *client.
 		addRequest.IncludeRequestContext = plan.IncludeRequestContext.ValueBoolPointer()
 	}
 	if internaltypes.IsDefined(plan.DefaultApplicationRef) {
-		addRequestNewLinkObj := internaltypes.ToRequestResourceLink(plan.DefaultApplicationRef)
+		addRequestNewLinkObj := resourcelink.ClientStruct(plan.DefaultApplicationRef)
 		addRequest.DefaultApplicationRef = addRequestNewLinkObj
 	}
 	return nil
@@ -132,15 +133,17 @@ func (r *authenticationApiSettingsResource) Configure(_ context.Context, req res
 
 }
 
-func readAuthenticationApiSettingsResponse(ctx context.Context, r *client.AuthnApiSettings, state *authenticationApiSettingsResourceModel, expectedValues *authenticationApiSettingsResourceModel, diags *diag.Diagnostics) {
+func readAuthenticationApiSettingsResponse(ctx context.Context, r *client.AuthnApiSettings, state *authenticationApiSettingsResourceModel, expectedValues *authenticationApiSettingsResourceModel) diag.Diagnostics {
 	//TODO different placeholder?
 	state.Id = types.StringValue("id")
 	state.ApiEnabled = types.BoolValue(*r.ApiEnabled)
 	state.EnableApiDescriptions = types.BoolValue(*r.EnableApiDescriptions)
 	state.RestrictAccessToRedirectlessMode = types.BoolValue(*r.RestrictAccessToRedirectlessMode)
 	state.IncludeRequestContext = types.BoolValue(*r.IncludeRequestContext)
-	resourceLinkObjectValue := internaltypes.ToStateResourceLink(ctx, r.DefaultApplicationRef, diags)
+	var valueFromDiags diag.Diagnostics
+	resourceLinkObjectValue, valueFromDiags := resourcelink.ToState(ctx, r.DefaultApplicationRef)
 	state.DefaultApplicationRef = resourceLinkObjectValue
+	return valueFromDiags
 }
 
 func (r *authenticationApiSettingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -176,7 +179,8 @@ func (r *authenticationApiSettingsResource) Create(ctx context.Context, req reso
 	}
 	// Read the response
 	var state authenticationApiSettingsResourceModel
-	readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, &plan, &diags)
+	diags = readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, &plan)
+	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
@@ -208,7 +212,8 @@ func (r *authenticationApiSettingsResource) Read(ctx context.Context, req resour
 	}
 
 	// Read the response into the state
-	readAuthenticationApiSettingsResponse(ctx, apiReadAuthenticationApiSettings, &state, &state, &diags)
+	diags = readAuthenticationApiSettingsResponse(ctx, apiReadAuthenticationApiSettings, &state, &state)
+	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -248,7 +253,8 @@ func (r *authenticationApiSettingsResource) Update(ctx context.Context, req reso
 	}
 	// Read the response
 	var state authenticationApiSettingsResourceModel
-	readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, &plan, &diags)
+	diags = readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, &plan)
+	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
