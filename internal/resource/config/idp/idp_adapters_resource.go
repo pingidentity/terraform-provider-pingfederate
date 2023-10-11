@@ -395,11 +395,6 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Description: "The list of attributes that the IdP adapter provides.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
-					//TODO plan modifier to add defaults to this - I guess I can't because I can't mark this as computed
-					// Or just don't store anything not from the HCL in state
-					// Or a separate attribute for anything default returned by PF
-					// Or a separate individual attribute for each core attribute supported by the plugin...... disgusting
-					// Also could add modifyplan for computed to set an error if it isn't set
 					"core_attributes": schema.SetNestedAttribute{
 						Description: "A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type.",
 						Required:    true,

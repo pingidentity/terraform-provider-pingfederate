@@ -150,13 +150,14 @@ func TestAccIdpAdapters(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:        testAccIdpAdapters(resourceName, updatedResourceModel),
-				ResourceName:  "pingfederate_idp_adapter." + resourceName,
-				ImportStateId: idpAdapterId,
-				ImportState:   true,
-				//TODO need to re-enable this once we have a way to store fields/tables/attrs/etc. that PF generates itself and returns
-				//ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{"configuration.fields"},
+				Config:            testAccIdpAdapters(resourceName, updatedResourceModel),
+				ResourceName:      "pingfederate_idp_adapter." + resourceName,
+				ImportStateId:     idpAdapterId,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Can't verify fields and core_attributes because the computed ones from the server will go into the
+				// corresponding fields_all and core_attributes_all fields
+				ImportStateVerifyIgnore: []string{"configuration.fields", "attribute_contract.core_attributes"},
 			},
 		},
 	})
