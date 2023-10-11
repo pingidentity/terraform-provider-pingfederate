@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -424,7 +425,6 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 							setplanmodifier.UseStateForUnknown(),
 						},
 					},
-					//TODO storing these
 					"core_attributes_all": schema.SetNestedAttribute{
 						Description: "A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type. This attribute will include any values set by default by PingFederate.",
 						Computed:    true,
@@ -444,9 +444,6 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 									Required:    true,
 								},
 							},
-						},
-						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
 						},
 					},
 					"extended_attributes": schema.SetNestedAttribute{
@@ -910,9 +907,9 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 						},
 					},
 					"inherited": schema.BoolAttribute{
-						Optional: true,
-						Computed: true,
-						//Default:     booldefault.StaticBool(false),
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
 						Description: "Whether this attribute mapping is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
 					},
 				},
@@ -982,7 +979,6 @@ func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdap
 	}
 
 	if internaltypes.IsDefined(plan.AttributeContract) {
-		//TODO make sure this works on subsequent applies even with defaulted core attributes
 		addRequest.AttributeContract = &client.IdpAdapterAttributeContract{}
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContract, false)), addRequest.AttributeContract)
 		if err != nil {
@@ -1179,7 +1175,6 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	var configuration client.PluginConfiguration
-	//TODO make sure this works on subsequent applies even with defaulted core attributes
 	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, false)), &configuration)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to read configuration from plan", err.Error())

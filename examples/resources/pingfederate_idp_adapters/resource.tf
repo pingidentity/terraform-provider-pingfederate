@@ -98,7 +98,7 @@ resource "pingfederate_idp_adapter" "idpAdaptersExample" {
       },
       {
         name  = "Local Identity Profile",
-        value = "RBSQIwi5KWYN9ZGK"
+        value = "example"
       },
       {
         name  = "Enable Username Recovery",
