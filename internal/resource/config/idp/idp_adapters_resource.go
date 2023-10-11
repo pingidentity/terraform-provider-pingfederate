@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -409,15 +410,13 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 									Description: "Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to false.",
 									Optional:    true,
 									Computed:    true,
-									//TODO issue with using defaults here
-									//Default:     booldefault.StaticBool(false),
+									Default:     booldefault.StaticBool(false),
 								},
 								"masked": schema.BoolAttribute{
 									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
 									Optional:    true,
 									Computed:    true,
-									//TODO issue with using defaults here
-									//Default:     booldefault.StaticBool(false),
+									Default:     booldefault.StaticBool(false),
 								},
 							},
 						},
@@ -450,7 +449,6 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 						Description: "A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them.",
 						Optional:    true,
 						Computed:    true,
-						//Default:     setdefault.StaticValue(extendedAttributesEmptySet),
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -461,15 +459,13 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 									Description: "Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to false.",
 									Optional:    true,
 									Computed:    true,
-									//TODO issue with using defaults here
-									//Default:     booldefault.StaticBool(false),
+									Default:     booldefault.StaticBool(false),
 								},
 								"masked": schema.BoolAttribute{
 									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
 									Optional:    true,
 									Computed:    true,
-									//TODO issue with using defaults here
-									//Default:     booldefault.StaticBool(false),
+									Default:     booldefault.StaticBool(false),
 								},
 							},
 						},
@@ -498,9 +494,8 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 				},
 				Attributes: map[string]schema.Attribute{
 					"attribute_sources": schema.ListNestedAttribute{
-						Optional: true,
-						Computed: true,
-						//Default:     listdefault.StaticValue(attributeSourcesEmptyList),
+						Optional:    true,
+						Computed:    true,
 						Description: "A list of configured data stores to look up attributes from.",
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
@@ -508,14 +503,11 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 									Optional:    true,
 									Description: "The configured settings to look up attributes from an associated data store.",
 									Attributes: map[string]schema.Attribute{
-										//TODO only need type on ldap dat source, others are implicit. Make the others readonly
 										"type": schema.StringAttribute{
 											Description: "The data store type of this attribute source.",
-											Required:    true,
-											//TODO is this type attribute really required? Why are there 4 possible types and only 3 attribute source implementations
-											Validators: []validator.String{
-												stringvalidator.OneOf("LDAP", "PING_ONE_LDAP_GATEWAY", "JDBC", "CUSTOM"),
-											},
+											Optional:    false,
+											Computed:    true,
+											Default:     stringdefault.StaticString("CUSTOM"),
 										},
 										//TODO use shared schema
 										"data_store_ref": schema.SingleNestedAttribute{
@@ -596,11 +588,9 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 									Attributes: map[string]schema.Attribute{
 										"type": schema.StringAttribute{
 											Description: "The data store type of this attribute source.",
-											Required:    true,
-											//TODO is this type attribute really required? Why are there 4 possible types and only 3 attribute source implementations
-											Validators: []validator.String{
-												stringvalidator.OneOf("LDAP", "PING_ONE_LDAP_GATEWAY", "JDBC", "CUSTOM"),
-											},
+											Optional:    false,
+											Computed:    true,
+											Default:     stringdefault.StaticString("JDBC"),
 										},
 										//TODO use shared schema
 										"data_store_ref": schema.SingleNestedAttribute{
@@ -683,9 +673,8 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 										"type": schema.StringAttribute{
 											Description: "The data store type of this attribute source.",
 											Required:    true,
-											//TODO is this type attribute really required? Why are there 4 possible types and only 3 attribute source implementations
 											Validators: []validator.String{
-												stringvalidator.OneOf("LDAP", "PING_ONE_LDAP_GATEWAY", "JDBC", "CUSTOM"),
+												stringvalidator.OneOf("LDAP", "PING_ONE_LDAP_GATEWAY"),
 											},
 										},
 										//TODO use shared schema
