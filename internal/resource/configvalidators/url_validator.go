@@ -80,6 +80,6 @@ func (v urlSetValidator) ValidateSet(ctx context.Context, req validator.SetReque
 
 }
 
-func ValidateUrlsInSet() urlSetValidator {
+func ValidateUrlInSet() urlSetValidator {
 	return urlSetValidator{}
 }

@@ -455,7 +455,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 					setplanmodifier.UseStateForUnknown(),
 				},
 				Validators: []validator.Set{
-					configvalidators.ValidateUrlsInSet(),
+					configvalidators.ValidateUrlInSet(),
 				},
 			},
 			"user_authorization_url": schema.StringAttribute{
