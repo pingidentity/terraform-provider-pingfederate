@@ -55,7 +55,7 @@ func TestAccServerSettings(t *testing.T) {
 		},
 		emailServer: emailServerResourceModel{
 			sourceAddr:  "initialEmailServerAdmin@example.com",
-			emailServer: "initialEmailserver.example.com",
+			emailServer: "initialemailserver.example.com",
 		},
 	}
 
@@ -72,7 +72,7 @@ func TestAccServerSettings(t *testing.T) {
 		},
 		emailServer: emailServerResourceModel{
 			sourceAddr:  "updatedEmailServerAdmin@example.com",
-			emailServer: "updatedEmailserver.example.com",
+			emailServer: "updatedemailserver.example.com",
 		},
 	}
 

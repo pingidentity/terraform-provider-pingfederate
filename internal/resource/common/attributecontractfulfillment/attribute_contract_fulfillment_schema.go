@@ -6,33 +6,19 @@ import (
 )
 
 func Schema(required bool) schema.MapNestedAttribute {
-	if required {
-		return schema.MapNestedAttribute{
-			Description: "Defines how an attribute in an attribute contract should be populated.",
-			Required:    true,
-			NestedObject: schema.NestedAttributeObject{
-				Attributes: map[string]schema.Attribute{
-					"source": sourcetypeidkey.Schema(),
-					"value": schema.StringAttribute{
-						Optional:    true,
-						Description: "The value for this attribute.",
-					},
-				},
-			},
-		}
-	} else {
-		return schema.MapNestedAttribute{
-			Description: "Defines how an attribute in an attribute contract should be populated.",
+	attributeContractFulfillmentSchema := schema.MapNestedAttribute{}
+	attributeContractFulfillmentSchema.Description = "Defines how an attribute in an attribute contract should be populated."
+	attributeContractFulfillmentSchema.NestedObject.Attributes = map[string]schema.Attribute{
+		"source": sourcetypeidkey.Schema(),
+		"value": schema.StringAttribute{
 			Optional:    true,
-			NestedObject: schema.NestedAttributeObject{
-				Attributes: map[string]schema.Attribute{
-					"source": sourcetypeidkey.Schema(),
-					"value": schema.StringAttribute{
-						Optional:    true,
-						Description: "The value for this attribute.",
-					},
-				},
-			},
-		}
+			Description: "The value for this attribute.",
+		},
 	}
+	if required {
+		attributeContractFulfillmentSchema.Required = true
+	} else {
+		attributeContractFulfillmentSchema.Optional = true
+	}
+	return attributeContractFulfillmentSchema
 }
