@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -32,6 +31,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopeentry"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopegroupentry"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/validators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -127,6 +127,9 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 						"name": schema.StringAttribute{
 							Description: "The name of the scope.",
 							Required:    true,
+							Validators: []validator.String{
+								configvalidators.NoWhitespace(),
+							},
 						},
 						"description": schema.StringAttribute{
 							Description: "The description of the scope that appears when the user is prompted for authorization.",
@@ -157,10 +160,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 							Description: "The name of the scope group.",
 							Required:    true,
 							Validators: []validator.String{
-								stringvalidator.RegexMatches(
-									regexp.MustCompile(`^\S*$`),
-									"Scope group attribute \"name\" must not contain any spaces!",
-								),
+								configvalidators.NoWhitespace(),
 							},
 						},
 						"description": schema.StringAttribute{
@@ -187,6 +187,9 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 						"name": schema.StringAttribute{
 							Description: "The name of the scope.",
 							Required:    true,
+							Validators: []validator.String{
+								configvalidators.NoWhitespace(),
+							},
 						},
 						"description": schema.StringAttribute{
 							Description: "The description of the scope that appears when the user is prompted for authorization.",
@@ -217,10 +220,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 							Description: "The name of the scope group.",
 							Required:    true,
 							Validators: []validator.String{
-								stringvalidator.RegexMatches(
-									regexp.MustCompile(`^\S*$`),
-									"Exclusive scope group attribute \"name\" must not contain any spaces!",
-								),
+								configvalidators.NoWhitespace(),
 							},
 						},
 						"description": schema.StringAttribute{
@@ -429,23 +429,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 			"admin_web_service_pcv_ref": schema.SingleNestedAttribute{
 				Description: "The password credential validator reference that is used for authenticating access to the OAuth Administrative Web Service.",
 				Optional:    true,
-				Attributes: map[string]schema.Attribute{
-					"id": schema.StringAttribute{
-						Description: "The ID of the resource.",
-						Required:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
-					},
-					"location": schema.StringAttribute{
-						Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-						Computed:    true,
-						Optional:    false,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
-					},
-				},
+				Attributes:  resourcelink.Schema(),
 			},
 			"atm_id_for_oauth_grant_management": schema.StringAttribute{
 				Description: "The ID of the Access Token Manager used for OAuth enabled grant management.",
@@ -483,10 +467,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Description: "The Registered Authorization Path is concatenated to PingFederate base URL to generate 'verification_url' and 'verification_url_complete' values in a Device Authorization request. PingFederate listens to this path if specified",
 				Required:    true,
 				Validators: []validator.String{
-					stringvalidator.RegexMatches(
-						regexp.MustCompile(`^\/`),
-						"The Registered Authorization Path must begin with a '/'",
-					),
+					configvalidators.StartsWith("/"),
 				},
 			},
 			"pending_authorization_timeout": schema.Int64Attribute{

@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/validators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -28,7 +28,7 @@ func AddCommonSchema(s *schema.Schema) {
 }
 
 func AddCustomId(s *schema.Schema, required bool, characterLimit bool, description string) {
-	var customId = schema.StringAttribute{}
+	customId := schema.StringAttribute{}
 	customId.Description = description
 	customId.PlanModifiers = []planmodifier.String{
 		stringplanmodifier.RequiresReplace(),
@@ -40,7 +40,7 @@ func AddCustomId(s *schema.Schema, required bool, characterLimit bool, descripti
 		customId.Optional = true
 	}
 	if characterLimit {
-		customId.Validators = []validator.String{validators.SchemaValidCharacters()}
+		customId.Validators = []validator.String{configvalidators.ValidChars()}
 	}
 	s.Attributes["custom_id"] = customId
 }

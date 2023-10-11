@@ -194,7 +194,6 @@ func (r *serverSettingsSystemKeysResource) Configure(_ context.Context, req reso
 func readServerSettingsSystemKeysResponse(ctx context.Context, r *client.SystemKeys, state *serverSettingsSystemKeysResourceModel, diags *diag.Diagnostics) {
 	//TODO placeholder?
 	state.Id = types.StringValue("id")
-
 	currentAttrs := r.GetCurrent()
 	currentAttrVals := map[string]attr.Value{
 		"creation_date":      types.StringValue(currentAttrs.GetCreationDate().Format(time.RFC3339Nano)),
