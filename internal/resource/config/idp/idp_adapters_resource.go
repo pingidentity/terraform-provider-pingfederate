@@ -251,10 +251,6 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Description: "The fixed value that indicates how the user was authenticated.",
 				Optional:    true,
 			},
-			"custom_id": schema.StringAttribute{
-				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
-				Required:    true,
-			},
 			"name": schema.StringAttribute{
 				Description: "The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
@@ -871,6 +867,8 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 	}
 
 	config.AddCommonSchema(&schema)
+	config.AddCustomId(&schema, true, true,
+		"The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.")
 	resp.Schema = schema
 }
 

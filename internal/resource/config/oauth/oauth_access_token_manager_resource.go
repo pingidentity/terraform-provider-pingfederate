@@ -3,9 +3,7 @@ package oauth
 import (
 	"context"
 	"encoding/json"
-	"regexp"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -17,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
@@ -102,19 +99,6 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 	schema := schema.Schema{
 		Description: "Manages OAuth Access Token Manager",
 		Attributes: map[string]schema.Attribute{
-			"custom_id": schema.StringAttribute{
-				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
-				Required:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
-				Validators: []validator.String{
-					stringvalidator.RegexMatches(
-						regexp.MustCompile("^[a-zA-Z0-9_]{1,32}$"),
-						"The plugin ID must be less than 33 characters, contain no spaces, and be alphanumeric.",
-					),
-				},
-			},
 			"name": schema.StringAttribute{
 				Description: "The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
@@ -297,6 +281,8 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 	}
 
 	config.AddCommonSchema(&schema)
+	config.AddCustomId(&schema, true, true,
+		"The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.")
 	resp.Schema = schema
 }
 
