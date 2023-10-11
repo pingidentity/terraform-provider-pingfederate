@@ -43,7 +43,6 @@ type tokenProcessorToTokenGeneratorMappingsResourceModel struct {
 	SourceId                         types.String `tfsdk:"source_id"`
 	TargetId                         types.String `tfsdk:"target_id"`
 	Id                               types.String `tfsdk:"id"`
-	CustomId                         types.String `tfsdk:"custom_id"`
 	DefaultTargetResource            types.String `tfsdk:"default_target_resource"`
 	LicenseConnectionGroupAssignment types.String `tfsdk:"license_connection_group_assignment"`
 }
@@ -75,8 +74,6 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Schema(ctx context.Cont
 		},
 	}
 	AddCommonSchema(&schema)
-	AddCustomId(&schema, false, false,
-		"The id of the Token Processor to Token Generator mapping. This field is read-only and is ignored when passed in with the payload.")
 	resp.Schema = schema
 }
 
@@ -97,10 +94,6 @@ func addOptionalTokenProcessorToTokenGeneratorMappingFields(ctx context.Context,
 		if issuanceCriteriaErr != nil {
 			return issuanceCriteriaErr
 		}
-	}
-
-	if internaltypes.IsDefined(plan.CustomId) {
-		addRequest.Id = plan.CustomId.ValueStringPointer()
 	}
 
 	if internaltypes.IsDefined(plan.DefaultTargetResource) {
@@ -142,7 +135,6 @@ func readTokenProcessorToTokenGeneratorMappingResponse(ctx context.Context, r *c
 	state.SourceId = types.StringValue(r.SourceId)
 	state.TargetId = types.StringValue(r.TargetId)
 	state.Id = types.StringPointerValue(r.Id)
-	state.CustomId = types.StringPointerValue(r.Id)
 	state.DefaultTargetResource = types.StringPointerValue(r.DefaultTargetResource)
 	state.LicenseConnectionGroupAssignment = types.StringPointerValue(r.LicenseConnectionGroupAssignment)
 	return diags
