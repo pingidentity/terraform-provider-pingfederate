@@ -12,6 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
@@ -236,15 +238,12 @@ type idpAdapterResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	//fieldsEmptyList, _ := types.ListValue(types.ObjectType{AttrTypes: config.FieldAttrTypes()}, []attr.Value{})
-	//extendedAttributesEmptySet, _ := types.SetValue(types.ObjectType{AttrTypes: attributesAttrType}, []attr.Value{})
-	//attributeSourcesEmptyList, _ := types.ListValue(types.ObjectType{AttrTypes: attributeSourcesElementAttrTypes}, []attr.Value{})
-	//conditionalCriteriaEmptyList, _ := types.ListValue(types.ObjectType{AttrTypes: conditionalCriteriaAttrTypes}, []attr.Value{})
-	//expressionCriteriaEmtpyList := types.ListNull(types.ObjectType{AttrTypes: expressionCriteriaAttrTypes})
-	/*issuanceCriteriaEmptyObject, _ := types.ObjectValue(issuanceCritieriaAttrTypes, map[string]attr.Value{
+	conditionalCriteriaEmptyList, _ := types.ListValue(types.ObjectType{AttrTypes: conditionalCriteriaAttrTypes}, []attr.Value{})
+	expressionCriteriaNullList := types.ListNull(types.ObjectType{AttrTypes: expressionCriteriaAttrTypes})
+	issuanceCriteriaEmptyObject, _ := types.ObjectValue(issuanceCriteriaAttrTypes, map[string]attr.Value{
 		"conditional_criteria": conditionalCriteriaEmptyList,
-		"expression_criteria":  expressionCriteriaEmtpyList,
-	})*/
+		"expression_criteria":  expressionCriteriaNullList,
+	})
 	schema := schema.Schema{
 		Description: "Manages an Idp Adapter",
 		Attributes: map[string]schema.Attribute{
@@ -410,13 +409,15 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 									Description: "Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to false.",
 									Optional:    true,
 									Computed:    true,
-									Default:     booldefault.StaticBool(false),
+									// These defaults cause issues with unexpected plans
+									//Default:     booldefault.StaticBool(false),
 								},
 								"masked": schema.BoolAttribute{
 									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
 									Optional:    true,
 									Computed:    true,
-									Default:     booldefault.StaticBool(false),
+									// These defaults cause issues with unexpected plans
+									//Default:     booldefault.StaticBool(false),
 								},
 							},
 						},
@@ -750,7 +751,6 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 											PlanModifiers: []planmodifier.Bool{
 												boolplanmodifier.UseStateForUnknown(),
 											},
-											//Default: booldefault.StaticBool(false),
 										},
 										"base_dn": schema.StringAttribute{
 											Description: "The base DN to search from. If not specified, the search will start at the LDAP's root.",
@@ -829,12 +829,13 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 						Description: "The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled.",
 						Optional:    true,
 						Computed:    true,
-						//Default:     objectdefault.StaticValue(issuanceCriteriaEmptyObject),
+						Default:     objectdefault.StaticValue(issuanceCriteriaEmptyObject),
 						Attributes: map[string]schema.Attribute{
 							"conditional_criteria": schema.ListNestedAttribute{
 								Description: "An issuance criterion that checks a source attribute against a particular condition and the expected value. If the condition is true then this issuance criterion passes, otherwise the criterion fails.",
 								Optional:    true,
 								Computed:    true,
+								Default:     listdefault.StaticValue(conditionalCriteriaEmptyList),
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										//TODO share these definitions
