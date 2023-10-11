@@ -13,7 +13,7 @@ var _ validator.String = &hostnameOrIpValidator{}
 type hostnameOrIpValidator struct{}
 
 func (v hostnameOrIpValidator) Description(ctx context.Context) string {
-	return "Invalid hostname or IP, Please provide a valid hostname or IP address"
+	return "Validates supplied value is of a hostname or IP type"
 }
 
 func (v hostnameOrIpValidator) MarkdownDescription(ctx context.Context) string {
@@ -34,7 +34,6 @@ func (v hostnameOrIpValidator) ValidateString(ctx context.Context, req validator
 			"Invalid hostname or IP",
 			fmt.Sprintf("This %s value must be a valid hostname or IP address", req.ConfigValue),
 		)
-		return
 	}
 }
 

@@ -15,7 +15,7 @@ type startsWithValidator struct {
 }
 
 func (v startsWithValidator) Description(ctx context.Context) string {
-	return fmt.Sprintf("Value is not prefixed with a %s", v.firstChar)
+	return "Validates value supplied does not contain any whitespaces"
 }
 
 func (v startsWithValidator) MarkdownDescription(ctx context.Context) string {
@@ -36,7 +36,6 @@ func (v startsWithValidator) ValidateString(ctx context.Context, req validator.S
 			"Invalid Prefix Value",
 			fmt.Sprintf("%s must be prefixed with a %s", req.ConfigValue, v.firstChar),
 		)
-		return
 	}
 }
 

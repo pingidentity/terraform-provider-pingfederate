@@ -32,7 +32,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopegroupentry"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/validators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -453,7 +452,11 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown()},
+					setplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.Set{
+					configvalidators.ValidateUrlsInSet(),
+				},
 			},
 			"user_authorization_url": schema.StringAttribute{
 				Description: "The URL used to generate 'verification_url' and 'verification_url_complete' values in a Device Authorization request",
@@ -585,14 +588,6 @@ func (r *oauthAuthServerSettingsResource) ValidateConfig(ctx context.Context, re
 
 	var model oauthAuthServerSettingsResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
-
-	// Validate allowed_origins value(s)
-	if internaltypes.IsDefined(model.AllowedOrigins) {
-		aoElems := model.AllowedOrigins.Elements()
-		for _, aoElem := range aoElems {
-			validators.IsUrlFormat(aoElem, resp)
-		}
-	}
 
 	// Scope list for comparing values in matchNameBtwnScopes variable
 	scopeNames := []string{}

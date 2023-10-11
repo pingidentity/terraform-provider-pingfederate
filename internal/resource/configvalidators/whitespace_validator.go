@@ -8,19 +8,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-var _ validator.String = &whitespaceValidator{}
+var _ validator.String = &noWhitespaceValidator{}
 
-type whitespaceValidator struct{}
+type noWhitespaceValidator struct{}
 
-func (v whitespaceValidator) Description(ctx context.Context) string {
-	return "This value must not contain any whitespace"
+func (v noWhitespaceValidator) Description(ctx context.Context) string {
+	return "Validates supplied value contains no whitespaces"
 }
 
-func (v whitespaceValidator) MarkdownDescription(ctx context.Context) string {
+func (v noWhitespaceValidator) MarkdownDescription(ctx context.Context) string {
 	return v.Description(ctx)
 }
 
-func (v whitespaceValidator) ValidateString(ctx context.Context, req validator.StringRequest, resp *validator.StringResponse) {
+func (v noWhitespaceValidator) ValidateString(ctx context.Context, req validator.StringRequest, resp *validator.StringResponse) {
 	// If the value is unknown or null, there is nothing to validate.
 	if req.ConfigValue.IsUnknown() || req.ConfigValue.IsNull() {
 		return
@@ -38,6 +38,6 @@ func (v whitespaceValidator) ValidateString(ctx context.Context, req validator.S
 	}
 }
 
-func NoWhitespace() whitespaceValidator {
-	return whitespaceValidator{}
+func NoWhitespace() noWhitespaceValidator {
+	return noWhitespaceValidator{}
 }

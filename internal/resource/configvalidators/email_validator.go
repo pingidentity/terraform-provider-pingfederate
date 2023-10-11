@@ -13,7 +13,7 @@ var _ validator.String = &emailValidator{}
 type emailValidator struct{}
 
 func (v emailValidator) Description(ctx context.Context) string {
-	return "The email must be of the form '<address>@<company>.<domain>'"
+	return "Validates value supplied is of E-mail address value format"
 }
 
 func (v emailValidator) MarkdownDescription(ctx context.Context) string {
@@ -34,7 +34,6 @@ func (v emailValidator) ValidateString(ctx context.Context, req validator.String
 			"Invalid E-mail Address",
 			fmt.Sprintf("The email %s must be of the form '<address>@<company>.<domain>', where 'domain' contains only alphabetic characters and is at least 2 characters in length.", req.ConfigValue),
 		)
-		return
 	}
 }
 
