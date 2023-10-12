@@ -3,41 +3,42 @@ package oauth
 import (
 	"context"
 	"encoding/json"
-	"regexp"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	client "github.com/pingidentity/pingfederate-go-client"
+	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource                = &oauthTokenExchangeTokenGeneratorMappingsResource{}
-	_ resource.ResourceWithConfigure   = &oauthTokenExchangeTokenGeneratorMappingsResource{}
-	_ resource.ResourceWithImportState = &oauthTokenExchangeTokenGeneratorMappingsResource{}
+	_ resource.Resource                = &oauthTokenExchangeTokenGeneratorMappingResource{}
+	_ resource.ResourceWithConfigure   = &oauthTokenExchangeTokenGeneratorMappingResource{}
+	_ resource.ResourceWithImportState = &oauthTokenExchangeTokenGeneratorMappingResource{}
 )
 
-// OauthTokenExchangeTokenGeneratorMappingsResource is a helper function to simplify the provider implementation.
-func OauthTokenExchangeTokenGeneratorMappingsResource() resource.Resource {
-	return &oauthTokenExchangeTokenGeneratorMappingsResource{}
+// OauthTokenExchangeTokenGeneratorMappingResource is a helper function to simplify the provider implementation.
+func OauthTokenExchangeTokenGeneratorMappingResource() resource.Resource {
+	return &oauthTokenExchangeTokenGeneratorMappingResource{}
 }
 
-// oauthTokenExchangeTokenGeneratorMappingsResource is the resource implementation.
-type oauthTokenExchangeTokenGeneratorMappingsResource struct {
+// oauthTokenExchangeTokenGeneratorMappingResource is the resource implementation.
+type oauthTokenExchangeTokenGeneratorMappingResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
 }
 
-type oauthTokenExchangeTokenGeneratorMappingsResourceModel struct {
-	AttributeSources                 types.Set    `tfsdk:"attribute_sources"`
+type oauthTokenExchangeTokenGeneratorMappingResourceModel struct {
+	AttributeSources                 types.List   `tfsdk:"attribute_sources"`
 	AttributeContractFulfillment     types.Map    `tfsdk:"attribute_contract_fulfillment"`
 	IssuanceCriteria                 types.Object `tfsdk:"issuance_criteria"`
 	Id                               types.String `tfsdk:"id"`
@@ -47,128 +48,13 @@ type oauthTokenExchangeTokenGeneratorMappingsResourceModel struct {
 }
 
 // GetSchema defines the schema for the resource.
-func (r *oauthTokenExchangeTokenGeneratorMappingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = schema.Schema{
-		Description: "The id of the Token Exchange Processor policy.",
+func (r *oauthTokenExchangeTokenGeneratorMappingResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	schema := schema.Schema{
+		Description: "Manages the Token Exchange Processor Policy To Token Generator Mappings.",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "The persistent, unique ID for the Token Exchange Processor policy. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
-				Optional:    true,
-				Computed:    true,
-				Validators: []validator.String{
-					stringvalidator.RegexMatches(
-						regexp.MustCompile("^[a-zA-Z0-9_]{1,32}$"),
-						"The Token Exchange Processor policy ID must be less than 33 characters, contain no spaces, and be alphanumeric.",
-					),
-				},
-			},
-			"attribute_sources": schema.SetNestedAttribute{
-				Description: "A list of configured data stores to look up attributes from.",
-				Computed:    true,
-				Optional:    true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{},
-				},
-				// Validators: []validator.String{
-				// 	stringvalidator.OneOf([]string{"LDAP", "PING_ONE_LDAP_GATEWAY", "JDBC", "CUSTOM"}...),
-				// },
-			},
-			"attribute_contract_fulfillment": schema.MapNestedAttribute{
-				Description: " A list of mappings from attribute names to their fulfillment values.",
-				Optional:    true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"source": schema.SingleNestedAttribute{
-							Description: "Source containing key that is meant to reference a source from which an attribute can be retrieved.",
-							Required:    true,
-							Attributes: map[string]schema.Attribute{
-								"type": schema.StringAttribute{
-									Description: "The source type of this key.",
-									Computed:    true,
-									Optional:    true,
-								},
-								"id": schema.StringAttribute{
-									Description: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-									Required:    true,
-								},
-							},
-						},
-						"value": schema.StringAttribute{
-							Description: "The value for this attribute.",
-							Required:    true,
-						},
-					},
-				},
-			},
-			"issuance_criteria": schema.SingleNestedAttribute{
-				Description: "The attribute update policy for authentication sources.",
-				Optional:    true,
-				Attributes: map[string]schema.Attribute{
-					"conditional_criteria": schema.SetNestedAttribute{
-						Description: "The source type of this key.",
-						Computed:    true,
-						Optional:    true,
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"source": schema.SingleNestedAttribute{
-									Description: "Source containing key that is meant to reference a source from which an attribute can be retrieved.",
-									Required:    true,
-									Attributes: map[string]schema.Attribute{
-										"type": schema.StringAttribute{
-											Description: "The source type of this key.",
-											Computed:    true,
-											Optional:    true,
-										},
-										"id": schema.StringAttribute{
-											Description: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-											Required:    true,
-										},
-									},
-								},
-								"attribute_name": schema.StringAttribute{
-									Description: " The name of the attribute to use in this issuance criterion.",
-									Computed:    true,
-									Optional:    true,
-								},
-								"condition": schema.StringAttribute{
-									Description: "The condition that will be applied to the source attribute's value and the expected value.",
-									Computed:    true,
-									Optional:    true,
-								},
-								"value": schema.StringAttribute{
-									Description: "The expected value of this issuance criterion.",
-									Computed:    true,
-									Optional:    true,
-								},
-								"error_result": schema.StringAttribute{
-									Description: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs..",
-									Computed:    true,
-									Optional:    true,
-								},
-							},
-						},
-					},
-					"expression_criteria": schema.SetNestedAttribute{
-						Description: "A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue.",
-						Computed:    true,
-						Optional:    true,
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"expression": schema.StringAttribute{
-									Description: "The OGNL expression to evaluate.",
-									Computed:    true,
-									Optional:    true,
-								},
-								"error_result": schema.StringAttribute{
-									Description: " The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-									Computed:    true,
-									Optional:    true,
-								},
-							},
-						},
-					},
-				},
-			},
+			"attribute_sources":              attributesources.Schema(),
+			"attribute_contract_fulfillment": attributecontractfulfillment.Schema(true),
+			"issuance_criteria":              issuancecriteria.Schema(),
 			"source_id": schema.StringAttribute{
 				Description: "The id of the Token Exchange Processor policy.",
 				Required:    true,
@@ -179,65 +65,45 @@ func (r *oauthTokenExchangeTokenGeneratorMappingsResource) Schema(ctx context.Co
 			},
 			"license_connection_group_assignment": schema.StringAttribute{
 				Description: "The license connection group",
-				Computed:    true,
 				Optional:    true,
 			},
 		},
 	}
+	config.AddCommonSchema(&schema)
+	resp.Schema = schema
 }
 
-func addOptionalOauthTokenExchangeTokenGeneratorMappingsFields(ctx context.Context, addRequest *client.ProcessorPolicyToGeneratorMapping, plan oauthTokenExchangeTokenGeneratorMappingsResourceModel) error {
-
+func addOptionalOauthTokenExchangeTokenGeneratorMappingFields(ctx context.Context, addRequest *client.ProcessorPolicyToGeneratorMapping, plan oauthTokenExchangeTokenGeneratorMappingResourceModel) error {
 	if internaltypes.IsDefined(plan.AttributeSources) {
-		// if attributeSource.type is jbdc, ldap
-		// call their respctive model  and add it to the request.
-		var slice []correct_type
-		//you may need to build the slice using a client method here, otherwise use a primitive type if applicable
-		addRequest.AttributeSources = slice
-	}
-
-	if internaltypes.IsDefined(plan.AttributeContractFulfillment) {
-		addRequest.AttributeContractFulfillment = client.NewAttributeFulfillmentValueWithDefaults()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContractFulfillment, false)), addRequest.AttributeContractFulfillment)
-		if err != nil {
-			return err
+		addRequest.AttributeSources = []client.AttributeSourceAggregation{}
+		var attributeSourcesErr error
+		addRequest.AttributeSources, attributeSourcesErr = attributesources.ClientStruct(plan.AttributeSources)
+		if attributeSourcesErr != nil {
+			return attributeSourcesErr
 		}
 	}
 
 	if internaltypes.IsDefined(plan.IssuanceCriteria) {
 		addRequest.IssuanceCriteria = client.NewIssuanceCriteria()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.IssuanceCriteria, false)), addRequest.IssuanceCriteria)
-		if err != nil {
-			return err
+		var issuanceCriteriaErr error
+		addRequest.IssuanceCriteria, issuanceCriteriaErr = issuancecriteria.ClientStruct(plan.IssuanceCriteria)
+		if issuanceCriteriaErr != nil {
+			return issuanceCriteriaErr
 		}
 	}
-
-	if internaltypes.IsDefined(plan.Id) {
-		addRequest.Id = plan.Id.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.SourceId) {
-		addRequest.SourceId = plan.SourceId.ValueString()
-	}
-
-	if internaltypes.IsDefined(plan.TargetId) {
-		addRequest.TargetId = plan.TargetId.ValueString()
-	}
-
 	if internaltypes.IsDefined(plan.LicenseConnectionGroupAssignment) {
 		addRequest.LicenseConnectionGroupAssignment = plan.LicenseConnectionGroupAssignment.ValueStringPointer()
 	}
 
 	return nil
-
 }
 
 // Metadata returns the resource type name.
-func (r *oauthTokenExchangeTokenGeneratorMappingsResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_oauth_token_exchange_token_generator_mappings"
+func (r *oauthTokenExchangeTokenGeneratorMappingResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_oauth_token_exchange_processor_policy_token_generator_mapping"
 }
 
-func (r *oauthTokenExchangeTokenGeneratorMappingsResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
+func (r *oauthTokenExchangeTokenGeneratorMappingResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -245,150 +111,164 @@ func (r *oauthTokenExchangeTokenGeneratorMappingsResource) Configure(_ context.C
 	providerCfg := req.ProviderData.(internaltypes.ResourceConfiguration)
 	r.providerConfig = providerCfg.ProviderConfig
 	r.apiClient = providerCfg.ApiClient
-
 }
 
-func readOauthTokenExchangeTokenGeneratorMappingsResponse(ctx context.Context, r *client.ProcessorPolicyToGeneratorMapping, state *oauthTokenExchangeTokenGeneratorMappingsResourceModel) {
-	// state.AttributeSources = internaltypes.GetCorrectMethodFromInternalTypesForThis(r.AttributeSources)
-	// state.AttributeContractFulfillment = You will need to figure out what needs to go into the object(r.AttributeContractFulfillment)
-	// state.IssuanceCriteria = (r.IssuanceCriteria)
-	// state.Id = internaltypes.StringTypeOrNil(r.Id)
-	// state.SourceId = internaltypes.StringTypeOrNil(r.SourceId)
-	// state.TargetId = internaltypes.StringTypeOrNil(r.TargetId)
-	// state.LicenseConnectionGroupAssignment = internaltypes.StringTypeOrNil(r.LicenseConnectionGroupAssignment)
+func readOauthTokenExchangeTokenGeneratorMappingResponse(ctx context.Context, r *client.ProcessorPolicyToGeneratorMapping, state *oauthTokenExchangeTokenGeneratorMappingResourceModel, plan oauthTokenExchangeTokenGeneratorMappingResourceModel) diag.Diagnostics {
+	var diags, respDiags diag.Diagnostics
+	state.AttributeSources, respDiags = attributesources.ToState(ctx, r.AttributeSources)
+	diags.Append(respDiags...)
+	state.AttributeContractFulfillment, respDiags = attributecontractfulfillment.ToState(ctx, r.AttributeContractFulfillment)
+	diags.Append(respDiags...)
+	state.IssuanceCriteria, respDiags = issuancecriteria.ToState(ctx, r.IssuanceCriteria)
+	diags.Append(respDiags...)
+	state.SourceId = types.StringValue(r.SourceId)
+	state.TargetId = types.StringValue(r.TargetId)
+	state.Id = types.StringPointerValue(r.Id)
+	state.LicenseConnectionGroupAssignment = types.StringPointerValue(r.LicenseConnectionGroupAssignment)
+	return diags
 }
 
-func (r *oauthTokenExchangeTokenGeneratorMappingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan oauthTokenExchangeTokenGeneratorMappingsResourceModel
+func (r *oauthTokenExchangeTokenGeneratorMappingResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan oauthTokenExchangeTokenGeneratorMappingResourceModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	createOauthTokenExchangeTokenGeneratorMappings := client.NewProcessorPolicyToGeneratorMappingsWithDefaults()
-	err := addOptionalOauthTokenExchangeTokenGeneratorMappingsFields(ctx, createOauthTokenExchangeTokenGeneratorMappings, plan)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OauthTokenExchangeTokenGeneratorMappings", err.Error())
+	attributeContractFulfillment := &map[string]client.AttributeFulfillmentValue{}
+	attributeContractFulfillmentErr := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContractFulfillment, false)), attributeContractFulfillment)
+	if attributeContractFulfillmentErr != nil {
+		resp.Diagnostics.AddError("Failed to build attribute contract fulfillment request object:", attributeContractFulfillmentErr.Error())
 		return
 	}
-	requestJson, err := createOauthTokenExchangeTokenGeneratorMappings.MarshalJSON()
+	createOauthTokenExchangeTokenGeneratorMapping := client.NewProcessorPolicyToGeneratorMapping(*attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
+	err := addOptionalOauthTokenExchangeTokenGeneratorMappingFields(ctx, createOauthTokenExchangeTokenGeneratorMapping, plan)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for OauthTokenExchangeTokenGeneratorMapping", err.Error())
+		return
+	}
+	requestJson, err := createOauthTokenExchangeTokenGeneratorMapping.MarshalJSON()
 	if err == nil {
 		tflog.Debug(ctx, "Add request: "+string(requestJson))
 	}
 
-	apiCreateOauthTokenExchangeTokenGeneratorMappings := r.apiClient.OauthTokenExchangeProcessorApi.CreateOauthTokenExchangeProcessorPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
-	apiCreateOauthTokenExchangeTokenGeneratorMappings = apiCreateOauthTokenExchangeTokenGeneratorMappings.Body(*createOauthTokenExchangeTokenGeneratorMappings)
-	oauthTokenExchangeTokenGeneratorMappingsResponse, httpResp, err := r.apiClient.OauthTokenExchangeProcessorApi.CreateOauthTokenExchangeProcessorPolicyExecute(apiCreateOauthTokenExchangeTokenGeneratorMappings)
+	apiCreateOauthTokenExchangeTokenGeneratorMapping := r.apiClient.OauthTokenExchangeTokenGeneratorMappingsAPI.CreateTokenGeneratorMapping(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateOauthTokenExchangeTokenGeneratorMapping = apiCreateOauthTokenExchangeTokenGeneratorMapping.Body(*createOauthTokenExchangeTokenGeneratorMapping)
+	oauthTokenExchangeTokenGeneratorMappingResponse, httpResp, err := r.apiClient.OauthTokenExchangeTokenGeneratorMappingsAPI.CreateTokenGeneratorMappingExecute(apiCreateOauthTokenExchangeTokenGeneratorMapping)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OauthTokenExchangeTokenGeneratorMappings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OauthTokenExchangeTokenGeneratorMapping", err, httpResp)
 		return
 	}
-	responseJson, err := oauthTokenExchangeTokenGeneratorMappingsResponse.MarshalJSON()
+	responseJson, err := oauthTokenExchangeTokenGeneratorMappingResponse.MarshalJSON()
 	if err == nil {
 		tflog.Debug(ctx, "Add response: "+string(responseJson))
 	}
 
 	// Read the response into the state
-	var state oauthTokenExchangeTokenGeneratorMappingsResourceModel
+	var state oauthTokenExchangeTokenGeneratorMappingResourceModel
 
-	readOauthTokenExchangeTokenGeneratorMappingsResponse(ctx, oauthTokenExchangeTokenGeneratorMappingsResponse, &state)
+	diags = readOauthTokenExchangeTokenGeneratorMappingResponse(ctx, oauthTokenExchangeTokenGeneratorMappingResponse, &state, plan)
+	resp.Diagnostics.Append(diags...)
+
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
-func (r *oauthTokenExchangeTokenGeneratorMappingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state oauthTokenExchangeTokenGeneratorMappingsResourceModel
+func (r *oauthTokenExchangeTokenGeneratorMappingResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state oauthTokenExchangeTokenGeneratorMappingResourceModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthTokenExchangeTokenGeneratorMappings, httpResp, err := r.apiClient.OauthTokenExchangeProcessorApi.GetOauthTokenExchangeProcessorPolicyById(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadOauthTokenExchangeTokenGeneratorMapping, httpResp, err := r.apiClient.OauthTokenExchangeTokenGeneratorMappingsAPI.GetTokenGeneratorMappingById(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the OauthTokenExchangeTokenGeneratorMappings", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the OauthTokenExchangeTokenGeneratorMapping", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  OauthTokenExchangeTokenGeneratorMappings", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  OauthTokenExchangeTokenGeneratorMapping", err, httpResp)
 		}
 	}
 	// Log response JSON
-	responseJson, err := apiReadOauthTokenExchangeTokenGeneratorMappings.MarshalJSON()
+	responseJson, err := apiReadOauthTokenExchangeTokenGeneratorMapping.MarshalJSON()
 	if err == nil {
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	}
 
 	// Read the response into the state
-	readOauthTokenExchangeTokenGeneratorMappingsResponse(ctx, apiReadOauthTokenExchangeTokenGeneratorMappings, &state)
-
+	diags = readOauthTokenExchangeTokenGeneratorMappingResponse(ctx, apiReadOauthTokenExchangeTokenGeneratorMapping, &state, state)
+	resp.Diagnostics.Append(diags...)
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
-func (r *oauthTokenExchangeTokenGeneratorMappingsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *oauthTokenExchangeTokenGeneratorMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 
-	var plan oauthTokenExchangeTokenGeneratorMappingsResourceModel
+	var plan oauthTokenExchangeTokenGeneratorMappingResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	// Get the current state to see how any attributes are changing
-	var state oauthTokenExchangeTokenGeneratorMappingsResourceModel
-	req.State.Get(ctx, &state)
-	updateOauthTokenExchangeTokenGeneratorMappings := r.apiClient.OauthTokenExchangeProcessorApi.UpdateOauthTokenExchangeProcessorPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Id.ValueString())
-	createUpdateRequest := client.NewProcessorPolicyToGeneratorMappingWithDefaults()
-	err := addOptionalOauthTokenExchangeTokenGeneratorMappingsFields(ctx, createUpdateRequest, plan)
+	attributeContractFulfillment := &map[string]client.AttributeFulfillmentValue{}
+	attributeContractFulfillmentErr := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContractFulfillment, false)), attributeContractFulfillment)
+	if attributeContractFulfillmentErr != nil {
+		resp.Diagnostics.AddError("Failed to build attribute contract fulfillment request object:", attributeContractFulfillmentErr.Error())
+		return
+	}
+	updateOauthTokenExchangeTokenGeneratorMapping := r.apiClient.OauthTokenExchangeTokenGeneratorMappingsAPI.UpdateTokenGeneratorMappingById(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Id.ValueString())
+	createUpdateRequest := client.NewProcessorPolicyToGeneratorMapping(*attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
+	err := addOptionalOauthTokenExchangeTokenGeneratorMappingFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OauthTokenExchangeTokenGeneratorMappings", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for OauthTokenExchangeTokenGeneratorMapping", err.Error())
 		return
 	}
 	requestJson, err := createUpdateRequest.MarshalJSON()
 	if err == nil {
 		tflog.Debug(ctx, "Update request: "+string(requestJson))
 	}
-	updateOauthTokenExchangeTokenGeneratorMappings = updateOauthTokenExchangeTokenGeneratorMappings.Body(*createUpdateRequest)
-	updateOauthTokenExchangeTokenGeneratorMappingsResponse, httpResp, err := r.apiClient.OauthTokenExchangeProcessorApi.UpdateOauthTokenExchangeProcessorPolicyExecute(updateOauthTokenExchangeTokenGeneratorMappings)
+	updateOauthTokenExchangeTokenGeneratorMapping = updateOauthTokenExchangeTokenGeneratorMapping.Body(*createUpdateRequest)
+	updateOauthTokenExchangeTokenGeneratorMappingResponse, httpResp, err := r.apiClient.OauthTokenExchangeTokenGeneratorMappingsAPI.UpdateTokenGeneratorMappingByIdExecute(updateOauthTokenExchangeTokenGeneratorMapping)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OauthTokenExchangeTokenGeneratorMappings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OauthTokenExchangeTokenGeneratorMapping", err, httpResp)
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateOauthTokenExchangeTokenGeneratorMappingsResponse.MarshalJSON()
+	responseJson, err := updateOauthTokenExchangeTokenGeneratorMappingResponse.MarshalJSON()
 	if err == nil {
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	}
 	// Read the response
-	readOauthTokenExchangeTokenGeneratorMappingsResponse(ctx, updateOauthTokenExchangeTokenGeneratorMappingsResponse, &state)
+	var state oauthTokenExchangeTokenGeneratorMappingResourceModel
+	diags = readOauthTokenExchangeTokenGeneratorMappingResponse(ctx, updateOauthTokenExchangeTokenGeneratorMappingResponse, &state, plan)
+	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
-func (r *oauthTokenExchangeTokenGeneratorMappingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *oauthTokenExchangeTokenGeneratorMappingResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state oauthTokenExchangeTokenGeneratorMappingsResourceModel
+	var state oauthTokenExchangeTokenGeneratorMappingResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.OauthTokenExchangeProcessorApi.DeleteOauthTokenExchangeProcessorPolicyy(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	httpResp, err := r.apiClient.OauthTokenExchangeTokenGeneratorMappingsAPI.DeleteTokenGeneratorMappingById(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting OauthTokenExchangeTokenGeneratorMappings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting OauthTokenExchangeTokenGeneratorMapping", err, httpResp)
 	}
 
 }
-func (r *oauthTokenExchangeTokenGeneratorMappingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// The real attributes will be imported when terraform performs a read after the import.
-	// If no value is set here, Terraform will error out when importing.
+func (r *oauthTokenExchangeTokenGeneratorMappingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
