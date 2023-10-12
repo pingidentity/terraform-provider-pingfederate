@@ -6,15 +6,15 @@
 * **New Resource:** `pingfederate_oauth_token_exchange_processor_policy_token_generator_mapping` (#68)
 ​
 #### Data Sources
-* **New Data Source:** `pingfederate_administrative_account` (#64)
-* **New Data Source:** `pingfederate_authentication_api_settings` (#64)
-* **New Data Source:** `pingfederate_certificate_ca` (#64)
-* **New Data Source:** `pingfederate_idp_default_urls` (#64)
-* **New Data Source:** `pingfederate_key_pair_signing_import` (#64)
-* **New Data Source:** `pingfederate_key_pair_ssl_server_import` (#64)
-* **New Data Source:** `pingfederate_license_agreement` (#64)
-* **New Data Source:** `pingfederate_license` (#64)
-* **New Data Source:** `pingfederate_local_identity_identity_profile` (#64)
+* **New Data Source:** `pingfederate_administrative_account` (#70)
+* **New Data Source:** `pingfederate_authentication_api_settings` (#70)
+* **New Data Source:** `pingfederate_certificate_ca` (#70)
+* **New Data Source:** `pingfederate_idp_default_urls` (#70)
+* **New Data Source:** `pingfederate_key_pair_signing_import` (#70)
+* **New Data Source:** `pingfederate_key_pair_ssl_server_import` (#70)
+* **New Data Source:** `pingfederate_license_agreement` (#70)
+* **New Data Source:** `pingfederate_license` (#70)
+* **New Data Source:** `pingfederate_local_identity_identity_profile` (#70)
 
 ​
 # v0.1.0 September 28, 2023
