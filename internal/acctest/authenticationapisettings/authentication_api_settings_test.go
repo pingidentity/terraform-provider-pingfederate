@@ -70,7 +70,7 @@ resource "pingfederate_authentication_api_settings" "%[1]s" {
   include_request_context              = %[5]t
 }
 
-data "pingfederate_authentication_api_settings" "%[1]s"{
+data "pingfederate_authentication_api_settings" "%[1]s" {
   depends_on = [
     pingfederate_authentication_api_settings.%[1]s
   ]

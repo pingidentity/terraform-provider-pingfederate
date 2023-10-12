@@ -38,7 +38,7 @@ type keyPairsSigningImportDataSourceModel struct {
 	Id                      types.String `tfsdk:"id"`
 	SerialNumber            types.String `tfsdk:"serial_number"`
 	SubjectDN               types.String `tfsdk:"subject_dn"`
-	SubjectAlternativeNames types.Set    `tfsdk:"subjectAlternative_names"`
+	SubjectAlternativeNames types.Set    `tfsdk:"subject_alternative_names"`
 	IssuerDN                types.String `tfsdk:"issuer_dn"`
 	ValidFrom               types.String `tfsdk:"valid_from"`
 	Expires                 types.String `tfsdk:"expires"`
@@ -151,7 +151,9 @@ func (r *keyPairsSigningImportDataSource) Schema(ctx context.Context, req dataso
 			},
 			"rotation_settings": schema.SingleNestedAttribute{
 				Description: "The local identity profile data store configuration.",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Description: "The base DN to search from. If not specified, the search will start at the LDAP's root.",
@@ -161,13 +163,13 @@ func (r *keyPairsSigningImportDataSource) Schema(ctx context.Context, req dataso
 					},
 					"creation_buffer_days": schema.Int64Attribute{
 						Description: "Buffer days before key pair expiration for creation of a new key pair.",
-						Required:    true,
+						Required:    false,
 						Optional:    false,
 						Computed:    true,
 					},
 					"activation_buffer_days": schema.Int64Attribute{
 						Description: "Buffer days before key pair expiration for activation of the new key pair.",
-						Required:    true,
+						Required:    false,
 						Optional:    false,
 						Computed:    true,
 					},

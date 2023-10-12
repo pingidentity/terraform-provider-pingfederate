@@ -60,9 +60,9 @@ resource "pingfederate_license_agreement" "%[1]s" {
   accepted              = %[3]t
 }
 
-data "pingfederate_license_agreement" "%[1]s"{
+data "pingfederate_license_agreement" "%[1]s" {
   depends_on = [
-	pingfederate_license_agreement.%[1]s
+    pingfederate_license_agreement.%[1]s
   ]
 }`, resourceName,
 		resourceModel.licenseAgreementUrl,

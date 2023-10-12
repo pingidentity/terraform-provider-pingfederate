@@ -31,14 +31,17 @@ provider "pingfederate" {
 }
 
 resource "pingfederate_certificate_ca" "myCertificateCa" {
-  file_data = ""
+  custom_id = "example"
 }
 
 data "pingfederate_certificate_ca" "myCertificateCa" {
-  file_data = pingfederate_certificate_ca.myCertificateCa.file_data
+  id = "pingfederate_certificate_ca.myCertificateCa.custom_id"
+  depends_on = [
+    pingfederate_certificate_ca.myCertificateCa
+  ]
 }
 resource "pingfederate_certificate_ca" "certificateCaExample" {
-  file_data = "data.pingfederate_certificate_ca.myCertificateCa.file_data"
+  custom_id = "${data.pingfederate_certificate_ca.myCertificateCa.id}2"
 }
 ```
 
@@ -47,12 +50,21 @@ resource "pingfederate_certificate_ca" "certificateCaExample" {
 
 ### Required
 
-- `file_data` (String) The certificate data in PEM format. New line characters should be omitted or encoded in this value.
-
-### Optional
-
-- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.
+- `id` (String) The persistent, unique ID for the certificate
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.
+- `expires` (String) The end date up until which the item is valid, in ISO 8601 format (UTC)
+- `issuer_dn` (String) The issuer's distinguished name
+- `key_algorithm` (String) The public key algorithm
+- `key_size` (Number) The public key size
+- `serial_number` (String) The serial number assigned by the CA
+- `sha1_fingerprint` (String) SHA-1 fingerprint in Hex encoding
+- `sha256_fingerprint` (String) SHA-256 fingerprint in Hex encoding
+- `signature_algorithm` (String) The signature algorithm
+- `status` (String) Status of the item.
+- `subject_alternative_names` (Set of String) The subject alternative names (SAN)
+- `subject_dn` (String) The subject's distinguished name
+- `valid_from` (String) The start date from which the item is valid, in ISO 8601 format (UTC)
+- `version` (Number) The X.509 version to which the item conforms

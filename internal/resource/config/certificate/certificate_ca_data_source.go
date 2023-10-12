@@ -37,7 +37,7 @@ type certificatesDataSourceModel struct {
 	Id                      types.String `tfsdk:"id"`
 	SerialNumber            types.String `tfsdk:"serial_number"`
 	SubjectDN               types.String `tfsdk:"subject_dn"`
-	SubjectAlternativeNames types.Set    `tfsdk:"subjectAlternative_names"`
+	SubjectAlternativeNames types.Set    `tfsdk:"subject_alternative_names"`
 	IssuerDN                types.String `tfsdk:"issuer_dn"`
 	ValidFrom               types.String `tfsdk:"valid_from"`
 	Expires                 types.String `tfsdk:"expires"`

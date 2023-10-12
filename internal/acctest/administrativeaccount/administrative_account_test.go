@@ -74,13 +74,8 @@ resource "pingfederate_administrative_account" "%[1]s" {
   username    = "%[6]s"
 }
 
-data "pingfederate_administrative_account" "%[1]s"{
-  roles       = %[4]s
-  password    = "%[5]s"
-  username = "%[6]s"
-  depends_on = [
-    pingfederate_administrative_account.%[1]s
-  ]
+data "pingfederate_administrative_account" "%[1]s" {
+  id = pingfederate_administrative_account.%[1]s.username
 }`, resourceName,
 		resourceModel.active,
 		resourceModel.description,

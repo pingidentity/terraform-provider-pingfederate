@@ -16,12 +16,15 @@ provider "pingfederate" {
 }
 
 resource "pingfederate_certificate_ca" "myCertificateCa" {
-  status = "example"
+  custom_id = "example"
 }
 
 data "pingfederate_certificate_ca" "myCertificateCa" {
-  status = "pingfederate_certificate_ca.myCertificateCa.id"
+  id = "pingfederate_certificate_ca.myCertificateCa.custom_id"
+  depends_on = [
+    pingfederate_certificate_ca.myCertificateCa
+  ]
 }
 resource "pingfederate_certificate_ca" "certificateCaExample" {
-  status = "${data.pingfederate_certificate_ca.myCertificateCa.id}2"
+  custom_id = "${data.pingfederate_certificate_ca.myCertificateCa.id}2"
 }

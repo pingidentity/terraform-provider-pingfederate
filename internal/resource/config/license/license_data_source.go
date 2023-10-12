@@ -183,7 +183,7 @@ func (r *licenseDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 				Optional:    false,
 				Computed:    true,
 			},
-			"bridgeMode": schema.BoolAttribute{
+			"bridge_mode": schema.BoolAttribute{
 				Description: "Indicates whether license agreement has been accepted. The default value is false.",
 				Required:    false,
 				Optional:    false,
@@ -235,7 +235,7 @@ func (r *licenseDataSource) Configure(_ context.Context, req datasource.Configur
 }
 
 // Read a DseeCompatAdministrativeAccountResponse object into the model struct
-func readLicenseResponseDataSource(ctx context.Context, r *client.LicenseView, state *licenseDataSourceModel, expectedValues *licenseDataSourceModel, createPlan types.String) {
+func readLicenseResponseDataSource(ctx context.Context, r *client.LicenseView, state *licenseDataSourceModel, expectedValues *licenseDataSourceModel) {
 	state.Id = types.StringValue("id")
 	state.Name = internaltypes.StringTypeOrNil(r.Name, false)
 	state.MaxConnections = internaltypes.Int64TypeOrNil(r.MaxConnections)
@@ -261,14 +261,14 @@ func readLicenseResponseDataSource(ctx context.Context, r *client.LicenseView, s
 		"start_date":       basetypes.StringType{},
 		"end_date":         basetypes.StringType{},
 	}
-	state.LicenseGroups, _ = types.ObjectValueFrom(ctx, licenseGroupsAttrTypes, licenseGroups)
+	state.LicenseGroups, _ = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: licenseGroupsAttrTypes}, licenseGroups)
 
 	features := r.Features
 	featuresAttrTypes := map[string]attr.Type{
 		"name":  basetypes.StringType{},
 		"value": basetypes.StringType{},
 	}
-	state.Features, _ = types.ObjectValueFrom(ctx, featuresAttrTypes, features)
+	state.Features, _ = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: featuresAttrTypes}, features)
 }
 
 // Read resource information
@@ -296,7 +296,7 @@ func (r *licenseDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	}
 
 	// Read the response into the state
-	readLicenseResponseDataSource(ctx, apiReadLicense, &state, &state, state.FileData)
+	readLicenseResponseDataSource(ctx, apiReadLicense, &state, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

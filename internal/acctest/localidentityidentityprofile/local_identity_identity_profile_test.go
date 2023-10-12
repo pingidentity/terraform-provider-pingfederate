@@ -73,6 +73,7 @@ resource "pingfederate_authentication_policy_contract" "authenticationPolicyCont
   extended_attributes = [{ name = "extended_attribute" }, { name = "extended_attribute2" }]
   name                = "example"
 }
+
 resource "pingfederate_local_identity_identity_profile" "%[1]s" {
   custom_id = "%[2]s"
   name      = "%[3]s"
@@ -84,14 +85,8 @@ resource "pingfederate_local_identity_identity_profile" "%[1]s" {
 
 }
 
-data "pingfederate_local_identity_identity_profile" "%[1]s"{
-  name      = "%[3]s"
-  apc_id = {
-    id = pingfederate_authentication_policy_contract.authenticationPolicyContractsExample.id
-  }
-  depends_on = [
-	pingfederate_local_identity_identity_profile.%[1]s
-  ]
+data "pingfederate_local_identity_identity_profile" "%[1]s" {
+  id = pingfederate_local_identity_identity_profile.%[1]s.custom_id
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.name,

@@ -106,7 +106,7 @@ func (r *administrativeAccountDataSource) Schema(ctx context.Context, req dataso
 			},
 			"username": schema.StringAttribute{
 				Description: "Username for the Administrative Account.",
-				Required:    true,
+				Required:    false,
 				Optional:    false,
 				Computed:    true,
 			},
@@ -137,9 +137,9 @@ func readAdministrativeAccountResponseDataSource(ctx context.Context, r *client.
 	state.Id = types.StringValue(r.Username)
 	state.Username = types.StringValue(r.Username)
 	state.EncryptedPassword = types.StringPointerValue(r.EncryptedPassword)
-	state.Active = types.BoolValue(*r.Active)
+	state.Active = types.BoolPointerValue(r.Active)
 	state.Description = internaltypes.StringTypeOrNil(r.Description, false)
-	state.Auditor = types.BoolValue(*r.Auditor)
+	state.Auditor = types.BoolPointerValue(r.Auditor)
 	state.PhoneNumber = internaltypes.StringTypeOrNil(r.PhoneNumber, false)
 	state.EmailAddress = internaltypes.StringTypeOrNil(r.EmailAddress, false)
 	state.Department = internaltypes.StringTypeOrNil(r.Department, false)

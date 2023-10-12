@@ -16,17 +16,20 @@ provider "pingfederate" {
 }
 
 resource "pingfederate_administrative_account" "myAdministrativeAccount" {
+  id       = "example"
   username = "data-source-example"
   password = "2FederateM0re"
   roles    = ["USER_ADMINISTRATOR"]
 }
 
 data "pingfederate_administrative_account" "myAdministrativeAccount" {
+  id       = "example"
   username = pingfederate_administrative_account.myAdministrativeAccount.username
   password = "2FederateM0re"
   roles    = ["USER_ADMINISTRATOR"]
 }
 resource "pingfederate_administrative_account" "administrativeAccountExample" {
+  id       = "example"
   username = "${data.pingfederate_administrative_account.myAdministrativeAccount.username}2"
   password = "2FederateM0re"
   roles    = ["USER_ADMINISTRATOR"]

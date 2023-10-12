@@ -72,19 +72,19 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 			},
 			"name": schema.StringAttribute{
 				Description: "The local identity profile name. Name is unique.",
-				Required:    true,
+				Required:    false,
 				Optional:    false,
 				Computed:    true,
 			},
 			"apc_id": schema.SingleNestedAttribute{
 				Description: "The reference to the authentication policy contract to use for this local identity profile.",
-				Required:    true,
+				Required:    false,
 				Optional:    false,
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Description: "The ID of the resource.",
-						Required:    true,
+						Required:    false,
 						Optional:    false,
 						Computed:    true,
 					},
@@ -176,7 +176,7 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 						Attributes: map[string]schema.Attribute{
 							"id": schema.StringAttribute{
 								Description: "The ID of the resource.",
-								Required:    true,
+								Required:    false,
 								Optional:    false,
 								Computed:    true,
 							},
@@ -190,7 +190,7 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 					},
 					"template_name": schema.StringAttribute{
 						Description: "The template name for the registration configuration.",
-						Required:    true,
+						Required:    false,
 						Optional:    false,
 						Computed:    true,
 					},
@@ -220,7 +220,7 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 						Attributes: map[string]schema.Attribute{
 							"id": schema.StringAttribute{
 								Description: "The ID of the resource.",
-								Required:    true,
+								Required:    false,
 								Optional:    false,
 								Computed:    true,
 							},
@@ -257,7 +257,7 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 					},
 					"template_name": schema.StringAttribute{
 						Description: "The template name for end-user profile management.",
-						Required:    true,
+						Required:    false,
 						Optional:    false,
 						Computed:    true,
 					},
@@ -278,7 +278,7 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 							Attributes: map[string]schema.Attribute{
 								"type": schema.StringAttribute{
 									Description: "The type of the local identity field.",
-									Required:    true,
+									Required:    false,
 									Optional:    false,
 									Computed:    true,
 									Validators: []validator.String{
@@ -287,13 +287,13 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 								},
 								"id": schema.StringAttribute{
 									Description: "Id of the local identity field.",
-									Required:    true,
+									Required:    false,
 									Optional:    false,
 									Computed:    true,
 								},
 								"label": schema.StringAttribute{
 									Description: "Label of the local identity field.",
-									Required:    true,
+									Required:    false,
 									Optional:    false,
 									Computed:    true,
 								},
@@ -413,13 +413,13 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 					},
 					"field_for_email_to_verify": schema.StringAttribute{
 						Description: "Field used for email ownership verification. Note: Not required when emailVerificationEnabled is set to false.",
-						Required:    true,
+						Required:    false,
 						Optional:    false,
 						Computed:    true,
 					},
 					"field_storing_verification_status": schema.StringAttribute{
 						Description: "Field used for storing email verification status. Note: Not required when emailVerificationEnabled is set to false.",
-						Required:    true,
+						Required:    false,
 						Optional:    false,
 						Computed:    true,
 					},
@@ -431,7 +431,7 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 						Attributes: map[string]schema.Attribute{
 							"id": schema.StringAttribute{
 								Description: "The ID of the resource.",
-								Required:    true,
+								Required:    false,
 								Optional:    false,
 								Computed:    true,
 							},
@@ -465,13 +465,13 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 				Attributes: map[string]schema.Attribute{
 					"base_dn": schema.StringAttribute{
 						Description: "The base DN to search from. If not specified, the search will start at the LDAP's root.",
-						Required:    true,
+						Required:    false,
 						Optional:    false,
 						Computed:    true,
 					},
 					"type": schema.StringAttribute{
 						Description: "The data store config type.",
-						Required:    true,
+						Required:    false,
 						Optional:    false,
 						Computed:    true,
 						Validators: []validator.String{
@@ -480,13 +480,13 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 					},
 					"data_store_ref": schema.SingleNestedAttribute{
 						Description: "Reference to the associated data store.",
-						Required:    true,
+						Required:    false,
 						Optional:    false,
 						Computed:    true,
 						Attributes: map[string]schema.Attribute{
 							"id": schema.StringAttribute{
 								Description: "The ID of the resource.",
-								Required:    true,
+								Required:    false,
 								Optional:    false,
 								Computed:    true,
 							},
@@ -500,14 +500,14 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 					},
 					"data_store_mapping": schema.MapNestedAttribute{
 						Description: "The data store mapping.",
-						Required:    true,
+						Required:    false,
 						Optional:    false,
 						Computed:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"type": schema.StringAttribute{
 									Description: "The data store attribute type.",
-									Required:    true,
+									Required:    false,
 									Optional:    false,
 									Computed:    true,
 									Validators: []validator.String{
@@ -516,7 +516,7 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 								},
 								"name": schema.StringAttribute{
 									Description: "The data store attribute name.",
-									Required:    true,
+									Required:    false,
 									Optional:    false,
 									Computed:    true,
 								},
@@ -532,13 +532,13 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 					},
 					"create_pattern": schema.StringAttribute{
 						Description: "The Relative DN Pattern that will be used to create objects in the directory.",
-						Required:    true,
+						Required:    false,
 						Optional:    false,
 						Computed:    true,
 					},
 					"object_class": schema.StringAttribute{
 						Description: "The Object Class used by the new objects stored in the LDAP data store.",
-						Required:    true,
+						Required:    false,
 						Optional:    false,
 						Computed:    true,
 					},

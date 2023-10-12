@@ -49,7 +49,7 @@ func (r *idpDefaultUrlsDataSource) Schema(ctx context.Context, req datasource.Sc
 			},
 			"idp_error_msg": schema.StringAttribute{
 				Description: "Provide the error text displayed in a user's browser when an SSO operation fails.",
-				Required:    true,
+				Required:    false,
 				Optional:    false,
 				Computed:    true,
 			},

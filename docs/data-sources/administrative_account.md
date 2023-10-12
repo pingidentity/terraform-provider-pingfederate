@@ -31,17 +31,20 @@ provider "pingfederate" {
 }
 
 resource "pingfederate_administrative_account" "myAdministrativeAccount" {
+  id       = "example"
   username = "data-source-example"
   password = "2FederateM0re"
   roles    = ["USER_ADMINISTRATOR"]
 }
 
 data "pingfederate_administrative_account" "myAdministrativeAccount" {
+  id       = "example"
   username = pingfederate_administrative_account.myAdministrativeAccount.username
   password = "2FederateM0re"
   roles    = ["USER_ADMINISTRATOR"]
 }
 resource "pingfederate_administrative_account" "administrativeAccountExample" {
+  id       = "example"
   username = "${data.pingfederate_administrative_account.myAdministrativeAccount.username}2"
   password = "2FederateM0re"
   roles    = ["USER_ADMINISTRATOR"]
@@ -53,19 +56,17 @@ resource "pingfederate_administrative_account" "administrativeAccountExample" {
 
 ### Required
 
-- `password` (String, Sensitive) Password for the Account. This field is only applicable during a POST operation.
-- `roles` (Set of String) Roles available for an administrator. USER_ADMINISTRATOR - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. CRYPTO_ADMINISTRATOR - Can manage local keys and certificates. ADMINISTRATOR - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. EXPRESSION_ADMINISTRATOR - Can add and update OGNL expressions.
-- `username` (String) Username for the Administrative Account.
+- `id` (String) Computed attribute tied to the username property of this resource
 
-### Optional
+### Read-Only
 
 - `active` (Boolean) Indicates whether the account is active or not.
 - `auditor` (Boolean) Indicates whether the account belongs to an Auditor. An Auditor has View-only permissions for all administrative functions. An Auditor cannot have any administrative roles.
 - `department` (String) The Department name of account user.
 - `description` (String) Description of the account.
 - `email_address` (String) Email address associated with the account.
+- `encrypted_password` (String) For GET requests, this field contains the encrypted account password. For POST and PUT requests, if you wish to re-use the password from an API response to this endpoint, this field should be passed back unchanged.
+- `password` (String) Password for the Account. This field is only applicable during a POST operation.
 - `phone_number` (String) Phone number associated with the account.
-
-### Read-Only
-
-- `id` (String) The ID of this resource.
+- `roles` (Set of String) Roles available for an administrator. USER_ADMINISTRATOR - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. CRYPTO_ADMINISTRATOR - Can manage local keys and certificates. ADMINISTRATOR - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. EXPRESSION_ADMINISTRATOR - Can add and update OGNL expressions.
+- `username` (String) Username for the Administrative Account.

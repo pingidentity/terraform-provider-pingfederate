@@ -54,11 +54,14 @@ resource "pingfederate_license" "%[1]s" {
   file_data = "%[2]s"
 }
 
-data "pingfederate_license" "%[1]s"{
-  file_data = "%[2]s"
+data "pingfederate_license" "%[1]s" {
   depends_on = [
-	pingfederate_license.%[1]s
+    pingfederate_license.%[1]s
   ]
+}
+
+resource "pingfederate_license" "licenseExample" {
+  file_data = "%[2]s"
 }`, resourceName,
 		fileData,
 	)
