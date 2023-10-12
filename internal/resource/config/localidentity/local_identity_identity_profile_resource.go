@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -31,8 +30,89 @@ var (
 	_ resource.ResourceWithImportState = &localIdentityIdentityProfilesResource{}
 )
 
+var (
+	authSourceUpdatePolicyAttrTypes = map[string]attr.Type{
+		"store_attributes":  basetypes.BoolType{},
+		"retain_attributes": basetypes.BoolType{},
+		"update_attributes": basetypes.BoolType{},
+		"update_interval":   basetypes.Int64Type{},
+	}
+
+	authSourcesAttrTypes = map[string]attr.Type{
+		"id":     basetypes.StringType{},
+		"source": basetypes.StringType{},
+	}
+
+	registrationConfigAttrTypes = map[string]attr.Type{
+		"captcha_enabled":                         basetypes.BoolType{},
+		"captcha_provider_ref":                    basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"template_name":                           basetypes.StringType{},
+		"create_authn_session_after_registration": basetypes.BoolType{},
+		"username_field":                          basetypes.StringType{},
+		"this_is_my_device_enabled":               basetypes.BoolType{},
+		"registration_workflow":                   basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"execute_workflow":                        basetypes.StringType{},
+	}
+
+	profileConfigAttrTypes = map[string]attr.Type{
+		"delete_identity_enabled": basetypes.BoolType{},
+		"template_name":           basetypes.StringType{},
+	}
+
+	fieldItemAttrTypes = map[string]attr.Type{
+		"type":                    basetypes.StringType{},
+		"id":                      basetypes.StringType{},
+		"label":                   basetypes.StringType{},
+		"registration_page_field": basetypes.BoolType{},
+		"profile_page_field":      basetypes.BoolType{},
+		"attributes":              basetypes.MapType{ElemType: basetypes.BoolType{}},
+	}
+
+	fieldConfigAttrTypes = map[string]attr.Type{
+		"fields":                        basetypes.SetType{ElemType: types.ObjectType{AttrTypes: fieldItemAttrTypes}},
+		"strip_space_from_unique_field": basetypes.BoolType{},
+	}
+
+	emailVerificationConfigAttrTypes = map[string]attr.Type{
+		"email_verification_enabled":               basetypes.BoolType{},
+		"verify_email_template_name":               basetypes.StringType{},
+		"email_verification_sent_template_name":    basetypes.StringType{},
+		"email_verification_success_template_name": basetypes.StringType{},
+		"email_verification_error_template_name":   basetypes.StringType{},
+		"email_verification_type":                  basetypes.StringType{},
+		"otp_length":                               basetypes.Int64Type{},
+		"otp_retry_attempts":                       basetypes.Int64Type{},
+		"allowed_otp_character_set":                basetypes.StringType{},
+		"otp_time_to_live":                         basetypes.Int64Type{},
+		"email_verification_otp_template_name":     basetypes.StringType{},
+		"otl_time_to_live":                         basetypes.Int64Type{},
+		"field_for_email_to_verify":                basetypes.StringType{},
+		"field_storing_verification_status":        basetypes.StringType{},
+		"notification_publisher_ref":               basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"require_verified_email":                   basetypes.BoolType{},
+		"require_verified_email_template_name":     basetypes.StringType{},
+	}
+
+	dsConfigAttrTypes = map[string]attr.Type{
+		"base_dn":                  basetypes.StringType{},
+		"type":                     basetypes.StringType{},
+		"data_store_ref":           basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"data_store_mapping":       basetypes.MapType{ElemType: types.ObjectType{AttrTypes: dsMappingAttrtypes}},
+		"create_pattern":           basetypes.StringType{},
+		"object_class":             basetypes.StringType{},
+		"auxiliary_object_classes": basetypes.SetType{ElemType: basetypes.StringType{}},
+	}
+
+	dsMappingAttrtypes = map[string]attr.Type{
+		"type":     basetypes.StringType{},
+		"name":     basetypes.StringType{},
+		"metadata": basetypes.MapType{ElemType: basetypes.StringType{}},
+	}
+)
+
 // LocalIdentityIdentityProfilesResource is a helper function to simplify the provider implementation.
 func LocalIdentityIdentityProfilesResource() resource.Resource {
+
 	return &localIdentityIdentityProfilesResource{}
 }
 
@@ -43,19 +123,22 @@ type localIdentityIdentityProfilesResource struct {
 }
 
 type localIdentityIdentityProfilesResourceModel struct {
-	Id                      types.String `tfsdk:"id"`
-	CustomId                types.String `tfsdk:"custom_id"`
-	Name                    types.String `tfsdk:"name"`
-	ApcId                   types.Object `tfsdk:"apc_id"`
-	AuthSources             types.Set    `tfsdk:"auth_sources"`
-	AuthSourceUpdatePolicy  types.Object `tfsdk:"auth_source_update_policy"`
-	RegistrationEnabled     types.Bool   `tfsdk:"registration_enabled"`
-	RegistrationConfig      types.Object `tfsdk:"registration_config"`
+	Id       types.String `tfsdk:"id"`
+	CustomId types.String `tfsdk:"custom_id"`
+	Name     types.String `tfsdk:"name"`
+	ApcId    types.Object `tfsdk:"apc_id"`
+
+	AuthSources            types.Set    `tfsdk:"auth_sources"`
+	AuthSourceUpdatePolicy types.Object `tfsdk:"auth_source_update_policy"`
+	RegistrationEnabled    types.Bool   `tfsdk:"registration_enabled"`
+	RegistrationConfig     types.Object `tfsdk:"registration_config"`
+
 	ProfileConfig           types.Object `tfsdk:"profile_config"`
 	FieldConfig             types.Object `tfsdk:"field_config"`
 	EmailVerificationConfig types.Object `tfsdk:"email_verification_config"`
-	DataStoreConfig         types.Object `tfsdk:"data_store_config"`
-	ProfileEnabled          types.Bool   `tfsdk:"profile_enabled"`
+
+	DataStoreConfig types.Object `tfsdk:"data_store_config"`
+	ProfileEnabled  types.Bool   `tfsdk:"profile_enabled"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -63,17 +146,6 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 	schema := schema.Schema{
 		Description: "Manages Local Identity Identity Profiles",
 		Attributes: map[string]schema.Attribute{
-			"custom_id": schema.StringAttribute{
-				Description: "The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
-				Optional:    true,
-				Computed:    true,
-				Validators: []validator.String{
-					stringvalidator.RegexMatches(
-						regexp.MustCompile("^[a-zA-Z0-9_]{1,32}$"),
-						"The local Identity Profile ID must be less than 33 characters, contain no spaces, and be alphanumeric.",
-					),
-				},
-			},
 			"name": schema.StringAttribute{
 				Description: "The local identity profile name. Name is unique.",
 				Required:    true,
@@ -81,17 +153,7 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 			"apc_id": schema.SingleNestedAttribute{
 				Description: "The reference to the authentication policy contract to use for this local identity profile.",
 				Required:    true,
-				Attributes: map[string]schema.Attribute{
-					"id": schema.StringAttribute{
-						Description: "The ID of the resource.",
-						Required:    true,
-					},
-					"location": schema.StringAttribute{
-						Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-						Optional:    false,
-						Computed:    true,
-					},
-				},
+				Attributes:  resourcelink.Schema(),
 			},
 			"auth_sources": schema.SetNestedAttribute{
 				Description: "The local identity authentication sources. Sources are unique.",
@@ -153,17 +215,7 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 						Description: "Reference to the associated CAPTCHA provider.",
 						Computed:    true,
 						Optional:    true,
-						Attributes: map[string]schema.Attribute{
-							"id": schema.StringAttribute{
-								Description: "The ID of the resource.",
-								Required:    true,
-							},
-							"location": schema.StringAttribute{
-								Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-								Optional:    false,
-								Computed:    true,
-							},
-						},
+						Attributes:  resourcelink.Schema(),
 					},
 					"template_name": schema.StringAttribute{
 						Description: "The template name for the registration configuration.",
@@ -187,17 +239,7 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 					"registration_workflow": schema.SingleNestedAttribute{
 						Description: "The policy fragment to be executed as part of the registration workflow.",
 						Optional:    true,
-						Attributes: map[string]schema.Attribute{
-							"id": schema.StringAttribute{
-								Description: "The ID of the resource.",
-								Required:    true,
-							},
-							"location": schema.StringAttribute{
-								Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-								Optional:    false,
-								Computed:    true,
-							},
-						},
+						Attributes:  resourcelink.Schema(),
 					},
 					"execute_workflow": schema.StringAttribute{
 						Description: "This setting indicates whether PingFederate should execute the workflow before or after account creation. The default is to run the registration workflow after account creation.",
@@ -352,17 +394,7 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 					"notification_publisher_ref": schema.SingleNestedAttribute{
 						Description: "Reference to the associated notification publisher.",
 						Optional:    true,
-						Attributes: map[string]schema.Attribute{
-							"id": schema.StringAttribute{
-								Description: "The ID of the resource.",
-								Required:    true,
-							},
-							"location": schema.StringAttribute{
-								Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-								Optional:    false,
-								Computed:    true,
-							},
-						},
+						Attributes:  resourcelink.Schema(),
 					},
 					"require_verified_email": schema.BoolAttribute{
 						Description: "Whether the user must verify their email address before they can complete a single sign-on transaction. The default is false.",
@@ -457,6 +489,8 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 	}
 
 	config.AddCommonSchema(&schema)
+	config.AddCustomId(&schema, false, true,
+		"The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.")
 	resp.Schema = schema
 }
 
@@ -560,6 +594,7 @@ func (r *localIdentityIdentityProfilesResource) Configure(_ context.Context, req
 	r.apiClient = providerCfg.ApiClient
 
 }
+
 func (r *localIdentityIdentityProfilesResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 	var model localIdentityIdentityProfilesResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
@@ -655,25 +690,19 @@ func (r *localIdentityIdentityProfilesResource) ValidateConfig(ctx context.Conte
 	}
 }
 
-func readLocalIdentityIdentityProfilesResponse(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfilesResourceModel, diags *diag.Diagnostics) {
+func readLocalIdentityIdentityProfilesResponse(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfilesResourceModel) diag.Diagnostics {
+	var diags, respDiags diag.Diagnostics
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
 	state.CustomId = internaltypes.StringTypeOrNil(r.Id, false)
 	state.Name = types.StringValue(r.Name)
-	state.ApcId = resourcelink.ToState(ctx, &r.ApcId, diags)
+	state.ApcId, respDiags = resourcelink.ToState(ctx, &r.ApcId)
+	diags.Append(respDiags...)
 
+	// auth source update policy
 	authSourceUpdatePolicy := r.AuthSourceUpdatePolicy
-	authSourceUpdatePolicyAttrTypes := map[string]attr.Type{
-		"store_attributes":  basetypes.BoolType{},
-		"retain_attributes": basetypes.BoolType{},
-		"update_attributes": basetypes.BoolType{},
-		"update_interval":   basetypes.Int64Type{},
-	}
 	state.AuthSourceUpdatePolicy, _ = types.ObjectValueFrom(ctx, authSourceUpdatePolicyAttrTypes, authSourceUpdatePolicy)
 
-	authSourcesAttrTypes := map[string]attr.Type{
-		"id":     basetypes.StringType{},
-		"source": basetypes.StringType{},
-	}
+	// auth sources
 	authSources := r.GetAuthSources()
 	var authSourcesSliceAttrVal = []attr.Value{}
 	authSourcesSliceType := types.ObjectType{AttrTypes: authSourcesAttrTypes}
@@ -688,93 +717,34 @@ func readLocalIdentityIdentityProfilesResponse(ctx context.Context, r *client.Lo
 	state.AuthSources, _ = types.SetValue(authSourcesSliceType, authSourcesSliceAttrVal)
 
 	registrationConfig := r.RegistrationConfig
-	resourceLinkTypes := map[string]attr.Type{
-		"id":       basetypes.StringType{},
-		"location": basetypes.StringType{},
-	}
-	registrationConfigAttrTypes := map[string]attr.Type{
-		"captcha_enabled":                         basetypes.BoolType{},
-		"captcha_provider_ref":                    basetypes.ObjectType{AttrTypes: resourceLinkTypes},
-		"template_name":                           basetypes.StringType{},
-		"create_authn_session_after_registration": basetypes.BoolType{},
-		"username_field":                          basetypes.StringType{},
-		"this_is_my_device_enabled":               basetypes.BoolType{},
-		"registration_workflow":                   basetypes.ObjectType{AttrTypes: resourceLinkTypes},
-		"execute_workflow":                        basetypes.StringType{},
-	}
 	state.RegistrationConfig, _ = types.ObjectValueFrom(ctx, registrationConfigAttrTypes, registrationConfig)
+
 	state.RegistrationEnabled = types.BoolValue(r.GetRegistrationEnabled())
 
 	profileConfig := r.ProfileConfig
-	profileConfigAttrTypes := map[string]attr.Type{
-		"delete_identity_enabled": basetypes.BoolType{},
-		"template_name":           basetypes.StringType{},
-	}
 	state.ProfileConfig, _ = types.ObjectValueFrom(ctx, profileConfigAttrTypes, profileConfig)
 
+	// field config
 	fieldConfig := r.GetFieldConfig()
-	fieldItemAttrTypes := map[string]attr.Type{
-		"type":                    basetypes.StringType{},
-		"id":                      basetypes.StringType{},
-		"label":                   basetypes.StringType{},
-		"registration_page_field": basetypes.BoolType{},
-		"profile_page_field":      basetypes.BoolType{},
-		"attributes":              basetypes.MapType{ElemType: basetypes.BoolType{}},
-	}
 	fieldType := types.ObjectType{AttrTypes: fieldItemAttrTypes}
 	fieldAttrsStruct := fieldConfig.GetFields()
 	fieldAttrsState, _ := types.SetValueFrom(ctx, fieldType, fieldAttrsStruct)
-	fieldConfigAttrTypes := map[string]attr.Type{
-		"fields":                        basetypes.SetType{ElemType: types.ObjectType{AttrTypes: fieldItemAttrTypes}},
-		"strip_space_from_unique_field": basetypes.BoolType{},
-	}
-	StripSpaceFromUniqueFieldState := types.BoolPointerValue(r.GetFieldConfig().StripSpaceFromUniqueField)
+	stripSpaceFromUniqueFieldState := types.BoolPointerValue(r.GetFieldConfig().StripSpaceFromUniqueField)
 	fieldConfigAttrValues := map[string]attr.Value{
 		"fields":                        fieldAttrsState,
-		"strip_space_from_unique_field": StripSpaceFromUniqueFieldState,
+		"strip_space_from_unique_field": stripSpaceFromUniqueFieldState,
 	}
 	state.FieldConfig, _ = types.ObjectValue(fieldConfigAttrTypes, fieldConfigAttrValues)
 
 	emailVerificationConfig := r.EmailVerificationConfig
-	emailVerificationConfigAttrTypes := map[string]attr.Type{
-		"email_verification_enabled":               basetypes.BoolType{},
-		"verify_email_template_name":               basetypes.StringType{},
-		"email_verification_sent_template_name":    basetypes.StringType{},
-		"email_verification_success_template_name": basetypes.StringType{},
-		"email_verification_error_template_name":   basetypes.StringType{},
-		"email_verification_type":                  basetypes.StringType{},
-		"otp_length":                               basetypes.Int64Type{},
-		"otp_retry_attempts":                       basetypes.Int64Type{},
-		"allowed_otp_character_set":                basetypes.StringType{},
-		"otp_time_to_live":                         basetypes.Int64Type{},
-		"email_verification_otp_template_name":     basetypes.StringType{},
-		"otl_time_to_live":                         basetypes.Int64Type{},
-		"field_for_email_to_verify":                basetypes.StringType{},
-		"field_storing_verification_status":        basetypes.StringType{},
-		"notification_publisher_ref":               basetypes.ObjectType{AttrTypes: resourceLinkTypes},
-		"require_verified_email":                   basetypes.BoolType{},
-		"require_verified_email_template_name":     basetypes.StringType{},
-	}
 	state.EmailVerificationConfig, _ = types.ObjectValueFrom(ctx, emailVerificationConfigAttrTypes, emailVerificationConfig)
 
+	//  data store config
 	dsConfig := r.DataStoreConfig
-	dsMappingAttrtypes := map[string]attr.Type{
-		"type":     basetypes.StringType{},
-		"name":     basetypes.StringType{},
-		"metadata": basetypes.MapType{ElemType: basetypes.StringType{}},
-	}
-	dsConfigAttrTypes := map[string]attr.Type{
-		"base_dn":                  basetypes.StringType{},
-		"type":                     basetypes.StringType{},
-		"data_store_ref":           basetypes.ObjectType{AttrTypes: resourceLinkTypes},
-		"data_store_mapping":       basetypes.MapType{ElemType: types.ObjectType{AttrTypes: dsMappingAttrtypes}},
-		"create_pattern":           basetypes.StringType{},
-		"object_class":             basetypes.StringType{},
-		"auxiliary_object_classes": basetypes.SetType{ElemType: basetypes.StringType{}},
-	}
 	state.DataStoreConfig, _ = types.ObjectValueFrom(ctx, dsConfigAttrTypes, dsConfig)
-	state.ProfileEnabled = types.BoolPointerValue(r.ProfileEnabled)
 
+	state.ProfileEnabled = types.BoolPointerValue(r.ProfileEnabled)
+	return diags
 }
 
 func (r *localIdentityIdentityProfilesResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -785,8 +755,7 @@ func (r *localIdentityIdentityProfilesResource) Create(ctx context.Context, req 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apcId := plan.ApcId.Attributes()["id"].(types.String).ValueString()
-	apcResourceLink := client.NewResourceLink(apcId)
+	apcResourceLink := resourcelink.ClientStruct(plan.ApcId)
 	createLocalIdentityIdentityProfiles := client.NewLocalIdentityProfile(plan.Name.ValueString(), *apcResourceLink)
 	err := addOptionalLocalIdentityIdentityProfilesFields(ctx, createLocalIdentityIdentityProfiles, plan)
 	if err != nil {
@@ -812,7 +781,8 @@ func (r *localIdentityIdentityProfilesResource) Create(ctx context.Context, req 
 	// Read the response into the state
 	var state localIdentityIdentityProfilesResourceModel
 
-	readLocalIdentityIdentityProfilesResponse(ctx, localIdentityIdentityProfilesResponse, &state, &resp.Diagnostics)
+	diags = readLocalIdentityIdentityProfilesResponse(ctx, localIdentityIdentityProfilesResponse, &state)
+	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -842,7 +812,8 @@ func (r *localIdentityIdentityProfilesResource) Read(ctx context.Context, req re
 	}
 
 	// Read the response into the state
-	readLocalIdentityIdentityProfilesResponse(ctx, apiReadLocalIdentityIdentityProfiles, &state, &resp.Diagnostics)
+	diags = readLocalIdentityIdentityProfilesResponse(ctx, apiReadLocalIdentityIdentityProfiles, &state)
+	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -859,8 +830,7 @@ func (r *localIdentityIdentityProfilesResource) Update(ctx context.Context, req 
 		return
 	}
 	updateLocalIdentityIdentityProfiles := r.apiClient.LocalIdentityIdentityProfilesAPI.UpdateIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.CustomId.ValueString())
-	apcId := plan.ApcId.Attributes()["id"].(types.String).ValueString()
-	apcResourceLink := client.NewResourceLink(apcId)
+	apcResourceLink := resourcelink.ClientStruct(plan.ApcId)
 	createUpdateRequest := client.NewLocalIdentityProfile(plan.Name.ValueString(), *apcResourceLink)
 	err := addOptionalLocalIdentityIdentityProfilesFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -883,7 +853,8 @@ func (r *localIdentityIdentityProfilesResource) Update(ctx context.Context, req 
 		diags.AddError("There was an issue retrieving the response of a Local Identity Identity Profile: %s", responseErr.Error())
 	}
 	// Read the response
-	readLocalIdentityIdentityProfilesResponse(ctx, updateLocalIdentityIdentityProfilesResponse, &plan, &resp.Diagnostics)
+	diags = readLocalIdentityIdentityProfilesResponse(ctx, updateLocalIdentityIdentityProfilesResponse, &plan)
+	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, plan)
@@ -904,8 +875,8 @@ func (r *localIdentityIdentityProfilesResource) Delete(ctx context.Context, req 
 	}
 
 }
+
 func (r *localIdentityIdentityProfilesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// The real attributes will be imported when terraform performs a read after the import.
-	// If no value is set here, Terraform will error out when importing.
+	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("custom_id"), req, resp)
 }

@@ -27,6 +27,13 @@ var (
 	_ resource.ResourceWithImportState = &serverSettingsLogSettingsResource{}
 )
 
+var logCategoriesAttrTypes = map[string]attr.Type{
+	"id":          basetypes.StringType{},
+	"name":        basetypes.StringType{},
+	"description": basetypes.StringType{},
+	"enabled":     basetypes.BoolType{},
+}
+
 // ServerSettingsLogSettingsResource is a helper function to simplify the provider implementation.
 func ServerSettingsLogSettingsResource() resource.Resource {
 	return &serverSettingsLogSettingsResource{}
@@ -129,12 +136,6 @@ func (r *serverSettingsLogSettingsResource) Configure(_ context.Context, req res
 func readServerSettingsLogSettingsResponse(ctx context.Context, r *client.LogSettings, state *serverSettingsLogSettingsResourceModel) {
 	//TODO placeholder?
 	state.Id = types.StringValue("id")
-	logCategoriesAttrTypes := map[string]attr.Type{
-		"id":          basetypes.StringType{},
-		"name":        basetypes.StringType{},
-		"description": basetypes.StringType{},
-		"enabled":     basetypes.BoolType{},
-	}
 	logCategorySettings := r.GetLogCategories()
 	var LogCategorySliceAttrVal = []attr.Value{}
 	LogCategorySliceType := types.ObjectType{AttrTypes: logCategoriesAttrTypes}

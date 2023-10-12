@@ -25,6 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -250,10 +251,6 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Description: "The fixed value that indicates how the user was authenticated.",
 				Optional:    true,
 			},
-			"custom_id": schema.StringAttribute{
-				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
-				Required:    true,
-			},
 			"name": schema.StringAttribute{
 				Description: "The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
@@ -290,7 +287,6 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 					},
 				},
 			},
-
 			"configuration": schema.SingleNestedAttribute{
 				Description: "Plugin instance configuration.",
 				Required:    true,
@@ -871,6 +867,8 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 	}
 
 	config.AddCommonSchema(&schema)
+	config.AddCustomId(&schema, true, true,
+		"The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.")
 	resp.Schema = schema
 }
 
@@ -958,26 +956,27 @@ func (r *idpAdapterResource) Configure(_ context.Context, req resource.Configure
 
 }
 
-func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *idpAdapterResourceModel, plan idpAdapterResourceModel, diags *diag.Diagnostics) {
+func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *idpAdapterResourceModel, plan idpAdapterResourceModel) diag.Diagnostics {
+	var diags, valueFromDiags diag.Diagnostics
 	state.AuthnCtxClassRef = internaltypes.StringTypeOrNil(r.AuthnCtxClassRef, false)
 	state.CustomId = types.StringValue(r.Id)
 	state.Id = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
-	state.PluginDescriptorRef = resourcelink.ToState(ctx, &r.PluginDescriptorRef, diags)
-	state.ParentRef = resourcelink.ToState(ctx, r.ParentRef, diags)
-
-	var valueFromDiags diag.Diagnostics
+	state.PluginDescriptorRef, valueFromDiags = resourcelink.ToState(ctx, &r.PluginDescriptorRef)
+	diags.Append(valueFromDiags...)
+	state.ParentRef, valueFromDiags = resourcelink.ToState(ctx, r.ParentRef)
+	diags.Append(valueFromDiags...)
 
 	// Configuration
 	//TODO move into common method
 	//TODO unify how we handle diagnostics in these methods
 	configurationAttrType := map[string]attr.Type{
-		"fields": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.FieldAttrTypes()}},
-		"tables": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: config.TableAttrTypes()}},
+		"fields": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: pluginconfiguration.FieldAttrTypes()}},
+		"tables": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: pluginconfiguration.TableAttrTypes()}},
 	}
 
-	planFields := types.ListNull(types.ObjectType{AttrTypes: config.FieldAttrTypes()})
-	planTables := types.ListNull(types.ObjectType{AttrTypes: config.TableAttrTypes()})
+	planFields := types.ListNull(types.ObjectType{AttrTypes: pluginconfiguration.FieldAttrTypes()})
+	planTables := types.ListNull(types.ObjectType{AttrTypes: pluginconfiguration.TableAttrTypes()})
 
 	planFieldsValue, ok := plan.Configuration.Attributes()["fields"]
 	if ok {
@@ -988,8 +987,8 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 		planTables = planTablesValue.(types.List)
 	}
 
-	fieldsAttrValue := config.ToFieldsListValue(r.Configuration.Fields, planFields, diags)
-	tablesAttrValue := config.ToTablesListValue(r.Configuration.Tables, planTables, diags)
+	fieldsAttrValue := pluginconfiguration.ToFieldsListValue(r.Configuration.Fields, planFields, &diags)
+	tablesAttrValue := pluginconfiguration.ToTablesListValue(r.Configuration.Tables, planTables, &diags)
 
 	configurationAttrValue := map[string]attr.Value{
 		"fields": fieldsAttrValue,
@@ -1105,6 +1104,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 		state.AttributeMapping, valueFromDiags = types.ObjectValue(attributeMappingAttrTypes, attributeMappingValues)
 		diags.Append(valueFromDiags...)
 	}
+	return diags
 }
 
 func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -1156,7 +1156,7 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 	// Read the response into the state
 	var state idpAdapterResourceModel
 
-	readIdpAdapterResponse(ctx, idpAdapterResponse, &state, plan, &resp.Diagnostics)
+	readIdpAdapterResponse(ctx, idpAdapterResponse, &state, plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -1182,7 +1182,7 @@ func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// Read the response into the state
-	readIdpAdapterResponse(ctx, apiReadIdpAdapter, &state, state, &resp.Diagnostics)
+	readIdpAdapterResponse(ctx, apiReadIdpAdapter, &state, state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -1241,7 +1241,7 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 	// Read the response
 	var state idpAdapterResourceModel
-	readIdpAdapterResponse(ctx, updateIdpAdapterResponse, &state, plan, &resp.Diagnostics)
+	readIdpAdapterResponse(ctx, updateIdpAdapterResponse, &state, plan)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

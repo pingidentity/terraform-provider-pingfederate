@@ -37,5 +37,4 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "tokenProcess
   }
   source_id = "tokenprocessor"
   target_id = "tokengenerator"
-  custom_id = "tokenprocessor|tokengenerator"
 }

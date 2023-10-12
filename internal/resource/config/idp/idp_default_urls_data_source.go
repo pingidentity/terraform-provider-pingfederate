@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -61,7 +62,7 @@ func (r *idpDefaultUrlsDataSource) Schema(ctx context.Context, req datasource.Sc
 			},
 		},
 	}
-	config.AddCommonDataSourceSchema(&schemaDef, false, "The ID of this resource.")
+	id.DataSourceSchema(&schemaDef, false, "The ID of this resource.")
 	resp.Schema = schemaDef
 }
 

@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -149,7 +150,7 @@ func (r *certificatesDataSource) Schema(ctx context.Context, req datasource.Sche
 			},
 		},
 	}
-	config.AddCommonDataSourceSchema(&schemaDef, true, "The persistent, unique ID for the certificate")
+	id.DataSourceSchema(&schemaDef, true, "The persistent, unique ID for the certificate")
 	resp.Schema = schemaDef
 }
 

@@ -298,6 +298,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		oauth.OauthAuthServerSettingsScopesCommonScopesResource,
 		oauth.OauthAuthServerSettingsScopesExclusiveScopesResource,
 		oauth.OauthIssuersResource,
+		oauth.OauthTokenExchangeTokenGeneratorMappingResource,
 		protocolmetadata.ProtocolMetadataLifetimeSettingsResource,
 		serversettings.ServerSettingsGeneralSettingsResource,
 		serversettings.ServerSettingsLogSettingsResource,

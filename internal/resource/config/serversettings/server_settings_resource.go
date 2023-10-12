@@ -3,12 +3,10 @@ package serversettings
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -26,6 +24,7 @@ import (
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -34,6 +33,111 @@ var (
 	_ resource.Resource                = &serverSettingsResource{}
 	_ resource.ResourceWithConfigure   = &serverSettingsResource{}
 	_ resource.ResourceWithImportState = &serverSettingsResource{}
+)
+
+var (
+	contactInfoAttrType = map[string]attr.Type{
+		"company":    basetypes.StringType{},
+		"email":      basetypes.StringType{},
+		"first_name": basetypes.StringType{},
+		"last_name":  basetypes.StringType{},
+		"phone":      basetypes.StringType{},
+	}
+
+	certificateExpirationsAttrType = map[string]attr.Type{
+		"email_address":              basetypes.StringType{},
+		"initial_warning_period":     basetypes.Int64Type{},
+		"final_warning_period":       basetypes.Int64Type{},
+		"notification_publisher_ref": basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
+	}
+
+	notificationSettingsAttrType = map[string]attr.Type{
+		"email_address":              basetypes.StringType{},
+		"notification_publisher_ref": basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
+	}
+
+	notificationsAttrType = map[string]attr.Type{
+		"license_events":                             basetypes.ObjectType{AttrTypes: notificationSettingsAttrType},
+		"certificate_expirations":                    basetypes.ObjectType{AttrTypes: certificateExpirationsAttrType},
+		"notify_admin_user_password_changes":         basetypes.BoolType{},
+		"account_changes_notification_publisher_ref": basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"metadata_notification_settings":             basetypes.ObjectType{AttrTypes: notificationSettingsAttrType},
+	}
+
+	oauthRoleAttrType = map[string]attr.Type{
+		"enable_oauth":           basetypes.BoolType{},
+		"enable_open_id_connect": basetypes.BoolType{},
+	}
+
+	idpSaml20ProfileAttrType = map[string]attr.Type{
+		"enable":              basetypes.BoolType{},
+		"enable_auto_connect": basetypes.BoolType{},
+	}
+
+	spSaml20ProfileAttrType = map[string]attr.Type{
+		"enable":              basetypes.BoolType{},
+		"enable_auto_connect": basetypes.BoolType{},
+		"enable_xasp":         basetypes.BoolType{},
+	}
+
+	idpRoleAttrType = map[string]attr.Type{
+		"enable":                       basetypes.BoolType{},
+		"enable_saml_1_1":              basetypes.BoolType{},
+		"enable_saml_1_0":              basetypes.BoolType{},
+		"enable_ws_fed":                basetypes.BoolType{},
+		"enable_ws_trust":              basetypes.BoolType{},
+		"saml_2_0_profile":             basetypes.ObjectType{AttrTypes: idpSaml20ProfileAttrType},
+		"enable_outbound_provisioning": basetypes.BoolType{},
+	}
+
+	spRoleAttrType = map[string]attr.Type{
+		"enable":                      basetypes.BoolType{},
+		"enable_saml_1_1":             basetypes.BoolType{},
+		"enable_saml_1_0":             basetypes.BoolType{},
+		"enable_ws_fed":               basetypes.BoolType{},
+		"enable_ws_trust":             basetypes.BoolType{},
+		"saml_2_0_profile":            basetypes.ObjectType{AttrTypes: spSaml20ProfileAttrType},
+		"enable_open_id_connect":      basetypes.BoolType{},
+		"enable_inbound_provisioning": basetypes.BoolType{},
+	}
+
+	rolesAndProtocolsAttrType = map[string]attr.Type{
+		"oauth_role":           basetypes.ObjectType{AttrTypes: oauthRoleAttrType},
+		"idp_role":             basetypes.ObjectType{AttrTypes: idpRoleAttrType},
+		"sp_role":              basetypes.ObjectType{AttrTypes: spRoleAttrType},
+		"enable_idp_discovery": basetypes.BoolType{},
+	}
+
+	federationInfoAttrType = map[string]attr.Type{
+		"base_url":               basetypes.StringType{},
+		"saml_2_entity_id":       basetypes.StringType{},
+		"auto_connect_entity_id": basetypes.StringType{},
+		"saml_1x_issuer_id":      basetypes.StringType{},
+		"saml_1x_source_id":      basetypes.StringType{},
+		"wsfed_realm":            basetypes.StringType{},
+	}
+
+	emailServerAttrType = map[string]attr.Type{
+		"source_addr":                 basetypes.StringType{},
+		"email_server":                basetypes.StringType{},
+		"port":                        basetypes.Int64Type{},
+		"ssl_port":                    basetypes.Int64Type{},
+		"timeout":                     basetypes.Int64Type{},
+		"retry_attempts":              basetypes.Int64Type{},
+		"retry_delay":                 basetypes.Int64Type{},
+		"use_ssl":                     basetypes.BoolType{},
+		"use_tls":                     basetypes.BoolType{},
+		"verify_hostname":             basetypes.BoolType{},
+		"enable_utf8_message_headers": basetypes.BoolType{},
+		"use_debugging":               basetypes.BoolType{},
+		"username":                    basetypes.StringType{},
+		"password":                    basetypes.StringType{},
+	}
+
+	captchaSettingsAttrType = map[string]attr.Type{
+		"site_key":   basetypes.StringType{},
+		"secret_key": basetypes.StringType{},
+	}
 )
 
 // ServerSettingsResource is a helper function to simplify the provider implementation.
@@ -85,6 +189,9 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
 						},
+						Validators: []validator.String{
+							configvalidators.ValidEmail(),
+						},
 					},
 					"first_name": schema.StringAttribute{
 						Description: "Contact first name.",
@@ -133,6 +240,9 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								PlanModifiers: []planmodifier.String{
 									stringplanmodifier.UseStateForUnknown(),
 								},
+								Validators: []validator.String{
+									configvalidators.ValidEmail(),
+								},
 							},
 							"notification_publisher_ref": schema.SingleNestedAttribute{
 								Description: "Reference to the associated notification publisher.",
@@ -140,23 +250,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								PlanModifiers: []planmodifier.Object{
 									objectplanmodifier.UseStateForUnknown(),
 								},
-								Attributes: map[string]schema.Attribute{
-									"id": schema.StringAttribute{
-										Description: "The ID of the resource.",
-										Required:    true,
-										PlanModifiers: []planmodifier.String{
-											stringplanmodifier.UseStateForUnknown(),
-										},
-									},
-									"location": schema.StringAttribute{
-										Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-										Computed:    true,
-										Optional:    false,
-										PlanModifiers: []planmodifier.String{
-											stringplanmodifier.UseStateForUnknown(),
-										},
-									},
-								},
+								Attributes: resourcelink.Schema(),
 							},
 						},
 					},
@@ -172,6 +266,9 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								Required:    true,
 								PlanModifiers: []planmodifier.String{
 									stringplanmodifier.UseStateForUnknown(),
+								},
+								Validators: []validator.String{
+									configvalidators.ValidEmail(),
 								},
 							},
 							"initial_warning_period": schema.Int64Attribute{
@@ -195,23 +292,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								PlanModifiers: []planmodifier.Object{
 									objectplanmodifier.UseStateForUnknown(),
 								},
-								Attributes: map[string]schema.Attribute{
-									"id": schema.StringAttribute{
-										Description: "The ID of the resource.",
-										Required:    true,
-										PlanModifiers: []planmodifier.String{
-											stringplanmodifier.UseStateForUnknown(),
-										},
-									},
-									"location": schema.StringAttribute{
-										Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-										Computed:    true,
-										Optional:    false,
-										PlanModifiers: []planmodifier.String{
-											stringplanmodifier.UseStateForUnknown(),
-										},
-									},
-								},
+								Attributes: resourcelink.Schema(),
 							},
 						},
 					},
@@ -230,23 +311,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						PlanModifiers: []planmodifier.Object{
 							objectplanmodifier.UseStateForUnknown(),
 						},
-						Attributes: map[string]schema.Attribute{
-							"id": schema.StringAttribute{
-								Description: "The ID of the resource.",
-								Required:    true,
-								PlanModifiers: []planmodifier.String{
-									stringplanmodifier.UseStateForUnknown(),
-								},
-							},
-							"location": schema.StringAttribute{
-								Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-								Computed:    true,
-								Optional:    false,
-								PlanModifiers: []planmodifier.String{
-									stringplanmodifier.UseStateForUnknown(),
-								},
-							},
-						},
+						Attributes: resourcelink.Schema(),
 					},
 					"metadata_notification_settings": schema.SingleNestedAttribute{
 						Description: "Settings for metadata update event notifications.",
@@ -259,10 +324,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								Description: "The email address where notifications are sent.",
 								Required:    true,
 								Validators: []validator.String{
-									stringvalidator.RegexMatches(
-										regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`),
-										"Invalid email address! Must be of the form '<address>@<company>.<domain>', where 'domain' contains only alphabetic characters and is at least 2 characters in length.",
-									),
+									configvalidators.ValidEmail(),
 								},
 								PlanModifiers: []planmodifier.String{
 									stringplanmodifier.UseStateForUnknown(),
@@ -274,23 +336,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								PlanModifiers: []planmodifier.Object{
 									objectplanmodifier.UseStateForUnknown(),
 								},
-								Attributes: map[string]schema.Attribute{
-									"id": schema.StringAttribute{
-										Description: "The ID of the resource.",
-										Required:    true,
-										PlanModifiers: []planmodifier.String{
-											stringplanmodifier.UseStateForUnknown(),
-										},
-									},
-									"location": schema.StringAttribute{
-										Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-										Computed:    true,
-										Optional:    false,
-										PlanModifiers: []planmodifier.String{
-											stringplanmodifier.UseStateForUnknown(),
-										},
-									},
-								},
+								Attributes: resourcelink.Schema(),
 							},
 						},
 					},
@@ -535,10 +581,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Description: "The fully qualified host name, port, and path (if applicable) on which the PingFederate server runs.",
 						Required:    true,
 						Validators: []validator.String{
-							stringvalidator.RegexMatches(
-								regexp.MustCompile(`^(https?:\/\/)`),
-								"Invalid entry for \"base_url\"! This value must start with 'http://' or 'https://'",
-							),
+							configvalidators.ValidUrl(),
 						},
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
@@ -598,14 +641,14 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Description: "The email address that appears in the 'From' header line in email messages generated by PingFederate. The address must be in valid format but need not be set up on your system.",
 						Required:    true,
 						Validators: []validator.String{
-							stringvalidator.LengthAtLeast(1),
+							configvalidators.ValidEmail(),
 						},
 					},
 					"email_server": schema.StringAttribute{
 						Description: "The IP address or hostname of your email server.",
 						Required:    true,
 						Validators: []validator.String{
-							stringvalidator.LengthAtLeast(1),
+							configvalidators.ValidHostnameOrIp(),
 						},
 					},
 					"port": schema.Int64Attribute{
@@ -748,67 +791,9 @@ func (r *serverSettingsResource) ValidateConfig(ctx context.Context, req resourc
 
 	var model serverSettingsResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
-	////////////////////////////////////
-	// CONTACT INFO
-	////////////////////////////////////
-	// Validate contact_info email value
-	ciEmail := model.ContactInfo.Attributes()["email"]
-	if internaltypes.IsDefined(ciEmail) {
-		ciEmailStringValue := ciEmail.(types.String)
-		if internaltypes.IsNonEmptyString(ciEmailStringValue) && !internaltypes.IsEmailFormat(ciEmailStringValue.ValueString()) {
-			resp.Diagnostics.AddError("Invalid Email Format!", fmt.Sprintf("Please provide a valid email address - \"%s\" needs to be in a valid email format according to RFC 5322.  For example, \"<user>@<company>.<tld>\"", ciEmailStringValue.ValueString()))
-		}
-	}
-
-	////////////////////////////////////
-	// NOTIFICATIONS
-	////////////////////////////////////
-	// Validate license events email_address value
-	if internaltypes.IsDefined(model.Notifications) {
-		notificationAttrs := model.Notifications.Attributes()
-
-		if internaltypes.IsDefined(notificationAttrs["license_events"].(types.Object).Attributes()["email_address"]) {
-			nLicEmailAddrStringValue := notificationAttrs["license_events"].(types.Object).Attributes()["email_address"].(types.String)
-			if internaltypes.IsNonEmptyString(nLicEmailAddrStringValue) && !internaltypes.IsEmailFormat(nLicEmailAddrStringValue.ValueString()) {
-				resp.Diagnostics.AddError("Invalid Email Format!", fmt.Sprintf("Please provide a valid email address - \"%s\" needs to be in a valid email format according to RFC 5322.  For example, \"<user>@<company>.<tld>\"", nLicEmailAddrStringValue.ValueString()))
-			}
-		}
-
-		// Validate certificate_expiration events email_address value
-		if internaltypes.IsDefined(notificationAttrs["certificate_expirations"]) {
-			nCertEmailAddrStringValue := notificationAttrs["certificate_expirations"].(types.Object).Attributes()["email_address"].(types.String)
-			if internaltypes.IsNonEmptyString(nCertEmailAddrStringValue) && !internaltypes.IsEmailFormat(nCertEmailAddrStringValue.ValueString()) {
-				resp.Diagnostics.AddError("Invalid Email Format!", fmt.Sprintf("Please provide a valid email address - \"%s\" needs to be in a valid email format according to RFC 5322.  For example, \"<user>@<company>.<tld>\"", nCertEmailAddrStringValue.ValueString()))
-			}
-		}
-	}
-
-	////////////////////////////////////
-	// FEDERATION INFO
-	////////////////////////////////////
-	// Validate base_url value
-	if !internaltypes.IsUrlFormat(model.FederationInfo.Attributes()["base_url"].(types.String).ValueString()) {
-		resp.Diagnostics.AddError("Invalid URL Format!", fmt.Sprintf("Please provide a valid origin. Origin \"%s\" needs to be in a valid URL-like format - \"http(s)//:<value>.<domain>\"", model.FederationInfo.Attributes()["base_url"].(types.String).ValueString()))
-	}
-	////////////////////////////////////
-	// EMAIL SERVER
-	////////////////////////////////////
 	// Validate email_server source_addr value
 	if internaltypes.IsDefined(model.EmailServer) {
 		esAttrs := model.EmailServer.Attributes()
-		if internaltypes.IsDefined(esAttrs["source_addr"]) && internaltypes.IsDefined(esAttrs["email_server"]) {
-			if internaltypes.IsNonEmptyString(esAttrs["source_addr"].(types.String)) && internaltypes.IsNonEmptyString(esAttrs["email_server"].(types.String)) {
-				// Validate source_addr host value
-				if !internaltypes.IsEmailFormat(esAttrs["source_addr"].(types.String).ValueString()) {
-					resp.Diagnostics.AddError("Invalid Email Format!", fmt.Sprintf("Please provide a valid email address - \"%s\" needs to be in a valid email format according to RFC 5322.  For example, \"<user>@<company>.<tld>\"", esAttrs["source_addr"].(types.String).ValueString()))
-				}
-				// Validate email_server host value
-				if internaltypes.IsNonEmptyString(esAttrs["email_server"].(types.String)) && !internaltypes.IsValidHostnameOrIp(esAttrs["email_server"].(types.String).ValueString()) {
-					resp.Diagnostics.AddError("Invalid hostname or IP!", fmt.Sprintf("Please provide a valid hostname or IP address - \"%s\" is invalid", esAttrs["email_server"].(types.String).ValueString()))
-				}
-			}
-		}
-
 		// If email_server attribute use_ssl is set, confirm that use_tls is NOT
 		esUseSSLFlag := esAttrs["use_ssl"]
 		esUseTLSFlag := esAttrs["use_tls"]
@@ -891,97 +876,20 @@ func (r *serverSettingsResource) Configure(_ context.Context, req resource.Confi
 
 }
 
-func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, state *serverSettingsResourceModel, plan *serverSettingsResourceModel) {
-
-	//////////////////////////////////////////////////
-	// variables for read response
-	//////////////////////////////////////////////////
-	// emptyString is a variable initialized with an empty string value.
+func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, state *serverSettingsResourceModel, plan *serverSettingsResourceModel) diag.Diagnostics {
+	var diags, respDiags diag.Diagnostics
 	emptyString := ""
 	//TODO placeholder?
 	state.Id = types.StringValue("id")
-
-	//////////////////////////////////////////////////
-	// CONTACT INFO
-	//////////////////////////////////////////////////
-	contactInfoAttrType := map[string]attr.Type{
-		"company":    basetypes.StringType{},
-		"email":      basetypes.StringType{},
-		"first_name": basetypes.StringType{},
-		"last_name":  basetypes.StringType{},
-		"phone":      basetypes.StringType{},
-	}
-	// add to state
-	state.ContactInfo, _ = types.ObjectValueFrom(ctx, contactInfoAttrType, r.ContactInfo)
-
-	//////////////////////////////////////////////
-	// NOTIFICATIONS
-	//////////////////////////////////////////////
-	// nested object
-	certificateExpirationsAttrType := map[string]attr.Type{
-		"email_address":              basetypes.StringType{},
-		"initial_warning_period":     basetypes.Int64Type{},
-		"final_warning_period":       basetypes.Int64Type{},
-		"notification_publisher_ref": basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
-	}
-
-	// nested object
-	notificationSettingsAttrType := map[string]attr.Type{
-		"email_address":              basetypes.StringType{},
-		"notification_publisher_ref": basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
-	}
-
-	// build object map for notifications from pieces above
-	notificationsAttrType := map[string]attr.Type{
-		"license_events":                             basetypes.ObjectType{AttrTypes: notificationSettingsAttrType},
-		"certificate_expirations":                    basetypes.ObjectType{AttrTypes: certificateExpirationsAttrType},
-		"notify_admin_user_password_changes":         basetypes.BoolType{},
-		"account_changes_notification_publisher_ref": basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
-		"metadata_notification_settings":             basetypes.ObjectType{AttrTypes: notificationSettingsAttrType},
-	}
-
-	state.Notifications, _ = types.ObjectValueFrom(ctx, notificationsAttrType, r.Notifications)
-
+	state.ContactInfo, respDiags = types.ObjectValueFrom(ctx, contactInfoAttrType, r.ContactInfo)
+	diags.Append(respDiags...)
+	state.Notifications, respDiags = types.ObjectValueFrom(ctx, notificationsAttrType, r.Notifications)
+	diags.Append(respDiags...)
 	//////////////////////////////////////////////
 	// ROLES AND PROTOCOLS
 	//////////////////////////////////////////////
-	// nested object
-	oauthRoleAttrType := map[string]attr.Type{
-		"enable_oauth":           basetypes.BoolType{},
-		"enable_open_id_connect": basetypes.BoolType{},
-	}
-	//	retrieve values for saving to state
-	oauthRoleVal, _ := types.ObjectValueFrom(ctx, oauthRoleAttrType, r.RolesAndProtocols.OauthRole)
-
-	// nested object
-	idpSaml20ProfileAttrType := map[string]attr.Type{
-		"enable":              basetypes.BoolType{},
-		"enable_auto_connect": basetypes.BoolType{},
-	}
-	// retrieve values for saving to state
-	idpSaml20ProfileVal, _ := types.ObjectValueFrom(ctx, idpSaml20ProfileAttrType, r.RolesAndProtocols.IdpRole.Saml20Profile)
-
-	// nested object
-	spSaml20ProfileAttrType := map[string]attr.Type{
-		"enable":              basetypes.BoolType{},
-		"enable_auto_connect": basetypes.BoolType{},
-		"enable_xasp":         basetypes.BoolType{},
-	}
-	// retrieve values for saving to state
-	spSaml20ProfileVal, _ := types.ObjectValueFrom(ctx, spSaml20ProfileAttrType, r.RolesAndProtocols.SpRole.Saml20Profile)
-
-	// nested object
-	idpRoleAttrType := map[string]attr.Type{
-		"enable":                       basetypes.BoolType{},
-		"enable_saml_1_1":              basetypes.BoolType{},
-		"enable_saml_1_0":              basetypes.BoolType{},
-		"enable_ws_fed":                basetypes.BoolType{},
-		"enable_ws_trust":              basetypes.BoolType{},
-		"saml_2_0_profile":             basetypes.ObjectType{AttrTypes: idpSaml20ProfileAttrType},
-		"enable_outbound_provisioning": basetypes.BoolType{},
-	}
-
-	// retrieve values for saving to state
+	idpSaml20ProfileVal, respDiags := types.ObjectValueFrom(ctx, idpSaml20ProfileAttrType, r.RolesAndProtocols.IdpRole.Saml20Profile)
+	diags.Append(respDiags...)
 	idpRoleAttrValue := map[string]attr.Value{
 		"enable":                       types.BoolPointerValue(r.RolesAndProtocols.IdpRole.Enable),
 		"enable_saml_1_1":              types.BoolPointerValue(r.RolesAndProtocols.IdpRole.EnableSaml11),
@@ -991,23 +899,12 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 		"saml_2_0_profile":             idpSaml20ProfileVal,
 		"enable_outbound_provisioning": types.BoolPointerValue(r.RolesAndProtocols.IdpRole.EnableOutboundProvisioning),
 	}
+	idpRoleVal, respDiags := types.ObjectValue(idpRoleAttrType, idpRoleAttrValue)
+	diags.Append(respDiags...)
 
-	// save IDP role to state
-	idpRoleVal, _ := types.ObjectValue(idpRoleAttrType, idpRoleAttrValue)
+	spSaml20ProfileVal, respDiags := types.ObjectValueFrom(ctx, spSaml20ProfileAttrType, r.RolesAndProtocols.SpRole.Saml20Profile)
+	diags.Append(respDiags...)
 
-	// nested object
-	spRoleAttrType := map[string]attr.Type{
-		"enable":                      basetypes.BoolType{},
-		"enable_saml_1_1":             basetypes.BoolType{},
-		"enable_saml_1_0":             basetypes.BoolType{},
-		"enable_ws_fed":               basetypes.BoolType{},
-		"enable_ws_trust":             basetypes.BoolType{},
-		"saml_2_0_profile":            basetypes.ObjectType{AttrTypes: spSaml20ProfileAttrType},
-		"enable_open_id_connect":      basetypes.BoolType{},
-		"enable_inbound_provisioning": basetypes.BoolType{},
-	}
-
-	// 	retrieve values for saving to state
 	spRoleAttrValue := map[string]attr.Value{
 		"enable":                      types.BoolPointerValue(r.RolesAndProtocols.SpRole.Enable),
 		"enable_saml_1_1":             types.BoolPointerValue(r.RolesAndProtocols.SpRole.EnableSaml11),
@@ -1019,37 +916,21 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 		"enable_inbound_provisioning": types.BoolPointerValue(r.RolesAndProtocols.SpRole.EnableInboundProvisioning),
 	}
 	// save SP role to state
-	spRoleVal, _ := types.ObjectValue(spRoleAttrType, spRoleAttrValue)
-
-	// build object map for roles and protocols from pieces above
-	rolesAndProtocolsAttrType := map[string]attr.Type{
-		"oauth_role":           basetypes.ObjectType{AttrTypes: oauthRoleAttrType},
-		"idp_role":             basetypes.ObjectType{AttrTypes: idpRoleAttrType},
-		"sp_role":              basetypes.ObjectType{AttrTypes: spRoleAttrType},
-		"enable_idp_discovery": basetypes.BoolType{},
-	}
-
-	// put the values together into state
+	spRoleVal, respDiags := types.ObjectValue(spRoleAttrType, spRoleAttrValue)
+	diags.Append(respDiags...)
+	oauthRoleVal, respDiags := types.ObjectValueFrom(ctx, oauthRoleAttrType, r.RolesAndProtocols.OauthRole)
+	diags.Append(respDiags...)
 	rolesAndProtocolsAttrTypeValues := map[string]attr.Value{
 		"oauth_role":           oauthRoleVal,
 		"idp_role":             idpRoleVal,
 		"sp_role":              spRoleVal,
 		"enable_idp_discovery": types.BoolPointerValue(r.RolesAndProtocols.EnableIdpDiscovery),
 	}
-	state.RolesAndProtocols, _ = types.ObjectValue(rolesAndProtocolsAttrType, rolesAndProtocolsAttrTypeValues)
-
+	state.RolesAndProtocols, respDiags = types.ObjectValue(rolesAndProtocolsAttrType, rolesAndProtocolsAttrTypeValues)
+	diags.Append(respDiags...)
 	//////////////////////////////////////////////
 	// FEDERATION INFO
 	//////////////////////////////////////////////
-	federationInfoAttrType := map[string]attr.Type{
-		"base_url":               basetypes.StringType{},
-		"saml_2_entity_id":       basetypes.StringType{},
-		"auto_connect_entity_id": basetypes.StringType{},
-		"saml_1x_issuer_id":      basetypes.StringType{},
-		"saml_1x_source_id":      basetypes.StringType{},
-		"wsfed_realm":            basetypes.StringType{},
-	}
-
 	federationInfoAttrValue := map[string]attr.Value{
 		"base_url":               types.StringPointerValue(r.FederationInfo.BaseUrl),
 		"saml_2_entity_id":       types.StringPointerValue(r.FederationInfo.Saml2EntityId),
@@ -1059,28 +940,11 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 		"wsfed_realm":            types.StringPointerValue(r.FederationInfo.WsfedRealm),
 	}
 
-	state.FederationInfo, _ = types.ObjectValue(federationInfoAttrType, federationInfoAttrValue)
-
+	state.FederationInfo, respDiags = types.ObjectValue(federationInfoAttrType, federationInfoAttrValue)
+	diags.Append(respDiags...)
 	//////////////////////////////////////////////
 	// EMAIL SERVER
 	//////////////////////////////////////////////
-	emailServerAttrType := map[string]attr.Type{
-		"source_addr":                 basetypes.StringType{},
-		"email_server":                basetypes.StringType{},
-		"port":                        basetypes.Int64Type{},
-		"ssl_port":                    basetypes.Int64Type{},
-		"timeout":                     basetypes.Int64Type{},
-		"retry_attempts":              basetypes.Int64Type{},
-		"retry_delay":                 basetypes.Int64Type{},
-		"use_ssl":                     basetypes.BoolType{},
-		"use_tls":                     basetypes.BoolType{},
-		"verify_hostname":             basetypes.BoolType{},
-		"enable_utf8_message_headers": basetypes.BoolType{},
-		"use_debugging":               basetypes.BoolType{},
-		"username":                    basetypes.StringType{},
-		"password":                    basetypes.StringType{},
-	}
-
 	// get email creds with function
 	// if username and password are not set, return null values
 	var getEmailCreds = func() (*string, string) {
@@ -1112,16 +976,11 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 		"password":                    types.StringValue(password),
 	}
 
-	state.EmailServer, _ = types.ObjectValue(emailServerAttrType, emailServerAttrValue)
-
+	state.EmailServer, respDiags = types.ObjectValue(emailServerAttrType, emailServerAttrValue)
+	diags.Append(respDiags...)
 	//////////////////////////////////////////////
 	// CAPTCHA SETTINGS
 	//////////////////////////////////////////////
-	captchaSettingsAttrType := map[string]attr.Type{
-		"site_key":   basetypes.StringType{},
-		"secret_key": basetypes.StringType{},
-	}
-
 	var getCaptchaSettingsAttrValue = func() map[string]attr.Value {
 		if internaltypes.ObjContainsNoEmptyVals(plan.CaptchaSettings) {
 			return map[string]attr.Value{
@@ -1135,8 +994,9 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 			}
 		}
 	}
-
-	state.CaptchaSettings, _ = types.ObjectValue(captchaSettingsAttrType, getCaptchaSettingsAttrValue())
+	state.CaptchaSettings, respDiags = types.ObjectValue(captchaSettingsAttrType, getCaptchaSettingsAttrValue())
+	diags.Append(respDiags...)
+	return diags
 }
 
 func (r *serverSettingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -1174,7 +1034,8 @@ func (r *serverSettingsResource) Create(ctx context.Context, req resource.Create
 	// Read the response into the state
 	var state serverSettingsResourceModel
 
-	readServerSettingsResponse(ctx, serverSettingsResponse, &state, &plan)
+	diags = readServerSettingsResponse(ctx, serverSettingsResponse, &state, &plan)
+	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -1211,7 +1072,8 @@ func (r *serverSettingsResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Read the response into the state
-	readServerSettingsResponse(ctx, apiReadServerSettings, &state, &state)
+	diags = readServerSettingsResponse(ctx, apiReadServerSettings, &state, &state)
+	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -1254,7 +1116,8 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 		diags.AddError("There was an issue retrieving the response of Server Settings: %s", responseErr.Error())
 	}
 	// Read the response
-	readServerSettingsResponse(ctx, updateServerSettingsResponse, &state, &plan)
+	diags = readServerSettingsResponse(ctx, updateServerSettingsResponse, &state, &plan)
+	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

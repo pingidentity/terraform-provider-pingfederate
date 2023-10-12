@@ -46,15 +46,6 @@ func (r *keyPairsSigningImportResource) Schema(ctx context.Context, req resource
 	schema := schema.Schema{
 		Description: "Manages a KeyPairsSigningImport.",
 		Attributes: map[string]schema.Attribute{
-			"custom_id": schema.StringAttribute{
-				Description: "The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.",
-				Computed:    true,
-				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-					stringplanmodifier.RequiresReplace(),
-				},
-			},
 			"file_data": schema.StringAttribute{
 				Description: "Base-64 encoded PKCS12 or PEM file data. In the case of PEM, the raw (non-base-64) data is also accepted. In BCFIPS mode, only PEM with PBES2 and AES or Triple DES encryption is accepted and 128-bit salt is required.",
 				Required:    true,
@@ -93,6 +84,8 @@ func (r *keyPairsSigningImportResource) Schema(ctx context.Context, req resource
 	}
 
 	config.AddCommonSchema(&schema)
+	config.AddCustomId(&schema, true, true,
+		"The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.")
 	resp.Schema = schema
 }
 

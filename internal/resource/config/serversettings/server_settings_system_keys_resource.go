@@ -26,6 +26,12 @@ var (
 	_ resource.ResourceWithImportState = &serverSettingsSystemKeysResource{}
 )
 
+var systemKeyAttrTypes = map[string]attr.Type{
+	"creation_date":      basetypes.StringType{},
+	"encrypted_key_data": basetypes.StringType{},
+	"key_data":           basetypes.StringType{},
+}
+
 // ServerSettingsSystemKeysResource is a helper function to simplify the provider implementation.
 func ServerSettingsSystemKeysResource() resource.Resource {
 	return &serverSettingsSystemKeysResource{}
@@ -188,44 +194,29 @@ func (r *serverSettingsSystemKeysResource) Configure(_ context.Context, req reso
 func readServerSettingsSystemKeysResponse(ctx context.Context, r *client.SystemKeys, state *serverSettingsSystemKeysResourceModel, diags *diag.Diagnostics) {
 	//TODO placeholder?
 	state.Id = types.StringValue("id")
-	currentAttrTypes := map[string]attr.Type{
-		"creation_date":      basetypes.StringType{},
-		"encrypted_key_data": basetypes.StringType{},
-		"key_data":           basetypes.StringType{},
-	}
 	currentAttrs := r.GetCurrent()
 	currentAttrVals := map[string]attr.Value{
 		"creation_date":      types.StringValue(currentAttrs.GetCreationDate().Format(time.RFC3339Nano)),
 		"encrypted_key_data": types.StringValue(currentAttrs.GetEncryptedKeyData()),
 		"key_data":           types.StringValue(currentAttrs.GetKeyData()),
 	}
-	currentAttrsObjVal := internaltypes.MaptoObjValue(currentAttrTypes, currentAttrVals, diags)
+	currentAttrsObjVal := internaltypes.MaptoObjValue(systemKeyAttrTypes, currentAttrVals, diags)
 
-	previousAttrTypes := map[string]attr.Type{
-		"creation_date":      basetypes.StringType{},
-		"encrypted_key_data": basetypes.StringType{},
-		"key_data":           basetypes.StringType{},
-	}
 	previousAttrs := r.GetPrevious()
-
 	previousAttrVals := map[string]attr.Value{
 		"creation_date":      types.StringValue(previousAttrs.GetCreationDate().Format(time.RFC3339Nano)),
 		"encrypted_key_data": types.StringValue(previousAttrs.GetEncryptedKeyData()),
 		"key_data":           types.StringValue(previousAttrs.GetKeyData()),
 	}
-	previousAttrsObjVal := internaltypes.MaptoObjValue(previousAttrTypes, previousAttrVals, diags)
-	pendingAttrTypes := map[string]attr.Type{
-		"creation_date":      basetypes.StringType{},
-		"encrypted_key_data": basetypes.StringType{},
-		"key_data":           basetypes.StringType{},
-	}
+	previousAttrsObjVal := internaltypes.MaptoObjValue(systemKeyAttrTypes, previousAttrVals, diags)
+
 	pendingAttrs := r.GetPending()
 	pendingAttrVals := map[string]attr.Value{
 		"creation_date":      types.StringValue(pendingAttrs.GetCreationDate().Format(time.RFC3339Nano)),
 		"encrypted_key_data": types.StringValue(pendingAttrs.GetEncryptedKeyData()),
 		"key_data":           types.StringValue(pendingAttrs.GetKeyData()),
 	}
-	pendingAttrsObjVal := internaltypes.MaptoObjValue(pendingAttrTypes, pendingAttrVals, diags)
+	pendingAttrsObjVal := internaltypes.MaptoObjValue(systemKeyAttrTypes, pendingAttrVals, diags)
 
 	state.Current = currentAttrsObjVal
 	state.Pending = pendingAttrsObjVal

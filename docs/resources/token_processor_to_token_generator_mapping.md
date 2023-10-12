@@ -52,7 +52,6 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "tokenProcess
   }
   source_id = "tokenprocessor"
   target_id = "tokengenerator"
-  custom_id = "tokenprocessor|tokengenerator"
 }
 ```
 
@@ -68,7 +67,6 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "tokenProcess
 ### Optional
 
 - `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--attribute_sources))
-- `custom_id` (String) The ID of the token processor to token generator mapping. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
 - `default_target_resource` (String) Default target URL for this Token Processor to Token Generator mapping configuration.
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--issuance_criteria))
 - `license_connection_group_assignment` (String) The license connection group.
