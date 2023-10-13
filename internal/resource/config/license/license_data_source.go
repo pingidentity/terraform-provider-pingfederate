@@ -237,7 +237,7 @@ func (r *licenseDataSource) Configure(_ context.Context, req datasource.Configur
 }
 
 // Read a DseeCompatAdministrativeAccountResponse object into the model struct
-func readLicenseResponseDataSource(ctx context.Context, r *client.LicenseView, state *licenseDataSourceModel, expectedValues *licenseDataSourceModel) diag.Diagnostics {
+func readLicenseResponseDataSource(ctx context.Context, r *client.LicenseView, state *licenseDataSourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.Id = types.StringValue("id")
 	state.Name = internaltypes.StringTypeOrNil(r.Name, false)
@@ -303,7 +303,7 @@ func (r *licenseDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	}
 
 	// Read the response into the state
-	diags = readLicenseResponseDataSource(ctx, apiReadLicense, &state, &state)
+	diags = readLicenseResponseDataSource(ctx, apiReadLicense, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state

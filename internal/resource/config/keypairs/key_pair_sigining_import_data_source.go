@@ -216,7 +216,7 @@ func (r *keyPairsSigningImportDataSource) Configure(_ context.Context, req datas
 }
 
 // Read a DseeCompatAdministrativeAccountResponse object into the model struct
-func readKeyPairsSigningImportResponseDataSource(ctx context.Context, r *client.KeyPairView, state *keyPairsSigningImportDataSourceModel, expectedValues *keyPairsSigningImportDataSourceModel) diag.Diagnostics {
+func readKeyPairsSigningImportResponseDataSource(ctx context.Context, r *client.KeyPairView, state *keyPairsSigningImportDataSourceModel) diag.Diagnostics {
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
 	state.SerialNumber = internaltypes.StringTypeOrNil(r.SerialNumber, false)
 	state.SubjectDN = internaltypes.StringTypeOrNil(r.SubjectDN, false)
@@ -273,7 +273,7 @@ func (r *keyPairsSigningImportDataSource) Read(ctx context.Context, req datasour
 	}
 
 	// Read the response into the state
-	diags = readKeyPairsSigningImportResponseDataSource(ctx, apiReadKeyPairsSigningImport, &state, &state)
+	diags = readKeyPairsSigningImportResponseDataSource(ctx, apiReadKeyPairsSigningImport, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state

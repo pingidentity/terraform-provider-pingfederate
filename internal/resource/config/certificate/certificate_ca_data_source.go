@@ -163,7 +163,7 @@ func (r *certificatesDataSource) Configure(_ context.Context, req datasource.Con
 }
 
 // Read a CertificateResponse object into the model struct
-func readCertificateResponseDataSource(ctx context.Context, r *client.CertView, state *certificatesDataSourceModel, expectedValues *certificatesDataSourceModel, diagnostics *diag.Diagnostics) {
+func readCertificateResponseDataSource(ctx context.Context, r *client.CertView, state *certificatesDataSourceModel, diagnostics *diag.Diagnostics) {
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
 	state.SerialNumber = internaltypes.StringTypeOrNil(r.SerialNumber, false)
 	state.SubjectDN = internaltypes.StringTypeOrNil(r.SubjectDN, false)
@@ -206,7 +206,7 @@ func (r *certificatesDataSource) Read(ctx context.Context, req datasource.ReadRe
 	}
 
 	// Read the response into the state
-	readCertificateResponseDataSource(ctx, apiReadCertificate, &state, &state, &resp.Diagnostics)
+	readCertificateResponseDataSource(ctx, apiReadCertificate, &state, &resp.Diagnostics)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
