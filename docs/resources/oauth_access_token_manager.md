@@ -14,8 +14,8 @@ Manages OAuth Access Token Manager
 
 ```terraform
 resource "pingfederate_oauth_access_token_manager" "internallyManagedReferenceOauthAccessTokenManagerExample" {
-  id   = "internallyManagedReferenceOatm"
-  name = "internallyManagedReferenceExample"
+  custom_id = "internallyManagedReferenceOatm"
+  name      = "internallyManagedReferenceExample"
   plugin_descriptor_ref = {
     id = "org.sourceid.oauth20.token.plugin.impl.ReferenceBearerAccessTokenManagementPlugin"
   }
@@ -81,8 +81,8 @@ resource "pingfederate_oauth_access_token_manager" "internallyManagedReferenceOa
 }
 
 resource "pingfederate_oauth_access_token_manager" "jsonWebTokenOauthAccessTokenManagerExample" {
-  id   = "jsonWebTokenOatm"
-  name = "jsonWebTokenExample"
+  custom_id = "jsonWebTokenOatm"
+  name      = "jsonWebTokenExample"
   plugin_descriptor_ref = {
     id = "com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin"
   }
@@ -276,6 +276,10 @@ Optional:
 - `fields` (Attributes List) List of configuration fields. (see [below for nested schema](#nestedatt--configuration--fields))
 - `tables` (Attributes List) List of configuration tables. (see [below for nested schema](#nestedatt--configuration--tables))
 
+Read-Only:
+
+- `fields_all` (Attributes List) List of configuration fields. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--configuration--fields_all))
+
 <a id="nestedatt--configuration--fields"></a>
 ### Nested Schema for `configuration.fields`
 
@@ -322,6 +326,16 @@ Optional:
 - `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 
 
+
+
+<a id="nestedatt--configuration--fields_all"></a>
+### Nested Schema for `configuration.fields_all`
+
+Required:
+
+- `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
+- `name` (String) The name of the configuration field.
+- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
 
 
 
@@ -375,24 +389,18 @@ Read-Only:
 <a id="nestedatt--attribute_contract--extended_attributes"></a>
 ### Nested Schema for `attribute_contract.extended_attributes`
 
-Required:
-
-- `name` (String) The name of this attribute.
-
 Optional:
 
 - `multi_valued` (Boolean) Indicates whether attribute value is always returned as an array.
+- `name` (String) The name of this attribute.
 
 
 <a id="nestedatt--attribute_contract--core_attributes"></a>
 ### Nested Schema for `attribute_contract.core_attributes`
 
-Optional:
-
-- `multi_valued` (Boolean) Indicates whether attribute value is always returned as an array.
-
 Read-Only:
 
+- `multi_valued` (Boolean) Indicates whether attribute value is always returned as an array.
 - `name` (String) The name of this attribute.
 
 

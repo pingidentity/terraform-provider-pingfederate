@@ -39,12 +39,6 @@ var (
 	_ resource.Resource                = &oauthAuthServerSettingsResource{}
 	_ resource.ResourceWithConfigure   = &oauthAuthServerSettingsResource{}
 	_ resource.ResourceWithImportState = &oauthAuthServerSettingsResource{}
-
-	scopeAttrTypes = map[string]attr.Type{
-		"name":        basetypes.StringType{},
-		"description": basetypes.StringType{},
-		"dynamic":     basetypes.BoolType{},
-	}
 )
 
 // OauthAuthServerSettingsResource is a helper function to simplify the provider implementation.

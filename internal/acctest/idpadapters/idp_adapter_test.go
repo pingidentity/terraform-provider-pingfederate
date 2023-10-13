@@ -261,7 +261,9 @@ func attributeMappingHclBlock(attributeMapping *client.IdpAdapterContractMapping
 			builder.WriteString("        \"")
 			builder.WriteString(key)
 			builder.WriteString("\" = {\n")
-			builder.WriteString(attributecontractfulfillment.Hcl(&val))
+			// Avoid taking address of for loop variable
+			innerVal := val
+			builder.WriteString(attributecontractfulfillment.Hcl(&innerVal))
 			builder.WriteString("        }\n")
 		}
 		builder.WriteString("    }\n")
