@@ -12,8 +12,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const sessionSettingsId = "2"
-
 // Attributes to test with. Add optional properties to test here if desired.
 type sessionSettingsResourceModel struct {
 	trackAdapterSessionsForLogout bool
@@ -53,7 +51,6 @@ func TestAccSessionSettings(t *testing.T) {
 				// Test importing the resource
 				Config:            testAccSessionSettings(resourceName, updatedResourceModel),
 				ResourceName:      "pingfederate_session_settings." + resourceName,
-				ImportStateId:     sessionSettingsId,
 				ImportState:       true,
 				ImportStateVerify: false,
 			},

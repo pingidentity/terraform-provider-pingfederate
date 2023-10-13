@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -72,7 +73,7 @@ func (r *idpDefaultUrlsResource) Schema(ctx context.Context, req resource.Schema
 		},
 	}
 
-	config.AddCommonSchema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -106,9 +107,8 @@ func (r *idpDefaultUrlsResource) Configure(_ context.Context, req resource.Confi
 
 }
 
-func readIdpDefaultUrlsResponse(ctx context.Context, r *client.IdpDefaultUrl, state *idpDefaultUrlsResourceModel, expectedValues *idpDefaultUrlsResourceModel) {
-	//TODO different placholder?
-	state.Id = types.StringValue("id")
+func readIdpDefaultUrlsResponse(ctx context.Context, r *client.IdpDefaultUrl, state *idpDefaultUrlsResourceModel, expectedValues *idpDefaultUrlsResourceModel, existingId *string) {
+	state.Id = id.GenerateUUIDToState(existingId)
 	state.ConfirmIdpSlo = types.BoolPointerValue(r.ConfirmIdpSlo)
 	state.IdpSloSuccessUrl = internaltypes.StringTypeOrNil(r.IdpSloSuccessUrl, false)
 	state.IdpErrorMsg = types.StringValue(r.IdpErrorMsg)
@@ -148,15 +148,13 @@ func (r *idpDefaultUrlsResource) Create(ctx context.Context, req resource.Create
 
 	// Read the response into the state
 	var state idpDefaultUrlsResourceModel
-
-	readIdpDefaultUrlsResponse(ctx, idpDefaultUrlsResponse, &state, &plan)
+	readIdpDefaultUrlsResponse(ctx, idpDefaultUrlsResponse, &state, &plan, nil)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
 func (r *idpDefaultUrlsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state idpDefaultUrlsResourceModel
-
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -180,7 +178,12 @@ func (r *idpDefaultUrlsResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Read the response into the state
-	readIdpDefaultUrlsResponse(ctx, apiReadIdpDefaultUrls, &state, &state)
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readIdpDefaultUrlsResponse(ctx, apiReadIdpDefaultUrls, &state, &state, id)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -197,9 +200,6 @@ func (r *idpDefaultUrlsResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
-	var state idpDefaultUrlsResourceModel
-	req.State.Get(ctx, &state)
 	updateIdpDefaultUrls := r.apiClient.IdpDefaultUrlsAPI.UpdateDefaultUrlSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewIdpDefaultUrl(plan.IdpErrorMsg.ValueString())
 	err := addOptionalIdpDefaultUrlsFields(ctx, createUpdateRequest, plan)
@@ -223,7 +223,14 @@ func (r *idpDefaultUrlsResource) Update(ctx context.Context, req resource.Update
 		diags.AddError("There was an issue retrieving the response of the Idp Default Urls: %s", responseErr.Error())
 	}
 	// Read the response
-	readIdpDefaultUrlsResponse(ctx, updateIdpDefaultUrlsResponse, &state, &plan)
+	// Get the current state to see how any attributes are changing
+	var state idpDefaultUrlsResourceModel
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readIdpDefaultUrlsResponse(ctx, updateIdpDefaultUrlsResponse, &state, &plan, id)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

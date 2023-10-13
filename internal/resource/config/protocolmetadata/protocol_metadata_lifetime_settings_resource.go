@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -61,7 +62,7 @@ func (r *protocolMetadataLifetimeSettingsResource) Schema(ctx context.Context, r
 		},
 	}
 
-	config.AddCommonSchema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -93,9 +94,8 @@ func (r *protocolMetadataLifetimeSettingsResource) Configure(_ context.Context, 
 
 }
 
-func readProtocolMetadataLifetimeSettingsResponse(ctx context.Context, r *client.MetadataLifetimeSettings, state *protocolMetadataLifetimeSettingsResourceModel, expectedValues *protocolMetadataLifetimeSettingsResourceModel) {
-	//TODO placeholder?
-	state.Id = types.StringValue("id")
+func readProtocolMetadataLifetimeSettingsResponse(ctx context.Context, r *client.MetadataLifetimeSettings, state *protocolMetadataLifetimeSettingsResourceModel, existingId *string) {
+	state.Id = id.GenerateUUIDToState(existingId)
 	state.CacheDuration = types.Int64Value(*r.CacheDuration)
 	state.ReloadDelay = types.Int64Value(*r.ReloadDelay)
 }
@@ -134,8 +134,8 @@ func (r *protocolMetadataLifetimeSettingsResource) Create(ctx context.Context, r
 
 	// Read the response into the state
 	var state protocolMetadataLifetimeSettingsResourceModel
+	readProtocolMetadataLifetimeSettingsResponse(ctx, protocolMetadataLifetimeSettingsResponse, &state, nil)
 
-	readProtocolMetadataLifetimeSettingsResponse(ctx, protocolMetadataLifetimeSettingsResponse, &state, &plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -165,7 +165,12 @@ func (r *protocolMetadataLifetimeSettingsResource) Read(ctx context.Context, req
 	}
 
 	// Read the response into the state
-	readProtocolMetadataLifetimeSettingsResponse(ctx, apiReadProtocolMetadataLifetimeSettings, &state, &state)
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readProtocolMetadataLifetimeSettingsResponse(ctx, apiReadProtocolMetadataLifetimeSettings, &state, id)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -207,8 +212,13 @@ func (r *protocolMetadataLifetimeSettingsResource) Update(ctx context.Context, r
 
 	// Read the response into the state
 	var state protocolMetadataLifetimeSettingsResourceModel
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readProtocolMetadataLifetimeSettingsResponse(ctx, protocolMetadataLifetimeSettingsResponse, &state, id)
 
-	readProtocolMetadataLifetimeSettingsResponse(ctx, protocolMetadataLifetimeSettingsResponse, &state, &plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }

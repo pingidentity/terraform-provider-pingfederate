@@ -14,6 +14,7 @@ import (
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -52,8 +53,8 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Schema(ctx context.Cont
 	schema := schema.Schema{
 		Description: "Manages Token Processor To Token Generator Mappings",
 		Attributes: map[string]schema.Attribute{
-			"attribute_contract_fulfillment": attributecontractfulfillment.Schema(true),
-			"attribute_sources":              attributesources.Schema(),
+			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true),
+			"attribute_sources":              attributesources.ToSchema(),
 			"default_target_resource": schema.StringAttribute{
 				Description: "Default target URL for this Token Processor to Token Generator mapping configuration.",
 				Optional:    true,
@@ -70,10 +71,10 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Schema(ctx context.Cont
 				Description: "The id of the Token Processor.",
 				Required:    true,
 			},
-			"issuance_criteria": issuancecriteria.Schema(),
+			"issuance_criteria": issuancecriteria.ToSchema(),
 		},
 	}
-	AddCommonSchema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 

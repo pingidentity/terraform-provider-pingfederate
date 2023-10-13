@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -52,7 +53,7 @@ func (r *virtualHostNamesResource) Schema(ctx context.Context, req resource.Sche
 		},
 	}
 
-	AddCommonSchema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -82,9 +83,8 @@ func (r *virtualHostNamesResource) Configure(_ context.Context, req resource.Con
 
 }
 
-func readVirtualHostNamesResponse(ctx context.Context, r *client.VirtualHostNameSettings, state *virtualHostNamesResourceModel) {
-	//TODO placeholder?
-	state.Id = types.StringValue("id")
+func readVirtualHostNamesResponse(ctx context.Context, r *client.VirtualHostNameSettings, state *virtualHostNamesResourceModel, existingId *string) {
+	state.Id = id.GenerateUUIDToState(existingId)
 	state.VirtualHostNames = internaltypes.GetStringSet(r.VirtualHostNames)
 }
 
@@ -122,8 +122,8 @@ func (r *virtualHostNamesResource) Create(ctx context.Context, req resource.Crea
 
 	// Read the response into the state
 	var state virtualHostNamesResourceModel
+	readVirtualHostNamesResponse(ctx, virtualHostNamesResponse, &state, nil)
 
-	readVirtualHostNamesResponse(ctx, virtualHostNamesResponse, &state)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -153,7 +153,12 @@ func (r *virtualHostNamesResource) Read(ctx context.Context, req resource.ReadRe
 	}
 
 	// Read the response into the state
-	readVirtualHostNamesResponse(ctx, apiReadVirtualHostNames, &state)
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readVirtualHostNamesResponse(ctx, apiReadVirtualHostNames, &state, id)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -170,9 +175,6 @@ func (r *virtualHostNamesResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
-	var state virtualHostNamesResourceModel
-	req.State.Get(ctx, &state)
 	updateVirtualHostNames := r.apiClient.VirtualHostNamesAPI.UpdateVirtualHostNamesSettings(ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewVirtualHostNameSettings()
 	err := addOptionalVirtualHostNamesFields(ctx, createUpdateRequest, plan)
@@ -196,7 +198,13 @@ func (r *virtualHostNamesResource) Update(ctx context.Context, req resource.Upda
 		diags.AddError("There was an issue retrieving the response of Virtual Host Names: %s", responseErr.Error())
 	}
 	// Read the response
-	readVirtualHostNamesResponse(ctx, updateVirtualHostNamesResponse, &state)
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	var state virtualHostNamesResourceModel
+	readVirtualHostNamesResponse(ctx, updateVirtualHostNamesResponse, &state, id)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

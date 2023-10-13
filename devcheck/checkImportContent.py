@@ -18,4 +18,4 @@ if has_no_import_files:
   print(f"No import.sh content found for resource(s) in {no_import_dirs}!") 
   exit(1)
 else:
-  print("All resource(s) contain an import.sh for documentation")
+  print("All resources contain an import.sh for documentation")

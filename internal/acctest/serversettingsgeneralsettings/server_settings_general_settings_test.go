@@ -12,11 +12,8 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const serverSettingsGeneralSettingsId = "id"
-
 // Attributes to test with. Add optional properties to test here if desired.
 type serverSettingsGeneralSettingsResourceModel struct {
-	id                                      string
 	disableAutomaticConnectionValidation    bool
 	idpConnectionTransactionLoggingOverride string
 	spConnectionTransactionLoggingOverride  string
@@ -60,7 +57,6 @@ func TestAccServerSettingsGeneralSettings(t *testing.T) {
 				// Test importing the resource
 				Config:            testAccServerSettingsGeneralSettings(resourceName, updatedResourceModel),
 				ResourceName:      "pingfederate_server_settings_general_settings." + resourceName,
-				ImportStateId:     serverSettingsGeneralSettingsId,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -98,27 +94,27 @@ func testAccCheckExpectedServerSettingsGeneralSettingsAttributes(config serverSe
 		}
 
 		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchInt(resourceType, &config.id, "datastore_validation_interval_secs",
+		err = acctest.TestAttributesMatchInt(resourceType, nil, "datastore_validation_interval_secs",
 			config.datastoreValidationIntervalSecs, *response.DatastoreValidationIntervalSecs)
 		if err != nil {
 			return err
 		}
-		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "disable_automatic_connection_validation",
+		err = acctest.TestAttributesMatchBool(resourceType, nil, "disable_automatic_connection_validation",
 			config.disableAutomaticConnectionValidation, *response.DisableAutomaticConnectionValidation)
 		if err != nil {
 			return err
 		}
-		err = acctest.TestAttributesMatchString(resourceType, &config.id, "idp_connection_transaction_logging_override",
+		err = acctest.TestAttributesMatchString(resourceType, nil, "idp_connection_transaction_logging_override",
 			config.idpConnectionTransactionLoggingOverride, *response.IdpConnectionTransactionLoggingOverride)
 		if err != nil {
 			return err
 		}
-		err = acctest.TestAttributesMatchString(resourceType, &config.id, "request_header_for_correlation_id",
+		err = acctest.TestAttributesMatchString(resourceType, nil, "request_header_for_correlation_id",
 			config.requestHeaderForCorrelationId, *response.RequestHeaderForCorrelationId)
 		if err != nil {
 			return err
 		}
-		err = acctest.TestAttributesMatchString(resourceType, &config.id, "sp_connection_transaction_logging_override",
+		err = acctest.TestAttributesMatchString(resourceType, nil, "sp_connection_transaction_logging_override",
 			config.spConnectionTransactionLoggingOverride, *response.SpConnectionTransactionLoggingOverride)
 		if err != nil {
 			return err

@@ -22,6 +22,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
@@ -250,7 +251,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								PlanModifiers: []planmodifier.Object{
 									objectplanmodifier.UseStateForUnknown(),
 								},
-								Attributes: resourcelink.Schema(),
+								Attributes: resourcelink.ToSchema(),
 							},
 						},
 					},
@@ -292,7 +293,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								PlanModifiers: []planmodifier.Object{
 									objectplanmodifier.UseStateForUnknown(),
 								},
-								Attributes: resourcelink.Schema(),
+								Attributes: resourcelink.ToSchema(),
 							},
 						},
 					},
@@ -311,7 +312,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						PlanModifiers: []planmodifier.Object{
 							objectplanmodifier.UseStateForUnknown(),
 						},
-						Attributes: resourcelink.Schema(),
+						Attributes: resourcelink.ToSchema(),
 					},
 					"metadata_notification_settings": schema.SingleNestedAttribute{
 						Description: "Settings for metadata update event notifications.",
@@ -336,7 +337,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								PlanModifiers: []planmodifier.Object{
 									objectplanmodifier.UseStateForUnknown(),
 								},
-								Attributes: resourcelink.Schema(),
+								Attributes: resourcelink.ToSchema(),
 							},
 						},
 					},
@@ -768,24 +769,17 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 					},
 					"secret_key": schema.StringAttribute{
 						Description: "Secret key for reCAPTCHA. GETs will not return this attribute. To update this field, specify the new value in this attribute.",
-						Computed:    true,
-						Optional:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
+						Required:    true,
 					},
 				},
 			},
 		},
 	}
-	config.AddCommonSchema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
 // ValidateConfig validates the configuration of the server settings resource.
-// It checks the email format of contact_info and notifications email addresses,
-// the URL format of the federation_info base_url, and the email format and hostname/IP
-// validity of the email_server source_addr and email_server email_server attributes.
 // It also checks that the email_server use_ssl and use_tls attributes are not both set to true.
 func (r *serverSettingsResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 
@@ -848,8 +842,8 @@ func addOptionalServerSettingsFields(ctx context.Context, addRequest *client.Ser
 		}
 	}
 
-	if internaltypes.ObjContainsNoEmptyVals(plan.CaptchaSettings) {
-		addRequest.CaptchaSettings = client.NewCaptchaSettings()
+	if internaltypes.IsDefined(plan.CaptchaSettings) {
+		addRequest.CaptchaSettings = client.NewCaptchaSettingsWithDefaults()
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.CaptchaSettings, true)), addRequest.CaptchaSettings)
 		if err != nil {
 			return err
@@ -876,11 +870,10 @@ func (r *serverSettingsResource) Configure(_ context.Context, req resource.Confi
 
 }
 
-func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, state *serverSettingsResourceModel, plan *serverSettingsResourceModel) diag.Diagnostics {
+func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, state *serverSettingsResourceModel, plan *serverSettingsResourceModel, existingId *string) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	emptyString := ""
-	//TODO placeholder?
-	state.Id = types.StringValue("id")
+	state.Id = id.GenerateUUIDToState(existingId)
 	state.ContactInfo, respDiags = types.ObjectValueFrom(ctx, contactInfoAttrType, r.ContactInfo)
 	diags.Append(respDiags...)
 	state.Notifications, respDiags = types.ObjectValueFrom(ctx, notificationsAttrType, r.Notifications)
@@ -947,55 +940,54 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	//////////////////////////////////////////////
 	// get email creds with function
 	// if username and password are not set, return null values
-	var getEmailCreds = func() (*string, string) {
-		if plan.EmailServer.Attributes()["username"] != nil && plan.EmailServer.Attributes()["password"] != nil {
-			username := plan.EmailServer.Attributes()["username"].(types.String).ValueStringPointer()
-			password := plan.EmailServer.Attributes()["password"].(types.String).ValueString()
-			return username, password
-		} else {
-			return types.StringNull().ValueStringPointer(), types.StringNull().ValueString()
+	if internaltypes.IsDefined(plan.EmailServer) {
+		var getEmailCreds = func() (*string, string) {
+			if plan.EmailServer.Attributes()["username"] != nil && plan.EmailServer.Attributes()["password"] != nil {
+				username := plan.EmailServer.Attributes()["username"].(types.String).ValueStringPointer()
+				password := plan.EmailServer.Attributes()["password"].(types.String).ValueString()
+				return username, password
+			} else {
+				return types.StringNull().ValueStringPointer(), types.StringNull().ValueString()
+			}
 		}
-	}
 
-	// retrieve values for saving to state
-	username, password := getEmailCreds()
-	emailServerAttrValue := map[string]attr.Value{
-		"source_addr":                 types.StringValue(r.EmailServer.GetSourceAddr()),
-		"email_server":                types.StringValue(r.EmailServer.GetEmailServer()),
-		"port":                        types.Int64Value(r.EmailServer.GetPort()),
-		"ssl_port":                    types.Int64Value(r.EmailServer.GetSslPort()),
-		"timeout":                     types.Int64Value(r.EmailServer.GetTimeout()),
-		"retry_attempts":              types.Int64Value(r.EmailServer.GetRetryAttempts()),
-		"retry_delay":                 types.Int64Value(r.EmailServer.GetRetryDelay()),
-		"use_ssl":                     types.BoolValue(r.EmailServer.GetUseSSL()),
-		"use_tls":                     types.BoolValue(r.EmailServer.GetUseTLS()),
-		"verify_hostname":             types.BoolValue(r.EmailServer.GetVerifyHostname()),
-		"enable_utf8_message_headers": types.BoolValue(r.EmailServer.GetEnableUtf8MessageHeaders()),
-		"use_debugging":               types.BoolValue(r.EmailServer.GetUseDebugging()),
-		"username":                    types.StringPointerValue(username),
-		"password":                    types.StringValue(password),
-	}
+		// retrieve values for saving to state
+		username, password := getEmailCreds()
+		emailServerAttrValue := map[string]attr.Value{
+			"source_addr":                 types.StringValue(r.EmailServer.SourceAddr),
+			"email_server":                types.StringValue(r.EmailServer.EmailServer),
+			"port":                        types.Int64Value(r.EmailServer.Port),
+			"ssl_port":                    types.Int64PointerValue(r.EmailServer.SslPort),
+			"timeout":                     types.Int64PointerValue(r.EmailServer.Timeout),
+			"retry_attempts":              types.Int64PointerValue(r.EmailServer.RetryAttempts),
+			"retry_delay":                 types.Int64PointerValue(r.EmailServer.RetryDelay),
+			"use_ssl":                     types.BoolPointerValue(r.EmailServer.UseSSL),
+			"use_tls":                     types.BoolPointerValue(r.EmailServer.UseTLS),
+			"verify_hostname":             types.BoolPointerValue(r.EmailServer.VerifyHostname),
+			"enable_utf8_message_headers": types.BoolPointerValue(r.EmailServer.EnableUtf8MessageHeaders),
+			"use_debugging":               types.BoolPointerValue(r.EmailServer.UseDebugging),
+			"username":                    types.StringPointerValue(username),
+			"password":                    types.StringValue(password),
+		}
 
-	state.EmailServer, respDiags = types.ObjectValue(emailServerAttrType, emailServerAttrValue)
-	diags.Append(respDiags...)
+		state.EmailServer, respDiags = types.ObjectValue(emailServerAttrType, emailServerAttrValue)
+		diags.Append(respDiags...)
+	} else {
+		state.EmailServer = types.ObjectNull(emailServerAttrType)
+	}
 	//////////////////////////////////////////////
 	// CAPTCHA SETTINGS
 	//////////////////////////////////////////////
-	var getCaptchaSettingsAttrValue = func() map[string]attr.Value {
-		if internaltypes.ObjContainsNoEmptyVals(plan.CaptchaSettings) {
-			return map[string]attr.Value{
-				"site_key":   types.StringPointerValue(r.CaptchaSettings.SiteKey),
-				"secret_key": types.StringValue(plan.CaptchaSettings.Attributes()["secret_key"].(types.String).ValueString()),
-			}
-		} else {
-			return map[string]attr.Value{
-				"site_key":   types.StringPointerValue(&emptyString),
-				"secret_key": types.StringValue(emptyString),
-			}
+	if internaltypes.IsDefined(plan.CaptchaSettings) {
+		captchaSettingsAttrValue := map[string]attr.Value{
+			"site_key":   types.StringPointerValue(r.CaptchaSettings.SiteKey),
+			"secret_key": types.StringValue(plan.CaptchaSettings.Attributes()["secret_key"].(types.String).ValueString()),
 		}
+		state.CaptchaSettings, respDiags = types.ObjectValue(captchaSettingsAttrType, captchaSettingsAttrValue)
+		diags.Append(respDiags...)
+	} else {
+		state.CaptchaSettings = types.ObjectNull(captchaSettingsAttrType)
 	}
-	state.CaptchaSettings, respDiags = types.ObjectValue(captchaSettingsAttrType, getCaptchaSettingsAttrValue())
-	diags.Append(respDiags...)
 	return diags
 }
 
@@ -1033,8 +1025,7 @@ func (r *serverSettingsResource) Create(ctx context.Context, req resource.Create
 
 	// Read the response into the state
 	var state serverSettingsResourceModel
-
-	diags = readServerSettingsResponse(ctx, serverSettingsResponse, &state, &plan)
+	diags = readServerSettingsResponse(ctx, serverSettingsResponse, &state, &plan, nil)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -1072,7 +1063,12 @@ func (r *serverSettingsResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Read the response into the state
-	diags = readServerSettingsResponse(ctx, apiReadServerSettings, &state, &state)
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = readServerSettingsResponse(ctx, apiReadServerSettings, &state, &state, id)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -1090,9 +1086,6 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
-	var state serverSettingsResourceModel
-	req.State.Get(ctx, &state)
 	updateServerSettings := r.apiClient.ServerSettingsAPI.UpdateServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewServerSettings()
 	err := addOptionalServerSettingsFields(ctx, createUpdateRequest, plan)
@@ -1116,7 +1109,13 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 		diags.AddError("There was an issue retrieving the response of Server Settings: %s", responseErr.Error())
 	}
 	// Read the response
-	diags = readServerSettingsResponse(ctx, updateServerSettingsResponse, &state, &plan)
+	var state serverSettingsResourceModel
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = readServerSettingsResponse(ctx, updateServerSettingsResponse, &state, &plan, id)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -1130,6 +1129,5 @@ func (r *serverSettingsResource) Delete(ctx context.Context, req resource.Delete
 
 func (r *serverSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	// Set a placeholder id value to appease terraform.
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

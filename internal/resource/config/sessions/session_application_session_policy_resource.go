@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -61,7 +62,7 @@ func (r *sessionApplicationSessionPolicyResource) Schema(ctx context.Context, re
 		},
 	}
 
-	config.AddCommonSchema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -92,9 +93,8 @@ func (r *sessionApplicationSessionPolicyResource) Configure(_ context.Context, r
 
 }
 
-func readSessionApplicationSessionPolicyResponse(ctx context.Context, r *client.ApplicationSessionPolicy, state *sessionApplicationSessionPolicyResourceModel, expectedValues *sessionApplicationSessionPolicyResourceModel) {
-	//TODO placeholder?
-	state.Id = types.StringValue("id")
+func readSessionApplicationSessionPolicyResponse(ctx context.Context, r *client.ApplicationSessionPolicy, state *sessionApplicationSessionPolicyResourceModel, existingId *string) {
+	state.Id = id.GenerateUUIDToState(existingId)
 	state.IdleTimeoutMins = types.Int64Value(r.GetIdleTimeoutMins())
 	state.MaxTimeoutMins = types.Int64Value(r.GetMaxTimeoutMins())
 }
@@ -133,8 +133,8 @@ func (r *sessionApplicationSessionPolicyResource) Create(ctx context.Context, re
 
 	// Read the response into the state
 	var state sessionApplicationSessionPolicyResourceModel
+	readSessionApplicationSessionPolicyResponse(ctx, sessionApplicationSessionPolicyResponse, &state, nil)
 
-	readSessionApplicationSessionPolicyResponse(ctx, sessionApplicationSessionPolicyResponse, &state, &plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -164,7 +164,12 @@ func (r *sessionApplicationSessionPolicyResource) Read(ctx context.Context, req 
 	}
 
 	// Read the response into the state
-	readSessionApplicationSessionPolicyResponse(ctx, apiReadSessionApplicationSessionPolicy, &state, &state)
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readSessionApplicationSessionPolicyResponse(ctx, apiReadSessionApplicationSessionPolicy, &state, id)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -181,9 +186,6 @@ func (r *sessionApplicationSessionPolicyResource) Update(ctx context.Context, re
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
-	var state sessionApplicationSessionPolicyResourceModel
-	req.State.Get(ctx, &state)
 	updateSessionApplicationSessionPolicy := r.apiClient.SessionAPI.UpdateApplicationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewApplicationSessionPolicy()
 	err := addOptionalSessionApplicationSessionPolicyFields(ctx, createUpdateRequest, plan)
@@ -206,8 +208,15 @@ func (r *sessionApplicationSessionPolicyResource) Update(ctx context.Context, re
 	if responseErr != nil {
 		diags.AddError("There was an issue retrieving the response of Session Application Session Policy: %s", responseErr.Error())
 	}
-	// Read the response
-	readSessionApplicationSessionPolicyResponse(ctx, updateSessionApplicationSessionPolicyResponse, &state, &plan)
+
+	// Get the current state to see how any attributes are changing
+	var state sessionApplicationSessionPolicyResourceModel
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readSessionApplicationSessionPolicyResponse(ctx, updateSessionApplicationSessionPolicyResponse, &state, id)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

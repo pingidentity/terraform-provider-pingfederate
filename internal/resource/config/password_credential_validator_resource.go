@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -74,7 +75,7 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
 				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
-				Attributes:  resourcelink.Schema(),
+				Attributes:  resourcelink.ToSchema(),
 			},
 			"parent_ref": schema.SingleNestedAttribute{
 				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
@@ -83,9 +84,9 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
-				Attributes: resourcelink.Schema(),
+				Attributes: resourcelink.ToSchema(),
 			},
-			"configuration": pluginconfiguration.Schema(),
+			"configuration": pluginconfiguration.ToSchema(),
 			"attribute_contract": schema.SingleNestedAttribute{
 				Description: "The list of attributes that the password credential validator provides.",
 				Computed:    true,
@@ -142,8 +143,8 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 		},
 	}
 
-	AddCommonSchema(&schema)
-	AddCustomId(&schema, true, true,
+	id.ToSchema(&schema)
+	id.ToSchemaCustomId(&schema, true, true,
 		"The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.")
 	resp.Schema = schema
 }

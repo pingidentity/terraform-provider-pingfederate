@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -68,7 +69,7 @@ func (r *sessionSettingsResource) Schema(ctx context.Context, req resource.Schem
 			},
 		},
 	}
-	config.AddCommonSchema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -102,9 +103,8 @@ func (r *sessionSettingsResource) Configure(_ context.Context, req resource.Conf
 
 }
 
-func readSessionSettingsResponse(ctx context.Context, r *client.SessionSettings, state *sessionSettingsResourceModel, expectedValues *sessionSettingsResourceModel) {
-	//TODO placeholder?
-	state.Id = types.StringValue("id")
+func readSessionSettingsResponse(ctx context.Context, r *client.SessionSettings, state *sessionSettingsResourceModel, existingId *string) {
+	state.Id = id.GenerateUUIDToState(existingId)
 	state.TrackAdapterSessionsForLogout = types.BoolPointerValue(r.TrackAdapterSessionsForLogout)
 	state.RevokeUserSessionOnLogout = types.BoolPointerValue(r.RevokeUserSessionOnLogout)
 	state.SessionRevocationLifetime = types.Int64PointerValue(r.SessionRevocationLifetime)
@@ -144,8 +144,8 @@ func (r *sessionSettingsResource) Create(ctx context.Context, req resource.Creat
 
 	// Read the response into the state
 	var state sessionSettingsResourceModel
+	readSessionSettingsResponse(ctx, sessionSettingsResponse, &state, nil)
 
-	readSessionSettingsResponse(ctx, sessionSettingsResponse, &state, &plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -175,7 +175,12 @@ func (r *sessionSettingsResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	// Read the response into the state
-	readSessionSettingsResponse(ctx, apiReadSessionSettings, &state, &state)
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readSessionSettingsResponse(ctx, apiReadSessionSettings, &state, id)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -192,9 +197,6 @@ func (r *sessionSettingsResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
-	var state sessionSettingsResourceModel
-	req.State.Get(ctx, &state)
 	updateSessionSettings := r.apiClient.SessionAPI.UpdateSessionSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewSessionSettings()
 	err := addOptionalSessionSettingsFields(ctx, createUpdateRequest, plan)
@@ -217,8 +219,15 @@ func (r *sessionSettingsResource) Update(ctx context.Context, req resource.Updat
 	if responseErr != nil {
 		diags.AddError("There was an issue retrieving the response of Session Settings: %s", responseErr.Error())
 	}
-	// Read the response
-	readSessionSettingsResponse(ctx, updateSessionSettingsResponse, &state, &plan)
+
+	// Get the current state to see how any attributes are changing
+	var state sessionSettingsResourceModel
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readSessionSettingsResponse(ctx, updateSessionSettingsResponse, &state, id)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

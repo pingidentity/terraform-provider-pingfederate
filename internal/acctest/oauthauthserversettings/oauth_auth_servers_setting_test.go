@@ -12,11 +12,8 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const oauthAuthServerSettingsId = "id"
-
 // Attributes to test with. Add optional properties to test here if desired.
 type oauthAuthServerSettingsResourceModel struct {
-	id                               string
 	defaultScopeDescription          string
 	authorizationCodeTimeout         int64
 	authorizationCodeEntropy         int64
@@ -31,7 +28,6 @@ type oauthAuthServerSettingsResourceModel struct {
 func TestAccOauthAuthServerSettings(t *testing.T) {
 	resourceName := "myOauthAuthServerSettings"
 	initialResourceModel := oauthAuthServerSettingsResourceModel{
-		id:                               oauthAuthServerSettingsId,
 		defaultScopeDescription:          "example scope description",
 		authorizationCodeTimeout:         50,
 		authorizationCodeEntropy:         20,
@@ -43,7 +39,6 @@ func TestAccOauthAuthServerSettings(t *testing.T) {
 		bypassActivationCodeConfirmation: false,
 	}
 	updatedResourceModel := oauthAuthServerSettingsResourceModel{
-		id:                               oauthAuthServerSettingsId,
 		defaultScopeDescription:          "example updated scope description",
 		authorizationCodeTimeout:         60,
 		authorizationCodeEntropy:         30,
@@ -74,7 +69,6 @@ func TestAccOauthAuthServerSettings(t *testing.T) {
 				// Test importing the resource
 				Config:            testAccOauthAuthServerSettings(resourceName, updatedResourceModel),
 				ResourceName:      "pingfederate_oauth_auth_server_settings." + resourceName,
-				ImportStateId:     oauthAuthServerSettingsId,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -120,54 +114,54 @@ func testAccCheckExpectedOauthAuthServerSettingsAttributes(config oauthAuthServe
 		}
 
 		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchInt(resourceType, &config.id, "authorization_code_entropy",
+		err = acctest.TestAttributesMatchInt(resourceType, nil, "authorization_code_entropy",
 			config.authorizationCodeEntropy, response.AuthorizationCodeEntropy)
 		if err != nil {
 			return err
 		}
 
-		err = acctest.TestAttributesMatchInt(resourceType, &config.id, "authorization_code_timeout",
+		err = acctest.TestAttributesMatchInt(resourceType, nil, "authorization_code_timeout",
 			config.authorizationCodeTimeout, response.AuthorizationCodeTimeout)
 		if err != nil {
 			return err
 		}
 
-		err = acctest.TestAttributesMatchString(resourceType, &config.id, "registered_authorization_path",
+		err = acctest.TestAttributesMatchString(resourceType, nil, "registered_authorization_path",
 			config.registeredAuthorizationPath, response.RegisteredAuthorizationPath)
 		if err != nil {
 			return err
 		}
 
-		err = acctest.TestAttributesMatchString(resourceType, &config.id, "default_scope_description",
+		err = acctest.TestAttributesMatchString(resourceType, nil, "default_scope_description",
 			config.defaultScopeDescription, response.DefaultScopeDescription)
 		if err != nil {
 			return err
 		}
 
-		err = acctest.TestAttributesMatchInt(resourceType, &config.id, "device_polling_interval",
+		err = acctest.TestAttributesMatchInt(resourceType, nil, "device_polling_interval",
 			config.devicePollingInterval, response.DevicePollingInterval)
 		if err != nil {
 			return err
 		}
-		err = acctest.TestAttributesMatchInt(resourceType, &config.id, "pending_authorization_timeout",
+		err = acctest.TestAttributesMatchInt(resourceType, nil, "pending_authorization_timeout",
 			config.pendingAuthorizationTimeout, response.PendingAuthorizationTimeout)
 		if err != nil {
 			return err
 		}
 
-		err = acctest.TestAttributesMatchInt(resourceType, &config.id, "refresh_rolling_interval",
+		err = acctest.TestAttributesMatchInt(resourceType, nil, "refresh_rolling_interval",
 			config.refreshRollingInterval, response.RefreshRollingInterval)
 		if err != nil {
 			return err
 		}
 
-		err = acctest.TestAttributesMatchInt(resourceType, &config.id, "refresh_token_length",
+		err = acctest.TestAttributesMatchInt(resourceType, nil, "refresh_token_length",
 			config.refreshTokenLength, response.RefreshTokenLength)
 		if err != nil {
 			return err
 		}
 
-		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "bypass_activation_code_confirmation",
+		err = acctest.TestAttributesMatchBool(resourceType, nil, "bypass_activation_code_confirmation",
 			config.bypassActivationCodeConfirmation, response.BypassActivationCodeConfirmation)
 		if err != nil {
 			return err

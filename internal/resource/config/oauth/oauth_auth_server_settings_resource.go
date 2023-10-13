@@ -27,6 +27,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopeentry"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopegroupentry"
@@ -428,7 +429,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 			"admin_web_service_pcv_ref": schema.SingleNestedAttribute{
 				Description: "The password credential validator reference that is used for authenticating access to the OAuth Administrative Web Service.",
 				Optional:    true,
-				Attributes:  resourcelink.Schema(),
+				Attributes:  resourcelink.ToSchema(),
 			},
 			"atm_id_for_oauth_grant_management": schema.StringAttribute{
 				Description: "The ID of the Access Token Manager used for OAuth enabled grant management.",
@@ -580,7 +581,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 		},
 	}
 
-	config.AddCommonSchema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -817,10 +818,9 @@ func (r *oauthAuthServerSettingsResource) Configure(_ context.Context, req resou
 
 }
 
-func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsResourceModel) diag.Diagnostics {
-	//TODO placeholder
+func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsResourceModel, existingId *string) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.Id = types.StringValue("id")
+	state.Id = id.GenerateUUIDToState(existingId)
 	state.DefaultScopeDescription = types.StringValue(r.DefaultScopeDescription)
 	state.Scopes, respDiags = scopeentry.ToState(ctx, r.Scopes)
 	diags.Append(respDiags...)
@@ -945,8 +945,7 @@ func (r *oauthAuthServerSettingsResource) Create(ctx context.Context, req resour
 
 	// Read the response into the state
 	var state oauthAuthServerSettingsResourceModel
-
-	diags = readOauthAuthServerSettingsResponse(ctx, oauthAuthServerSettingsResponse, &state)
+	diags = readOauthAuthServerSettingsResponse(ctx, oauthAuthServerSettingsResponse, &state, nil)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -978,7 +977,12 @@ func (r *oauthAuthServerSettingsResource) Read(ctx context.Context, req resource
 	}
 
 	// Read the response into the state
-	diags = readOauthAuthServerSettingsResponse(ctx, apiReadOauthAuthServerSettings, &state)
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = readOauthAuthServerSettingsResponse(ctx, apiReadOauthAuthServerSettings, &state, id)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -997,8 +1001,6 @@ func (r *oauthAuthServerSettingsResource) Update(ctx context.Context, req resour
 	}
 
 	// Get the current state to see how any attributes are changing
-	var state oauthAuthServerSettingsResourceModel
-	req.State.Get(ctx, &state)
 	updateOauthAuthServerSettings := r.apiClient.OauthAuthServerSettingsAPI.UpdateAuthorizationServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewAuthorizationServerSettings(plan.DefaultScopeDescription.ValueString(), plan.AuthorizationCodeTimeout.ValueInt64(), plan.AuthorizationCodeEntropy.ValueInt64(), plan.RefreshTokenLength.ValueInt64(), plan.RefreshRollingInterval.ValueInt64(), plan.RegisteredAuthorizationPath.ValueString(), plan.PendingAuthorizationTimeout.ValueInt64(), plan.DevicePollingInterval.ValueInt64(), plan.BypassActivationCodeConfirmation.ValueBool())
 	err := addOptionalOauthAuthServerSettingsFields(ctx, createUpdateRequest, plan)
@@ -1022,7 +1024,13 @@ func (r *oauthAuthServerSettingsResource) Update(ctx context.Context, req resour
 		diags.AddError("There was an issue retrieving the response of a OAuth Auth Server Settings: %s", responseErr.Error())
 	}
 	// Read the response
-	diags = readOauthAuthServerSettingsResponse(ctx, updateOauthAuthServerSettingsResponse, &state)
+	var state oauthAuthServerSettingsResourceModel
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = readOauthAuthServerSettingsResponse(ctx, updateOauthAuthServerSettingsResponse, &state, id)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -1036,8 +1044,5 @@ func (r *oauthAuthServerSettingsResource) Delete(ctx context.Context, req resour
 
 func (r *oauthAuthServerSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	// Set a placeholder id value to appease terraform.
-	// The real attributes will be imported when terraform performs a read after the import.
-	// If no value is set here, Terraform will error out when importing.
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), "id")...)
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

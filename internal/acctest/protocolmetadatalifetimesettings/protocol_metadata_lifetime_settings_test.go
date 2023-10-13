@@ -12,11 +12,8 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const protocolMetadataLifetimeSettingsId = "id"
-
 // Attributes to test with. Add optional properties to test here if desired.
 type protocolMetadataLifetimeSettingsResourceModel struct {
-	id            string
 	cacheDuration int64
 	reloadDelay   int64
 }
@@ -51,7 +48,6 @@ func TestAccProtocolMetadataLifetimeSettings(t *testing.T) {
 				// Test importing the resource
 				Config:            testAccProtocolMetadataLifetimeSettings(resourceName, updatedResourceModel),
 				ResourceName:      "pingfederate_protocol_metadata_lifetime_settings." + resourceName,
-				ImportStateId:     protocolMetadataLifetimeSettingsId,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -83,12 +79,12 @@ func testAccCheckExpectedProtocolMetadataLifetimeSettingsAttributes(config proto
 		}
 
 		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchInt(resourceType, &config.id, "cache_duration",
+		err = acctest.TestAttributesMatchInt(resourceType, nil, "cache_duration",
 			config.cacheDuration, *response.CacheDuration)
 		if err != nil {
 			return err
 		}
-		err = acctest.TestAttributesMatchInt(resourceType, &config.id, "reload_delay",
+		err = acctest.TestAttributesMatchInt(resourceType, nil, "reload_delay",
 			config.reloadDelay, *response.ReloadDelay)
 		if err != nil {
 			return err

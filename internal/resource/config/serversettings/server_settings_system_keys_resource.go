@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -140,7 +141,7 @@ func (r *serverSettingsSystemKeysResource) Schema(ctx context.Context, req resou
 		},
 	}
 
-	config.AddCommonSchema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -191,16 +192,16 @@ func (r *serverSettingsSystemKeysResource) Configure(_ context.Context, req reso
 
 }
 
-func readServerSettingsSystemKeysResponse(ctx context.Context, r *client.SystemKeys, state *serverSettingsSystemKeysResourceModel, diags *diag.Diagnostics) {
-	//TODO placeholder?
-	state.Id = types.StringValue("id")
+func readServerSettingsSystemKeysResponse(ctx context.Context, r *client.SystemKeys, state *serverSettingsSystemKeysResourceModel, existingId *string) diag.Diagnostics {
+	var diags diag.Diagnostics
+	state.Id = id.GenerateUUIDToState(existingId)
 	currentAttrs := r.GetCurrent()
 	currentAttrVals := map[string]attr.Value{
 		"creation_date":      types.StringValue(currentAttrs.GetCreationDate().Format(time.RFC3339Nano)),
 		"encrypted_key_data": types.StringValue(currentAttrs.GetEncryptedKeyData()),
 		"key_data":           types.StringValue(currentAttrs.GetKeyData()),
 	}
-	currentAttrsObjVal := internaltypes.MaptoObjValue(systemKeyAttrTypes, currentAttrVals, diags)
+	currentAttrsObjVal := internaltypes.MaptoObjValue(systemKeyAttrTypes, currentAttrVals, &diags)
 
 	previousAttrs := r.GetPrevious()
 	previousAttrVals := map[string]attr.Value{
@@ -208,7 +209,7 @@ func readServerSettingsSystemKeysResponse(ctx context.Context, r *client.SystemK
 		"encrypted_key_data": types.StringValue(previousAttrs.GetEncryptedKeyData()),
 		"key_data":           types.StringValue(previousAttrs.GetKeyData()),
 	}
-	previousAttrsObjVal := internaltypes.MaptoObjValue(systemKeyAttrTypes, previousAttrVals, diags)
+	previousAttrsObjVal := internaltypes.MaptoObjValue(systemKeyAttrTypes, previousAttrVals, &diags)
 
 	pendingAttrs := r.GetPending()
 	pendingAttrVals := map[string]attr.Value{
@@ -216,11 +217,12 @@ func readServerSettingsSystemKeysResponse(ctx context.Context, r *client.SystemK
 		"encrypted_key_data": types.StringValue(pendingAttrs.GetEncryptedKeyData()),
 		"key_data":           types.StringValue(pendingAttrs.GetKeyData()),
 	}
-	pendingAttrsObjVal := internaltypes.MaptoObjValue(systemKeyAttrTypes, pendingAttrVals, diags)
+	pendingAttrsObjVal := internaltypes.MaptoObjValue(systemKeyAttrTypes, pendingAttrVals, &diags)
 
 	state.Current = currentAttrsObjVal
 	state.Pending = pendingAttrsObjVal
 	state.Previous = previousAttrsObjVal
+	return diags
 }
 
 func (r *serverSettingsSystemKeysResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -252,8 +254,8 @@ func (r *serverSettingsSystemKeysResource) Create(ctx context.Context, req resou
 
 	// Read the response into the state
 	var state serverSettingsSystemKeysResourceModel
-
-	readServerSettingsSystemKeysResponse(ctx, serverSettingsSystemKeysResponse, &state, &resp.Diagnostics)
+	diags = readServerSettingsSystemKeysResponse(ctx, serverSettingsSystemKeysResponse, &state, nil)
+	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -283,7 +285,13 @@ func (r *serverSettingsSystemKeysResource) Read(ctx context.Context, req resourc
 	}
 
 	// Read the response into the state
-	readServerSettingsSystemKeysResponse(ctx, apiReadServerSettingsSystemKeys, &state, &resp.Diagnostics)
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = readServerSettingsSystemKeysResponse(ctx, apiReadServerSettingsSystemKeys, &state, id)
+	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -321,8 +329,14 @@ func (r *serverSettingsSystemKeysResource) Update(ctx context.Context, req resou
 
 	// Read the response into the state
 	var state serverSettingsSystemKeysResourceModel
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-	readServerSettingsSystemKeysResponse(ctx, serverSettingsSystemKeysResponse, &state, &resp.Diagnostics)
+	diags = readServerSettingsSystemKeysResponse(ctx, serverSettingsSystemKeysResponse, &state, id)
+	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }

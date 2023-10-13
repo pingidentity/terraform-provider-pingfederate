@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -86,7 +87,7 @@ func (r *serverSettingsGeneralSettingsResource) Schema(ctx context.Context, req 
 		},
 	}
 
-	config.AddCommonSchema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -126,9 +127,8 @@ func (r *serverSettingsGeneralSettingsResource) Configure(_ context.Context, req
 
 }
 
-func readServerSettingsGeneralSettingsResponse(ctx context.Context, r *client.GeneralSettings, state *serverSettingsGeneralSettingsResourceModel, expectedValues *serverSettingsGeneralSettingsResourceModel) {
-	//TODO placeholder?
-	state.Id = types.StringValue("id")
+func readServerSettingsGeneralSettingsResponse(ctx context.Context, r *client.GeneralSettings, state *serverSettingsGeneralSettingsResourceModel, existingId *string) {
+	state.Id = id.GenerateUUIDToState(existingId)
 	state.DisableAutomaticConnectionValidation = types.BoolPointerValue(r.DisableAutomaticConnectionValidation)
 	state.IdpConnectionTransactionLoggingOverride = internaltypes.StringTypeOrNil(r.IdpConnectionTransactionLoggingOverride, true)
 	state.SpConnectionTransactionLoggingOverride = internaltypes.StringTypeOrNil(r.SpConnectionTransactionLoggingOverride, true)
@@ -170,8 +170,8 @@ func (r *serverSettingsGeneralSettingsResource) Create(ctx context.Context, req 
 
 	// Read the response into the state
 	var state serverSettingsGeneralSettingsResourceModel
+	readServerSettingsGeneralSettingsResponse(ctx, serverSettingsGeneralSettingsResponse, &state, nil)
 
-	readServerSettingsGeneralSettingsResponse(ctx, serverSettingsGeneralSettingsResponse, &state, &plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -201,7 +201,12 @@ func (r *serverSettingsGeneralSettingsResource) Read(ctx context.Context, req re
 		diags.AddError("There was an issue retrieving the response of Server Settings General Settings: %s", responseErr.Error())
 	}
 	// Read the response into the state
-	readServerSettingsGeneralSettingsResponse(ctx, apiReadServerSettingsGeneralSettings, &state, &state)
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readServerSettingsGeneralSettingsResponse(ctx, apiReadServerSettingsGeneralSettings, &state, id)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -218,9 +223,6 @@ func (r *serverSettingsGeneralSettingsResource) Update(ctx context.Context, req 
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
-	var state serverSettingsGeneralSettingsResourceModel
-	req.State.Get(ctx, &state)
 	updateServerSettingsGeneralSettings := r.apiClient.ServerSettingsAPI.UpdateGeneralSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewGeneralSettings()
 	err := addOptionalServerSettingsGeneralSettingsFields(ctx, createUpdateRequest, plan)
@@ -244,7 +246,13 @@ func (r *serverSettingsGeneralSettingsResource) Update(ctx context.Context, req 
 		diags.AddError("There was an issue retrieving the response of Server Settings General Settings: %s", responseErr.Error())
 	}
 	// Read the response
-	readServerSettingsGeneralSettingsResponse(ctx, updateServerSettingsGeneralSettingsResponse, &state, &plan)
+	var state serverSettingsGeneralSettingsResourceModel
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readServerSettingsGeneralSettingsResponse(ctx, updateServerSettingsGeneralSettingsResponse, &state, id)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
