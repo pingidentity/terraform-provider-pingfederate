@@ -166,14 +166,13 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Create(ctx context.Cont
 		return
 	}
 
-	attributeContractFulfillment := &map[string]client.AttributeFulfillmentValue{}
-	attributeContractFulfillmentErr := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContractFulfillment, false)), attributeContractFulfillment)
-	if attributeContractFulfillmentErr != nil {
-		resp.Diagnostics.AddError("Failed to build attribute contract fulfillment request object:", attributeContractFulfillmentErr.Error())
+	attributeContractFulfillment, err := attributecontractfulfillment.ClientStruct(plan.AttributeContractFulfillment)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to build attribute contract fulfillment request object:", err.Error())
 		return
 	}
-	createTokenProcessorToTokenGeneratorMapping := client.NewTokenToTokenMapping(*attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
-	err := addOptionalTokenProcessorToTokenGeneratorMappingFields(ctx, createTokenProcessorToTokenGeneratorMapping, plan)
+	createTokenProcessorToTokenGeneratorMapping := client.NewTokenToTokenMapping(attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
+	err = addOptionalTokenProcessorToTokenGeneratorMappingFields(ctx, createTokenProcessorToTokenGeneratorMapping, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for TokenProcessorToTokenGeneratorMapping", err.Error())
 		return

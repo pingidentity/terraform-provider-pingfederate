@@ -276,23 +276,22 @@ func (r *passwordCredentialValidatorsResource) Create(ctx context.Context, req r
 	}
 
 	// PluginDescriptorRef
-	pluginDescRefResLink := resourcelink.ClientStruct(plan.PluginDescriptorRef)
-	pluginDescRefErr := json.Unmarshal([]byte(internaljson.FromValue(plan.PluginDescriptorRef, false)), pluginDescRefResLink)
-	if pluginDescRefErr != nil {
-		resp.Diagnostics.AddError("Failed to build plugin descriptor ref request object:", pluginDescRefErr.Error())
+	pluginDescRefResLink, err := resourcelink.ClientStruct(plan.PluginDescriptorRef)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to build plugin descriptor ref request object:", err.Error())
 		return
 	}
 
 	// Configuration
 	configuration := client.NewPluginConfigurationWithDefaults()
-	configErr := json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, true)), configuration)
-	if configErr != nil {
-		resp.Diagnostics.AddError("Failed to build plugin configuration request object:", configErr.Error())
+	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, true)), configuration)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to build plugin configuration request object:", err.Error())
 		return
 	}
 
 	createPasswordCredentialValidators := client.NewPasswordCredentialValidator(plan.CustomId.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
-	err := addOptionalPasswordCredentialValidatorsFields(ctx, createPasswordCredentialValidators, plan)
+	err = addOptionalPasswordCredentialValidatorsFields(ctx, createPasswordCredentialValidators, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for a Password Credential Validator", err.Error())
 		return
@@ -365,24 +364,23 @@ func (r *passwordCredentialValidatorsResource) Update(ctx context.Context, req r
 	}
 
 	// PluginDescriptorRef
-	pluginDescRefResLink := resourcelink.ClientStruct(plan.PluginDescriptorRef)
-	pluginDescRefErr := json.Unmarshal([]byte(internaljson.FromValue(plan.PluginDescriptorRef, false)), pluginDescRefResLink)
-	if pluginDescRefErr != nil {
-		resp.Diagnostics.AddError("Failed to build plugin descriptor ref request object:", pluginDescRefErr.Error())
+	pluginDescRefResLink, err := resourcelink.ClientStruct(plan.PluginDescriptorRef)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to build plugin descriptor ref request object:", err.Error())
 		return
 	}
 
 	// Configuration
 	configuration := client.NewPluginConfiguration()
-	configErr := json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, true)), configuration)
-	if configErr != nil {
-		resp.Diagnostics.AddError("Failed to build plugin configuration request object:", configErr.Error())
+	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, true)), configuration)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to build plugin configuration request object:", err.Error())
 		return
 	}
 
 	updatePasswordCredentialValidators := r.apiClient.PasswordCredentialValidatorsAPI.UpdatePasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig), plan.CustomId.ValueString())
 	createUpdateRequest := client.NewPasswordCredentialValidator(plan.CustomId.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
-	err := addOptionalPasswordCredentialValidatorsFields(ctx, createUpdateRequest, plan)
+	err = addOptionalPasswordCredentialValidatorsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for a Password Credential Validator", err.Error())
 		return

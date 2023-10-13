@@ -110,7 +110,10 @@ func addAuthenticationApiSettingsFields(ctx context.Context, addRequest *client.
 		addRequest.IncludeRequestContext = plan.IncludeRequestContext.ValueBoolPointer()
 	}
 	if internaltypes.IsDefined(plan.DefaultApplicationRef) {
-		addRequestNewLinkObj := resourcelink.ClientStruct(plan.DefaultApplicationRef)
+		addRequestNewLinkObj, err := resourcelink.ClientStruct(plan.DefaultApplicationRef)
+		if err != nil {
+			return err
+		}
 		addRequest.DefaultApplicationRef = addRequestNewLinkObj
 	}
 	return nil

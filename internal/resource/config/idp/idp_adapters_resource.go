@@ -250,13 +250,13 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 }
 
 func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdapter, plan idpAdapterResourceModel) error {
+	var err error
 	if internaltypes.IsDefined(plan.AuthnCtxClassRef) {
 		addRequest.AuthnCtxClassRef = plan.AuthnCtxClassRef.ValueStringPointer()
 	}
 
 	if internaltypes.IsDefined(plan.ParentRef) {
-		addRequest.ParentRef = &client.ResourceLink{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ParentRef, false)), addRequest.ParentRef)
+		addRequest.ParentRef, err = resourcelink.ClientStruct(plan.ParentRef)
 		if err != nil {
 			return err
 		}
@@ -269,41 +269,22 @@ func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdap
 		addRequest.AttributeMapping.Inherited = planAttrs["inherited"].(types.Bool).ValueBoolPointer()
 
 		attrContractFulfillmentAttr := planAttrs["attribute_contract_fulfillment"].(types.Map)
-		err := json.Unmarshal([]byte(internaljson.FromValue(attrContractFulfillmentAttr, true)), &addRequest.AttributeMapping.AttributeContractFulfillment)
+		addRequest.AttributeMapping.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(attrContractFulfillmentAttr)
 		if err != nil {
 			return err
 		}
 
 		issuanceCriteriaAttr := planAttrs["issuance_criteria"].(types.Object)
-		addRequest.AttributeMapping.IssuanceCriteria = client.NewIssuanceCriteria()
-		err = json.Unmarshal([]byte(internaljson.FromValue(issuanceCriteriaAttr, true)), addRequest.AttributeMapping.IssuanceCriteria)
+		addRequest.AttributeMapping.IssuanceCriteria, err = issuancecriteria.ClientStruct(issuanceCriteriaAttr)
 		if err != nil {
 			return err
 		}
 
-		//TODO
 		attributeSourcesAttr := planAttrs["attribute_sources"].(types.List)
 		addRequest.AttributeMapping.AttributeSources = []client.AttributeSourceAggregation{}
-		for _, source := range attributeSourcesAttr.Elements() {
-			//Determine which attribute source type this is
-			sourceAttrs := source.(types.Object).Attributes()
-			attributeSourceInner := client.AttributeSourceAggregation{}
-			if internaltypes.IsDefined(sourceAttrs["custom_attribute_source"]) {
-				attributeSourceInner.CustomAttributeSource = &client.CustomAttributeSource{}
-				err = json.Unmarshal([]byte(internaljson.FromValue(sourceAttrs["custom_attribute_source"], true)), attributeSourceInner.CustomAttributeSource)
-			}
-			if internaltypes.IsDefined(sourceAttrs["jdbc_attribute_source"]) {
-				attributeSourceInner.JdbcAttributeSource = &client.JdbcAttributeSource{}
-				err = json.Unmarshal([]byte(internaljson.FromValue(sourceAttrs["jdbc_attribute_source"], true)), attributeSourceInner.JdbcAttributeSource)
-			}
-			if internaltypes.IsDefined(sourceAttrs["ldap_attribute_source"]) {
-				attributeSourceInner.LdapAttributeSource = &client.LdapAttributeSource{}
-				err = json.Unmarshal([]byte(internaljson.FromValue(sourceAttrs["ldap_attribute_source"], true)), attributeSourceInner.LdapAttributeSource)
-			}
-			if err != nil {
-				return err
-			}
-			addRequest.AttributeMapping.AttributeSources = append(addRequest.AttributeMapping.AttributeSources, attributeSourceInner)
+		addRequest.AttributeMapping.AttributeSources, err = attributesources.ClientStruct(attributeSourcesAttr)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -394,17 +375,11 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 		}
 
 		// Build attribute_contract_fulfillment value
-		//TODO
-		attributeContractFulfillmentElementAttrTypes := attributeMappingAttrTypes["attribute_contract_fulfillment"].(types.MapType).ElemType.(types.ObjectType).AttrTypes
-		attributeMappingValues["attribute_contract_fulfillment"], diags = types.MapValueFrom(ctx,
-			types.ObjectType{AttrTypes: attributeContractFulfillmentElementAttrTypes}, r.AttributeMapping.AttributeContractFulfillment)
+		attributeMappingValues["attribute_contract_fulfillment"], diags = attributecontractfulfillment.ToState(ctx, r.AttributeMapping.AttributeContractFulfillment)
 		respDiags.Append(diags...)
 
 		// Build issuance_criteria value
-		//TODO
-		issuanceCritieraAttrTypes := attributeMappingAttrTypes["issuance_criteria"].(types.ObjectType).AttrTypes
-		attributeMappingValues["issuance_criteria"], diags = types.ObjectValueFrom(ctx,
-			issuanceCritieraAttrTypes, r.AttributeMapping.IssuanceCriteria)
+		attributeMappingValues["issuance_criteria"], diags = issuancecriteria.ToState(ctx, r.AttributeMapping.IssuanceCriteria)
 		respDiags.Append(diags...)
 
 		// Build attribute_sources value
