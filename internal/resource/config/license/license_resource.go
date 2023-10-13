@@ -158,9 +158,6 @@ func (r *licenseResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
-	var state licenseResourceModel
-	req.State.Get(ctx, &state.Id)
 	updateLicense := r.apiClient.LicenseAPI.UpdateLicense(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewLicenseFile(plan.FileData.ValueString())
 	_, requestErr := createUpdateRequest.MarshalJSON()
@@ -184,6 +181,7 @@ func (r *licenseResource) Update(ctx context.Context, req resource.UpdateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var state licenseResourceModel
 	readLicenseResponse(ctx, updateLicenseResponse, &state, &state, plan.FileData, id)
 
 	// Update computed values

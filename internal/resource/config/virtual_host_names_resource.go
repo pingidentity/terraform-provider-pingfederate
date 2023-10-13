@@ -175,9 +175,6 @@ func (r *virtualHostNamesResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
-	var state virtualHostNamesResourceModel
-	req.State.Get(ctx, &state.Id)
 	updateVirtualHostNames := r.apiClient.VirtualHostNamesAPI.UpdateVirtualHostNamesSettings(ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewVirtualHostNameSettings()
 	err := addOptionalVirtualHostNamesFields(ctx, createUpdateRequest, plan)
@@ -206,6 +203,7 @@ func (r *virtualHostNamesResource) Update(ctx context.Context, req resource.Upda
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	var state virtualHostNamesResourceModel
 	readVirtualHostNamesResponse(ctx, updateVirtualHostNamesResponse, &state, id)
 
 	// Update computed values
