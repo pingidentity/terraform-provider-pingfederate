@@ -5,34 +5,21 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 )
 
-func Schema(required bool) schema.MapNestedAttribute {
-	if required {
-		return schema.MapNestedAttribute{
-			Description: "Defines how an attribute in an attribute contract should be populated.",
-			Required:    true,
-			NestedObject: schema.NestedAttributeObject{
-				Attributes: map[string]schema.Attribute{
-					"source": sourcetypeidkey.Schema(),
-					"value": schema.StringAttribute{
-						Optional:    true,
-						Description: "The value for this attribute.",
-					},
+func Schema(required, fullyComputed bool) schema.MapNestedAttribute {
+	return schema.MapNestedAttribute{
+		Description: "Defines how an attribute in an attribute contract should be populated.",
+		Required:    required,
+		Optional:    !required,
+		Computed:    !required,
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: map[string]schema.Attribute{
+				"source": sourcetypeidkey.Schema(fullyComputed),
+				"value": schema.StringAttribute{
+					Optional:    true,
+					Computed:    fullyComputed,
+					Description: "The value for this attribute.",
 				},
 			},
-		}
-	} else {
-		return schema.MapNestedAttribute{
-			Description: "Defines how an attribute in an attribute contract should be populated.",
-			Optional:    true,
-			NestedObject: schema.NestedAttributeObject{
-				Attributes: map[string]schema.Attribute{
-					"source": sourcetypeidkey.Schema(),
-					"value": schema.StringAttribute{
-						Optional:    true,
-						Description: "The value for this attribute.",
-					},
-				},
-			},
-		}
+		},
 	}
 }

@@ -4,19 +4,15 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
@@ -113,6 +109,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Description: "The fixed value that indicates how the user was authenticated.",
 				Optional:    true,
 			},
+			//TODO
 			"custom_id": schema.StringAttribute{
 				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
@@ -127,20 +124,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
 				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
-				Attributes: map[string]schema.Attribute{
-					"id": schema.StringAttribute{
-						Description: "The ID of the resource.",
-						Required:    true,
-					},
-					"location": schema.StringAttribute{
-						Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-						Optional:    true,
-						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
-					},
-				},
+				Attributes:  resourcelink.Schema(),
 			},
 			"parent_ref": schema.SingleNestedAttribute{
 				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
@@ -152,6 +136,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Description: "The list of attributes that the IdP adapter provides.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
+					//TODO move to common?
 					"core_attributes": schema.SetNestedAttribute{
 						Description: "A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type.",
 						Required:    true,
@@ -241,117 +226,14 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 					},
 				},
 			},
-
 			"attribute_mapping": schema.SingleNestedAttribute{
 				Description: "The attributes mapping from attribute sources to attribute targets.",
 				Optional:    true,
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
-					"attribute_sources": attributesources.Schema(),
-					"attribute_contract_fulfillment": schema.MapNestedAttribute{
-						Description: "A list of mappings from attribute names to their fulfillment values.",
-						Optional:    true,
-						Computed:    true,
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"source": schema.SingleNestedAttribute{
-									Description: "The attribute value source.",
-									Optional:    true,
-									Computed:    true,
-									Attributes: map[string]schema.Attribute{
-										"type": schema.StringAttribute{
-											Description: "The source type of this key.",
-											Optional:    true,
-											Computed:    true,
-											Validators: []validator.String{
-												stringvalidator.OneOf("TOKEN_EXCHANGE_PROCESSOR_POLICY", "ACCOUNT_LINK", "ADAPTER", "ASSERTION", "CONTEXT", "CUSTOM_DATA_STORE", "EXPRESSION", "JDBC_DATA_STORE", "LDAP_DATA_STORE", "PING_ONE_LDAP_GATEWAY_DATA_STORE", "MAPPED_ATTRIBUTES", "NO_MAPPING", "TEXT", "TOKEN", "REQUEST", "OAUTH_PERSISTENT_GRANT", "SUBJECT_TOKEN", "ACTOR_TOKEN", "PASSWORD_CREDENTIAL_VALIDATOR", "IDP_CONNECTION", "AUTHENTICATION_POLICY_CONTRACT", "CLAIMS", "LOCAL_IDENTITY_PROFILE", "EXTENDED_CLIENT_METADATA", "EXTENDED_PROPERTIES", "TRACKED_HTTP_PARAMS", "FRAGMENT", "INPUTS", "ATTRIBUTE_QUERY", "IDENTITY_STORE_USER", "IDENTITY_STORE_GROUP", "SCIM_USER", "SCIM_GROUP"),
-											},
-										},
-										"id": schema.StringAttribute{
-											Description: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-											Optional:    true,
-										},
-									},
-								},
-								"value": schema.StringAttribute{
-									Description: "The value for this attribute.",
-									Optional:    true,
-									Computed:    true,
-								},
-							},
-						},
-					},
-					"issuance_criteria": schema.SingleNestedAttribute{
-						Description: "The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled.",
-						Optional:    true,
-						Computed:    true,
-						Default:     objectdefault.StaticValue(issuancecriteria.EmptyDefault()),
-						Attributes: map[string]schema.Attribute{
-							"conditional_criteria": schema.ListNestedAttribute{
-								Description: "An issuance criterion that checks a source attribute against a particular condition and the expected value. If the condition is true then this issuance criterion passes, otherwise the criterion fails.",
-								Optional:    true,
-								Computed:    true,
-								Default:     listdefault.StaticValue(issuancecriteria.ConditionalCriteriaEmptyDefault()),
-								NestedObject: schema.NestedAttributeObject{
-									Attributes: map[string]schema.Attribute{
-										//TODO share these definitions
-										"source": schema.SingleNestedAttribute{
-											Description: "The attribute value source.",
-											Required:    true,
-											Attributes: map[string]schema.Attribute{
-												"type": schema.StringAttribute{
-													Description: "The source type of this key.",
-													Required:    true,
-													Validators: []validator.String{
-														stringvalidator.OneOf([]string{"TOKEN_EXCHANGE_PROCESSOR_POLICY", "ACCOUNT_LINK", "ADAPTER", "ASSERTION", "CONTEXT", "CUSTOM_DATA_STORE", "EXPRESSION", "JDBC_DATA_STORE", "LDAP_DATA_STORE", "PING_ONE_LDAP_GATEWAY_DATA_STORE", "MAPPED_ATTRIBUTES", "NO_MAPPING", "TEXT", "TOKEN", "REQUEST", "OAUTH_PERSISTENT_GRANT", "SUBJECT_TOKEN", "ACTOR_TOKEN", "PASSWORD_CREDENTIAL_VALIDATOR", "IDP_CONNECTION", "AUTHENTICATION_POLICY_CONTRACT", "CLAIMS", "LOCAL_IDENTITY_PROFILE", "EXTENDED_CLIENT_METADATA", "EXTENDED_PROPERTIES", "TRACKED_HTTP_PARAMS", "FRAGMENT", "INPUTS", "ATTRIBUTE_QUERY", "IDENTITY_STORE_USER", "IDENTITY_STORE_GROUP", "SCIM_USER", "SCIM_GROUP"}...),
-													},
-												},
-												"id": schema.StringAttribute{
-													Description: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-													Optional:    true,
-												},
-											},
-										},
-										"attribute_name": schema.StringAttribute{
-											Description: "The name of the attribute to use in this issuance criterion.",
-											Required:    true,
-										},
-										"condition": schema.StringAttribute{
-											Description: "The condition that will be applied to the source attribute's value and the expected value.",
-											Required:    true,
-											Validators: []validator.String{
-												stringvalidator.OneOf("EQUALS", "EQUALS_CASE_INSENSITIVE", "EQUALS_DN", "NOT_EQUAL", "NOT_EQUAL_CASE_INSENSITIVE", "NOT_EQUAL_DN", "MULTIVALUE_CONTAINS", "MULTIVALUE_CONTAINS_CASE_INSENSITIVE", "MULTIVALUE_CONTAINS_DN", "MULTIVALUE_DOES_NOT_CONTAIN", "MULTIVALUE_DOES_NOT_CONTAIN_CASE_INSENSITIVE", "MULTIVALUE_DOES_NOT_CONTAIN_DN"),
-											},
-										},
-										"value": schema.StringAttribute{
-											Description: "The expected value of this issuance criterion.",
-											Required:    true,
-										},
-										"error_result": schema.StringAttribute{
-											Description: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-											Optional:    true,
-										},
-									},
-								},
-							},
-							"expression_criteria": schema.ListNestedAttribute{
-								Description: "An issuance criterion that uses a Boolean return value from an OGNL expression to determine whether or not it passes.",
-								Optional:    true,
-								NestedObject: schema.NestedAttributeObject{
-									Attributes: map[string]schema.Attribute{
-										"expression": schema.StringAttribute{
-											Required:    true,
-											Description: "The OGNL expression to evaluate.",
-										},
-										"error_result": schema.StringAttribute{
-											Optional:    true,
-											Description: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-										},
-									},
-								},
-							},
-						},
-					},
+					"attribute_sources":              attributesources.Schema(),
+					"attribute_contract_fulfillment": attributecontractfulfillment.Schema(false, true),
+					"issuance_criteria":              issuancecriteria.Schema(),
 					"inherited": schema.BoolAttribute{
 						Optional:    true,
 						Computed:    true,
@@ -399,6 +281,7 @@ func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdap
 			return err
 		}
 
+		//TODO
 		attributeSourcesAttr := planAttrs["attribute_sources"].(types.List)
 		addRequest.AttributeMapping.AttributeSources = []client.AttributeSourceAggregation{}
 		for _, source := range attributeSourcesAttr.Elements() {
@@ -466,6 +349,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 	respDiags.Append(diags...)
 
 	if r.AttributeContract != nil {
+		//TODO move to common?
 		attributeContractValues := map[string]attr.Value{}
 		attributeContractValues["extended_attributes"], diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attributesAttrType}, r.AttributeContract.ExtendedAttributes)
 		respDiags.Append(diags...)
@@ -510,12 +394,14 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 		}
 
 		// Build attribute_contract_fulfillment value
+		//TODO
 		attributeContractFulfillmentElementAttrTypes := attributeMappingAttrTypes["attribute_contract_fulfillment"].(types.MapType).ElemType.(types.ObjectType).AttrTypes
 		attributeMappingValues["attribute_contract_fulfillment"], diags = types.MapValueFrom(ctx,
 			types.ObjectType{AttrTypes: attributeContractFulfillmentElementAttrTypes}, r.AttributeMapping.AttributeContractFulfillment)
 		respDiags.Append(diags...)
 
 		// Build issuance_criteria value
+		//TODO
 		issuanceCritieraAttrTypes := attributeMappingAttrTypes["issuance_criteria"].(types.ObjectType).AttrTypes
 		attributeMappingValues["issuance_criteria"], diags = types.ObjectValueFrom(ctx,
 			issuanceCritieraAttrTypes, r.AttributeMapping.IssuanceCriteria)

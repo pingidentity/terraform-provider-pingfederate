@@ -21,7 +21,7 @@ func Schema() schema.SingleNestedAttribute {
 				Optional:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"source": sourcetypeidkey.Schema(),
+						"source": sourcetypeidkey.Schema(false),
 						"attribute_name": schema.StringAttribute{
 							Description: "The name of the attribute to use in this issuance criterion.",
 							Required:    true,
