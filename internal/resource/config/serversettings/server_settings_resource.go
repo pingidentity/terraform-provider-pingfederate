@@ -769,11 +769,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 					},
 					"secret_key": schema.StringAttribute{
 						Description: "Secret key for reCAPTCHA. GETs will not return this attribute. To update this field, specify the new value in this attribute.",
-						Computed:    true,
-						Optional:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
+						Required:    true,
 					},
 				},
 			},
@@ -944,37 +940,41 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	//////////////////////////////////////////////
 	// get email creds with function
 	// if username and password are not set, return null values
-	var getEmailCreds = func() (*string, string) {
-		if plan.EmailServer.Attributes()["username"] != nil && plan.EmailServer.Attributes()["password"] != nil {
-			username := plan.EmailServer.Attributes()["username"].(types.String).ValueStringPointer()
-			password := plan.EmailServer.Attributes()["password"].(types.String).ValueString()
-			return username, password
-		} else {
-			return types.StringNull().ValueStringPointer(), types.StringNull().ValueString()
+	if internaltypes.IsDefined(plan.EmailServer) {
+		var getEmailCreds = func() (*string, string) {
+			if plan.EmailServer.Attributes()["username"] != nil && plan.EmailServer.Attributes()["password"] != nil {
+				username := plan.EmailServer.Attributes()["username"].(types.String).ValueStringPointer()
+				password := plan.EmailServer.Attributes()["password"].(types.String).ValueString()
+				return username, password
+			} else {
+				return types.StringNull().ValueStringPointer(), types.StringNull().ValueString()
+			}
 		}
-	}
 
-	// retrieve values for saving to state
-	username, password := getEmailCreds()
-	emailServerAttrValue := map[string]attr.Value{
-		"source_addr":                 types.StringValue(r.EmailServer.SourceAddr),
-		"email_server":                types.StringValue(r.EmailServer.EmailServer),
-		"port":                        types.Int64Value(r.EmailServer.Port),
-		"ssl_port":                    types.Int64PointerValue(r.EmailServer.SslPort),
-		"timeout":                     types.Int64PointerValue(r.EmailServer.Timeout),
-		"retry_attempts":              types.Int64PointerValue(r.EmailServer.RetryAttempts),
-		"retry_delay":                 types.Int64PointerValue(r.EmailServer.RetryDelay),
-		"use_ssl":                     types.BoolPointerValue(r.EmailServer.UseSSL),
-		"use_tls":                     types.BoolPointerValue(r.EmailServer.UseTLS),
-		"verify_hostname":             types.BoolPointerValue(r.EmailServer.VerifyHostname),
-		"enable_utf8_message_headers": types.BoolPointerValue(r.EmailServer.EnableUtf8MessageHeaders),
-		"use_debugging":               types.BoolPointerValue(r.EmailServer.UseDebugging),
-		"username":                    types.StringPointerValue(username),
-		"password":                    types.StringValue(password),
-	}
+		// retrieve values for saving to state
+		username, password := getEmailCreds()
+		emailServerAttrValue := map[string]attr.Value{
+			"source_addr":                 types.StringValue(r.EmailServer.SourceAddr),
+			"email_server":                types.StringValue(r.EmailServer.EmailServer),
+			"port":                        types.Int64Value(r.EmailServer.Port),
+			"ssl_port":                    types.Int64PointerValue(r.EmailServer.SslPort),
+			"timeout":                     types.Int64PointerValue(r.EmailServer.Timeout),
+			"retry_attempts":              types.Int64PointerValue(r.EmailServer.RetryAttempts),
+			"retry_delay":                 types.Int64PointerValue(r.EmailServer.RetryDelay),
+			"use_ssl":                     types.BoolPointerValue(r.EmailServer.UseSSL),
+			"use_tls":                     types.BoolPointerValue(r.EmailServer.UseTLS),
+			"verify_hostname":             types.BoolPointerValue(r.EmailServer.VerifyHostname),
+			"enable_utf8_message_headers": types.BoolPointerValue(r.EmailServer.EnableUtf8MessageHeaders),
+			"use_debugging":               types.BoolPointerValue(r.EmailServer.UseDebugging),
+			"username":                    types.StringPointerValue(username),
+			"password":                    types.StringValue(password),
+		}
 
-	state.EmailServer, respDiags = types.ObjectValue(emailServerAttrType, emailServerAttrValue)
-	diags.Append(respDiags...)
+		state.EmailServer, respDiags = types.ObjectValue(emailServerAttrType, emailServerAttrValue)
+		diags.Append(respDiags...)
+	} else {
+		state.EmailServer = types.ObjectNull(emailServerAttrType)
+	}
 	//////////////////////////////////////////////
 	// CAPTCHA SETTINGS
 	//////////////////////////////////////////////
