@@ -13,7 +13,7 @@ Manages a AdministrativeAccount.
 ## Example Usage
 
 ```terraform
-resource "pingfederate_administrative_account" "administrativeAccountExample" {
+resource "pingfederate_administrative_account" "myAdministrativeAccount" {
   username = "example"
   password = "2FederateM0re"
   roles    = ["USER_ADMINISTRATOR"]

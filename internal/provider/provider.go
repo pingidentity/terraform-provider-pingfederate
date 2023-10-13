@@ -255,13 +255,24 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	clientConfig.UserAgent = fmt.Sprintf("pingtools terraform-provider-pingfederate/%s go", p.version)
 	resourceConfig.ApiClient = client.NewAPIClient(clientConfig)
 	resp.ResourceData = resourceConfig
+	resp.DataSourceData = resourceConfig
 
 	tflog.Info(ctx, "Configured PingFederate client", map[string]interface{}{"success": true})
 }
 
 // DataSources defines the data sources implemented in the provider.
 func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	return nil
+	return []func() datasource.DataSource{
+		administrativeaccount.NewAdministrativeAccountDataSource,
+		authenticationapi.NewAuthenticationApiSettingsDataSource,
+		certificate.NewCertificateDataSource,
+		idp.NewIdpDefaultUrlsDataSource,
+		keypairs.NewKeyPairsSigningImportDataSource,
+		keypairs.NewKeyPairsSslServerImportDataSource,
+		license.NewLicenseAgreementDataSource,
+		license.NewLicenseDataSource,
+		localidentity.NewLocalIdentityIdentityProfileDataSource,
+	}
 }
 
 // Resources defines the resources implemented in the provider.
