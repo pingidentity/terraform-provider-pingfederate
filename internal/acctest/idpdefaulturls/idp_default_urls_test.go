@@ -71,6 +71,12 @@ resource "pingfederate_idp_default_urls" "%[1]s" {
   confirm_idp_slo     = %[2]t
   idp_error_msg       = "%[3]s"
   idp_slo_success_url = "%[4]s"
+}
+
+data "pingfederate_idp_default_urls" "%[1]s" {
+  depends_on = [
+    pingfederate_idp_default_urls.%[1]s
+  ]
 }`, resourceName,
 		resourceModel.confirmIdpSlo,
 		resourceModel.idpErrorMsg,

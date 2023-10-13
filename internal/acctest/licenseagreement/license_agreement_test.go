@@ -58,6 +58,12 @@ func testAccLicenseAgreement(resourceName string, resourceModel licenseAgreement
 resource "pingfederate_license_agreement" "%[1]s" {
   license_agreement_url = "%[2]s"
   accepted              = %[3]t
+}
+
+data "pingfederate_license_agreement" "%[1]s" {
+  depends_on = [
+    pingfederate_license_agreement.%[1]s
+  ]
 }`, resourceName,
 		resourceModel.licenseAgreementUrl,
 		resourceModel.accepted,
