@@ -56,6 +56,8 @@ endef
 testoneacc:
 	$(call test_acc_env_vars) TF_ACC=1 go test ./... -timeout 10m --run ${ACC_TEST_NAME} -v -p 4 --count=1
 
+testoneacccomplete: spincontainer testoneacc
+
 testacc:
 	$(call test_acc_env_vars) TF_ACC=1 go test `go list ./internal/... | grep -v github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/oauthauthserversettings` -timeout 10m -v -p 4 && \
 	$(call test_acc_env_vars) TF_ACC=1 go test `go list ./internal/... | grep github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/oauthauthserversettings` -timeout 10m -v -p 1
