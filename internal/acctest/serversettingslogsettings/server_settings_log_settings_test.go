@@ -12,8 +12,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const serverSettingsLogSettingsId = "id"
-
 // Attributes to test with. Add optional properties to test here if desired.
 type serverSettingsLogSettingsResourceModel struct {
 	id                   string
@@ -23,11 +21,9 @@ type serverSettingsLogSettingsResourceModel struct {
 func TestAccServerSettingsLogSettings(t *testing.T) {
 	resourceName := "myServerSettingsLogSettings"
 	initialResourceModel := serverSettingsLogSettingsResourceModel{
-		id:                   serverSettingsLogSettingsId,
 		logCategoriesEnabled: false,
 	}
 	updatedResourceModel := serverSettingsLogSettingsResourceModel{
-		id:                   serverSettingsLogSettingsId,
 		logCategoriesEnabled: true,
 	}
 
@@ -50,7 +46,6 @@ func TestAccServerSettingsLogSettings(t *testing.T) {
 				// Test importing the resource
 				Config:            testAccServerSettingsLogSettings(resourceName, updatedResourceModel),
 				ResourceName:      "pingfederate_server_settings_log_settings." + resourceName,
-				ImportStateId:     serverSettingsLogSettingsId,
 				ImportState:       true,
 				ImportStateVerify: false,
 			},

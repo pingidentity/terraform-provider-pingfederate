@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -86,7 +87,7 @@ func (r *serverSettingsGeneralSettingsResource) Schema(ctx context.Context, req 
 		},
 	}
 
-	config.AddCommonSchema(&schema)
+	id.Schema(&schema)
 	resp.Schema = schema
 }
 
@@ -127,8 +128,7 @@ func (r *serverSettingsGeneralSettingsResource) Configure(_ context.Context, req
 }
 
 func readServerSettingsGeneralSettingsResponse(ctx context.Context, r *client.GeneralSettings, state *serverSettingsGeneralSettingsResourceModel, expectedValues *serverSettingsGeneralSettingsResourceModel) {
-	//TODO placeholder?
-	state.Id = types.StringValue("id")
+	state.Id = id.GenerateUUIDToState(state.Id)
 	state.DisableAutomaticConnectionValidation = types.BoolPointerValue(r.DisableAutomaticConnectionValidation)
 	state.IdpConnectionTransactionLoggingOverride = internaltypes.StringTypeOrNil(r.IdpConnectionTransactionLoggingOverride, true)
 	state.SpConnectionTransactionLoggingOverride = internaltypes.StringTypeOrNil(r.SpConnectionTransactionLoggingOverride, true)
@@ -172,6 +172,7 @@ func (r *serverSettingsGeneralSettingsResource) Create(ctx context.Context, req 
 	var state serverSettingsGeneralSettingsResourceModel
 
 	readServerSettingsGeneralSettingsResponse(ctx, serverSettingsGeneralSettingsResponse, &state, &plan)
+
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }

@@ -12,8 +12,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const serverSettingsGeneralSettingsId = "id"
-
 // Attributes to test with. Add optional properties to test here if desired.
 type serverSettingsGeneralSettingsResourceModel struct {
 	id                                      string
@@ -60,7 +58,6 @@ func TestAccServerSettingsGeneralSettings(t *testing.T) {
 				// Test importing the resource
 				Config:            testAccServerSettingsGeneralSettings(resourceName, updatedResourceModel),
 				ResourceName:      "pingfederate_server_settings_general_settings." + resourceName,
-				ImportStateId:     serverSettingsGeneralSettingsId,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},

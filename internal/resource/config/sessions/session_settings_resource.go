@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -68,7 +69,7 @@ func (r *sessionSettingsResource) Schema(ctx context.Context, req resource.Schem
 			},
 		},
 	}
-	config.AddCommonSchema(&schema)
+	id.Schema(&schema)
 	resp.Schema = schema
 }
 
@@ -103,8 +104,7 @@ func (r *sessionSettingsResource) Configure(_ context.Context, req resource.Conf
 }
 
 func readSessionSettingsResponse(ctx context.Context, r *client.SessionSettings, state *sessionSettingsResourceModel, expectedValues *sessionSettingsResourceModel) {
-	//TODO placeholder?
-	state.Id = types.StringValue("id")
+	state.Id = id.GenerateUUIDToState(state.Id)
 	state.TrackAdapterSessionsForLogout = types.BoolPointerValue(r.TrackAdapterSessionsForLogout)
 	state.RevokeUserSessionOnLogout = types.BoolPointerValue(r.RevokeUserSessionOnLogout)
 	state.SessionRevocationLifetime = types.Int64PointerValue(r.SessionRevocationLifetime)
@@ -146,6 +146,7 @@ func (r *sessionSettingsResource) Create(ctx context.Context, req resource.Creat
 	var state sessionSettingsResourceModel
 
 	readSessionSettingsResponse(ctx, sessionSettingsResponse, &state, &plan)
+
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }

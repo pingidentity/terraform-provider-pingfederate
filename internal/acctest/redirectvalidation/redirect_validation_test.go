@@ -12,8 +12,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const redirectValidationId = "id"
-
 // Attributes to test with. Add optional properties to test here if desired.
 type redirectValidationResourceModel struct {
 	id                                   string
@@ -25,13 +23,11 @@ type redirectValidationResourceModel struct {
 func TestAccRedirectValidation(t *testing.T) {
 	resourceName := "myRedirectValidation"
 	initialResourceModel := redirectValidationResourceModel{
-		id:                                   redirectValidationId,
 		enableTargetResourceValidationForSso: true,
 		whiteListValidDomain:                 "example.com",
 		enableWreplyValidationSlo:            false,
 	}
 	updatedResourceModel := redirectValidationResourceModel{
-		id:                                   redirectValidationId,
 		enableTargetResourceValidationForSso: false,
 		whiteListValidDomain:                 "updatedexample.com",
 		enableWreplyValidationSlo:            true,
@@ -56,7 +52,6 @@ func TestAccRedirectValidation(t *testing.T) {
 				// Test importing the resource
 				Config:            testAccRedirectValidation(resourceName, updatedResourceModel),
 				ResourceName:      "pingfederate_redirect_validation." + resourceName,
-				ImportStateId:     redirectValidationId,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},

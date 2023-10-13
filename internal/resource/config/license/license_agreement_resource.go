@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -64,7 +65,7 @@ func (r *licenseAgreementResource) Schema(ctx context.Context, req resource.Sche
 		},
 	}
 
-	config.AddCommonSchema(&schema)
+	id.Schema(&schema)
 	resp.Schema = schema
 }
 
@@ -97,8 +98,7 @@ func (r *licenseAgreementResource) Configure(_ context.Context, req resource.Con
 }
 
 func readLicenseAgreementResponse(ctx context.Context, r *client.LicenseAgreementInfo, state *licenseAgreementResourceModel, expectedValues *licenseAgreementResourceModel) {
-	//TODO placeholder?
-	state.Id = types.StringValue("id")
+	state.Id = id.GenerateUUIDToState(state.Id)
 	state.LicenseAgreementUrl = internaltypes.StringTypeOrNil(r.LicenseAgreementUrl, false)
 	state.Accepted = internaltypes.BoolTypeOrNil(r.Accepted)
 }
@@ -171,7 +171,6 @@ func (r *licenseAgreementResource) Read(ctx context.Context, req resource.ReadRe
 	}
 	// Read the response into the state
 	readLicenseAgreementResponse(ctx, apiReadLicenseAgreement, &state, &state)
-
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)

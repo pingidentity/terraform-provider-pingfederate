@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -104,7 +105,7 @@ func (r *authenticationPolicyContractsResource) Schema(ctx context.Context, req 
 		},
 	}
 
-	AddCommonSchema(&schema)
+	id.Schema(&schema)
 	resp.Schema = schema
 }
 

@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -77,7 +78,7 @@ func (r *certificatesResource) Schema(ctx context.Context, req resource.SchemaRe
 		},
 	}
 
-	config.AddCommonSchema(&schema)
+	id.Schema(&schema)
 	resp.Schema = schema
 }
 

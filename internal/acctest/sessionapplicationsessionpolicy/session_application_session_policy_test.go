@@ -12,8 +12,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const sessionApplicationSessionPolicyId = "id"
-
 // Attributes to test with. Add optional properties to test here if desired.
 type sessionApplicationSessionPolicyResourceModel struct {
 	id              string
@@ -51,7 +49,6 @@ func TestAccSessionApplicationSessionPolicy(t *testing.T) {
 				// Test importing the resource
 				Config:            testAccSessionApplicationSessionPolicy(resourceName, updatedResourceModel),
 				ResourceName:      "pingfederate_session_application_session_policy." + resourceName,
-				ImportStateId:     sessionApplicationSessionPolicyId,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},

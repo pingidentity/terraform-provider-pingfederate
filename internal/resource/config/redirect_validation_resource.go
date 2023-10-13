@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -213,7 +214,7 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 		},
 	}
 
-	AddCommonSchema(&schema)
+	id.Schema(&schema)
 	resp.Schema = schema
 }
 
@@ -255,7 +256,8 @@ func (r *redirectValidationResource) Configure(_ context.Context, req resource.C
 func readRedirectValidationResponse(ctx context.Context, r *client.RedirectValidationSettings, state *redirectValidationResourceModel) diag.Diagnostics {
 	//TODO placeholder?
 	var diags, respDiags diag.Diagnostics
-	state.Id = types.StringValue("id")
+	state.Id = id.GenerateUUIDToState(state.Id)
+	diags.Append(respDiags...)
 	whiteListAttrs := r.GetRedirectValidationLocalSettings().WhiteList
 	var whiteListSliceAttrVal = []attr.Value{}
 	whiteListSliceType := types.ObjectType{AttrTypes: whiteListAttrTypes}

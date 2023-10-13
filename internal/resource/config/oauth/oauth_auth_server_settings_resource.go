@@ -27,6 +27,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopeentry"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopegroupentry"
@@ -580,7 +581,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 		},
 	}
 
-	config.AddCommonSchema(&schema)
+	id.Schema(&schema)
 	resp.Schema = schema
 }
 
@@ -818,9 +819,8 @@ func (r *oauthAuthServerSettingsResource) Configure(_ context.Context, req resou
 }
 
 func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsResourceModel) diag.Diagnostics {
-	//TODO placeholder
 	var diags, respDiags diag.Diagnostics
-	state.Id = types.StringValue("id")
+	state.Id = id.GenerateUUIDToState(state.Id)
 	state.DefaultScopeDescription = types.StringValue(r.DefaultScopeDescription)
 	state.Scopes, respDiags = scopeentry.ToState(ctx, r.Scopes)
 	diags.Append(respDiags...)
@@ -1036,8 +1036,5 @@ func (r *oauthAuthServerSettingsResource) Delete(ctx context.Context, req resour
 
 func (r *oauthAuthServerSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	// Set a placeholder id value to appease terraform.
-	// The real attributes will be imported when terraform performs a read after the import.
-	// If no value is set here, Terraform will error out when importing.
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), "id")...)
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

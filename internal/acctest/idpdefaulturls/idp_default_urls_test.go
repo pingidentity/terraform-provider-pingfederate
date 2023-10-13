@@ -12,7 +12,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const idpDefaultUrlsId = "id"
 const idpErrMessage = "errorDetail.idpSsoFailure"
 
 // Attributes to test with. Add optional properties to test here if desired.
@@ -26,13 +25,11 @@ type idpDefaultUrlsResourceModel struct {
 func TestAccIdpDefaultUrls(t *testing.T) {
 	resourceName := "myIdpDefaultUrls"
 	initialResourceModel := idpDefaultUrlsResourceModel{
-		id:               idpDefaultUrlsId,
 		confirmIdpSlo:    true,
 		idpSloSuccessUrl: "https://localhost",
 		idpErrorMsg:      idpErrMessage,
 	}
 	updatedResourceModel := idpDefaultUrlsResourceModel{
-		id:               idpDefaultUrlsId,
 		confirmIdpSlo:    false,
 		idpSloSuccessUrl: "https://example",
 		idpErrorMsg:      idpErrMessage,
@@ -57,7 +54,6 @@ func TestAccIdpDefaultUrls(t *testing.T) {
 				// Test importing the resource
 				Config:            testAccIdpDefaultUrls(resourceName, updatedResourceModel),
 				ResourceName:      "pingfederate_idp_default_urls." + resourceName,
-				ImportStateId:     idpDefaultUrlsId,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},

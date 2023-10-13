@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -101,7 +102,7 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Schema(ctx context.
 		},
 	}
 
-	config.AddCommonSchema(&schema)
+	id.Schema(&schema)
 	resp.Schema = schema
 }
 
@@ -148,8 +149,7 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Configure(_ context
 }
 
 func readSessionAuthenticationSessionPoliciesGlobalResponse(ctx context.Context, r *client.GlobalAuthenticationSessionPolicy, state *sessionAuthenticationSessionPoliciesGlobalResourceModel, expectedValues *sessionAuthenticationSessionPoliciesGlobalResourceModel) {
-	//TODO placeholder?
-	state.Id = types.StringValue("id")
+	state.Id = id.GenerateUUIDToState(state.Id)
 	state.EnableSessions = types.BoolValue(r.EnableSessions)
 	state.PersistentSessions = types.BoolPointerValue(r.PersistentSessions)
 	state.HashUniqueUserKeyAttribute = types.BoolPointerValue(r.HashUniqueUserKeyAttribute)
@@ -195,6 +195,7 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Create(ctx context.
 	var state sessionAuthenticationSessionPoliciesGlobalResourceModel
 
 	readSessionAuthenticationSessionPoliciesGlobalResponse(ctx, sessionAuthenticationSessionPoliciesGlobalResponse, &state, &plan)
+
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -281,4 +282,5 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Delete(ctx context.
 func (r *sessionAuthenticationSessionPoliciesGlobalResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

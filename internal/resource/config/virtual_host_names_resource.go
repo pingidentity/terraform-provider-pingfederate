@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -52,7 +53,7 @@ func (r *virtualHostNamesResource) Schema(ctx context.Context, req resource.Sche
 		},
 	}
 
-	AddCommonSchema(&schema)
+	id.Schema(&schema)
 	resp.Schema = schema
 }
 
@@ -83,8 +84,7 @@ func (r *virtualHostNamesResource) Configure(_ context.Context, req resource.Con
 }
 
 func readVirtualHostNamesResponse(ctx context.Context, r *client.VirtualHostNameSettings, state *virtualHostNamesResourceModel) {
-	//TODO placeholder?
-	state.Id = types.StringValue("id")
+	state.Id = id.GenerateUUIDToState(state.Id)
 	state.VirtualHostNames = internaltypes.GetStringSet(r.VirtualHostNames)
 }
 
@@ -124,6 +124,7 @@ func (r *virtualHostNamesResource) Create(ctx context.Context, req resource.Crea
 	var state virtualHostNamesResourceModel
 
 	readVirtualHostNamesResponse(ctx, virtualHostNamesResponse, &state)
+
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }

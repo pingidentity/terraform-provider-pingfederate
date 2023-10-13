@@ -22,6 +22,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
@@ -778,14 +779,11 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 			},
 		},
 	}
-	config.AddCommonSchema(&schema)
+	id.Schema(&schema)
 	resp.Schema = schema
 }
 
 // ValidateConfig validates the configuration of the server settings resource.
-// It checks the email format of contact_info and notifications email addresses,
-// the URL format of the federation_info base_url, and the email format and hostname/IP
-// validity of the email_server source_addr and email_server email_server attributes.
 // It also checks that the email_server use_ssl and use_tls attributes are not both set to true.
 func (r *serverSettingsResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 
@@ -848,8 +846,8 @@ func addOptionalServerSettingsFields(ctx context.Context, addRequest *client.Ser
 		}
 	}
 
-	if internaltypes.ObjContainsNoEmptyVals(plan.CaptchaSettings) {
-		addRequest.CaptchaSettings = client.NewCaptchaSettings()
+	if internaltypes.IsDefined(plan.CaptchaSettings) {
+		addRequest.CaptchaSettings = client.NewCaptchaSettingsWithDefaults()
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.CaptchaSettings, true)), addRequest.CaptchaSettings)
 		if err != nil {
 			return err
@@ -879,8 +877,7 @@ func (r *serverSettingsResource) Configure(_ context.Context, req resource.Confi
 func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, state *serverSettingsResourceModel, plan *serverSettingsResourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	emptyString := ""
-	//TODO placeholder?
-	state.Id = types.StringValue("id")
+	state.Id = id.GenerateUUIDToState(state.Id)
 	state.ContactInfo, respDiags = types.ObjectValueFrom(ctx, contactInfoAttrType, r.ContactInfo)
 	diags.Append(respDiags...)
 	state.Notifications, respDiags = types.ObjectValueFrom(ctx, notificationsAttrType, r.Notifications)
@@ -960,18 +957,18 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	// retrieve values for saving to state
 	username, password := getEmailCreds()
 	emailServerAttrValue := map[string]attr.Value{
-		"source_addr":                 types.StringValue(r.EmailServer.GetSourceAddr()),
-		"email_server":                types.StringValue(r.EmailServer.GetEmailServer()),
-		"port":                        types.Int64Value(r.EmailServer.GetPort()),
-		"ssl_port":                    types.Int64Value(r.EmailServer.GetSslPort()),
-		"timeout":                     types.Int64Value(r.EmailServer.GetTimeout()),
-		"retry_attempts":              types.Int64Value(r.EmailServer.GetRetryAttempts()),
-		"retry_delay":                 types.Int64Value(r.EmailServer.GetRetryDelay()),
-		"use_ssl":                     types.BoolValue(r.EmailServer.GetUseSSL()),
-		"use_tls":                     types.BoolValue(r.EmailServer.GetUseTLS()),
-		"verify_hostname":             types.BoolValue(r.EmailServer.GetVerifyHostname()),
-		"enable_utf8_message_headers": types.BoolValue(r.EmailServer.GetEnableUtf8MessageHeaders()),
-		"use_debugging":               types.BoolValue(r.EmailServer.GetUseDebugging()),
+		"source_addr":                 types.StringValue(r.EmailServer.SourceAddr),
+		"email_server":                types.StringValue(r.EmailServer.EmailServer),
+		"port":                        types.Int64Value(r.EmailServer.Port),
+		"ssl_port":                    types.Int64PointerValue(r.EmailServer.SslPort),
+		"timeout":                     types.Int64PointerValue(r.EmailServer.Timeout),
+		"retry_attempts":              types.Int64PointerValue(r.EmailServer.RetryAttempts),
+		"retry_delay":                 types.Int64PointerValue(r.EmailServer.RetryDelay),
+		"use_ssl":                     types.BoolPointerValue(r.EmailServer.UseSSL),
+		"use_tls":                     types.BoolPointerValue(r.EmailServer.UseTLS),
+		"verify_hostname":             types.BoolPointerValue(r.EmailServer.VerifyHostname),
+		"enable_utf8_message_headers": types.BoolPointerValue(r.EmailServer.EnableUtf8MessageHeaders),
+		"use_debugging":               types.BoolPointerValue(r.EmailServer.UseDebugging),
 		"username":                    types.StringPointerValue(username),
 		"password":                    types.StringValue(password),
 	}
@@ -981,21 +978,17 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 	//////////////////////////////////////////////
 	// CAPTCHA SETTINGS
 	//////////////////////////////////////////////
-	var getCaptchaSettingsAttrValue = func() map[string]attr.Value {
-		if internaltypes.ObjContainsNoEmptyVals(plan.CaptchaSettings) {
-			return map[string]attr.Value{
-				"site_key":   types.StringPointerValue(r.CaptchaSettings.SiteKey),
-				"secret_key": types.StringValue(plan.CaptchaSettings.Attributes()["secret_key"].(types.String).ValueString()),
-			}
-		} else {
-			return map[string]attr.Value{
-				"site_key":   types.StringPointerValue(&emptyString),
-				"secret_key": types.StringValue(emptyString),
-			}
+	if internaltypes.IsDefined(plan.CaptchaSettings) {
+		captchaSettingsAttrValue := map[string]attr.Value{
+			"site_key":   types.StringPointerValue(r.CaptchaSettings.SiteKey),
+			"secret_key": types.StringValue(plan.CaptchaSettings.Attributes()["secret_key"].(types.String).ValueString()),
 		}
+		state.CaptchaSettings, respDiags = types.ObjectValue(captchaSettingsAttrType, captchaSettingsAttrValue)
+		diags.Append(respDiags...)
+		return diags
+	} else {
+		state.CaptchaSettings = types.ObjectNull(captchaSettingsAttrType)
 	}
-	state.CaptchaSettings, respDiags = types.ObjectValue(captchaSettingsAttrType, getCaptchaSettingsAttrValue())
-	diags.Append(respDiags...)
 	return diags
 }
 

@@ -12,8 +12,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const oauthAuthServerSettingsId = "id"
-
 // Attributes to test with. Add optional properties to test here if desired.
 type oauthAuthServerSettingsResourceModel struct {
 	id                               string
@@ -31,7 +29,6 @@ type oauthAuthServerSettingsResourceModel struct {
 func TestAccOauthAuthServerSettings(t *testing.T) {
 	resourceName := "myOauthAuthServerSettings"
 	initialResourceModel := oauthAuthServerSettingsResourceModel{
-		id:                               oauthAuthServerSettingsId,
 		defaultScopeDescription:          "example scope description",
 		authorizationCodeTimeout:         50,
 		authorizationCodeEntropy:         20,
@@ -43,7 +40,6 @@ func TestAccOauthAuthServerSettings(t *testing.T) {
 		bypassActivationCodeConfirmation: false,
 	}
 	updatedResourceModel := oauthAuthServerSettingsResourceModel{
-		id:                               oauthAuthServerSettingsId,
 		defaultScopeDescription:          "example updated scope description",
 		authorizationCodeTimeout:         60,
 		authorizationCodeEntropy:         30,
@@ -74,7 +70,6 @@ func TestAccOauthAuthServerSettings(t *testing.T) {
 				// Test importing the resource
 				Config:            testAccOauthAuthServerSettings(resourceName, updatedResourceModel),
 				ResourceName:      "pingfederate_oauth_auth_server_settings." + resourceName,
-				ImportStateId:     oauthAuthServerSettingsId,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
