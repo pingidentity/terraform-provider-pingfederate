@@ -14,6 +14,7 @@ import (
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -69,7 +70,7 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Schema(ctx context.Con
 			},
 		},
 	}
-	config.AddCommonSchema(&schema)
+	id.Schema(&schema)
 	resp.Schema = schema
 }
 
