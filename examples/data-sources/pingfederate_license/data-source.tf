@@ -1,30 +1,17 @@
-terraform {
-  required_version = ">=1.1"
-  required_providers {
-    pingfederate = {
-      version = "~> 0.0.1"
-      source  = "pingidentity/pingfederate"
-    }
-  }
-}
-
-provider "pingfederate" {
-  username               = "administrator"
-  password               = "2FederateM0re"
-  https_host             = "https://localhost:9999"
-  insecure_trust_all_tls = true
-}
-
 resource "pingfederate_license" "myLicense" {
+  id = "id"
   # this property needs to contain base64 encoded value of your license.
   file_data = ""
 }
 
 data "pingfederate_license" "myLicense" {
-  # this property needs to contain base64 encoded value of your license.
-  file_data = pingfederate_license.myLicense.file_data
+  id = pingfederate_license.myLicense.id
+  depends_on = [
+    pingfederate_license.myLicense
+  ]
 }
 resource "pingfederate_license" "licenseExample" {
+  id = "${data.pingfederate_license.myLicense.id}2"
   # this property needs to contain base64 encoded value of your license.
-  file_data = "${data.pingfederate_license.myLicense.file_data}2"
+  file_data = ""
 }
