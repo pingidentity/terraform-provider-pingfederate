@@ -9,7 +9,7 @@ import (
 )
 
 // Get schema elements common to all resources
-func Schema(s *schema.Schema) {
+func ToSchema(s *schema.Schema) {
 	schemaId := schema.StringAttribute{}
 	schemaId.Description = "The ID of this resource."
 	schemaId.Required = false
@@ -21,7 +21,7 @@ func Schema(s *schema.Schema) {
 	s.Attributes["id"] = schemaId
 }
 
-func SchemaCustomId(s *schema.Schema, required bool, characterLimit bool, description string) {
+func ToSchemaCustomId(s *schema.Schema, required bool, characterLimit bool, description string) {
 	customId := schema.StringAttribute{}
 	customId.Description = description
 	customId.PlanModifiers = []planmodifier.String{

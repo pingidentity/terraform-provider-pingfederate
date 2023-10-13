@@ -52,14 +52,15 @@ func attributeContractFulfillmentHclBlock(aCf *client.AttributeFulfillmentValue)
 		return ""
 	}
 	if aCf != nil {
-		builder.WriteString("      source = {\n")
-		builder.WriteString("        type = \"")
-		builder.WriteString(aCf.Source.Type)
-		builder.WriteString("\"\n")
-		builder.WriteString("      },\n")
-		builder.WriteString("      value = \"")
-		builder.WriteString(aCf.Value)
-		builder.WriteString("\"")
+		tf := `
+			source = {
+				type = "%s"
+			},
+			value = "%s"
+		`
+		builder.WriteString(fmt.Sprintf(tf,
+			aCf.Source.Type,
+			aCf.Value))
 	}
 	return builder.String()
 }
@@ -81,25 +82,31 @@ func attributeSourcesHclBlock(attrSource *client.JdbcAttributeSource) string {
 		return ""
 	}
 	if attrSource != nil {
-		builder.WriteString("  attribute_sources = [\n")
-		builder.WriteString("    {\n")
-		builder.WriteString("      jdbc_attribute_source = {\n")
-		builder.WriteString("        data_store_ref = {\n")
-		builder.WriteString("          id = \"")
-		builder.WriteString(attrSource.DataStoreRef.Id)
-		builder.WriteString("\"\n        }\n        id           = \"")
-		builder.WriteString(*attrSource.Id)
-		builder.WriteString("\"\n        description  = \"")
-		builder.WriteString(*attrSource.Description)
-		builder.WriteString("\"\n        schema       = \"")
-		builder.WriteString(*attrSource.Schema)
-		builder.WriteString("\"\n        table        = \"")
-		builder.WriteString(attrSource.Table)
-		builder.WriteString("\"\n        filter       = \"")
-		builder.WriteString(attrSource.Filter)
-		builder.WriteString("\"\n        column_names = ")
-		builder.WriteString(acctest.StringSliceToTerraformString(attrSource.ColumnNames))
-		builder.WriteString("\n      }\n    }\n  ]")
+		tf := `
+		attribute_sources = [
+			{
+				jdbc_attribute_source = {
+					data_store_ref = {
+						id = "%s"
+					}
+					id           = "%s"
+					description  = "%s"
+					schema       = "%s"
+					table        = "%s"
+					filter       = "%s"
+					column_names = %s
+				}
+			}
+		]
+	`
+		builder.WriteString(fmt.Sprintf(tf,
+			attrSource.DataStoreRef.Id,
+			*attrSource.Id,
+			*attrSource.Description,
+			*attrSource.Schema,
+			attrSource.Table,
+			attrSource.Filter,
+			acctest.StringSliceToTerraformString(attrSource.ColumnNames)))
 	}
 	return builder.String()
 }
@@ -117,18 +124,26 @@ func issuanceCriteriaHclBlock(conditionalIssuanceCriteriaEntry *client.Condition
 		return ""
 	}
 	if conditionalIssuanceCriteriaEntry != nil {
-		builder.WriteString("  issuance_criteria = {\n    conditional_criteria = [\n      {\n")
-		builder.WriteString("        error_result = \"")
-		builder.WriteString(*conditionalIssuanceCriteriaEntry.ErrorResult)
-		builder.WriteString("\"\n        source = {\n          type = \"")
-		builder.WriteString(conditionalIssuanceCriteriaEntry.Source.Type)
-		builder.WriteString("\"\n        }\n        attribute_name = \"")
-		builder.WriteString(conditionalIssuanceCriteriaEntry.AttributeName)
-		builder.WriteString("\"\n        condition      = \"")
-		builder.WriteString(conditionalIssuanceCriteriaEntry.Condition)
-		builder.WriteString("\"\n        value          = \"")
-		builder.WriteString(conditionalIssuanceCriteriaEntry.Value)
-		builder.WriteString("\"\n      }\n    ]\n  }")
+		tf := `
+		issuance_criteria = {
+			conditional_criteria = [
+				{
+					error_result = "%s"
+					source = {
+						type = "%s"
+					}
+					attribute_name = "%s"
+					condition      = "%s"
+					value          = "%s"
+				}
+			]
+		}`
+		builder.WriteString(fmt.Sprintf(tf,
+			*conditionalIssuanceCriteriaEntry.ErrorResult,
+			conditionalIssuanceCriteriaEntry.Source.Type,
+			conditionalIssuanceCriteriaEntry.AttributeName,
+			conditionalIssuanceCriteriaEntry.Condition,
+			conditionalIssuanceCriteriaEntry.Value))
 	}
 	return builder.String()
 }

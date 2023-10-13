@@ -75,7 +75,7 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Schema(ctx contex
 		},
 	}
 
-	id.Schema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 

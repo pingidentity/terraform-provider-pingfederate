@@ -16,7 +16,6 @@ const idpErrMessage = "errorDetail.idpSsoFailure"
 
 // Attributes to test with. Add optional properties to test here if desired.
 type idpDefaultUrlsResourceModel struct {
-	id               string
 	confirmIdpSlo    bool
 	idpSloSuccessUrl string
 	idpErrorMsg      string
@@ -87,13 +86,13 @@ func testAccCheckExpectedIdpDefaultUrlsAttributes(config idpDefaultUrlsResourceM
 		}
 
 		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "confirm_idp_slo",
+		err = acctest.TestAttributesMatchBool(resourceType, nil, "confirm_idp_slo",
 			config.confirmIdpSlo, *response.ConfirmIdpSlo)
 		if err != nil {
 			return err
 		}
 
-		err = acctest.TestAttributesMatchString(resourceType, &config.id, "idp_slo_success_url",
+		err = acctest.TestAttributesMatchString(resourceType, nil, "idp_slo_success_url",
 			config.idpSloSuccessUrl, *response.IdpSloSuccessUrl)
 		if err != nil {
 			return err

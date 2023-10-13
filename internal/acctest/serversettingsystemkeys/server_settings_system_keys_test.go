@@ -14,7 +14,6 @@ import (
 
 // Attributes to test with. Add optional properties to test here if desired.
 type serverSettingsSystemKeysResourceModel struct {
-	id                      string
 	currentEncryptedKeyData string
 	pendingEncryptedKeyData string
 }
@@ -86,12 +85,12 @@ func testAccCheckExpectedServerSettingsSystemKeysAttributes(config serverSetting
 
 		// Verify that attributes have expected values
 		currentEncryptedKeyData := response.Current.EncryptedKeyData
-		err = acctest.TestAttributesMatchString(resourceType, &config.id, "encrypted_key_data", config.currentEncryptedKeyData, *currentEncryptedKeyData)
+		err = acctest.TestAttributesMatchString(resourceType, nil, "encrypted_key_data", config.currentEncryptedKeyData, *currentEncryptedKeyData)
 		if err != nil {
 			return err
 		}
 		pendingEncryptedKeyData := response.Pending.EncryptedKeyData
-		err = acctest.TestAttributesMatchString(resourceType, &config.id, "encrypted_key_data", config.pendingEncryptedKeyData, *pendingEncryptedKeyData)
+		err = acctest.TestAttributesMatchString(resourceType, nil, "encrypted_key_data", config.pendingEncryptedKeyData, *pendingEncryptedKeyData)
 		if err != nil {
 			return err
 		}

@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 )
 
-func Schema() schema.SingleNestedAttribute {
+func ToSchema() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Description: "Plugin instance configuration.",
 		Required:    true,

@@ -78,7 +78,7 @@ func (r *certificatesResource) Schema(ctx context.Context, req resource.SchemaRe
 		},
 	}
 
-	id.Schema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 

@@ -14,7 +14,6 @@ import (
 
 // Attributes to test with. Add optional properties to test here if desired.
 type serverSettingsLogSettingsResourceModel struct {
-	id                   string
 	logCategoriesEnabled bool
 }
 
@@ -124,7 +123,7 @@ func testAccCheckExpectedServerSettingsLogSettingsAttributes(config serverSettin
 				logCategoryEnabledVal = logCategories[i].Enabled
 			}
 		}
-		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "enabled", config.logCategoriesEnabled, *logCategoryEnabledVal)
+		err = acctest.TestAttributesMatchBool(resourceType, nil, "enabled", config.logCategoriesEnabled, *logCategoryEnabledVal)
 		if err != nil {
 			return err
 		}

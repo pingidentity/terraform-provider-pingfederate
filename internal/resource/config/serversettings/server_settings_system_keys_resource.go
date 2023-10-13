@@ -51,10 +51,6 @@ type serverSettingsSystemKeysResourceModel struct {
 	Pending  types.Object `tfsdk:"pending"`
 }
 
-type serverSettingsSystemKeysIdModel struct {
-	Id types.String `tfsdk:"id"`
-}
-
 // GetSchema defines the schema for the resource.
 func (r *serverSettingsSystemKeysResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
@@ -145,7 +141,7 @@ func (r *serverSettingsSystemKeysResource) Schema(ctx context.Context, req resou
 		},
 	}
 
-	id.Schema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -196,9 +192,9 @@ func (r *serverSettingsSystemKeysResource) Configure(_ context.Context, req reso
 
 }
 
-func readServerSettingsSystemKeysResponse(ctx context.Context, r *client.SystemKeys, state *serverSettingsSystemKeysResourceModel, idStruct *serverSettingsSystemKeysIdModel) diag.Diagnostics {
+func readServerSettingsSystemKeysResponse(ctx context.Context, r *client.SystemKeys, state *serverSettingsSystemKeysResourceModel, existingId *string) diag.Diagnostics {
 	var diags diag.Diagnostics
-	state.Id = id.GenerateUUIDToState(idStruct.Id)
+	state.Id = id.GenerateUUIDToState(existingId)
 	currentAttrs := r.GetCurrent()
 	currentAttrVals := map[string]attr.Value{
 		"creation_date":      types.StringValue(currentAttrs.GetCreationDate().Format(time.RFC3339Nano)),
@@ -258,8 +254,7 @@ func (r *serverSettingsSystemKeysResource) Create(ctx context.Context, req resou
 
 	// Read the response into the state
 	var state serverSettingsSystemKeysResourceModel
-	var uuidStruct serverSettingsSystemKeysIdModel
-	diags = readServerSettingsSystemKeysResponse(ctx, serverSettingsSystemKeysResponse, &state, &uuidStruct)
+	diags = readServerSettingsSystemKeysResponse(ctx, serverSettingsSystemKeysResponse, &state, nil)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -290,13 +285,12 @@ func (r *serverSettingsSystemKeysResource) Read(ctx context.Context, req resourc
 	}
 
 	// Read the response into the state
-	var uuidStruct serverSettingsSystemKeysIdModel
-	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	diags = readServerSettingsSystemKeysResponse(ctx, apiReadServerSettingsSystemKeys, &state, &uuidStruct)
+	diags = readServerSettingsSystemKeysResponse(ctx, apiReadServerSettingsSystemKeys, &state, id)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -335,14 +329,13 @@ func (r *serverSettingsSystemKeysResource) Update(ctx context.Context, req resou
 
 	// Read the response into the state
 	var state serverSettingsSystemKeysResourceModel
-	var uuidStruct serverSettingsSystemKeysIdModel
-	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	diags = readServerSettingsSystemKeysResponse(ctx, serverSettingsSystemKeysResponse, &state, &uuidStruct)
+	diags = readServerSettingsSystemKeysResponse(ctx, serverSettingsSystemKeysResponse, &state, id)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)

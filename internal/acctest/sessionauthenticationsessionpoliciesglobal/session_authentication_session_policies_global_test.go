@@ -14,7 +14,6 @@ import (
 
 // Attributes to test with. Add optional properties to test here if desired.
 type sessionAuthenticationSessionPoliciesGlobalResourceModel struct {
-	id                         string
 	enableSessions             bool
 	persistentSessions         bool
 	hashUniqueUserKeyAttribute bool
@@ -105,37 +104,37 @@ func testAccCheckExpectedSessionAuthenticationSessionPoliciesGlobalAttributes(co
 		}
 
 		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "enable_sessions",
+		err = acctest.TestAttributesMatchBool(resourceType, nil, "enable_sessions",
 			config.enableSessions, response.EnableSessions)
 		if err != nil {
 			return err
 		}
-		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "persistent_sessions",
+		err = acctest.TestAttributesMatchBool(resourceType, nil, "persistent_sessions",
 			config.persistentSessions, *response.PersistentSessions)
 		if err != nil {
 			return err
 		}
-		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "hash_unique_user_key_attribute",
+		err = acctest.TestAttributesMatchBool(resourceType, nil, "hash_unique_user_key_attribute",
 			config.hashUniqueUserKeyAttribute, *response.HashUniqueUserKeyAttribute)
 		if err != nil {
 			return err
 		}
-		err = acctest.TestAttributesMatchInt(resourceType, &config.id, "idle_timeout_mins",
+		err = acctest.TestAttributesMatchInt(resourceType, nil, "idle_timeout_mins",
 			config.idleTimeoutMins, *response.IdleTimeoutMins)
 		if err != nil {
 			return err
 		}
-		err = acctest.TestAttributesMatchString(resourceType, &config.id, "idle_timeout_display_unit",
+		err = acctest.TestAttributesMatchString(resourceType, nil, "idle_timeout_display_unit",
 			config.idleTimeoutDisplayUnit, *response.IdleTimeoutDisplayUnit)
 		if err != nil {
 			return err
 		}
-		err = acctest.TestAttributesMatchInt(resourceType, &config.id, "max_timeout_mins",
+		err = acctest.TestAttributesMatchInt(resourceType, nil, "max_timeout_mins",
 			config.maxTimeoutMins, *response.MaxTimeoutMins)
 		if err != nil {
 			return err
 		}
-		err = acctest.TestAttributesMatchString(resourceType, &config.id, "max_timeout_display_unit",
+		err = acctest.TestAttributesMatchString(resourceType, nil, "max_timeout_display_unit",
 			config.maxTimeoutDisplayUnit, *response.MaxTimeoutDisplayUnit)
 		if err != nil {
 			return err

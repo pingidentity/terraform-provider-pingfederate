@@ -867,8 +867,8 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 		},
 	}
 
-	id.Schema(&schema)
-	id.SchemaCustomId(&schema, true, true,
+	id.ToSchema(&schema)
+	id.ToSchemaCustomId(&schema, true, true,
 		"The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.")
 	resp.Schema = schema
 }

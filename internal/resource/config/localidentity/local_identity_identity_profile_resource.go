@@ -154,7 +154,7 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 			"apc_id": schema.SingleNestedAttribute{
 				Description: "The reference to the authentication policy contract to use for this local identity profile.",
 				Required:    true,
-				Attributes:  resourcelink.Schema(),
+				Attributes:  resourcelink.ToSchema(),
 			},
 			"auth_sources": schema.SetNestedAttribute{
 				Description: "The local identity authentication sources. Sources are unique.",
@@ -216,7 +216,7 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 						Description: "Reference to the associated CAPTCHA provider.",
 						Computed:    true,
 						Optional:    true,
-						Attributes:  resourcelink.Schema(),
+						Attributes:  resourcelink.ToSchema(),
 					},
 					"template_name": schema.StringAttribute{
 						Description: "The template name for the registration configuration.",
@@ -240,7 +240,7 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 					"registration_workflow": schema.SingleNestedAttribute{
 						Description: "The policy fragment to be executed as part of the registration workflow.",
 						Optional:    true,
-						Attributes:  resourcelink.Schema(),
+						Attributes:  resourcelink.ToSchema(),
 					},
 					"execute_workflow": schema.StringAttribute{
 						Description: "This setting indicates whether PingFederate should execute the workflow before or after account creation. The default is to run the registration workflow after account creation.",
@@ -395,7 +395,7 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 					"notification_publisher_ref": schema.SingleNestedAttribute{
 						Description: "Reference to the associated notification publisher.",
 						Optional:    true,
-						Attributes:  resourcelink.Schema(),
+						Attributes:  resourcelink.ToSchema(),
 					},
 					"require_verified_email": schema.BoolAttribute{
 						Description: "Whether the user must verify their email address before they can complete a single sign-on transaction. The default is false.",
@@ -489,8 +489,8 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 		},
 	}
 
-	id.Schema(&schema)
-	id.SchemaCustomId(&schema, false, true,
+	id.ToSchema(&schema)
+	id.ToSchemaCustomId(&schema, false, true,
 		"The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.")
 	resp.Schema = schema
 }

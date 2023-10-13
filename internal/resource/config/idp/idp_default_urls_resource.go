@@ -41,10 +41,6 @@ type idpDefaultUrlsResourceModel struct {
 	IdpErrorMsg      types.String `tfsdk:"idp_error_msg"`
 }
 
-type idpDefaultUrlsIdModel struct {
-	Id types.String `tfsdk:"id"`
-}
-
 // GetSchema defines the schema for the resource.
 func (r *idpDefaultUrlsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
@@ -77,7 +73,7 @@ func (r *idpDefaultUrlsResource) Schema(ctx context.Context, req resource.Schema
 		},
 	}
 
-	id.Schema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -111,8 +107,8 @@ func (r *idpDefaultUrlsResource) Configure(_ context.Context, req resource.Confi
 
 }
 
-func readIdpDefaultUrlsResponse(ctx context.Context, r *client.IdpDefaultUrl, state *idpDefaultUrlsResourceModel, expectedValues *idpDefaultUrlsResourceModel, idStruct *idpDefaultUrlsIdModel) {
-	state.Id = id.GenerateUUIDToState(idStruct.Id)
+func readIdpDefaultUrlsResponse(ctx context.Context, r *client.IdpDefaultUrl, state *idpDefaultUrlsResourceModel, expectedValues *idpDefaultUrlsResourceModel, existingId *string) {
+	state.Id = id.GenerateUUIDToState(existingId)
 	state.ConfirmIdpSlo = types.BoolPointerValue(r.ConfirmIdpSlo)
 	state.IdpSloSuccessUrl = internaltypes.StringTypeOrNil(r.IdpSloSuccessUrl, false)
 	state.IdpErrorMsg = types.StringValue(r.IdpErrorMsg)
@@ -152,8 +148,7 @@ func (r *idpDefaultUrlsResource) Create(ctx context.Context, req resource.Create
 
 	// Read the response into the state
 	var state idpDefaultUrlsResourceModel
-	var uuidStruct idpDefaultUrlsIdModel
-	readIdpDefaultUrlsResponse(ctx, idpDefaultUrlsResponse, &state, &plan, &uuidStruct)
+	readIdpDefaultUrlsResponse(ctx, idpDefaultUrlsResponse, &state, &plan, nil)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -183,13 +178,12 @@ func (r *idpDefaultUrlsResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Read the response into the state
-	var uuidStruct idpDefaultUrlsIdModel
-	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	readIdpDefaultUrlsResponse(ctx, apiReadIdpDefaultUrls, &state, &state, &uuidStruct)
+	readIdpDefaultUrlsResponse(ctx, apiReadIdpDefaultUrls, &state, &state, id)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -231,13 +225,12 @@ func (r *idpDefaultUrlsResource) Update(ctx context.Context, req resource.Update
 	// Read the response
 	// Get the current state to see how any attributes are changing
 	var state idpDefaultUrlsResourceModel
-	var uuidStruct idpDefaultUrlsIdModel
-	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	readIdpDefaultUrlsResponse(ctx, updateIdpDefaultUrlsResponse, &state, &plan, &uuidStruct)
+	readIdpDefaultUrlsResponse(ctx, updateIdpDefaultUrlsResponse, &state, &plan, id)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

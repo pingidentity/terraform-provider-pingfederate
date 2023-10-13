@@ -107,10 +107,6 @@ type oauthAuthServerSettingsResourceModel struct {
 	JwtSecuredAuthorizationResponseModeLifetime types.Int64  `tfsdk:"jwt_secured_authorization_response_mode_lifetime"`
 }
 
-type oauthAuthServerSettingsIdModel struct {
-	Id types.String `tfsdk:"id"`
-}
-
 // GetSchema defines the schema for the resource.
 func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	emptyScopesSet, _ := types.SetValue(types.ObjectType{AttrTypes: scopeAttrTypes}, []attr.Value{})
@@ -433,7 +429,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 			"admin_web_service_pcv_ref": schema.SingleNestedAttribute{
 				Description: "The password credential validator reference that is used for authenticating access to the OAuth Administrative Web Service.",
 				Optional:    true,
-				Attributes:  resourcelink.Schema(),
+				Attributes:  resourcelink.ToSchema(),
 			},
 			"atm_id_for_oauth_grant_management": schema.StringAttribute{
 				Description: "The ID of the Access Token Manager used for OAuth enabled grant management.",
@@ -585,7 +581,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 		},
 	}
 
-	id.Schema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -822,9 +818,9 @@ func (r *oauthAuthServerSettingsResource) Configure(_ context.Context, req resou
 
 }
 
-func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsResourceModel, idStruct *oauthAuthServerSettingsIdModel) diag.Diagnostics {
+func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsResourceModel, existingId *string) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.Id = id.GenerateUUIDToState(idStruct.Id)
+	state.Id = id.GenerateUUIDToState(existingId)
 	state.DefaultScopeDescription = types.StringValue(r.DefaultScopeDescription)
 	state.Scopes, respDiags = scopeentry.ToState(ctx, r.Scopes)
 	diags.Append(respDiags...)
@@ -949,8 +945,7 @@ func (r *oauthAuthServerSettingsResource) Create(ctx context.Context, req resour
 
 	// Read the response into the state
 	var state oauthAuthServerSettingsResourceModel
-	var uuidStruct oauthAuthServerSettingsIdModel
-	diags = readOauthAuthServerSettingsResponse(ctx, oauthAuthServerSettingsResponse, &state, &uuidStruct)
+	diags = readOauthAuthServerSettingsResponse(ctx, oauthAuthServerSettingsResponse, &state, nil)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -982,13 +977,12 @@ func (r *oauthAuthServerSettingsResource) Read(ctx context.Context, req resource
 	}
 
 	// Read the response into the state
-	var uuidStruct oauthAuthServerSettingsIdModel
-	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	diags = readOauthAuthServerSettingsResponse(ctx, apiReadOauthAuthServerSettings, &state, &uuidStruct)
+	diags = readOauthAuthServerSettingsResponse(ctx, apiReadOauthAuthServerSettings, &state, id)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -1031,13 +1025,12 @@ func (r *oauthAuthServerSettingsResource) Update(ctx context.Context, req resour
 	}
 	// Read the response
 	var state oauthAuthServerSettingsResourceModel
-	var uuidStruct oauthAuthServerSettingsIdModel
-	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	diags = readOauthAuthServerSettingsResponse(ctx, updateOauthAuthServerSettingsResponse, &state, &uuidStruct)
+	diags = readOauthAuthServerSettingsResponse(ctx, updateOauthAuthServerSettingsResponse, &state, id)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values

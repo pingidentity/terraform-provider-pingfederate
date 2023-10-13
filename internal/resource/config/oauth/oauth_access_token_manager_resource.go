@@ -110,7 +110,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
 				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
-				Attributes:  resourcelink.Schema(),
+				Attributes:  resourcelink.ToSchema(),
 			},
 			"parent_ref": schema.SingleNestedAttribute{
 				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
@@ -119,9 +119,9 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
-				Attributes: resourcelink.Schema(),
+				Attributes: resourcelink.ToSchema(),
 			},
-			"configuration": pluginconfiguration.Schema(),
+			"configuration": pluginconfiguration.ToSchema(),
 			"attribute_contract": schema.SingleNestedAttribute{
 				Description: "The list of attributes that will be added to an access token.",
 				Computed:    true,
@@ -231,7 +231,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 						Computed:    true,
 						Optional:    true,
 						NestedObject: schema.NestedAttributeObject{
-							Attributes: resourcelink.Schema(),
+							Attributes: resourcelink.ToSchema(),
 						},
 						PlanModifiers: []planmodifier.List{
 							listplanmodifier.UseStateForUnknown(),
@@ -281,8 +281,8 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 		},
 	}
 
-	id.Schema(&schema)
-	id.SchemaCustomId(&schema, true, true,
+	id.ToSchema(&schema)
+	id.ToSchemaCustomId(&schema, true, true,
 		"The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.")
 	resp.Schema = schema
 }

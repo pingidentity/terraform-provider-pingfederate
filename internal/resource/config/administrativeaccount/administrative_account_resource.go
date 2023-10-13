@@ -132,7 +132,7 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 		},
 	}
 
-	id.Schema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 func addOptionalAdministrativeAccountFields(ctx context.Context, addRequest *client.AdministrativeAccount, plan administrativeAccountResourceModel) error {

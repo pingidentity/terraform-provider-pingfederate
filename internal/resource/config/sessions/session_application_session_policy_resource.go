@@ -39,10 +39,6 @@ type sessionApplicationSessionPolicyResourceModel struct {
 	MaxTimeoutMins  types.Int64  `tfsdk:"max_timeout_mins"`
 }
 
-type sessionApplicationSessionPolicyIdModel struct {
-	Id types.String `tfsdk:"id"`
-}
-
 // GetSchema defines the schema for the resource.
 func (r *sessionApplicationSessionPolicyResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
@@ -66,7 +62,7 @@ func (r *sessionApplicationSessionPolicyResource) Schema(ctx context.Context, re
 		},
 	}
 
-	id.Schema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -97,8 +93,8 @@ func (r *sessionApplicationSessionPolicyResource) Configure(_ context.Context, r
 
 }
 
-func readSessionApplicationSessionPolicyResponse(ctx context.Context, r *client.ApplicationSessionPolicy, state *sessionApplicationSessionPolicyResourceModel, idStruct *sessionApplicationSessionPolicyIdModel) {
-	state.Id = id.GenerateUUIDToState(idStruct.Id)
+func readSessionApplicationSessionPolicyResponse(ctx context.Context, r *client.ApplicationSessionPolicy, state *sessionApplicationSessionPolicyResourceModel, existingId *string) {
+	state.Id = id.GenerateUUIDToState(existingId)
 	state.IdleTimeoutMins = types.Int64Value(r.GetIdleTimeoutMins())
 	state.MaxTimeoutMins = types.Int64Value(r.GetMaxTimeoutMins())
 }
@@ -137,8 +133,7 @@ func (r *sessionApplicationSessionPolicyResource) Create(ctx context.Context, re
 
 	// Read the response into the state
 	var state sessionApplicationSessionPolicyResourceModel
-	var uuidStruct sessionApplicationSessionPolicyIdModel
-	readSessionApplicationSessionPolicyResponse(ctx, sessionApplicationSessionPolicyResponse, &state, &uuidStruct)
+	readSessionApplicationSessionPolicyResponse(ctx, sessionApplicationSessionPolicyResponse, &state, nil)
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -169,13 +164,12 @@ func (r *sessionApplicationSessionPolicyResource) Read(ctx context.Context, req 
 	}
 
 	// Read the response into the state
-	var uuidStruct sessionApplicationSessionPolicyIdModel
-	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	readSessionApplicationSessionPolicyResponse(ctx, apiReadSessionApplicationSessionPolicy, &state, &uuidStruct)
+	readSessionApplicationSessionPolicyResponse(ctx, apiReadSessionApplicationSessionPolicy, &state, id)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -217,13 +211,12 @@ func (r *sessionApplicationSessionPolicyResource) Update(ctx context.Context, re
 
 	// Get the current state to see how any attributes are changing
 	var state sessionApplicationSessionPolicyResourceModel
-	var uuidStruct sessionApplicationSessionPolicyIdModel
-	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	readSessionApplicationSessionPolicyResponse(ctx, updateSessionApplicationSessionPolicyResponse, &state, &uuidStruct)
+	readSessionApplicationSessionPolicyResponse(ctx, updateSessionApplicationSessionPolicyResponse, &state, id)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

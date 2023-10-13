@@ -105,7 +105,7 @@ func (r *authenticationPolicyContractsResource) Schema(ctx context.Context, req 
 		},
 	}
 
-	id.Schema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 

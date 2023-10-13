@@ -37,10 +37,6 @@ type virtualHostNamesResourceModel struct {
 	VirtualHostNames types.Set    `tfsdk:"virtual_host_names"`
 }
 
-type virtualHostNamesIdModel struct {
-	Id types.String `tfsdk:"id"`
-}
-
 // GetSchema defines the schema for the resource.
 func (r *virtualHostNamesResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
@@ -57,7 +53,7 @@ func (r *virtualHostNamesResource) Schema(ctx context.Context, req resource.Sche
 		},
 	}
 
-	id.Schema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -87,8 +83,8 @@ func (r *virtualHostNamesResource) Configure(_ context.Context, req resource.Con
 
 }
 
-func readVirtualHostNamesResponse(ctx context.Context, r *client.VirtualHostNameSettings, state *virtualHostNamesResourceModel, idStruct *virtualHostNamesIdModel) {
-	state.Id = id.GenerateUUIDToState(idStruct.Id)
+func readVirtualHostNamesResponse(ctx context.Context, r *client.VirtualHostNameSettings, state *virtualHostNamesResourceModel, existingId *string) {
+	state.Id = id.GenerateUUIDToState(existingId)
 	state.VirtualHostNames = internaltypes.GetStringSet(r.VirtualHostNames)
 }
 
@@ -126,8 +122,7 @@ func (r *virtualHostNamesResource) Create(ctx context.Context, req resource.Crea
 
 	// Read the response into the state
 	var state virtualHostNamesResourceModel
-	var uuidStruct virtualHostNamesIdModel
-	readVirtualHostNamesResponse(ctx, virtualHostNamesResponse, &state, &uuidStruct)
+	readVirtualHostNamesResponse(ctx, virtualHostNamesResponse, &state, nil)
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -158,13 +153,12 @@ func (r *virtualHostNamesResource) Read(ctx context.Context, req resource.ReadRe
 	}
 
 	// Read the response into the state
-	var uuidStruct virtualHostNamesIdModel
-	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	readVirtualHostNamesResponse(ctx, apiReadVirtualHostNames, &state, &uuidStruct)
+	readVirtualHostNamesResponse(ctx, apiReadVirtualHostNames, &state, id)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -207,13 +201,12 @@ func (r *virtualHostNamesResource) Update(ctx context.Context, req resource.Upda
 		diags.AddError("There was an issue retrieving the response of Virtual Host Names: %s", responseErr.Error())
 	}
 	// Read the response
-	var uuidStruct virtualHostNamesIdModel
-	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	readVirtualHostNamesResponse(ctx, updateVirtualHostNamesResponse, &state, &uuidStruct)
+	readVirtualHostNamesResponse(ctx, updateVirtualHostNamesResponse, &state, id)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

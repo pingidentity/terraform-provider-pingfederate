@@ -71,10 +71,6 @@ type redirectValidationResourceModel struct {
 	RedirectValidationPartnerSettings types.Object `tfsdk:"redirect_validation_partner_settings"`
 }
 
-type redirectValidationIdModel struct {
-	Id types.String `tfsdk:"id"`
-}
-
 // GetSchema defines the schema for the resource.
 func (r *redirectValidationResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
@@ -218,7 +214,7 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 		},
 	}
 
-	id.Schema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -257,10 +253,9 @@ func (r *redirectValidationResource) Configure(_ context.Context, req resource.C
 
 }
 
-func readRedirectValidationResponse(ctx context.Context, r *client.RedirectValidationSettings, state *redirectValidationResourceModel, idStruct *redirectValidationIdModel) diag.Diagnostics {
+func readRedirectValidationResponse(ctx context.Context, r *client.RedirectValidationSettings, state *redirectValidationResourceModel, existingId *string) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.Id = id.GenerateUUIDToState(idStruct.Id)
-	diags.Append(respDiags...)
+	state.Id = id.GenerateUUIDToState(existingId)
 	whiteListAttrs := r.GetRedirectValidationLocalSettings().WhiteList
 	var whiteListSliceAttrVal = []attr.Value{}
 	whiteListSliceType := types.ObjectType{AttrTypes: whiteListAttrTypes}
@@ -335,8 +330,7 @@ func (r *redirectValidationResource) Create(ctx context.Context, req resource.Cr
 
 	// Read the response into the state
 	var state redirectValidationResourceModel
-	var uuidStruct redirectValidationIdModel
-	diags = readRedirectValidationResponse(ctx, redirectValidationResponse, &state, &uuidStruct)
+	diags = readRedirectValidationResponse(ctx, redirectValidationResponse, &state, nil)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -367,13 +361,12 @@ func (r *redirectValidationResource) Read(ctx context.Context, req resource.Read
 	}
 
 	// Read the response into the state
-	var uuidStruct redirectValidationIdModel
-	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	diags = readRedirectValidationResponse(ctx, apiReadRedirectValidation, &state, &uuidStruct)
+	diags = readRedirectValidationResponse(ctx, apiReadRedirectValidation, &state, id)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -391,9 +384,6 @@ func (r *redirectValidationResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
-	var state redirectValidationResourceModel
-	req.State.Get(ctx, &state.Id)
 	updateRedirectValidation := r.apiClient.RedirectValidationAPI.UpdateRedirectValidationSettings(ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewRedirectValidationSettings()
 	err := addOptionalRedirectValidationFields(ctx, createUpdateRequest, plan)
@@ -417,13 +407,13 @@ func (r *redirectValidationResource) Update(ctx context.Context, req resource.Up
 		diags.AddError("There was an issue retrieving the response of Redirect Validation: %s", responseErr.Error())
 	}
 	// Read the response
-	var uuidStruct redirectValidationIdModel
-	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	var state redirectValidationResourceModel
+	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	diags = readRedirectValidationResponse(ctx, updateRedirectValidationResponse, &state, &uuidStruct)
+	diags = readRedirectValidationResponse(ctx, updateRedirectValidationResponse, &state, id)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values

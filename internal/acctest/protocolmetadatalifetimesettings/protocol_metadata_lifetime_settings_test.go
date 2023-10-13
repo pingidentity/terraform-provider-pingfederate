@@ -14,7 +14,6 @@ import (
 
 // Attributes to test with. Add optional properties to test here if desired.
 type protocolMetadataLifetimeSettingsResourceModel struct {
-	id            string
 	cacheDuration int64
 	reloadDelay   int64
 }
@@ -80,12 +79,12 @@ func testAccCheckExpectedProtocolMetadataLifetimeSettingsAttributes(config proto
 		}
 
 		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchInt(resourceType, &config.id, "cache_duration",
+		err = acctest.TestAttributesMatchInt(resourceType, nil, "cache_duration",
 			config.cacheDuration, *response.CacheDuration)
 		if err != nil {
 			return err
 		}
-		err = acctest.TestAttributesMatchInt(resourceType, &config.id, "reload_delay",
+		err = acctest.TestAttributesMatchInt(resourceType, nil, "reload_delay",
 			config.reloadDelay, *response.ReloadDelay)
 		if err != nil {
 			return err

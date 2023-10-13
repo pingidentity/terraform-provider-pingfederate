@@ -37,10 +37,6 @@ type licenseResourceModel struct {
 	FileData types.String `tfsdk:"file_data"`
 }
 
-type licenseIdModel struct {
-	Id types.String `tfsdk:"id"`
-}
-
 // GetSchema defines the schema for the resource.
 func (r *licenseResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
@@ -55,7 +51,7 @@ func (r *licenseResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 		},
 	}
-	id.Schema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -75,8 +71,8 @@ func (r *licenseResource) Configure(_ context.Context, req resource.ConfigureReq
 
 }
 
-func readLicenseResponse(ctx context.Context, r *client.LicenseView, state *licenseResourceModel, expectedValues *licenseResourceModel, planFileData types.String, idStruct *licenseIdModel) {
-	state.Id = id.GenerateUUIDToState(idStruct.Id)
+func readLicenseResponse(ctx context.Context, r *client.LicenseView, state *licenseResourceModel, expectedValues *licenseResourceModel, planFileData types.String, existingId *string) {
+	state.Id = id.GenerateUUIDToState(existingId)
 	state.FileData = types.StringValue(planFileData.ValueString())
 }
 
@@ -109,8 +105,7 @@ func (r *licenseResource) Create(ctx context.Context, req resource.CreateRequest
 
 	// Read the response into the state
 	var state licenseResourceModel
-	var uuidStruct licenseIdModel
-	readLicenseResponse(ctx, licenseResponse, &state, &state, plan.FileData, &uuidStruct)
+	readLicenseResponse(ctx, licenseResponse, &state, &state, plan.FileData, nil)
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -141,13 +136,12 @@ func (r *licenseResource) Read(ctx context.Context, req resource.ReadRequest, re
 	}
 
 	// Read the response into the state
-	var uuidStruct licenseIdModel
-	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	readLicenseResponse(ctx, apiReadLicense, &state, &state, state.FileData, &uuidStruct)
+	readLicenseResponse(ctx, apiReadLicense, &state, &state, state.FileData, id)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -185,13 +179,12 @@ func (r *licenseResource) Update(ctx context.Context, req resource.UpdateRequest
 		diags.AddError("There was an issue retrieving the response of the License: %s", responseErr.Error())
 	}
 	// Read the response
-	var uuidStruct licenseIdModel
-	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	readLicenseResponse(ctx, updateLicenseResponse, &state, &state, plan.FileData, &uuidStruct)
+	readLicenseResponse(ctx, updateLicenseResponse, &state, &state, plan.FileData, id)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

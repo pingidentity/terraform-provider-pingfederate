@@ -24,7 +24,7 @@ func CommonAttributeSourceSchema() map[string]schema.Attribute {
 	commonAttributeSourceSchema["data_store_ref"] = schema.SingleNestedAttribute{
 		Required:    true,
 		Description: "Reference to the associated data store.",
-		Attributes:  resourcelink.Schema(),
+		Attributes:  resourcelink.ToSchema(),
 	}
 	commonAttributeSourceSchema["id"] = schema.StringAttribute{
 		Optional:    true,
@@ -34,7 +34,7 @@ func CommonAttributeSourceSchema() map[string]schema.Attribute {
 		Optional:    true,
 		Description: "The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings",
 	}
-	commonAttributeSourceSchema["attribute_contract_fulfillment"] = attributecontractfulfillment.Schema(false)
+	commonAttributeSourceSchema["attribute_contract_fulfillment"] = attributecontractfulfillment.ToSchema(false)
 	return commonAttributeSourceSchema
 }
 
@@ -149,7 +149,7 @@ func LdapAttributeSourceSchemaAttributes() map[string]schema.Attribute {
 	return ldapAttributeSourceSchema
 }
 
-func Schema() schema.ListNestedAttribute {
+func ToSchema() schema.ListNestedAttribute {
 	return schema.ListNestedAttribute{
 		Description: "A list of configured data stores to look up attributes from.",
 		Computed:    true,

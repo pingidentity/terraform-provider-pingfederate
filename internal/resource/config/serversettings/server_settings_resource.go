@@ -162,10 +162,6 @@ type serverSettingsResourceModel struct {
 	CaptchaSettings   types.Object `tfsdk:"captcha_settings"`
 }
 
-type serverSettingsIdModel struct {
-	Id types.String `tfsdk:"id"`
-}
-
 // GetSchema defines the schema for the resource.
 func (r *serverSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
@@ -255,7 +251,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								PlanModifiers: []planmodifier.Object{
 									objectplanmodifier.UseStateForUnknown(),
 								},
-								Attributes: resourcelink.Schema(),
+								Attributes: resourcelink.ToSchema(),
 							},
 						},
 					},
@@ -297,7 +293,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								PlanModifiers: []planmodifier.Object{
 									objectplanmodifier.UseStateForUnknown(),
 								},
-								Attributes: resourcelink.Schema(),
+								Attributes: resourcelink.ToSchema(),
 							},
 						},
 					},
@@ -316,7 +312,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						PlanModifiers: []planmodifier.Object{
 							objectplanmodifier.UseStateForUnknown(),
 						},
-						Attributes: resourcelink.Schema(),
+						Attributes: resourcelink.ToSchema(),
 					},
 					"metadata_notification_settings": schema.SingleNestedAttribute{
 						Description: "Settings for metadata update event notifications.",
@@ -341,7 +337,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								PlanModifiers: []planmodifier.Object{
 									objectplanmodifier.UseStateForUnknown(),
 								},
-								Attributes: resourcelink.Schema(),
+								Attributes: resourcelink.ToSchema(),
 							},
 						},
 					},
@@ -783,7 +779,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 			},
 		},
 	}
-	id.Schema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -878,10 +874,10 @@ func (r *serverSettingsResource) Configure(_ context.Context, req resource.Confi
 
 }
 
-func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, state *serverSettingsResourceModel, plan *serverSettingsResourceModel, idStruct *serverSettingsIdModel) diag.Diagnostics {
+func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, state *serverSettingsResourceModel, plan *serverSettingsResourceModel, existingId *string) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	emptyString := ""
-	state.Id = id.GenerateUUIDToState(idStruct.Id)
+	state.Id = id.GenerateUUIDToState(existingId)
 	state.ContactInfo, respDiags = types.ObjectValueFrom(ctx, contactInfoAttrType, r.ContactInfo)
 	diags.Append(respDiags...)
 	state.Notifications, respDiags = types.ObjectValueFrom(ctx, notificationsAttrType, r.Notifications)
@@ -1030,8 +1026,7 @@ func (r *serverSettingsResource) Create(ctx context.Context, req resource.Create
 
 	// Read the response into the state
 	var state serverSettingsResourceModel
-	var uuidStruct serverSettingsIdModel
-	diags = readServerSettingsResponse(ctx, serverSettingsResponse, &state, &plan, &uuidStruct)
+	diags = readServerSettingsResponse(ctx, serverSettingsResponse, &state, &plan, nil)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -1069,13 +1064,12 @@ func (r *serverSettingsResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Read the response into the state
-	var uuidStruct serverSettingsIdModel
-	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	diags = readServerSettingsResponse(ctx, apiReadServerSettings, &state, &state, &uuidStruct)
+	diags = readServerSettingsResponse(ctx, apiReadServerSettings, &state, &state, id)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -1117,13 +1111,12 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 	}
 	// Read the response
 	var state serverSettingsResourceModel
-	var uuidStruct serverSettingsIdModel
-	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	diags = readServerSettingsResponse(ctx, updateServerSettingsResponse, &state, &plan, &uuidStruct)
+	diags = readServerSettingsResponse(ctx, updateServerSettingsResponse, &state, &plan, id)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values

@@ -76,7 +76,7 @@ func (r *oauthAuthServerSettingsScopesCommonScopesResource) Schema(ctx context.C
 		},
 	}
 
-	id.Schema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
