@@ -1,4 +1,4 @@
-resource "pingfederate_token_processor_to_token_generator_mapping" "tokenProcessorToTokenGeneratorMappingExample" {
+resource "pingfederate_oauth_token_exchange_processor_policy_token_generator_mapping" "oauthTokenExchangeTokenGeneratorMappingsExample" {
   attribute_sources = [
     {
       jdbc_attribute_source = {
@@ -35,6 +35,6 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "tokenProcess
       }
     ]
   }
-  source_id = "tokenprocessor"
+  source_id = "tokenexchangeprocessorpolicy"
   target_id = "tokengenerator"
 }
