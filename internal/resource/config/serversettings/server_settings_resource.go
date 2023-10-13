@@ -985,7 +985,6 @@ func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, s
 		}
 		state.CaptchaSettings, respDiags = types.ObjectValue(captchaSettingsAttrType, captchaSettingsAttrValue)
 		diags.Append(respDiags...)
-		return diags
 	} else {
 		state.CaptchaSettings = types.ObjectNull(captchaSettingsAttrType)
 	}
@@ -1130,6 +1129,5 @@ func (r *serverSettingsResource) Delete(ctx context.Context, req resource.Delete
 
 func (r *serverSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	// Set a placeholder id value to appease terraform.
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

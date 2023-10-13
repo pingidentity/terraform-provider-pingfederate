@@ -281,7 +281,6 @@ func (r *authenticationPolicyContractsResource) Update(ctx context.Context, req 
 
 	// Get the current state to see how any attributes are changing
 	var state authenticationPolicyContractsResourceModel
-	req.State.Get(ctx, &state.Id)
 	updateAuthenticationPolicyContracts := r.apiClient.AuthenticationPolicyContractsAPI.UpdateAuthenticationPolicyContract(ProviderBasicAuthContext(ctx, r.providerConfig), plan.CustomId.ValueString())
 	createUpdateRequest := client.NewAuthenticationPolicyContract()
 	err := addAuthenticationPolicyContractsFields(ctx, createUpdateRequest, plan)
