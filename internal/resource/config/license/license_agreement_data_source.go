@@ -56,7 +56,7 @@ func (r *licenseAgreementDataSource) Schema(ctx context.Context, req datasource.
 		},
 	}
 
-	id.DataSourceSchema(&schemaDef, false, "The ID of this resource.")
+	id.AddToDataSourceSchema(&schemaDef, false, "The ID of this resource.")
 	resp.Schema = schemaDef
 }
 

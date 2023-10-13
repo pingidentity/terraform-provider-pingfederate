@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -215,7 +216,7 @@ func (r *licenseDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 		},
 	}
 
-	id.DataSourceSchema(&schemaDef, false, "Unique identifier of a license.")
+	id.AddToDataSourceSchema(&schemaDef, false, "Unique identifier of a license.")
 	resp.Schema = schemaDef
 }
 
@@ -236,14 +237,15 @@ func (r *licenseDataSource) Configure(_ context.Context, req datasource.Configur
 }
 
 // Read a DseeCompatAdministrativeAccountResponse object into the model struct
-func readLicenseResponseDataSource(ctx context.Context, r *client.LicenseView, state *licenseDataSourceModel, expectedValues *licenseDataSourceModel) {
+func readLicenseResponseDataSource(ctx context.Context, r *client.LicenseView, state *licenseDataSourceModel, expectedValues *licenseDataSourceModel) diag.Diagnostics {
+	var diags, respDiags diag.Diagnostics
 	state.Id = types.StringValue("id")
 	state.Name = internaltypes.StringTypeOrNil(r.Name, false)
 	state.MaxConnections = internaltypes.Int64TypeOrNil(r.MaxConnections)
 	state.UsedConnections = internaltypes.Int64TypeOrNil(r.UsedConnections)
 	state.Tier = internaltypes.StringTypeOrNil(r.Tier, false)
-	state.IssueDate = types.StringValue(r.IssueDate.Format(time.Now().String()))
-	state.ExpirationDate = types.StringValue(r.ExpirationDate.Format(time.Now().String()))
+	state.IssueDate = types.StringValue(r.IssueDate.Format(time.RFC3339))
+	state.ExpirationDate = types.StringValue(r.ExpirationDate.Format(time.RFC3339))
 	state.EnforcementType = internaltypes.StringTypeOrNil(r.EnforcementType, false)
 	state.Version = internaltypes.StringTypeOrNil(r.Version, false)
 	state.Product = internaltypes.StringTypeOrNil(r.Product, false)
@@ -262,14 +264,18 @@ func readLicenseResponseDataSource(ctx context.Context, r *client.LicenseView, s
 		"start_date":       basetypes.StringType{},
 		"end_date":         basetypes.StringType{},
 	}
-	state.LicenseGroups, _ = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: licenseGroupsAttrTypes}, licenseGroups)
+	state.LicenseGroups, respDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: licenseGroupsAttrTypes}, licenseGroups)
+	diags.Append(respDiags...)
 
 	features := r.Features
 	featuresAttrTypes := map[string]attr.Type{
 		"name":  basetypes.StringType{},
 		"value": basetypes.StringType{},
 	}
-	state.Features, _ = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: featuresAttrTypes}, features)
+	state.Features, respDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: featuresAttrTypes}, features)
+	diags.Append(respDiags...)
+
+	return diags
 }
 
 // Read resource information
@@ -297,7 +303,8 @@ func (r *licenseDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	}
 
 	// Read the response into the state
-	readLicenseResponseDataSource(ctx, apiReadLicense, &state, &state)
+	diags = readLicenseResponseDataSource(ctx, apiReadLicense, &state, &state)
+	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

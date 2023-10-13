@@ -2,15 +2,11 @@ package localidentity
 
 import (
 	"context"
-	"regexp"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
@@ -22,24 +18,23 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ datasource.DataSource              = &localIdentityIdentityProfilesDataSource{}
-	_ datasource.DataSourceWithConfigure = &localIdentityIdentityProfilesDataSource{}
+	_ datasource.DataSource              = &localIdentityIdentityProfileDataSource{}
+	_ datasource.DataSourceWithConfigure = &localIdentityIdentityProfileDataSource{}
 )
 
 // Create a Administrative Account data source
-func NewLocalIdentityIdentityProfilesDataSource() datasource.DataSource {
-	return &localIdentityIdentityProfilesDataSource{}
+func NewLocalIdentityIdentityProfileDataSource() datasource.DataSource {
+	return &localIdentityIdentityProfileDataSource{}
 }
 
-// localIdentityIdentityProfilesDataSource is the datasource implementation.
-type localIdentityIdentityProfilesDataSource struct {
+// localIdentityIdentityProfileDataSource is the datasource implementation.
+type localIdentityIdentityProfileDataSource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
 }
 
-type localIdentityIdentityProfilesDataSourceModel struct {
+type localIdentityIdentityProfileDataSourceModel struct {
 	Id                      types.String `tfsdk:"id"`
-	CustomId                types.String `tfsdk:"custom_id"`
 	Name                    types.String `tfsdk:"name"`
 	ApcId                   types.Object `tfsdk:"apc_id"`
 	AuthSources             types.Set    `tfsdk:"auth_sources"`
@@ -54,22 +49,10 @@ type localIdentityIdentityProfilesDataSourceModel struct {
 }
 
 // GetSchema defines the schema for the datasource.
-func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
 		Description: "Manages Local Identity Identity Profiles",
 		Attributes: map[string]schema.Attribute{
-			"custom_id": schema.StringAttribute{
-				Description: "The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
-				Required:    false,
-				Optional:    false,
-				Computed:    true,
-				Validators: []validator.String{
-					stringvalidator.RegexMatches(
-						regexp.MustCompile("^[a-zA-Z0-9_]{1,32}$"),
-						"The local Identity Profile ID must be less than 33 characters, contain no spaces, and be alphanumeric.",
-					),
-				},
-			},
 			"name": schema.StringAttribute{
 				Description: "The local identity profile name. Name is unique.",
 				Required:    false,
@@ -237,9 +220,6 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 						Required:    false,
 						Optional:    false,
 						Computed:    true,
-						Validators: []validator.String{
-							stringvalidator.OneOf([]string{"BEFORE_ACCOUNT_CREATION", "AFTER_ACCOUNT_CREATION"}...),
-						},
 					},
 				},
 			},
@@ -281,9 +261,6 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 									Required:    false,
 									Optional:    false,
 									Computed:    true,
-									Validators: []validator.String{
-										stringvalidator.OneOf([]string{"CHECKBOX", "CHECKBOX_GROUP", "DATE", "DROP_DOWN", "EMAIL", "PHONE", "TEXT", "HIDDEN"}...),
-									},
 								},
 								"id": schema.StringAttribute{
 									Description: "Id of the local identity field.",
@@ -368,18 +345,12 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 						Required:    false,
 						Optional:    false,
 						Computed:    true,
-						Validators: []validator.String{
-							stringvalidator.OneOf([]string{"OTP", "OTL"}...),
-						},
 					},
 					"otp_length": schema.Int64Attribute{
 						Description: "The OTP length generated for email verification. The default is 8. Note: Only applicable if EmailVerificationType is OTP.",
 						Required:    false,
 						Optional:    false,
 						Computed:    true,
-						Validators: []validator.Int64{
-							int64validator.Between(5, 100),
-						},
 					},
 					"otp_retry_attempts": schema.Int64Attribute{
 						Description: "The number of OTP retry attempts for email verification. The default is 3. Note: Only applicable if EmailVerificationType is OTP.",
@@ -474,9 +445,6 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 						Required:    false,
 						Optional:    false,
 						Computed:    true,
-						Validators: []validator.String{
-							stringvalidator.OneOf([]string{"LDAP", "PING_ONE_LDAP_GATEWAY", "JDBC", "CUSTOM"}...),
-						},
 					},
 					"data_store_ref": schema.SingleNestedAttribute{
 						Description: "Reference to the associated data store.",
@@ -510,9 +478,6 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 									Required:    false,
 									Optional:    false,
 									Computed:    true,
-									Validators: []validator.String{
-										stringvalidator.OneOf([]string{"LDAP", "PING_ONE_LDAP_GATEWAY", "JDBC", "CUSTOM"}...),
-									},
 								},
 								"name": schema.StringAttribute{
 									Description: "The data store attribute name.",
@@ -560,17 +525,17 @@ func (r *localIdentityIdentityProfilesDataSource) Schema(ctx context.Context, re
 		},
 	}
 
-	id.DataSourceSchema(&schemaDef, true, "The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.")
+	id.AddToDataSourceSchema(&schemaDef, true, "The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.")
 	resp.Schema = schemaDef
 }
 
 // Metadata returns the data source type name.
-func (r *localIdentityIdentityProfilesDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (r *localIdentityIdentityProfileDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_local_identity_identity_profile"
 }
 
 // Configure adds the provider configured client to the data source.
-func (r *localIdentityIdentityProfilesDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, _ *datasource.ConfigureResponse) {
+func (r *localIdentityIdentityProfileDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, _ *datasource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -581,17 +546,17 @@ func (r *localIdentityIdentityProfilesDataSource) Configure(_ context.Context, r
 }
 
 // Read a DseeCompatAdministrativeAccountResponse object into the model struct
-func readLocalIdentityIdentityProfilesResponseDataSource(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfilesDataSourceModel) diag.Diagnostics {
+func readLocalIdentityIdentityProfileResponseDataSource(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfileDataSourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
-	state.CustomId = internaltypes.StringTypeOrNil(r.Id, false)
 	state.Name = types.StringValue(r.Name)
 	state.ApcId, respDiags = resourcelink.ToState(ctx, &r.ApcId)
 	diags.Append(respDiags...)
 
 	// auth source update policy
 	authSourceUpdatePolicy := r.AuthSourceUpdatePolicy
-	state.AuthSourceUpdatePolicy, _ = types.ObjectValueFrom(ctx, authSourceUpdatePolicyAttrTypes, authSourceUpdatePolicy)
+	state.AuthSourceUpdatePolicy, respDiags = types.ObjectValueFrom(ctx, authSourceUpdatePolicyAttrTypes, authSourceUpdatePolicy)
+	diags.Append(respDiags...)
 
 	// auth sources
 	authSources := r.GetAuthSources()
@@ -602,45 +567,54 @@ func readLocalIdentityIdentityProfilesResponseDataSource(ctx context.Context, r 
 			"id":     types.StringPointerValue(authSources[i].Id),
 			"source": types.StringPointerValue(authSources[i].Source),
 		}
-		authSourcesObj, _ := types.ObjectValue(authSourcesAttrTypes, authSourcesAttrValues)
+		authSourcesObj, respDiags := types.ObjectValue(authSourcesAttrTypes, authSourcesAttrValues)
+		diags.Append(respDiags...)
 		authSourcesSliceAttrVal = append(authSourcesSliceAttrVal, authSourcesObj)
 	}
-	state.AuthSources, _ = types.SetValue(authSourcesSliceType, authSourcesSliceAttrVal)
+	state.AuthSources, respDiags = types.SetValue(authSourcesSliceType, authSourcesSliceAttrVal)
+	diags.Append(respDiags...)
 
 	registrationConfig := r.RegistrationConfig
-	state.RegistrationConfig, _ = types.ObjectValueFrom(ctx, registrationConfigAttrTypes, registrationConfig)
+	state.RegistrationConfig, respDiags = types.ObjectValueFrom(ctx, registrationConfigAttrTypes, registrationConfig)
+	diags.Append(respDiags...)
 
 	state.RegistrationEnabled = types.BoolValue(r.GetRegistrationEnabled())
 
 	profileConfig := r.ProfileConfig
-	state.ProfileConfig, _ = types.ObjectValueFrom(ctx, profileConfigAttrTypes, profileConfig)
+	state.ProfileConfig, respDiags = types.ObjectValueFrom(ctx, profileConfigAttrTypes, profileConfig)
+	diags.Append(respDiags...)
 
 	// field config
 	fieldConfig := r.GetFieldConfig()
 	fieldType := types.ObjectType{AttrTypes: fieldItemAttrTypes}
 	fieldAttrsStruct := fieldConfig.GetFields()
-	fieldAttrsState, _ := types.SetValueFrom(ctx, fieldType, fieldAttrsStruct)
+	fieldAttrsState, respDiags := types.SetValueFrom(ctx, fieldType, fieldAttrsStruct)
+	diags.Append(respDiags...)
+
 	stripSpaceFromUniqueFieldState := types.BoolPointerValue(r.GetFieldConfig().StripSpaceFromUniqueField)
 	fieldConfigAttrValues := map[string]attr.Value{
 		"fields":                        fieldAttrsState,
 		"strip_space_from_unique_field": stripSpaceFromUniqueFieldState,
 	}
-	state.FieldConfig, _ = types.ObjectValue(fieldConfigAttrTypes, fieldConfigAttrValues)
+	state.FieldConfig, respDiags = types.ObjectValue(fieldConfigAttrTypes, fieldConfigAttrValues)
+	diags.Append(respDiags...)
 
 	emailVerificationConfig := r.EmailVerificationConfig
-	state.EmailVerificationConfig, _ = types.ObjectValueFrom(ctx, emailVerificationConfigAttrTypes, emailVerificationConfig)
+	state.EmailVerificationConfig, respDiags = types.ObjectValueFrom(ctx, emailVerificationConfigAttrTypes, emailVerificationConfig)
+	diags.Append(respDiags...)
 
 	//  data store config
 	dsConfig := r.DataStoreConfig
-	state.DataStoreConfig, _ = types.ObjectValueFrom(ctx, dsConfigAttrTypes, dsConfig)
+	state.DataStoreConfig, respDiags = types.ObjectValueFrom(ctx, dsConfigAttrTypes, dsConfig)
+	diags.Append(respDiags...)
 
 	state.ProfileEnabled = types.BoolPointerValue(r.ProfileEnabled)
 	return diags
 }
 
 // Read resource information
-func (r *localIdentityIdentityProfilesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state localIdentityIdentityProfilesDataSourceModel
+func (r *localIdentityIdentityProfileDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var state localIdentityIdentityProfileDataSourceModel
 
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -648,14 +622,14 @@ func (r *localIdentityIdentityProfilesDataSource) Read(ctx context.Context, req 
 		return
 	}
 
-	apiReadLocalIdentityIdentityProfiles, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.GetIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadLocalIdentityIdentityProfile, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.GetIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Local Identity Profile", err, httpResp)
 		return
 	}
 
 	// Log response JSON
-	responseJson, responseErr := apiReadLocalIdentityIdentityProfiles.MarshalJSON()
+	responseJson, responseErr := apiReadLocalIdentityIdentityProfile.MarshalJSON()
 	if err == nil {
 		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	} else {
@@ -663,7 +637,8 @@ func (r *localIdentityIdentityProfilesDataSource) Read(ctx context.Context, req 
 	}
 
 	// Read the response into the state
-	readLocalIdentityIdentityProfilesResponseDataSource(ctx, apiReadLocalIdentityIdentityProfiles, &state)
+	diags = readLocalIdentityIdentityProfileResponseDataSource(ctx, apiReadLocalIdentityIdentityProfile, &state)
+	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

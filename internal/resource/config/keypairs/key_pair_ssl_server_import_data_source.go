@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -202,7 +203,7 @@ func (r *keyPairsSslServerImportDataSource) Schema(ctx context.Context, req data
 			},
 		},
 	}
-	id.DataSourceSchema(&schemaDef, true, "The persistent, unique ID for the certificate.")
+	id.AddToDataSourceSchema(&schemaDef, true, "The persistent, unique ID for the certificate.")
 	resp.Schema = schemaDef
 }
 
@@ -223,14 +224,14 @@ func (r *keyPairsSslServerImportDataSource) Configure(_ context.Context, req dat
 }
 
 // Read a DseeCompatAdministrativeAccountResponse object into the model struct
-func readKeyPairsSslServerImportResponseDataSource(ctx context.Context, r *client.KeyPairView, state *keyPairsSslServerImportDataSourceModel, expectedValues *keyPairsSslServerImportDataSourceModel) {
+func readKeyPairsSslServerImportResponseDataSource(ctx context.Context, r *client.KeyPairView, state *keyPairsSslServerImportDataSourceModel, expectedValues *keyPairsSslServerImportDataSourceModel) diag.Diagnostics {
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
 	state.SerialNumber = internaltypes.StringTypeOrNil(r.SerialNumber, false)
 	state.SubjectDN = internaltypes.StringTypeOrNil(r.SubjectDN, false)
 	state.SubjectAlternativeNames = internaltypes.GetStringSet(r.SubjectAlternativeNames)
 	state.IssuerDN = internaltypes.StringTypeOrNil(r.IssuerDN, false)
-	state.ValidFrom = types.StringValue(r.ValidFrom.Format(time.Now().String()))
-	state.Expires = types.StringValue(r.Expires.Format(time.Now().String()))
+	state.ValidFrom = types.StringValue(r.ValidFrom.Format(time.RFC3339))
+	state.Expires = types.StringValue(r.Expires.Format(time.RFC3339))
 	state.KeyAlgorithm = internaltypes.StringTypeOrNil(r.KeyAlgorithm, false)
 	state.KeySize = internaltypes.Int64TypeOrNil(r.KeySize)
 	state.SignatureAlgorithm = internaltypes.StringTypeOrNil(r.SignatureAlgorithm, false)
@@ -250,7 +251,9 @@ func readKeyPairsSslServerImportResponseDataSource(ctx context.Context, r *clien
 		"key_size":               basetypes.Int64Type{},
 		"signature_algorithm":    basetypes.StringType{},
 	}
-	state.RotationSettings, _ = types.ObjectValueFrom(ctx, rotationSettingsAttrTypes, rotationSettings)
+	var valueFromDiags diag.Diagnostics
+	state.RotationSettings, valueFromDiags = types.ObjectValueFrom(ctx, rotationSettingsAttrTypes, rotationSettings)
+	return valueFromDiags
 }
 
 // Read resource information
@@ -278,7 +281,8 @@ func (r *keyPairsSslServerImportDataSource) Read(ctx context.Context, req dataso
 	}
 
 	// Read the response into the state
-	readKeyPairsSslServerImportResponseDataSource(ctx, apiReadKeyPairsSslServerImport, &state, &state)
+	diags = readKeyPairsSslServerImportResponseDataSource(ctx, apiReadKeyPairsSslServerImport, &state, &state)
+	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

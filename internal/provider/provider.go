@@ -271,7 +271,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		keypairs.NewKeyPairsSslServerImportDataSource,
 		license.NewLicenseAgreementDataSource,
 		license.NewLicenseDataSource,
-		localidentity.NewLocalIdentityIdentityProfilesDataSource,
+		localidentity.NewLocalIdentityIdentityProfileDataSource,
 	}
 }
 

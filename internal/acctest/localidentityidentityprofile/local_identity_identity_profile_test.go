@@ -86,7 +86,7 @@ resource "pingfederate_local_identity_identity_profile" "%[1]s" {
 }
 
 data "pingfederate_local_identity_identity_profile" "%[1]s" {
-  id = pingfederate_local_identity_identity_profile.%[1]s.custom_id
+  id = pingfederate_local_identity_identity_profile.%[1]s.id
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.name,

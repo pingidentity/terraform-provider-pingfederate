@@ -95,21 +95,21 @@ func (r *authenticationApiSettingsDataSource) Schema(ctx context.Context, req da
 			},
 		},
 	}
-	id.DataSourceSchema(&schemaDef, false, "The ID of this resource.")
+	id.AddToDataSourceSchema(&schemaDef, false, "The ID of this resource.")
 	resp.Schema = schemaDef
 }
 
 // Read a AuthenticationApiSettingsResponse object into the model struct
-func readAuthenticationApiSettingsResponseDataSource(ctx context.Context, r *client.AuthnApiSettings, state *authenticationApiSettingsDataSourceModel, expectedValues *authenticationApiSettingsDataSourceModel) diag.Diagnostics {
+func readAuthenticationApiSettingsResponseDataSource(ctx context.Context, r *client.AuthnApiSettings, state *authenticationApiSettingsDataSourceModel) diag.Diagnostics {
 	//TODO different placeholder?
 	state.Id = types.StringValue("id")
 	state.ApiEnabled = types.BoolValue(*r.ApiEnabled)
 	state.EnableApiDescriptions = types.BoolValue(*r.EnableApiDescriptions)
 	state.RestrictAccessToRedirectlessMode = types.BoolValue(*r.RestrictAccessToRedirectlessMode)
 	state.IncludeRequestContext = types.BoolValue(*r.IncludeRequestContext)
-	var valueFromDiags diag.Diagnostics
 	resourceLinkObjectValue, valueFromDiags := resourcelink.ToState(ctx, r.DefaultApplicationRef)
 	state.DefaultApplicationRef = resourceLinkObjectValue
+
 	return valueFromDiags
 }
 
@@ -137,7 +137,8 @@ func (r *authenticationApiSettingsDataSource) Read(ctx context.Context, req data
 	}
 
 	// Read the response into the state
-	readAuthenticationApiSettingsResponseDataSource(ctx, apiReadAuthenticationApiSettings, &state, &state)
+	diags = readAuthenticationApiSettingsResponseDataSource(ctx, apiReadAuthenticationApiSettings, &state)
+	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

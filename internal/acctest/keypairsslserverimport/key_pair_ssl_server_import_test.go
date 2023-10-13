@@ -68,7 +68,7 @@ resource "pingfederate_key_pair_ssl_server_import" "%[1]s" {
 }
 
 data "pingfederate_key_pair_ssl_server_import" "%[1]s" {
-  id = pingfederate_key_pair_ssl_server_import.%[1]s.custom_id
+  id = pingfederate_key_pair_ssl_server_import.%[1]s.id
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.fileData,

@@ -150,7 +150,7 @@ func (r *certificatesDataSource) Schema(ctx context.Context, req datasource.Sche
 			},
 		},
 	}
-	id.DataSourceSchema(&schemaDef, true, "The persistent, unique ID for the certificate")
+	id.AddToDataSourceSchema(&schemaDef, true, "The persistent, unique ID for the certificate")
 	resp.Schema = schemaDef
 }
 
@@ -177,8 +177,8 @@ func readCertificateResponseDataSource(ctx context.Context, r *client.CertView, 
 	state.SubjectDN = internaltypes.StringTypeOrNil(r.SubjectDN, false)
 	state.SubjectAlternativeNames = internaltypes.GetStringSet(r.SubjectAlternativeNames)
 	state.IssuerDN = internaltypes.StringTypeOrNil(r.IssuerDN, false)
-	state.ValidFrom = types.StringValue(r.ValidFrom.Format(time.Now().String()))
-	state.Expires = types.StringValue(r.Expires.Format(time.Now().String()))
+	state.ValidFrom = types.StringValue(r.ValidFrom.Format(time.RFC3339))
+	state.Expires = types.StringValue(r.Expires.Format(time.RFC3339))
 	state.KeyAlgorithm = internaltypes.StringTypeOrNil(r.KeyAlgorithm, false)
 	state.KeySize = internaltypes.Int64TypeOrNil(r.KeySize)
 	state.SignatureAlgorithm = internaltypes.StringTypeOrNil(r.SignatureAlgorithm, false)

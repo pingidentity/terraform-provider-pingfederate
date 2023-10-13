@@ -13,32 +13,8 @@ Manages Local Identity Identity Profiles
 ## Example Usage
 
 ```terraform
-resource "pingfederate_authentication_policy_contract" "authenticationPolicyContractsExample" {
-  custom_id           = "test"
-  core_attributes     = [{ name = "subject" }]
-  extended_attributes = [{ name = "extended_attribute" }, { name = "extended_attribute2" }]
-  name                = "example"
-}
-
-resource "pingfederate_local_identity_identity_profile" "myLocalIdentityIdentityProfile" {
-  custom_id = "id"
-  name      = "yourIdentityProfileName"
-  apc_id = {
-    id = pingfederate_authentication_policy_contract.authenticationPolicyContractsExample.id
-  }
-  registration_enabled = false
-  profile_enabled      = false
-}
-
 data "pingfederate_local_identity_identity_profile" "myLocalIdentityIdentityProfile" {
-  id = pingfederate_local_identity_identity_profile.myLocalIdentityIdentityProfile.custom_id
-}
-
-resource "pingfederate_local_identity_identity_profile" "localIdentityIdentityProfileExample" {
-  name = "${data.pingfederate_local_identity_identity_profile.myLocalIdentityIdentityProfile.name}2"
-  apc_id = {
-    id = "apcid"
-  }
+  id = "example"
 }
 ```
 
@@ -54,7 +30,6 @@ resource "pingfederate_local_identity_identity_profile" "localIdentityIdentityPr
 - `apc_id` (Attributes) The reference to the authentication policy contract to use for this local identity profile. (see [below for nested schema](#nestedatt--apc_id))
 - `auth_source_update_policy` (Attributes) The attribute update policy for authentication sources. (see [below for nested schema](#nestedatt--auth_source_update_policy))
 - `auth_sources` (Attributes Set) The local identity authentication sources. Sources are unique. (see [below for nested schema](#nestedatt--auth_sources))
-- `custom_id` (String) The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
 - `data_store_config` (Attributes) The local identity profile data store configuration. (see [below for nested schema](#nestedatt--data_store_config))
 - `email_verification_config` (Attributes) The local identity email verification configuration. (see [below for nested schema](#nestedatt--email_verification_config))
 - `field_config` (Attributes) The local identity profile field configuration. (see [below for nested schema](#nestedatt--field_config))

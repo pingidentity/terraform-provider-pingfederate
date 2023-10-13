@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -113,7 +112,7 @@ func (r *administrativeAccountDataSource) Schema(ctx context.Context, req dataso
 			},
 		},
 	}
-	id.DataSourceSchema(&schemaDef, true, "Computed attribute tied to the username property of this resource")
+	id.AddToDataSourceSchema(&schemaDef, true, "Computed attribute tied to the username property of this resource")
 	resp.Schema = schemaDef
 }
 
@@ -134,7 +133,7 @@ func (r *administrativeAccountDataSource) Configure(_ context.Context, req datas
 }
 
 // Read a AdministrativeAccountResponse object into the model struct
-func readAdministrativeAccountResponseDataSource(ctx context.Context, r *client.AdministrativeAccount, state *administrativeAccountDataSourceModel, expectedValues *administrativeAccountDataSourceModel, passwordPlan basetypes.StringValue) {
+func readAdministrativeAccountResponseDataSource(ctx context.Context, r *client.AdministrativeAccount, state *administrativeAccountDataSourceModel) {
 	state.Id = types.StringValue(r.Username)
 	state.Username = types.StringValue(r.Username)
 	state.EncryptedPassword = types.StringPointerValue(r.EncryptedPassword)
@@ -172,7 +171,7 @@ func (r *administrativeAccountDataSource) Read(ctx context.Context, req datasour
 	}
 
 	// Read the response into the state
-	readAdministrativeAccountResponseDataSource(ctx, apiReadAdministrativeAccount, &state, &state, state.Password)
+	readAdministrativeAccountResponseDataSource(ctx, apiReadAdministrativeAccount, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
