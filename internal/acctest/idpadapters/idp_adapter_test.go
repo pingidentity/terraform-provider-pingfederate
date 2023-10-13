@@ -23,7 +23,7 @@ import (
 const idpAdapterId = "idpAdapterId"
 
 // Attributes to test with. Add optional properties to test here if desired.
-type idpAdaptersResourceModel struct {
+type idpAdapterResourceModel struct {
 	name                  string
 	pluginDescriptorRefId string
 	configuration         client.PluginConfiguration
@@ -90,9 +90,9 @@ func updatedAttributeMapping() *client.IdpAdapterContractMapping {
 	return attributeMapping
 }
 
-func TestAccIdpAdapters(t *testing.T) {
-	resourceName := "myIdpAdapters"
-	initialResourceModel := idpAdaptersResourceModel{
+func TestAccIdpAdapter(t *testing.T) {
+	resourceName := "myIdpAdapter"
+	initialResourceModel := idpAdapterResourceModel{
 		name:                  "testIdpAdapter",
 		pluginDescriptorRefId: "com.pingidentity.adapters.htmlform.idp.HtmlFormIdpAuthnAdapter",
 		configuration: client.PluginConfiguration{
@@ -117,7 +117,7 @@ func TestAccIdpAdapters(t *testing.T) {
 		attributeContract: *basicAttributeContract(),
 	}
 
-	updatedResourceModel := idpAdaptersResourceModel{
+	updatedResourceModel := idpAdapterResourceModel{
 		name:                  "testIdpAdapterNewName",
 		pluginDescriptorRefId: "com.pingidentity.adapters.htmlform.idp.HtmlFormIdpAuthnAdapter",
 		configuration: client.PluginConfiguration{
@@ -153,21 +153,21 @@ func TestAccIdpAdapters(t *testing.T) {
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
-		CheckDestroy: testAccCheckIdpAdaptersDestroy,
+		CheckDestroy: testAccCheckIdpAdapterDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Minimal model
-				Config: testAccIdpAdapters(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedIdpAdaptersAttributes(initialResourceModel),
+				Config: testAccIdpAdapter(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedIdpAdapterAttributes(initialResourceModel),
 			},
 			{
 				// Test updating some fields
-				Config: testAccIdpAdapters(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedIdpAdaptersAttributes(updatedResourceModel),
+				Config: testAccIdpAdapter(resourceName, updatedResourceModel),
+				Check:  testAccCheckExpectedIdpAdapterAttributes(updatedResourceModel),
 			},
 			{
 				// Test importing the resource
-				Config:            testAccIdpAdapters(resourceName, updatedResourceModel),
+				Config:            testAccIdpAdapter(resourceName, updatedResourceModel),
 				ResourceName:      "pingfederate_idp_adapter." + resourceName,
 				ImportStateId:     idpAdapterId,
 				ImportState:       true,
@@ -178,8 +178,8 @@ func TestAccIdpAdapters(t *testing.T) {
 			},
 			{
 				// Back to the initial minimal model
-				Config: testAccIdpAdapters(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedIdpAdaptersAttributes(initialResourceModel),
+				Config: testAccIdpAdapter(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedIdpAdapterAttributes(initialResourceModel),
 			},
 		},
 	})
@@ -279,7 +279,7 @@ func attributeMappingHclBlock(attributeMapping *client.IdpAdapterContractMapping
 	return builder.String()
 }
 
-func testAccIdpAdapters(resourceName string, resourceModel idpAdaptersResourceModel) string {
+func testAccIdpAdapter(resourceName string, resourceModel idpAdapterResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_idp_adapter" "%[1]s" {
   custom_id = "%[2]s"
@@ -301,7 +301,7 @@ resource "pingfederate_idp_adapter" "%[1]s" {
 }
 
 // Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedIdpAdaptersAttributes(config idpAdaptersResourceModel) resource.TestCheckFunc {
+func testAccCheckExpectedIdpAdapterAttributes(config idpAdapterResourceModel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		resourceType := "IdpAdapter"
 		testClient := acctest.TestClient()
@@ -398,7 +398,7 @@ func testAccCheckExpectedIdpAdaptersAttributes(config idpAdaptersResourceModel) 
 }
 
 // Test that any objects created by the test are destroyed
-func testAccCheckIdpAdaptersDestroy(s *terraform.State) error {
+func testAccCheckIdpAdapterDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
 	_, err := testClient.IdpAdaptersAPI.DeleteIdpAdapter(ctx, idpAdapterId).Execute()
