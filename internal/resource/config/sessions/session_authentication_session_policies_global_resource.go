@@ -290,5 +290,4 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Delete(ctx context.
 func (r *sessionAuthenticationSessionPoliciesGlobalResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
-	// resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
