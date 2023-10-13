@@ -24,7 +24,7 @@ func Schema() map[string]schema.Attribute {
 	}
 }
 
-func AddResourceLinkDataSourceSchema() map[string]datasourceschema.Attribute {
+func DataSourceSchema() map[string]datasourceschema.Attribute {
 	return map[string]datasourceschema.Attribute{
 		"id": datasourceschema.StringAttribute{
 			Description: "The ID of the resource.",

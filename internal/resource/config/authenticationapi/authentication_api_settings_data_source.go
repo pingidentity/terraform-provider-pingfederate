@@ -79,7 +79,7 @@ func (r *authenticationApiSettingsDataSource) Schema(ctx context.Context, req da
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
-				Attributes:  resourcelink.AddResourceLinkDataSourceSchema(),
+				Attributes:  resourcelink.DataSourceSchema(),
 			},
 			"restrict_access_to_redirectless_mode": schema.BoolAttribute{
 				Description: "Enable restrict access to redirectless mode",
