@@ -4,11 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
@@ -135,18 +133,12 @@ func (r *certificatesDataSource) Schema(ctx context.Context, req datasource.Sche
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
-				Validators: []validator.String{
-					stringvalidator.OneOf([]string{"VALID", "EXPIRED", "NOT_YET_VALID", "REVOKED"}...),
-				},
 			},
 			"crypto_provider": schema.StringAttribute{
 				Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
-				Validators: []validator.String{
-					stringvalidator.OneOf([]string{"LOCAL", "HSM"}...),
-				},
 			},
 		},
 	}

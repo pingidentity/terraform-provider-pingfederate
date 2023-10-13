@@ -4,12 +4,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -138,18 +136,12 @@ func (r *keyPairsSslServerImportDataSource) Schema(ctx context.Context, req data
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
-				Validators: []validator.String{
-					stringvalidator.OneOf([]string{"VALID", "EXPIRED", "NOT_YET_VALID", "REVOKED"}...),
-				},
 			},
 			"crypto_provider": schema.StringAttribute{
 				Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
-				Validators: []validator.String{
-					stringvalidator.OneOf([]string{"LOCAL", "HSM"}...),
-				},
 			},
 			"rotation_settings": schema.SingleNestedAttribute{
 				Description: "The local identity profile data store configuration.",
