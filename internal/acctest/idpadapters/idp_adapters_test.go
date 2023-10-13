@@ -12,6 +12,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/attributecontractfulfillment"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/attributesources"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/configuration"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/issuancecriteria"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -26,14 +31,6 @@ type idpAdaptersResourceModel struct {
 	attributeContract     client.IdpAdapterAttributeContract
 }
 
-func boolPointer(val bool) *bool {
-	return &val
-}
-
-func stringPointer(val string) *string {
-	return &val
-}
-
 func basicAttributeContract() *client.IdpAdapterAttributeContract {
 	attributeContract := client.NewIdpAdapterAttributeContract([]client.IdpAdapterAttribute{})
 	attributeContract.SetMaskOgnlValues(false)
@@ -42,38 +39,22 @@ func basicAttributeContract() *client.IdpAdapterAttributeContract {
 	})
 	attributeContract.CoreAttributes = append(attributeContract.CoreAttributes, client.IdpAdapterAttribute{
 		Name:      "policy.action",
-		Pseudonym: boolPointer(true),
+		Pseudonym: pointers.Bool(true),
 	})
 	return attributeContract
 }
 
-func TestAccIdpAdapters(t *testing.T) {
-	resourceName := "myIdpAdapters"
-	initialResourceModel := idpAdaptersResourceModel{
-		name:                  "testIdpAdapter",
-		pluginDescriptorRefId: "com.pingidentity.adapters.htmlform.idp.HtmlFormIdpAuthnAdapter",
-		configuration: client.PluginConfiguration{
-			Tables: []client.ConfigTable{
-				{
-					Name: "Credential Validators",
-					Rows: []client.ConfigRow{
-						{
-							DefaultRow: boolPointer(false),
-							Fields: []client.ConfigField{
-								{
-									Name:  "Password Credential Validator Instance",
-									Value: stringPointer("pingdirectory"),
-								},
-							},
-						},
-					},
-				},
-			},
-			Fields: []client.ConfigField{},
-		},
-		attributeContract: *basicAttributeContract(),
-	}
+func updatedAttributeContract() *client.IdpAdapterAttributeContract {
+	contract := basicAttributeContract()
+	contract.ExtendedAttributes = append(contract.ExtendedAttributes, client.IdpAdapterAttribute{
+		Name:      "entryUUID",
+		Pseudonym: pointers.Bool(false),
+		Masked:    pointers.Bool(false),
+	})
+	return contract
+}
 
+func updatedAttributeMapping() *client.IdpAdapterContractMapping {
 	attributeMapping := client.NewIdpAdapterContractMapping(map[string]client.AttributeFulfillmentValue{
 		"entryUUID": {
 			Source: client.SourceTypeIdKey{
@@ -94,13 +75,48 @@ func TestAccIdpAdapters(t *testing.T) {
 			Value: "username",
 		},
 	})
-	attributeMapping.Inherited = boolPointer(false)
-	attributeContract := basicAttributeContract()
-	attributeContract.ExtendedAttributes = append(attributeContract.ExtendedAttributes, client.IdpAdapterAttribute{
-		Name:      "entryUUID",
-		Pseudonym: boolPointer(false),
-		Masked:    boolPointer(false),
-	})
+	attributeMapping.Inherited = pointers.Bool(false)
+
+	attributeMapping.AttributeSources = []client.AttributeSourceAggregation{
+		{
+			JdbcAttributeSource: attributesources.JdbcClientStruct(),
+		},
+	}
+	attributeMapping.IssuanceCriteria = client.NewIssuanceCriteria()
+	criteria := issuancecriteria.ConditionalCriteria()
+	attributeMapping.IssuanceCriteria.ConditionalCriteria = []client.ConditionalIssuanceCriteriaEntry{
+		*criteria,
+	}
+	return attributeMapping
+}
+
+func TestAccIdpAdapters(t *testing.T) {
+	resourceName := "myIdpAdapters"
+	initialResourceModel := idpAdaptersResourceModel{
+		name:                  "testIdpAdapter",
+		pluginDescriptorRefId: "com.pingidentity.adapters.htmlform.idp.HtmlFormIdpAuthnAdapter",
+		configuration: client.PluginConfiguration{
+			Tables: []client.ConfigTable{
+				{
+					Name: "Credential Validators",
+					Rows: []client.ConfigRow{
+						{
+							DefaultRow: pointers.Bool(false),
+							Fields: []client.ConfigField{
+								{
+									Name:  "Password Credential Validator Instance",
+									Value: pointers.String("pingdirectory"),
+								},
+							},
+						},
+					},
+				},
+			},
+			Fields: []client.ConfigField{},
+		},
+		attributeContract: *basicAttributeContract(),
+	}
+
 	updatedResourceModel := idpAdaptersResourceModel{
 		name:                  "testIdpAdapterNewName",
 		pluginDescriptorRefId: "com.pingidentity.adapters.htmlform.idp.HtmlFormIdpAuthnAdapter",
@@ -110,11 +126,11 @@ func TestAccIdpAdapters(t *testing.T) {
 					Name: "Credential Validators",
 					Rows: []client.ConfigRow{
 						{
-							DefaultRow: boolPointer(false),
+							DefaultRow: pointers.Bool(false),
 							Fields: []client.ConfigField{
 								{
 									Name:  "Password Credential Validator Instance",
-									Value: stringPointer("pingdirectory"),
+									Value: pointers.String("pingdirectory"),
 								},
 							},
 						},
@@ -124,12 +140,12 @@ func TestAccIdpAdapters(t *testing.T) {
 			Fields: []client.ConfigField{
 				{
 					Name:  "Challenge Retries",
-					Value: stringPointer("3"),
+					Value: pointers.String("3"),
 				},
 			},
 		},
-		attributeContract: *attributeContract,
-		attributeMapping:  attributeMapping,
+		attributeContract: *updatedAttributeContract(),
+		attributeMapping:  updatedAttributeMapping(),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -140,6 +156,7 @@ func TestAccIdpAdapters(t *testing.T) {
 		CheckDestroy: testAccCheckIdpAdaptersDestroy,
 		Steps: []resource.TestStep{
 			{
+				// Minimal model
 				Config: testAccIdpAdapters(resourceName, initialResourceModel),
 				Check:  testAccCheckExpectedIdpAdaptersAttributes(initialResourceModel),
 			},
@@ -159,63 +176,13 @@ func TestAccIdpAdapters(t *testing.T) {
 				// corresponding fields_all and core_attributes_all fields
 				ImportStateVerifyIgnore: []string{"configuration.fields", "attribute_contract.core_attributes"},
 			},
+			{
+				// Back to the initial minimal model
+				Config: testAccIdpAdapters(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedIdpAdaptersAttributes(initialResourceModel),
+			},
 		},
 	})
-}
-
-func configurationHclBlock(configuration client.PluginConfiguration) string {
-	var builder strings.Builder
-	builder.WriteString("configuration = {\n")
-	builder.WriteString("    tables = [\n")
-	for _, table := range configuration.Tables {
-		builder.WriteString("       {\n")
-		builder.WriteString("           name = \"")
-		builder.WriteString(table.Name)
-		builder.WriteString("\"\n")
-		builder.WriteString("           rows = [\n")
-		for _, row := range table.Rows {
-			builder.WriteString("               {\n")
-			if row.DefaultRow != nil {
-				builder.WriteString("                   default_row = ")
-				builder.WriteString(strconv.FormatBool(*row.DefaultRow))
-				builder.WriteRune('\n')
-			}
-			builder.WriteString("                   fields = [\n")
-			for _, field := range row.Fields {
-				builder.WriteString("                       {\n")
-				builder.WriteString("                           name = \"")
-				builder.WriteString(field.Name)
-				builder.WriteString("\"\n")
-				if field.Value != nil {
-					builder.WriteString("                           value = \"")
-					builder.WriteString(*field.Value)
-					builder.WriteString("\"\n")
-				}
-				builder.WriteString("                       },\n")
-			}
-			builder.WriteString("                   ]\n")
-			builder.WriteString("               }\n")
-		}
-		builder.WriteString("           ]\n")
-		builder.WriteString("       },\n")
-	}
-	builder.WriteString("    ]\n")
-	builder.WriteString("    fields = [\n")
-	for _, field := range configuration.Fields {
-		builder.WriteString("        {\n")
-		builder.WriteString("            name = \"")
-		builder.WriteString(field.Name)
-		builder.WriteString("\"\n")
-		if field.Value != nil {
-			builder.WriteString("            value = \"")
-			builder.WriteString(*field.Value)
-			builder.WriteString("\"\n")
-		}
-		builder.WriteString("        },\n")
-	}
-	builder.WriteString("    ]\n")
-	builder.WriteString("}\n")
-	return builder.String()
 }
 
 func attributeContractHclBlock(attributeContract client.IdpAdapterAttributeContract) string {
@@ -284,31 +251,25 @@ func attributeMappingHclBlock(attributeMapping *client.IdpAdapterContractMapping
 	}
 	var builder strings.Builder
 	builder.WriteString("attribute_mapping = {\n")
-	//TODO attribute sources if we want to test them
+	if len(attributeMapping.AttributeSources) > 0 {
+		// Only have logic for JDBC attribute sources right now, assume it is the right type
+		attributesources.JdbcHcl(attributeMapping.AttributeSources[0].JdbcAttributeSource)
+	}
 	if attributeMapping.AttributeContractFulfillment != nil {
 		builder.WriteString("    attribute_contract_fulfillment = {\n")
 		for key, val := range attributeMapping.AttributeContractFulfillment {
 			builder.WriteString("        \"")
 			builder.WriteString(key)
 			builder.WriteString("\" = {\n")
-			builder.WriteString("            source = {\n")
-			builder.WriteString("                type = \"")
-			builder.WriteString(val.Source.Type)
-			builder.WriteString("\"\n")
-			if val.Source.Id != nil {
-				builder.WriteString("                id = \"")
-				builder.WriteString(*val.Source.Id)
-				builder.WriteString("\"\n")
-			}
-			builder.WriteString("            }\n")
-			builder.WriteString("            value = \"")
-			builder.WriteString(val.Value)
-			builder.WriteString("\"\n")
+			builder.WriteString(attributecontractfulfillment.Hcl(&val))
 			builder.WriteString("        }\n")
 		}
 		builder.WriteString("    }\n")
 	}
-	//TODO issuance_criteria if we want to test them
+	if attributeMapping.IssuanceCriteria != nil && len(attributeMapping.IssuanceCriteria.ConditionalCriteria) > 0 {
+		// Onlye have logic for one conditional criteria right now
+		builder.WriteString(issuancecriteria.Hcl(&attributeMapping.IssuanceCriteria.ConditionalCriteria[0]))
+	}
 	if attributeMapping.Inherited != nil {
 		builder.WriteString("    inherited = ")
 		builder.WriteString(strconv.FormatBool(*attributeMapping.Inherited))
@@ -333,7 +294,7 @@ resource "pingfederate_idp_adapter" "%[1]s" {
 		idpAdapterId,
 		resourceModel.name,
 		resourceModel.pluginDescriptorRefId,
-		configurationHclBlock(resourceModel.configuration),
+		configuration.Hcl(resourceModel.configuration),
 		attributeContractHclBlock(resourceModel.attributeContract),
 		attributeMappingHclBlock(resourceModel.attributeMapping),
 	)
@@ -352,18 +313,61 @@ func testAccCheckExpectedIdpAdaptersAttributes(config idpAdaptersResourceModel) 
 		}
 
 		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchString(resourceType, stringPointer(idpAdapterId), "name", config.name, resp.Name)
+		err = acctest.TestAttributesMatchString(resourceType, pointers.String(idpAdapterId), "name", config.name, resp.Name)
 		if err != nil {
 			return err
 		}
 
 		// Plugin descriptor
-		err = acctest.TestAttributesMatchString(resourceType, stringPointer(idpAdapterId), "plugin_descriptor_ref.id", config.pluginDescriptorRefId, resp.PluginDescriptorRef.Id)
+		err = acctest.TestAttributesMatchString(resourceType, pointers.String(idpAdapterId), "plugin_descriptor_ref.id", config.pluginDescriptorRefId, resp.PluginDescriptorRef.Id)
 		if err != nil {
 			return err
 		}
 
-		//TODO could check configuration too
+		// JDBC attribute sources
+		if config.attributeMapping != nil && len(config.attributeMapping.AttributeSources) > 0 {
+			configAttrSource := config.attributeMapping.AttributeSources[0].JdbcAttributeSource
+			attributeSources := resp.AttributeMapping.AttributeSources
+			for _, attributeSource := range attributeSources {
+				if attributeSource.JdbcAttributeSource != nil {
+					err = acctest.TestAttributesMatchString(resourceType, pointers.String(idpAdapterId), "id",
+						configAttrSource.DataStoreRef.Id, attributeSource.JdbcAttributeSource.DataStoreRef.Id)
+					if err != nil {
+						return err
+					}
+
+					err = acctest.TestAttributesMatchStringPointer(resourceType, pointers.String(idpAdapterId), "description",
+						*configAttrSource.Description, attributeSource.JdbcAttributeSource.Description)
+					if err != nil {
+						return err
+					}
+
+					err = acctest.TestAttributesMatchStringPointer(resourceType, pointers.String(idpAdapterId), "schema",
+						*configAttrSource.Description, attributeSource.JdbcAttributeSource.Description)
+					if err != nil {
+						return err
+					}
+
+					err = acctest.TestAttributesMatchString(resourceType, pointers.String(idpAdapterId), "table",
+						configAttrSource.Table, attributeSource.JdbcAttributeSource.Table)
+					if err != nil {
+						return err
+					}
+
+					err = acctest.TestAttributesMatchString(resourceType, pointers.String(idpAdapterId), "filter",
+						configAttrSource.Filter, attributeSource.JdbcAttributeSource.Filter)
+					if err != nil {
+						return err
+					}
+
+					err = acctest.TestAttributesMatchStringSlice(resourceType, pointers.String(idpAdapterId), "column_names",
+						configAttrSource.ColumnNames, attributeSource.JdbcAttributeSource.ColumnNames)
+					if err != nil {
+						return err
+					}
+				}
+			}
+		}
 
 		// Attribute mapping attribute contract fullfilment - verify the keys are present in the response
 		if config.attributeMapping != nil {

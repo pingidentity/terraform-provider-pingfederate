@@ -1,12 +1,16 @@
 package pluginconfiguration
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func Schema() schema.SingleNestedAttribute {
+	fieldsListDefault, _ := types.ListValue(types.ObjectType{AttrTypes: fieldAttrTypes}, []attr.Value{})
 	return schema.SingleNestedAttribute{
 		Description: "Plugin instance configuration.",
 		Required:    true,
@@ -37,13 +41,11 @@ func Schema() schema.SingleNestedAttribute {
 												},
 												"value": schema.StringAttribute{
 													Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
-													//TODO diff
-													Required: true,
+													Required:    true,
 												},
 												"inherited": schema.BoolAttribute{
 													Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
 													Optional:    true,
-													//TODO diff
 													PlanModifiers: []planmodifier.Bool{
 														boolplanmodifier.UseStateForUnknown(),
 													},
@@ -54,7 +56,6 @@ func Schema() schema.SingleNestedAttribute {
 									"default_row": schema.BoolAttribute{
 										Description: "Whether this row is the default.",
 										Optional:    true,
-										//TODO diff
 										PlanModifiers: []planmodifier.Bool{
 											boolplanmodifier.UseStateForUnknown(),
 										},
@@ -71,9 +72,9 @@ func Schema() schema.SingleNestedAttribute {
 			},
 			"fields": schema.ListNestedAttribute{
 				Description: "List of configuration fields.",
-				//TODO should this be computed? Usestateforunknown?
-				Computed: true,
-				Optional: true,
+				Computed:    true,
+				Optional:    true,
+				Default:     listdefault.StaticValue(fieldsListDefault),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
@@ -87,10 +88,6 @@ func Schema() schema.SingleNestedAttribute {
 						"inherited": schema.BoolAttribute{
 							Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
 							Optional:    true,
-							//TODO diff
-							/*PlanModifiers: []planmodifier.Bool{
-								boolplanmodifier.UseStateForUnknown(),
-							},*/
 						},
 					},
 				},
