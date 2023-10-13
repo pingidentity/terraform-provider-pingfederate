@@ -3,11 +3,8 @@ package serversettings
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -27,6 +24,7 @@ import (
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -191,6 +189,9 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
 						},
+						Validators: []validator.String{
+							configvalidators.ValidEmail(),
+						},
 					},
 					"first_name": schema.StringAttribute{
 						Description: "Contact first name.",
@@ -239,6 +240,9 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								PlanModifiers: []planmodifier.String{
 									stringplanmodifier.UseStateForUnknown(),
 								},
+								Validators: []validator.String{
+									configvalidators.ValidEmail(),
+								},
 							},
 							"notification_publisher_ref": schema.SingleNestedAttribute{
 								Description: "Reference to the associated notification publisher.",
@@ -246,23 +250,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								PlanModifiers: []planmodifier.Object{
 									objectplanmodifier.UseStateForUnknown(),
 								},
-								Attributes: map[string]schema.Attribute{
-									"id": schema.StringAttribute{
-										Description: "The ID of the resource.",
-										Required:    true,
-										PlanModifiers: []planmodifier.String{
-											stringplanmodifier.UseStateForUnknown(),
-										},
-									},
-									"location": schema.StringAttribute{
-										Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-										Computed:    true,
-										Optional:    false,
-										PlanModifiers: []planmodifier.String{
-											stringplanmodifier.UseStateForUnknown(),
-										},
-									},
-								},
+								Attributes: resourcelink.Schema(),
 							},
 						},
 					},
@@ -278,6 +266,9 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								Required:    true,
 								PlanModifiers: []planmodifier.String{
 									stringplanmodifier.UseStateForUnknown(),
+								},
+								Validators: []validator.String{
+									configvalidators.ValidEmail(),
 								},
 							},
 							"initial_warning_period": schema.Int64Attribute{
@@ -301,23 +292,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								PlanModifiers: []planmodifier.Object{
 									objectplanmodifier.UseStateForUnknown(),
 								},
-								Attributes: map[string]schema.Attribute{
-									"id": schema.StringAttribute{
-										Description: "The ID of the resource.",
-										Required:    true,
-										PlanModifiers: []planmodifier.String{
-											stringplanmodifier.UseStateForUnknown(),
-										},
-									},
-									"location": schema.StringAttribute{
-										Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-										Computed:    true,
-										Optional:    false,
-										PlanModifiers: []planmodifier.String{
-											stringplanmodifier.UseStateForUnknown(),
-										},
-									},
-								},
+								Attributes: resourcelink.Schema(),
 							},
 						},
 					},
@@ -336,23 +311,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						PlanModifiers: []planmodifier.Object{
 							objectplanmodifier.UseStateForUnknown(),
 						},
-						Attributes: map[string]schema.Attribute{
-							"id": schema.StringAttribute{
-								Description: "The ID of the resource.",
-								Required:    true,
-								PlanModifiers: []planmodifier.String{
-									stringplanmodifier.UseStateForUnknown(),
-								},
-							},
-							"location": schema.StringAttribute{
-								Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-								Computed:    true,
-								Optional:    false,
-								PlanModifiers: []planmodifier.String{
-									stringplanmodifier.UseStateForUnknown(),
-								},
-							},
-						},
+						Attributes: resourcelink.Schema(),
 					},
 					"metadata_notification_settings": schema.SingleNestedAttribute{
 						Description: "Settings for metadata update event notifications.",
@@ -365,10 +324,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								Description: "The email address where notifications are sent.",
 								Required:    true,
 								Validators: []validator.String{
-									stringvalidator.RegexMatches(
-										regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`),
-										"Invalid email address! Must be of the form '<address>@<company>.<domain>', where 'domain' contains only alphabetic characters and is at least 2 characters in length.",
-									),
+									configvalidators.ValidEmail(),
 								},
 								PlanModifiers: []planmodifier.String{
 									stringplanmodifier.UseStateForUnknown(),
@@ -380,23 +336,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								PlanModifiers: []planmodifier.Object{
 									objectplanmodifier.UseStateForUnknown(),
 								},
-								Attributes: map[string]schema.Attribute{
-									"id": schema.StringAttribute{
-										Description: "The ID of the resource.",
-										Required:    true,
-										PlanModifiers: []planmodifier.String{
-											stringplanmodifier.UseStateForUnknown(),
-										},
-									},
-									"location": schema.StringAttribute{
-										Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-										Computed:    true,
-										Optional:    false,
-										PlanModifiers: []planmodifier.String{
-											stringplanmodifier.UseStateForUnknown(),
-										},
-									},
-								},
+								Attributes: resourcelink.Schema(),
 							},
 						},
 					},
@@ -641,10 +581,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Description: "The fully qualified host name, port, and path (if applicable) on which the PingFederate server runs.",
 						Required:    true,
 						Validators: []validator.String{
-							stringvalidator.RegexMatches(
-								regexp.MustCompile(`^(https?:\/\/)`),
-								"Invalid entry for \"base_url\"! This value must start with 'http://' or 'https://'",
-							),
+							configvalidators.ValidUrl(),
 						},
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
@@ -704,14 +641,14 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Description: "The email address that appears in the 'From' header line in email messages generated by PingFederate. The address must be in valid format but need not be set up on your system.",
 						Required:    true,
 						Validators: []validator.String{
-							stringvalidator.LengthAtLeast(1),
+							configvalidators.ValidEmail(),
 						},
 					},
 					"email_server": schema.StringAttribute{
 						Description: "The IP address or hostname of your email server.",
 						Required:    true,
 						Validators: []validator.String{
-							stringvalidator.LengthAtLeast(1),
+							configvalidators.ValidHostnameOrIp(),
 						},
 					},
 					"port": schema.Int64Attribute{
@@ -854,67 +791,9 @@ func (r *serverSettingsResource) ValidateConfig(ctx context.Context, req resourc
 
 	var model serverSettingsResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
-	////////////////////////////////////
-	// CONTACT INFO
-	////////////////////////////////////
-	// Validate contact_info email value
-	ciEmail := model.ContactInfo.Attributes()["email"]
-	if internaltypes.IsDefined(ciEmail) {
-		ciEmailStringValue := ciEmail.(types.String)
-		if internaltypes.IsNonEmptyString(ciEmailStringValue) && !internaltypes.IsEmailFormat(ciEmailStringValue.ValueString()) {
-			resp.Diagnostics.AddError("Invalid Email Format!", fmt.Sprintf("Please provide a valid email address - \"%s\" needs to be in a valid email format according to RFC 5322.  For example, \"<user>@<company>.<tld>\"", ciEmailStringValue.ValueString()))
-		}
-	}
-
-	////////////////////////////////////
-	// NOTIFICATIONS
-	////////////////////////////////////
-	// Validate license events email_address value
-	if internaltypes.IsDefined(model.Notifications) {
-		notificationAttrs := model.Notifications.Attributes()
-
-		if internaltypes.IsDefined(notificationAttrs["license_events"].(types.Object).Attributes()["email_address"]) {
-			nLicEmailAddrStringValue := notificationAttrs["license_events"].(types.Object).Attributes()["email_address"].(types.String)
-			if internaltypes.IsNonEmptyString(nLicEmailAddrStringValue) && !internaltypes.IsEmailFormat(nLicEmailAddrStringValue.ValueString()) {
-				resp.Diagnostics.AddError("Invalid Email Format!", fmt.Sprintf("Please provide a valid email address - \"%s\" needs to be in a valid email format according to RFC 5322.  For example, \"<user>@<company>.<tld>\"", nLicEmailAddrStringValue.ValueString()))
-			}
-		}
-
-		// Validate certificate_expiration events email_address value
-		if internaltypes.IsDefined(notificationAttrs["certificate_expirations"]) {
-			nCertEmailAddrStringValue := notificationAttrs["certificate_expirations"].(types.Object).Attributes()["email_address"].(types.String)
-			if internaltypes.IsNonEmptyString(nCertEmailAddrStringValue) && !internaltypes.IsEmailFormat(nCertEmailAddrStringValue.ValueString()) {
-				resp.Diagnostics.AddError("Invalid Email Format!", fmt.Sprintf("Please provide a valid email address - \"%s\" needs to be in a valid email format according to RFC 5322.  For example, \"<user>@<company>.<tld>\"", nCertEmailAddrStringValue.ValueString()))
-			}
-		}
-	}
-
-	////////////////////////////////////
-	// FEDERATION INFO
-	////////////////////////////////////
-	// Validate base_url value
-	if !internaltypes.IsUrlFormat(model.FederationInfo.Attributes()["base_url"].(types.String).ValueString()) {
-		resp.Diagnostics.AddError("Invalid URL Format!", fmt.Sprintf("Please provide a valid origin. Origin \"%s\" needs to be in a valid URL-like format - \"http(s)//:<value>.<domain>\"", model.FederationInfo.Attributes()["base_url"].(types.String).ValueString()))
-	}
-	////////////////////////////////////
-	// EMAIL SERVER
-	////////////////////////////////////
 	// Validate email_server source_addr value
 	if internaltypes.IsDefined(model.EmailServer) {
 		esAttrs := model.EmailServer.Attributes()
-		if internaltypes.IsDefined(esAttrs["source_addr"]) && internaltypes.IsDefined(esAttrs["email_server"]) {
-			if internaltypes.IsNonEmptyString(esAttrs["source_addr"].(types.String)) && internaltypes.IsNonEmptyString(esAttrs["email_server"].(types.String)) {
-				// Validate source_addr host value
-				if !internaltypes.IsEmailFormat(esAttrs["source_addr"].(types.String).ValueString()) {
-					resp.Diagnostics.AddError("Invalid Email Format!", fmt.Sprintf("Please provide a valid email address - \"%s\" needs to be in a valid email format according to RFC 5322.  For example, \"<user>@<company>.<tld>\"", esAttrs["source_addr"].(types.String).ValueString()))
-				}
-				// Validate email_server host value
-				if internaltypes.IsNonEmptyString(esAttrs["email_server"].(types.String)) && !internaltypes.IsValidHostnameOrIp(esAttrs["email_server"].(types.String).ValueString()) {
-					resp.Diagnostics.AddError("Invalid hostname or IP!", fmt.Sprintf("Please provide a valid hostname or IP address - \"%s\" is invalid", esAttrs["email_server"].(types.String).ValueString()))
-				}
-			}
-		}
-
 		// If email_server attribute use_ssl is set, confirm that use_tls is NOT
 		esUseSSLFlag := esAttrs["use_ssl"]
 		esUseTLSFlag := esAttrs["use_tls"]

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -147,19 +146,6 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 	schema := schema.Schema{
 		Description: "Manages Local Identity Identity Profiles",
 		Attributes: map[string]schema.Attribute{
-			"custom_id": schema.StringAttribute{
-				Description: "The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
-
-				Optional: true,
-				Computed: true,
-				Validators: []validator.String{
-
-					stringvalidator.RegexMatches(
-						regexp.MustCompile("^[a-zA-Z0-9_]{1,32}$"),
-						"The local Identity Profile ID must be less than 33 characters, contain no spaces, and be alphanumeric.",
-					),
-				},
-			},
 			"name": schema.StringAttribute{
 				Description: "The local identity profile name. Name is unique.",
 				Required:    true,
@@ -503,6 +489,8 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 	}
 
 	config.AddCommonSchema(&schema)
+	config.AddCustomId(&schema, false, true,
+		"The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.")
 	resp.Schema = schema
 }
 

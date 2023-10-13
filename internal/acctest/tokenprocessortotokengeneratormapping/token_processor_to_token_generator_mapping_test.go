@@ -91,18 +91,16 @@ func TestAccTokenProcessorToTokenGeneratorMapping(t *testing.T) {
 func testAccTokenProcessorToTokenGeneratorMapping(resourceName string, resourceModel tokenProcessorToTokenGeneratorMappingResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_token_processor_to_token_generator_mapping" "%[1]s" {
-  custom_id = "%[2]s"
-  source_id = "%[3]s"
-  target_id = "%[4]s"
+  source_id = "%[2]s"
+  target_id = "%[3]s"
   attribute_contract_fulfillment = {
     "SAML_SUBJECT" = {
-			%[5]s
+			%[4]s
     }
   }
+	%[5]s
 	%[6]s
-	%[7]s
 }`, resourceName,
-		tokenProcessorToTokenGeneratorMappingId,
 		resourceModel.sourceId,
 		resourceModel.targetId,
 		attributecontractfulfillment.Hcl(&resourceModel.attributeContractFulfillment),

@@ -1,6 +1,8 @@
 # v0.2.0 (Unreleased)
 ### FEATURES
 * **New Resource:** `pingfederate_idp_adapter` (#64)
+* **New Resource:** `pingfederate_token_processor_to_token_generator_mapping` (#65)
+* **New Resource:** `pingfederate_oauth_token_exchange_processor_policy_token_generator_mapping` (#68)
 
 # v0.1.0 September 28, 2023
 

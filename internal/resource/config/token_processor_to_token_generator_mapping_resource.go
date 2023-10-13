@@ -8,8 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
@@ -45,7 +43,6 @@ type tokenProcessorToTokenGeneratorMappingsResourceModel struct {
 	SourceId                         types.String `tfsdk:"source_id"`
 	TargetId                         types.String `tfsdk:"target_id"`
 	Id                               types.String `tfsdk:"id"`
-	CustomId                         types.String `tfsdk:"custom_id"`
 	DefaultTargetResource            types.String `tfsdk:"default_target_resource"`
 	LicenseConnectionGroupAssignment types.String `tfsdk:"license_connection_group_assignment"`
 }
@@ -55,15 +52,6 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Schema(ctx context.Cont
 	schema := schema.Schema{
 		Description: "Manages Token Processor To Token Generator Mappings",
 		Attributes: map[string]schema.Attribute{
-			"custom_id": schema.StringAttribute{
-				Description: "The ID of the token processor to token generator mapping. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
-				Computed:    true,
-				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-					stringplanmodifier.RequiresReplace(),
-				},
-			},
 			"attribute_contract_fulfillment": attributecontractfulfillment.Schema(true, false),
 			"attribute_sources":              attributesources.Schema(),
 			"default_target_resource": schema.StringAttribute{
@@ -108,10 +96,6 @@ func addOptionalTokenProcessorToTokenGeneratorMappingFields(ctx context.Context,
 		}
 	}
 
-	if internaltypes.IsDefined(plan.CustomId) {
-		addRequest.Id = plan.CustomId.ValueStringPointer()
-	}
-
 	if internaltypes.IsDefined(plan.DefaultTargetResource) {
 		addRequest.DefaultTargetResource = plan.DefaultTargetResource.ValueStringPointer()
 	}
@@ -151,7 +135,6 @@ func readTokenProcessorToTokenGeneratorMappingResponse(ctx context.Context, r *c
 	state.SourceId = types.StringValue(r.SourceId)
 	state.TargetId = types.StringValue(r.TargetId)
 	state.Id = types.StringPointerValue(r.Id)
-	state.CustomId = types.StringPointerValue(r.Id)
 	state.DefaultTargetResource = types.StringPointerValue(r.DefaultTargetResource)
 	state.LicenseConnectionGroupAssignment = types.StringPointerValue(r.LicenseConnectionGroupAssignment)
 	return diags
