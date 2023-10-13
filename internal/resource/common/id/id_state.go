@@ -18,9 +18,9 @@ type idModelStruct struct {
 
 func GetID(con context.Context, state tfsdk.State) (*string, diag.Diagnostics) {
 	idModel := idModelStruct{}
-	diags := state.GetAttribute(con, path.Root("id"), idModel.Id)
+	diags := state.GetAttribute(con, path.Root("id"), &idModel.Id)
 	if !internaltypes.IsDefined(idModel.Id) {
-		return nil, nil
+		return nil, diags
 	} else {
 		return idModel.Id.ValueStringPointer(), diags
 	}
