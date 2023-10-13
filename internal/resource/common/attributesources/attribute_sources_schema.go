@@ -1,7 +1,9 @@
 package attributesources
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -158,24 +160,35 @@ func Schema() schema.ListNestedAttribute {
 					Description: "The configured settings used to look up attributes from a custom data store.",
 					Optional:    true,
 					Attributes:  CustomAttributeSourceSchemaAttributes(),
+					Validators: []validator.Object{
+						objectvalidator.ExactlyOneOf(
+							path.MatchRelative().AtParent().AtName("jdbc_attribute_source"),
+							path.MatchRelative().AtParent().AtName("ldap_attribute_source"),
+						),
+					},
 				},
 				"jdbc_attribute_source": schema.SingleNestedAttribute{
 					Description: "The configured settings used to look up attributes from a JDBC data store.",
 					Optional:    true,
 					Attributes:  JdbcAttributeSourceSchemaAttributes(),
+					Validators: []validator.Object{
+						objectvalidator.ExactlyOneOf(
+							path.MatchRelative().AtParent().AtName("custom_attribute_source"),
+							path.MatchRelative().AtParent().AtName("ldap_attribute_source"),
+						),
+					},
 				},
 				"ldap_attribute_source": schema.SingleNestedAttribute{
 					Description: "The configured settings used to look up attributes from a LDAP data store.",
 					Optional:    true,
 					Attributes:  LdapAttributeSourceSchemaAttributes(),
+					Validators: []validator.Object{
+						objectvalidator.ExactlyOneOf(
+							path.MatchRelative().AtParent().AtName("custom_attribute_source"),
+							path.MatchRelative().AtParent().AtName("jdbc_attribute_source"),
+						),
+					},
 				},
-				//TODO get these validators working
-				/*Validators: []validator.Object{
-					objectvalidator.ExactlyOneOf(
-						path.MatchRelative().AtName("ldap_attribute_source"),
-						path.MatchRelative().AtName("jdbc_attribute_source"),
-						path.MatchRelative().AtName("custom_attribute_source")),
-				},*/
 			},
 		},
 	}

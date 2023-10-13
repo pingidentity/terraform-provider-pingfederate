@@ -136,7 +136,6 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Description: "The list of attributes that the IdP adapter provides.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
-					//TODO move to common?
 					"core_attributes": schema.SetNestedAttribute{
 						Description: "A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type.",
 						Required:    true,
@@ -330,7 +329,6 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 	respDiags.Append(diags...)
 
 	if r.AttributeContract != nil {
-		//TODO move to common?
 		attributeContractValues := map[string]attr.Value{}
 		attributeContractValues["extended_attributes"], diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attributesAttrType}, r.AttributeContract.ExtendedAttributes)
 		respDiags.Append(diags...)
