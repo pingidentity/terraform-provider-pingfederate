@@ -230,7 +230,8 @@ func (r *authenticationPolicyContractsResource) Create(ctx context.Context, req 
 	// Read the response into the state
 	var state authenticationPolicyContractsResourceModel
 
-	readAuthenticationPolicyContractsResponse(ctx, authenticationPolicyContractsResponse, &state, &plan)
+	diags = readAuthenticationPolicyContractsResponse(ctx, authenticationPolicyContractsResponse, &state, &plan)
+	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -280,7 +281,7 @@ func (r *authenticationPolicyContractsResource) Update(ctx context.Context, req 
 
 	// Get the current state to see how any attributes are changing
 	var state authenticationPolicyContractsResourceModel
-	req.State.Get(ctx, &state)
+	req.State.Get(ctx, &state.Id)
 	updateAuthenticationPolicyContracts := r.apiClient.AuthenticationPolicyContractsAPI.UpdateAuthenticationPolicyContract(ProviderBasicAuthContext(ctx, r.providerConfig), plan.CustomId.ValueString())
 	createUpdateRequest := client.NewAuthenticationPolicyContract()
 	err := addAuthenticationPolicyContractsFields(ctx, createUpdateRequest, plan)

@@ -162,6 +162,10 @@ type serverSettingsResourceModel struct {
 	CaptchaSettings   types.Object `tfsdk:"captcha_settings"`
 }
 
+type serverSettingsIdModel struct {
+	Id types.String `tfsdk:"id"`
+}
+
 // GetSchema defines the schema for the resource.
 func (r *serverSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
@@ -874,10 +878,10 @@ func (r *serverSettingsResource) Configure(_ context.Context, req resource.Confi
 
 }
 
-func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, state *serverSettingsResourceModel, plan *serverSettingsResourceModel) diag.Diagnostics {
+func readServerSettingsResponse(ctx context.Context, r *client.ServerSettings, state *serverSettingsResourceModel, plan *serverSettingsResourceModel, idStruct *serverSettingsIdModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	emptyString := ""
-	state.Id = id.GenerateUUIDToState(state.Id)
+	state.Id = id.GenerateUUIDToState(idStruct.Id)
 	state.ContactInfo, respDiags = types.ObjectValueFrom(ctx, contactInfoAttrType, r.ContactInfo)
 	diags.Append(respDiags...)
 	state.Notifications, respDiags = types.ObjectValueFrom(ctx, notificationsAttrType, r.Notifications)
@@ -1026,8 +1030,8 @@ func (r *serverSettingsResource) Create(ctx context.Context, req resource.Create
 
 	// Read the response into the state
 	var state serverSettingsResourceModel
-
-	diags = readServerSettingsResponse(ctx, serverSettingsResponse, &state, &plan)
+	var uuidStruct serverSettingsIdModel
+	diags = readServerSettingsResponse(ctx, serverSettingsResponse, &state, &plan, &uuidStruct)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -1065,7 +1069,13 @@ func (r *serverSettingsResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	// Read the response into the state
-	diags = readServerSettingsResponse(ctx, apiReadServerSettings, &state, &state)
+	var uuidStruct serverSettingsIdModel
+	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = readServerSettingsResponse(ctx, apiReadServerSettings, &state, &state, &uuidStruct)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -1083,9 +1093,6 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
-	var state serverSettingsResourceModel
-	req.State.Get(ctx, &state)
 	updateServerSettings := r.apiClient.ServerSettingsAPI.UpdateServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewServerSettings()
 	err := addOptionalServerSettingsFields(ctx, createUpdateRequest, plan)
@@ -1109,7 +1116,14 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 		diags.AddError("There was an issue retrieving the response of Server Settings: %s", responseErr.Error())
 	}
 	// Read the response
-	diags = readServerSettingsResponse(ctx, updateServerSettingsResponse, &state, &plan)
+	var state serverSettingsResourceModel
+	var uuidStruct serverSettingsIdModel
+	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = readServerSettingsResponse(ctx, updateServerSettingsResponse, &state, &plan, &uuidStruct)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values

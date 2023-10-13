@@ -46,6 +46,10 @@ type sessionAuthenticationSessionPoliciesGlobalResourceModel struct {
 	MaxTimeoutDisplayUnit      types.String `tfsdk:"max_timeout_display_unit"`
 }
 
+type sessionAuthenticationSessionPoliciesGlobalIdModel struct {
+	Id types.String `tfsdk:"id"`
+}
+
 // GetSchema defines the schema for the resource.
 func (r *sessionAuthenticationSessionPoliciesGlobalResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
@@ -148,8 +152,8 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Configure(_ context
 
 }
 
-func readSessionAuthenticationSessionPoliciesGlobalResponse(ctx context.Context, r *client.GlobalAuthenticationSessionPolicy, state *sessionAuthenticationSessionPoliciesGlobalResourceModel, expectedValues *sessionAuthenticationSessionPoliciesGlobalResourceModel) {
-	state.Id = id.GenerateUUIDToState(state.Id)
+func readSessionAuthenticationSessionPoliciesGlobalResponse(ctx context.Context, r *client.GlobalAuthenticationSessionPolicy, state *sessionAuthenticationSessionPoliciesGlobalResourceModel, idStruct *sessionAuthenticationSessionPoliciesGlobalIdModel) {
+	state.Id = id.GenerateUUIDToState(idStruct.Id)
 	state.EnableSessions = types.BoolValue(r.EnableSessions)
 	state.PersistentSessions = types.BoolPointerValue(r.PersistentSessions)
 	state.HashUniqueUserKeyAttribute = types.BoolPointerValue(r.HashUniqueUserKeyAttribute)
@@ -193,8 +197,8 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Create(ctx context.
 
 	// Read the response into the state
 	var state sessionAuthenticationSessionPoliciesGlobalResourceModel
-
-	readSessionAuthenticationSessionPoliciesGlobalResponse(ctx, sessionAuthenticationSessionPoliciesGlobalResponse, &state, &plan)
+	var uuidStruct sessionAuthenticationSessionPoliciesGlobalIdModel
+	readSessionAuthenticationSessionPoliciesGlobalResponse(ctx, sessionAuthenticationSessionPoliciesGlobalResponse, &state, &uuidStruct)
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -225,7 +229,13 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Read(ctx context.Co
 	}
 
 	// Read the response into the state
-	readSessionAuthenticationSessionPoliciesGlobalResponse(ctx, apiReadSessionAuthenticationSessionPoliciesGlobal, &state, &state)
+	var uuidStruct sessionAuthenticationSessionPoliciesGlobalIdModel
+	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readSessionAuthenticationSessionPoliciesGlobalResponse(ctx, apiReadSessionAuthenticationSessionPoliciesGlobal, &state, &uuidStruct)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -242,9 +252,6 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Update(ctx context.
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
-	var state sessionAuthenticationSessionPoliciesGlobalResourceModel
-	req.State.Get(ctx, &state)
 	updateSessionAuthenticationSessionPoliciesGlobal := r.apiClient.SessionAPI.UpdateGlobalPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewGlobalAuthenticationSessionPolicy(plan.EnableSessions.ValueBool())
 	err := addOptionalSessionAuthenticationSessionPoliciesGlobalFields(ctx, createUpdateRequest, plan)
@@ -267,8 +274,16 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Update(ctx context.
 	if responseErr != nil {
 		diags.AddError("There was an issue retrieving the response of Session Authentication Session Policies Global: %s", responseErr.Error())
 	}
+
 	// Read the response
-	readSessionAuthenticationSessionPoliciesGlobalResponse(ctx, updateSessionAuthenticationSessionPoliciesGlobalResponse, &state, &plan)
+	var state sessionAuthenticationSessionPoliciesGlobalResourceModel
+	var uuidStruct sessionAuthenticationSessionPoliciesGlobalIdModel
+	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readSessionAuthenticationSessionPoliciesGlobalResponse(ctx, updateSessionAuthenticationSessionPoliciesGlobalResponse, &state, &uuidStruct)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

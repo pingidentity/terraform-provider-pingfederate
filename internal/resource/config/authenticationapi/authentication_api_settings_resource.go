@@ -43,6 +43,10 @@ type authenticationApiSettingsResourceModel struct {
 	DefaultApplicationRef            types.Object `tfsdk:"default_application_ref"`
 }
 
+type authenticationApiSettingsIdModel struct {
+	Id types.String `tfsdk:"id"`
+}
+
 // GetSchema defines the schema for the resource.
 func (r *authenticationApiSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
@@ -129,9 +133,9 @@ func (r *authenticationApiSettingsResource) Configure(_ context.Context, req res
 
 }
 
-func readAuthenticationApiSettingsResponse(ctx context.Context, r *client.AuthnApiSettings, state *authenticationApiSettingsResourceModel) diag.Diagnostics {
+func readAuthenticationApiSettingsResponse(ctx context.Context, r *client.AuthnApiSettings, state *authenticationApiSettingsResourceModel, idStruct *authenticationApiSettingsIdModel) diag.Diagnostics {
 	var diags, valueFromDiags diag.Diagnostics
-	state.Id = id.GenerateUUIDToState(state.Id)
+	state.Id = id.GenerateUUIDToState(idStruct.Id)
 	state.ApiEnabled = types.BoolValue(*r.ApiEnabled)
 	state.EnableApiDescriptions = types.BoolValue(*r.EnableApiDescriptions)
 	state.RestrictAccessToRedirectlessMode = types.BoolValue(*r.RestrictAccessToRedirectlessMode)
@@ -175,7 +179,8 @@ func (r *authenticationApiSettingsResource) Create(ctx context.Context, req reso
 	}
 	// Read the response
 	var state authenticationApiSettingsResourceModel
-	diags = readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state)
+	var uuidStruct authenticationApiSettingsIdModel
+	diags = readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, &uuidStruct)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -208,7 +213,13 @@ func (r *authenticationApiSettingsResource) Read(ctx context.Context, req resour
 	}
 
 	// Read the response into the state
-	readAuthenticationApiSettingsResponse(ctx, apiReadAuthenticationApiSettings, &state)
+	var uuidStruct authenticationApiSettingsIdModel
+	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = readAuthenticationApiSettingsResponse(ctx, apiReadAuthenticationApiSettings, &state, &uuidStruct)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -249,8 +260,13 @@ func (r *authenticationApiSettingsResource) Update(ctx context.Context, req reso
 	}
 	// Read the response
 	var state authenticationApiSettingsResourceModel
-	req.State.Get(ctx, &state)
-	diags = readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state)
+	var uuidStruct authenticationApiSettingsIdModel
+	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, &uuidStruct)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values

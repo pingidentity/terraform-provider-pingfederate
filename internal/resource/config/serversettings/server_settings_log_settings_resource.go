@@ -52,6 +52,10 @@ type serverSettingsLogSettingsResourceModel struct {
 	LogCategories types.Set    `tfsdk:"log_categories"`
 }
 
+type serverSettingsLogSettingsIdModel struct {
+	Id types.String `tfsdk:"id"`
+}
+
 // GetSchema defines the schema for the resource.
 func (r *serverSettingsLogSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
@@ -135,9 +139,9 @@ func (r *serverSettingsLogSettingsResource) Configure(_ context.Context, req res
 
 }
 
-func readServerSettingsLogSettingsResponse(ctx context.Context, r *client.LogSettings, state *serverSettingsLogSettingsResourceModel) diag.Diagnostics {
+func readServerSettingsLogSettingsResponse(ctx context.Context, r *client.LogSettings, state *serverSettingsLogSettingsResourceModel, idStruct *serverSettingsLogSettingsIdModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.Id = id.GenerateUUIDToState(state.Id)
+	state.Id = id.GenerateUUIDToState(idStruct.Id)
 	logCategorySettings := r.GetLogCategories()
 	var LogCategorySliceAttrVal = []attr.Value{}
 	LogCategorySliceType := types.ObjectType{AttrTypes: logCategoriesAttrTypes}
@@ -191,8 +195,8 @@ func (r *serverSettingsLogSettingsResource) Create(ctx context.Context, req reso
 
 	// Read the response into the state
 	var state serverSettingsLogSettingsResourceModel
-
-	diags = readServerSettingsLogSettingsResponse(ctx, serverSettingsLogSettingsResponse, &state)
+	var uuidStruct serverSettingsLogSettingsIdModel
+	diags = readServerSettingsLogSettingsResponse(ctx, serverSettingsLogSettingsResponse, &state, &uuidStruct)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -222,7 +226,13 @@ func (r *serverSettingsLogSettingsResource) Read(ctx context.Context, req resour
 		diags.AddError("There was an issue retrieving the response of Server Settings Log Settings: %s", responseErr.Error())
 	}
 	// Read the response into the state
-	diags = readServerSettingsLogSettingsResponse(ctx, apiReadServerSettingsLogSettings, &state)
+	var uuidStruct serverSettingsLogSettingsIdModel
+	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = readServerSettingsLogSettingsResponse(ctx, apiReadServerSettingsLogSettings, &state, &uuidStruct)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -240,9 +250,6 @@ func (r *serverSettingsLogSettingsResource) Update(ctx context.Context, req reso
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
-	var state serverSettingsLogSettingsResourceModel
-	req.State.Get(ctx, &state)
 	updateServerSettingsLogSettings := r.apiClient.ServerSettingsAPI.UpdateLogSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewLogSettings()
 	err := addOptionalServerSettingsLogSettingsFields(ctx, createUpdateRequest, plan)
@@ -266,7 +273,14 @@ func (r *serverSettingsLogSettingsResource) Update(ctx context.Context, req reso
 		diags.AddError("There was an issue retrieving the response of Server Settings Log Settings: %s", responseErr.Error())
 	}
 	// Read the response
-	diags = readServerSettingsLogSettingsResponse(ctx, updateServerSettingsLogSettingsResponse, &state)
+	var state serverSettingsLogSettingsResourceModel
+	var uuidStruct serverSettingsLogSettingsIdModel
+	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = readServerSettingsLogSettingsResponse(ctx, updateServerSettingsLogSettingsResponse, &state, &uuidStruct)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values

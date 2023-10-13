@@ -41,6 +41,10 @@ type sessionSettingsResourceModel struct {
 	SessionRevocationLifetime     types.Int64  `tfsdk:"session_revocation_lifetime"`
 }
 
+type sessionSettingsIdModel struct {
+	Id types.String `tfsdk:"id"`
+}
+
 // GetSchema defines the schema for the resource.
 func (r *sessionSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
@@ -103,8 +107,8 @@ func (r *sessionSettingsResource) Configure(_ context.Context, req resource.Conf
 
 }
 
-func readSessionSettingsResponse(ctx context.Context, r *client.SessionSettings, state *sessionSettingsResourceModel, expectedValues *sessionSettingsResourceModel) {
-	state.Id = id.GenerateUUIDToState(state.Id)
+func readSessionSettingsResponse(ctx context.Context, r *client.SessionSettings, state *sessionSettingsResourceModel, idStruct *sessionSettingsIdModel) {
+	state.Id = id.GenerateUUIDToState(idStruct.Id)
 	state.TrackAdapterSessionsForLogout = types.BoolPointerValue(r.TrackAdapterSessionsForLogout)
 	state.RevokeUserSessionOnLogout = types.BoolPointerValue(r.RevokeUserSessionOnLogout)
 	state.SessionRevocationLifetime = types.Int64PointerValue(r.SessionRevocationLifetime)
@@ -144,8 +148,8 @@ func (r *sessionSettingsResource) Create(ctx context.Context, req resource.Creat
 
 	// Read the response into the state
 	var state sessionSettingsResourceModel
-
-	readSessionSettingsResponse(ctx, sessionSettingsResponse, &state, &plan)
+	var uuidStruct sessionSettingsIdModel
+	readSessionSettingsResponse(ctx, sessionSettingsResponse, &state, &uuidStruct)
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -176,7 +180,13 @@ func (r *sessionSettingsResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	// Read the response into the state
-	readSessionSettingsResponse(ctx, apiReadSessionSettings, &state, &state)
+	var uuidStruct sessionSettingsIdModel
+	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readSessionSettingsResponse(ctx, apiReadSessionSettings, &state, &uuidStruct)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -193,9 +203,6 @@ func (r *sessionSettingsResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
-	var state sessionSettingsResourceModel
-	req.State.Get(ctx, &state)
 	updateSessionSettings := r.apiClient.SessionAPI.UpdateSessionSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewSessionSettings()
 	err := addOptionalSessionSettingsFields(ctx, createUpdateRequest, plan)
@@ -218,8 +225,16 @@ func (r *sessionSettingsResource) Update(ctx context.Context, req resource.Updat
 	if responseErr != nil {
 		diags.AddError("There was an issue retrieving the response of Session Settings: %s", responseErr.Error())
 	}
-	// Read the response
-	readSessionSettingsResponse(ctx, updateSessionSettingsResponse, &state, &plan)
+
+	// Get the current state to see how any attributes are changing
+	var state sessionSettingsResourceModel
+	var uuidStruct sessionSettingsIdModel
+	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readSessionSettingsResponse(ctx, updateSessionSettingsResponse, &state, &uuidStruct)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

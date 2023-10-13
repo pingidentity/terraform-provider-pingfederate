@@ -44,6 +44,10 @@ type serverSettingsGeneralSettingsResourceModel struct {
 	RequestHeaderForCorrelationId           types.String `tfsdk:"request_header_for_correlation_id"`
 }
 
+type serverSettingsGeneralSettingsIdModel struct {
+	Id types.String `tfsdk:"id"`
+}
+
 // GetSchema defines the schema for the resource.
 func (r *serverSettingsGeneralSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
@@ -127,8 +131,8 @@ func (r *serverSettingsGeneralSettingsResource) Configure(_ context.Context, req
 
 }
 
-func readServerSettingsGeneralSettingsResponse(ctx context.Context, r *client.GeneralSettings, state *serverSettingsGeneralSettingsResourceModel, expectedValues *serverSettingsGeneralSettingsResourceModel) {
-	state.Id = id.GenerateUUIDToState(state.Id)
+func readServerSettingsGeneralSettingsResponse(ctx context.Context, r *client.GeneralSettings, state *serverSettingsGeneralSettingsResourceModel, idStruct *serverSettingsGeneralSettingsIdModel) {
+	state.Id = id.GenerateUUIDToState(idStruct.Id)
 	state.DisableAutomaticConnectionValidation = types.BoolPointerValue(r.DisableAutomaticConnectionValidation)
 	state.IdpConnectionTransactionLoggingOverride = internaltypes.StringTypeOrNil(r.IdpConnectionTransactionLoggingOverride, true)
 	state.SpConnectionTransactionLoggingOverride = internaltypes.StringTypeOrNil(r.SpConnectionTransactionLoggingOverride, true)
@@ -170,8 +174,8 @@ func (r *serverSettingsGeneralSettingsResource) Create(ctx context.Context, req 
 
 	// Read the response into the state
 	var state serverSettingsGeneralSettingsResourceModel
-
-	readServerSettingsGeneralSettingsResponse(ctx, serverSettingsGeneralSettingsResponse, &state, &plan)
+	var uuidStruct serverSettingsGeneralSettingsIdModel
+	readServerSettingsGeneralSettingsResponse(ctx, serverSettingsGeneralSettingsResponse, &state, &uuidStruct)
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -202,7 +206,13 @@ func (r *serverSettingsGeneralSettingsResource) Read(ctx context.Context, req re
 		diags.AddError("There was an issue retrieving the response of Server Settings General Settings: %s", responseErr.Error())
 	}
 	// Read the response into the state
-	readServerSettingsGeneralSettingsResponse(ctx, apiReadServerSettingsGeneralSettings, &state, &state)
+	var uuidStruct serverSettingsGeneralSettingsIdModel
+	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readServerSettingsGeneralSettingsResponse(ctx, apiReadServerSettingsGeneralSettings, &state, &uuidStruct)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -219,9 +229,6 @@ func (r *serverSettingsGeneralSettingsResource) Update(ctx context.Context, req 
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
-	var state serverSettingsGeneralSettingsResourceModel
-	req.State.Get(ctx, &state)
 	updateServerSettingsGeneralSettings := r.apiClient.ServerSettingsAPI.UpdateGeneralSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewGeneralSettings()
 	err := addOptionalServerSettingsGeneralSettingsFields(ctx, createUpdateRequest, plan)
@@ -245,7 +252,14 @@ func (r *serverSettingsGeneralSettingsResource) Update(ctx context.Context, req 
 		diags.AddError("There was an issue retrieving the response of Server Settings General Settings: %s", responseErr.Error())
 	}
 	// Read the response
-	readServerSettingsGeneralSettingsResponse(ctx, updateServerSettingsGeneralSettingsResponse, &state, &plan)
+	var state serverSettingsGeneralSettingsResourceModel
+	var uuidStruct serverSettingsGeneralSettingsIdModel
+	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readServerSettingsGeneralSettingsResponse(ctx, updateServerSettingsGeneralSettingsResponse, &state, &uuidStruct)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

@@ -39,6 +39,10 @@ type protocolMetadataLifetimeSettingsResourceModel struct {
 	ReloadDelay   types.Int64  `tfsdk:"reload_delay"`
 }
 
+type protocolMetadataLifetimeSettingsIdModel struct {
+	Id types.String `tfsdk:"id"`
+}
+
 // GetSchema defines the schema for the resource.
 func (r *protocolMetadataLifetimeSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
@@ -94,8 +98,8 @@ func (r *protocolMetadataLifetimeSettingsResource) Configure(_ context.Context, 
 
 }
 
-func readProtocolMetadataLifetimeSettingsResponse(ctx context.Context, r *client.MetadataLifetimeSettings, state *protocolMetadataLifetimeSettingsResourceModel) {
-	state.Id = id.GenerateUUIDToState(state.Id)
+func readProtocolMetadataLifetimeSettingsResponse(ctx context.Context, r *client.MetadataLifetimeSettings, state *protocolMetadataLifetimeSettingsResourceModel, idStruct *protocolMetadataLifetimeSettingsIdModel) {
+	state.Id = id.GenerateUUIDToState(idStruct.Id)
 	state.CacheDuration = types.Int64Value(*r.CacheDuration)
 	state.ReloadDelay = types.Int64Value(*r.ReloadDelay)
 }
@@ -134,8 +138,8 @@ func (r *protocolMetadataLifetimeSettingsResource) Create(ctx context.Context, r
 
 	// Read the response into the state
 	var state protocolMetadataLifetimeSettingsResourceModel
-
-	readProtocolMetadataLifetimeSettingsResponse(ctx, protocolMetadataLifetimeSettingsResponse, &state)
+	var uuidStruct protocolMetadataLifetimeSettingsIdModel
+	readProtocolMetadataLifetimeSettingsResponse(ctx, protocolMetadataLifetimeSettingsResponse, &state, &uuidStruct)
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -166,7 +170,13 @@ func (r *protocolMetadataLifetimeSettingsResource) Read(ctx context.Context, req
 	}
 
 	// Read the response into the state
-	readProtocolMetadataLifetimeSettingsResponse(ctx, apiReadProtocolMetadataLifetimeSettings, &state)
+	var uuidStruct protocolMetadataLifetimeSettingsIdModel
+	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readProtocolMetadataLifetimeSettingsResponse(ctx, apiReadProtocolMetadataLifetimeSettings, &state, &uuidStruct)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -208,13 +218,13 @@ func (r *protocolMetadataLifetimeSettingsResource) Update(ctx context.Context, r
 
 	// Read the response into the state
 	var state protocolMetadataLifetimeSettingsResourceModel
-	diags = req.State.Get(ctx, &state)
+	var uuidStruct protocolMetadataLifetimeSettingsIdModel
+	diags = req.State.GetAttribute(ctx, path.Root("id"), &uuidStruct.Id)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	readProtocolMetadataLifetimeSettingsResponse(ctx, protocolMetadataLifetimeSettingsResponse, &state)
+	readProtocolMetadataLifetimeSettingsResponse(ctx, protocolMetadataLifetimeSettingsResponse, &state, &uuidStruct)
 
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
