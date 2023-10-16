@@ -216,7 +216,7 @@ func (r *licenseDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 		},
 	}
 
-	id.AddToDataSourceSchema(&schemaDef, false, "Unique identifier of a license.")
+	id.ToDataSourceSchema(&schemaDef, false, "Unique identifier of a license.")
 	resp.Schema = schemaDef
 }
 

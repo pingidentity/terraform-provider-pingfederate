@@ -4,7 +4,7 @@ import (
 	datasourceschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
 
-func AddToDataSourceSchema(s *datasourceschema.Schema, required bool, description string) {
+func ToDataSourceSchema(s *datasourceschema.Schema, required bool, description string) {
 	idSchemaAttr := datasourceschema.StringAttribute{}
 	idSchemaAttr.Description = description
 	if required {

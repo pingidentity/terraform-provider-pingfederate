@@ -112,7 +112,7 @@ func (r *administrativeAccountDataSource) Schema(ctx context.Context, req dataso
 			},
 		},
 	}
-	id.AddToDataSourceSchema(&schemaDef, true, "Computed attribute tied to the username property of this resource")
+	id.ToDataSourceSchema(&schemaDef, true, "Computed attribute tied to the username property of this resource")
 	resp.Schema = schemaDef
 }
 
