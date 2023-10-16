@@ -791,6 +791,8 @@ github.com/pelletier/go-toml v1.9.5 h1:4yBQzkHv+7BHq2PQUZF3Mx0IYxG7LsP222s7Agd3v
 github.com/pelletier/go-toml v1.9.5/go.mod h1:u1nR/EPcESfeI/szUZKdtJ0xRNbUoANCkoOuaOx1Y+c=
 github.com/pelletier/go-toml/v2 v2.0.5 h1:ipoSadvV8oGUjnUbMub59IDPPwfxF694nG/jwbMiyQg=
 github.com/pelletier/go-toml/v2 v2.0.5/go.mod h1:OMHamSCAODeSsVrwwvcJOaoN0LIUIaFVNZzmWyNfXas=
+github.com/pingidentity/pingfederate-go-client v0.0.5 h1:SgrEk7i6FsSlGw3XNFgXWt0yaiQ16SYmo5hPQU3yhDs=
+github.com/pingidentity/pingfederate-go-client v0.0.5/go.mod h1:5dQBn854seMR/cZS1YmjRHXDJq9yr3t6puFZn2RJgUY=
 github.com/pingidentity/pingfederate-go-client/v1125 v1125.2.0 h1:Kc7rCmB6HO5qndmvo0bzqJa8Tw+Ud29E8R3guYgDvMY=
 github.com/pingidentity/pingfederate-go-client/v1125 v1125.2.0/go.mod h1:UOZBvRR67wa9XnQcs6vS2kDu+ecxB3JGXKi8rr3iPnA=
 github.com/pjbgf/sha1cd v0.3.0 h1:4D5XXmUUBUl/xQ6IjCkEAbqXskkq/4O7LmGn0AqMDs4=
