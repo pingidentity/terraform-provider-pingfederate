@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -101,7 +102,7 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Schema(ctx context.
 		},
 	}
 
-	config.AddCommonSchema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -147,9 +148,8 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Configure(_ context
 
 }
 
-func readSessionAuthenticationSessionPoliciesGlobalResponse(ctx context.Context, r *client.GlobalAuthenticationSessionPolicy, state *sessionAuthenticationSessionPoliciesGlobalResourceModel, expectedValues *sessionAuthenticationSessionPoliciesGlobalResourceModel) {
-	//TODO placeholder?
-	state.Id = types.StringValue("id")
+func readSessionAuthenticationSessionPoliciesGlobalResponse(ctx context.Context, r *client.GlobalAuthenticationSessionPolicy, state *sessionAuthenticationSessionPoliciesGlobalResourceModel, existingId *string) {
+	state.Id = id.GenerateUUIDToState(existingId)
 	state.EnableSessions = types.BoolValue(r.EnableSessions)
 	state.PersistentSessions = types.BoolPointerValue(r.PersistentSessions)
 	state.HashUniqueUserKeyAttribute = types.BoolPointerValue(r.HashUniqueUserKeyAttribute)
@@ -193,8 +193,8 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Create(ctx context.
 
 	// Read the response into the state
 	var state sessionAuthenticationSessionPoliciesGlobalResourceModel
+	readSessionAuthenticationSessionPoliciesGlobalResponse(ctx, sessionAuthenticationSessionPoliciesGlobalResponse, &state, nil)
 
-	readSessionAuthenticationSessionPoliciesGlobalResponse(ctx, sessionAuthenticationSessionPoliciesGlobalResponse, &state, &plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -224,7 +224,12 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Read(ctx context.Co
 	}
 
 	// Read the response into the state
-	readSessionAuthenticationSessionPoliciesGlobalResponse(ctx, apiReadSessionAuthenticationSessionPoliciesGlobal, &state, &state)
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readSessionAuthenticationSessionPoliciesGlobalResponse(ctx, apiReadSessionAuthenticationSessionPoliciesGlobal, &state, id)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -241,9 +246,6 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Update(ctx context.
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
-	var state sessionAuthenticationSessionPoliciesGlobalResourceModel
-	req.State.Get(ctx, &state)
 	updateSessionAuthenticationSessionPoliciesGlobal := r.apiClient.SessionAPI.UpdateGlobalPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewGlobalAuthenticationSessionPolicy(plan.EnableSessions.ValueBool())
 	err := addOptionalSessionAuthenticationSessionPoliciesGlobalFields(ctx, createUpdateRequest, plan)
@@ -266,8 +268,15 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Update(ctx context.
 	if responseErr != nil {
 		diags.AddError("There was an issue retrieving the response of Session Authentication Session Policies Global: %s", responseErr.Error())
 	}
+
 	// Read the response
-	readSessionAuthenticationSessionPoliciesGlobalResponse(ctx, updateSessionAuthenticationSessionPoliciesGlobalResponse, &state, &plan)
+	var state sessionAuthenticationSessionPoliciesGlobalResourceModel
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readSessionAuthenticationSessionPoliciesGlobalResponse(ctx, updateSessionAuthenticationSessionPoliciesGlobalResponse, &state, id)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

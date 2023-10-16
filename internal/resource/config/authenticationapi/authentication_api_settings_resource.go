@@ -8,10 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -66,12 +66,8 @@ func (r *authenticationApiSettingsResource) Schema(ctx context.Context, req reso
 			},
 			"default_application_ref": schema.SingleNestedAttribute{
 				Description: "Enable API descriptions",
-				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
-				Attributes: resourcelink.Schema(),
+				Attributes:  resourcelink.ToSchema(),
 			},
 			"restrict_access_to_redirectless_mode": schema.BoolAttribute{
 				Description: "Enable restrict access to redirectless mode",
@@ -92,7 +88,7 @@ func (r *authenticationApiSettingsResource) Schema(ctx context.Context, req reso
 		},
 	}
 
-	config.AddCommonSchema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -109,7 +105,7 @@ func addAuthenticationApiSettingsFields(ctx context.Context, addRequest *client.
 	if internaltypes.IsDefined(plan.IncludeRequestContext) {
 		addRequest.IncludeRequestContext = plan.IncludeRequestContext.ValueBoolPointer()
 	}
-	if internaltypes.IsDefined(plan.DefaultApplicationRef) {
+	if internaltypes.IsNonEmptyObj(plan.DefaultApplicationRef) {
 		addRequestNewLinkObj, err := resourcelink.ClientStruct(plan.DefaultApplicationRef)
 		if err != nil {
 			return err
@@ -136,17 +132,17 @@ func (r *authenticationApiSettingsResource) Configure(_ context.Context, req res
 
 }
 
-func readAuthenticationApiSettingsResponse(ctx context.Context, r *client.AuthnApiSettings, state *authenticationApiSettingsResourceModel, expectedValues *authenticationApiSettingsResourceModel) diag.Diagnostics {
-	//TODO different placeholder?
-	state.Id = types.StringValue("id")
+func readAuthenticationApiSettingsResponse(ctx context.Context, r *client.AuthnApiSettings, state *authenticationApiSettingsResourceModel, existingId *string) diag.Diagnostics {
+	var diags, valueFromDiags diag.Diagnostics
+	state.Id = id.GenerateUUIDToState(existingId)
 	state.ApiEnabled = types.BoolValue(*r.ApiEnabled)
 	state.EnableApiDescriptions = types.BoolValue(*r.EnableApiDescriptions)
 	state.RestrictAccessToRedirectlessMode = types.BoolValue(*r.RestrictAccessToRedirectlessMode)
 	state.IncludeRequestContext = types.BoolValue(*r.IncludeRequestContext)
-	var valueFromDiags diag.Diagnostics
 	resourceLinkObjectValue, valueFromDiags := resourcelink.ToState(ctx, r.DefaultApplicationRef)
+	diags.Append(valueFromDiags...)
 	state.DefaultApplicationRef = resourceLinkObjectValue
-	return valueFromDiags
+	return diags
 }
 
 func (r *authenticationApiSettingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -182,7 +178,7 @@ func (r *authenticationApiSettingsResource) Create(ctx context.Context, req reso
 	}
 	// Read the response
 	var state authenticationApiSettingsResourceModel
-	diags = readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, &plan)
+	diags = readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, nil)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -215,7 +211,12 @@ func (r *authenticationApiSettingsResource) Read(ctx context.Context, req resour
 	}
 
 	// Read the response into the state
-	diags = readAuthenticationApiSettingsResponse(ctx, apiReadAuthenticationApiSettings, &state, &state)
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = readAuthenticationApiSettingsResponse(ctx, apiReadAuthenticationApiSettings, &state, id)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -256,7 +257,12 @@ func (r *authenticationApiSettingsResource) Update(ctx context.Context, req reso
 	}
 	// Read the response
 	var state authenticationApiSettingsResourceModel
-	diags = readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, &plan)
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, id)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -270,6 +276,5 @@ func (r *authenticationApiSettingsResource) Delete(ctx context.Context, req reso
 }
 
 func (r *authenticationApiSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Set a placeholder id value to appease terraform.
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), "id")...)
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

@@ -18,6 +18,7 @@ import (
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -115,14 +116,14 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
 				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 				Required:    true,
-				Attributes:  resourcelink.Schema(),
+				Attributes:  resourcelink.ToSchema(),
 			},
 			"parent_ref": schema.SingleNestedAttribute{
 				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
 				Optional:    true,
-				Attributes:  resourcelink.Schema(),
+				Attributes:  resourcelink.ToSchema(),
 			},
-			"configuration": pluginconfiguration.Schema(),
+			"configuration": pluginconfiguration.ToSchema(),
 			"attribute_contract": schema.SingleNestedAttribute{
 				Description: "The list of attributes that the IdP adapter provides.",
 				Optional:    true,
@@ -221,9 +222,9 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Optional:    true,
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
-					"attribute_sources":              attributesources.Schema(),
-					"attribute_contract_fulfillment": attributecontractfulfillment.Schema(false, true),
-					"issuance_criteria":              issuancecriteria.Schema(),
+					"attribute_sources":              attributesources.ToSchema(),
+					"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(false, true),
+					"issuance_criteria":              issuancecriteria.ToSchema(),
 					"inherited": schema.BoolAttribute{
 						Optional:    true,
 						Computed:    true,
@@ -235,8 +236,8 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 		},
 	}
 
-	config.AddCommonSchema(&schema)
-	config.AddCustomId(&schema, true, true,
+	id.ToSchema(&schema)
+	id.ToSchemaCustomId(&schema, true, true,
 		"The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.")
 	resp.Schema = schema
 }

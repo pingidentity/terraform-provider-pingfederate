@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-func Schema(computed bool) schema.SingleNestedAttribute {
+func ToSchema(computed bool) schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Description: "The attribute value source.",
 		Required:    !computed,

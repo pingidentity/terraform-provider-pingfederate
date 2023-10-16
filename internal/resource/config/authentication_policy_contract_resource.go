@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -104,7 +105,7 @@ func (r *authenticationPolicyContractsResource) Schema(ctx context.Context, req 
 		},
 	}
 
-	AddCommonSchema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -229,7 +230,8 @@ func (r *authenticationPolicyContractsResource) Create(ctx context.Context, req 
 	// Read the response into the state
 	var state authenticationPolicyContractsResourceModel
 
-	readAuthenticationPolicyContractsResponse(ctx, authenticationPolicyContractsResponse, &state, &plan)
+	diags = readAuthenticationPolicyContractsResponse(ctx, authenticationPolicyContractsResponse, &state, &plan)
+	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -279,7 +281,6 @@ func (r *authenticationPolicyContractsResource) Update(ctx context.Context, req 
 
 	// Get the current state to see how any attributes are changing
 	var state authenticationPolicyContractsResourceModel
-	req.State.Get(ctx, &state)
 	updateAuthenticationPolicyContracts := r.apiClient.AuthenticationPolicyContractsAPI.UpdateAuthenticationPolicyContract(ProviderBasicAuthContext(ctx, r.providerConfig), plan.CustomId.ValueString())
 	createUpdateRequest := client.NewAuthenticationPolicyContract()
 	err := addAuthenticationPolicyContractsFields(ctx, createUpdateRequest, plan)

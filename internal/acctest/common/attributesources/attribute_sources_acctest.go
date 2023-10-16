@@ -1,6 +1,7 @@
 package attributesources
 
 import (
+	"fmt"
 	"strings"
 
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
@@ -14,25 +15,31 @@ func JdbcHcl(attrSource *client.JdbcAttributeSource) string {
 		return ""
 	}
 	if attrSource != nil {
-		builder.WriteString("  attribute_sources = [\n")
-		builder.WriteString("    {\n")
-		builder.WriteString("      jdbc_attribute_source = {\n")
-		builder.WriteString("        data_store_ref = {\n")
-		builder.WriteString("          id = \"")
-		builder.WriteString(attrSource.DataStoreRef.Id)
-		builder.WriteString("\"\n        }\n        id           = \"")
-		builder.WriteString(*attrSource.Id)
-		builder.WriteString("\"\n        description  = \"")
-		builder.WriteString(*attrSource.Description)
-		builder.WriteString("\"\n        schema       = \"")
-		builder.WriteString(*attrSource.Schema)
-		builder.WriteString("\"\n        table        = \"")
-		builder.WriteString(attrSource.Table)
-		builder.WriteString("\"\n        filter       = \"")
-		builder.WriteString(attrSource.Filter)
-		builder.WriteString("\"\n        column_names = ")
-		builder.WriteString(acctest.StringSliceToTerraformString(attrSource.ColumnNames))
-		builder.WriteString("\n      }\n    }\n  ]")
+		tf := `
+		attribute_sources = [
+			{
+				jdbc_attribute_source = {
+					data_store_ref = {
+						id = "%s"
+					}
+					id           = "%s"
+					description  = "%s"
+					schema       = "%s"
+					table        = "%s"
+					filter       = "%s"
+					column_names = %s
+				}
+			}
+		]
+	`
+		builder.WriteString(fmt.Sprintf(tf,
+			attrSource.DataStoreRef.Id,
+			*attrSource.Id,
+			*attrSource.Description,
+			*attrSource.Schema,
+			attrSource.Table,
+			attrSource.Filter,
+			acctest.StringSliceToTerraformString(attrSource.ColumnNames)))
 	}
 	return builder.String()
 }

@@ -105,7 +105,7 @@ tfproviderlint:
 									-XS002=false ./internal/...
 
 tflint:
-	go run github.com/terraform-linters/tflint --recursive --disable-rule "terraform_required_providers" --disable-rule "terraform_required_version"
+	go run github.com/terraform-linters/tflint --recursive --disable-rule "terraform_unused_declarations" --disable-rule "terraform_required_providers" --disable-rule "terraform_required_version"
 
 terrafmtlint:
 	find ./internal/acctest -type f -name '*_test.go' \

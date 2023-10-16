@@ -11,19 +11,16 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const licenseId = "id"
 const fileData = "SUQ9MDA0ODk3MzEKV1NUcnVzdFNUUz10cnVlCk9BdXRoPXRydWUKU2Fhc1Byb3Zpc2lvbmluZz10cnVlClByb2R1Y3Q9UGluZ0ZlZGVyYXRlClZlcnNpb249MTEuMgpFbmZvcmNlbWVudFR5cGU9MwpUaWVyPUZyZWUKSXNzdWVEYXRlPTIwMjMtMDYtMDcKRXhwaXJhdGlvbkRhdGU9MjAyNC0wNi0wNwpEZXBsb3ltZW50TWV0aG9kPURvY2tlcgpPcmdhbml6YXRpb249UGluZyBJZGVudGl0eSBDb3Jwb3JhdGlvbgpTaWduQ29kZT1GRjBGClNpZ25hdHVyZT0zMDJDMDIxNDM4QkIwQzk5RjYwQUY1RkE4MzBBRUQ4NjEzOENGRENCNTAxNDYzNzUwMjE0NENCODc3MEI3N0ZDNzgwMUQ0M0QwNjQwMTVDNjIwOTJBNDY1RjZEMA=="
 
 // Attributes to test with. Add optional properties to test here if desired.
 type licenseResourceModel struct {
-	id       string
 	fileData string
 }
 
 func TestAccLicense(t *testing.T) {
 	resourceName := "myLicense"
 	initialResourceModel := licenseResourceModel{
-		id:       licenseId,
 		fileData: fileData,
 	}
 
@@ -40,7 +37,6 @@ func TestAccLicense(t *testing.T) {
 				// Test importing the resource
 				Config:            testAccLicense(resourceName, initialResourceModel),
 				ResourceName:      "pingfederate_license." + resourceName,
-				ImportStateId:     licenseId,
 				ImportState:       true,
 				ImportStateVerify: false,
 			},
@@ -51,6 +47,16 @@ func TestAccLicense(t *testing.T) {
 func testAccLicense(resourceName string, resourceModel licenseResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_license" "%[1]s" {
+  file_data = "%[2]s"
+}
+
+data "pingfederate_license" "%[1]s" {
+  depends_on = [
+    pingfederate_license.%[1]s
+  ]
+}
+
+resource "pingfederate_license" "licenseExample" {
   file_data = "%[2]s"
 }`, resourceName,
 		fileData,

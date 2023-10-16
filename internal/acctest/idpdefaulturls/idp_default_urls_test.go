@@ -12,12 +12,10 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const idpDefaultUrlsId = "id"
 const idpErrMessage = "errorDetail.idpSsoFailure"
 
 // Attributes to test with. Add optional properties to test here if desired.
 type idpDefaultUrlsResourceModel struct {
-	id               string
 	confirmIdpSlo    bool
 	idpSloSuccessUrl string
 	idpErrorMsg      string
@@ -26,13 +24,11 @@ type idpDefaultUrlsResourceModel struct {
 func TestAccIdpDefaultUrls(t *testing.T) {
 	resourceName := "myIdpDefaultUrls"
 	initialResourceModel := idpDefaultUrlsResourceModel{
-		id:               idpDefaultUrlsId,
 		confirmIdpSlo:    true,
 		idpSloSuccessUrl: "https://localhost",
 		idpErrorMsg:      idpErrMessage,
 	}
 	updatedResourceModel := idpDefaultUrlsResourceModel{
-		id:               idpDefaultUrlsId,
 		confirmIdpSlo:    false,
 		idpSloSuccessUrl: "https://example",
 		idpErrorMsg:      idpErrMessage,
@@ -57,7 +53,6 @@ func TestAccIdpDefaultUrls(t *testing.T) {
 				// Test importing the resource
 				Config:            testAccIdpDefaultUrls(resourceName, updatedResourceModel),
 				ResourceName:      "pingfederate_idp_default_urls." + resourceName,
-				ImportStateId:     idpDefaultUrlsId,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -71,6 +66,12 @@ resource "pingfederate_idp_default_urls" "%[1]s" {
   confirm_idp_slo     = %[2]t
   idp_error_msg       = "%[3]s"
   idp_slo_success_url = "%[4]s"
+}
+
+data "pingfederate_idp_default_urls" "%[1]s" {
+  depends_on = [
+    pingfederate_idp_default_urls.%[1]s
+  ]
 }`, resourceName,
 		resourceModel.confirmIdpSlo,
 		resourceModel.idpErrorMsg,
@@ -91,13 +92,13 @@ func testAccCheckExpectedIdpDefaultUrlsAttributes(config idpDefaultUrlsResourceM
 		}
 
 		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "confirm_idp_slo",
+		err = acctest.TestAttributesMatchBool(resourceType, nil, "confirm_idp_slo",
 			config.confirmIdpSlo, *response.ConfirmIdpSlo)
 		if err != nil {
 			return err
 		}
 
-		err = acctest.TestAttributesMatchString(resourceType, &config.id, "idp_slo_success_url",
+		err = acctest.TestAttributesMatchString(resourceType, nil, "idp_slo_success_url",
 			config.idpSloSuccessUrl, *response.IdpSloSuccessUrl)
 		if err != nil {
 			return err

@@ -12,11 +12,8 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const sessionApplicationSessionPolicyId = "id"
-
 // Attributes to test with. Add optional properties to test here if desired.
 type sessionApplicationSessionPolicyResourceModel struct {
-	id              string
 	idleTimeoutMins int64
 	maxTimeoutMins  int64
 }
@@ -51,7 +48,6 @@ func TestAccSessionApplicationSessionPolicy(t *testing.T) {
 				// Test importing the resource
 				Config:            testAccSessionApplicationSessionPolicy(resourceName, updatedResourceModel),
 				ResourceName:      "pingfederate_session_application_session_policy." + resourceName,
-				ImportStateId:     sessionApplicationSessionPolicyId,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -83,13 +79,13 @@ func testAccCheckExpectedSessionApplicationSessionPolicyAttributes(config sessio
 		}
 
 		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchInt(resourceType, &config.id, "idle_timeout_mins",
+		err = acctest.TestAttributesMatchInt(resourceType, nil, "idle_timeout_mins",
 			config.idleTimeoutMins, *response.IdleTimeoutMins)
 		if err != nil {
 			return err
 		}
 
-		err = acctest.TestAttributesMatchInt(resourceType, &config.id, "max_timeout_mins",
+		err = acctest.TestAttributesMatchInt(resourceType, nil, "max_timeout_mins",
 			config.maxTimeoutMins, *response.MaxTimeoutMins)
 		if err != nil {
 			return err

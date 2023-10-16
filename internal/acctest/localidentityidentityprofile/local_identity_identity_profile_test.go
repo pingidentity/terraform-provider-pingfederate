@@ -73,6 +73,7 @@ resource "pingfederate_authentication_policy_contract" "authenticationPolicyCont
   extended_attributes = [{ name = "extended_attribute" }, { name = "extended_attribute2" }]
   name                = "example"
 }
+
 resource "pingfederate_local_identity_identity_profile" "%[1]s" {
   custom_id = "%[2]s"
   name      = "%[3]s"
@@ -82,6 +83,10 @@ resource "pingfederate_local_identity_identity_profile" "%[1]s" {
   registration_enabled = %[4]t
   profile_enabled      = %[5]t
 
+}
+
+data "pingfederate_local_identity_identity_profile" "%[1]s" {
+  id = pingfederate_local_identity_identity_profile.%[1]s.id
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.name,

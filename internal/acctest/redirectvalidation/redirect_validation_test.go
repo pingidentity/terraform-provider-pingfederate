@@ -12,11 +12,8 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const redirectValidationId = "id"
-
 // Attributes to test with. Add optional properties to test here if desired.
 type redirectValidationResourceModel struct {
-	id                                   string
 	enableTargetResourceValidationForSso bool
 	whiteListValidDomain                 string
 	enableWreplyValidationSlo            bool
@@ -25,13 +22,11 @@ type redirectValidationResourceModel struct {
 func TestAccRedirectValidation(t *testing.T) {
 	resourceName := "myRedirectValidation"
 	initialResourceModel := redirectValidationResourceModel{
-		id:                                   redirectValidationId,
 		enableTargetResourceValidationForSso: true,
 		whiteListValidDomain:                 "example.com",
 		enableWreplyValidationSlo:            false,
 	}
 	updatedResourceModel := redirectValidationResourceModel{
-		id:                                   redirectValidationId,
 		enableTargetResourceValidationForSso: false,
 		whiteListValidDomain:                 "updatedexample.com",
 		enableWreplyValidationSlo:            true,
@@ -56,7 +51,6 @@ func TestAccRedirectValidation(t *testing.T) {
 				// Test importing the resource
 				Config:            testAccRedirectValidation(resourceName, updatedResourceModel),
 				ResourceName:      "pingfederate_redirect_validation." + resourceName,
-				ImportStateId:     redirectValidationId,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -98,18 +92,18 @@ func testAccCheckExpectedRedirectValidationAttributes(config redirectValidationR
 		}
 
 		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "enable_target_resource_validation_for_sso", config.enableTargetResourceValidationForSso, response.RedirectValidationLocalSettings.GetEnableTargetResourceValidationForSSO())
+		err = acctest.TestAttributesMatchBool(resourceType, nil, "enable_target_resource_validation_for_sso", config.enableTargetResourceValidationForSso, response.RedirectValidationLocalSettings.GetEnableTargetResourceValidationForSSO())
 		if err != nil {
 			return err
 		}
 
 		whiteListValidDomain := response.RedirectValidationLocalSettings.WhiteList
-		err = acctest.TestAttributesMatchString(resourceType, &config.id, "valid_domain", config.whiteListValidDomain, whiteListValidDomain[0].GetValidDomain())
+		err = acctest.TestAttributesMatchString(resourceType, nil, "valid_domain", config.whiteListValidDomain, whiteListValidDomain[0].GetValidDomain())
 		if err != nil {
 			return err
 		}
 
-		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "enable_wreply_validation_slo", config.enableWreplyValidationSlo, response.RedirectValidationPartnerSettings.GetEnableWreplyValidationSLO())
+		err = acctest.TestAttributesMatchBool(resourceType, nil, "enable_wreply_validation_slo", config.enableWreplyValidationSlo, response.RedirectValidationPartnerSettings.GetEnableWreplyValidationSLO())
 		if err != nil {
 			return err
 		}

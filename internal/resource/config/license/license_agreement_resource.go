@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -64,7 +65,7 @@ func (r *licenseAgreementResource) Schema(ctx context.Context, req resource.Sche
 		},
 	}
 
-	config.AddCommonSchema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -96,9 +97,8 @@ func (r *licenseAgreementResource) Configure(_ context.Context, req resource.Con
 
 }
 
-func readLicenseAgreementResponse(ctx context.Context, r *client.LicenseAgreementInfo, state *licenseAgreementResourceModel, expectedValues *licenseAgreementResourceModel) {
-	//TODO placeholder?
-	state.Id = types.StringValue("id")
+func readLicenseAgreementResponse(ctx context.Context, r *client.LicenseAgreementInfo, state *licenseAgreementResourceModel, existingId *string) {
+	state.Id = id.GenerateUUIDToState(existingId)
 	state.LicenseAgreementUrl = internaltypes.StringTypeOrNil(r.LicenseAgreementUrl, false)
 	state.Accepted = internaltypes.BoolTypeOrNil(r.Accepted)
 }
@@ -137,8 +137,7 @@ func (r *licenseAgreementResource) Create(ctx context.Context, req resource.Crea
 
 	// Read the response into the state
 	var state licenseAgreementResourceModel
-
-	readLicenseAgreementResponse(ctx, licenseAgreementResponse, &state, &plan)
+	readLicenseAgreementResponse(ctx, licenseAgreementResponse, &state, nil)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -170,8 +169,12 @@ func (r *licenseAgreementResource) Read(ctx context.Context, req resource.ReadRe
 		diags.AddError("There was an issue retrieving the response of the License Agreement: %s", responseErr.Error())
 	}
 	// Read the response into the state
-	readLicenseAgreementResponse(ctx, apiReadLicenseAgreement, &state, &state)
-
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readLicenseAgreementResponse(ctx, apiReadLicenseAgreement, &state, id)
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -187,9 +190,6 @@ func (r *licenseAgreementResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
-	var state licenseAgreementResourceModel
-	req.State.Get(ctx, &state)
 	updateLicenseAgreement := r.apiClient.LicenseAPI.UpdateLicenseAgreement(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewLicenseAgreementInfo()
 	err := addOptionalLicenseAgreementFields(ctx, createUpdateRequest, plan)
@@ -213,7 +213,14 @@ func (r *licenseAgreementResource) Update(ctx context.Context, req resource.Upda
 		diags.AddError("There was an issue retrieving the response of the License Agreement: %s", requestErr.Error())
 	}
 	// Read the response
-	readLicenseAgreementResponse(ctx, updateLicenseAgreementResponse, &state, &plan)
+	// Get the current state to see how any attributes are changing
+	var state licenseAgreementResourceModel
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readLicenseAgreementResponse(ctx, updateLicenseAgreementResponse, &state, id)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

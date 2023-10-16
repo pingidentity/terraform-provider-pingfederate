@@ -12,13 +12,11 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const licenseAgreementId = "id"
 const licenseAgreementUrlVal = "https://localhost:9999/pf-admin-api/license-agreement"
 const acceptedVal = true
 
 // Attributes to test with. Add optional properties to test here if desired.
 type licenseAgreementResourceModel struct {
-	id                  string
 	licenseAgreementUrl string
 	accepted            bool
 }
@@ -26,7 +24,6 @@ type licenseAgreementResourceModel struct {
 func TestAccLicenseAgreement(t *testing.T) {
 	resourceName := "myLicenseAgreement"
 	initialResourceModel := licenseAgreementResourceModel{
-		id:                  licenseAgreementId,
 		licenseAgreementUrl: licenseAgreementUrlVal,
 		accepted:            acceptedVal,
 	}
@@ -45,7 +42,6 @@ func TestAccLicenseAgreement(t *testing.T) {
 				// Test importing the resource
 				Config:            testAccLicenseAgreement(resourceName, initialResourceModel),
 				ResourceName:      "pingfederate_license_agreement." + resourceName,
-				ImportStateId:     licenseAgreementId,
 				ImportState:       true,
 				ImportStateVerify: false,
 			},
@@ -58,6 +54,12 @@ func testAccLicenseAgreement(resourceName string, resourceModel licenseAgreement
 resource "pingfederate_license_agreement" "%[1]s" {
   license_agreement_url = "%[2]s"
   accepted              = %[3]t
+}
+
+data "pingfederate_license_agreement" "%[1]s" {
+  depends_on = [
+    pingfederate_license_agreement.%[1]s
+  ]
 }`, resourceName,
 		resourceModel.licenseAgreementUrl,
 		resourceModel.accepted,

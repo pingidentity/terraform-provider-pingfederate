@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -213,7 +214,7 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 		},
 	}
 
-	AddCommonSchema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -252,10 +253,9 @@ func (r *redirectValidationResource) Configure(_ context.Context, req resource.C
 
 }
 
-func readRedirectValidationResponse(ctx context.Context, r *client.RedirectValidationSettings, state *redirectValidationResourceModel) diag.Diagnostics {
-	//TODO placeholder?
+func readRedirectValidationResponse(ctx context.Context, r *client.RedirectValidationSettings, state *redirectValidationResourceModel, existingId *string) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.Id = types.StringValue("id")
+	state.Id = id.GenerateUUIDToState(existingId)
 	whiteListAttrs := r.GetRedirectValidationLocalSettings().WhiteList
 	var whiteListSliceAttrVal = []attr.Value{}
 	whiteListSliceType := types.ObjectType{AttrTypes: whiteListAttrTypes}
@@ -330,8 +330,7 @@ func (r *redirectValidationResource) Create(ctx context.Context, req resource.Cr
 
 	// Read the response into the state
 	var state redirectValidationResourceModel
-
-	diags = readRedirectValidationResponse(ctx, redirectValidationResponse, &state)
+	diags = readRedirectValidationResponse(ctx, redirectValidationResponse, &state, nil)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -362,7 +361,12 @@ func (r *redirectValidationResource) Read(ctx context.Context, req resource.Read
 	}
 
 	// Read the response into the state
-	diags = readRedirectValidationResponse(ctx, apiReadRedirectValidation, &state)
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = readRedirectValidationResponse(ctx, apiReadRedirectValidation, &state, id)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -380,9 +384,6 @@ func (r *redirectValidationResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
-	var state redirectValidationResourceModel
-	req.State.Get(ctx, &state)
 	updateRedirectValidation := r.apiClient.RedirectValidationAPI.UpdateRedirectValidationSettings(ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewRedirectValidationSettings()
 	err := addOptionalRedirectValidationFields(ctx, createUpdateRequest, plan)
@@ -406,7 +407,13 @@ func (r *redirectValidationResource) Update(ctx context.Context, req resource.Up
 		diags.AddError("There was an issue retrieving the response of Redirect Validation: %s", responseErr.Error())
 	}
 	// Read the response
-	diags = readRedirectValidationResponse(ctx, updateRedirectValidationResponse, &state)
+	var state redirectValidationResourceModel
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	diags = readRedirectValidationResponse(ctx, updateRedirectValidationResponse, &state, id)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values

@@ -119,9 +119,12 @@ Read-Only:
 <a id="nestedatt--captcha_settings"></a>
 ### Nested Schema for `captcha_settings`
 
-Optional:
+Required:
 
 - `secret_key` (String) Secret key for reCAPTCHA. GETs will not return this attribute. To update this field, specify the new value in this attribute.
+
+Optional:
+
 - `site_key` (String) Site key for reCAPTCHA.
 
 

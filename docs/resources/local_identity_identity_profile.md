@@ -13,7 +13,7 @@ Manages Local Identity Identity Profiles
 ## Example Usage
 
 ```terraform
-resource "pingfederate_local_identity_identity_profile" "localIdentityIdentityProfilesExample" {
+resource "pingfederate_local_identity_identity_profile" "myLocalIdentityIdentityProfile" {
   name = "yourIdentityProfileName"
   id   = "yourid"
   apc_id = {

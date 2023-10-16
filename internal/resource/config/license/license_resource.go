@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -50,7 +51,7 @@ func (r *licenseResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 		},
 	}
-	config.AddCommonSchema(&schema)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -70,9 +71,8 @@ func (r *licenseResource) Configure(_ context.Context, req resource.ConfigureReq
 
 }
 
-func readLicenseResponse(ctx context.Context, r *client.LicenseView, state *licenseResourceModel, expectedValues *licenseResourceModel, planFileData types.String) {
-	//TODO placeholder?
-	state.Id = types.StringValue("id")
+func readLicenseResponse(ctx context.Context, r *client.LicenseView, state *licenseResourceModel, expectedValues *licenseResourceModel, planFileData types.String, existingId *string) {
+	state.Id = id.GenerateUUIDToState(existingId)
 	state.FileData = types.StringValue(planFileData.ValueString())
 }
 
@@ -105,8 +105,8 @@ func (r *licenseResource) Create(ctx context.Context, req resource.CreateRequest
 
 	// Read the response into the state
 	var state licenseResourceModel
+	readLicenseResponse(ctx, licenseResponse, &state, &state, plan.FileData, nil)
 
-	readLicenseResponse(ctx, licenseResponse, &state, &state, plan.FileData)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -136,7 +136,12 @@ func (r *licenseResource) Read(ctx context.Context, req resource.ReadRequest, re
 	}
 
 	// Read the response into the state
-	readLicenseResponse(ctx, apiReadLicense, &state, &state, state.FileData)
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	readLicenseResponse(ctx, apiReadLicense, &state, &state, state.FileData, id)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -153,9 +158,6 @@ func (r *licenseResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
-	var state licenseResourceModel
-	req.State.Get(ctx, &state)
 	updateLicense := r.apiClient.LicenseAPI.UpdateLicense(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewLicenseFile(plan.FileData.ValueString())
 	_, requestErr := createUpdateRequest.MarshalJSON()
@@ -174,7 +176,13 @@ func (r *licenseResource) Update(ctx context.Context, req resource.UpdateRequest
 		diags.AddError("There was an issue retrieving the response of the License: %s", responseErr.Error())
 	}
 	// Read the response
-	readLicenseResponse(ctx, updateLicenseResponse, &state, &state, plan.FileData)
+	id, diags := id.GetID(ctx, req.State)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	var state licenseResourceModel
+	readLicenseResponse(ctx, updateLicenseResponse, &state, &state, plan.FileData, id)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

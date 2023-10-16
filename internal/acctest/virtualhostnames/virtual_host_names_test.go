@@ -12,11 +12,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const virtualHostNamesId = "id"
-
-// Attributes to test with. Add optional properties to test here if desired.
 type virtualHostNamesResourceModel struct {
-	id               string
 	virtualHostNames []string
 }
 
@@ -48,7 +44,6 @@ func TestAccVirtualHostNames(t *testing.T) {
 				// Test importing the resource
 				Config:            testAccVirtualHostNames(resourceName, updatedResourceModel),
 				ResourceName:      "pingfederate_virtual_host_names." + resourceName,
-				ImportStateId:     virtualHostNamesId,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -77,7 +72,7 @@ func testAccCheckExpectedVirtualHostNamesAttributes(config virtualHostNamesResou
 		}
 
 		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchStringSlice(resourceType, &config.id, "virtual_host_names",
+		err = acctest.TestAttributesMatchStringSlice(resourceType, nil, "virtual_host_names",
 			config.virtualHostNames, response.GetVirtualHostNames())
 		if err != nil {
 			return err

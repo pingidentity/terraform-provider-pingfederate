@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -73,8 +74,8 @@ func (r *oauthIssuersResource) Schema(ctx context.Context, req resource.SchemaRe
 		},
 	}
 
-	config.AddCommonSchema(&schema)
-	config.AddCustomId(&schema, false, true,
+	id.ToSchema(&schema)
+	id.ToSchemaCustomId(&schema, false, true,
 		"The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.")
 	resp.Schema = schema
 }

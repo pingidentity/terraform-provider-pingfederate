@@ -1,6 +1,7 @@
 package issuancecriteria
 
 import (
+	"fmt"
 	"strings"
 
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
@@ -13,18 +14,26 @@ func Hcl(conditionalIssuanceCriteriaEntry *client.ConditionalIssuanceCriteriaEnt
 		return ""
 	}
 	if conditionalIssuanceCriteriaEntry != nil {
-		builder.WriteString("  issuance_criteria = {\n    conditional_criteria = [\n      {\n")
-		builder.WriteString("        error_result = \"")
-		builder.WriteString(*conditionalIssuanceCriteriaEntry.ErrorResult)
-		builder.WriteString("\"\n        source = {\n          type = \"")
-		builder.WriteString(conditionalIssuanceCriteriaEntry.Source.Type)
-		builder.WriteString("\"\n        }\n        attribute_name = \"")
-		builder.WriteString(conditionalIssuanceCriteriaEntry.AttributeName)
-		builder.WriteString("\"\n        condition      = \"")
-		builder.WriteString(conditionalIssuanceCriteriaEntry.Condition)
-		builder.WriteString("\"\n        value          = \"")
-		builder.WriteString(conditionalIssuanceCriteriaEntry.Value)
-		builder.WriteString("\"\n      }\n    ]\n  }\n")
+		tf := `
+		issuance_criteria = {
+			conditional_criteria = [
+				{
+					error_result = "%s"
+					source = {
+						type = "%s"
+					}
+					attribute_name = "%s"
+					condition      = "%s"
+					value          = "%s"
+				}
+			]
+		}`
+		builder.WriteString(fmt.Sprintf(tf,
+			*conditionalIssuanceCriteriaEntry.ErrorResult,
+			conditionalIssuanceCriteriaEntry.Source.Type,
+			conditionalIssuanceCriteriaEntry.AttributeName,
+			conditionalIssuanceCriteriaEntry.Condition,
+			conditionalIssuanceCriteriaEntry.Value))
 	}
 	return builder.String()
 }

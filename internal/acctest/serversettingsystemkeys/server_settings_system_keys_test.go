@@ -12,11 +12,8 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const serverSettingsSystemKeysId = "id"
-
 // Attributes to test with. Add optional properties to test here if desired.
 type serverSettingsSystemKeysResourceModel struct {
-	id                      string
 	currentEncryptedKeyData string
 	pendingEncryptedKeyData string
 }
@@ -24,12 +21,10 @@ type serverSettingsSystemKeysResourceModel struct {
 func TestAccServerSettingsSystemKeys(t *testing.T) {
 	resourceName := "myServerSettingsSystemKeys"
 	initialResourceModel := serverSettingsSystemKeysResourceModel{
-		id:                      serverSettingsSystemKeysId,
 		currentEncryptedKeyData: "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2Iiwia2lkIjoiUWVzOVR5eTV5WiIsInZlcnNpb24iOiIxMS4yLjUuMCIsInppcCI6IkRFRiJ9..4Q-LeikGMQ-5dVVRMMDyfw.JLR4Yg1FfmaTdOpVHZ1V1BypiguCuKawnJsUD33weL3nYRvyEPFgMCuBV72GC-HG.2b2T22iR040xI4ro-Iemeg",
 		pendingEncryptedKeyData: "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2Iiwia2lkIjoiUWVzOVR5eTV5WiIsInZlcnNpb24iOiIxMS4yLjUuMCIsInppcCI6IkRFRiJ9..J1yaOm2OdYCUDN402iIKPQ.LlpjecXwfHDiFJl_K6O57Mzp1RZxHN-TAbpKnypkRfeL1XgTHZrUkPgxO3ZcU7fb.q-X1zzd-de5svqDRbAE0lw",
 	}
 	updatedResourceModel := serverSettingsSystemKeysResourceModel{
-		id:                      serverSettingsSystemKeysId,
 		currentEncryptedKeyData: "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2Iiwia2lkIjoiUWVzOVR5eTV5WiIsInZlcnNpb24iOiIxMS4yLjUuMCIsInppcCI6IkRFRiJ9..J1yaOm2OdYCUDN402iIKPQ.LlpjecXwfHDiFJl_K6O57Mzp1RZxHN-TAbpKnypkRfeL1XgTHZrUkPgxO3ZcU7fb.q-X1zzd-de5svqDRbAE0lw",
 		pendingEncryptedKeyData: "eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2Iiwia2lkIjoiUWVzOVR5eTV5WiIsInZlcnNpb24iOiIxMS4yLjUuMCIsInppcCI6IkRFRiJ9..4Q-LeikGMQ-5dVVRMMDyfw.JLR4Yg1FfmaTdOpVHZ1V1BypiguCuKawnJsUD33weL3nYRvyEPFgMCuBV72GC-HG.2b2T22iR040xI4ro-Iemeg",
 	}
@@ -53,7 +48,6 @@ func TestAccServerSettingsSystemKeys(t *testing.T) {
 				// Test importing the resource
 				Config:            testAccServerSettingsSystemKeys(resourceName, updatedResourceModel),
 				ResourceName:      "pingfederate_server_settings_system_keys." + resourceName,
-				ImportStateId:     serverSettingsSystemKeysId,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -91,12 +85,12 @@ func testAccCheckExpectedServerSettingsSystemKeysAttributes(config serverSetting
 
 		// Verify that attributes have expected values
 		currentEncryptedKeyData := response.Current.EncryptedKeyData
-		err = acctest.TestAttributesMatchString(resourceType, &config.id, "encrypted_key_data", config.currentEncryptedKeyData, *currentEncryptedKeyData)
+		err = acctest.TestAttributesMatchString(resourceType, nil, "encrypted_key_data", config.currentEncryptedKeyData, *currentEncryptedKeyData)
 		if err != nil {
 			return err
 		}
 		pendingEncryptedKeyData := response.Pending.EncryptedKeyData
-		err = acctest.TestAttributesMatchString(resourceType, &config.id, "encrypted_key_data", config.pendingEncryptedKeyData, *pendingEncryptedKeyData)
+		err = acctest.TestAttributesMatchString(resourceType, nil, "encrypted_key_data", config.pendingEncryptedKeyData, *pendingEncryptedKeyData)
 		if err != nil {
 			return err
 		}

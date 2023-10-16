@@ -53,7 +53,6 @@ func TestAccAuthenticationApiSettings(t *testing.T) {
 				// Test importing the resource
 				Config:            testAccAuthenticationApiSettings(resourceName, updatedResourceModel),
 				ResourceName:      "pingfederate_authentication_api_settings." + resourceName,
-				ImportStateId:     resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -68,6 +67,12 @@ resource "pingfederate_authentication_api_settings" "%[1]s" {
   enable_api_descriptions              = %[3]t
   restrict_access_to_redirectless_mode = %[4]t
   include_request_context              = %[5]t
+}
+
+data "pingfederate_authentication_api_settings" "%[1]s" {
+  depends_on = [
+    pingfederate_authentication_api_settings.%[1]s
+  ]
 }`, resourceName,
 		resourceModel.apiEnabled,
 		resourceModel.enableApiDescriptions,

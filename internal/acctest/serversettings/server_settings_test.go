@@ -12,8 +12,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const sessionSettingsId = "2"
-
 // Attributes to test with. Add optional properties to test here if desired.
 // The serverSettingsResourceModel struct represents a model for server settings resources.
 // It defines the fields that can be used to configure various aspects of the server settings.
@@ -95,7 +93,6 @@ func TestAccServerSettings(t *testing.T) {
 				// Test importing the resource
 				Config:                  testAccServerSettings(resourceName, updatedResourceModel),
 				ResourceName:            "pingfederate_server_settings." + resourceName,
-				ImportStateId:           sessionSettingsId,
 				ImportState:             true,
 				ImportStateVerifyIgnore: []string{"email_server"},
 			},
