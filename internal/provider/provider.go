@@ -241,8 +241,6 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 			URL: httpsHost + "/pf-admin-api/v1",
 		},
 	}
-	// TODO THIS IS NOT SAFE!! Eventually need to add way to trust a specific cert/signer here rather than just trusting everything
-	// https://stackoverflow.com/questions/12122159/how-to-do-a-https-request-with-bad-certificate
 	// #nosec G402
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{

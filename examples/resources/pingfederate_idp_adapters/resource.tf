@@ -1,4 +1,4 @@
-resource "pingfederate_idp_adapter" "idpAdaptersExample" {
+resource "pingfederate_idp_adapter" "idpAdapterExample" {
   custom_id = "HTMLFormPD"
   name      = "HTMLFormPD"
   plugin_descriptor_ref = {
@@ -98,7 +98,7 @@ resource "pingfederate_idp_adapter" "idpAdaptersExample" {
       },
       {
         name  = "Local Identity Profile",
-        value = "RBSQIwi5KWYN9ZGK"
+        value = "example"
       },
       {
         name  = "Enable Username Recovery",

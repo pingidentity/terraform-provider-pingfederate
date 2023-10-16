@@ -53,7 +53,7 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Schema(ctx context.Cont
 	schema := schema.Schema{
 		Description: "Manages Token Processor To Token Generator Mappings",
 		Attributes: map[string]schema.Attribute{
-			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true),
+			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
 			"attribute_sources":              attributesources.ToSchema(),
 			"default_target_resource": schema.StringAttribute{
 				Description: "Default target URL for this Token Processor to Token Generator mapping configuration.",
@@ -150,14 +150,13 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Create(ctx context.Cont
 		return
 	}
 
-	attributeContractFulfillment := &map[string]client.AttributeFulfillmentValue{}
-	attributeContractFulfillmentErr := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContractFulfillment, false)), attributeContractFulfillment)
-	if attributeContractFulfillmentErr != nil {
-		resp.Diagnostics.AddError("Failed to build attribute contract fulfillment request object:", attributeContractFulfillmentErr.Error())
+	attributeContractFulfillment, err := attributecontractfulfillment.ClientStruct(plan.AttributeContractFulfillment)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to build attribute contract fulfillment request object:", err.Error())
 		return
 	}
-	createTokenProcessorToTokenGeneratorMapping := client.NewTokenToTokenMapping(*attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
-	err := addOptionalTokenProcessorToTokenGeneratorMappingFields(ctx, createTokenProcessorToTokenGeneratorMapping, plan)
+	createTokenProcessorToTokenGeneratorMapping := client.NewTokenToTokenMapping(attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
+	err = addOptionalTokenProcessorToTokenGeneratorMappingFields(ctx, createTokenProcessorToTokenGeneratorMapping, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for TokenProcessorToTokenGeneratorMapping", err.Error())
 		return

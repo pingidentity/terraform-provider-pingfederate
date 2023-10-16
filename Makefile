@@ -53,8 +53,10 @@ define test_acc_env_vars
 endef
 
 # Set ACC_TEST_NAME to name of test in cli
-testoneacc: spincontainer
+testoneacc:
 	$(call test_acc_env_vars) TF_ACC=1 go test ./... -timeout 10m --run ${ACC_TEST_NAME} -v -p 4 --count=1
+
+testoneacccomplete: spincontainer testoneacc
 
 testacc:
 	$(call test_acc_env_vars) TF_ACC=1 go test `go list ./internal/... | grep -v github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/oauthauthserversettings` -timeout 10m -v -p 4 && \

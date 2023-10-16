@@ -48,9 +48,11 @@ func LdapAttributeSourceAttrType() map[string]attr.Type {
 	ldapAttrSourceAttrType["search_scope"] = basetypes.StringType{}
 	ldapAttrSourceAttrType["search_filter"] = basetypes.StringType{}
 	ldapAttrSourceAttrType["search_attributes"] = basetypes.ListType{ElemType: basetypes.StringType{}}
-	ldapAttrSourceAttrType["binary_attribute_settings"] = basetypes.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"binary_encoding": basetypes.StringType{},
+	ldapAttrSourceAttrType["binary_attribute_settings"] = basetypes.MapType{
+		ElemType: basetypes.ObjectType{
+			AttrTypes: map[string]attr.Type{
+				"binary_encoding": basetypes.StringType{},
+			},
 		},
 	}
 	ldapAttrSourceAttrType["member_of_nested_group"] = basetypes.BoolType{}

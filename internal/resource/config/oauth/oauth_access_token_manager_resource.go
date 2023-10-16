@@ -114,7 +114,6 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 			},
 			"parent_ref": schema.SingleNestedAttribute{
 				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
-				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
@@ -149,7 +148,8 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 								},
 								"multi_valued": schema.BoolAttribute{
 									Description: "Indicates whether attribute value is always returned as an array.",
-									Optional:    true,
+									Optional:    false,
+									Computed:    true,
 									PlanModifiers: []planmodifier.Bool{
 										boolplanmodifier.UseStateForUnknown(),
 									},
@@ -168,13 +168,15 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
 									Description: "The name of this attribute.",
-									Required:    true,
+									Computed:    true,
+									Optional:    true,
 									PlanModifiers: []planmodifier.String{
 										stringplanmodifier.UseStateForUnknown(),
 									},
 								},
 								"multi_valued": schema.BoolAttribute{
 									Description: "Indicates whether attribute value is always returned as an array.",
+									Computed:    true,
 									Optional:    true,
 									PlanModifiers: []planmodifier.Bool{
 										boolplanmodifier.UseStateForUnknown(),
@@ -186,10 +188,13 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 					"inherited": schema.BoolAttribute{
 						Description: "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
 						Optional:    true,
+						Computed:    true,
+						//Default:     booldefault.StaticBool(false),
 					},
 					"default_subject_attribute": schema.StringAttribute{
 						Description: "Default subject attribute to use for audit logging when validating the access token. Blank value means to use USER_KEY attribute value after grant lookup.",
 						Optional:    true,
+						Computed:    true,
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.UseStateForUnknown(),
 						},
@@ -316,10 +321,6 @@ func addOptionalOauthAccessTokenManagerFields(ctx context.Context, addRequest *c
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContract, true)), addRequest.AttributeContract)
 		if err != nil {
 			return err
-		}
-		extendedAttrsLength := len(plan.AttributeContract.Attributes()["extended_attributes"].(types.List).Elements())
-		if extendedAttrsLength == 0 {
-			addRequest.AttributeContract.ExtendedAttributes = nil
 		}
 	}
 

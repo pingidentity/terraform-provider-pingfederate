@@ -756,16 +756,16 @@ func (r *localIdentityIdentityProfilesResource) Create(ctx context.Context, req 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apcResourceLink := resourcelink.ClientStruct(plan.ApcId)
+	apcResourceLink, err := resourcelink.ClientStruct(plan.ApcId)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to add apc id to add request for Local Identity Identity Profile", err.Error())
+		return
+	}
 	createLocalIdentityIdentityProfiles := client.NewLocalIdentityProfile(plan.Name.ValueString(), *apcResourceLink)
-	err := addOptionalLocalIdentityIdentityProfilesFields(ctx, createLocalIdentityIdentityProfiles, plan)
+	err = addOptionalLocalIdentityIdentityProfilesFields(ctx, createLocalIdentityIdentityProfiles, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for a Local Identity Identity Profile", err.Error())
 		return
-	}
-	_, requestErr := createLocalIdentityIdentityProfiles.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of a Local Identity Identity Profile: %s", requestErr.Error())
 	}
 	apiCreateLocalIdentityIdentityProfiles := r.apiClient.LocalIdentityIdentityProfilesAPI.CreateIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateLocalIdentityIdentityProfiles = apiCreateLocalIdentityIdentityProfiles.Body(*createLocalIdentityIdentityProfiles)
@@ -831,16 +831,16 @@ func (r *localIdentityIdentityProfilesResource) Update(ctx context.Context, req 
 		return
 	}
 	updateLocalIdentityIdentityProfiles := r.apiClient.LocalIdentityIdentityProfilesAPI.UpdateIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.CustomId.ValueString())
-	apcResourceLink := resourcelink.ClientStruct(plan.ApcId)
+	apcResourceLink, err := resourcelink.ClientStruct(plan.ApcId)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to add apc id to add request for Local Identity Identity Profile", err.Error())
+		return
+	}
 	createUpdateRequest := client.NewLocalIdentityProfile(plan.Name.ValueString(), *apcResourceLink)
-	err := addOptionalLocalIdentityIdentityProfilesFields(ctx, createUpdateRequest, plan)
+	err = addOptionalLocalIdentityIdentityProfilesFields(ctx, createUpdateRequest, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Local Identity Identity Profile", err.Error())
 		return
-	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of a Local Identity Identity Profile: %s", requestErr.Error())
 	}
 	updateLocalIdentityIdentityProfiles = updateLocalIdentityIdentityProfiles.Body(*createUpdateRequest)
 	updateLocalIdentityIdentityProfilesResponse, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.UpdateIdentityProfileExecute(updateLocalIdentityIdentityProfiles)

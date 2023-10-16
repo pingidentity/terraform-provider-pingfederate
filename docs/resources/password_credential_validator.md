@@ -651,6 +651,10 @@ Optional:
 - `fields` (Attributes List) List of configuration fields. (see [below for nested schema](#nestedatt--configuration--fields))
 - `tables` (Attributes List) List of configuration tables. (see [below for nested schema](#nestedatt--configuration--tables))
 
+Read-Only:
+
+- `fields_all` (Attributes List) List of configuration fields. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--configuration--fields_all))
+
 <a id="nestedatt--configuration--fields"></a>
 ### Nested Schema for `configuration.fields`
 
@@ -697,6 +701,16 @@ Optional:
 - `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 
 
+
+
+<a id="nestedatt--configuration--fields_all"></a>
+### Nested Schema for `configuration.fields_all`
+
+Required:
+
+- `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
+- `name` (String) The name of the configuration field.
+- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
 
 
 

@@ -1,23 +1,20 @@
 package attributesources
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 )
-
-var attributeSourcesEmptyList, _ = types.ListValue(types.ObjectType{AttrTypes: ElemAttrType()}, []attr.Value{})
 
 func CommonAttributeSourceSchema() map[string]schema.Attribute {
 	commonAttributeSourceSchema := map[string]schema.Attribute{}
@@ -34,7 +31,7 @@ func CommonAttributeSourceSchema() map[string]schema.Attribute {
 		Optional:    true,
 		Description: "The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings",
 	}
-	commonAttributeSourceSchema["attribute_contract_fulfillment"] = attributecontractfulfillment.ToSchema(false)
+	commonAttributeSourceSchema["attribute_contract_fulfillment"] = attributecontractfulfillment.ToSchema(false, false)
 	return commonAttributeSourceSchema
 }
 
@@ -99,7 +96,7 @@ func LdapAttributeSourceSchemaAttributes() map[string]schema.Attribute {
 		Required:    true,
 		Description: "The data store type of this attribute source.",
 		Validators: []validator.String{
-			stringvalidator.OneOf([]string{"LDAP", "PING_ONE_LDAP_GATEWAY"}...),
+			stringvalidator.OneOf("LDAP", "PING_ONE_LDAP_GATEWAY"),
 		},
 	}
 	ldapAttributeSourceSchema["base_dn"] = schema.StringAttribute{
@@ -134,14 +131,17 @@ func LdapAttributeSourceSchemaAttributes() map[string]schema.Attribute {
 		},
 		Default: booldefault.StaticBool(false),
 	}
-	ldapAttributeSourceSchema["binary_attribute_settings"] = schema.SingleNestedAttribute{
+	ldapAttributeSourceSchema["binary_attribute_settings"] = schema.MapNestedAttribute{
 		Description: "The advanced settings for binary LDAP attributes.",
 		Optional:    true,
-		Attributes: map[string]schema.Attribute{
-			"binary_encoding": schema.StringAttribute{
-				Optional: true,
-				Validators: []validator.String{
-					stringvalidator.OneOf([]string{"BASE64", "HEX", "SID"}...),
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: map[string]schema.Attribute{
+				"binary_encoding": schema.StringAttribute{
+					Optional:    true,
+					Description: "Get the encoding type for this attribute. If not specified, the default is BASE64.",
+					Validators: []validator.String{
+						stringvalidator.OneOf("BASE64", "HEX", "SID"),
+					},
 				},
 			},
 		},
@@ -154,23 +154,40 @@ func ToSchema() schema.ListNestedAttribute {
 		Description: "A list of configured data stores to look up attributes from.",
 		Computed:    true,
 		Optional:    true,
-		Default:     listdefault.StaticValue(attributeSourcesEmptyList),
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
 				"custom_attribute_source": schema.SingleNestedAttribute{
 					Description: "The configured settings used to look up attributes from a custom data store.",
 					Optional:    true,
 					Attributes:  CustomAttributeSourceSchemaAttributes(),
+					Validators: []validator.Object{
+						objectvalidator.ExactlyOneOf(
+							path.MatchRelative().AtParent().AtName("jdbc_attribute_source"),
+							path.MatchRelative().AtParent().AtName("ldap_attribute_source"),
+						),
+					},
 				},
 				"jdbc_attribute_source": schema.SingleNestedAttribute{
 					Description: "The configured settings used to look up attributes from a JDBC data store.",
 					Optional:    true,
 					Attributes:  JdbcAttributeSourceSchemaAttributes(),
+					Validators: []validator.Object{
+						objectvalidator.ExactlyOneOf(
+							path.MatchRelative().AtParent().AtName("custom_attribute_source"),
+							path.MatchRelative().AtParent().AtName("ldap_attribute_source"),
+						),
+					},
 				},
 				"ldap_attribute_source": schema.SingleNestedAttribute{
 					Description: "The configured settings used to look up attributes from a LDAP data store.",
 					Optional:    true,
 					Attributes:  LdapAttributeSourceSchemaAttributes(),
+					Validators: []validator.Object{
+						objectvalidator.ExactlyOneOf(
+							path.MatchRelative().AtParent().AtName("custom_attribute_source"),
+							path.MatchRelative().AtParent().AtName("jdbc_attribute_source"),
+						),
+					},
 				},
 			},
 		},

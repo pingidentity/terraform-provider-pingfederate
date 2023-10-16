@@ -11,28 +11,36 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 )
 
+func ConditionalCriteriaElemType() types.ObjectType {
+	return basetypes.ObjectType{
+		AttrTypes: map[string]attr.Type{
+			"source": basetypes.ObjectType{
+				AttrTypes: sourcetypeidkey.AttrType(),
+			},
+			"attribute_name": basetypes.StringType{},
+			"condition":      basetypes.StringType{},
+			"value":          basetypes.StringType{},
+			"error_result":   basetypes.StringType{},
+		},
+	}
+}
+
+func ExpressionCriteriaElemType() types.ObjectType {
+	return basetypes.ObjectType{
+		AttrTypes: map[string]attr.Type{
+			"expression":   basetypes.StringType{},
+			"error_result": basetypes.StringType{},
+		},
+	}
+}
+
 func AttrType() map[string]attr.Type {
 	return map[string]attr.Type{
 		"conditional_criteria": basetypes.ListType{
-			ElemType: basetypes.ObjectType{
-				AttrTypes: map[string]attr.Type{
-					"source": basetypes.ObjectType{
-						AttrTypes: sourcetypeidkey.AttrType(),
-					},
-					"attribute_name": basetypes.StringType{},
-					"condition":      basetypes.StringType{},
-					"value":          basetypes.StringType{},
-					"error_result":   basetypes.StringType{},
-				},
-			},
+			ElemType: ConditionalCriteriaElemType(),
 		},
 		"expression_criteria": basetypes.ListType{
-			ElemType: basetypes.ObjectType{
-				AttrTypes: map[string]attr.Type{
-					"expression":   basetypes.StringType{},
-					"error_result": basetypes.StringType{},
-				},
-			},
+			ElemType: ExpressionCriteriaElemType(),
 		},
 	}
 }

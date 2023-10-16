@@ -2,7 +2,6 @@ package acctest_test
 
 import (
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -11,6 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/attributecontractfulfillment"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/attributesources"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/issuancecriteria"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -24,10 +27,6 @@ type tokenProcessorToTokenGeneratorMappingResourceModel struct {
 	issuanceCriteria             *client.ConditionalIssuanceCriteriaEntry
 	sourceId                     string
 	targetId                     string
-}
-
-func stringPointer(val string) *string {
-	return &val
 }
 
 func initialAttributeContractFulfillment() client.AttributeFulfillmentValue {
@@ -46,108 +45,6 @@ func updatedAttributeContractFulfillment() client.AttributeFulfillmentValue {
 	return updatedAttributecontractfulfillment
 }
 
-func attributeContractFulfillmentHclBlock(aCf *client.AttributeFulfillmentValue) string {
-	var builder strings.Builder
-	if aCf == nil {
-		return ""
-	}
-	if aCf != nil {
-		tf := `
-			source = {
-				type = "%s"
-			},
-			value = "%s"
-		`
-		builder.WriteString(fmt.Sprintf(tf,
-			aCf.Source.Type,
-			aCf.Value))
-	}
-	return builder.String()
-}
-
-func attributeSource() *client.JdbcAttributeSource {
-	jdbcAttributeSource := client.NewJdbcAttributeSource(
-		"CHANNEL_GROUP", "$${SAML_SUBJECT}", "JDBC", *client.NewResourceLink("ProvisionerDS"),
-	)
-	jdbcAttributeSource.Id = stringPointer("attributesourceid")
-	jdbcAttributeSource.ColumnNames = []string{"CREATED"}
-	jdbcAttributeSource.Description = stringPointer("description")
-	jdbcAttributeSource.Schema = stringPointer("PUBLIC")
-	return jdbcAttributeSource
-}
-
-func attributeSourcesHclBlock(attrSource *client.JdbcAttributeSource) string {
-	var builder strings.Builder
-	if attrSource == nil {
-		return ""
-	}
-	if attrSource != nil {
-		tf := `
-		attribute_sources = [
-			{
-				jdbc_attribute_source = {
-					data_store_ref = {
-						id = "%s"
-					}
-					id           = "%s"
-					description  = "%s"
-					schema       = "%s"
-					table        = "%s"
-					filter       = "%s"
-					column_names = %s
-				}
-			}
-		]
-	`
-		builder.WriteString(fmt.Sprintf(tf,
-			attrSource.DataStoreRef.Id,
-			*attrSource.Id,
-			*attrSource.Description,
-			*attrSource.Schema,
-			attrSource.Table,
-			attrSource.Filter,
-			acctest.StringSliceToTerraformString(attrSource.ColumnNames)))
-	}
-	return builder.String()
-}
-
-func issuanceCriteria() *client.ConditionalIssuanceCriteriaEntry {
-	conditionalIssuanceCriteriaEntry := client.NewConditionalIssuanceCriteriaEntry(
-		*client.NewSourceTypeIdKey("CONTEXT"), "ClientIp", "EQUALS", "value")
-	conditionalIssuanceCriteriaEntry.ErrorResult = stringPointer("error")
-	return conditionalIssuanceCriteriaEntry
-}
-
-func issuanceCriteriaHclBlock(conditionalIssuanceCriteriaEntry *client.ConditionalIssuanceCriteriaEntry) string {
-	var builder strings.Builder
-	if conditionalIssuanceCriteriaEntry == nil {
-		return ""
-	}
-	if conditionalIssuanceCriteriaEntry != nil {
-		tf := `
-		issuance_criteria = {
-			conditional_criteria = [
-				{
-					error_result = "%s"
-					source = {
-						type = "%s"
-					}
-					attribute_name = "%s"
-					condition      = "%s"
-					value          = "%s"
-				}
-			]
-		}`
-		builder.WriteString(fmt.Sprintf(tf,
-			*conditionalIssuanceCriteriaEntry.ErrorResult,
-			conditionalIssuanceCriteriaEntry.Source.Type,
-			conditionalIssuanceCriteriaEntry.AttributeName,
-			conditionalIssuanceCriteriaEntry.Condition,
-			conditionalIssuanceCriteriaEntry.Value))
-	}
-	return builder.String()
-}
-
 func TestAccTokenProcessorToTokenGeneratorMapping(t *testing.T) {
 	resourceName := "myTokenProcessorToTokenGeneratorMapping"
 	initialResourceModel := tokenProcessorToTokenGeneratorMappingResourceModel{
@@ -156,9 +53,9 @@ func TestAccTokenProcessorToTokenGeneratorMapping(t *testing.T) {
 		targetId:                     tokenGenTargetId,
 	}
 	updatedResourceModel := tokenProcessorToTokenGeneratorMappingResourceModel{
-		attributeSource:              attributeSource(),
+		attributeSource:              attributesources.JdbcClientStruct(),
 		attributeContractFulfillment: updatedAttributeContractFulfillment(),
-		issuanceCriteria:             issuanceCriteria(),
+		issuanceCriteria:             issuancecriteria.ConditionalCriteria(),
 		sourceId:                     tokenProcSourceId,
 		targetId:                     tokenGenTargetId,
 	}
@@ -206,9 +103,9 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "%[1]s" {
 }`, resourceName,
 		resourceModel.sourceId,
 		resourceModel.targetId,
-		attributeContractFulfillmentHclBlock(&resourceModel.attributeContractFulfillment),
-		attributeSourcesHclBlock(resourceModel.attributeSource),
-		issuanceCriteriaHclBlock(resourceModel.issuanceCriteria),
+		attributecontractfulfillment.Hcl(&resourceModel.attributeContractFulfillment),
+		attributesources.JdbcHcl(resourceModel.attributeSource),
+		issuancecriteria.Hcl(resourceModel.issuanceCriteria),
 	)
 }
 
@@ -224,13 +121,13 @@ func testAccCheckExpectedTokenProcessorToTokenGeneratorMappingAttributes(config 
 		}
 
 		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchString(resourceType, stringPointer(tokenProcessorToTokenGeneratorMappingId), "type",
+		err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "type",
 			config.attributeContractFulfillment.Source.Type, response.AttributeContractFulfillment["SAML_SUBJECT"].Source.Type)
 		if err != nil {
 			return err
 		}
 
-		err = acctest.TestAttributesMatchString(resourceType, stringPointer(tokenProcessorToTokenGeneratorMappingId), "value",
+		err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "value",
 			config.attributeContractFulfillment.Value, response.AttributeContractFulfillment["SAML_SUBJECT"].Value)
 		if err != nil {
 			return err
@@ -239,37 +136,37 @@ func testAccCheckExpectedTokenProcessorToTokenGeneratorMappingAttributes(config 
 		attributeSources := response.AttributeSources
 		for _, attributeSource := range attributeSources {
 			if attributeSource.JdbcAttributeSource != nil {
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(tokenProcessorToTokenGeneratorMappingId), "id",
+				err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "id",
 					config.attributeSource.DataStoreRef.Id, attributeSource.JdbcAttributeSource.DataStoreRef.Id)
 				if err != nil {
 					return err
 				}
 
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(tokenProcessorToTokenGeneratorMappingId), "description",
+				err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "description",
 					*config.attributeSource.Description, *attributeSource.JdbcAttributeSource.Description)
 				if err != nil {
 					return err
 				}
 
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(tokenProcessorToTokenGeneratorMappingId), "schema",
+				err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "schema",
 					*config.attributeSource.Description, *attributeSource.JdbcAttributeSource.Description)
 				if err != nil {
 					return err
 				}
 
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(tokenProcessorToTokenGeneratorMappingId), "table",
+				err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "table",
 					config.attributeSource.Table, attributeSource.JdbcAttributeSource.Table)
 				if err != nil {
 					return err
 				}
 
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(tokenProcessorToTokenGeneratorMappingId), "filter",
+				err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "filter",
 					config.attributeSource.Filter, "$"+attributeSource.JdbcAttributeSource.Filter)
 				if err != nil {
 					return err
 				}
 
-				err = acctest.TestAttributesMatchStringSlice(resourceType, stringPointer(tokenProcessorToTokenGeneratorMappingId), "column_names",
+				err = acctest.TestAttributesMatchStringSlice(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "column_names",
 					config.attributeSource.ColumnNames, attributeSource.JdbcAttributeSource.ColumnNames)
 				if err != nil {
 					return err
@@ -280,25 +177,25 @@ func testAccCheckExpectedTokenProcessorToTokenGeneratorMappingAttributes(config 
 		if response.IssuanceCriteria != nil {
 			conditionalCriteria := response.IssuanceCriteria.ConditionalCriteria
 			for _, conditionalCriteriaEntry := range conditionalCriteria {
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(tokenProcessorToTokenGeneratorMappingId), "type",
+				err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "type",
 					config.issuanceCriteria.Source.Type, conditionalCriteriaEntry.Source.Type)
 				if err != nil {
 					return err
 				}
 
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(tokenProcessorToTokenGeneratorMappingId), "attribute_name",
+				err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "attribute_name",
 					config.issuanceCriteria.AttributeName, conditionalCriteriaEntry.AttributeName)
 				if err != nil {
 					return err
 				}
 
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(tokenProcessorToTokenGeneratorMappingId), "condition",
+				err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "condition",
 					config.issuanceCriteria.Condition, conditionalCriteriaEntry.Condition)
 				if err != nil {
 					return err
 				}
 
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(tokenProcessorToTokenGeneratorMappingId), "value",
+				err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "value",
 					config.issuanceCriteria.Value, conditionalCriteriaEntry.Value)
 				if err != nil {
 					return err

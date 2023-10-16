@@ -247,7 +247,7 @@ Optional:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--attribute_sources--ldap_attribute_source--binary_attribute_settings))
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--attribute_sources--ldap_attribute_source--binary_attribute_settings))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
@@ -294,7 +294,7 @@ Optional:
 
 Optional:
 
-- `binary_encoding` (String)
+- `binary_encoding` (String) Get the encoding type for this attribute. If not specified, the default is BASE64.
 
 
 
