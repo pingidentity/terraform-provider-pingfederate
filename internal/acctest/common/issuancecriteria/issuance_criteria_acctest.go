@@ -27,7 +27,8 @@ func Hcl(conditionalIssuanceCriteriaEntry *client.ConditionalIssuanceCriteriaEnt
 					value          = "%s"
 				}
 			]
-		}`
+		}
+		`
 		builder.WriteString(fmt.Sprintf(tf,
 			*conditionalIssuanceCriteriaEntry.ErrorResult,
 			conditionalIssuanceCriteriaEntry.Source.Type,
