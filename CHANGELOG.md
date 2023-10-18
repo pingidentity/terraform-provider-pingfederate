@@ -15,6 +15,7 @@
 * **New Data Source:** `pingfederate_license_agreement` (#70)
 * **New Data Source:** `pingfederate_license` (#70)
 * **New Data Source:** `pingfederate_local_identity_identity_profile` (#70)
+* **New Data Source:** `pingfederate_oauth_access_token_manager` (#76)
 
 ​
 # v0.1.0 September 28, 2023
