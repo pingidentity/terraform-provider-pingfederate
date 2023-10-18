@@ -1,26 +1,12 @@
 package id
 
 import (
-	datasourceschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 )
-
-func AddToDataSourceSchema(s *datasourceschema.Schema, required bool, description string) {
-	idSchemaAttr := datasourceschema.StringAttribute{}
-	idSchemaAttr.Description = description
-	if required {
-		idSchemaAttr.Required = true
-	} else {
-		idSchemaAttr.Computed = true
-		idSchemaAttr.Required = false
-		idSchemaAttr.Optional = false
-	}
-	s.Attributes["id"] = idSchemaAttr
-}
 
 func ToSchema(s *schema.Schema) {
 	schemaId := schema.StringAttribute{}

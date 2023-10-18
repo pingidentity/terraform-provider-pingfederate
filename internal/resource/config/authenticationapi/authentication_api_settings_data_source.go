@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -79,7 +79,7 @@ func (r *authenticationApiSettingsDataSource) Schema(ctx context.Context, req da
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
-				Attributes:  resourcelink.DataSourceSchema(),
+				Attributes:  resourcelink.ToDataSourceSchema(),
 			},
 			"restrict_access_to_redirectless_mode": schema.BoolAttribute{
 				Description: "Enable restrict access to redirectless mode",
@@ -95,7 +95,7 @@ func (r *authenticationApiSettingsDataSource) Schema(ctx context.Context, req da
 			},
 		},
 	}
-	id.AddToDataSourceSchema(&schemaDef, false, "The ID of this resource.")
+	id.ToDataSourceSchema(&schemaDef, false, "The ID of this resource.")
 	resp.Schema = schemaDef
 }
 
