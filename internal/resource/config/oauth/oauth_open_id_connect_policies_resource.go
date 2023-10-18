@@ -128,6 +128,12 @@ func (r *oauthOpenIdConnectPoliciesResource) Schema(ctx context.Context, req res
 										stringplanmodifier.UseStateForUnknown(),
 									},
 								},
+								"include_in_id_token": schema.BoolAttribute{
+									Description: "Attribute is included in the ID Token.",
+								},
+								"include_in_user_info": schema.BoolAttribute{
+									Description: "Attribute is included in the User Info.",
+								},
 								"multi_valued": schema.BoolAttribute{
 									Description: "Indicates whether attribute value is always returned as an array.",
 									Optional:    false,
@@ -156,6 +162,12 @@ func (r *oauthOpenIdConnectPoliciesResource) Schema(ctx context.Context, req res
 										stringplanmodifier.UseStateForUnknown(),
 									},
 								},
+								"include_in_id_token": schema.BoolAttribute{
+									Description: "Attribute is included in the ID Token.",
+								},
+								"include_in_user_info": schema.BoolAttribute{
+									Description: "Attribute is included in the User Info.",
+								},
 								"multi_valued": schema.BoolAttribute{
 									Description: "Indicates whether attribute value is always returned as an array.",
 									Computed:    true,
@@ -176,12 +188,6 @@ func (r *oauthOpenIdConnectPoliciesResource) Schema(ctx context.Context, req res
 						"attribute_sources":              attributesources.ToSchema(),
 						"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(false, true),
 						"issuance_criteria":              issuancecriteria.ToSchema(),
-						"inherited": schema.BoolAttribute{
-							Optional:    true,
-							Computed:    true,
-							Default:     booldefault.StaticBool(false),
-							Description: "Whether this attribute mapping is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
-						},
 					},
 				},
 				"scope_attribute_mappings": schema.SingleNestedAttribute{
@@ -207,7 +213,7 @@ func (r *oauthOpenIdConnectPoliciesResource) Schema(ctx context.Context, req res
 	// resp.Schema = schema
 // }
 
-func addOptionalOauthOpenIdConnectPoliciesFields(ctx context.Context, addRequest *client.Policies, plan oauthOpenIdConnectPoliciesResourceModel) error {
+func addOptionalOauthOpenIdConnectPoliciesFields(ctx context.Context, addRequest *client.OauthOpenIdConnectApiService, plan oauthOpenIdConnectPoliciesResourceModel) error {
 	
 	if internaltypes.IsDefined(plan.Id) {
 	addRequest.Id = plan.Id.ValueStringPointer()
@@ -305,8 +311,10 @@ state.Id = internaltypes.StringTypeOrNil(r.Id)
 	state.ReissueIdTokenInHybridFlow = types.BoolValue(r.ReissueIdTokenInHybridFlow)	
 	state.AttributeContract = (r.AttributeContract)	
 	state.AttributeMapping = (r.AttributeMapping)	
-	state.ScopeAttributeMappings = You will need to figure out what needs to go into the object(r.ScopeAttributeMappings)
+	state.ScopeAttributeMappings = (r.ScopeAttributeMappings)
 }
+
+//^^state.ScopeAttributeMappings = You will need to figure out what needs to go into the object(r.ScopeAttributeMappings)
 
 func (r *oauthOpenIdConnectPoliciesResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan oauthOpenIdConnectPoliciesResourceModel
