@@ -2,7 +2,6 @@ package sp
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -10,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -147,21 +145,16 @@ func (r *spAuthenticationPolicyContractMappingResource) Create(ctx context.Conte
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	attributeContractFulfillment := &map[string]client.AttributeFulfillmentValue{}
-	attributeContractFulfillmentErr := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContractFulfillment, false)), attributeContractFulfillment)
-	if attributeContractFulfillmentErr != nil {
-		resp.Diagnostics.AddError("Failed to build attribute contract fulfillment request object:", attributeContractFulfillmentErr.Error())
+	attributeContractFulfillment, err := attributecontractfulfillment.ClientStruct(plan.AttributeContractFulfillment)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to build attribute contract fulfillment request object:", err.Error())
 		return
 	}
-	createSpAuthenticationPolicyContractMappingResource := client.NewApcToSpAdapterMapping(*attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
-	err := addOptionalSpAuthenticationPolicyContractMappingResourceFields(ctx, createSpAuthenticationPolicyContractMappingResource, plan)
+	createSpAuthenticationPolicyContractMappingResource := client.NewApcToSpAdapterMapping(attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
+	err = addOptionalSpAuthenticationPolicyContractMappingResourceFields(ctx, createSpAuthenticationPolicyContractMappingResource, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for SpAuthenticationPolicyContractMappingResource", err.Error())
 		return
-	}
-	_, requestErr := createSpAuthenticationPolicyContractMappingResource.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of the SpAuthenticationPolicyContractMappingResource: %s", requestErr.Error())
 	}
 
 	apiCreateSpAuthenticationPolicyContractMappingResource := r.apiClient.SpAuthenticationPolicyContractMappingsAPI.CreateApcToSpAdapterMapping(config.ProviderBasicAuthContext(ctx, r.providerConfig))
@@ -170,10 +163,6 @@ func (r *spAuthenticationPolicyContractMappingResource) Create(ctx context.Conte
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the SpAuthenticationPolicyContractMappingResource", err, httpResp)
 		return
-	}
-	_, responseErr := spAuthenticationPolicyContractMappingResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the SpAuthenticationPolicyContractMappingResource: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -204,11 +193,6 @@ func (r *spAuthenticationPolicyContractMappingResource) Read(ctx context.Context
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  SpAuthenticationPolicyContractMappingResource", err, httpResp)
 		}
 	}
-	// Log response JSON
-	_, responseErr := apiReadSpAuthenticationPolicyContractMappingResource.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the SpAuthenticationPolicyContractMappingResource: %s", responseErr.Error())
-	}
 
 	// Read the response into the state
 	diags = readSpAuthenticationPolicyContractMappingResourceResponse(ctx, apiReadSpAuthenticationPolicyContractMappingResource, &state)
@@ -227,33 +211,23 @@ func (r *spAuthenticationPolicyContractMappingResource) Update(ctx context.Conte
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	attributeContractFulfillment := &map[string]client.AttributeFulfillmentValue{}
-	attributeContractFulfillmentErr := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContractFulfillment, false)), attributeContractFulfillment)
-	if attributeContractFulfillmentErr != nil {
-		resp.Diagnostics.AddError("Failed to build attribute contract fulfillment request object:", attributeContractFulfillmentErr.Error())
+	attributeContractFulfillment, err := attributecontractfulfillment.ClientStruct(plan.AttributeContractFulfillment)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to build attribute contract fulfillment request object:", err.Error())
 		return
 	}
 	updateSpAuthenticationPolicyContractMappingResource := r.apiClient.SpAuthenticationPolicyContractMappingsAPI.UpdateApcToSpAdapterMappingById(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Id.ValueString())
-	createUpdateRequest := client.NewApcToSpAdapterMapping(*attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
-	err := addOptionalSpAuthenticationPolicyContractMappingResourceFields(ctx, createUpdateRequest, plan)
+	createUpdateRequest := client.NewApcToSpAdapterMapping(attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
+	err = addOptionalSpAuthenticationPolicyContractMappingResourceFields(ctx, createUpdateRequest, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for SpAuthenticationPolicyContractMappingResource", err.Error())
 		return
-	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of the SpAuthenticationPolicyContractMappingResource: %s", requestErr.Error())
 	}
 	updateSpAuthenticationPolicyContractMappingResource = updateSpAuthenticationPolicyContractMappingResource.Body(*createUpdateRequest)
 	updateSpAuthenticationPolicyContractMappingResourceResponse, httpResp, err := r.apiClient.SpAuthenticationPolicyContractMappingsAPI.UpdateApcToSpAdapterMappingByIdExecute(updateSpAuthenticationPolicyContractMappingResource)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating SpAuthenticationPolicyContractMappingResource", err, httpResp)
 		return
-	}
-	// Log response JSON
-	_, responseErr := updateSpAuthenticationPolicyContractMappingResourceResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the SpAuthenticationPolicyContractMappingResource: %s", responseErr.Error())
 	}
 	// Read the response
 	var state spAuthenticationPolicyContractMappingResourceModel
@@ -274,7 +248,7 @@ func (r *spAuthenticationPolicyContractMappingResource) Delete(ctx context.Conte
 		return
 	}
 	httpResp, err := r.apiClient.SpAuthenticationPolicyContractMappingsAPI.DeleteApcToSpAdapterMappingById(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
-	if err != nil {
+	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting SpAuthenticationPolicyContractMappingResource", err, httpResp)
 	}
 

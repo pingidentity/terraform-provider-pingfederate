@@ -29,32 +29,16 @@ type tokenProcessorToTokenGeneratorMappingResourceModel struct {
 	targetId                     string
 }
 
-func initialAttributeContractFulfillment() client.AttributeFulfillmentValue {
-	initialAttributecontractfulfillment := *client.NewAttributeFulfillmentValue(
-		*client.NewSourceTypeIdKey("TEXT"),
-		"value",
-	)
-	return initialAttributecontractfulfillment
-}
-
-func updatedAttributeContractFulfillment() client.AttributeFulfillmentValue {
-	updatedAttributecontractfulfillment := *client.NewAttributeFulfillmentValue(
-		*client.NewSourceTypeIdKey("CONTEXT"),
-		"ClientIp",
-	)
-	return updatedAttributecontractfulfillment
-}
-
 func TestAccTokenProcessorToTokenGeneratorMapping(t *testing.T) {
 	resourceName := "myTokenProcessorToTokenGeneratorMapping"
 	initialResourceModel := tokenProcessorToTokenGeneratorMappingResourceModel{
-		attributeContractFulfillment: initialAttributeContractFulfillment(),
+		attributeContractFulfillment: attributecontractfulfillment.InitialAttributeContractFulfillment(),
 		sourceId:                     tokenProcSourceId,
 		targetId:                     tokenGenTargetId,
 	}
 	updatedResourceModel := tokenProcessorToTokenGeneratorMappingResourceModel{
-		attributeSource:              attributesources.JdbcClientStruct(),
-		attributeContractFulfillment: updatedAttributeContractFulfillment(),
+		attributeSource:              attributesources.JdbcClientStruct("CHANNEL_GROUP", "$${SAML_SUBJECT}", "JDBC", *client.NewResourceLink("ProvisionerDS")),
+		attributeContractFulfillment: attributecontractfulfillment.UpdatedAttributeContractFulfillment(),
 		issuanceCriteria:             issuancecriteria.ConditionalCriteria(),
 		sourceId:                     tokenProcSourceId,
 		targetId:                     tokenGenTargetId,
