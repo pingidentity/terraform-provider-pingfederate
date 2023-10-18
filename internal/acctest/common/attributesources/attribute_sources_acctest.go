@@ -44,11 +44,6 @@ func JdbcHcl(attrSource *client.JdbcAttributeSource) string {
 	return builder.String()
 }
 
-// jdbcAttributeSource := client.NewJdbcAttributeSource(
-//
-//	"CHANNEL_GROUP", "$${SAML_SUBJECT}", "JDBC", *client.NewResourceLink("ProvisionerDS"),
-//
-// )
 func JdbcClientStruct(table string, filter string, attributeSourceType string, resourceLink client.ResourceLink) *client.JdbcAttributeSource {
 	jdbcAttributeSource := client.NewJdbcAttributeSource(
 		table, filter, attributeSourceType, resourceLink,
