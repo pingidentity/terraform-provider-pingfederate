@@ -30,6 +30,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/protocolmetadata"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sessions"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sp"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -305,5 +306,6 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		sessions.SessionApplicationSessionPolicyResource,
 		sessions.SessionAuthenticationSessionPoliciesGlobalResource,
 		sessions.SessionSettingsResource,
+		sp.SpAuthenticationPolicyContractMappingResource,
 	}
 }

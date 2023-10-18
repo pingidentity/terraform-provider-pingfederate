@@ -79,7 +79,7 @@ func updatedAttributeMapping() *client.IdpAdapterContractMapping {
 
 	attributeMapping.AttributeSources = []client.AttributeSourceAggregation{
 		{
-			JdbcAttributeSource: attributesources.JdbcClientStruct(),
+			JdbcAttributeSource: attributesources.JdbcClientStruct("CHANNEL_GROUP", "$${SAML_SUBJECT}", "JDBC", *client.NewResourceLink("ProvisionerDS")),
 		},
 	}
 	attributeMapping.IssuanceCriteria = client.NewIssuanceCriteria()
