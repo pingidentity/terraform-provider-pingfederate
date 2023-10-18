@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
@@ -124,7 +123,7 @@ func (r *spAuthenticationPolicyContractMappingResource) Configure(_ context.Cont
 	r.apiClient = providerCfg.ApiClient
 }
 
-func readSpAuthenticationPolicyContractMappingResourceResponse(ctx context.Context, r *client.ApcToSpAdapterMapping, state *spAuthenticationPolicyContractMappingResourceModel, plan spAuthenticationPolicyContractMappingResourceModel) diag.Diagnostics {
+func readSpAuthenticationPolicyContractMappingResourceResponse(ctx context.Context, r *client.ApcToSpAdapterMapping, state *spAuthenticationPolicyContractMappingResourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.AttributeSources, respDiags = attributesources.ToState(ctx, r.AttributeSources)
 	diags.Append(respDiags...)
@@ -160,9 +159,9 @@ func (r *spAuthenticationPolicyContractMappingResource) Create(ctx context.Conte
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for SpAuthenticationPolicyContractMappingResource", err.Error())
 		return
 	}
-	requestJson, err := createSpAuthenticationPolicyContractMappingResource.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
+	_, requestErr := createSpAuthenticationPolicyContractMappingResource.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of the SpAuthenticationPolicyContractMappingResource: %s", requestErr.Error())
 	}
 
 	apiCreateSpAuthenticationPolicyContractMappingResource := r.apiClient.SpAuthenticationPolicyContractMappingsAPI.CreateApcToSpAdapterMapping(config.ProviderBasicAuthContext(ctx, r.providerConfig))
@@ -172,15 +171,15 @@ func (r *spAuthenticationPolicyContractMappingResource) Create(ctx context.Conte
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the SpAuthenticationPolicyContractMappingResource", err, httpResp)
 		return
 	}
-	responseJson, err := spAuthenticationPolicyContractMappingResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
+	_, responseErr := spAuthenticationPolicyContractMappingResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of the SpAuthenticationPolicyContractMappingResource: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
 	var state spAuthenticationPolicyContractMappingResourceModel
 
-	diags = readSpAuthenticationPolicyContractMappingResourceResponse(ctx, spAuthenticationPolicyContractMappingResponse, &state, plan)
+	diags = readSpAuthenticationPolicyContractMappingResourceResponse(ctx, spAuthenticationPolicyContractMappingResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
 	diags = resp.State.Set(ctx, state)
@@ -206,13 +205,13 @@ func (r *spAuthenticationPolicyContractMappingResource) Read(ctx context.Context
 		}
 	}
 	// Log response JSON
-	responseJson, err := apiReadSpAuthenticationPolicyContractMappingResource.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := apiReadSpAuthenticationPolicyContractMappingResource.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of the SpAuthenticationPolicyContractMappingResource: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
-	diags = readSpAuthenticationPolicyContractMappingResourceResponse(ctx, apiReadSpAuthenticationPolicyContractMappingResource, &state, state)
+	diags = readSpAuthenticationPolicyContractMappingResourceResponse(ctx, apiReadSpAuthenticationPolicyContractMappingResource, &state)
 	resp.Diagnostics.Append(diags...)
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -241,9 +240,9 @@ func (r *spAuthenticationPolicyContractMappingResource) Update(ctx context.Conte
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for SpAuthenticationPolicyContractMappingResource", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
+	_, requestErr := createUpdateRequest.MarshalJSON()
+	if requestErr != nil {
+		diags.AddError("There was an issue retrieving the request of the SpAuthenticationPolicyContractMappingResource: %s", requestErr.Error())
 	}
 	updateSpAuthenticationPolicyContractMappingResource = updateSpAuthenticationPolicyContractMappingResource.Body(*createUpdateRequest)
 	updateSpAuthenticationPolicyContractMappingResourceResponse, httpResp, err := r.apiClient.SpAuthenticationPolicyContractMappingsAPI.UpdateApcToSpAdapterMappingByIdExecute(updateSpAuthenticationPolicyContractMappingResource)
@@ -252,13 +251,13 @@ func (r *spAuthenticationPolicyContractMappingResource) Update(ctx context.Conte
 		return
 	}
 	// Log response JSON
-	responseJson, err := updateSpAuthenticationPolicyContractMappingResourceResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
+	_, responseErr := updateSpAuthenticationPolicyContractMappingResourceResponse.MarshalJSON()
+	if responseErr != nil {
+		diags.AddError("There was an issue retrieving the response of the SpAuthenticationPolicyContractMappingResource: %s", responseErr.Error())
 	}
 	// Read the response
 	var state spAuthenticationPolicyContractMappingResourceModel
-	diags = readSpAuthenticationPolicyContractMappingResourceResponse(ctx, updateSpAuthenticationPolicyContractMappingResourceResponse, &state, plan)
+	diags = readSpAuthenticationPolicyContractMappingResourceResponse(ctx, updateSpAuthenticationPolicyContractMappingResourceResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values

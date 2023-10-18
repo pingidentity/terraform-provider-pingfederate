@@ -4,7 +4,7 @@
 * **New Resource:** `pingfederate_idp_adapter` (#64)
 * **New Resource:** `pingfederate_token_processor_to_token_generator_mapping` (#65)
 * **New Resource:** `pingfederate_oauth_token_exchange_processor_policy_token_generator_mapping` (#68)
-* **New Resource:** `pingfederate_authentication_policy_contract` (#75)
+* **New Resource:** `pingfederate_sp_authentication_policy_contract` (#75)
 
 ​
 #### Data Sources
