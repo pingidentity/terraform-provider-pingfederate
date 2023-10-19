@@ -53,11 +53,9 @@ var (
 		"validate_connection_sql":      basetypes.StringType{},
 		"password":                     basetypes.StringType{},
 	}
-)
 
-// func toStateJdbcDataStoreEmptyStateObj() basetypes.ObjectValue {
-// 	return types.ObjectNull(jdbcDataStoreAttrType)
-// }
+	jdbcDataStoreEmptyStateObj = types.ObjectNull(jdbcDataStoreAttrType)
+)
 
 func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 	jdbcDataStoreSchema := schema.SingleNestedAttribute{}
