@@ -22,6 +22,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/administrativeaccount"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificate"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/datastore"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/license"
@@ -285,6 +286,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		config.RedirectValidationResource,
 		config.TokenProcessorToTokenGeneratorMappingResource,
 		config.VirtualHostNamesResource,
+		datastore.DataStoreResource,
 		idp.IdpAdapterResource,
 		idp.IdpDefaultUrlsResource,
 		keypairs.KeyPairsSigningImportResource,

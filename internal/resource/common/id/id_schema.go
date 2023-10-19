@@ -24,6 +24,7 @@ func ToSchemaCustomId(s *schema.Schema, required bool, characterLimit bool, desc
 	customId := schema.StringAttribute{}
 	customId.Description = description
 	customId.PlanModifiers = []planmodifier.String{
+		stringplanmodifier.UseStateForUnknown(),
 		stringplanmodifier.RequiresReplace(),
 	}
 	if required {
@@ -33,7 +34,9 @@ func ToSchemaCustomId(s *schema.Schema, required bool, characterLimit bool, desc
 		customId.Optional = true
 	}
 	if characterLimit {
-		customId.Validators = []validator.String{configvalidators.ValidChars()}
+		customId.Validators = []validator.String{
+			configvalidators.ValidChars(),
+		}
 	}
 	s.Attributes["custom_id"] = customId
 }
