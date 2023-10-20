@@ -13,7 +13,7 @@ Manages OAuth Access Token Manager
 ## Example Usage
 
 ```terraform
-resource "pingfederate_oauth_access_token_manager" "internallyManagedReferenceOauthAccessTokenManagerExample" {
+resource "pingfederate_oauth_access_token_manager" "myInternallyManagedReferenceOauthAccessTokenManager" {
   custom_id = "internallyManagedReferenceOatm"
   name      = "internallyManagedReferenceExample"
   plugin_descriptor_ref = {

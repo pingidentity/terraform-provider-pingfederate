@@ -136,6 +136,10 @@ resource "pingfederate_oauth_access_token_manager" "%[1]s" {
     update_authn_session_activity   = false
     include_session_id              = false
   }
+}
+
+data "pingfederate_oauth_access_token_manager" "%[1]s" {
+  custom_id = pingfederate_oauth_access_token_manager.%[1]s.id
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.name,

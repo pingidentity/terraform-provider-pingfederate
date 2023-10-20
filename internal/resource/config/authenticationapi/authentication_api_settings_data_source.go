@@ -107,7 +107,7 @@ func readAuthenticationApiSettingsResponseDataSource(ctx context.Context, r *cli
 	state.EnableApiDescriptions = types.BoolValue(*r.EnableApiDescriptions)
 	state.RestrictAccessToRedirectlessMode = types.BoolValue(*r.RestrictAccessToRedirectlessMode)
 	state.IncludeRequestContext = types.BoolValue(*r.IncludeRequestContext)
-	resourceLinkObjectValue, valueFromDiags := resourcelink.ToState(ctx, r.DefaultApplicationRef)
+	resourceLinkObjectValue, valueFromDiags := resourcelink.ToDataSourceState(ctx, r.DefaultApplicationRef)
 	state.DefaultApplicationRef = resourceLinkObjectValue
 
 	return valueFromDiags
