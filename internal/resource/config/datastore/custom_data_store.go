@@ -104,12 +104,9 @@ func toStateCustomDataStore(con context.Context, clientValue *client.DataStoreAg
 	configurationObject := func() (types.Object, diag.Diagnostics) {
 		planConfiguration, ok := plan.Attributes()["configuration"]
 		if ok {
-			configuration, diags := pluginconfiguration.ToState(planConfiguration.(types.Object), &customDataStore.Configuration)
-			allDiags = append(allDiags, diags...)
-			return configuration, allDiags
+			return pluginconfiguration.ToState(planConfiguration.(types.Object), &customDataStore.Configuration)
 		} else {
-			configuration := types.ObjectNull(pluginconfiguration.AttrType())
-			return configuration, allDiags
+			return pluginconfiguration.ToState(types.ObjectNull(pluginconfiguration.AttrType()), &customDataStore.Configuration)
 		}
 	}
 	configurationToState, diags := configurationObject()

@@ -141,8 +141,8 @@ func TestAccJdbcDataStore(t *testing.T) {
 func testAccJdbcDataStore(resourceName string, resourceModel jdbcDataStoreResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_data_store" "%[1]s" {
-	custom_id             = "%[2]s"
-	mask_attribute_values = %[3]t
+  custom_id             = "%[2]s"
+  mask_attribute_values = %[3]t
 	%[4]s
 }`, resourceName,
 		jdbcDataStoreId,

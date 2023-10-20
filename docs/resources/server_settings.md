@@ -151,7 +151,7 @@ Required:
 Optional:
 
 - `enable_utf8_message_headers` (Boolean) Only set this flag to true if the email server supports UTF-8 characters in message headers. Otherwise, this is defaulted to false.
-- `password` (String) User password. To update the password, specify the plaintext value in this field. This field will not be populated for GET requests.
+- `password` (String, Sensitive) User password. To update the password, specify the plaintext value in this field. This field will not be populated for GET requests.
 - `port` (Number) The SMTP port on your email server. Allowable values: 1 - 65535. The default value is 25.
 - `retry_attempts` (Number) The number of times PingFederate tries to resend an email upon unsuccessful delivery. The default value is 2.
 - `retry_delay` (Number) The number of minutes PingFederate waits before the next retry attempt. The default value is 2.
