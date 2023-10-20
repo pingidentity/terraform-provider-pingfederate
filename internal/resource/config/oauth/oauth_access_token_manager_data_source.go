@@ -23,6 +23,31 @@ var (
 	_ datasource.DataSourceWithConfigure = &oauthAccessTokenManagerDataSource{}
 )
 
+var (
+	fieldAttrTypes = map[string]attr.Type{
+		"name":            basetypes.StringType{},
+		"value":           basetypes.StringType{},
+		"encrypted_value": basetypes.StringType{},
+		"inherited":       basetypes.BoolType{},
+	}
+
+	rowAttrTypes = map[string]attr.Type{
+		"fields":      basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: fieldAttrTypes}},
+		"default_row": basetypes.BoolType{},
+	}
+
+	tableAttrTypes = map[string]attr.Type{
+		"name":      basetypes.StringType{},
+		"rows":      basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: rowAttrTypes}},
+		"inherited": basetypes.BoolType{},
+	}
+
+	configurationAttrTypes = map[string]attr.Type{
+		"fields": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
+		"tables": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: tableAttrTypes}},
+	}
+)
+
 // Create a Administrative Account data source
 func NewOauthAccessTokenManagerDataSource() datasource.DataSource {
 	return &oauthAccessTokenManagerDataSource{}
@@ -266,7 +291,8 @@ func readOauthAccessTokenManagerResponseDataSource(ctx context.Context, r *clien
 	diags.Append(respDiags...)
 	state.ParentRef, respDiags = resourcelink.ToDataSourceState(ctx, r.ParentRef)
 	diags.Append(respDiags...)
-	state.Configuration, respDiags = pluginconfiguration.ToDataSourceState(configurationFromPlan, &r.Configuration)
+
+	state.Configuration, respDiags = types.ObjectValueFrom(ctx, configurationAttrTypes, &r.Configuration)
 	diags.Append(respDiags...)
 
 	// state.AttributeContract
@@ -352,12 +378,7 @@ func (r *oauthAccessTokenManagerDataSource) Read(ctx context.Context, req dataso
 	apiReadOauthAccessTokenManager, httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.GetTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
 
 	if err != nil {
-		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Manager", err, httpResp)
-			resp.State.RemoveResource(ctx)
-		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Manager", err, httpResp)
-		}
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Manager", err, httpResp)
 		return
 	}
 

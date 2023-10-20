@@ -5,6 +5,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+)
+
+var (
+	fieldAttrTypes = map[string]attr.Type{
+		"name":      basetypes.StringType{},
+		"value":     basetypes.StringType{},
+		"inherited": basetypes.BoolType{},
+	}
 )
 
 func ToDataSourceSchema() schema.SingleNestedAttribute {
@@ -50,6 +59,12 @@ func ToDataSourceSchema() schema.SingleNestedAttribute {
 												},
 												"value": schema.StringAttribute{
 													Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
+													Required:    false,
+													Optional:    false,
+													Computed:    true,
+												},
+												"encrypted_value": schema.StringAttribute{
+													Description: "For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. If you do not want to update the stored value, this attribute should be passed back unchanged.",
 													Required:    false,
 													Optional:    false,
 													Computed:    true,
@@ -101,30 +116,8 @@ func ToDataSourceSchema() schema.SingleNestedAttribute {
 							Optional:    false,
 							Computed:    true,
 						},
-						"inherited": schema.BoolAttribute{
-							Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-							Required:    false,
-							Optional:    false,
-							Computed:    true,
-						},
-					},
-				},
-			},
-			"fields_all": schema.ListNestedAttribute{
-				Description: "List of configuration fields. This attribute will include any values set by default by PingFederate.",
-				Required:    false,
-				Optional:    false,
-				Computed:    true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"name": schema.StringAttribute{
-							Description: "The name of the configuration field.",
-							Required:    false,
-							Optional:    false,
-							Computed:    true,
-						},
-						"value": schema.StringAttribute{
-							Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
+						"encrypted_value": schema.StringAttribute{
+							Description: "For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. If you do not want to update the stored value, this attribute should be passed back unchanged.",
 							Required:    false,
 							Optional:    false,
 							Computed:    true,
