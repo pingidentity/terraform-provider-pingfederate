@@ -86,6 +86,10 @@ func (r *dataStoreResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
+	if internaltypes.IsDefined(plan.CustomDataStore) {
+		createCustomDataStore(plan, ctx, req, resp, r)
+	}
+
 	if internaltypes.IsDefined(plan.JdbcDataStore) {
 		createJdbcDataStore(plan, ctx, req, resp, r)
 	}
@@ -110,6 +114,11 @@ func (r *dataStoreResource) Read(ctx context.Context, req resource.ReadRequest, 
 		}
 	}
 
+	if dataStoreGetReq.CustomDataStore != nil {
+		diags = readCustomDataStoreResponse(ctx, dataStoreGetReq, &state, &state.CustomDataStore)
+		resp.Diagnostics.Append(diags...)
+	}
+
 	if dataStoreGetReq.JdbcDataStore != nil {
 		diags = readJdbcDataStoreResponse(ctx, dataStoreGetReq, &state, &state)
 		resp.Diagnostics.Append(diags...)
@@ -129,6 +138,10 @@ func (r *dataStoreResource) Update(ctx context.Context, req resource.UpdateReque
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
+	}
+
+	if internaltypes.IsDefined(plan.CustomDataStore) {
+		updateCustomDataStore(plan, ctx, req, resp, r)
 	}
 
 	if internaltypes.IsDefined(plan.JdbcDataStore) {
