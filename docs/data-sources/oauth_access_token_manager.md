@@ -102,10 +102,10 @@ Read-Only:
 
 Read-Only:
 
-- `encrypted_value` (String) For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. If you do not want to update the stored value, this attribute should be passed back unchanged.
+- `encrypted_value` (String) For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined.
 - `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute.
 
 
 <a id="nestedatt--configuration--tables"></a>
@@ -130,10 +130,10 @@ Read-Only:
 
 Read-Only:
 
-- `encrypted_value` (String) For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. If you do not want to update the stored value, this attribute should be passed back unchanged.
+- `encrypted_value` (String) For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined.
 - `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 - `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute.
 
 
 

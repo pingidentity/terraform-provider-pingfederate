@@ -10,11 +10,32 @@ import (
 
 var (
 	fieldAttrTypes = map[string]attr.Type{
+		"name":            basetypes.StringType{},
+		"value":           basetypes.StringType{},
+		"encrypted_value": basetypes.StringType{},
+		"inherited":       basetypes.BoolType{},
+	}
+
+	rowAttrTypes = map[string]attr.Type{
+		"fields":      basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: fieldAttrTypes}},
+		"default_row": basetypes.BoolType{},
+	}
+
+	tableAttrTypes = map[string]attr.Type{
 		"name":      basetypes.StringType{},
-		"value":     basetypes.StringType{},
+		"rows":      basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: rowAttrTypes}},
 		"inherited": basetypes.BoolType{},
 	}
+
+	configurationAttrTypes = map[string]attr.Type{
+		"fields": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
+		"tables": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: tableAttrTypes}},
+	}
 )
+
+func AttrType() map[string]attr.Type {
+	return configurationAttrTypes
+}
 
 func ToDataSourceSchema() schema.SingleNestedAttribute {
 	fieldsListDefault, _ := types.ListValue(types.ObjectType{AttrTypes: fieldAttrTypes}, []attr.Value{})
@@ -58,13 +79,13 @@ func ToDataSourceSchema() schema.SingleNestedAttribute {
 													Computed:    true,
 												},
 												"value": schema.StringAttribute{
-													Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
+													Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute.",
 													Required:    false,
 													Optional:    false,
 													Computed:    true,
 												},
 												"encrypted_value": schema.StringAttribute{
-													Description: "For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. If you do not want to update the stored value, this attribute should be passed back unchanged.",
+													Description: "For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined.",
 													Required:    false,
 													Optional:    false,
 													Computed:    true,
@@ -111,13 +132,13 @@ func ToDataSourceSchema() schema.SingleNestedAttribute {
 							Computed:    true,
 						},
 						"value": schema.StringAttribute{
-							Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
+							Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute.",
 							Required:    false,
 							Optional:    false,
 							Computed:    true,
 						},
 						"encrypted_value": schema.StringAttribute{
-							Description: "For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. If you do not want to update the stored value, this attribute should be passed back unchanged.",
+							Description: "For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined.",
 							Required:    false,
 							Optional:    false,
 							Computed:    true,

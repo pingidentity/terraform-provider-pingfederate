@@ -24,27 +24,21 @@ var (
 )
 
 var (
-	fieldAttrTypes = map[string]attr.Type{
-		"name":            basetypes.StringType{},
-		"value":           basetypes.StringType{},
-		"encrypted_value": basetypes.StringType{},
-		"inherited":       basetypes.BoolType{},
+	coreAttributeTypes = map[string]attr.Type{
+		"name":         basetypes.StringType{},
+		"multi_valued": basetypes.BoolType{},
 	}
 
-	rowAttrTypes = map[string]attr.Type{
-		"fields":      basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: fieldAttrTypes}},
-		"default_row": basetypes.BoolType{},
+	extendedAttributeTypes = map[string]attr.Type{
+		"name":         basetypes.StringType{},
+		"multi_valued": basetypes.BoolType{},
 	}
 
-	tableAttrTypes = map[string]attr.Type{
-		"name":      basetypes.StringType{},
-		"rows":      basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: rowAttrTypes}},
-		"inherited": basetypes.BoolType{},
-	}
-
-	configurationAttrTypes = map[string]attr.Type{
-		"fields": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
-		"tables": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: tableAttrTypes}},
+	attributeContractAttrTypes = map[string]attr.Type{
+		"core_attributes":           basetypes.ListType{ElemType: types.ObjectType{AttrTypes: coreAttributeTypes}},
+		"extended_attributes":       basetypes.ListType{ElemType: types.ObjectType{AttrTypes: extendedAttributeTypes}},
+		"inherited":                 basetypes.BoolType{},
+		"default_subject_attribute": basetypes.StringType{},
 	}
 )
 
@@ -291,47 +285,14 @@ func readOauthAccessTokenManagerResponseDataSource(ctx context.Context, r *clien
 	diags.Append(respDiags...)
 	state.ParentRef, respDiags = resourcelink.ToDataSourceState(ctx, r.ParentRef)
 	diags.Append(respDiags...)
-
-	state.Configuration, respDiags = types.ObjectValueFrom(ctx, configurationAttrTypes, &r.Configuration)
+	state.Configuration, respDiags = types.ObjectValueFrom(ctx, pluginconfiguration.AttrType(), r.Configuration)
 	diags.Append(respDiags...)
 
 	// state.AttributeContract
 	if r.AttributeContract == nil {
-		state.AttributeContract = types.ObjectNull(attributeContractTypes)
+		state.AttributeContract = types.ObjectNull(attributeContractAttrTypes)
 	} else {
-		attrContract := r.AttributeContract
-
-		// state.AttributeContract core_attributes
-		attributeContractClientCoreAttributes := attrContract.CoreAttributes
-		coreAttrs := []client.AccessTokenAttribute{}
-		for _, ca := range attributeContractClientCoreAttributes {
-			coreAttribute := client.AccessTokenAttribute{}
-			coreAttribute.Name = ca.Name
-			coreAttribute.MultiValued = ca.MultiValued
-			coreAttrs = append(coreAttrs, coreAttribute)
-		}
-		attributeContractCoreAttributes, respDiags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
-		diags.Append(respDiags...)
-
-		// state.AttributeContract extended_attributes
-		attributeContractClientExtendedAttributes := attrContract.ExtendedAttributes
-		extdAttrs := []client.AccessTokenAttribute{}
-		for _, ea := range attributeContractClientExtendedAttributes {
-			extendedAttr := client.AccessTokenAttribute{}
-			extendedAttr.Name = ea.Name
-			extendedAttr.MultiValued = ea.MultiValued
-			extdAttrs = append(extdAttrs, extendedAttr)
-		}
-		attributeContractExtendedAttributes, respDiags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
-		diags.Append(respDiags...)
-
-		attributeContractValues := map[string]attr.Value{
-			"core_attributes":           attributeContractCoreAttributes,
-			"extended_attributes":       attributeContractExtendedAttributes,
-			"inherited":                 types.BoolPointerValue(attrContract.Inherited),
-			"default_subject_attribute": types.StringPointerValue(attrContract.DefaultSubjectAttribute),
-		}
-		state.AttributeContract, respDiags = types.ObjectValue(attributeContractTypes, attributeContractValues)
+		state.AttributeContract, respDiags = types.ObjectValueFrom(ctx, attributeContractAttrTypes, r.AttributeContract)
 		diags.Append(respDiags...)
 	}
 
