@@ -2,152 +2,170 @@
 # Please refer to the link below on how to best store state files and data within. #
 # https://developer.hashicorp.com/terraform/plugin/best-practices/sensitive-state #
 
-resource "pingfederate_data_store" "myCustomDataStore" {
-  custom_id = "myCustomDataStore"
-  # mask_attribute_value= false
-  custom_data_store = {
-    name = "custom"
-    plugin_descriptor_ref = {
-      id = "com.pingidentity.pf.datastore.other.RestDataSourceDriver"
-    }
-    configuration = {
-      tables = [
-        {
-          name = "Base URLs and Tags"
-          rows = [
-            {
-              fields = [
-                {
-                  name  = "Base URL"
-                  value = "http://localhost"
-                },
-                {
-                  name  = "Tags"
-                  value = "tag"
-                }
-              ],
-              default_row = true
-            }
-          ]
-        },
-        {
-          name = "HTTP Request Headers"
-          rows = [
-            {
-              fields = [
-                {
-                  name  = "Header Name"
-                  value = "header"
-                },
-                {
-                  name  = "Header Value"
-                  value = "header_value"
-                }
-              ],
-              default_row = false
-            }
-          ]
-        },
-        {
-          name = "Attributes"
-          rows = [
-            {
-              fields = [
-                {
-                  name  = "Local Attribute"
-                  value = "attribute"
-                },
-                {
-                  name  = "JSON Response Attribute Path"
-                  value = "/json_response_attr_path"
-                }
-              ],
-              default_row = false
-            }
-          ]
-        }
-      ],
-      fields = [
-        {
-          name  = "Authentication Method"
-          value = "Basic Authentication"
-        },
-        {
-          name  = "HTTP Method"
-          value = "GET"
-        },
-        {
-          name  = "Username"
-          value = "Administrator"
-        },
-        {
-          name  = "Password"
-          value = "2FederateM0re"
-        },
-        {
-          name  = "Password Reference"
-          value = ""
-        },
-        {
-          name  = "OAuth Token Endpoint"
-          value = "https://example.com"
-        },
-        {
-          name  = "OAuth Scope"
-          value = "scope"
-        },
-        {
-          name  = "Client ID"
-          value = "client_id"
-        },
-        {
-          name  = "Client Secret"
-          value = "2FederateM0re"
-        },
-        {
-          name  = "Client Secret Reference"
-          value = ""
-        },
-        {
-          name  = "Enable HTTPS Hostname Verification"
-          value = "true"
-        },
-        {
-          name  = "Read Timeout (ms)"
-          value = "10000"
-        },
-        {
-          name  = "Connection Timeout (ms)"
-          value = "10000"
-        },
-        {
-          name  = "Max Payload Size (KB)"
-          value = "1024"
-        },
-        {
-          name  = "Retry Request"
-          value = "true"
-        },
-        {
-          name  = "Maximum Retries Limit"
-          value = "5"
-        },
-        {
-          name  = "Retry Error Codes"
-          value = "429"
-        },
-        {
-          name  = "Test Connection URL"
-          value = "https://example.com"
-        },
-        {
-          name  = "Test Connection Body"
-          value = "body"
-        }
-      ]
+terraform {
+  required_version = ">=1.1"
+  required_providers {
+    pingfederate = {
+      version = "~> 0.1.0"
+      source  = "pingidentity/pingfederate"
     }
   }
 }
+
+provider "pingfederate" {
+  username                     = "administrator"
+  password                     = "2FederateM0re"
+  https_host                   = "https://localhost:9999"
+  insecure_trust_all_tls       = true
+  x_bypass_external_validation = true
+}
+
+# resource "pingfederate_data_store" "myCustomDataStore" {
+#   custom_id = "myCustomDataStore"
+#   # mask_attribute_value= false
+#   custom_data_store = {
+#     name = "custom"
+#     plugin_descriptor_ref = {
+#       id = "com.pingidentity.pf.datastore.other.RestDataSourceDriver"
+#     }
+#     configuration = {
+#       tables = [
+#         {
+#           name = "Base URLs and Tags"
+#           rows = [
+#             {
+#               fields = [
+#                 {
+#                   name  = "Base URL"
+#                   value = "http://localhost"
+#                 },
+#                 {
+#                   name  = "Tags"
+#                   value = "tag"
+#                 }
+#               ],
+#               default_row = true
+#             }
+#           ]
+#         },
+#         {
+#           name = "HTTP Request Headers"
+#           rows = [
+#             {
+#               fields = [
+#                 {
+#                   name  = "Header Name"
+#                   value = "header"
+#                 },
+#                 {
+#                   name  = "Header Value"
+#                   value = "header_value"
+#                 }
+#               ],
+#               default_row = false
+#             }
+#           ]
+#         },
+#         {
+#           name = "Attributes"
+#           rows = [
+#             {
+#               fields = [
+#                 {
+#                   name  = "Local Attribute"
+#                   value = "attribute"
+#                 },
+#                 {
+#                   name  = "JSON Response Attribute Path"
+#                   value = "/json_response_attr_path"
+#                 }
+#               ],
+#               default_row = false
+#             }
+#           ]
+#         }
+#       ],
+#       fields = [
+#         {
+#           name  = "Authentication Method"
+#           value = "Basic Authentication"
+#         },
+#         {
+#           name  = "HTTP Method"
+#           value = "GET"
+#         },
+#         {
+#           name  = "Username"
+#           value = "Administrator"
+#         },
+#         {
+#           name  = "Password"
+#           value = "2FederateM0re"
+#         },
+#         {
+#           name  = "Password Reference"
+#           value = ""
+#         },
+#         {
+#           name  = "OAuth Token Endpoint"
+#           value = "https://example.com"
+#         },
+#         {
+#           name  = "OAuth Scope"
+#           value = "scope"
+#         },
+#         {
+#           name  = "Client ID"
+#           value = "client_id"
+#         },
+#         {
+#           name  = "Client Secret"
+#           value = "2FederateM0re"
+#         },
+#         {
+#           name  = "Client Secret Reference"
+#           value = ""
+#         },
+#         {
+#           name  = "Enable HTTPS Hostname Verification"
+#           value = "true"
+#         },
+#         {
+#           name  = "Read Timeout (ms)"
+#           value = "10000"
+#         },
+#         {
+#           name  = "Connection Timeout (ms)"
+#           value = "10000"
+#         },
+#         {
+#           name  = "Max Payload Size (KB)"
+#           value = "1024"
+#         },
+#         {
+#           name  = "Retry Request"
+#           value = "true"
+#         },
+#         {
+#           name  = "Maximum Retries Limit"
+#           value = "5"
+#         },
+#         {
+#           name  = "Retry Error Codes"
+#           value = "429"
+#         },
+#         {
+#           name  = "Test Connection URL"
+#           value = "https://example.com"
+#         },
+#         {
+#           name  = "Test Connection Body"
+#           value = "body"
+#         }
+#       ]
+#     }
+#   }
+# }
 
 # resource "pingfederate_data_store" "myJdbcDataStore" {
 #   custom_id             = "myJdbcDataStore"
@@ -171,3 +189,42 @@ resource "pingfederate_data_store" "myCustomDataStore" {
 #     idle_timeout     = 5
 #   }
 # }
+
+resource "pingfederate_data_store" "myPingDirectoryLdapDataStore" {
+  custom_id             = "myPingDirectoryLdapDataStore"
+  mask_attribute_values = true
+  ldap_data_store = {
+    ldap_type          = "PING_DIRECTORY"
+    bind_anonymously   = false
+    user_dn            = "cn=pingfederate"
+    password           = "2FederateM0re"
+    use_ssl            = false
+    use_dns_srv_record = false
+    name               = "myPingDirectoryLdapDataStore"
+    hostnames = [
+      "pingdirectory:1389"
+    ]
+    hostnames_tags = [
+      {
+        hostnames = [
+          "pingdirectory:1389"
+        ]
+        default_source = true
+      }
+    ]
+    test_on_borrow         = true
+    test_on_return         = false
+    create_if_necessary    = true
+    verify_host            = true
+    min_connections        = 10
+    max_connections        = 100
+    max_wait               = -1
+    time_between_evictions = 6000
+    read_timeout           = 300
+    connection_timeout     = 300
+    binary_attributes      = []
+    dns_ttl                = 6000
+    ldap_dns_srv_prefix    = "_ldap._tcp"
+    ldaps_dns_srv_prefix   = "_ldaps._tcp"
+  }
+}

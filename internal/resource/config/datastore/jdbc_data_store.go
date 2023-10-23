@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
@@ -60,6 +61,7 @@ var (
 func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 	jdbcDataStoreSchema := schema.SingleNestedAttribute{}
 	jdbcDataStoreSchema.Description = "A JDBC data store."
+	jdbcDataStoreSchema.Default = objectdefault.StaticValue(types.ObjectNull(jdbcDataStoreAttrType))
 	jdbcDataStoreSchema.Computed = true
 	jdbcDataStoreSchema.Optional = true
 	jdbcDataStoreSchema.Attributes = map[string]schema.Attribute{
@@ -195,6 +197,63 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 	return jdbcDataStoreSchema
 }
 
+func toStateJdbcDataStore(con context.Context, clientValue *client.DataStoreAggregation, plan dataStoreResourceModel) (types.Object, diag.Diagnostics) {
+	var allDiags, diags diag.Diagnostics
+	jdbcDataStore := *clientValue.JdbcDataStore
+
+	connectionUrlTags := func() (types.Set, diag.Diagnostics) {
+		if len(jdbcDataStore.ConnectionUrlTags) > 0 {
+			connectionUrlTagsSetVal, diags := types.SetValueFrom(con, jdbcTagConfigAttrType, jdbcDataStore.ConnectionUrlTags)
+			return connectionUrlTagsSetVal, diags
+		} else {
+			connectionUrlTagsSetVal := types.SetNull(jdbcTagConfigAttrType)
+			return connectionUrlTagsSetVal, diag.Diagnostics{}
+		}
+	}
+	connectionUrlSetVal, diags := connectionUrlTags()
+	allDiags = append(allDiags, diags...)
+
+	password := func() basetypes.StringValue {
+		passwordVal, ok := plan.JdbcDataStore.Attributes()["password"].(types.String)
+		if ok {
+			return passwordVal
+		} else {
+			return types.StringPointerValue(pointers.String(""))
+		}
+	}
+
+	jdbcAttrValue := map[string]attr.Value{
+		"type":                         types.StringValue("JDBC"),
+		"blocking_timeout":             types.Int64PointerValue(jdbcDataStore.BlockingTimeout),
+		"connection_url":               types.StringValue(*jdbcDataStore.ConnectionUrl),
+		"driver_class":                 types.StringValue(jdbcDataStore.DriverClass),
+		"connection_url_tags":          connectionUrlSetVal,
+		"idle_timeout":                 types.Int64PointerValue(jdbcDataStore.IdleTimeout),
+		"max_pool_size":                types.Int64PointerValue(jdbcDataStore.MaxPoolSize),
+		"min_pool_size":                types.Int64PointerValue(jdbcDataStore.MinPoolSize),
+		"name":                         types.StringPointerValue(jdbcDataStore.Name),
+		"password":                     password(),
+		"user_name":                    types.StringValue(jdbcDataStore.UserName),
+		"allow_multi_value_attributes": types.BoolPointerValue(jdbcDataStore.AllowMultiValueAttributes),
+		"validate_connection_sql":      internaltypes.StringTypeOrNil(jdbcDataStore.ValidateConnectionSql, true),
+	}
+	toStateObjVal, diags := types.ObjectValue(jdbcDataStoreAttrType, jdbcAttrValue)
+	allDiags = append(allDiags, diags...)
+	return toStateObjVal, allDiags
+}
+
+func readJdbcDataStoreResponse(ctx context.Context, r *client.DataStoreAggregation, state *dataStoreResourceModel, plan *dataStoreResourceModel) diag.Diagnostics {
+	var diags diag.Diagnostics
+	state.Id = types.StringPointerValue(r.JdbcDataStore.Id)
+	state.CustomId = types.StringPointerValue(r.JdbcDataStore.Id)
+	state.MaskAttributeValues = types.BoolPointerValue(r.JdbcDataStore.MaskAttributeValues)
+	state.JdbcDataStore, diags = toStateJdbcDataStore(ctx, r, *plan)
+	state.CustomDataStore = customDataStoreEmptyStateObj
+	state.LdapDataStore = ldapDataStoreEmptyStateObj
+	state.PingOneLdapGatewayDataStore = pingOneLdapGatewayDataStoreEmptyStateObj
+	return diags
+}
+
 func addOptionalJdbcDataStoreFields(addRequest client.DataStoreAggregation, con context.Context, createJdbcDataStore client.JdbcDataStore, plan dataStoreResourceModel) error {
 
 	if internaltypes.IsDefined(plan.MaskAttributeValues) {
@@ -260,63 +319,6 @@ func addOptionalJdbcDataStoreFields(addRequest client.DataStoreAggregation, con 
 		addRequest.JdbcDataStore.Password = password.(types.String).ValueStringPointer()
 	}
 	return nil
-}
-
-func toStateJdbcDataStore(con context.Context, clientValue *client.DataStoreAggregation, plan dataStoreResourceModel) (types.Object, diag.Diagnostics) {
-	var allDiags, diags diag.Diagnostics
-	jdbcDataStore := *clientValue.JdbcDataStore
-
-	connectionUrlTags := func() (types.Set, diag.Diagnostics) {
-		if len(jdbcDataStore.ConnectionUrlTags) > 0 {
-			connectionUrlTagsSetVal, diags := types.SetValueFrom(con, jdbcTagConfigAttrType, jdbcDataStore.ConnectionUrlTags)
-			return connectionUrlTagsSetVal, diags
-		} else {
-			connectionUrlTagsSetVal := types.SetNull(jdbcTagConfigAttrType)
-			return connectionUrlTagsSetVal, diag.Diagnostics{}
-		}
-	}
-	connectionUrlSetVal, diags := connectionUrlTags()
-	allDiags = append(allDiags, diags...)
-
-	password := func() basetypes.StringValue {
-		passwordVal, ok := plan.JdbcDataStore.Attributes()["password"].(types.String)
-		if ok {
-			return passwordVal
-		} else {
-			return types.StringPointerValue(pointers.String(""))
-		}
-	}
-
-	jdbcAttrValue := map[string]attr.Value{
-		"type":                         types.StringValue("JDBC"),
-		"blocking_timeout":             types.Int64PointerValue(jdbcDataStore.BlockingTimeout),
-		"connection_url":               types.StringValue(*jdbcDataStore.ConnectionUrl),
-		"driver_class":                 types.StringValue(jdbcDataStore.DriverClass),
-		"connection_url_tags":          connectionUrlSetVal,
-		"idle_timeout":                 types.Int64PointerValue(jdbcDataStore.IdleTimeout),
-		"max_pool_size":                types.Int64PointerValue(jdbcDataStore.MaxPoolSize),
-		"min_pool_size":                types.Int64PointerValue(jdbcDataStore.MinPoolSize),
-		"name":                         types.StringPointerValue(jdbcDataStore.Name),
-		"password":                     password(),
-		"user_name":                    types.StringValue(jdbcDataStore.UserName),
-		"allow_multi_value_attributes": types.BoolPointerValue(jdbcDataStore.AllowMultiValueAttributes),
-		"validate_connection_sql":      internaltypes.StringTypeOrNil(jdbcDataStore.ValidateConnectionSql, true),
-	}
-	toStateObjVal, diags := types.ObjectValue(jdbcDataStoreAttrType, jdbcAttrValue)
-	allDiags = append(allDiags, diags...)
-	return toStateObjVal, allDiags
-}
-
-func readJdbcDataStoreResponse(ctx context.Context, r *client.DataStoreAggregation, state *dataStoreResourceModel, plan *dataStoreResourceModel) diag.Diagnostics {
-	var diags diag.Diagnostics
-	state.Id = types.StringPointerValue(r.JdbcDataStore.Id)
-	state.CustomId = types.StringPointerValue(r.JdbcDataStore.Id)
-	state.MaskAttributeValues = types.BoolPointerValue(r.JdbcDataStore.MaskAttributeValues)
-	state.JdbcDataStore, diags = toStateJdbcDataStore(ctx, r, *plan)
-	state.CustomDataStore = customDataStoreEmptyStateObj
-	state.LdapDataStore = ldapDataStoreEmptyStateObj
-	state.PingOneLdapGatewayDataStore = pingOneLdapGatewayDataStoreEmptyStateObj
-	return diags
 }
 
 func createJdbcDataStore(plan dataStoreResourceModel, con context.Context, req resource.CreateRequest, resp *resource.CreateResponse, dsr *dataStoreResource) {

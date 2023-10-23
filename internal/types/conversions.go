@@ -70,6 +70,14 @@ func Float64InterfaceToFloat64OrNull(v interface{}) basetypes.Float64Value {
 	}
 }
 
+func StringSetFromSetType(set types.Set) []string {
+	stringSet := []string{}
+	for i := 0; i < len(set.Elements()); i++ {
+		stringSet = append(stringSet, set.Elements()[i].(types.String).ValueString())
+	}
+	return stringSet
+}
+
 // Get a types.Set from a slice of string
 func GetStringSet(values []string) types.Set {
 	setValues := make([]attr.Value, len(values))

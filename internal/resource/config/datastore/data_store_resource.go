@@ -93,6 +93,10 @@ func (r *dataStoreResource) Create(ctx context.Context, req resource.CreateReque
 		createJdbcDataStore(plan, ctx, req, resp, r)
 	}
 
+	if internaltypes.IsDefined(plan.LdapDataStore) {
+		createLdapDataStore(plan, ctx, req, resp, r)
+	}
+
 }
 
 func (r *dataStoreResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -123,6 +127,11 @@ func (r *dataStoreResource) Read(ctx context.Context, req resource.ReadRequest, 
 		resp.Diagnostics.Append(diags...)
 	}
 
+	if dataStoreGetReq.LdapDataStore != nil {
+		diags = readLdapDataStoreResponse(ctx, dataStoreGetReq, &state, &state.LdapDataStore)
+		resp.Diagnostics.Append(diags...)
+	}
+
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -146,6 +155,11 @@ func (r *dataStoreResource) Update(ctx context.Context, req resource.UpdateReque
 	if internaltypes.IsDefined(plan.JdbcDataStore) {
 		updateJdbcDataStore(plan, ctx, req, resp, r)
 	}
+
+	if internaltypes.IsDefined(plan.LdapDataStore) {
+		updateLdapDataStore(plan, ctx, req, resp, r)
+	}
+
 }
 
 // This config object is edit-only, so Terraform can't delete it.

@@ -76,24 +76,6 @@ func toSchemaCustomDataStore() schema.SingleNestedAttribute {
 	return customDataStoreSchema
 }
 
-func addOptionalCustomDataStoreFields(addRequest client.DataStoreAggregation, con context.Context, createJdbcDataStore client.CustomDataStore, plan dataStoreResourceModel) error {
-	customDataStorePlan := plan.CustomDataStore.Attributes()
-
-	if internaltypes.IsDefined(plan.CustomId) {
-		addRequest.CustomDataStore.Id = plan.CustomId.ValueStringPointer()
-	}
-
-	parentRef := customDataStorePlan["parent_ref"]
-	if internaltypes.IsNonEmptyObj(parentRef.(types.Object)) {
-		parentRef, err := resourcelink.ClientStruct(parentRef.(types.Object))
-		if err != nil {
-			return err
-		}
-		addRequest.CustomDataStore.ParentRef = parentRef
-	}
-	return nil
-}
-
 func toStateCustomDataStore(con context.Context, clientValue *client.DataStoreAggregation, plan basetypes.ObjectValue) (types.Object, diag.Diagnostics) {
 	var diags, allDiags diag.Diagnostics
 	customDataStore := *clientValue.CustomDataStore
@@ -133,6 +115,24 @@ func readCustomDataStoreResponse(ctx context.Context, r *client.DataStoreAggrega
 	state.LdapDataStore = ldapDataStoreEmptyStateObj
 	state.PingOneLdapGatewayDataStore = pingOneLdapGatewayDataStoreEmptyStateObj
 	return diags
+}
+
+func addOptionalCustomDataStoreFields(addRequest client.DataStoreAggregation, con context.Context, createJdbcDataStore client.CustomDataStore, plan dataStoreResourceModel) error {
+	customDataStorePlan := plan.CustomDataStore.Attributes()
+
+	if internaltypes.IsDefined(plan.CustomId) {
+		addRequest.CustomDataStore.Id = plan.CustomId.ValueStringPointer()
+	}
+
+	parentRef := customDataStorePlan["parent_ref"]
+	if internaltypes.IsNonEmptyObj(parentRef.(types.Object)) {
+		parentRef, err := resourcelink.ClientStruct(parentRef.(types.Object))
+		if err != nil {
+			return err
+		}
+		addRequest.CustomDataStore.ParentRef = parentRef
+	}
+	return nil
 }
 
 func createCustomDataStore(plan dataStoreResourceModel, con context.Context, req resource.CreateRequest, resp *resource.CreateResponse, dsr *dataStoreResource) {
