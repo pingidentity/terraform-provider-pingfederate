@@ -204,7 +204,7 @@ func testAccCheckJdbcDataStoreDestroy(s *terraform.State) error {
 	ctx := acctest.TestBasicAuthContext()
 	_, err := testClient.DataStoresAPI.DeleteDataStore(ctx, jdbcDataStoreId).Execute()
 	if err == nil {
-		return acctest.ExpectedDestroyError("JdbcDataStores", jdbcDataStoreId)
+		return acctest.ExpectedDestroyError("JdbcDataStore", jdbcDataStoreId)
 	}
 	return nil
 }
