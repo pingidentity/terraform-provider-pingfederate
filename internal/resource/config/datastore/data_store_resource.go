@@ -162,7 +162,6 @@ func (r *dataStoreResource) Update(ctx context.Context, req resource.UpdateReque
 
 }
 
-// This config object is edit-only, so Terraform can't delete it.
 func (r *dataStoreResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
 	var state dataStoreResourceModel
