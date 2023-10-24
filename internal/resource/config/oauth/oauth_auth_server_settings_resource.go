@@ -42,6 +42,16 @@ var (
 	_ resource.ResourceWithImportState = &oauthAuthServerSettingsResource{}
 )
 
+var (
+	nameAttributeType = map[string]attr.Type{
+		"name": basetypes.StringType{},
+	}
+	persistentGrantObjContractTypes = map[string]attr.Type{
+		"core_attributes":     basetypes.SetType{ElemType: types.ObjectType{AttrTypes: nameAttributeType}},
+		"extended_attributes": basetypes.SetType{ElemType: types.ObjectType{AttrTypes: nameAttributeType}},
+	}
+)
+
 // OauthAuthServerSettingsResource is a helper function to simplify the provider implementation.
 func OauthAuthServerSettingsResource() resource.Resource {
 	return &oauthAuthServerSettingsResource{}
@@ -824,45 +834,9 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 	diags.Append(respDiags...)
 	state.ExclusiveScopeGroups, respDiags = scopegroupentry.ToState(ctx, r.ExclusiveScopeGroups)
 	diags.Append(respDiags...)
+	persistentGrantContract, respDiags := types.ObjectValueFrom(ctx, persistentGrantObjContractTypes, r.PersistentGrantContract)
+	diags.Append(respDiags...)
 
-	// state.PersistentGrantContract
-	getPersistentGrantContract := r.GetPersistentGrantContract()
-	// Build core attributes
-	nameAttributeType := map[string]attr.Type{
-		"name": basetypes.StringType{},
-	}
-	coreAttrs := getPersistentGrantContract.CoreAttributes
-	setObjType := types.ObjectType{AttrTypes: nameAttributeType}
-	stateCoreAttrs := []client.Attribute{}
-	for _, coreAttr := range coreAttrs {
-		coreAttribute := client.Attribute{}
-		coreAttribute.Name = coreAttr.Name
-		stateCoreAttrs = append(stateCoreAttrs, coreAttribute)
-	}
-	toStateCoreAttributes, _ := types.SetValueFrom(ctx, setObjType, stateCoreAttrs)
-
-	// Build extended attributes
-	extdAttrs := getPersistentGrantContract.ExtendedAttributes
-	stateExtdAttrs := []client.Attribute{}
-	for _, extdAttr := range extdAttrs {
-		extdAttribute := client.Attribute{}
-		extdAttribute.Name = extdAttr.Name
-		stateExtdAttrs = append(stateExtdAttrs, extdAttribute)
-	}
-	toStateExtdAttributes, _ := types.SetValueFrom(ctx, setObjType, stateExtdAttrs)
-
-	// Build final object for state
-	persistentGrantObjContractTypes := map[string]attr.Type{
-		"core_attributes":     basetypes.SetType{ElemType: types.ObjectType{AttrTypes: nameAttributeType}},
-		"extended_attributes": basetypes.SetType{ElemType: types.ObjectType{AttrTypes: nameAttributeType}},
-	}
-
-	persistentGrantObjContractVals := map[string]attr.Value{
-		"core_attributes":     toStateCoreAttributes,
-		"extended_attributes": toStateExtdAttributes,
-	}
-
-	persistentGrantContract, _ := types.ObjectValue(persistentGrantObjContractTypes, persistentGrantObjContractVals)
 	state.PersistentGrantContract = persistentGrantContract
 	state.AuthorizationCodeTimeout = types.Int64Value(r.AuthorizationCodeTimeout)
 	state.AuthorizationCodeEntropy = types.Int64Value(r.AuthorizationCodeEntropy)
