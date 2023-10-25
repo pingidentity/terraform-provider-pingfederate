@@ -508,7 +508,7 @@ func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req data
 			},
 		},
 	}
-	id.ToDataSourceSchema(&schemaDef, false, "The ID of this resource.")
+	id.ToSchema(&schemaDef)
 	resp.Schema = schemaDef
 }
 
@@ -603,14 +603,14 @@ func (r *oauthAuthServerSettingsDataSource) Read(ctx context.Context, req dataso
 		return
 	}
 
-	// Log response JSON
-	_, responseErr := apiReadOauthAuthServerSettings.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of OAuth Auth Server Settings: %s", responseErr.Error())
-	}
-
+	// // Read the response into the state
+	// id := id.GenerateUUIDStringPointer()
 	// Read the response into the state
-	id := id.GenerateUUIDStringPointer()
+	var id *string
+	if !internaltypes.IsDefined(state.Id) {
+	} else {
+		id = state.Id.ValueStringPointer()
+	}
 	diags = readOauthAuthServerSettingsResponseDataSource(ctx, apiReadOauthAuthServerSettings, &state, id)
 	resp.Diagnostics.Append(diags...)
 
