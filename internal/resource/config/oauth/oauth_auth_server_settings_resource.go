@@ -840,7 +840,8 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 		coreAttribute.Name = coreAttr.Name
 		stateCoreAttrs = append(stateCoreAttrs, coreAttribute)
 	}
-	toStateCoreAttributes, _ := types.SetValueFrom(ctx, setObjType, stateCoreAttrs)
+	toStateCoreAttributes, respDiags := types.ListValueFrom(ctx, setObjType, stateCoreAttrs)
+	diags.Append(respDiags...)
 
 	// Build extended attributes
 	extdAttrs := getPersistentGrantContract.ExtendedAttributes
@@ -850,12 +851,13 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 		extdAttribute.Name = extdAttr.Name
 		stateExtdAttrs = append(stateExtdAttrs, extdAttribute)
 	}
-	toStateExtdAttributes, _ := types.SetValueFrom(ctx, setObjType, stateExtdAttrs)
+	toStateExtdAttributes, respDiags := types.ListValueFrom(ctx, setObjType, stateExtdAttrs)
+	diags.Append(respDiags...)
 
 	// Build final object for state
 	persistentGrantObjContractTypes := map[string]attr.Type{
-		"core_attributes":     basetypes.SetType{ElemType: types.ObjectType{AttrTypes: nameAttributeType}},
-		"extended_attributes": basetypes.SetType{ElemType: types.ObjectType{AttrTypes: nameAttributeType}},
+		"core_attributes":     basetypes.ListType{ElemType: types.ObjectType{AttrTypes: nameAttributeType}},
+		"extended_attributes": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: nameAttributeType}},
 	}
 
 	persistentGrantObjContractVals := map[string]attr.Value{
@@ -863,7 +865,8 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 		"extended_attributes": toStateExtdAttributes,
 	}
 
-	persistentGrantContract, _ := types.ObjectValue(persistentGrantObjContractTypes, persistentGrantObjContractVals)
+	persistentGrantContract, respDiags := types.ObjectValue(persistentGrantObjContractTypes, persistentGrantObjContractVals)
+	diags.Append(respDiags...)
 	state.PersistentGrantContract = persistentGrantContract
 	state.AuthorizationCodeTimeout = types.Int64Value(r.AuthorizationCodeTimeout)
 	state.AuthorizationCodeEntropy = types.Int64Value(r.AuthorizationCodeEntropy)

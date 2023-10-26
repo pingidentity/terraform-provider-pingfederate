@@ -701,7 +701,8 @@ func readLocalIdentityIdentityProfilesResponse(ctx context.Context, r *client.Lo
 
 	// auth source update policy
 	authSourceUpdatePolicy := r.AuthSourceUpdatePolicy
-	state.AuthSourceUpdatePolicy, _ = types.ObjectValueFrom(ctx, authSourceUpdatePolicyAttrTypes, authSourceUpdatePolicy)
+	state.AuthSourceUpdatePolicy, respDiags = types.ObjectValueFrom(ctx, authSourceUpdatePolicyAttrTypes, authSourceUpdatePolicy)
+	diags.Append(respDiags...)
 
 	// auth sources
 	authSources := r.GetAuthSources()
@@ -720,31 +721,37 @@ func readLocalIdentityIdentityProfilesResponse(ctx context.Context, r *client.Lo
 	diags.Append(respDiags...)
 
 	registrationConfig := r.RegistrationConfig
-	state.RegistrationConfig, _ = types.ObjectValueFrom(ctx, registrationConfigAttrTypes, registrationConfig)
+	state.RegistrationConfig, respDiags = types.ObjectValueFrom(ctx, registrationConfigAttrTypes, registrationConfig)
+	diags.Append(respDiags...)
 
 	state.RegistrationEnabled = types.BoolValue(r.GetRegistrationEnabled())
 
 	profileConfig := r.ProfileConfig
-	state.ProfileConfig, _ = types.ObjectValueFrom(ctx, profileConfigAttrTypes, profileConfig)
+	state.ProfileConfig, respDiags = types.ObjectValueFrom(ctx, profileConfigAttrTypes, profileConfig)
+	diags.Append(respDiags...)
 
 	// field config
 	fieldConfig := r.GetFieldConfig()
 	fieldType := types.ObjectType{AttrTypes: fieldItemAttrTypes}
 	fieldAttrsStruct := fieldConfig.GetFields()
-	fieldAttrsState, _ := types.SetValueFrom(ctx, fieldType, fieldAttrsStruct)
+	fieldAttrsState, respDiags := types.ListValueFrom(ctx, fieldType, fieldAttrsStruct)
+	diags.Append(respDiags...)
 	stripSpaceFromUniqueFieldState := types.BoolPointerValue(r.GetFieldConfig().StripSpaceFromUniqueField)
 	fieldConfigAttrValues := map[string]attr.Value{
 		"fields":                        fieldAttrsState,
 		"strip_space_from_unique_field": stripSpaceFromUniqueFieldState,
 	}
-	state.FieldConfig, _ = types.ObjectValue(fieldConfigAttrTypes, fieldConfigAttrValues)
+	state.FieldConfig, respDiags = types.ObjectValue(fieldConfigAttrTypes, fieldConfigAttrValues)
+	diags.Append(respDiags...)
 
 	emailVerificationConfig := r.EmailVerificationConfig
-	state.EmailVerificationConfig, _ = types.ObjectValueFrom(ctx, emailVerificationConfigAttrTypes, emailVerificationConfig)
+	state.EmailVerificationConfig, respDiags = types.ObjectValueFrom(ctx, emailVerificationConfigAttrTypes, emailVerificationConfig)
+	diags.Append(respDiags...)
 
 	//  data store config
 	dsConfig := r.DataStoreConfig
-	state.DataStoreConfig, _ = types.ObjectValueFrom(ctx, dsConfigAttrTypes, dsConfig)
+	state.DataStoreConfig, respDiags = types.ObjectValueFrom(ctx, dsConfigAttrTypes, dsConfig)
+	diags.Append(respDiags...)
 
 	state.ProfileEnabled = types.BoolPointerValue(r.ProfileEnabled)
 	return diags
