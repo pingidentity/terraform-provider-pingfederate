@@ -66,7 +66,7 @@ resource "pingfederate_server_settings_log_settings" "serverSettingsLogSettingsE
 
 ### Required
 
-- `log_categories` (Attributes Set) The log categories defined for the system and whether they are enabled. On a PUT request, if a category is not included in the list, it will be disabled. (see [below for nested schema](#nestedatt--log_categories))
+- `log_categories` (Attributes List) The log categories defined for the system and whether they are enabled. On a PUT request, if a category is not included in the list, it will be disabled. (see [below for nested schema](#nestedatt--log_categories))
 
 ### Read-Only
 
