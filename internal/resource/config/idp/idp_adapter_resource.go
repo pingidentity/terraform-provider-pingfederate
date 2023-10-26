@@ -53,7 +53,7 @@ var (
 				AttrTypes: attributesAttrType,
 			},
 		},
-		"extended_attributes": types.SetType{
+		"extended_attributes": types.ListType{
 			ElemType: types.ObjectType{
 				AttrTypes: attributesAttrType,
 			},
@@ -178,7 +178,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 							},
 						},
 					},
-					"extended_attributes": schema.SetNestedAttribute{
+					"extended_attributes": schema.ListNestedAttribute{
 						Description: "A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them.",
 						Optional:    true,
 						Computed:    true,
@@ -324,7 +324,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 
 	if r.AttributeContract != nil {
 		attributeContractValues := map[string]attr.Value{}
-		attributeContractValues["extended_attributes"], diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attributesAttrType}, r.AttributeContract.ExtendedAttributes)
+		attributeContractValues["extended_attributes"], diags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: attributesAttrType}, r.AttributeContract.ExtendedAttributes)
 		respDiags.Append(diags...)
 		attributeContractValues["core_attributes_all"], diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attributesAttrType}, r.AttributeContract.CoreAttributes)
 		respDiags.Append(diags...)

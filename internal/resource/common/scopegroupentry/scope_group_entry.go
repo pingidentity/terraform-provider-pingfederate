@@ -16,7 +16,7 @@ var scopeGroupAttrTypes = map[string]attr.Type{
 	"scopes":      basetypes.SetType{ElemType: types.StringType},
 }
 
-func ToState(con context.Context, scopeGroups []client.ScopeGroupEntry) (basetypes.SetValue, diag.Diagnostics) {
+func ToState(con context.Context, scopeGroups []client.ScopeGroupEntry) (basetypes.ListValue, diag.Diagnostics) {
 	toStateScopeGroups := []client.ScopeGroupEntry{}
 	for _, scopeGroup := range scopeGroups {
 		scopeGroupEntry := client.ScopeGroupEntry{}
@@ -26,5 +26,5 @@ func ToState(con context.Context, scopeGroups []client.ScopeGroupEntry) (basetyp
 		toStateScopeGroups = append(toStateScopeGroups, scopeGroupEntry)
 	}
 
-	return types.SetValueFrom(con, types.ObjectType{AttrTypes: scopeGroupAttrTypes}, toStateScopeGroups)
+	return types.ListValueFrom(con, types.ObjectType{AttrTypes: scopeGroupAttrTypes}, toStateScopeGroups)
 }

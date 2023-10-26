@@ -7,8 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -45,7 +45,7 @@ type administrativeAccountResourceModel struct {
 	Id           types.String `tfsdk:"id"`
 	Password     types.String `tfsdk:"password"`
 	PhoneNumber  types.String `tfsdk:"phone_number"`
-	Roles        types.Set    `tfsdk:"roles"`
+	Roles        types.List   `tfsdk:"roles"`
 	Username     types.String `tfsdk:"username"`
 }
 
@@ -112,12 +112,12 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"roles": schema.SetAttribute{
+			"roles": schema.ListAttribute{
 				Description: "Roles available for an administrator. USER_ADMINISTRATOR - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. CRYPTO_ADMINISTRATOR - Can manage local keys and certificates. ADMINISTRATOR - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. EXPRESSION_ADMINISTRATOR - Can add and update OGNL expressions.",
 				Required:    true,
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
-					setplanmodifier.RequiresReplace(),
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
+					listplanmodifier.RequiresReplace(),
 				},
 				ElementType: types.StringType,
 			},
@@ -192,7 +192,7 @@ func readAdministrativeAccountResponse(ctx context.Context, r *client.Administra
 	state.PhoneNumber = internaltypes.StringTypeOrNil(r.PhoneNumber, false)
 	state.EmailAddress = internaltypes.StringTypeOrNil(r.EmailAddress, false)
 	state.Department = internaltypes.StringTypeOrNil(r.Department, false)
-	state.Roles = internaltypes.GetStringSet(r.Roles)
+	state.Roles = internaltypes.GetStringList(r.Roles)
 }
 
 func (r *administrativeAccountsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

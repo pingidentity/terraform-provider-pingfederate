@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
@@ -56,10 +57,10 @@ type oauthAuthServerSettingsResource struct {
 type oauthAuthServerSettingsResourceModel struct {
 	Id                                          types.String `tfsdk:"id"`
 	DefaultScopeDescription                     types.String `tfsdk:"default_scope_description"`
-	Scopes                                      types.Set    `tfsdk:"scopes"`
-	ScopeGroups                                 types.Set    `tfsdk:"scope_groups"`
-	ExclusiveScopes                             types.Set    `tfsdk:"exclusive_scopes"`
-	ExclusiveScopeGroups                        types.Set    `tfsdk:"exclusive_scope_groups"`
+	Scopes                                      types.List   `tfsdk:"scopes"`
+	ScopeGroups                                 types.List   `tfsdk:"scope_groups"`
+	ExclusiveScopes                             types.List   `tfsdk:"exclusive_scopes"`
+	ExclusiveScopeGroups                        types.List   `tfsdk:"exclusive_scope_groups"`
 	AuthorizationCodeTimeout                    types.Int64  `tfsdk:"authorization_code_timeout"`
 	AuthorizationCodeEntropy                    types.Int64  `tfsdk:"authorization_code_entropy"`
 	DisallowPlainPKCE                           types.Bool   `tfsdk:"disallow_plain_pkce"`
@@ -82,7 +83,7 @@ type oauthAuthServerSettingsResourceModel struct {
 	AdminWebServicePcvRef                       types.Object `tfsdk:"admin_web_service_pcv_ref"`
 	AtmIdForOAuthGrantManagement                types.String `tfsdk:"atm_id_for_oauth_grant_management"`
 	ScopeForOAuthGrantManagement                types.String `tfsdk:"scope_for_oauth_grant_management"`
-	AllowedOrigins                              types.Set    `tfsdk:"allowed_origins"`
+	AllowedOrigins                              types.List   `tfsdk:"allowed_origins"`
 	UserAuthorizationUrl                        types.String `tfsdk:"user_authorization_url"`
 	BypassActivationCodeConfirmation            types.Bool   `tfsdk:"bypass_activation_code_confirmation"`
 	RegisteredAuthorizationPath                 types.String `tfsdk:"registered_authorization_path"`
@@ -109,12 +110,12 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Description: "The default scope description.",
 				Required:    true,
 			},
-			"scopes": schema.SetNestedAttribute{
+			"scopes": schema.ListNestedAttribute{
 				Description: "The list of common scopes.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
 				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -141,12 +142,12 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 					},
 				},
 			},
-			"scope_groups": schema.SetNestedAttribute{
+			"scope_groups": schema.ListNestedAttribute{
 				Description: "The list of common scope groups.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
 				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -169,12 +170,12 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 					},
 				},
 			},
-			"exclusive_scopes": schema.SetNestedAttribute{
+			"exclusive_scopes": schema.ListNestedAttribute{
 				Description: "The list of exclusive scopes.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
 				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -201,12 +202,12 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 					},
 				},
 			},
-			"exclusive_scope_groups": schema.SetNestedAttribute{
+			"exclusive_scope_groups": schema.ListNestedAttribute{
 				Description: "The list of exclusive scope groups.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
 				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -356,7 +357,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 					objectplanmodifier.UseStateForUnknown(),
 				},
 				Attributes: map[string]schema.Attribute{
-					"core_attributes": schema.SetNestedAttribute{
+					"core_attributes": schema.ListNestedAttribute{
 						Description: "This is a read-only list of persistent grant attributes and includes USER_KEY and USER_NAME. Changes to this field will be ignored.",
 						Computed:    true,
 						Optional:    false,
@@ -372,15 +373,15 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 								},
 							},
 						},
-						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
+						PlanModifiers: []planmodifier.List{
+							listplanmodifier.UseStateForUnknown(),
 						},
 					},
-					"extended_attributes": schema.SetNestedAttribute{
+					"extended_attributes": schema.ListNestedAttribute{
 						Description: "A list of additional attributes for the persistent grant contract.",
 						Optional:    true,
-						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
+						PlanModifiers: []planmodifier.List{
+							listplanmodifier.UseStateForUnknown(),
 						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
@@ -441,16 +442,16 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"allowed_origins": schema.SetAttribute{
+			"allowed_origins": schema.ListAttribute{
 				Description: "The list of allowed origins.",
 				ElementType: types.StringType,
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
 				},
-				Validators: []validator.Set{
-					configvalidators.ValidateUrlInSet(),
+				Validators: []validator.List{
+					configvalidators.ValidUrls(),
 				},
 			},
 			"user_authorization_url": schema.StringAttribute{
@@ -886,7 +887,7 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 	diags.Append(respDiags...)
 	state.AtmIdForOAuthGrantManagement = types.StringPointerValue(r.AtmIdForOAuthGrantManagement)
 	state.ScopeForOAuthGrantManagement = types.StringPointerValue(r.ScopeForOAuthGrantManagement)
-	state.AllowedOrigins = internaltypes.GetStringSet(r.AllowedOrigins)
+	state.AllowedOrigins = internaltypes.GetStringList(r.AllowedOrigins)
 	state.UserAuthorizationUrl = types.StringPointerValue(r.UserAuthorizationUrl)
 	state.RegisteredAuthorizationPath = types.StringValue(r.RegisteredAuthorizationPath)
 	state.PendingAuthorizationTimeout = types.Int64Value(r.PendingAuthorizationTimeout)
