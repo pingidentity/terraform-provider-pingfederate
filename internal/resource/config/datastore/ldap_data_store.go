@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -234,6 +235,12 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			PlanModifiers: []planmodifier.Set{
 				setplanmodifier.UseStateForUnknown(),
 			},
+			Validators: []validator.Set{
+				setvalidator.AtLeastOneOf(
+					path.Expression.AtName(path.MatchRoot("ldap_data_store"), "hostnames_tags"),
+					path.Expression.AtName(path.MatchRoot("ldap_data_store"), "hostnames"),
+				),
+			},
 		},
 		"time_between_evictions": schema.Int64Attribute{
 			Description: "The frequency, in milliseconds, that the evictor cleans up the connections in the pool. A value of -1 disables the evictor. Omitting this attribute will set the value to the default value.",
@@ -392,7 +399,7 @@ func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con 
 
 	hostnames, ok := ldapDataStorePlan["hostnames"]
 	if ok {
-		addRequest.LdapDataStore.Hostnames = internaltypes.StringSetFromSetType(hostnames.(types.Set))
+		addRequest.LdapDataStore.Hostnames = internaltypes.SetTypeToStringSet(hostnames.(types.Set))
 	}
 
 	verifyHost, ok := ldapDataStorePlan["verify_host"]
@@ -415,9 +422,8 @@ func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con 
 		addRequest.LdapDataStore.ConnectionTimeout = connectionTimeout.(types.Int64).ValueInt64Pointer()
 	}
 
-	minConnections, ok := ldapDataStorePlan["min_connections"]
-	if ok {
-		addRequest.LdapDataStore.MinConnections = minConnections.(types.Int64).ValueInt64Pointer()
+	if internaltypes.IsDefined(ldapDataStorePlan["min_connections"]) {
+		addRequest.LdapDataStore.MinConnections = ldapDataStorePlan["min_connections"].(types.Int64).ValueInt64Pointer()
 	}
 
 	useSsl, ok := ldapDataStorePlan["use_ssl"]
@@ -450,9 +456,8 @@ func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con 
 		addRequest.LdapDataStore.UseDnsSrvRecords = useDnsSrvRecords.(types.Bool).ValueBoolPointer()
 	}
 
-	maxConnections, ok := ldapDataStorePlan["max_connections"]
-	if ok {
-		addRequest.LdapDataStore.MaxConnections = maxConnections.(types.Int64).ValueInt64Pointer()
+	if internaltypes.IsDefined(ldapDataStorePlan["max_connections"]) {
+		addRequest.LdapDataStore.MaxConnections = ldapDataStorePlan["max_connections"].(types.Int64).ValueInt64Pointer()
 	}
 
 	createIfNecessary, ok := ldapDataStorePlan["create_if_necessary"]
@@ -462,12 +467,11 @@ func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con 
 
 	binaryAttributes, ok := ldapDataStorePlan["binary_attributes"]
 	if ok {
-		addRequest.LdapDataStore.BinaryAttributes = internaltypes.StringSetFromSetType(binaryAttributes.(types.Set))
+		addRequest.LdapDataStore.BinaryAttributes = internaltypes.SetTypeToStringSet(binaryAttributes.(types.Set))
 	}
 
-	maxWait, ok := ldapDataStorePlan["max_wait"]
-	if ok {
-		addRequest.LdapDataStore.MaxWait = maxWait.(types.Int64).ValueInt64Pointer()
+	if internaltypes.IsDefined(ldapDataStorePlan["max_wait"]) {
+		addRequest.LdapDataStore.MaxWait = ldapDataStorePlan["max_wait"].(types.Int64).ValueInt64Pointer()
 	}
 
 	hostnamesTags, ok := ldapDataStorePlan["hostnames_tags"]
