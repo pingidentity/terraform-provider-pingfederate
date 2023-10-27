@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -40,6 +41,8 @@ var (
 		"extended_attributes": basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
 		"inherited":           basetypes.BoolType{},
 	}
+
+	emptyAttrList, _ = types.ListValue(types.ObjectType{AttrTypes: attrType}, []attr.Value{})
 )
 
 // PasswordCredentialValidatorResource is a helper function to simplify the provider implementation.
@@ -88,18 +91,13 @@ func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req re
 			"configuration": pluginconfiguration.ToSchema(),
 			"attribute_contract": schema.SingleNestedAttribute{
 				Description: "The list of attributes that the password credential validator provides.",
-				//TODO
-				Computed: true,
-				Optional: true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
+				Computed:    true,
+				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"core_attributes": schema.ListNestedAttribute{
 						Description: "A list of read-only attributes that are automatically populated by the password credential validator descriptor.",
-						//TODO
-						Computed: true,
-						Optional: false,
+						Computed:    true,
+						Optional:    false,
 						PlanModifiers: []planmodifier.List{
 							listplanmodifier.UseStateForUnknown(),
 						},
@@ -107,24 +105,17 @@ func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req re
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
 									Description: "The name of this attribute.",
-									//TODO
-									Computed: true,
-									Optional: false,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
+									Computed:    true,
+									Optional:    false,
 								},
 							},
 						},
 					},
 					"extended_attributes": schema.ListNestedAttribute{
 						Description: "A list of additional attributes that can be returned by the password credential validator. The extended attributes are only used if the adapter supports them.",
-						//TODO
-						Computed: true,
-						Optional: true,
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.UseStateForUnknown(),
-						},
+						Computed:    true,
+						Optional:    true,
+						Default:     listdefault.StaticValue(emptyAttrList),
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -152,19 +143,7 @@ func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req re
 	resp.Schema = schema
 }
 
-func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var model passwordCredentialValidatorResourceModel
-	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
-
-	if internaltypes.IsDefined(model.AttributeContract) {
-		if len(model.AttributeContract.Attributes()["extended_attributes"].(types.List).Elements()) == 0 {
-			resp.Diagnostics.AddError("Empty list!", "Please provide valid properties within extended_attributes. The list cannot be empty.\nIf no values are necessary, remove this property from your terraform file.")
-		}
-	}
-}
-
 func addOptionalPasswordCredentialValidatorFields(ctx context.Context, addRequest *client.PasswordCredentialValidator, plan passwordCredentialValidatorResourceModel) error {
-
 	if internaltypes.IsDefined(plan.ParentRef) {
 		if plan.ParentRef.Attributes()["id"].(types.String).ValueString() != "" {
 			addRequest.ParentRef = client.NewResourceLinkWithDefaults()
