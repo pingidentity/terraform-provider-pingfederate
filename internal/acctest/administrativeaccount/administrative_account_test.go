@@ -79,6 +79,10 @@ func TestAccAdministrativeAccount(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
+			{
+				Config: testAccAdministrativeAccount(resourceName, initialResourceModel),
+				Check:  initialTest,
+			},
 		},
 	})
 }
@@ -181,7 +185,7 @@ func testAccCheckExpectedAdministrativeAccountAttributes(config administrativeAc
 			return err
 		}
 
-		fmt.Println(*response.EncryptedPassword)
+		// fmt.Println(*response.EncryptedPassword)
 
 		return nil
 	}, ""
