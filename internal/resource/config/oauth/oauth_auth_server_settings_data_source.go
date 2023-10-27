@@ -65,7 +65,7 @@ type oauthAuthServerSettingsDataSourceModel struct {
 	AdminWebServicePcvRef                       types.Object `tfsdk:"admin_web_service_pcv_ref"`
 	AtmIdForOAuthGrantManagement                types.String `tfsdk:"atm_id_for_oauth_grant_management"`
 	ScopeForOAuthGrantManagement                types.String `tfsdk:"scope_for_oauth_grant_management"`
-	AllowedOrigins                              types.Set    `tfsdk:"allowed_origins"`
+	AllowedOrigins                              types.List   `tfsdk:"allowed_origins"`
 	UserAuthorizationUrl                        types.String `tfsdk:"user_authorization_url"`
 	BypassActivationCodeConfirmation            types.Bool   `tfsdk:"bypass_activation_code_confirmation"`
 	RegisteredAuthorizationPath                 types.String `tfsdk:"registered_authorization_path"`
@@ -394,14 +394,14 @@ func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req data
 				Optional:    false,
 				Computed:    true,
 			},
-			"allowed_origins": schema.SetAttribute{
+			"allowed_origins": schema.ListAttribute{
 				Description: "The list of allowed origins.",
 				ElementType: types.StringType,
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
-				Validators: []validator.Set{
-					configvalidators.ValidateUrlInSet(),
+				Validators: []validator.List{
+					configvalidators.ValidUrls(),
 				},
 			},
 			"user_authorization_url": schema.StringAttribute{
@@ -567,7 +567,7 @@ func readOauthAuthServerSettingsResponseDataSource(ctx context.Context, r *clien
 	diags.Append(respDiags...)
 	state.AtmIdForOAuthGrantManagement = types.StringPointerValue(r.AtmIdForOAuthGrantManagement)
 	state.ScopeForOAuthGrantManagement = types.StringPointerValue(r.ScopeForOAuthGrantManagement)
-	state.AllowedOrigins = internaltypes.GetStringSet(r.AllowedOrigins)
+	state.AllowedOrigins = internaltypes.GetStringList(r.AllowedOrigins)
 	state.UserAuthorizationUrl = types.StringPointerValue(r.UserAuthorizationUrl)
 	state.RegisteredAuthorizationPath = types.StringValue(r.RegisteredAuthorizationPath)
 	state.PendingAuthorizationTimeout = types.Int64Value(r.PendingAuthorizationTimeout)

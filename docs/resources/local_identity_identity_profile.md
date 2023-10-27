@@ -14,8 +14,8 @@ Manages Local Identity Identity Profiles
 
 ```terraform
 resource "pingfederate_local_identity_identity_profile" "myLocalIdentityIdentityProfile" {
-  name = "yourIdentityProfileName"
-  id   = "yourid"
+  name      = "yourIdentityProfileName"
+  custom_id = "yourid"
   apc_id = {
     id = "apcid"
   }
@@ -159,7 +159,7 @@ resource "pingfederate_local_identity_identity_profile" "myLocalIdentityIdentity
 ### Optional
 
 - `auth_source_update_policy` (Attributes) The attribute update policy for authentication sources. (see [below for nested schema](#nestedatt--auth_source_update_policy))
-- `auth_sources` (Attributes Set) The local identity authentication sources. Sources are unique. (see [below for nested schema](#nestedatt--auth_sources))
+- `auth_sources` (Attributes List) The local identity authentication sources. Sources are unique. (see [below for nested schema](#nestedatt--auth_sources))
 - `custom_id` (String) The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
 - `data_store_config` (Attributes) The local identity profile data store configuration. (see [below for nested schema](#nestedatt--data_store_config))
 - `email_verification_config` (Attributes) The local identity email verification configuration. (see [below for nested schema](#nestedatt--email_verification_config))
@@ -291,7 +291,7 @@ Read-Only:
 
 Optional:
 
-- `fields` (Attributes Set) The field configuration for the local identity profile. (see [below for nested schema](#nestedatt--field_config--fields))
+- `fields` (Attributes List) The field configuration for the local identity profile. (see [below for nested schema](#nestedatt--field_config--fields))
 - `strip_space_from_unique_field` (Boolean) Strip leading/trailing spaces from unique ID field. Default is true.
 
 <a id="nestedatt--field_config--fields"></a>
