@@ -603,15 +603,9 @@ func (r *oauthAuthServerSettingsDataSource) Read(ctx context.Context, req dataso
 		return
 	}
 
-	// // Read the response into the state
-	// id := id.GenerateUUIDStringPointer()
 	// Read the response into the state
-	var id *string
-	if !internaltypes.IsDefined(state.Id) {
-	} else {
-		id = state.Id.ValueStringPointer()
-	}
-	diags = readOauthAuthServerSettingsResponseDataSource(ctx, apiReadOauthAuthServerSettings, &state, id)
+	var id = "id"
+	diags = readOauthAuthServerSettingsResponseDataSource(ctx, apiReadOauthAuthServerSettings, &state, &id)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
