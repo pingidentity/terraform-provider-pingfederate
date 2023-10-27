@@ -88,6 +88,11 @@ resource "pingfederate_oauth_auth_server_settings" "%[1]s" {
   refresh_rolling_interval            = %[8]d
   refresh_token_length                = %[9]d
   bypass_activation_code_confirmation = %[10]t
+}
+data "pingfederate_oauth_auth_server_settings" "%[1]s" {
+  depends_on = [
+    pingfederate_oauth_auth_server_settings.%[1]s
+  ]
 }`, resourceName,
 		resourceModel.authorizationCodeEntropy,
 		resourceModel.authorizationCodeTimeout,
