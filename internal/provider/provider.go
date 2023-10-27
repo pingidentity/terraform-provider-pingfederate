@@ -281,7 +281,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		administrativeaccount.AdministrativeAccountResource,
 		authenticationapi.AuthenticationApiSettingsResource,
 		certificate.CertificateCAResource,
-		config.AuthenticationPolicyContractsResource,
+		config.AuthenticationPolicyContractResource,
 		config.PasswordCredentialValidatorsResource,
 		config.RedirectValidationResource,
 		config.TokenProcessorToTokenGeneratorMappingResource,

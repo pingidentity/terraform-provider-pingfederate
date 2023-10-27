@@ -23,23 +23,23 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource                = &authenticationPolicyContractsResource{}
-	_ resource.ResourceWithConfigure   = &authenticationPolicyContractsResource{}
-	_ resource.ResourceWithImportState = &authenticationPolicyContractsResource{}
+	_ resource.Resource                = &authenticationPolicyContractResource{}
+	_ resource.ResourceWithConfigure   = &authenticationPolicyContractResource{}
+	_ resource.ResourceWithImportState = &authenticationPolicyContractResource{}
 )
 
-// AuthenticationPolicyContractsResource is a helper function to simplify the provider implementation.
-func AuthenticationPolicyContractsResource() resource.Resource {
-	return &authenticationPolicyContractsResource{}
+// AuthenticationPolicyContractResource is a helper function to simplify the provider implementation.
+func AuthenticationPolicyContractResource() resource.Resource {
+	return &authenticationPolicyContractResource{}
 }
 
-// authenticationPolicyContractsResource is the resource implementation.
-type authenticationPolicyContractsResource struct {
+// authenticationPolicyContractResource is the resource implementation.
+type authenticationPolicyContractResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
 }
 
-type authenticationPolicyContractsResourceModel struct {
+type authenticationPolicyContractResourceModel struct {
 	Id                 types.String `tfsdk:"id"`
 	CustomId           types.String `tfsdk:"custom_id"`
 	Name               types.String `tfsdk:"name"`
@@ -48,9 +48,9 @@ type authenticationPolicyContractsResourceModel struct {
 }
 
 // GetSchema defines the schema for the resource.
-func (r *authenticationPolicyContractsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a AuthenticationPolicyContracts.",
+		Description: "Manages an Authentication Policy Contract.",
 		Attributes: map[string]schema.Attribute{
 			"custom_id": schema.StringAttribute{
 				Description: "The persistent, unique ID for the authentication policy contract. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
@@ -110,7 +110,7 @@ func (r *authenticationPolicyContractsResource) Schema(ctx context.Context, req 
 	resp.Schema = schema
 }
 
-func addAuthenticationPolicyContractsFields(ctx context.Context, addRequest *client.AuthenticationPolicyContract, plan authenticationPolicyContractsResourceModel) error {
+func addAuthenticationPolicyContractsFields(ctx context.Context, addRequest *client.AuthenticationPolicyContract, plan authenticationPolicyContractResourceModel) error {
 	if internaltypes.IsDefined(plan.CustomId) {
 		addRequest.Id = plan.CustomId.ValueStringPointer()
 	}
@@ -144,11 +144,11 @@ func addAuthenticationPolicyContractsFields(ctx context.Context, addRequest *cli
 }
 
 // Metadata returns the resource type name.
-func (r *authenticationPolicyContractsResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *authenticationPolicyContractResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_authentication_policy_contract"
 }
 
-func (r *authenticationPolicyContractsResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
+func (r *authenticationPolicyContractResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -159,7 +159,7 @@ func (r *authenticationPolicyContractsResource) Configure(_ context.Context, req
 
 }
 
-func readAuthenticationPolicyContractsResponse(ctx context.Context, r *client.AuthenticationPolicyContract, state *authenticationPolicyContractsResourceModel, expectedValues *authenticationPolicyContractsResourceModel) diag.Diagnostics {
+func readAuthenticationPolicyContractsResponse(ctx context.Context, r *client.AuthenticationPolicyContract, state *authenticationPolicyContractResourceModel, expectedValues *authenticationPolicyContractResourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
 	state.CustomId = internaltypes.StringTypeOrNil(r.Id, false)
@@ -197,8 +197,8 @@ func readAuthenticationPolicyContractsResponse(ctx context.Context, r *client.Au
 	return diags
 }
 
-func (r *authenticationPolicyContractsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan authenticationPolicyContractsResourceModel
+func (r *authenticationPolicyContractResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan authenticationPolicyContractResourceModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -229,7 +229,7 @@ func (r *authenticationPolicyContractsResource) Create(ctx context.Context, req 
 		diags.AddError("There was an issue retrieving the response of an Authentication Policy Contract: %s", responseErr.Error())
 	}
 	// Read the response into the state
-	var state authenticationPolicyContractsResourceModel
+	var state authenticationPolicyContractResourceModel
 
 	diags = readAuthenticationPolicyContractsResponse(ctx, authenticationPolicyContractsResponse, &state, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -237,8 +237,8 @@ func (r *authenticationPolicyContractsResource) Create(ctx context.Context, req 
 	resp.Diagnostics.Append(diags...)
 }
 
-func (r *authenticationPolicyContractsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state authenticationPolicyContractsResourceModel
+func (r *authenticationPolicyContractResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state authenticationPolicyContractResourceModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -271,9 +271,9 @@ func (r *authenticationPolicyContractsResource) Read(ctx context.Context, req re
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
-func (r *authenticationPolicyContractsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *authenticationPolicyContractResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	var plan authenticationPolicyContractsResourceModel
+	var plan authenticationPolicyContractResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -281,7 +281,7 @@ func (r *authenticationPolicyContractsResource) Update(ctx context.Context, req 
 	}
 
 	// Get the current state to see how any attributes are changing
-	var state authenticationPolicyContractsResourceModel
+	var state authenticationPolicyContractResourceModel
 	updateAuthenticationPolicyContracts := r.apiClient.AuthenticationPolicyContractsAPI.UpdateAuthenticationPolicyContract(ProviderBasicAuthContext(ctx, r.providerConfig), plan.CustomId.ValueString())
 	createUpdateRequest := client.NewAuthenticationPolicyContract()
 	err := addAuthenticationPolicyContractsFields(ctx, createUpdateRequest, plan)
@@ -314,9 +314,9 @@ func (r *authenticationPolicyContractsResource) Update(ctx context.Context, req 
 }
 
 // // Delete deletes the resource and removes the Terraform state on success.
-func (r *authenticationPolicyContractsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *authenticationPolicyContractResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state authenticationPolicyContractsResourceModel
+	var state authenticationPolicyContractResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -330,7 +330,7 @@ func (r *authenticationPolicyContractsResource) Delete(ctx context.Context, req 
 
 }
 
-func (r *authenticationPolicyContractsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *authenticationPolicyContractResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("custom_id"), req, resp)
 }
