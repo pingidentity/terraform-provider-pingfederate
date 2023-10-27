@@ -67,9 +67,9 @@ resource "pingfederate_redirect_validation" "%[1]s" {
       {
         valid_domain = "%[3]s"
       },
-	  {
-		valid_domain = "anotherexample.com"
-	  }
+      {
+        valid_domain = "anotherexample.com"
+      }
     ]
   }
   redirect_validation_partner_settings = {

@@ -114,8 +114,8 @@ resource "pingfederate_oauth_auth_server_settings" "oauthAuthServerSettingsExamp
 - `bypass_authorization_for_approved_grants` (Boolean) Bypass authorization for previously approved persistent grants. The default value is false.
 - `client_secret_retention_period` (Number) The length of time in minutes that client secrets will be retained as secondary secrets after secret change. The default value is 0, which will disable secondary client secret retention.
 - `disallow_plain_pkce` (Boolean) Determines whether PKCE's 'plain' code challenge method will be disallowed. The default value is false.
-- `exclusive_scope_groups` (Attributes List) The list of exclusive scope groups. (see [below for nested schema](#nestedatt--exclusive_scope_groups))
-- `exclusive_scopes` (Attributes List) The list of exclusive scopes. (see [below for nested schema](#nestedatt--exclusive_scopes))
+- `exclusive_scope_groups` (Attributes Set) The list of exclusive scope groups. (see [below for nested schema](#nestedatt--exclusive_scope_groups))
+- `exclusive_scopes` (Attributes Set) The list of exclusive scopes. (see [below for nested schema](#nestedatt--exclusive_scopes))
 - `include_issuer_in_authorization_response` (Boolean) Determines whether the authorization server's issuer value is added to the authorization response or not. The default value is false.
 - `jwt_secured_authorization_response_mode_lifetime` (Number) The lifetime, in seconds, of the JWT Secured authorization response. The default value is 600.
 - `par_reference_length` (Number) The entropy of pushed authorization request references, in bytes. The default value is 24.
@@ -130,8 +130,8 @@ resource "pingfederate_oauth_auth_server_settings" "oauthAuthServerSettingsExamp
 - `refresh_token_rolling_grace_period` (Number) The grace period that a rolled refresh token remains valid in seconds. The default value is 0.
 - `roll_refresh_token_values` (Boolean) The roll refresh token values default policy. The default value is true.
 - `scope_for_oauth_grant_management` (String) The OAuth scope to validate when accessing grant management service.
-- `scope_groups` (Attributes List) The list of common scope groups. (see [below for nested schema](#nestedatt--scope_groups))
-- `scopes` (Attributes List) The list of common scopes. (see [below for nested schema](#nestedatt--scopes))
+- `scope_groups` (Attributes Set) The list of common scope groups. (see [below for nested schema](#nestedatt--scope_groups))
+- `scopes` (Attributes Set) The list of common scopes. (see [below for nested schema](#nestedatt--scopes))
 - `token_endpoint_base_url` (String) The token endpoint base URL used to validate the 'aud' claim during Private Key JWT Client Authentication.
 - `track_user_sessions_for_logout` (Boolean) Determines whether user sessions are tracked for logout. If this property is not provided on a PUT, the setting is left unchanged.
 - `user_authorization_consent_adapter` (String) Adapter ID of the external consent adapter to be used for the consent page user interface.
@@ -182,11 +182,11 @@ Optional:
 
 Optional:
 
-- `extended_attributes` (Attributes List) A list of additional attributes for the persistent grant contract. (see [below for nested schema](#nestedatt--persistent_grant_contract--extended_attributes))
+- `extended_attributes` (Attributes Set) A list of additional attributes for the persistent grant contract. (see [below for nested schema](#nestedatt--persistent_grant_contract--extended_attributes))
 
 Read-Only:
 
-- `core_attributes` (Attributes List) This is a read-only list of persistent grant attributes and includes USER_KEY and USER_NAME. Changes to this field will be ignored. (see [below for nested schema](#nestedatt--persistent_grant_contract--core_attributes))
+- `core_attributes` (Attributes Set) This is a read-only list of persistent grant attributes and includes USER_KEY and USER_NAME. Changes to this field will be ignored. (see [below for nested schema](#nestedatt--persistent_grant_contract--core_attributes))
 
 <a id="nestedatt--persistent_grant_contract--extended_attributes"></a>
 ### Nested Schema for `persistent_grant_contract.extended_attributes`
