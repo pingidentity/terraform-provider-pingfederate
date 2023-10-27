@@ -18,22 +18,25 @@ const password = "2FederateM0re!"
 var roles = []string{"USER_ADMINISTRATOR", "CRYPTO_ADMINISTRATOR"}
 
 type administrativeAccountResourceModel struct {
-	active      bool
-	description string
-	stateId     string
+	active       bool
+	description  string
+	stateId      string
+	emailAddress string
 }
 
 func TestAccAdministrativeAccount(t *testing.T) {
 	resourceName := "myAdministrativeAccount"
 	initialResourceModel := administrativeAccountResourceModel{
-		active:      false,
-		description: "example description",
-		stateId:     username,
+		active:       false,
+		description:  "example description",
+		stateId:      username,
+		emailAddress: "firstemail@example.com",
 	}
 	updatedResourceModel := administrativeAccountResourceModel{
-		active:      true,
-		description: "updated description",
-		stateId:     username,
+		active:       true,
+		description:  "updated description",
+		stateId:      username,
+		emailAddress: "secondemail@example.com",
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -72,6 +75,7 @@ resource "pingfederate_administrative_account" "%[1]s" {
   roles       = %[4]s
   password    = "%[5]s"
   username    = "%[6]s"
+  email_address = "%[7]s"
 }
 
 data "pingfederate_administrative_account" "%[1]s" {
@@ -82,6 +86,7 @@ data "pingfederate_administrative_account" "%[1]s" {
 		acctest.StringSliceToTerraformString(roles),
 		password,
 		username,
+		resourceModel.emailAddress,
 	)
 }
 
@@ -101,8 +106,13 @@ func testAccCheckExpectedAdministrativeAccountAttributes(config administrativeAc
 		if err != nil {
 			return err
 		}
-		err = acctest.TestAttributesMatchString(resourceType, &config.stateId, "description",
-			config.description, *response.Description)
+		err = acctest.TestAttributesMatchStringPointer(resourceType, &config.stateId, "description",
+			config.description, response.Description)
+		if err != nil {
+			return err
+		}
+		err = acctest.TestAttributesMatchStringPointer(resourceType, &config.stateId, "email_address",
+			config.emailAddress, response.EmailAddress)
 		if err != nil {
 			return err
 		}
