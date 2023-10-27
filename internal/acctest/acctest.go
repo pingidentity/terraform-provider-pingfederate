@@ -124,6 +124,23 @@ func InterfaceSliceToStringSlice(values []interface{}) []string {
 	return stringSlice
 }
 
+func TfKeyValuePairToString(key string, value string, addDoubleQuotes bool) string {
+	if value != "" {
+		quoteVal := func() string {
+			if addDoubleQuotes {
+				return "\""
+			}
+			return ""
+		}
+
+		q := quoteVal()
+		fmt.Printf("%s = %s%s%s", key, q, value, q)
+		return fmt.Sprintf("%s = %s%s%s", key, q, value, q)
+	} else {
+		return ""
+	}
+}
+
 // Utility methods for testing whether attributes match the expected values
 
 // Test if string attributes match
