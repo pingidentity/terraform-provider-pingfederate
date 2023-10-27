@@ -600,7 +600,7 @@ func (r *oauthAuthServerSettingsDataSource) Read(ctx context.Context, req dataso
 	}
 
 	// Read the response into the state
-	var id = "id"
+	var id = "oauth_auth_server_settings_id"
 	diags = readOauthAuthServerSettingsResponseDataSource(ctx, apiReadOauthAuthServerSettings, &state, &id)
 	resp.Diagnostics.Append(diags...)
 
