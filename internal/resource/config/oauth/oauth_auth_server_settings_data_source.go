@@ -590,11 +590,7 @@ func readOauthAuthServerSettingsResponseDataSource(ctx context.Context, r *clien
 func (r *oauthAuthServerSettingsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state oauthAuthServerSettingsDataSourceModel
 
-	diags := req.Config.Get(ctx, &state)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	var diags diag.Diagnostics
 
 	apiReadOauthAuthServerSettings, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.GetAuthorizationServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 
