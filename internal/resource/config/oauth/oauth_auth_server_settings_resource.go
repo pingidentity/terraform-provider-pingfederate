@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
@@ -82,7 +83,7 @@ type oauthAuthServerSettingsResourceModel struct {
 	AdminWebServicePcvRef                       types.Object `tfsdk:"admin_web_service_pcv_ref"`
 	AtmIdForOAuthGrantManagement                types.String `tfsdk:"atm_id_for_oauth_grant_management"`
 	ScopeForOAuthGrantManagement                types.String `tfsdk:"scope_for_oauth_grant_management"`
-	AllowedOrigins                              types.Set    `tfsdk:"allowed_origins"`
+	AllowedOrigins                              types.List   `tfsdk:"allowed_origins"`
 	UserAuthorizationUrl                        types.String `tfsdk:"user_authorization_url"`
 	BypassActivationCodeConfirmation            types.Bool   `tfsdk:"bypass_activation_code_confirmation"`
 	RegisteredAuthorizationPath                 types.String `tfsdk:"registered_authorization_path"`
@@ -441,16 +442,16 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"allowed_origins": schema.SetAttribute{
+			"allowed_origins": schema.ListAttribute{
 				Description: "The list of allowed origins.",
 				ElementType: types.StringType,
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
 				},
-				Validators: []validator.Set{
-					configvalidators.ValidateUrlInSet(),
+				Validators: []validator.List{
+					configvalidators.ValidUrls(),
 				},
 			},
 			"user_authorization_url": schema.StringAttribute{
@@ -839,7 +840,8 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 		coreAttribute.Name = coreAttr.Name
 		stateCoreAttrs = append(stateCoreAttrs, coreAttribute)
 	}
-	toStateCoreAttributes, _ := types.SetValueFrom(ctx, setObjType, stateCoreAttrs)
+	toStateCoreAttributes, respDiags := types.SetValueFrom(ctx, setObjType, stateCoreAttrs)
+	diags.Append(respDiags...)
 
 	// Build extended attributes
 	extdAttrs := getPersistentGrantContract.ExtendedAttributes
@@ -849,7 +851,8 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 		extdAttribute.Name = extdAttr.Name
 		stateExtdAttrs = append(stateExtdAttrs, extdAttribute)
 	}
-	toStateExtdAttributes, _ := types.SetValueFrom(ctx, setObjType, stateExtdAttrs)
+	toStateExtdAttributes, respDiags := types.SetValueFrom(ctx, setObjType, stateExtdAttrs)
+	diags.Append(respDiags...)
 
 	// Build final object for state
 	persistentGrantObjContractTypes := map[string]attr.Type{
@@ -862,7 +865,8 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 		"extended_attributes": toStateExtdAttributes,
 	}
 
-	persistentGrantContract, _ := types.ObjectValue(persistentGrantObjContractTypes, persistentGrantObjContractVals)
+	persistentGrantContract, respDiags := types.ObjectValue(persistentGrantObjContractTypes, persistentGrantObjContractVals)
+	diags.Append(respDiags...)
 	state.PersistentGrantContract = persistentGrantContract
 	state.AuthorizationCodeTimeout = types.Int64Value(r.AuthorizationCodeTimeout)
 	state.AuthorizationCodeEntropy = types.Int64Value(r.AuthorizationCodeEntropy)
@@ -886,7 +890,7 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 	diags.Append(respDiags...)
 	state.AtmIdForOAuthGrantManagement = types.StringPointerValue(r.AtmIdForOAuthGrantManagement)
 	state.ScopeForOAuthGrantManagement = types.StringPointerValue(r.ScopeForOAuthGrantManagement)
-	state.AllowedOrigins = internaltypes.GetStringSet(r.AllowedOrigins)
+	state.AllowedOrigins = internaltypes.GetStringList(r.AllowedOrigins)
 	state.UserAuthorizationUrl = types.StringPointerValue(r.UserAuthorizationUrl)
 	state.RegisteredAuthorizationPath = types.StringValue(r.RegisteredAuthorizationPath)
 	state.PendingAuthorizationTimeout = types.Int64Value(r.PendingAuthorizationTimeout)

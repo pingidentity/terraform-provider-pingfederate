@@ -70,7 +70,7 @@ var (
 	}
 
 	fieldConfigAttrTypes = map[string]attr.Type{
-		"fields":                        basetypes.SetType{ElemType: types.ObjectType{AttrTypes: fieldItemAttrTypes}},
+		"fields":                        basetypes.ListType{ElemType: types.ObjectType{AttrTypes: fieldItemAttrTypes}},
 		"strip_space_from_unique_field": basetypes.BoolType{},
 	}
 
@@ -129,7 +129,7 @@ type localIdentityIdentityProfilesResourceModel struct {
 	Name     types.String `tfsdk:"name"`
 	ApcId    types.Object `tfsdk:"apc_id"`
 
-	AuthSources            types.Set    `tfsdk:"auth_sources"`
+	AuthSources            types.List   `tfsdk:"auth_sources"`
 	AuthSourceUpdatePolicy types.Object `tfsdk:"auth_source_update_policy"`
 	RegistrationEnabled    types.Bool   `tfsdk:"registration_enabled"`
 	RegistrationConfig     types.Object `tfsdk:"registration_config"`
@@ -156,7 +156,7 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 				Required:    true,
 				Attributes:  resourcelink.ToSchema(),
 			},
-			"auth_sources": schema.SetNestedAttribute{
+			"auth_sources": schema.ListNestedAttribute{
 				Description: "The local identity authentication sources. Sources are unique.",
 				Computed:    true,
 				Optional:    true,
@@ -272,7 +272,7 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 				Optional:    true,
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
-					"fields": schema.SetNestedAttribute{
+					"fields": schema.ListNestedAttribute{
 						Description: "The field configuration for the local identity profile.",
 						Optional:    true,
 						NestedObject: schema.NestedAttributeObject{
@@ -643,7 +643,7 @@ func (r *localIdentityIdentityProfilesResource) ValidateConfig(ctx context.Conte
 		if (model.ProfileEnabled.ValueBool()) && (model.RegistrationEnabled.ValueBool()) {
 			if !model.ProfileEnabled.ValueBool() {
 				if internaltypes.IsDefined(model.FieldConfig.Attributes()["fields"]) {
-					fieldObj := model.FieldConfig.Attributes()["fields"].(basetypes.SetValue)
+					fieldObj := model.FieldConfig.Attributes()["fields"].(basetypes.ListValue)
 					fieldElems := fieldObj.Elements()
 					for _, fieldElem := range fieldElems {
 						fieldElemAttrs := fieldElem.(basetypes.ObjectValue)
@@ -701,7 +701,8 @@ func readLocalIdentityIdentityProfilesResponse(ctx context.Context, r *client.Lo
 
 	// auth source update policy
 	authSourceUpdatePolicy := r.AuthSourceUpdatePolicy
-	state.AuthSourceUpdatePolicy, _ = types.ObjectValueFrom(ctx, authSourceUpdatePolicyAttrTypes, authSourceUpdatePolicy)
+	state.AuthSourceUpdatePolicy, respDiags = types.ObjectValueFrom(ctx, authSourceUpdatePolicyAttrTypes, authSourceUpdatePolicy)
+	diags.Append(respDiags...)
 
 	// auth sources
 	authSources := r.GetAuthSources()
@@ -712,37 +713,45 @@ func readLocalIdentityIdentityProfilesResponse(ctx context.Context, r *client.Lo
 			"id":     types.StringPointerValue(authSources[i].Id),
 			"source": types.StringPointerValue(authSources[i].Source),
 		}
-		authSourcesObj, _ := types.ObjectValue(authSourcesAttrTypes, authSourcesAttrValues)
+		authSourcesObj, respDiags := types.ObjectValue(authSourcesAttrTypes, authSourcesAttrValues)
+		diags.Append(respDiags...)
 		authSourcesSliceAttrVal = append(authSourcesSliceAttrVal, authSourcesObj)
 	}
-	state.AuthSources, _ = types.SetValue(authSourcesSliceType, authSourcesSliceAttrVal)
+	state.AuthSources, respDiags = types.ListValue(authSourcesSliceType, authSourcesSliceAttrVal)
+	diags.Append(respDiags...)
 
 	registrationConfig := r.RegistrationConfig
-	state.RegistrationConfig, _ = types.ObjectValueFrom(ctx, registrationConfigAttrTypes, registrationConfig)
+	state.RegistrationConfig, respDiags = types.ObjectValueFrom(ctx, registrationConfigAttrTypes, registrationConfig)
+	diags.Append(respDiags...)
 
 	state.RegistrationEnabled = types.BoolValue(r.GetRegistrationEnabled())
 
 	profileConfig := r.ProfileConfig
-	state.ProfileConfig, _ = types.ObjectValueFrom(ctx, profileConfigAttrTypes, profileConfig)
+	state.ProfileConfig, respDiags = types.ObjectValueFrom(ctx, profileConfigAttrTypes, profileConfig)
+	diags.Append(respDiags...)
 
 	// field config
 	fieldConfig := r.GetFieldConfig()
 	fieldType := types.ObjectType{AttrTypes: fieldItemAttrTypes}
 	fieldAttrsStruct := fieldConfig.GetFields()
-	fieldAttrsState, _ := types.SetValueFrom(ctx, fieldType, fieldAttrsStruct)
+	fieldAttrsState, respDiags := types.ListValueFrom(ctx, fieldType, fieldAttrsStruct)
+	diags.Append(respDiags...)
 	stripSpaceFromUniqueFieldState := types.BoolPointerValue(r.GetFieldConfig().StripSpaceFromUniqueField)
 	fieldConfigAttrValues := map[string]attr.Value{
 		"fields":                        fieldAttrsState,
 		"strip_space_from_unique_field": stripSpaceFromUniqueFieldState,
 	}
-	state.FieldConfig, _ = types.ObjectValue(fieldConfigAttrTypes, fieldConfigAttrValues)
+	state.FieldConfig, respDiags = types.ObjectValue(fieldConfigAttrTypes, fieldConfigAttrValues)
+	diags.Append(respDiags...)
 
 	emailVerificationConfig := r.EmailVerificationConfig
-	state.EmailVerificationConfig, _ = types.ObjectValueFrom(ctx, emailVerificationConfigAttrTypes, emailVerificationConfig)
+	state.EmailVerificationConfig, respDiags = types.ObjectValueFrom(ctx, emailVerificationConfigAttrTypes, emailVerificationConfig)
+	diags.Append(respDiags...)
 
 	//  data store config
 	dsConfig := r.DataStoreConfig
-	state.DataStoreConfig, _ = types.ObjectValueFrom(ctx, dsConfigAttrTypes, dsConfig)
+	state.DataStoreConfig, respDiags = types.ObjectValueFrom(ctx, dsConfigAttrTypes, dsConfig)
+	diags.Append(respDiags...)
 
 	state.ProfileEnabled = types.BoolPointerValue(r.ProfileEnabled)
 	return diags

@@ -57,16 +57,16 @@ func testAccServerSettingsLogSettings(resourceName string, resourceModel serverS
 resource "pingfederate_server_settings_log_settings" "%[1]s" {
   log_categories = [
     {
-      id          = "core"
-      name        = "Core"
-      description = "Debug logging for core components."
-      enabled     = true
-    },
-    {
       id          = "policytree"
       name        = "Policy Tree"
       description = "Policy tree debug logging."
       enabled     = false
+    },
+    {
+      id          = "core"
+      name        = "Core"
+      description = "Debug logging for core components."
+      enabled     = true
     },
     {
       id          = "trustedcas"

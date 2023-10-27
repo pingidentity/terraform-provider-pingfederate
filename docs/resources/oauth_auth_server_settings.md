@@ -107,7 +107,7 @@ resource "pingfederate_oauth_auth_server_settings" "oauthAuthServerSettingsExamp
 - `admin_web_service_pcv_ref` (Attributes) The password credential validator reference that is used for authenticating access to the OAuth Administrative Web Service. (see [below for nested schema](#nestedatt--admin_web_service_pcv_ref))
 - `allow_unidentified_client_extension_grants` (Boolean) Allow unidentified clients to request extension grants. The default value is false.
 - `allow_unidentified_client_ro_creds` (Boolean) Allow unidentified clients to request resource owner password credentials grants. The default value is false.
-- `allowed_origins` (Set of String) The list of allowed origins.
+- `allowed_origins` (List of String) The list of allowed origins.
 - `approved_authorization_detail_attribute` (String) Attribute from the external consent adapter's contract, intended for storing approved authorization details returned by the external consent page.
 - `approved_scopes_attribute` (String) Attribute from the external consent adapter's contract, intended for storing approved scopes returned by the external consent page.
 - `atm_id_for_oauth_grant_management` (String) The ID of the Access Token Manager used for OAuth enabled grant management.

@@ -6,8 +6,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -34,7 +34,7 @@ type virtualHostNamesResource struct {
 
 type virtualHostNamesResourceModel struct {
 	Id               types.String `tfsdk:"id"`
-	VirtualHostNames types.Set    `tfsdk:"virtual_host_names"`
+	VirtualHostNames types.List   `tfsdk:"virtual_host_names"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -42,13 +42,13 @@ func (r *virtualHostNamesResource) Schema(ctx context.Context, req resource.Sche
 	schema := schema.Schema{
 		Description: "Manages a VirtualHostNames.",
 		Attributes: map[string]schema.Attribute{
-			"virtual_host_names": schema.SetAttribute{
+			"virtual_host_names": schema.ListAttribute{
 				Description: "List of virtual host names.",
 				ElementType: types.StringType,
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown()},
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown()},
 			},
 		},
 	}
@@ -85,7 +85,7 @@ func (r *virtualHostNamesResource) Configure(_ context.Context, req resource.Con
 
 func readVirtualHostNamesResponse(ctx context.Context, r *client.VirtualHostNameSettings, state *virtualHostNamesResourceModel, existingId *string) {
 	state.Id = id.GenerateUUIDToState(existingId)
-	state.VirtualHostNames = internaltypes.GetStringSet(r.VirtualHostNames)
+	state.VirtualHostNames = internaltypes.GetStringList(r.VirtualHostNames)
 }
 
 func (r *virtualHostNamesResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

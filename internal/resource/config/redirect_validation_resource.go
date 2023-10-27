@@ -10,9 +10,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -46,7 +46,7 @@ var (
 		"enable_target_resource_validation_for_slo":           basetypes.BoolType{},
 		"enable_target_resource_validation_for_idp_discovery": basetypes.BoolType{},
 		"enable_in_error_resource_validation":                 basetypes.BoolType{},
-		"white_list":                                          basetypes.SetType{ElemType: basetypes.ObjectType{AttrTypes: whiteListAttrTypes}},
+		"white_list":                                          basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: whiteListAttrTypes}},
 	}
 
 	redirectValidationPartnerSettingsAttrTypes = map[string]attr.Type{
@@ -116,12 +116,12 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 							boolplanmodifier.UseStateForUnknown(),
 						},
 					},
-					"white_list": schema.SetNestedAttribute{
+					"white_list": schema.ListNestedAttribute{
 						Description: "List of URLs that are designated as valid target resources.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
+						PlanModifiers: []planmodifier.List{
+							listplanmodifier.UseStateForUnknown(),
 						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
@@ -274,7 +274,7 @@ func readRedirectValidationResponse(ctx context.Context, r *client.RedirectValid
 		diags.Append(respDiags...)
 		whiteListSliceAttrVal = append(whiteListSliceAttrVal, whiteListObj)
 	}
-	whiteListSlice, respDiags := types.SetValue(whiteListSliceType, whiteListSliceAttrVal)
+	whiteListSlice, respDiags := types.ListValue(whiteListSliceType, whiteListSliceAttrVal)
 	diags.Append(respDiags...)
 	redirectValidationLocalSettings := r.GetRedirectValidationLocalSettings()
 	redirectValidationLocalSettingsAttrVals := map[string]attr.Value{

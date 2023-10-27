@@ -37,7 +37,7 @@ type localIdentityIdentityProfileDataSourceModel struct {
 	Id                      types.String `tfsdk:"id"`
 	Name                    types.String `tfsdk:"name"`
 	ApcId                   types.Object `tfsdk:"apc_id"`
-	AuthSources             types.Set    `tfsdk:"auth_sources"`
+	AuthSources             types.List   `tfsdk:"auth_sources"`
 	AuthSourceUpdatePolicy  types.Object `tfsdk:"auth_source_update_policy"`
 	RegistrationEnabled     types.Bool   `tfsdk:"registration_enabled"`
 	RegistrationConfig      types.Object `tfsdk:"registration_config"`
@@ -79,7 +79,7 @@ func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req
 					},
 				},
 			},
-			"auth_sources": schema.SetNestedAttribute{
+			"auth_sources": schema.ListNestedAttribute{
 				Description: "The local identity authentication sources. Sources are unique.",
 				Required:    false,
 				Optional:    false,
@@ -249,7 +249,7 @@ func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req
 				Optional:    false,
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
-					"fields": schema.SetNestedAttribute{
+					"fields": schema.ListNestedAttribute{
 						Description: "The field configuration for the local identity profile.",
 						Required:    false,
 						Optional:    false,
@@ -571,7 +571,7 @@ func readLocalIdentityIdentityProfileResponseDataSource(ctx context.Context, r *
 		diags.Append(respDiags...)
 		authSourcesSliceAttrVal = append(authSourcesSliceAttrVal, authSourcesObj)
 	}
-	state.AuthSources, respDiags = types.SetValue(authSourcesSliceType, authSourcesSliceAttrVal)
+	state.AuthSources, respDiags = types.ListValue(authSourcesSliceType, authSourcesSliceAttrVal)
 	diags.Append(respDiags...)
 
 	registrationConfig := r.RegistrationConfig
@@ -588,7 +588,7 @@ func readLocalIdentityIdentityProfileResponseDataSource(ctx context.Context, r *
 	fieldConfig := r.GetFieldConfig()
 	fieldType := types.ObjectType{AttrTypes: fieldItemAttrTypes}
 	fieldAttrsStruct := fieldConfig.GetFields()
-	fieldAttrsState, respDiags := types.SetValueFrom(ctx, fieldType, fieldAttrsStruct)
+	fieldAttrsState, respDiags := types.ListValueFrom(ctx, fieldType, fieldAttrsStruct)
 	diags.Append(respDiags...)
 
 	stripSpaceFromUniqueFieldState := types.BoolPointerValue(r.GetFieldConfig().StripSpaceFromUniqueField)
