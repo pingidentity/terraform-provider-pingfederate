@@ -24,8 +24,8 @@ var (
 	_ resource.ResourceWithConfigure = &certificatesResource{}
 )
 
-// CertificateResource is a helper function to simplify the provider implementation.
-func CertificateResource() resource.Resource {
+// CertificateCAResource is a helper function to simplify the provider implementation.
+func CertificateCAResource() resource.Resource {
 	return &certificatesResource{}
 }
 
@@ -48,7 +48,7 @@ func (r *certificatesResource) Schema(ctx context.Context, req resource.SchemaRe
 		Description: "Manages CertificateCA Import.",
 		Attributes: map[string]schema.Attribute{
 			"custom_id": schema.StringAttribute{
-				Description: "The persistent, unique ID for the certificate",
+				Description: "The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.",
 				Optional:    true,
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
@@ -71,7 +71,6 @@ func (r *certificatesResource) Schema(ctx context.Context, req resource.SchemaRe
 				Description: "The certificate data in PEM format. New line characters should be omitted or encoded in this value.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
@@ -198,6 +197,8 @@ func (r *certificatesResource) Read(ctx context.Context, req resource.ReadReques
 }
 
 func (r *certificatesResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	// All attributes in this resource use the RequiresReplace plan modifier, so no updates can be done.
+	// The PF API does not support updating a certificate CA, only creating and deleting.
 }
 
 // // Delete deletes the resource and removes the Terraform state on success.

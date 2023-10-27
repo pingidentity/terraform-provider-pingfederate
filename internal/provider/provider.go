@@ -280,7 +280,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 	return []func() resource.Resource{
 		administrativeaccount.AdministrativeAccountResource,
 		authenticationapi.AuthenticationApiSettingsResource,
-		certificate.CertificateResource,
+		certificate.CertificateCAResource,
 		config.AuthenticationPolicyContractsResource,
 		config.PasswordCredentialValidatorsResource,
 		config.RedirectValidationResource,
