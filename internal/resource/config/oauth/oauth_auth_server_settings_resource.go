@@ -57,10 +57,10 @@ type oauthAuthServerSettingsResource struct {
 type oauthAuthServerSettingsResourceModel struct {
 	Id                                          types.String `tfsdk:"id"`
 	DefaultScopeDescription                     types.String `tfsdk:"default_scope_description"`
-	Scopes                                      types.List   `tfsdk:"scopes"`
-	ScopeGroups                                 types.List   `tfsdk:"scope_groups"`
-	ExclusiveScopes                             types.List   `tfsdk:"exclusive_scopes"`
-	ExclusiveScopeGroups                        types.List   `tfsdk:"exclusive_scope_groups"`
+	Scopes                                      types.Set    `tfsdk:"scopes"`
+	ScopeGroups                                 types.Set    `tfsdk:"scope_groups"`
+	ExclusiveScopes                             types.Set    `tfsdk:"exclusive_scopes"`
+	ExclusiveScopeGroups                        types.Set    `tfsdk:"exclusive_scope_groups"`
 	AuthorizationCodeTimeout                    types.Int64  `tfsdk:"authorization_code_timeout"`
 	AuthorizationCodeEntropy                    types.Int64  `tfsdk:"authorization_code_entropy"`
 	DisallowPlainPKCE                           types.Bool   `tfsdk:"disallow_plain_pkce"`
@@ -110,12 +110,12 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Description: "The default scope description.",
 				Required:    true,
 			},
-			"scopes": schema.ListNestedAttribute{
+			"scopes": schema.SetNestedAttribute{
 				Description: "The list of common scopes.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.List{
-					listplanmodifier.UseStateForUnknown(),
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
 				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -142,12 +142,12 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 					},
 				},
 			},
-			"scope_groups": schema.ListNestedAttribute{
+			"scope_groups": schema.SetNestedAttribute{
 				Description: "The list of common scope groups.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.List{
-					listplanmodifier.UseStateForUnknown(),
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
 				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -170,12 +170,12 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 					},
 				},
 			},
-			"exclusive_scopes": schema.ListNestedAttribute{
+			"exclusive_scopes": schema.SetNestedAttribute{
 				Description: "The list of exclusive scopes.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.List{
-					listplanmodifier.UseStateForUnknown(),
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
 				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -202,12 +202,12 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 					},
 				},
 			},
-			"exclusive_scope_groups": schema.ListNestedAttribute{
+			"exclusive_scope_groups": schema.SetNestedAttribute{
 				Description: "The list of exclusive scope groups.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.List{
-					listplanmodifier.UseStateForUnknown(),
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
 				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -357,7 +357,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 					objectplanmodifier.UseStateForUnknown(),
 				},
 				Attributes: map[string]schema.Attribute{
-					"core_attributes": schema.ListNestedAttribute{
+					"core_attributes": schema.SetNestedAttribute{
 						Description: "This is a read-only list of persistent grant attributes and includes USER_KEY and USER_NAME. Changes to this field will be ignored.",
 						Computed:    true,
 						Optional:    false,
@@ -373,15 +373,15 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 								},
 							},
 						},
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.UseStateForUnknown(),
+						PlanModifiers: []planmodifier.Set{
+							setplanmodifier.UseStateForUnknown(),
 						},
 					},
-					"extended_attributes": schema.ListNestedAttribute{
+					"extended_attributes": schema.SetNestedAttribute{
 						Description: "A list of additional attributes for the persistent grant contract.",
 						Optional:    true,
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.UseStateForUnknown(),
+						PlanModifiers: []planmodifier.Set{
+							setplanmodifier.UseStateForUnknown(),
 						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
@@ -840,7 +840,7 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 		coreAttribute.Name = coreAttr.Name
 		stateCoreAttrs = append(stateCoreAttrs, coreAttribute)
 	}
-	toStateCoreAttributes, respDiags := types.ListValueFrom(ctx, setObjType, stateCoreAttrs)
+	toStateCoreAttributes, respDiags := types.SetValueFrom(ctx, setObjType, stateCoreAttrs)
 	diags.Append(respDiags...)
 
 	// Build extended attributes
@@ -851,13 +851,13 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 		extdAttribute.Name = extdAttr.Name
 		stateExtdAttrs = append(stateExtdAttrs, extdAttribute)
 	}
-	toStateExtdAttributes, respDiags := types.ListValueFrom(ctx, setObjType, stateExtdAttrs)
+	toStateExtdAttributes, respDiags := types.SetValueFrom(ctx, setObjType, stateExtdAttrs)
 	diags.Append(respDiags...)
 
 	// Build final object for state
 	persistentGrantObjContractTypes := map[string]attr.Type{
-		"core_attributes":     basetypes.ListType{ElemType: types.ObjectType{AttrTypes: nameAttributeType}},
-		"extended_attributes": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: nameAttributeType}},
+		"core_attributes":     basetypes.SetType{ElemType: types.ObjectType{AttrTypes: nameAttributeType}},
+		"extended_attributes": basetypes.SetType{ElemType: types.ObjectType{AttrTypes: nameAttributeType}},
 	}
 
 	persistentGrantObjContractVals := map[string]attr.Value{

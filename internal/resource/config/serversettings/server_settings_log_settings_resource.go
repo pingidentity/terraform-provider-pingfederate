@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -49,7 +49,7 @@ type serverSettingsLogSettingsResource struct {
 
 type serverSettingsLogSettingsResourceModel struct {
 	Id            types.String `tfsdk:"id"`
-	LogCategories types.List   `tfsdk:"log_categories"`
+	LogCategories types.Set    `tfsdk:"log_categories"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -57,11 +57,11 @@ func (r *serverSettingsLogSettingsResource) Schema(ctx context.Context, req reso
 	schema := schema.Schema{
 		Description: "LogSettings Settings related to server logging.",
 		Attributes: map[string]schema.Attribute{
-			"log_categories": schema.ListNestedAttribute{
+			"log_categories": schema.SetNestedAttribute{
 				Description: "The log categories defined for the system and whether they are enabled. On a PUT request, if a category is not included in the list, it will be disabled.",
 				Required:    true,
-				PlanModifiers: []planmodifier.List{
-					listplanmodifier.UseStateForUnknown(),
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
 				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -151,7 +151,7 @@ func readServerSettingsLogSettingsResponse(ctx context.Context, r *client.LogSet
 		LogCategoryObj, _ := types.ObjectValue(logCategoriesAttrTypes, logCategoriesAttrValues)
 		LogCategorySliceAttrVal = append(LogCategorySliceAttrVal, LogCategoryObj)
 	}
-	LogCategorySlice, respDiags := types.ListValue(LogCategorySliceType, LogCategorySliceAttrVal)
+	LogCategorySlice, respDiags := types.SetValue(LogCategorySliceType, LogCategorySliceAttrVal)
 	diags.Append(respDiags...)
 	state.LogCategories = LogCategorySlice
 	return diags

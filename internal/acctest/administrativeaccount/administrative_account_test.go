@@ -15,7 +15,7 @@ import (
 const username = "username"
 const password = "2FederateM0re!"
 
-var roles = []string{"USER_ADMINISTRATOR"}
+var roles = []string{"USER_ADMINISTRATOR", "CRYPTO_ADMINISTRATOR"}
 
 type administrativeAccountResourceModel struct {
 	active      bool

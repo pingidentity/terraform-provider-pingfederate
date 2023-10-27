@@ -40,7 +40,7 @@ type administrativeAccountDataSourceModel struct {
 	EncryptedPassword types.String `tfsdk:"encrypted_password"`
 	Password          types.String `tfsdk:"password"`
 	PhoneNumber       types.String `tfsdk:"phone_number"`
-	Roles             types.List   `tfsdk:"roles"`
+	Roles             types.Set    `tfsdk:"roles"`
 	Username          types.String `tfsdk:"username"`
 }
 
@@ -97,7 +97,7 @@ func (r *administrativeAccountDataSource) Schema(ctx context.Context, req dataso
 				Optional:    false,
 				Computed:    true,
 			},
-			"roles": schema.ListAttribute{
+			"roles": schema.SetAttribute{
 				Description: "Roles available for an administrator. USER_ADMINISTRATOR - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. CRYPTO_ADMINISTRATOR - Can manage local keys and certificates. ADMINISTRATOR - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. EXPRESSION_ADMINISTRATOR - Can add and update OGNL expressions.",
 				Required:    false,
 				Optional:    false,
@@ -143,7 +143,7 @@ func readAdministrativeAccountResponseDataSource(ctx context.Context, r *client.
 	state.PhoneNumber = internaltypes.StringTypeOrNil(r.PhoneNumber, false)
 	state.EmailAddress = internaltypes.StringTypeOrNil(r.EmailAddress, false)
 	state.Department = internaltypes.StringTypeOrNil(r.Department, false)
-	state.Roles = internaltypes.GetStringList(r.Roles)
+	state.Roles = internaltypes.GetStringSet(r.Roles)
 }
 
 // Read resource information

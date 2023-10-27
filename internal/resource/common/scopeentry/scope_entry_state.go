@@ -16,7 +16,7 @@ var exclusiveScopeAttrTypes = map[string]attr.Type{
 	"dynamic":     basetypes.BoolType{},
 }
 
-func ToState(con context.Context, scopes []client.ScopeEntry) (basetypes.ListValue, diag.Diagnostics) {
+func ToState(con context.Context, scopes []client.ScopeEntry) (basetypes.SetValue, diag.Diagnostics) {
 	toStateScopes := []client.ScopeEntry{}
 	for _, scope := range scopes {
 		scopeEntry := client.ScopeEntry{}
@@ -26,5 +26,5 @@ func ToState(con context.Context, scopes []client.ScopeEntry) (basetypes.ListVal
 		toStateScopes = append(toStateScopes, scopeEntry)
 	}
 
-	return types.ListValueFrom(con, types.ObjectType{AttrTypes: exclusiveScopeAttrTypes}, toStateScopes)
+	return types.SetValueFrom(con, types.ObjectType{AttrTypes: exclusiveScopeAttrTypes}, toStateScopes)
 }
