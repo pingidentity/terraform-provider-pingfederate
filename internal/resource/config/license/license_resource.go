@@ -45,7 +45,6 @@ func (r *licenseResource) Schema(ctx context.Context, req resource.SchemaRequest
 			"file_data": schema.StringAttribute{
 				Required: true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
