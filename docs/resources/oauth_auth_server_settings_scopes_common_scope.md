@@ -13,7 +13,7 @@ Manages a OauthAuthServerSettingsScopesCommonScopes.
 ## Example Usage
 
 ```terraform
-resource "pingfederate_oauth_auth_server_settings_scopes_common_scope" "oauthAuthServerSettingsScopesCommonScopeExample" {
+resource "pingfederate_oauth_auth_server_settings_scopes_common_scope" "myOauthAuthServerSettingsScopesCommonScope" {
   dynamic     = true
   description = "example"
   name        = "*exampleCommonScope"
