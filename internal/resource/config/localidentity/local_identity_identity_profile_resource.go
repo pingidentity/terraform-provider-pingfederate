@@ -13,6 +13,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -109,6 +115,37 @@ var (
 		"name":     basetypes.StringType{},
 		"metadata": basetypes.MapType{ElemType: basetypes.StringType{}},
 	}
+
+	authSourcesDefault, _ = types.ListValue(types.ObjectType{AttrTypes: authSourcesAttrTypes}, []attr.Value{})
+
+	authSourceUpdatePolicyDefault, _ = types.ObjectValue(authSourceUpdatePolicyAttrTypes, map[string]attr.Value{
+		"store_attributes":  types.BoolValue(false),
+		"retain_attributes": types.BoolValue(false),
+		"update_attributes": types.BoolValue(false),
+		"update_interval":   types.Int64Value(0),
+	})
+
+	emptyStringMapDefault, _ = types.MapValue(types.StringType, map[string]attr.Value{})
+
+	emailVerificationConfigDefault, _ = types.ObjectValue(emailVerificationConfigAttrTypes, map[string]attr.Value{
+		"email_verification_enabled":               types.BoolValue(false),
+		"verify_email_template_name":               types.StringNull(),
+		"email_verification_sent_template_name":    types.StringNull(),
+		"email_verification_success_template_name": types.StringNull(),
+		"email_verification_error_template_name":   types.StringNull(),
+		"email_verification_type":                  types.StringNull(),
+		"otp_length":                               types.Int64Null(),
+		"otp_retry_attempts":                       types.Int64Null(),
+		"allowed_otp_character_set":                types.StringNull(),
+		"otp_time_to_live":                         types.Int64Null(),
+		"email_verification_otp_template_name":     types.StringNull(),
+		"otl_time_to_live":                         types.Int64Null(),
+		"field_for_email_to_verify":                types.StringNull(),
+		"field_storing_verification_status":        types.StringNull(),
+		"notification_publisher_ref":               types.ObjectNull(resourcelink.AttrType()),
+		"require_verified_email":                   types.BoolNull(),
+		"require_verified_email_template_name":     types.StringNull(),
+	})
 )
 
 // LocalIdentityIdentityProfilesResource is a helper function to simplify the provider implementation.
@@ -160,17 +197,20 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 				Description: "The local identity authentication sources. Sources are unique.",
 				Computed:    true,
 				Optional:    true,
+				Default:     listdefault.StaticValue(authSourcesDefault),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
 							Description: "The persistent, unique ID for the local identity authentication source. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
 							Computed:    true,
 							Optional:    true,
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.UseStateForUnknown(),
+							},
 						},
 						"source": schema.StringAttribute{
 							Description: "The local identity authentication source. Source is unique.",
-							Computed:    true,
-							Optional:    true,
+							Required:    true,
 						},
 					},
 				},
@@ -178,22 +218,32 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 			"auth_source_update_policy": schema.SingleNestedAttribute{
 				Description: "The attribute update policy for authentication sources.",
 				Optional:    true,
+				Computed:    true,
+				//Default:     objectdefault.StaticValue(authSourceUpdatePolicyDefault), //TODO this default only applies if profile or registration is true, I think
 				Attributes: map[string]schema.Attribute{
 					"store_attributes": schema.BoolAttribute{
 						Description: "Whether or not to store attributes that came from authentication sources.",
 						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 					"retain_attributes": schema.BoolAttribute{
 						Description: "Whether or not to keep attributes after user disconnects.",
 						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 					"update_attributes": schema.BoolAttribute{
 						Description: "Whether or not to update attributes when users authenticate.",
 						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 					"update_interval": schema.Int64Attribute{
 						Description: "The minimum number of days between updates.",
 						Optional:    true,
+						Computed:    true,
+						Default:     int64default.StaticInt64(0),
 					},
 				},
 			},
@@ -211,10 +261,10 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 						Description: "Whether CAPTCHA is enabled or not in the registration configuration.",
 						Computed:    true,
 						Optional:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 					"captcha_provider_ref": schema.SingleNestedAttribute{
 						Description: "Reference to the associated CAPTCHA provider.",
-						Computed:    true,
 						Optional:    true,
 						Attributes:  resourcelink.ToSchema(),
 					},
@@ -226,16 +276,17 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 						Description: "Whether to create an Authentication Session when registering a local account. Default is true.",
 						Computed:    true,
 						Optional:    true,
+						Default:     booldefault.StaticBool(true),
 					},
 					"username_field": schema.StringAttribute{
 						Description: "When creating an Authentication Session after registering a local account, PingFederate will pass the Unique ID field's value as the username. If the Unique ID value is not the username, then override which field's value will be used as the username.",
-						Computed:    true,
 						Optional:    true,
 					},
 					"this_is_my_device_enabled": schema.BoolAttribute{
 						Description: "Allows users to indicate whether their device is shared or private. In this mode, PingFederate Authentication Sessions will not be stored unless the user indicates the device is private.",
 						Computed:    true,
 						Optional:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 					"registration_workflow": schema.SingleNestedAttribute{
 						Description: "The policy fragment to be executed as part of the registration workflow.",
@@ -244,10 +295,10 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 					},
 					"execute_workflow": schema.StringAttribute{
 						Description: "This setting indicates whether PingFederate should execute the workflow before or after account creation. The default is to run the registration workflow after account creation.",
-						Computed:    true,
 						Optional:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOf([]string{"BEFORE_ACCOUNT_CREATION", "AFTER_ACCOUNT_CREATION"}...),
+							stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("registration_workflow")),
 						},
 					},
 				},
@@ -260,6 +311,7 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 						Description: "Whether the end user is allowed to use delete functionality.",
 						Computed:    true,
 						Optional:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 					"template_name": schema.StringAttribute{
 						Description: "The template name for end-user profile management.",
@@ -270,7 +322,6 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 			"field_config": schema.SingleNestedAttribute{
 				Description: "The local identity profile field configuration.",
 				Optional:    true,
-				Computed:    true,
 				Attributes: map[string]schema.Attribute{
 					"fields": schema.ListNestedAttribute{
 						Description: "The field configuration for the local identity profile.",
@@ -300,7 +351,7 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 									Description: "Whether this is a profile page field or not.",
 									Optional:    true,
 								},
-								"attributes": schema.MapAttribute{
+								"attributes": schema.MapAttribute{ //TODO the default for this field is based on the type value
 									Description: "Attributes of the local identity field.",
 									Computed:    true,
 									Optional:    true,
@@ -313,6 +364,7 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 						Description: "Strip leading/trailing spaces from unique ID field. Default is true.",
 						Computed:    true,
 						Optional:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 				},
 			},
@@ -320,28 +372,30 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 				Description: "The local identity email verification configuration.",
 				Computed:    true,
 				Optional:    true,
+				//Default:     objectdefault.StaticValue(emailVerificationConfigDefault), TODO this is conditional on registration_config or profile_config being true
 				Attributes: map[string]schema.Attribute{
 					"email_verification_enabled": schema.BoolAttribute{
 						Description: "Whether the email ownership verification is enabled.",
 						Computed:    true,
 						Optional:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 					"verify_email_template_name": schema.StringAttribute{
 						Description: "The template name for verify email. The default is message-template-email-ownership-verification.html.",
 						Computed:    true,
 						Optional:    true,
 					},
-					"email_verification_sent_template_name": schema.StringAttribute{
+					"email_verification_sent_template_name": schema.StringAttribute{ //TODO conditional default - see description
 						Description: "The template name for email verification sent. The default is local.identity.email.verification.sent.html. Note:Only applicable if EmailVerificationType is OTL.",
 						Computed:    true,
 						Optional:    true,
 					},
-					"email_verification_success_template_name": schema.StringAttribute{
+					"email_verification_success_template_name": schema.StringAttribute{ //TODO conditional default
 						Description: "The template name for email verification success. The default is local.identity.email.verification.success.html.",
 						Computed:    true,
 						Optional:    true,
 					},
-					"email_verification_error_template_name": schema.StringAttribute{
+					"email_verification_error_template_name": schema.StringAttribute{ //TODO conditional default
 						Description: "The template name for email verification error. The default is local.identity.email.verification.error.html.",
 						Computed:    true,
 						Optional:    true,
@@ -364,45 +418,49 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 						Description: "The number of OTP retry attempts for email verification. The default is 3. Note: Only applicable if EmailVerificationType is OTP.",
 						Optional:    true,
 					},
-					"allowed_otp_character_set": schema.StringAttribute{
+					"allowed_otp_character_set": schema.StringAttribute{ //TODO conditional default
 						Description: "The allowed character set used to generate the OTP. The default is 23456789BCDFGHJKMNPQRSTVWXZbcdfghjkmnpqrstvwxz. Note: Only applicable if EmailVerificationType is OTP.",
 						Optional:    true,
 						Computed:    true,
 					},
-					"otp_time_to_live": schema.Int64Attribute{
+					"otp_time_to_live": schema.Int64Attribute{ //TODO conditional default
 						Description: "Field used OTP time to live. The default is 15. Note: Only applicable if EmailVerificationType is OTP.",
 						Computed:    true,
 						Optional:    true,
 					},
-					"email_verification_otp_template_name": schema.StringAttribute{
+					"email_verification_otp_template_name": schema.StringAttribute{ //TODO conditional default
 						Description: "The template name for email verification OTP verification. The default is local.identity.email.verification.otp.html. Note: Only applicable if EmailVerificationType is OTP.",
 						Optional:    true,
 						Computed:    true,
 					},
-					"otl_time_to_live": schema.Int64Attribute{
+					"otl_time_to_live": schema.Int64Attribute{ //TODO conditional default
 						Description: "Field used OTL time to live. The default is 1440. Note: Only applicable if EmailVerificationType is OTL.",
 						Computed:    true,
 						Optional:    true,
 					},
 					"field_for_email_to_verify": schema.StringAttribute{
 						Description: "Field used for email ownership verification. Note: Not required when emailVerificationEnabled is set to false.",
-						Required:    true,
+						Optional:    true,
+						Computed:    true,
+						Default:     stringdefault.StaticString(""),
 					},
 					"field_storing_verification_status": schema.StringAttribute{
 						Description: "Field used for storing email verification status. Note: Not required when emailVerificationEnabled is set to false.",
-						Required:    true,
+						Optional:    true,
+						Computed:    true,
+						Default:     stringdefault.StaticString(""),
 					},
 					"notification_publisher_ref": schema.SingleNestedAttribute{
 						Description: "Reference to the associated notification publisher.",
 						Optional:    true,
 						Attributes:  resourcelink.ToSchema(),
 					},
-					"require_verified_email": schema.BoolAttribute{
+					"require_verified_email": schema.BoolAttribute{ //TODO conditional default
 						Description: "Whether the user must verify their email address before they can complete a single sign-on transaction. The default is false.",
 						Computed:    true,
 						Optional:    true,
 					},
-					"require_verified_email_template_name": schema.StringAttribute{
+					"require_verified_email_template_name": schema.StringAttribute{ //TODO conditional default
 						Description: "The template to render when the user must verify their email address before they can complete a single sign-on transaction. The default is local.identity.email.verification.required.html. Note:Only applicable if EmailVerificationType is OTL and requireVerifiedEmail is true.",
 						Computed:    true,
 						Optional:    true,
@@ -436,6 +494,9 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 								Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
 								Optional:    false,
 								Computed:    true,
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.UseStateForUnknown(),
+								},
 							},
 						},
 					},
@@ -459,6 +520,7 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 									Description: "The data store attribute metadata.",
 									Computed:    true,
 									Optional:    true,
+									Default:     mapdefault.StaticValue(emptyStringMapDefault),
 									ElementType: types.StringType,
 								},
 							},
@@ -720,37 +782,24 @@ func readLocalIdentityIdentityProfilesResponse(ctx context.Context, r *client.Lo
 	state.AuthSources, respDiags = types.ListValue(authSourcesSliceType, authSourcesSliceAttrVal)
 	diags.Append(respDiags...)
 
-	registrationConfig := r.RegistrationConfig
-	state.RegistrationConfig, respDiags = types.ObjectValueFrom(ctx, registrationConfigAttrTypes, registrationConfig)
+	state.RegistrationConfig, respDiags = types.ObjectValueFrom(ctx, registrationConfigAttrTypes, r.RegistrationConfig)
 	diags.Append(respDiags...)
 
 	state.RegistrationEnabled = types.BoolValue(r.GetRegistrationEnabled())
 
-	profileConfig := r.ProfileConfig
-	state.ProfileConfig, respDiags = types.ObjectValueFrom(ctx, profileConfigAttrTypes, profileConfig)
+	state.ProfileConfig, respDiags = types.ObjectValueFrom(ctx, profileConfigAttrTypes, r.ProfileConfig)
 	diags.Append(respDiags...)
 
 	// field config
-	fieldConfig := r.GetFieldConfig()
-	fieldType := types.ObjectType{AttrTypes: fieldItemAttrTypes}
-	fieldAttrsStruct := fieldConfig.GetFields()
-	fieldAttrsState, respDiags := types.ListValueFrom(ctx, fieldType, fieldAttrsStruct)
-	diags.Append(respDiags...)
-	stripSpaceFromUniqueFieldState := types.BoolPointerValue(r.GetFieldConfig().StripSpaceFromUniqueField)
-	fieldConfigAttrValues := map[string]attr.Value{
-		"fields":                        fieldAttrsState,
-		"strip_space_from_unique_field": stripSpaceFromUniqueFieldState,
-	}
-	state.FieldConfig, respDiags = types.ObjectValue(fieldConfigAttrTypes, fieldConfigAttrValues)
+	state.FieldConfig, respDiags = types.ObjectValueFrom(ctx, fieldConfigAttrTypes, r.FieldConfig)
 	diags.Append(respDiags...)
 
-	emailVerificationConfig := r.EmailVerificationConfig
-	state.EmailVerificationConfig, respDiags = types.ObjectValueFrom(ctx, emailVerificationConfigAttrTypes, emailVerificationConfig)
+	// email verification config
+	state.EmailVerificationConfig, respDiags = types.ObjectValueFrom(ctx, emailVerificationConfigAttrTypes, r.EmailVerificationConfig)
 	diags.Append(respDiags...)
 
 	//  data store config
-	dsConfig := r.DataStoreConfig
-	state.DataStoreConfig, respDiags = types.ObjectValueFrom(ctx, dsConfigAttrTypes, dsConfig)
+	state.DataStoreConfig, respDiags = types.ObjectValueFrom(ctx, dsConfigAttrTypes, r.DataStoreConfig)
 	diags.Append(respDiags...)
 
 	state.ProfileEnabled = types.BoolPointerValue(r.ProfileEnabled)
