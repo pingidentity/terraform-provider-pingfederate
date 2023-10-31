@@ -78,14 +78,24 @@ func SetTypeToStringSet(set types.Set) []string {
 	return stringSet
 }
 
-// Get a types.Set from a slice of string
-func GetStringSet(values []string) types.Set {
+func stringValuesSlice(values []string) []attr.Value {
 	setValues := make([]attr.Value, len(values))
 	for i := 0; i < len(values); i++ {
 		setValues[i] = types.StringValue(string(values[i]))
 	}
-	set, _ := types.SetValue(types.StringType, setValues)
+	return setValues
+}
+
+// Get a types.Set from a slice of string
+func GetStringSet(values []string) types.Set {
+	set, _ := types.SetValue(types.StringType, stringValuesSlice(values))
 	return set
+}
+
+// Get a types.List from a slice of string
+func GetStringList(values []string) types.List {
+	list, _ := types.ListValue(types.StringType, stringValuesSlice(values))
+	return list
 }
 
 func InterfaceToStringSet(i interface{}) types.Set {
