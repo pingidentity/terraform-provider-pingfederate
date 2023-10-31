@@ -19,8 +19,6 @@ import (
 const username = "username"
 
 var password = "2FederateM0re!"
-var encryptedPassword *string
-var testSteps []resource.TestStep
 
 type administrativeAccountResourceModel struct {
 	administrativeAccount *client.AdministrativeAccount
@@ -35,10 +33,9 @@ func initialAdministrativeAccount() *client.AdministrativeAccount {
 	return initialAdministrativeAccount
 }
 
-func updateAdministrativeAccount(encryptedPass *string) *client.AdministrativeAccount {
+func updateAdministrativeAccount() *client.AdministrativeAccount {
 	updateAdministrativeAccount := client.NewAdministrativeAccountWithDefaults()
 	updateAdministrativeAccount.Username = username
-	updateAdministrativeAccount.EncryptedPassword = encryptedPass
 	updateAdministrativeAccount.Active = pointers.Bool(false)
 	updateAdministrativeAccount.Description = pointers.String("updated description")
 	updateAdministrativeAccount.Department = pointers.String("updated department")
@@ -196,33 +193,8 @@ func TestAccAdministrativeAccount(t *testing.T) {
 		administrativeAccount: initialAdministrativeAccount(),
 	}
 
-	encryptedPassword = pointers.String("")
 	updatedResourceModel := administrativeAccountResourceModel{
-		administrativeAccount: updateAdministrativeAccount(encryptedPassword),
-	}
-
-	testSteps = []resource.TestStep{
-		{
-			Config: testAccAdministrativeAccount(resourceName, initialResourceModel),
-			Check:  testAccCheckExpectedInitialAdministrativeAccountAttributes(initialResourceModel),
-		},
-		{
-			Config: testAccAdministrativeAccount(resourceName, updatedResourceModel),
-			Check:  testAccCheckExpectedUpdatedAdministrativeAccountAttributes(updatedResourceModel),
-		},
-		{
-			// Test importing the resource
-			Config:                  testAccAdministrativeAccount(resourceName, updatedResourceModel),
-			ResourceName:            "pingfederate_administrative_account." + resourceName,
-			ImportStateId:           initialResourceModel.administrativeAccount.Username,
-			ImportState:             true,
-			ImportStateVerify:       true,
-			ImportStateVerifyIgnore: []string{"encrypted_password"},
-		},
-		{
-			Config: testAccAdministrativeAccount(resourceName, initialResourceModel),
-			Check:  testAccCheckExpectedInitialAdministrativeAccountAttributes(initialResourceModel),
-		},
+		administrativeAccount: updateAdministrativeAccount(),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -231,6 +203,28 @@ func TestAccAdministrativeAccount(t *testing.T) {
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
 		CheckDestroy: testAccCheckAdministrativeAccountDestroy,
-		Steps:        testSteps,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccAdministrativeAccount(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedInitialAdministrativeAccountAttributes(initialResourceModel),
+			},
+			{
+				Config: testAccAdministrativeAccount(resourceName, updatedResourceModel),
+				Check:  testAccCheckExpectedUpdatedAdministrativeAccountAttributes(updatedResourceModel),
+			},
+			{
+				// Test importing the resource
+				Config:                  testAccAdministrativeAccount(resourceName, updatedResourceModel),
+				ResourceName:            "pingfederate_administrative_account." + resourceName,
+				ImportStateId:           initialResourceModel.administrativeAccount.Username,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"encrypted_password", "password"},
+			},
+			{
+				Config: testAccAdministrativeAccount(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedInitialAdministrativeAccountAttributes(initialResourceModel),
+			},
+		},
 	})
 }
