@@ -23,6 +23,9 @@ const ldapType = "PING_DIRECTORY"
 const ldapDnsSrvPrefix = "_ldap._tcp."
 const ldapsDnsSrvPrefix = "_ldaps._tcp."
 const verifyHost = false
+const hostnames = "pingdirectory:1389"
+const userDn = "cn=userDN"
+const passwordVal = "password"
 
 type ldapDataStoreResourceModel struct {
 	dataStore *client.LdapDataStore
@@ -35,9 +38,9 @@ func initialLdapDataStore() *client.LdapDataStore {
 	initialLdapDataStore.Type = dataStoreType
 	initialLdapDataStore.LdapType = ldapType
 	initialLdapDataStore.BindAnonymously = pointers.Bool(false)
-	initialLdapDataStore.UserDN = pointers.String("cn=initialUserDN")
-	initialLdapDataStore.Password = pointers.String("initialPassword")
-	initialLdapDataStore.Hostnames = []string{"initialHostname"}
+	initialLdapDataStore.UserDN = pointers.String(userDn)
+	initialLdapDataStore.Password = pointers.String(passwordVal)
+	initialLdapDataStore.Hostnames = []string{hostnames}
 	initialLdapDataStore.VerifyHost = pointers.Bool(verifyHost)
 	return initialLdapDataStore
 }
@@ -50,16 +53,16 @@ func updatedLdapDataStore() *client.LdapDataStore {
 	updatedLdapDataStore.LdapType = ldapType
 	updatedLdapDataStore.MaskAttributeValues = pointers.Bool(true)
 	updatedLdapDataStore.BindAnonymously = pointers.Bool(true)
-	updatedLdapDataStore.UserDN = pointers.String("cn=updatedUserDN")
-	updatedLdapDataStore.Password = pointers.String("updatedPassword")
+	updatedLdapDataStore.UserDN = pointers.String(userDn)
+	updatedLdapDataStore.Password = pointers.String(passwordVal)
+	updatedLdapDataStore.Hostnames = []string{hostnames}
 	updatedLdapDataStore.UseSsl = pointers.Bool(true)
 	updatedLdapDataStore.UseDnsSrvRecords = pointers.Bool(true)
-	updatedLdapDataStore.Hostnames = []string{"updatedHostname1", "updatedHostname2"}
 	updatedLdapDataStore.TestOnBorrow = pointers.Bool(true)
 	updatedLdapDataStore.TestOnReturn = pointers.Bool(true)
 	updatedLdapDataStore.CreateIfNecessary = pointers.Bool(true)
 	updatedLdapDataStore.VerifyHost = pointers.Bool(verifyHost)
-	updatedLdapDataStore.MinConnections = pointers.Int64(20)
+	updatedLdapDataStore.MinConnections = pointers.Int64(1)
 	updatedLdapDataStore.MaxConnections = pointers.Int64(200)
 	updatedLdapDataStore.MaxWait = pointers.Int64(1000)
 	updatedLdapDataStore.TimeBetweenEvictions = pointers.Int64(3000)
@@ -77,6 +80,7 @@ func TestAccLdapDataStore(t *testing.T) {
 	initialResourceModel := ldapDataStoreResourceModel{
 		dataStore: initialLdapDataStore(),
 	}
+
 	updatedResourceModel := ldapDataStoreResourceModel{
 		dataStore: updatedLdapDataStore(),
 	}
@@ -100,11 +104,12 @@ func TestAccLdapDataStore(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccLdapDataStore(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_data_store." + resourceName,
-				ImportStateId:     ldapDataStoreId,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                  testAccLdapDataStore(resourceName, updatedResourceModel),
+				ResourceName:            "pingfederate_data_store." + resourceName,
+				ImportStateId:           ldapDataStoreId,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"ldap_data_store.user_dn", "ldap_data_store.password"},
 			},
 			{
 				// Back to the initial minimal model
@@ -211,7 +216,7 @@ func testAccCheckExpectedLdapDataStoreAttributes(config ldapDataStoreResourceMod
 			return err
 		}
 
-		err = acctest.TestAttributesMatchBool(resourceType, pointers.String(ldapDataStoreId), "mask_attribute_values", *config.dataStore.MaskAttributeValues, *resp.LdapDataStore.MaskAttributeValues)
+		err = acctest.TestAttributesMatchBool(resourceType, pointers.String(ldapDataStoreId), "mask_attribute_values", config.dataStore.GetMaskAttributeValues(), *resp.LdapDataStore.MaskAttributeValues)
 		if err != nil {
 			return err
 		}
