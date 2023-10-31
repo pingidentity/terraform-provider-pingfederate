@@ -23,7 +23,7 @@ resource "pingfederate_virtual_host_names" "virtualHostNamesExample" {
 
 ### Optional
 
-- `virtual_host_names` (Set of String) List of virtual host names.
+- `virtual_host_names` (List of String) List of virtual host names.
 
 ### Read-Only
 

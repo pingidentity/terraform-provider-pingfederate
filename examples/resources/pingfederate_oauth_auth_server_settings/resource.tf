@@ -1,4 +1,4 @@
-resource "pingfederate_oauth_auth_server_settings" "oauthAuthServerSettingsExample" {
+resource "pingfederate_oauth_auth_server_settings" "myOauthAuthServerSettings" {
   authorization_code_entropy          = 20
   authorization_code_timeout          = 50
   bypass_activation_code_confirmation = false

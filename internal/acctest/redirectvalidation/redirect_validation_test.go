@@ -66,6 +66,9 @@ resource "pingfederate_redirect_validation" "%[1]s" {
     white_list = [
       {
         valid_domain = "%[3]s"
+      },
+      {
+        valid_domain = "anotherexample.com"
       }
     ]
   }

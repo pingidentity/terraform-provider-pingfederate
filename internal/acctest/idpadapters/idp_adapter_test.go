@@ -47,6 +47,11 @@ func basicAttributeContract() *client.IdpAdapterAttributeContract {
 func updatedAttributeContract() *client.IdpAdapterAttributeContract {
 	contract := basicAttributeContract()
 	contract.ExtendedAttributes = append(contract.ExtendedAttributes, client.IdpAdapterAttribute{
+		Name:      "another",
+		Pseudonym: pointers.Bool(false),
+		Masked:    pointers.Bool(false),
+	})
+	contract.ExtendedAttributes = append(contract.ExtendedAttributes, client.IdpAdapterAttribute{
 		Name:      "entryUUID",
 		Pseudonym: pointers.Bool(false),
 		Masked:    pointers.Bool(false),
@@ -73,6 +78,12 @@ func updatedAttributeMapping() *client.IdpAdapterContractMapping {
 				Type: "ADAPTER",
 			},
 			Value: "username",
+		},
+		"another": {
+			Source: client.SourceTypeIdKey{
+				Type: "ADAPTER",
+			},
+			Value: "another",
 		},
 	})
 	attributeMapping.Inherited = pointers.Bool(false)
