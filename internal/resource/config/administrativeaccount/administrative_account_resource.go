@@ -92,7 +92,7 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 				},
 			},
 			"password": schema.StringAttribute{
-				Description: "Password for the Account. This field is only applicable during a POST operation.",
+				Description: "Password for the Account. This field is only applicable during account creation.",
 				Computed:    true,
 				Optional:    true,
 				Sensitive:   true,
@@ -101,7 +101,7 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 				},
 			},
 			"encrypted_password": schema.StringAttribute{
-				Description: "Password for the Account. This field is only applicable during a POST operation.",
+				Description: "Read-only attribute. This field is utilized for updating an existing Administrative Account.",
 				Computed:    true,
 				Optional:    false,
 				Sensitive:   true,
