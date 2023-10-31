@@ -351,7 +351,7 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 									Description: "Whether this is a profile page field or not.",
 									Optional:    true,
 								},
-								"attributes": schema.MapAttribute{ //TODO the default for this field is based on the type value
+								"attributes": schema.MapAttribute{
 									Description: "Attributes of the local identity field.",
 									Computed:    true,
 									Optional:    true,
@@ -780,6 +780,64 @@ func (r *localIdentityIdentityProfileResource) ModifyPlan(ctx context.Context, r
 		// Update the object with the set defaults
 		plan.EmailVerificationConfig, respDiags = types.ObjectValue(emailVerificationConfigAttrTypes, emailVerificationAttributes)
 		resp.Diagnostics.Append(respDiags...)
+	}
+
+	// Some default for fields attributes depend on the field type
+	if internaltypes.IsDefined(plan.FieldConfig) {
+		fieldsList := plan.FieldConfig.Attributes()["fields"].(types.List)
+		if internaltypes.IsDefined(fieldsList) {
+			fields := fieldsList.Elements()
+			fieldsWithDefaults := []attr.Value{}
+			for _, field := range fields {
+				fieldObj := field.(types.Object)
+				fieldAttrs := fieldObj.Attributes()
+				if !fieldAttrs["attributes"].IsUnknown() {
+					fieldsWithDefaults = append(fieldsWithDefaults, fieldObj)
+					continue
+				}
+
+				defaultAttrs := map[string]attr.Value{}
+				fieldType := fieldAttrs["type"].(types.String).ValueString()
+				switch fieldType {
+				// The other type defaults aren't implemented
+				case "HIDDEN":
+					defaultAttrs["Unique ID Field"] = types.BoolValue(false)
+					defaultAttrs["Mask Log Values"] = types.BoolValue(false)
+				case "CHECKBOX":
+					defaultAttrs["Mask Log Values"] = types.BoolValue(false)
+					defaultAttrs["Must Be Checked"] = types.BoolValue(false)
+					defaultAttrs["Read-Only"] = types.BoolValue(false)
+				case "DATE":
+					defaultAttrs["Mask Log Values"] = types.BoolValue(false)
+					defaultAttrs["Read-Only"] = types.BoolValue(false)
+					defaultAttrs["Required"] = types.BoolValue(false)
+				case "EMAIL":
+					fallthrough
+				case "PHONE":
+					fallthrough
+				case "TEXT":
+					defaultAttrs["Mask Log Values"] = types.BoolValue(false)
+					defaultAttrs["Read-Only"] = types.BoolValue(false)
+					defaultAttrs["Required"] = types.BoolValue(false)
+					defaultAttrs["Unique ID Field"] = types.BoolValue(false)
+				}
+
+				if len(defaultAttrs) > 0 {
+					fieldAttrs["attributes"], respDiags = types.MapValue(types.BoolType, defaultAttrs)
+					resp.Diagnostics.Append(respDiags...)
+				}
+
+				fieldWithDefaults, respDiags := types.ObjectValue(fieldObj.AttributeTypes(ctx), fieldAttrs)
+				resp.Diagnostics.Append(respDiags...)
+				fieldsWithDefaults = append(fieldsWithDefaults, fieldWithDefaults)
+			}
+			// Update the Field config with any defaults that were set
+			fieldsAttrs := plan.FieldConfig.Attributes()
+			fieldsAttrs["fields"], respDiags = types.ListValue(fieldsList.ElementType(ctx), fieldsWithDefaults)
+			resp.Diagnostics.Append(respDiags...)
+			plan.FieldConfig, respDiags = types.ObjectValue(plan.FieldConfig.AttributeTypes(ctx), fieldsAttrs)
+			resp.Diagnostics.Append(respDiags...)
+		}
 	}
 
 	resp.Plan.Set(ctx, plan)
