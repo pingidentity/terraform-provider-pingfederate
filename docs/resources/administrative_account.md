@@ -36,12 +36,12 @@ resource "pingfederate_administrative_account" "myAdministrativeAccount" {
 - `department` (String) The Department name of account user.
 - `description` (String) Description of the account.
 - `email_address` (String) Email address associated with the account.
-- `encrypted_password` (String, Sensitive) Password for the Account. This field is only applicable during a POST operation.
 - `password` (String, Sensitive) Password for the Account. This field is only applicable during a POST operation.
 - `phone_number` (String) Phone number associated with the account.
 
 ### Read-Only
 
+- `encrypted_password` (String, Sensitive) Password for the Account. This field is only applicable during a POST operation.
 - `id` (String) The ID of this resource.
 
 ## Import

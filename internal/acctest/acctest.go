@@ -134,7 +134,6 @@ func TfKeyValuePairToString(key string, value string, addDoubleQuotes bool) stri
 		}
 
 		q := quoteVal()
-		fmt.Printf("%s = %s%s%s", key, q, value, q)
 		return fmt.Sprintf("%s = %s%s%s", key, q, value, q)
 	} else {
 		return ""

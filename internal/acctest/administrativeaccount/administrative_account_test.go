@@ -48,15 +48,6 @@ func updateAdministrativeAccount(encryptedPass *string) *client.AdministrativeAc
 	return updateAdministrativeAccount
 }
 
-func minimalAdministrativeAccount(encryptedPass *string) *client.AdministrativeAccount {
-	minimalAdministrativeAccount := client.NewAdministrativeAccountWithDefaults()
-	minimalAdministrativeAccount.Username = username
-	minimalAdministrativeAccount.EncryptedPassword = encryptedPass
-	minimalAdministrativeAccount.Active = pointers.Bool(true)
-	minimalAdministrativeAccount.Roles = []string{"USER_ADMINISTRATOR"}
-	return minimalAdministrativeAccount
-}
-
 func hcl(aa *client.AdministrativeAccount) string {
 	var builder strings.Builder
 	if aa == nil {
@@ -106,22 +97,6 @@ func hcl(aa *client.AdministrativeAccount) string {
 	return builder.String()
 }
 
-func firstStepCheck(initialResourceModel, updatedResourceModel administrativeAccountResourceModel) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		// Get the encryptedValue here, and then use it to make the HCL
-		(testSteps)[1].Config = testAccAdministrativeAccount("AdministrativeAccount", administrativeAccountResourceModel{})
-		return testAccCheckExpectedInitialAdministrativeAccountAttributes(initialResourceModel, updatedResourceModel)(s)
-	}
-}
-
-func lastStepCheck(minimalResourceModel, updatedResourceModel administrativeAccountResourceModel) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		// Get the encryptedValue here, and then use it to make the HCL
-		(testSteps)[3].Config = testAccAdministrativeAccount("AdministrativeAccount", administrativeAccountResourceModel{})
-		return testAccCheckExpectedInitialAdministrativeAccountAttributes(minimalResourceModel, updatedResourceModel)(s)
-	}
-}
-
 func testAccAdministrativeAccount(resourceName string, resourceModel administrativeAccountResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_administrative_account" "%[1]s" {
@@ -137,10 +112,8 @@ data "pingfederate_administrative_account" "%[1]s" {
 }
 
 // Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedInitialAdministrativeAccountAttributes(config, update administrativeAccountResourceModel) resource.TestCheckFunc {
+func testAccCheckExpectedInitialAdministrativeAccountAttributes(config administrativeAccountResourceModel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		*encryptedPassword = s.RootModule().Resources["pingfederate_administrative_account.myAdministrativeAccount"].Primary.Attributes["encrypted_password"]
-		testSteps[1].Config = testAccAdministrativeAccount("myAdministrativeAccount", update)
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
 		response, _, err := testClient.AdministrativeAccountsAPI.GetAccount(ctx, config.administrativeAccount.Username).Execute()
@@ -230,14 +203,10 @@ func TestAccAdministrativeAccount(t *testing.T) {
 		administrativeAccount: updateAdministrativeAccount(encryptedPassword),
 	}
 
-	minimalResourceModel := administrativeAccountResourceModel{
-		administrativeAccount: minimalAdministrativeAccount(encryptedPassword),
-	}
-
 	testSteps = []resource.TestStep{
 		{
 			Config: testAccAdministrativeAccount(resourceName, initialResourceModel),
-			Check:  firstStepCheck(initialResourceModel, updatedResourceModel),
+			Check:  testAccCheckExpectedInitialAdministrativeAccountAttributes(initialResourceModel),
 		},
 		{
 			Config: testAccAdministrativeAccount(resourceName, updatedResourceModel),
@@ -250,11 +219,11 @@ func TestAccAdministrativeAccount(t *testing.T) {
 			ImportStateId:           initialResourceModel.administrativeAccount.Username,
 			ImportState:             true,
 			ImportStateVerify:       true,
-			ImportStateVerifyIgnore: []string{"encrypted_password", "password"},
+			ImportStateVerifyIgnore: []string{"encrypted_password"},
 		},
 		{
-			Config: testAccAdministrativeAccount(resourceName, minimalResourceModel),
-			Check:  lastStepCheck(minimalResourceModel, updatedResourceModel),
+			Config: testAccAdministrativeAccount(resourceName, initialResourceModel),
+			Check:  testAccCheckExpectedInitialAdministrativeAccountAttributes(initialResourceModel),
 		},
 	}
 

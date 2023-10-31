@@ -3,7 +3,6 @@ package administrativeaccount
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -11,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -98,18 +96,18 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 				Computed:    true,
 				Optional:    true,
 				Sensitive:   true,
-				Validators: []validator.String{
-					stringvalidator.AtLeastOneOf(
-						path.MatchRoot("password"),
-						path.MatchRoot("encrypted_password"),
-					),
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplaceIfConfigured(),
 				},
 			},
 			"encrypted_password": schema.StringAttribute{
 				Description: "Password for the Account. This field is only applicable during a POST operation.",
 				Computed:    true,
-				Optional:    true,
+				Optional:    false,
 				Sensitive:   true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"phone_number": schema.StringAttribute{
 				Description: "Phone number associated with the account.",
@@ -139,25 +137,30 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 	id.ToSchema(&schema)
 	resp.Schema = schema
 }
-func addOptionalAdministrativeAccountFields(ctx context.Context, addRequest *client.AdministrativeAccount, plan administrativeAccountResourceModel) error {
+
+func addOptionalAdministrativeAccountFields(ctx context.Context, addRequest *client.AdministrativeAccount, plan, state administrativeAccountResourceModel) error {
 	// Empty strings are treated as equivalent to null
 	if internaltypes.IsDefined(plan.Active) {
 		addRequest.Active = plan.Active.ValueBoolPointer()
 	}
+
 	if internaltypes.IsDefined(plan.Auditor) {
 		addRequest.Auditor = plan.Auditor.ValueBoolPointer()
 	}
+
 	if internaltypes.IsDefined(plan.Department) {
 		addRequest.Department = plan.Department.ValueStringPointer()
 	}
+
 	if internaltypes.IsDefined(plan.Description) {
 		addRequest.Description = plan.Description.ValueStringPointer()
 	}
+
 	if internaltypes.IsDefined(plan.EmailAddress) {
 		addRequest.EmailAddress = plan.EmailAddress.ValueStringPointer()
 	}
 
-	if internaltypes.IsDefined(plan.Password) {
+	if internaltypes.IsDefined(plan.Password) && plan.Password.ValueString() != state.Password.ValueString() {
 		addRequest.Password = plan.Password.ValueStringPointer()
 	}
 
@@ -207,10 +210,8 @@ func readAdministrativeAccountResponse(ctx context.Context, r *client.Administra
 	// state.EncryptedPassword
 	if internaltypes.IsDefined(plan.EncryptedPassword) {
 		state.EncryptedPassword = types.StringValue(plan.EncryptedPassword.ValueString())
-	} else if (r.EncryptedPassword) != nil {
-		state.EncryptedPassword = types.StringPointerValue(r.EncryptedPassword)
 	} else {
-		state.EncryptedPassword = types.StringNull()
+		state.EncryptedPassword = types.StringPointerValue(r.EncryptedPassword)
 	}
 
 	state.Active = types.BoolValue(*r.Active)
@@ -232,7 +233,7 @@ func (r *administrativeAccountsResource) Create(ctx context.Context, req resourc
 	}
 
 	createAdministrativeAccount := client.NewAdministrativeAccount(plan.Username.ValueString())
-	err := addOptionalAdministrativeAccountFields(ctx, createAdministrativeAccount, plan)
+	err := addOptionalAdministrativeAccountFields(ctx, createAdministrativeAccount, plan, administrativeAccountResourceModel{})
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Administrative Account", err.Error())
 		return
@@ -295,7 +296,7 @@ func (r *administrativeAccountsResource) Update(ctx context.Context, req resourc
 	req.State.Get(ctx, &state)
 	updateAdministrativeAccount := r.apiClient.AdministrativeAccountsAPI.UpdateAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Username.ValueString())
 	createUpdateRequest := client.NewAdministrativeAccount(plan.Username.ValueString())
-	err := addOptionalAdministrativeAccountFields(ctx, createUpdateRequest, plan)
+	err := addOptionalAdministrativeAccountFields(ctx, createUpdateRequest, plan, state)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Administrative Account", err.Error())
 		return
