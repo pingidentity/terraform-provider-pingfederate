@@ -32,9 +32,9 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource                = &localIdentityIdentityProfilesResource{}
-	_ resource.ResourceWithConfigure   = &localIdentityIdentityProfilesResource{}
-	_ resource.ResourceWithImportState = &localIdentityIdentityProfilesResource{}
+	_ resource.Resource                = &localIdentityIdentityProfileResource{}
+	_ resource.ResourceWithConfigure   = &localIdentityIdentityProfileResource{}
+	_ resource.ResourceWithImportState = &localIdentityIdentityProfileResource{}
 )
 
 var (
@@ -140,27 +140,27 @@ var (
 		"otp_time_to_live":                         types.Int64Null(),
 		"email_verification_otp_template_name":     types.StringNull(),
 		"otl_time_to_live":                         types.Int64Null(),
-		"field_for_email_to_verify":                types.StringNull(),
-		"field_storing_verification_status":        types.StringNull(),
+		"field_for_email_to_verify":                types.StringValue(""),
+		"field_storing_verification_status":        types.StringValue(""),
 		"notification_publisher_ref":               types.ObjectNull(resourcelink.AttrType()),
 		"require_verified_email":                   types.BoolNull(),
 		"require_verified_email_template_name":     types.StringNull(),
 	})
 )
 
-// LocalIdentityIdentityProfilesResource is a helper function to simplify the provider implementation.
-func LocalIdentityIdentityProfilesResource() resource.Resource {
+// LocalIdentityIdentityProfileResource is a helper function to simplify the provider implementation.
+func LocalIdentityIdentityProfileResource() resource.Resource {
 
-	return &localIdentityIdentityProfilesResource{}
+	return &localIdentityIdentityProfileResource{}
 }
 
-// localIdentityIdentityProfilesResource is the resource implementation.
-type localIdentityIdentityProfilesResource struct {
+// localIdentityIdentityProfileResource is the resource implementation.
+type localIdentityIdentityProfileResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
 }
 
-type localIdentityIdentityProfilesResourceModel struct {
+type localIdentityIdentityProfileResourceModel struct {
 	Id       types.String `tfsdk:"id"`
 	CustomId types.String `tfsdk:"custom_id"`
 	Name     types.String `tfsdk:"name"`
@@ -180,9 +180,9 @@ type localIdentityIdentityProfilesResourceModel struct {
 }
 
 // GetSchema defines the schema for the resource.
-func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages Local Identity Identity Profiles",
+		Description: "Manages Local Identity Identity Profile",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Description: "The local identity profile name. Name is unique.",
@@ -219,7 +219,7 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 				Description: "The attribute update policy for authentication sources.",
 				Optional:    true,
 				Computed:    true,
-				//Default:     objectdefault.StaticValue(authSourceUpdatePolicyDefault), //TODO this default only applies if profile or registration is true, I think
+				// Default set in ModifyPlan
 				Attributes: map[string]schema.Attribute{
 					"store_attributes": schema.BoolAttribute{
 						Description: "Whether or not to store attributes that came from authentication sources.",
@@ -372,7 +372,7 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 				Description: "The local identity email verification configuration.",
 				Computed:    true,
 				Optional:    true,
-				//Default:     objectdefault.StaticValue(emailVerificationConfigDefault), TODO this is conditional on registration_config or profile_config being true
+				// Default set in ModifyPlan
 				Attributes: map[string]schema.Attribute{
 					"email_verification_enabled": schema.BoolAttribute{
 						Description: "Whether the email ownership verification is enabled.",
@@ -385,17 +385,17 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 						Computed:    true,
 						Optional:    true,
 					},
-					"email_verification_sent_template_name": schema.StringAttribute{ //TODO conditional default - see description
+					"email_verification_sent_template_name": schema.StringAttribute{
 						Description: "The template name for email verification sent. The default is local.identity.email.verification.sent.html. Note:Only applicable if EmailVerificationType is OTL.",
 						Computed:    true,
 						Optional:    true,
 					},
-					"email_verification_success_template_name": schema.StringAttribute{ //TODO conditional default
+					"email_verification_success_template_name": schema.StringAttribute{
 						Description: "The template name for email verification success. The default is local.identity.email.verification.success.html.",
 						Computed:    true,
 						Optional:    true,
 					},
-					"email_verification_error_template_name": schema.StringAttribute{ //TODO conditional default
+					"email_verification_error_template_name": schema.StringAttribute{
 						Description: "The template name for email verification error. The default is local.identity.email.verification.error.html.",
 						Computed:    true,
 						Optional:    true,
@@ -418,22 +418,22 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 						Description: "The number of OTP retry attempts for email verification. The default is 3. Note: Only applicable if EmailVerificationType is OTP.",
 						Optional:    true,
 					},
-					"allowed_otp_character_set": schema.StringAttribute{ //TODO conditional default
+					"allowed_otp_character_set": schema.StringAttribute{
 						Description: "The allowed character set used to generate the OTP. The default is 23456789BCDFGHJKMNPQRSTVWXZbcdfghjkmnpqrstvwxz. Note: Only applicable if EmailVerificationType is OTP.",
 						Optional:    true,
 						Computed:    true,
 					},
-					"otp_time_to_live": schema.Int64Attribute{ //TODO conditional default
+					"otp_time_to_live": schema.Int64Attribute{
 						Description: "Field used OTP time to live. The default is 15. Note: Only applicable if EmailVerificationType is OTP.",
 						Computed:    true,
 						Optional:    true,
 					},
-					"email_verification_otp_template_name": schema.StringAttribute{ //TODO conditional default
+					"email_verification_otp_template_name": schema.StringAttribute{
 						Description: "The template name for email verification OTP verification. The default is local.identity.email.verification.otp.html. Note: Only applicable if EmailVerificationType is OTP.",
 						Optional:    true,
 						Computed:    true,
 					},
-					"otl_time_to_live": schema.Int64Attribute{ //TODO conditional default
+					"otl_time_to_live": schema.Int64Attribute{
 						Description: "Field used OTL time to live. The default is 1440. Note: Only applicable if EmailVerificationType is OTL.",
 						Computed:    true,
 						Optional:    true,
@@ -455,12 +455,12 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 						Optional:    true,
 						Attributes:  resourcelink.ToSchema(),
 					},
-					"require_verified_email": schema.BoolAttribute{ //TODO conditional default
+					"require_verified_email": schema.BoolAttribute{
 						Description: "Whether the user must verify their email address before they can complete a single sign-on transaction. The default is false.",
 						Computed:    true,
 						Optional:    true,
 					},
-					"require_verified_email_template_name": schema.StringAttribute{ //TODO conditional default
+					"require_verified_email_template_name": schema.StringAttribute{
 						Description: "The template to render when the user must verify their email address before they can complete a single sign-on transaction. The default is local.identity.email.verification.required.html. Note:Only applicable if EmailVerificationType is OTL and requireVerifiedEmail is true.",
 						Computed:    true,
 						Optional:    true,
@@ -557,7 +557,7 @@ func (r *localIdentityIdentityProfilesResource) Schema(ctx context.Context, req 
 	resp.Schema = schema
 }
 
-func addOptionalLocalIdentityIdentityProfilesFields(ctx context.Context, addRequest *client.LocalIdentityProfile, plan localIdentityIdentityProfilesResourceModel) error {
+func addOptionalLocalIdentityIdentityProfileFields(ctx context.Context, addRequest *client.LocalIdentityProfile, plan localIdentityIdentityProfileResourceModel) error {
 
 	if internaltypes.IsDefined(plan.CustomId) {
 		addRequest.Id = plan.CustomId.ValueStringPointer()
@@ -643,11 +643,11 @@ func addOptionalLocalIdentityIdentityProfilesFields(ctx context.Context, addRequ
 }
 
 // Metadata returns the resource type name.
-func (r *localIdentityIdentityProfilesResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *localIdentityIdentityProfileResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_local_identity_identity_profile"
 }
 
-func (r *localIdentityIdentityProfilesResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
+func (r *localIdentityIdentityProfileResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -655,16 +655,143 @@ func (r *localIdentityIdentityProfilesResource) Configure(_ context.Context, req
 	providerCfg := req.ProviderData.(internaltypes.ResourceConfiguration)
 	r.providerConfig = providerCfg.ProviderConfig
 	r.apiClient = providerCfg.ApiClient
-
 }
 
-func (r *localIdentityIdentityProfilesResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var model localIdentityIdentityProfilesResourceModel
+func (r *localIdentityIdentityProfileResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	var plan *localIdentityIdentityProfileResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	var respDiags diag.Diagnostics
+
+	// If the plan is null, this must be a destroy. Just exit early
+	if plan == nil {
+		return
+	}
+
+	// Set defaults that apply only when at least one of registration_enabled or profile_enabled is set to true
+	if plan.RegistrationEnabled.ValueBool() || plan.ProfileEnabled.ValueBool() {
+		if plan.AuthSourceUpdatePolicy.IsUnknown() {
+			plan.AuthSourceUpdatePolicy = authSourceUpdatePolicyDefault
+		}
+		if plan.EmailVerificationConfig.IsUnknown() {
+			plan.EmailVerificationConfig = emailVerificationConfigDefault
+		}
+	} else {
+		if plan.AuthSourceUpdatePolicy.IsUnknown() {
+			plan.AuthSourceUpdatePolicy = types.ObjectNull(authSourceUpdatePolicyAttrTypes)
+		}
+		if plan.EmailVerificationConfig.IsUnknown() {
+			plan.EmailVerificationConfig = types.ObjectNull(emailVerificationConfigAttrTypes)
+		}
+	}
+
+	// Email verification config inner defaults
+	if internaltypes.IsDefined(plan.EmailVerificationConfig) {
+		emailVerificationAttributes := plan.EmailVerificationConfig.Attributes()
+		// Some defaults in the email verification config only apply if email verification is enabled
+		emailVerificationEnabled := emailVerificationAttributes["email_verification_enabled"].(types.Bool).ValueBool()
+		// Some attributes only apply for certain email verification types
+		emailVerificationType := emailVerificationAttributes["email_verification_type"].(types.String)
+		isOTP := emailVerificationType.ValueString() == "OTP"
+		isOTL := emailVerificationType.ValueString() == "OTL"
+
+		// Set unknown email verification attributes to defaults
+		if emailVerificationAttributes["verify_email_template_name"].IsUnknown() {
+			if emailVerificationEnabled {
+				emailVerificationAttributes["verify_email_template_name"] = types.StringValue("message-template-email-ownership-verification.html")
+			} else {
+				emailVerificationAttributes["verify_email_template_name"] = types.StringNull()
+			}
+		}
+
+		if emailVerificationAttributes["email_verification_success_template_name"].IsUnknown() {
+			if emailVerificationEnabled {
+				emailVerificationAttributes["email_verification_success_template_name"] = types.StringValue("local.identity.email.verification.success.html")
+			} else {
+				emailVerificationAttributes["email_verification_success_template_name"] = types.StringNull()
+			}
+		}
+
+		if emailVerificationAttributes["email_verification_error_template_name"].IsUnknown() {
+			if emailVerificationEnabled {
+				emailVerificationAttributes["email_verification_error_template_name"] = types.StringValue("local.identity.email.verification.error.html")
+			} else {
+				emailVerificationAttributes["email_verification_error_template_name"] = types.StringNull()
+			}
+		}
+
+		if emailVerificationAttributes["require_verified_email"].IsUnknown() {
+			if emailVerificationEnabled {
+				emailVerificationAttributes["require_verified_email"] = types.BoolValue(false)
+			} else {
+				emailVerificationAttributes["require_verified_email"] = types.BoolNull()
+			}
+		}
+
+		// Attributes with defaults only when OTP is enabled
+		if emailVerificationAttributes["allowed_otp_character_set"].IsUnknown() {
+			if emailVerificationEnabled && isOTP {
+				emailVerificationAttributes["allowed_otp_character_set"] = types.StringValue("23456789BCDFGHJKMNPQRSTVWXZbcdfghjkmnpqrstvwxz")
+			} else {
+				emailVerificationAttributes["allowed_otp_character_set"] = types.StringNull()
+			}
+		}
+
+		if emailVerificationAttributes["otp_time_to_live"].IsUnknown() {
+			if emailVerificationEnabled && isOTP {
+				emailVerificationAttributes["otp_time_to_live"] = types.Int64Value(15)
+			} else {
+				emailVerificationAttributes["otp_time_to_live"] = types.Int64Null()
+			}
+		}
+
+		if emailVerificationAttributes["email_verification_otp_template_name"].IsUnknown() {
+			if emailVerificationEnabled && isOTP {
+				emailVerificationAttributes["email_verification_otp_template_name"] = types.StringValue("local.identity.email.verification.otp.html")
+			} else {
+				emailVerificationAttributes["email_verification_otp_template_name"] = types.StringNull()
+			}
+		}
+
+		// Attributes with defaults only when OTL is enabled
+		if emailVerificationAttributes["email_verification_sent_template_name"].IsUnknown() {
+			if emailVerificationEnabled && isOTL {
+				emailVerificationAttributes["email_verification_sent_template_name"] = types.StringValue("local.identity.email.verification.sent.html")
+			} else {
+				emailVerificationAttributes["email_verification_sent_template_name"] = types.StringNull()
+			}
+		}
+
+		if emailVerificationAttributes["otl_time_to_live"].IsUnknown() {
+			if emailVerificationEnabled && isOTL {
+				emailVerificationAttributes["otl_time_to_live"] = types.Int64Value(1440)
+			} else {
+				emailVerificationAttributes["otl_time_to_live"] = types.Int64Null()
+			}
+		}
+
+		if emailVerificationAttributes["require_verified_email_template_name"].IsUnknown() {
+			if emailVerificationEnabled && isOTL {
+				emailVerificationAttributes["require_verified_email_template_name"] = types.StringValue("local.identity.email.verification.required.html")
+			} else {
+				emailVerificationAttributes["require_verified_email_template_name"] = types.StringNull()
+			}
+		}
+
+		// Update the object with the set defaults
+		plan.EmailVerificationConfig, respDiags = types.ObjectValue(emailVerificationConfigAttrTypes, emailVerificationAttributes)
+		resp.Diagnostics.Append(respDiags...)
+	}
+
+	resp.Plan.Set(ctx, plan)
+}
+
+func (r *localIdentityIdentityProfileResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var model localIdentityIdentityProfileResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
-	// Validates Email Verification type for Email Configuration
 	if internaltypes.IsDefined(model.EmailVerificationConfig) {
 		emailVerificationConfig := model.EmailVerificationConfig.Attributes()
 		emailVerificationType := model.EmailVerificationConfig.Attributes()["email_verification_type"].(basetypes.StringValue).ValueString()
+		// Validates Email Verification type for Email Configuration
 		switch emailVerificationType {
 		case "OTP":
 			if internaltypes.IsDefined(emailVerificationConfig["otl_time_to_live"]) {
@@ -691,6 +818,21 @@ func (r *localIdentityIdentityProfilesResource) ValidateConfig(ctx context.Conte
 			}
 			if internaltypes.IsDefined(emailVerificationConfig["email_verification_otp_template_name"]) {
 				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("email_verification_otp_template_name attribute is not allowed when email_verification_type is OTL. Required attribute: otl_time_to_live."))
+			}
+		}
+		// If email verification is enabled, some fields become required
+		verificationEnabled := emailVerificationConfig["email_verification_enabled"].(types.Bool)
+		if verificationEnabled.ValueBool() {
+			fieldForEmailToVerify := emailVerificationConfig["field_for_email_to_verify"].(types.String)
+			if !internaltypes.IsDefined(fieldForEmailToVerify) || fieldForEmailToVerify.ValueString() == "" {
+				resp.Diagnostics.AddError("Missing Required Attribute", fmt.Sprintln("field_for_email_to_verify is required when email_verification_enabled is set to true"))
+			}
+			fieldStoringVerificationStatus := emailVerificationConfig["field_storing_verification_status"].(types.String)
+			if !internaltypes.IsDefined(fieldStoringVerificationStatus) || fieldStoringVerificationStatus.ValueString() == "" {
+				resp.Diagnostics.AddError("Missing Required Attribute", fmt.Sprintln("field_storing_verification_status is required when email_verification_enabled is set to true"))
+			}
+			if !internaltypes.IsDefined(emailVerificationConfig["notification_publisher_ref"]) {
+				resp.Diagnostics.AddError("Missing Required Attribute", fmt.Sprintln("notification_publisher_ref is required when email_verification_enabled is set to true"))
 			}
 		}
 	}
@@ -753,7 +895,7 @@ func (r *localIdentityIdentityProfilesResource) ValidateConfig(ctx context.Conte
 	}
 }
 
-func readLocalIdentityIdentityProfilesResponse(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfilesResourceModel) diag.Diagnostics {
+func readLocalIdentityIdentityProfileResponse(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfileResourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
 	state.CustomId = internaltypes.StringTypeOrNil(r.Id, false)
@@ -806,8 +948,8 @@ func readLocalIdentityIdentityProfilesResponse(ctx context.Context, r *client.Lo
 	return diags
 }
 
-func (r *localIdentityIdentityProfilesResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan localIdentityIdentityProfilesResourceModel
+func (r *localIdentityIdentityProfileResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan localIdentityIdentityProfileResourceModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -820,7 +962,7 @@ func (r *localIdentityIdentityProfilesResource) Create(ctx context.Context, req 
 		return
 	}
 	createLocalIdentityIdentityProfiles := client.NewLocalIdentityProfile(plan.Name.ValueString(), *apcResourceLink)
-	err = addOptionalLocalIdentityIdentityProfilesFields(ctx, createLocalIdentityIdentityProfiles, plan)
+	err = addOptionalLocalIdentityIdentityProfileFields(ctx, createLocalIdentityIdentityProfiles, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for a Local Identity Identity Profile", err.Error())
 		return
@@ -838,16 +980,16 @@ func (r *localIdentityIdentityProfilesResource) Create(ctx context.Context, req 
 	}
 
 	// Read the response into the state
-	var state localIdentityIdentityProfilesResourceModel
+	var state localIdentityIdentityProfileResourceModel
 
-	diags = readLocalIdentityIdentityProfilesResponse(ctx, localIdentityIdentityProfilesResponse, &state)
+	diags = readLocalIdentityIdentityProfileResponse(ctx, localIdentityIdentityProfilesResponse, &state)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
-func (r *localIdentityIdentityProfilesResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state localIdentityIdentityProfilesResourceModel
+func (r *localIdentityIdentityProfileResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state localIdentityIdentityProfileResourceModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -871,7 +1013,7 @@ func (r *localIdentityIdentityProfilesResource) Read(ctx context.Context, req re
 	}
 
 	// Read the response into the state
-	diags = readLocalIdentityIdentityProfilesResponse(ctx, apiReadLocalIdentityIdentityProfiles, &state)
+	diags = readLocalIdentityIdentityProfileResponse(ctx, apiReadLocalIdentityIdentityProfiles, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -880,9 +1022,9 @@ func (r *localIdentityIdentityProfilesResource) Read(ctx context.Context, req re
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
-func (r *localIdentityIdentityProfilesResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *localIdentityIdentityProfileResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	var plan localIdentityIdentityProfilesResourceModel
+	var plan localIdentityIdentityProfileResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -895,7 +1037,7 @@ func (r *localIdentityIdentityProfilesResource) Update(ctx context.Context, req 
 		return
 	}
 	createUpdateRequest := client.NewLocalIdentityProfile(plan.Name.ValueString(), *apcResourceLink)
-	err = addOptionalLocalIdentityIdentityProfilesFields(ctx, createUpdateRequest, plan)
+	err = addOptionalLocalIdentityIdentityProfileFields(ctx, createUpdateRequest, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Local Identity Identity Profile", err.Error())
 		return
@@ -912,7 +1054,7 @@ func (r *localIdentityIdentityProfilesResource) Update(ctx context.Context, req 
 		diags.AddError("There was an issue retrieving the response of a Local Identity Identity Profile: %s", responseErr.Error())
 	}
 	// Read the response
-	diags = readLocalIdentityIdentityProfilesResponse(ctx, updateLocalIdentityIdentityProfilesResponse, &plan)
+	diags = readLocalIdentityIdentityProfileResponse(ctx, updateLocalIdentityIdentityProfilesResponse, &plan)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -920,9 +1062,9 @@ func (r *localIdentityIdentityProfilesResource) Update(ctx context.Context, req 
 	resp.Diagnostics.Append(diags...)
 }
 
-func (r *localIdentityIdentityProfilesResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *localIdentityIdentityProfileResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state localIdentityIdentityProfilesResourceModel
+	var state localIdentityIdentityProfileResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -935,7 +1077,7 @@ func (r *localIdentityIdentityProfilesResource) Delete(ctx context.Context, req 
 
 }
 
-func (r *localIdentityIdentityProfilesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *localIdentityIdentityProfileResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("custom_id"), req, resp)
 }
