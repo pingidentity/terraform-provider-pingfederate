@@ -14,9 +14,10 @@ Manages a AdministrativeAccount.
 
 ```terraform
 resource "pingfederate_administrative_account" "myAdministrativeAccount" {
-  username = "example"
-  password = "2FederateM0re"
-  roles    = ["USER_ADMINISTRATOR"]
+  username    = "example"
+  description = "description"
+  password    = "2FederateM0re"
+  roles       = ["USER_ADMINISTRATOR"]
 }
 ```
 
@@ -25,7 +26,6 @@ resource "pingfederate_administrative_account" "myAdministrativeAccount" {
 
 ### Required
 
-- `password` (String, Sensitive) Password for the Account. This field is only applicable during a POST operation.
 - `roles` (Set of String) Roles available for an administrator. USER_ADMINISTRATOR - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. CRYPTO_ADMINISTRATOR - Can manage local keys and certificates. ADMINISTRATOR - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. EXPRESSION_ADMINISTRATOR - Can add and update OGNL expressions.
 - `username` (String) Username for the Administrative Account.
 
@@ -36,6 +36,8 @@ resource "pingfederate_administrative_account" "myAdministrativeAccount" {
 - `department` (String) The Department name of account user.
 - `description` (String) Description of the account.
 - `email_address` (String) Email address associated with the account.
+- `encrypted_password` (String, Sensitive) Password for the Account. This field is only applicable during a POST operation.
+- `password` (String, Sensitive) Password for the Account. This field is only applicable during a POST operation.
 - `phone_number` (String) Phone number associated with the account.
 
 ### Read-Only

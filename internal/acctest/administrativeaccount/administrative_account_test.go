@@ -19,6 +19,8 @@ import (
 const username = "username"
 
 var password = "2FederateM0re!"
+var encryptedPassword *string
+var testSteps []resource.TestStep
 
 type administrativeAccountResourceModel struct {
 	administrativeAccount *client.AdministrativeAccount
@@ -28,63 +30,22 @@ func initialAdministrativeAccount() *client.AdministrativeAccount {
 	initialAdministrativeAccount := client.NewAdministrativeAccountWithDefaults()
 	initialAdministrativeAccount.Username = username
 	initialAdministrativeAccount.Password = &password
+	initialAdministrativeAccount.Active = pointers.Bool(true)
+	initialAdministrativeAccount.Roles = []string{"USER_ADMINISTRATOR"}
 	return initialAdministrativeAccount
 }
 
-func updateAdministrativeAccount(encryptedPassword string) *client.AdministrativeAccount {
+func updateAdministrativeAccount(encryptedPass *string) *client.AdministrativeAccount {
 	updateAdministrativeAccount := client.NewAdministrativeAccountWithDefaults()
 	updateAdministrativeAccount.Username = username
-	updateAdministrativeAccount.EncryptedPassword = &encryptedPassword
+	updateAdministrativeAccount.EncryptedPassword = encryptedPass
 	updateAdministrativeAccount.Active = pointers.Bool(false)
 	updateAdministrativeAccount.Description = pointers.String("updated description")
-	updateAdministrativeAccount.Department = pointers.String("department")
+	updateAdministrativeAccount.Department = pointers.String("updated department")
 	updateAdministrativeAccount.EmailAddress = pointers.String("test@example.com")
 	updateAdministrativeAccount.PhoneNumber = pointers.String("555-555-5555")
 	updateAdministrativeAccount.Roles = []string{"USER_ADMINISTRATOR", "CRYPTO_ADMINISTRATOR"}
 	return updateAdministrativeAccount
-}
-
-func TestAccAdministrativeAccount(t *testing.T) {
-	resourceName := "myAdministrativeAccount"
-	initialResourceModel := administrativeAccountResourceModel{
-		administrativeAccount: initialAdministrativeAccount(),
-	}
-
-	initialTest, encryptedPassword := testAccCheckExpectedAdministrativeAccountAttributes(initialResourceModel)
-	updatedResourceModel := administrativeAccountResourceModel{
-		administrativeAccount: updateAdministrativeAccount(encryptedPassword),
-	}
-	updatedTest, _ := testAccCheckExpectedAdministrativeAccountAttributes(updatedResourceModel)
-
-	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
-		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
-			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
-		},
-		Steps: []resource.TestStep{
-			{
-				Config: testAccAdministrativeAccount(resourceName, initialResourceModel),
-				Check:  initialTest,
-			},
-			{
-				// Test updating some fields
-				Config: testAccAdministrativeAccount(resourceName, updatedResourceModel),
-				Check:  updatedTest,
-			},
-			{
-				// Test importing the resource
-				Config:            testAccAdministrativeAccount(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_administrative_account." + resourceName,
-				ImportStateId:     initialResourceModel.administrativeAccount.Username,
-				ImportState:       true,
-				ImportStateVerify: true,
-			},
-			{
-				Config: testAccAdministrativeAccount(resourceName, initialResourceModel),
-				Check:  initialTest,
-			},
-		},
-	})
 }
 
 func hcl(aa *client.AdministrativeAccount) string {
@@ -104,22 +65,44 @@ func hcl(aa *client.AdministrativeAccount) string {
 		%[8]s
 		%[9]s
 		`
+		passwords := func() (string, string) {
+			if aa.EncryptedPassword != nil {
+				encryptedPasswordVal := aa.GetEncryptedPassword()
+				fmt.Print(encryptedPasswordVal)
+				passwordVal := ""
+				return encryptedPasswordVal, passwordVal
+			} else {
+				encryptedPasswordVal := ""
+				passwordVal := password
+				return encryptedPasswordVal, passwordVal
+			}
+			// return "", ""
+		}
+		encryptedPasswordTfVal, passwordTfVal := passwords()
 		builder.WriteString(
 			fmt.Sprintf(tf,
-				acctest.TfKeyValuePairToString("active", strconv.FormatBool(*aa.Active), true),
-				acctest.TfKeyValuePairToString("description", *aa.Description, true),
-				acctest.TfKeyValuePairToString("department", *aa.Department, true),
-				acctest.TfKeyValuePairToString("email_address", *aa.EmailAddress, true),
-				acctest.TfKeyValuePairToString("encrypted_password", *aa.EncryptedPassword, true),
+				acctest.TfKeyValuePairToString("active", strconv.FormatBool(aa.GetActive()), true),
+				acctest.TfKeyValuePairToString("description", aa.GetDescription(), true),
+				acctest.TfKeyValuePairToString("department", aa.GetDepartment(), true),
+				acctest.TfKeyValuePairToString("email_address", aa.GetEmailAddress(), true),
+				acctest.TfKeyValuePairToString("encrypted_password", encryptedPasswordTfVal, true),
 				acctest.TfKeyValuePairToString("roles", acctest.StringSliceToTerraformString(aa.Roles), false),
-				acctest.TfKeyValuePairToString("password", *aa.Password, true),
-				acctest.TfKeyValuePairToString("phone_number", *aa.PhoneNumber, true),
+				acctest.TfKeyValuePairToString("password", passwordTfVal, true),
+				acctest.TfKeyValuePairToString("phone_number", aa.GetPhoneNumber(), true),
 				acctest.TfKeyValuePairToString("username", aa.Username, true),
 			),
 		)
 	}
-	fmt.Print(builder.String())
+	fmt.Printf("%s\n", builder.String())
 	return builder.String()
+}
+
+func firstStepCheck(initialResourceModel, updatedResourceModel administrativeAccountResourceModel) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		// Get the encryptedValue here, and then use it to make the HCL
+		(testSteps)[1].Config = testAccAdministrativeAccount("AdministrativeAccount", administrativeAccountResourceModel{})
+		return testAccCheckExpectedInitialAdministrativeAccountAttributes(initialResourceModel, updatedResourceModel)(s)
+	}
 }
 
 func testAccAdministrativeAccount(resourceName string, resourceModel administrativeAccountResourceModel) string {
@@ -137,45 +120,65 @@ data "pingfederate_administrative_account" "%[1]s" {
 }
 
 // Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedAdministrativeAccountAttributes(config administrativeAccountResourceModel) (resource.TestCheckFunc, string) {
-	var err error
-	testClient := acctest.TestClient()
-	ctx := acctest.TestBasicAuthContext()
-	response, _, responseErr := testClient.AdministrativeAccountsAPI.GetAccount(ctx, config.administrativeAccount.Username).Execute()
-	// encryptedPassword := *response.EncryptedPassword
+func testAccCheckExpectedInitialAdministrativeAccountAttributes(config, update administrativeAccountResourceModel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resourceType := "AdministrativeAccount"
-		if responseErr != nil {
+		*encryptedPassword = s.RootModule().Resources["pingfederate_administrative_account.myAdministrativeAccount"].Primary.Attributes["encrypted_password"]
+		testSteps[1].Config = testAccAdministrativeAccount("myAdministrativeAccount", update)
+		testClient := acctest.TestClient()
+		ctx := acctest.TestBasicAuthContext()
+		response, _, err := testClient.AdministrativeAccountsAPI.GetAccount(ctx, config.administrativeAccount.Username).Execute()
+		if err != nil {
 			return err
 		}
+		resourceType := "AdministrativeAccount"
 		// Verify that attributes have expected values
 		err = acctest.TestAttributesMatchBool(resourceType, &config.administrativeAccount.Username, "active",
-			*config.administrativeAccount.Active, *response.Active)
+			*config.administrativeAccount.Active, response.GetActive())
+		if err != nil {
+			return err
+		}
+
+		err = acctest.TestAttributesMatchStringSlice(resourceType, &config.administrativeAccount.Username, "roles",
+			config.administrativeAccount.Roles, response.Roles)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+}
+
+func testAccCheckExpectedUpdatedAdministrativeAccountAttributes(config administrativeAccountResourceModel) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		testClient := acctest.TestClient()
+		ctx := acctest.TestBasicAuthContext()
+		response, _, err := testClient.AdministrativeAccountsAPI.GetAccount(ctx, config.administrativeAccount.Username).Execute()
+		if err != nil {
+			return err
+		}
+		resourceType := "AdministrativeAccount"
+		// Verify that attributes have expected values
+		err = acctest.TestAttributesMatchBool(resourceType, &config.administrativeAccount.Username, "active",
+			*config.administrativeAccount.Active, response.GetActive())
 		if err != nil {
 			return err
 		}
 		err = acctest.TestAttributesMatchString(resourceType, &config.administrativeAccount.Username, "description",
-			*config.administrativeAccount.Description, *response.Description)
+			*config.administrativeAccount.Description, response.GetDescription())
 		if err != nil {
 			return err
 		}
 		err = acctest.TestAttributesMatchString(resourceType, &config.administrativeAccount.Username, "department",
-			*config.administrativeAccount.Department, *response.Department)
+			*config.administrativeAccount.Department, response.GetDepartment())
 		if err != nil {
 			return err
 		}
 		err = acctest.TestAttributesMatchString(resourceType, &config.administrativeAccount.Username, "email_address",
-			*config.administrativeAccount.EmailAddress, *response.EmailAddress)
+			*config.administrativeAccount.EmailAddress, response.GetEmailAddress())
 		if err != nil {
 			return err
 		}
 		err = acctest.TestAttributesMatchString(resourceType, &config.administrativeAccount.Username, "phone_number",
-			*config.administrativeAccount.PhoneNumber, *response.PhoneNumber)
-		if err != nil {
-			return err
-		}
-		err = acctest.TestAttributesMatchString(resourceType, &config.administrativeAccount.Username, "username",
-			config.administrativeAccount.Username, response.Username)
+			*config.administrativeAccount.PhoneNumber, response.GetPhoneNumber())
 		if err != nil {
 			return err
 		}
@@ -184,9 +187,62 @@ func testAccCheckExpectedAdministrativeAccountAttributes(config administrativeAc
 		if err != nil {
 			return err
 		}
-
-		// fmt.Println(*response.EncryptedPassword)
-
 		return nil
-	}, ""
+	}
+}
+
+// Test that any objects created by the test are destroyed
+func testAccCheckAdministrativeAccountDestroy(s *terraform.State) error {
+	testClient := acctest.TestClient()
+	ctx := acctest.TestBasicAuthContext()
+	_, err := testClient.LocalIdentityIdentityProfilesAPI.DeleteIdentityProfile(ctx, username).Execute()
+	if err == nil {
+		return acctest.ExpectedDestroyError("AdministrativeAccount", username)
+	}
+	return nil
+}
+
+func TestAccAdministrativeAccount(t *testing.T) {
+	resourceName := "myAdministrativeAccount"
+	initialResourceModel := administrativeAccountResourceModel{
+		administrativeAccount: initialAdministrativeAccount(),
+	}
+
+	encryptedPassword = pointers.String("")
+	updatedResourceModel := administrativeAccountResourceModel{
+		administrativeAccount: updateAdministrativeAccount(encryptedPassword),
+	}
+
+	testSteps = []resource.TestStep{
+		{
+			Config: testAccAdministrativeAccount(resourceName, initialResourceModel),
+			Check:  firstStepCheck(initialResourceModel, updatedResourceModel),
+		},
+		{
+			Config: testAccAdministrativeAccount(resourceName, updatedResourceModel),
+			Check:  testAccCheckExpectedUpdatedAdministrativeAccountAttributes(updatedResourceModel),
+		},
+		{
+			// Test importing the resource
+			Config:                  testAccAdministrativeAccount(resourceName, updatedResourceModel),
+			ResourceName:            "pingfederate_administrative_account." + resourceName,
+			ImportStateId:           initialResourceModel.administrativeAccount.Username,
+			ImportState:             true,
+			ImportStateVerify:       true,
+			ImportStateVerifyIgnore: []string{"encrypted_password", "password"},
+		},
+		{
+			Config: testAccAdministrativeAccount(resourceName, updatedResourceModel),
+			Check:  testAccCheckExpectedInitialAdministrativeAccountAttributes(initialResourceModel, updatedResourceModel),
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
+		},
+		CheckDestroy: testAccCheckAdministrativeAccountDestroy,
+		Steps:        testSteps,
+	})
 }
