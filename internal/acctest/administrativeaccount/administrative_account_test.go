@@ -68,7 +68,6 @@ func hcl(aa *client.AdministrativeAccount) string {
 		passwords := func() (string, string) {
 			if aa.EncryptedPassword != nil {
 				encryptedPasswordVal := aa.GetEncryptedPassword()
-				fmt.Print(encryptedPasswordVal)
 				passwordVal := ""
 				return encryptedPasswordVal, passwordVal
 			} else {
@@ -93,7 +92,6 @@ func hcl(aa *client.AdministrativeAccount) string {
 			),
 		)
 	}
-	fmt.Printf("%s\n", builder.String())
 	return builder.String()
 }
 
