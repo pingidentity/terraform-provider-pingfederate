@@ -48,6 +48,15 @@ func updateAdministrativeAccount(encryptedPass *string) *client.AdministrativeAc
 	return updateAdministrativeAccount
 }
 
+func minimalAdministrativeAccount(encryptedPass *string) *client.AdministrativeAccount {
+	minimalAdministrativeAccount := client.NewAdministrativeAccountWithDefaults()
+	minimalAdministrativeAccount.Username = username
+	minimalAdministrativeAccount.EncryptedPassword = encryptedPass
+	minimalAdministrativeAccount.Active = pointers.Bool(true)
+	minimalAdministrativeAccount.Roles = []string{"USER_ADMINISTRATOR"}
+	return minimalAdministrativeAccount
+}
+
 func hcl(aa *client.AdministrativeAccount) string {
 	var builder strings.Builder
 	if aa == nil {
@@ -102,6 +111,14 @@ func firstStepCheck(initialResourceModel, updatedResourceModel administrativeAcc
 		// Get the encryptedValue here, and then use it to make the HCL
 		(testSteps)[1].Config = testAccAdministrativeAccount("AdministrativeAccount", administrativeAccountResourceModel{})
 		return testAccCheckExpectedInitialAdministrativeAccountAttributes(initialResourceModel, updatedResourceModel)(s)
+	}
+}
+
+func lastStepCheck(minimalResourceModel, updatedResourceModel administrativeAccountResourceModel) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		// Get the encryptedValue here, and then use it to make the HCL
+		(testSteps)[3].Config = testAccAdministrativeAccount("AdministrativeAccount", administrativeAccountResourceModel{})
+		return testAccCheckExpectedInitialAdministrativeAccountAttributes(minimalResourceModel, updatedResourceModel)(s)
 	}
 }
 
@@ -213,6 +230,10 @@ func TestAccAdministrativeAccount(t *testing.T) {
 		administrativeAccount: updateAdministrativeAccount(encryptedPassword),
 	}
 
+	minimalResourceModel := administrativeAccountResourceModel{
+		administrativeAccount: minimalAdministrativeAccount(encryptedPassword),
+	}
+
 	testSteps = []resource.TestStep{
 		{
 			Config: testAccAdministrativeAccount(resourceName, initialResourceModel),
@@ -232,8 +253,8 @@ func TestAccAdministrativeAccount(t *testing.T) {
 			ImportStateVerifyIgnore: []string{"encrypted_password", "password"},
 		},
 		{
-			Config: testAccAdministrativeAccount(resourceName, updatedResourceModel),
-			Check:  testAccCheckExpectedInitialAdministrativeAccountAttributes(initialResourceModel, updatedResourceModel),
+			Config: testAccAdministrativeAccount(resourceName, minimalResourceModel),
+			Check:  lastStepCheck(minimalResourceModel, updatedResourceModel),
 		},
 	}
 

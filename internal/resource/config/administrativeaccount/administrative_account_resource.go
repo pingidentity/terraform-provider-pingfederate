@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -239,22 +238,12 @@ func (r *administrativeAccountsResource) Create(ctx context.Context, req resourc
 		return
 	}
 
-	_, requestErr := createAdministrativeAccount.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of an Administrative Account: %s", requestErr.Error())
-	}
-
 	apiCreateAdministrativeAccount := r.apiClient.AdministrativeAccountsAPI.AddAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateAdministrativeAccount = apiCreateAdministrativeAccount.Body(*createAdministrativeAccount)
 	administrativeAccountResponse, httpResp, err := r.apiClient.AdministrativeAccountsAPI.AddAccountExecute(apiCreateAdministrativeAccount)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Administrative Account", err, httpResp)
 		return
-	}
-
-	_, responseErr := administrativeAccountResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an Administrative Account: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -283,11 +272,6 @@ func (r *administrativeAccountsResource) Read(ctx context.Context, req resource.
 		}
 		return
 	}
-	// Log response JSON
-	_, responseErr := apiReadAdministrativeAccount.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an Administrative Account: %s", responseErr.Error())
-	}
 
 	// Read the response into the state
 	readAdministrativeAccountResponse(ctx, apiReadAdministrativeAccount, &state, &state)
@@ -315,13 +299,6 @@ func (r *administrativeAccountsResource) Update(ctx context.Context, req resourc
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Administrative Account", err.Error())
 		return
-	}
-
-	reqJson, reqErr := createUpdateRequest.MarshalJSON()
-	if reqErr == nil {
-		tflog.Debug(ctx, "Read req: "+string(reqJson))
-	} else {
-		diags.AddError("There was an issue retrieving the request of an Administrative Account: %s", reqErr.Error())
 	}
 
 	updateAdministrativeAccount = updateAdministrativeAccount.Body(*createUpdateRequest)
