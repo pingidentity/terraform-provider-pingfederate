@@ -10,12 +10,12 @@ import (
 )
 
 var _ validator.String = &urlValidator{}
-var _ validator.Set = &urlSetValidator{}
+var _ validator.List = &urlListValidator{}
 var errorInfo = "%s must start with 'http://' or 'https://'"
 var regexFilter = `^(https?:\/\/)`
 
 type urlValidator struct{}
-type urlSetValidator struct{}
+type urlListValidator struct{}
 
 // URL String Validator
 func (v urlValidator) Description(ctx context.Context) string {
@@ -47,23 +47,23 @@ func ValidUrl() urlValidator {
 	return urlValidator{}
 }
 
-// Check values in Set for URL Validation
-func (v urlSetValidator) Description(ctx context.Context) string {
+// Check values in List for URL Validation
+func (v urlListValidator) Description(ctx context.Context) string {
 	return "Validates the value supplied is of URL format"
 }
 
-func (v urlSetValidator) MarkdownDescription(ctx context.Context) string {
+func (v urlListValidator) MarkdownDescription(ctx context.Context) string {
 	return v.Description(ctx)
 }
 
-func (v urlSetValidator) ValidateSet(ctx context.Context, req validator.SetRequest, resp *validator.SetResponse) {
+func (v urlListValidator) ValidateList(ctx context.Context, req validator.ListRequest, resp *validator.ListResponse) {
 	// If the value is unknown or null, there is nothing to validate.
 	if req.ConfigValue.IsUnknown() || req.ConfigValue.IsNull() {
 		return
 	}
 
-	setElems := req.ConfigValue.Elements()
-	for _, elem := range setElems {
+	listElems := req.ConfigValue.Elements()
+	for _, elem := range listElems {
 		regexComp, regexCompError := regexp.Compile(regexFilter)
 		if regexCompError != nil {
 			return
@@ -72,7 +72,7 @@ func (v urlSetValidator) ValidateSet(ctx context.Context, req validator.SetReque
 		if !isMatch {
 			resp.Diagnostics.AddAttributeError(
 				req.Path,
-				"Invalid URL Format Found In Set",
+				"Invalid URL Format Found In List",
 				fmt.Sprintf(errorInfo, elem.(types.String).ValueString()),
 			)
 		}
@@ -80,6 +80,6 @@ func (v urlSetValidator) ValidateSet(ctx context.Context, req validator.SetReque
 
 }
 
-func ValidateUrlInSet() urlSetValidator {
-	return urlSetValidator{}
+func ValidUrls() urlListValidator {
+	return urlListValidator{}
 }

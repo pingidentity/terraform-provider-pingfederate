@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -42,7 +43,7 @@ type authenticationPolicyContractsResourceModel struct {
 	Id                 types.String `tfsdk:"id"`
 	CustomId           types.String `tfsdk:"custom_id"`
 	Name               types.String `tfsdk:"name"`
-	CoreAttributes     types.Set    `tfsdk:"core_attributes"`
+	CoreAttributes     types.List   `tfsdk:"core_attributes"`
 	ExtendedAttributes types.Set    `tfsdk:"extended_attributes"`
 }
 
@@ -60,11 +61,11 @@ func (r *authenticationPolicyContractsResource) Schema(ctx context.Context, req 
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"core_attributes": schema.SetNestedAttribute{
+			"core_attributes": schema.ListNestedAttribute{
 				Description: "A list of read-only assertion attributes (for example, subject) that are automatically populated by PingFederate.",
 				Required:    true,
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
 				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -174,7 +175,7 @@ func readAuthenticationPolicyContractsResponse(ctx context.Context, r *client.Au
 		newCaObj, _ := types.ObjectValue(attrType, cAnameVal)
 		caSlice = append(caSlice, newCaObj)
 	}
-	caSliceOfObj, respDiags := types.SetValue(cAobjSlice, caSlice)
+	caSliceOfObj, respDiags := types.ListValue(cAobjSlice, caSlice)
 	diags.Append(respDiags...)
 
 	clientExtAttributes := r.GetExtendedAttributes()
@@ -189,7 +190,7 @@ func readAuthenticationPolicyContractsResponse(ctx context.Context, r *client.Au
 	eaSliceOfObj, respDiags := types.SetValue(eAobjSlice, eaSlice)
 	diags.Append(respDiags...)
 
-	state.CoreAttributes = basetypes.SetValue{}
+	state.CoreAttributes = basetypes.ListValue{}
 	state.CoreAttributes = caSliceOfObj
 	state.ExtendedAttributes = basetypes.SetValue{}
 	state.ExtendedAttributes = eaSliceOfObj
