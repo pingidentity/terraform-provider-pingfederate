@@ -137,7 +137,7 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 	resp.Schema = schema
 }
 
-func addOptionalAdministrativeAccountFields(ctx context.Context, addRequest *client.AdministrativeAccount, plan, state administrativeAccountResourceModel) error {
+func addOptionalAdministrativeAccountFields(ctx context.Context, addRequest *client.AdministrativeAccount, plan administrativeAccountResourceModel, isCreate bool) error {
 	// Empty strings are treated as equivalent to null
 	if internaltypes.IsDefined(plan.Active) {
 		addRequest.Active = plan.Active.ValueBoolPointer()
@@ -159,7 +159,7 @@ func addOptionalAdministrativeAccountFields(ctx context.Context, addRequest *cli
 		addRequest.EmailAddress = plan.EmailAddress.ValueStringPointer()
 	}
 
-	if internaltypes.IsDefined(plan.Password) && plan.Password.ValueString() != state.Password.ValueString() {
+	if isCreate {
 		addRequest.Password = plan.Password.ValueStringPointer()
 	}
 
@@ -226,7 +226,7 @@ func (r *administrativeAccountsResource) Create(ctx context.Context, req resourc
 	}
 
 	createAdministrativeAccount := client.NewAdministrativeAccount(plan.Username.ValueString())
-	err := addOptionalAdministrativeAccountFields(ctx, createAdministrativeAccount, plan, administrativeAccountResourceModel{})
+	err := addOptionalAdministrativeAccountFields(ctx, createAdministrativeAccount, plan, true)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Administrative Account", err.Error())
 		return
@@ -289,7 +289,7 @@ func (r *administrativeAccountsResource) Update(ctx context.Context, req resourc
 	req.State.Get(ctx, &state)
 	updateAdministrativeAccount := r.apiClient.AdministrativeAccountsAPI.UpdateAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Username.ValueString())
 	createUpdateRequest := client.NewAdministrativeAccount(plan.Username.ValueString())
-	err := addOptionalAdministrativeAccountFields(ctx, createUpdateRequest, plan, state)
+	err := addOptionalAdministrativeAccountFields(ctx, createUpdateRequest, plan, false)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Administrative Account", err.Error())
 		return
