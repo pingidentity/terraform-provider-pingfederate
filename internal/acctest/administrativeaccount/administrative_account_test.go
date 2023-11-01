@@ -72,7 +72,6 @@ func hcl(aa *client.AdministrativeAccount) string {
 				passwordVal := password
 				return encryptedPasswordVal, passwordVal
 			}
-			// return "", ""
 		}
 		encryptedPasswordTfVal, passwordTfVal := passwords()
 		builder.WriteString(
@@ -106,8 +105,7 @@ data "pingfederate_administrative_account" "%[1]s" {
 	)
 }
 
-// Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedInitialAdministrativeAccountAttributes(config administrativeAccountResourceModel) resource.TestCheckFunc {
+func testAccCheckExpectedAdministrativeAccountAttributes(config administrativeAccountResourceModel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
@@ -123,50 +121,38 @@ func testAccCheckExpectedInitialAdministrativeAccountAttributes(config administr
 			return err
 		}
 
-		err = acctest.TestAttributesMatchStringSlice(resourceType, &config.administrativeAccount.Username, "roles",
-			config.administrativeAccount.Roles, response.Roles)
-		if err != nil {
-			return err
+		if config.administrativeAccount.Description != nil {
+			err = acctest.TestAttributesMatchString(resourceType, &config.administrativeAccount.Username, "description",
+				*config.administrativeAccount.Description, response.GetDescription())
+			if err != nil {
+				return err
+			}
 		}
-		return nil
-	}
-}
 
-func testAccCheckExpectedUpdatedAdministrativeAccountAttributes(config administrativeAccountResourceModel) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		testClient := acctest.TestClient()
-		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.AdministrativeAccountsAPI.GetAccount(ctx, config.administrativeAccount.Username).Execute()
-		if err != nil {
-			return err
+		if config.administrativeAccount.Department != nil {
+			err = acctest.TestAttributesMatchString(resourceType, &config.administrativeAccount.Username, "department",
+				*config.administrativeAccount.Department, response.GetDepartment())
+			if err != nil {
+				return err
+			}
 		}
-		resourceType := "AdministrativeAccount"
-		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchBool(resourceType, &config.administrativeAccount.Username, "active",
-			*config.administrativeAccount.Active, response.GetActive())
-		if err != nil {
-			return err
+
+		if config.administrativeAccount.EmailAddress != nil {
+			err = acctest.TestAttributesMatchString(resourceType, &config.administrativeAccount.Username, "email_address",
+				*config.administrativeAccount.EmailAddress, response.GetEmailAddress())
+			if err != nil {
+				return err
+			}
 		}
-		err = acctest.TestAttributesMatchString(resourceType, &config.administrativeAccount.Username, "description",
-			*config.administrativeAccount.Description, response.GetDescription())
-		if err != nil {
-			return err
+
+		if config.administrativeAccount.PhoneNumber != nil {
+			err = acctest.TestAttributesMatchString(resourceType, &config.administrativeAccount.Username, "phone_number",
+				*config.administrativeAccount.PhoneNumber, response.GetPhoneNumber())
+			if err != nil {
+				return err
+			}
 		}
-		err = acctest.TestAttributesMatchString(resourceType, &config.administrativeAccount.Username, "department",
-			*config.administrativeAccount.Department, response.GetDepartment())
-		if err != nil {
-			return err
-		}
-		err = acctest.TestAttributesMatchString(resourceType, &config.administrativeAccount.Username, "email_address",
-			*config.administrativeAccount.EmailAddress, response.GetEmailAddress())
-		if err != nil {
-			return err
-		}
-		err = acctest.TestAttributesMatchString(resourceType, &config.administrativeAccount.Username, "phone_number",
-			*config.administrativeAccount.PhoneNumber, response.GetPhoneNumber())
-		if err != nil {
-			return err
-		}
+
 		err = acctest.TestAttributesMatchStringSlice(resourceType, &config.administrativeAccount.Username, "roles",
 			config.administrativeAccount.Roles, response.Roles)
 		if err != nil {
@@ -206,11 +192,11 @@ func TestAccAdministrativeAccount(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccAdministrativeAccount(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedInitialAdministrativeAccountAttributes(initialResourceModel),
+				Check:  testAccCheckExpectedAdministrativeAccountAttributes(initialResourceModel),
 			},
 			{
 				Config: testAccAdministrativeAccount(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedUpdatedAdministrativeAccountAttributes(updatedResourceModel),
+				Check:  testAccCheckExpectedAdministrativeAccountAttributes(updatedResourceModel),
 			},
 			{
 				// Test importing the resource
@@ -223,7 +209,7 @@ func TestAccAdministrativeAccount(t *testing.T) {
 			},
 			{
 				Config: testAccAdministrativeAccount(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedInitialAdministrativeAccountAttributes(initialResourceModel),
+				Check:  testAccCheckExpectedAdministrativeAccountAttributes(initialResourceModel),
 			},
 		},
 	})

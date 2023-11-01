@@ -93,15 +93,14 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 			},
 			"password": schema.StringAttribute{
 				Description: "Password for the Account. This field is only applicable during account creation.",
-				Computed:    true,
-				Optional:    true,
+				Required:    true,
 				Sensitive:   true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplaceIfConfigured(),
 				},
 			},
 			"encrypted_password": schema.StringAttribute{
-				Description: "Read-only attribute. This field is utilized for updating an existing Administrative Account.",
+				Description: "Read-only attribute. This field holds the value returned from PingFederate and used for updating an existing Administrative Account.",
 				Computed:    true,
 				Optional:    false,
 				Sensitive:   true,
@@ -199,13 +198,7 @@ func (r *administrativeAccountsResource) Configure(_ context.Context, req resour
 func readAdministrativeAccountResponse(ctx context.Context, r *client.AdministrativeAccount, state *administrativeAccountResourceModel, plan *administrativeAccountResourceModel) {
 	state.Id = types.StringValue(r.Username)
 	state.Username = types.StringValue(r.Username)
-
-	// state.Password
-	if internaltypes.IsDefined(plan.Password) {
-		state.Password = types.StringValue(plan.Password.ValueString())
-	} else {
-		state.Password = types.StringNull()
-	}
+	state.Password = types.StringValue(plan.Password.ValueString())
 
 	// state.EncryptedPassword
 	if internaltypes.IsDefined(plan.EncryptedPassword) {
