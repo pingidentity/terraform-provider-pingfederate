@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
@@ -126,19 +127,27 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 							Attributes: map[string]schema.Attribute{
 								"target_resource_sso": schema.BoolAttribute{
 									Description: "Enable this target resource for SSO redirect validation.",
+									Computed:    true,
 									Optional:    true,
+									Default:     booldefault.StaticBool(false),
 								},
 								"target_resource_slo": schema.BoolAttribute{
 									Description: "Enable this target resource for SLO redirect validation.",
+									Computed:    true,
 									Optional:    true,
+									Default:     booldefault.StaticBool(false),
 								},
 								"in_error_resource": schema.BoolAttribute{
 									Description: "Enable this target resource for in error resource validation.",
+									Computed:    true,
 									Optional:    true,
+									Default:     booldefault.StaticBool(false),
 								},
 								"idp_discovery": schema.BoolAttribute{
 									Description: "Enable this target resource for IdP discovery validation.",
+									Computed:    true,
 									Optional:    true,
+									Default:     booldefault.StaticBool(false),
 								},
 								"valid_domain": schema.StringAttribute{
 									Description: "Domain of a valid resource.",
@@ -146,15 +155,21 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 								},
 								"valid_path": schema.StringAttribute{
 									Description: "Path of a valid resource.",
+									Computed:    true,
 									Optional:    true,
+									Default:     stringdefault.StaticString(""),
 								},
 								"allow_query_and_fragment": schema.BoolAttribute{
 									Description: "Allow any query parameters and fragment in the resource.",
+									Computed:    true,
 									Optional:    true,
+									Default:     booldefault.StaticBool(false),
 								},
 								"require_https": schema.BoolAttribute{
 									Description: "Require HTTPS for accessing this resource.",
+									Computed:    true,
 									Optional:    true,
+									Default:     booldefault.StaticBool(false),
 								},
 							},
 						},
