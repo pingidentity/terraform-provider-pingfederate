@@ -6,8 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -19,6 +18,8 @@ var (
 	_ resource.Resource                = &virtualHostNamesResource{}
 	_ resource.ResourceWithConfigure   = &virtualHostNamesResource{}
 	_ resource.ResourceWithImportState = &virtualHostNamesResource{}
+
+	virtualHostNamesDefault, _ = types.ListValue(types.StringType, nil)
 )
 
 // VirtualHostNamesResource is a helper function to simplify the provider implementation.
@@ -47,8 +48,7 @@ func (r *virtualHostNamesResource) Schema(ctx context.Context, req resource.Sche
 				ElementType: types.StringType,
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.List{
-					listplanmodifier.UseStateForUnknown()},
+				Default:     listdefault.StaticValue(virtualHostNamesDefault),
 			},
 		},
 	}
