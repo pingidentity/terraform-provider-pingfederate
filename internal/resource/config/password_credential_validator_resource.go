@@ -42,7 +42,7 @@ var (
 		"inherited":           basetypes.BoolType{},
 	}
 
-	emptyAttrList, _ = types.ListValue(types.ObjectType{AttrTypes: attrType}, []attr.Value{})
+	emptyAttrList, _ = types.ListValue(types.ObjectType{AttrTypes: attrType}, nil)
 )
 
 // PasswordCredentialValidatorResource is a helper function to simplify the provider implementation.

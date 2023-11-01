@@ -68,13 +68,13 @@ var (
 		"update_authn_session_activity":   basetypes.BoolType{},
 	}
 
-	resourceUrisDefault, _      = types.ListValue(types.StringType, []attr.Value{})
+	resourceUrisDefault, _      = types.ListValue(types.StringType, nil)
 	selectionSettingsDefault, _ = types.ObjectValue(selectionSettingsAttrType, map[string]attr.Value{
 		"inherited":     types.BoolValue(false),
 		"resource_uris": resourceUrisDefault,
 	})
 
-	allowedClientsDefault, _        = types.ListValue(types.ObjectType{AttrTypes: resourcelink.AttrType()}, []attr.Value{})
+	allowedClientsDefault, _        = types.ListValue(types.ObjectType{AttrTypes: resourcelink.AttrType()}, nil)
 	accessControlSettingsDefault, _ = types.ObjectValue(accessControlSettingsAttrType, map[string]attr.Value{
 		"inherited":        types.BoolValue(false),
 		"restrict_clients": types.BoolValue(false),

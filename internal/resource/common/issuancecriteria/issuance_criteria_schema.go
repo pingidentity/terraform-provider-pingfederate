@@ -2,10 +2,8 @@ package issuancecriteria
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 )
 
@@ -62,18 +60,4 @@ func ToSchema() schema.SingleNestedAttribute {
 			},
 		},
 	}
-}
-
-func ConditionalCriteriaEmptyDefault() types.List {
-	conditionalCriteriaEmptyList, _ := types.ListValue(ConditionalCriteriaElemType(), []attr.Value{})
-	return conditionalCriteriaEmptyList
-}
-
-func EmptyDefault() types.Object {
-	expressionCriteriaNullList := types.ListNull(ExpressionCriteriaElemType())
-	issuanceCriteriaEmptyObject, _ := types.ObjectValue(AttrType(), map[string]attr.Value{
-		"conditional_criteria": ConditionalCriteriaEmptyDefault(),
-		"expression_criteria":  expressionCriteriaNullList,
-	})
-	return issuanceCriteriaEmptyObject
 }

@@ -1,7 +1,6 @@
 package pluginconfiguration
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
@@ -10,7 +9,7 @@ import (
 )
 
 func ToSchema() schema.SingleNestedAttribute {
-	fieldsListDefault, _ := types.ListValue(types.ObjectType{AttrTypes: fieldAttrTypes}, []attr.Value{})
+	fieldsListDefault, _ := types.ListValue(types.ObjectType{AttrTypes: fieldAttrTypes}, nil)
 	return schema.SingleNestedAttribute{
 		Description: "Plugin instance configuration.",
 		Required:    true,

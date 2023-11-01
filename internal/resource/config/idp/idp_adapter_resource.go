@@ -79,7 +79,7 @@ var (
 
 	extendedAttributesDefault, _ = types.SetValue(types.ObjectType{
 		AttrTypes: attributesAttrType,
-	}, []attr.Value{})
+	}, nil)
 )
 
 // IdpAdapterResource is a helper function to simplify the provider implementation.

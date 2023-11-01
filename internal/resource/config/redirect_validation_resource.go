@@ -51,7 +51,7 @@ var (
 		"enable_wreply_validation_slo": basetypes.BoolType{},
 	}
 
-	whiteListDefault, _                       = types.ListValue(types.ObjectType{AttrTypes: whiteListAttrTypes}, []attr.Value{})
+	whiteListDefault, _                       = types.ListValue(types.ObjectType{AttrTypes: whiteListAttrTypes}, nil)
 	redirectValidationLocalSettingsDefault, _ = types.ObjectValue(redirectValidationLocalSettingsAttrTypes, map[string]attr.Value{
 		"enable_target_resource_validation_for_sso":           types.BoolValue(false),
 		"enable_target_resource_validation_for_slo":           types.BoolValue(false),

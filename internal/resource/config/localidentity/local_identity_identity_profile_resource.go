@@ -116,7 +116,7 @@ var (
 		"metadata": basetypes.MapType{ElemType: basetypes.StringType{}},
 	}
 
-	authSourcesDefault, _ = types.ListValue(types.ObjectType{AttrTypes: authSourcesAttrTypes}, []attr.Value{})
+	authSourcesDefault, _ = types.ListValue(types.ObjectType{AttrTypes: authSourcesAttrTypes}, nil)
 
 	authSourceUpdatePolicyDefault, _ = types.ObjectValue(authSourceUpdatePolicyAttrTypes, map[string]attr.Value{
 		"store_attributes":  types.BoolValue(false),
