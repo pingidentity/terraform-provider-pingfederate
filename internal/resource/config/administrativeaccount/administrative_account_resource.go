@@ -96,7 +96,7 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 				Required:    true,
 				Sensitive:   true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplaceIfConfigured(),
+					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"encrypted_password": schema.StringAttribute{
