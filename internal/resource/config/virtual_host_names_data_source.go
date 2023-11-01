@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -42,7 +42,6 @@ func (r *virtualHostNamesDataSource) Schema(ctx context.Context, req datasource.
 			"virtual_host_names": schema.ListAttribute{
 				Description: "List of virtual host names.",
 				ElementType: types.StringType,
-				Computed:    true,
 				Optional:    true,
 			},
 		},

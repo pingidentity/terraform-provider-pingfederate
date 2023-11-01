@@ -265,7 +265,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		administrativeaccount.NewAdministrativeAccountDataSource,
 		authenticationapi.NewAuthenticationApiSettingsDataSource,
 		certificate.NewCertificateDataSource,
-		config.VirtualHostNamesDataSource,
+		config.NewVirtualHostNamesDataSource,
 		idp.NewIdpDefaultUrlsDataSource,
 		keypairs.NewKeyPairsSigningImportDataSource,
 		keypairs.NewKeyPairsSslServerImportDataSource,
