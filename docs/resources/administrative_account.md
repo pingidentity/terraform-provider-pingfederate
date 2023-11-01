@@ -41,7 +41,7 @@ resource "pingfederate_administrative_account" "myAdministrativeAccount" {
 
 ### Read-Only
 
-- `encrypted_password` (String, Sensitive) Read-only attribute. This field holds the value of encryptedPassword returned from PingFederate and used for updating an existing Administrative Account.
+- `encrypted_password` (String, Sensitive) Read-only attribute. This field holds the value returned from PingFederate and used for updating an existing Administrative Account.
 - `id` (String) The ID of this resource.
 
 ## Import
