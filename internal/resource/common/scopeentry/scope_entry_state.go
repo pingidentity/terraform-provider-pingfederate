@@ -28,3 +28,7 @@ func ToState(con context.Context, scopes []client.ScopeEntry) (basetypes.SetValu
 
 	return types.SetValueFrom(con, types.ObjectType{AttrTypes: exclusiveScopeAttrTypes}, toStateScopes)
 }
+
+func AttrTypes() map[string]attr.Type {
+	return exclusiveScopeAttrTypes
+}

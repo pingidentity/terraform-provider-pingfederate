@@ -13,12 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -41,6 +40,43 @@ var (
 	_ resource.Resource                = &oauthAuthServerSettingsResource{}
 	_ resource.ResourceWithConfigure   = &oauthAuthServerSettingsResource{}
 	_ resource.ResourceWithImportState = &oauthAuthServerSettingsResource{}
+
+	scopesDefault, _ = types.SetValue(types.ObjectType{AttrTypes: scopeentry.AttrTypes()}, nil)
+
+	scopeGroupsDefault, _ = types.SetValue(types.ObjectType{AttrTypes: map[string]attr.Type{
+		"name":        types.StringType,
+		"description": types.StringType,
+		"scopes":      types.SetType{ElemType: types.StringType},
+	}}, nil)
+
+	persistentGrantReuseGrantTypesDefault, _ = types.SetValue(types.StringType, nil)
+	allowedOriginsDefault, _                 = types.ListValue(types.StringType, nil)
+
+	attributeAttrTypes = map[string]attr.Type{
+		"name": types.StringType,
+	}
+	attributeSetElementType = types.ObjectType{AttrTypes: attributeAttrTypes}
+
+	defaultCoreAttribute1, _ = types.ObjectValue(attributeAttrTypes, map[string]attr.Value{
+		"name": types.StringValue("USER_KEY"),
+	})
+	defaultCoreAttribute2, _ = types.ObjectValue(attributeAttrTypes, map[string]attr.Value{
+		"name": types.StringValue("USER_NAME"),
+	})
+
+	coreAttributesDefault, _ = types.SetValue(attributeSetElementType, []attr.Value{
+		defaultCoreAttribute1,
+		defaultCoreAttribute2,
+	})
+	extendedAttributesDefault, _ = types.SetValue(attributeSetElementType, nil)
+
+	persistentGrantContactDefault, _ = types.ObjectValue(map[string]attr.Type{
+		"core_attributes":     types.SetType{ElemType: attributeSetElementType},
+		"extended_attributes": types.SetType{ElemType: attributeSetElementType},
+	}, map[string]attr.Value{
+		"core_attributes":     coreAttributesDefault,
+		"extended_attributes": extendedAttributesDefault,
+	})
 )
 
 // OauthAuthServerSettingsResource is a helper function to simplify the provider implementation.
@@ -114,9 +150,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Description: "The list of common scopes.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
-				},
+				Default:     setdefault.StaticValue(scopesDefault),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
@@ -135,9 +169,6 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 							Computed:    true,
 							Optional:    true,
 							Default:     booldefault.StaticBool(false),
-							PlanModifiers: []planmodifier.Bool{
-								boolplanmodifier.UseStateForUnknown(),
-							},
 						},
 					},
 				},
@@ -146,9 +177,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Description: "The list of common scope groups.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
-				},
+				Default:     setdefault.StaticValue(scopeGroupsDefault),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
@@ -174,9 +203,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Description: "The list of exclusive scopes.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
-				},
+				Default:     setdefault.StaticValue(scopesDefault),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
@@ -195,9 +222,6 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 							Computed:    true,
 							Optional:    true,
 							Default:     booldefault.StaticBool(false),
-							PlanModifiers: []planmodifier.Bool{
-								boolplanmodifier.UseStateForUnknown(),
-							},
 						},
 					},
 				},
@@ -206,9 +230,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Description: "The list of exclusive scope groups.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
-				},
+				Default:     setdefault.StaticValue(scopeGroupsDefault),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
@@ -243,52 +265,36 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"include_issuer_in_authorization_response": schema.BoolAttribute{
 				Description: "Determines whether the authorization server's issuer value is added to the authorization response or not. The default value is false.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"track_user_sessions_for_logout": schema.BoolAttribute{
 				Description: "Determines whether user sessions are tracked for logout. If this property is not provided on a PUT, the setting is left unchanged.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
+				Default:     booldefault.StaticBool(false),
 			},
 			"token_endpoint_base_url": schema.StringAttribute{
 				Description: "The token endpoint base URL used to validate the 'aud' claim during Private Key JWT Client Authentication.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
+				Default:     stringdefault.StaticString(""),
 			},
 			"persistent_grant_lifetime": schema.Int64Attribute{
 				Description: "The persistent grant lifetime. The default value is indefinite. -1 indicates an indefinite amount of time.",
 				Computed:    true,
 				Optional:    true,
 				Default:     int64default.StaticInt64(-1),
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown(),
-				},
 			},
 			"persistent_grant_lifetime_unit": schema.StringAttribute{
 				Description: "The persistent grant lifetime unit.",
 				Computed:    true,
 				Optional:    true,
 				Default:     stringdefault.StaticString("DAYS"),
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 				Validators: []validator.String{
 					stringvalidator.OneOf([]string{"MINUTES", "DAYS", "HOURS"}...),
 				},
@@ -298,18 +304,12 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Computed:    true,
 				Optional:    true,
 				Default:     int64default.StaticInt64(30),
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown(),
-				},
 			},
 			"persistent_grant_idle_timeout_time_unit": schema.StringAttribute{
 				Description: "The persistent grant idle timeout time unit. The default value is DAYS",
 				Computed:    true,
 				Optional:    true,
 				Default:     stringdefault.StaticString("DAYS"),
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 				Validators: []validator.String{
 					stringvalidator.OneOf([]string{"MINUTES", "DAYS", "HOURS"}...),
 				},
@@ -323,18 +323,12 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(true),
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"refresh_token_rolling_grace_period": schema.Int64Attribute{
 				Description: "The grace period that a rolled refresh token remains valid in seconds. The default value is 0.",
 				Computed:    true,
 				Optional:    true,
 				Default:     int64default.StaticInt64(0),
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown(),
-				},
 			},
 			"refresh_rolling_interval": schema.Int64Attribute{
 				Description: "The minimum interval to roll refresh tokens, in hours.",
@@ -344,23 +338,20 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Description: "The grant types that the OAuth AS can reuse rather than creating a new grant for each request. Only 'IMPLICIT' or 'AUTHORIZATION_CODE' or 'RESOURCE_OWNER_CREDENTIALS' are valid grant types.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
-				},
+				Default:     setdefault.StaticValue(persistentGrantReuseGrantTypesDefault),
 				ElementType: types.StringType,
 			},
 			"persistent_grant_contract": schema.SingleNestedAttribute{
 				Description: "The persistent grant contract defines attributes that are associated with OAuth persistent grants.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
+				Default:     objectdefault.StaticValue(persistentGrantContactDefault),
 				Attributes: map[string]schema.Attribute{
 					"core_attributes": schema.SetNestedAttribute{
 						Description: "This is a read-only list of persistent grant attributes and includes USER_KEY and USER_NAME. Changes to this field will be ignored.",
 						Computed:    true,
 						Optional:    false,
+						Default:     setdefault.StaticValue(coreAttributesDefault),
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -380,9 +371,6 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 					"extended_attributes": schema.SetNestedAttribute{
 						Description: "A list of additional attributes for the persistent grant contract.",
 						Optional:    true,
-						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
-						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -399,27 +387,18 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"allow_unidentified_client_ro_creds": schema.BoolAttribute{
 				Description: "Allow unidentified clients to request resource owner password credentials grants. The default value is false.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"allow_unidentified_client_extension_grants": schema.BoolAttribute{
 				Description: "Allow unidentified clients to request extension grants. The default value is false.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"admin_web_service_pcv_ref": schema.SingleNestedAttribute{
 				Description: "The password credential validator reference that is used for authenticating access to the OAuth Administrative Web Service.",
@@ -430,26 +409,20 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Description: "The ID of the Access Token Manager used for OAuth enabled grant management.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
+				Default:     stringdefault.StaticString(""),
 			},
 			"scope_for_oauth_grant_management": schema.StringAttribute{
 				Description: "The OAuth scope to validate when accessing grant management service.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
+				Default:     stringdefault.StaticString(""),
 			},
 			"allowed_origins": schema.ListAttribute{
 				Description: "The list of allowed origins.",
 				ElementType: types.StringType,
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.List{
-					listplanmodifier.UseStateForUnknown(),
-				},
+				Default:     listdefault.StaticValue(allowedOriginsDefault),
 				Validators: []validator.List{
 					configvalidators.ValidUrls(),
 				},
@@ -458,9 +431,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Description: "The URL used to generate 'verification_url' and 'verification_url_complete' values in a Device Authorization request",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
+				Default:     stringdefault.StaticString(""),
 			},
 			"registered_authorization_path": schema.StringAttribute{
 				Description: "The Registered Authorization Path is concatenated to PingFederate base URL to generate 'verification_url' and 'verification_url_complete' values in a Device Authorization request. PingFederate listens to this path if specified",
@@ -482,9 +453,6 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Computed:    true,
 				Optional:    true,
 				Default:     stringdefault.StaticString("AFTER_AUTHENTICATION"),
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 				Validators: []validator.String{
 					stringvalidator.OneOf([]string{"AFTER_AUTHENTICATION", "BEFORE_AUTHENTICATION"}...),
 				},
@@ -497,9 +465,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Description: "User Authorization Consent Page setting to use PingFederate's internal consent page or an external system",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
+				Default:     stringdefault.StaticString("INTERNAL"),
 				Validators: []validator.String{
 					stringvalidator.OneOf([]string{"INTERNAL", "ADAPTER"}...),
 				},
@@ -507,50 +473,32 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 			"user_authorization_consent_adapter": schema.StringAttribute{
 				Description: "Adapter ID of the external consent adapter to be used for the consent page user interface.",
 				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"approved_scopes_attribute": schema.StringAttribute{
 				Description: "Attribute from the external consent adapter's contract, intended for storing approved scopes returned by the external consent page.",
 				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"approved_authorization_detail_attribute": schema.StringAttribute{
 				Description: "Attribute from the external consent adapter's contract, intended for storing approved authorization details returned by the external consent page.",
 				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"par_reference_timeout": schema.Int64Attribute{
 				Description: "The timeout, in seconds, of the pushed authorization request reference. The default value is 60.",
 				Computed:    true,
 				Optional:    true,
 				Default:     int64default.StaticInt64(60),
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown(),
-				},
 			},
 			"par_reference_length": schema.Int64Attribute{
 				Description: "The entropy of pushed authorization request references, in bytes. The default value is 24.",
 				Computed:    true,
 				Optional:    true,
 				Default:     int64default.StaticInt64(24),
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown(),
-				},
 			},
 			"par_status": schema.StringAttribute{
 				Description: "The status of pushed authorization request support. The default value is ENABLED.",
 				Computed:    true,
 				Optional:    true,
 				Default:     stringdefault.StaticString("ENABLED"),
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 				Validators: []validator.String{
 					stringvalidator.OneOf([]string{"DISABLED", "ENABLED", "REQUIRED"}...),
 				},
@@ -560,18 +508,12 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Computed:    true,
 				Optional:    true,
 				Default:     int64default.StaticInt64(0),
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown(),
-				},
 			},
 			"jwt_secured_authorization_response_mode_lifetime": schema.Int64Attribute{
 				Description: "The lifetime, in seconds, of the JWT Secured authorization response. The default value is 600.",
 				Computed:    true,
 				Optional:    true,
 				Default:     int64default.StaticInt64(600),
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown(),
-				},
 			},
 		},
 	}
