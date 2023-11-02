@@ -57,7 +57,7 @@ resource "pingfederate_virtual_host_names" "%[1]s" {
   virtual_host_names = %[2]s
 }
 data "pingfederate_virtual_host_names" "%[1]s" {
-	name = pingfederate_virtual_host_names.%[1]s.id
+  depends_on = [pingfederate_virtual_host_names.%[1]s]
 }`, resourceName,
 		acctest.StringSliceToTerraformString(resourceModel.virtualHostNames),
 	)
