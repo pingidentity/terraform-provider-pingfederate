@@ -20,6 +20,7 @@
 * **New Data Source:** `pingfederate_license` ([#70](https://github.com/pingidentity/terraform-provider-pingfederate/pull/70))
 * **New Data Source:** `pingfederate_local_identity_identity_profile` ([#70](https://github.com/pingidentity/terraform-provider-pingfederate/pull/70))
 * **New Data Source:** `pingfederate_oauth_access_token_manager` ([#76](https://github.com/pingidentity/terraform-provider-pingfederate/pull/70))
+* **New Data Source:** `pingfederate_virtual_host_names` ([#87](https://github.com/pingidentity/terraform-provider-pingfederate/pull/87))
 
 ​
 # v0.1.0 September 28, 2023
