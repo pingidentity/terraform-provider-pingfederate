@@ -17,7 +17,7 @@ Manages a Data Store
 # Please refer to the link below on how to best store state files and data within. #
 # https://developer.hashicorp.com/terraform/plugin/best-practices/sensitive-state #
 
-# x_bypass_external_validation in the provider block may be used to bypass the connection test.
+# x_bypass_external_validation may be used in the provider block to bypass the connection test.
 resource "pingfederate_data_store" "myCustomDataStore" {
   custom_id = "myCustomDataStore"
   # mask_attribute_value= false
@@ -224,6 +224,88 @@ resource "pingfederate_data_store" "myPingDirectoryLdapDataStore" {
     dns_ttl                = 6000
     ldap_dns_srv_prefix    = "_ldap._tcp"
     ldaps_dns_srv_prefix   = "_ldaps._tcp"
+  }
+}
+
+resource "pingfederate_data_store" "myPingOneDataStore" {
+  custom_id = "myPingOneDataStore"
+  custom_data_store = {
+    name = "PingOne Data Store"
+    plugin_descriptor_ref = {
+      id = "com.pingidentity.plugins.datastore.p14c.PingOneForCustomersDataStore"
+    }
+    configuration = {
+      tables = [
+        {
+          name = "Custom Attributes Details",
+          rows = [
+            {
+              fields = [
+                {
+                  name  = "Local Attribute",
+                  value = "local_attribute"
+                },
+                {
+                  name  = "PingOne for Customers Attribute",
+                  value = "/pingone_attribute"
+                }
+              ],
+              defaultRow = false
+            }
+          ]
+        }
+      ],
+      fields = [
+        {
+          name  = "PingOne Environment",
+          value = ""
+        },
+        {
+          name  = "Connection Timeout",
+          value = "10000"
+        },
+        {
+          name  = "Retry Request",
+          value = "true"
+        },
+        {
+          name  = "Maximum Retries Limit",
+          value = "5"
+        },
+        {
+          name  = "Retry Error Codes",
+          value = "429"
+        },
+        {
+          name  = "Proxy Settings",
+          value = "System Defaults"
+        },
+        {
+          name  = "Custom Proxy Host",
+          value = ""
+        },
+        {
+          name  = "Custom Proxy Port",
+          value = ""
+        }
+      ]
+    }
+    mask_attribute_values = false
+  }
+}
+
+resource "pingfederate_data_store" "myPingOneLdapDataStore" {
+  custom_id             = "myPingOneLdapDataStore"
+  mask_attribute_values = false
+  ping_one_ldap_gateway_data_store = {
+    ldap_type = "PING_DIRECTORY"
+    name      = "PingOne LDAP Gateway Data Store"
+    ping_one_connection_ref = {
+      id = ""
+    },
+    ping_one_environment_id  = ""
+    ping_one_ldap_gateway_id = ""
+    use_ssl                  = true
   }
 }
 ```
@@ -452,6 +534,7 @@ Optional:
 Required:
 
 - `ldap_type` (String) A type that allows PingFederate to configure many provisioning settings automatically. The value is validated against the LDAP gateway configuration in PingOne unless the header 'X-BypassExternalValidation' is set to true.
+- `ping_one_connection_ref` (Attributes) Reference to the PingOne connection this gateway uses. (see [below for nested schema](#nestedatt--ping_one_ldap_gateway_data_store--ping_one_connection_ref))
 - `ping_one_environment_id` (String) The environment ID that the gateway belongs to.
 - `ping_one_ldap_gateway_id` (String) The ID of the PingOne LDAP Gateway this data store uses.
 
@@ -459,7 +542,6 @@ Optional:
 
 - `binary_attributes` (Set of String) A list of LDAP attributes to be handled as binary data.
 - `name` (String) The data store name with a unique value across all data sources. Omitting this attribute will set the value to a combination of the hostname(s) and the principal.
-- `ping_one_connection_ref` (Attributes) Reference to the PingOne connection this gateway uses. (see [below for nested schema](#nestedatt--ping_one_ldap_gateway_data_store--ping_one_connection_ref))
 - `use_ssl` (Boolean) Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS). The default value is false. The value is validated against the LDAP gateway configuration in PingOne unless the header 'X-BypassExternalValidation' is set to true.
 
 Read-Only:

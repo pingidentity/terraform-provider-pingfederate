@@ -97,6 +97,10 @@ func (r *dataStoreResource) Create(ctx context.Context, req resource.CreateReque
 		createLdapDataStore(plan, ctx, req, resp, r)
 	}
 
+	if internaltypes.IsDefined(plan.PingOneLdapGatewayDataStore) {
+		createPingOneLdapGatewayDataStore(plan, ctx, req, resp, r)
+	}
+
 }
 
 func (r *dataStoreResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -132,6 +136,11 @@ func (r *dataStoreResource) Read(ctx context.Context, req resource.ReadRequest, 
 		resp.Diagnostics.Append(diags...)
 	}
 
+	if dataStoreGetReq.PingOneLdapGatewayDataStore != nil {
+		diags = readPingOneLdapGatewayDataStoreResponse(ctx, dataStoreGetReq, &state, &state.PingOneLdapGatewayDataStore)
+		resp.Diagnostics.Append(diags...)
+	}
+
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -158,6 +167,10 @@ func (r *dataStoreResource) Update(ctx context.Context, req resource.UpdateReque
 
 	if internaltypes.IsDefined(plan.LdapDataStore) {
 		updateLdapDataStore(plan, ctx, req, resp, r)
+	}
+
+	if internaltypes.IsDefined(plan.PingOneLdapGatewayDataStore) {
+		updatePingOneLdapGatewayDataStore(plan, ctx, req, resp, r)
 	}
 
 }

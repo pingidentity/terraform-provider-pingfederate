@@ -3,6 +3,7 @@ package pluginconfiguration
 import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -55,7 +56,9 @@ func ToSchema() schema.SingleNestedAttribute {
 									},
 									"default_row": schema.BoolAttribute{
 										Description: "Whether this row is the default.",
+										Computed:    true,
 										Optional:    true,
+										Default:     booldefault.StaticBool(false),
 										PlanModifiers: []planmodifier.Bool{
 											boolplanmodifier.UseStateForUnknown(),
 										},
