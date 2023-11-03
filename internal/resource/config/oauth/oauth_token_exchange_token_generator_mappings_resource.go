@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
@@ -149,10 +148,6 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Create(ctx context.Con
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OauthTokenExchangeTokenGeneratorMapping", err.Error())
 		return
 	}
-	requestJson, err := createOauthTokenExchangeTokenGeneratorMapping.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
-	}
 
 	apiCreateOauthTokenExchangeTokenGeneratorMapping := r.apiClient.OauthTokenExchangeTokenGeneratorMappingsAPI.CreateTokenGeneratorMapping(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateOauthTokenExchangeTokenGeneratorMapping = apiCreateOauthTokenExchangeTokenGeneratorMapping.Body(*createOauthTokenExchangeTokenGeneratorMapping)
@@ -160,10 +155,6 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Create(ctx context.Con
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OauthTokenExchangeTokenGeneratorMapping", err, httpResp)
 		return
-	}
-	responseJson, err := oauthTokenExchangeTokenGeneratorMappingResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
 	}
 
 	// Read the response into the state
@@ -193,11 +184,6 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Read(ctx context.Conte
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  OauthTokenExchangeTokenGeneratorMapping", err, httpResp)
 		}
-	}
-	// Log response JSON
-	responseJson, err := apiReadOauthTokenExchangeTokenGeneratorMapping.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	}
 
 	// Read the response into the state
@@ -230,21 +216,14 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Update(ctx context.Con
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OauthTokenExchangeTokenGeneratorMapping", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
-	}
+
 	updateOauthTokenExchangeTokenGeneratorMapping = updateOauthTokenExchangeTokenGeneratorMapping.Body(*createUpdateRequest)
 	updateOauthTokenExchangeTokenGeneratorMappingResponse, httpResp, err := r.apiClient.OauthTokenExchangeTokenGeneratorMappingsAPI.UpdateTokenGeneratorMappingByIdExecute(updateOauthTokenExchangeTokenGeneratorMapping)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OauthTokenExchangeTokenGeneratorMapping", err, httpResp)
 		return
 	}
-	// Log response JSON
-	responseJson, err := updateOauthTokenExchangeTokenGeneratorMappingResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
-	}
+
 	// Read the response
 	var state oauthTokenExchangeTokenGeneratorMappingResourceModel
 	diags = readOauthTokenExchangeTokenGeneratorMappingResponse(ctx, updateOauthTokenExchangeTokenGeneratorMappingResponse, &state, plan)

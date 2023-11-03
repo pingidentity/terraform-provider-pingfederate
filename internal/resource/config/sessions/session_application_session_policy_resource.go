@@ -114,10 +114,6 @@ func (r *sessionApplicationSessionPolicyResource) Create(ctx context.Context, re
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Session Application Session Policy", err.Error())
 		return
 	}
-	_, requestErr := createSessionApplicationSessionPolicy.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Session Application Session Policy: %s", requestErr.Error())
-	}
 
 	apiCreateSessionApplicationSessionPolicy := r.apiClient.SessionAPI.UpdateApplicationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateSessionApplicationSessionPolicy = apiCreateSessionApplicationSessionPolicy.Body(*createSessionApplicationSessionPolicy)
@@ -125,10 +121,6 @@ func (r *sessionApplicationSessionPolicyResource) Create(ctx context.Context, re
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Session Application Session Policy", err, httpResp)
 		return
-	}
-	_, responseErr := sessionApplicationSessionPolicyResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Session Application Session Policy: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -156,11 +148,6 @@ func (r *sessionApplicationSessionPolicyResource) Read(ctx context.Context, req 
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Session Application Session Policy", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadSessionApplicationSessionPolicy.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Session Application Session Policy: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -193,20 +180,12 @@ func (r *sessionApplicationSessionPolicyResource) Update(ctx context.Context, re
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Session Application Session Policy", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Session Application Session Policy: %s", requestErr.Error())
-	}
+
 	updateSessionApplicationSessionPolicy = updateSessionApplicationSessionPolicy.Body(*createUpdateRequest)
 	updateSessionApplicationSessionPolicyResponse, httpResp, err := r.apiClient.SessionAPI.UpdateApplicationPolicyExecute(updateSessionApplicationSessionPolicy)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Session Application Session Policy", err, httpResp)
 		return
-	}
-	// Log response JSON
-	_, responseErr := updateSessionApplicationSessionPolicyResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Session Application Session Policy: %s", responseErr.Error())
 	}
 
 	// Get the current state to see how any attributes are changing

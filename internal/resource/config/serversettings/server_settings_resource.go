@@ -1006,10 +1006,6 @@ func (r *serverSettingsResource) Create(ctx context.Context, req resource.Create
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings", err.Error())
 		return
 	}
-	_, requestErr := createServerSettings.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Server Settings: %s", requestErr.Error())
-	}
 
 	apiCreateServerSettings := r.apiClient.ServerSettingsAPI.UpdateServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateServerSettings = apiCreateServerSettings.Body(*createServerSettings)
@@ -1017,10 +1013,6 @@ func (r *serverSettingsResource) Create(ctx context.Context, req resource.Create
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Server Settings", err, httpResp)
 		return
-	}
-	_, responseErr := serverSettingsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Server Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -1032,11 +1024,6 @@ func (r *serverSettingsResource) Create(ctx context.Context, req resource.Create
 }
 
 // Read the server settings resource from the PingFederate API and update the state accordingly.
-// It retrieves the current state of the resource, sends a GET request to the PingFederate API to get the server settings,
-// and updates the state with the response. If an error occurs, it logs the error and returns the error message.
-// If the server settings resource is not found, it removes the resource from the state.
-// It also logs the response JSON and sets the refreshed state.
-// If the response is empty, it logs a warning and removes the resource from the state.
 func (r *serverSettingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state serverSettingsResourceModel
 
@@ -1055,11 +1042,6 @@ func (r *serverSettingsResource) Read(ctx context.Context, req resource.ReadRequ
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadServerSettings.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Server Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -1093,21 +1075,14 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Server Settings: %s", requestErr.Error())
-	}
+
 	updateServerSettings = updateServerSettings.Body(*createUpdateRequest)
 	updateServerSettingsResponse, httpResp, err := r.apiClient.ServerSettingsAPI.UpdateServerSettingsExecute(updateServerSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Server Settings", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateServerSettingsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Server Settings: %s", responseErr.Error())
-	}
+
 	// Read the response
 	var state serverSettingsResourceModel
 	id, diags := id.GetID(ctx, req.State)

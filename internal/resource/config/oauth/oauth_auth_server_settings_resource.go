@@ -895,10 +895,6 @@ func (r *oauthAuthServerSettingsResource) Create(ctx context.Context, req resour
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Auth Server Settings", err.Error())
 		return
 	}
-	_, requestErr := createOauthAuthServerSettings.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of OAuth Auth Server Settings: %s", requestErr.Error())
-	}
 
 	apiCreateOauthAuthServerSettings := r.apiClient.OauthAuthServerSettingsAPI.UpdateAuthorizationServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateOauthAuthServerSettings = apiCreateOauthAuthServerSettings.Body(*createOauthAuthServerSettings)
@@ -906,10 +902,6 @@ func (r *oauthAuthServerSettingsResource) Create(ctx context.Context, req resour
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Auth Server Settings", err, httpResp)
 		return
-	}
-	_, responseErr := oauthAuthServerSettingsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of OAuth Auth Server Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -938,11 +930,6 @@ func (r *oauthAuthServerSettingsResource) Read(ctx context.Context, req resource
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Auth Server Settings", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadOauthAuthServerSettings.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of OAuth Auth Server Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -977,21 +964,14 @@ func (r *oauthAuthServerSettingsResource) Update(ctx context.Context, req resour
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Auth Server Settings", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of a OAuth Auth Server Settings: %s", requestErr.Error())
-	}
+
 	updateOauthAuthServerSettings = updateOauthAuthServerSettings.Body(*createUpdateRequest)
 	updateOauthAuthServerSettingsResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.UpdateAuthorizationServerSettingsExecute(updateOauthAuthServerSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OAuth Auth Server Settings", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateOauthAuthServerSettingsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of a OAuth Auth Server Settings: %s", responseErr.Error())
-	}
+
 	// Read the response
 	var state oauthAuthServerSettingsResourceModel
 	id, diags := id.GetID(ctx, req.State)

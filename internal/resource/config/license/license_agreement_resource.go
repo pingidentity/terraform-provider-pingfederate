@@ -118,10 +118,6 @@ func (r *licenseAgreementResource) Create(ctx context.Context, req resource.Crea
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for License Agreement", err.Error())
 		return
 	}
-	_, requestErr := createLicenseAgreement.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of the License Agreement: %s", requestErr.Error())
-	}
 
 	apiCreateLicenseAgreement := r.apiClient.LicenseAPI.UpdateLicenseAgreement(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateLicenseAgreement = apiCreateLicenseAgreement.Body(*createLicenseAgreement)
@@ -129,10 +125,6 @@ func (r *licenseAgreementResource) Create(ctx context.Context, req resource.Crea
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the License Agreement", err, httpResp)
 		return
-	}
-	_, responseErr := licenseAgreementResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the License Agreement: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -163,11 +155,7 @@ func (r *licenseAgreementResource) Read(ctx context.Context, req resource.ReadRe
 		}
 		return
 	}
-	// Log response JSON
-	_, responseErr := apiReadLicenseAgreement.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the License Agreement: %s", responseErr.Error())
-	}
+
 	// Read the response into the state
 	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
@@ -197,22 +185,14 @@ func (r *licenseAgreementResource) Update(ctx context.Context, req resource.Upda
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for License Agreement", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of the License Agreement: %s", requestErr.Error())
-	}
+
 	updateLicenseAgreement = updateLicenseAgreement.Body(*createUpdateRequest)
 	updateLicenseAgreementResponse, httpResp, err := r.apiClient.LicenseAPI.UpdateLicenseAgreementExecute(updateLicenseAgreement)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating License Agreement", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateLicenseAgreementResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the License Agreement: %s", requestErr.Error())
-	}
-	// Read the response
+
 	// Get the current state to see how any attributes are changing
 	var state licenseAgreementResourceModel
 	id, diags := id.GetID(ctx, req.State)

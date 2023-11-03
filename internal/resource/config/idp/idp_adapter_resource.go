@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
@@ -414,10 +413,6 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdpAdapter", err.Error())
 		return
 	}
-	requestJson, err := createIdpAdapter.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
-	}
 
 	apiCreateIdpAdapter := r.apiClient.IdpAdaptersAPI.CreateIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateIdpAdapter = apiCreateIdpAdapter.Body(*createIdpAdapter)
@@ -425,10 +420,6 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the IdpAdapter", err, httpResp)
 		return
-	}
-	responseJson, err := idpAdapterResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
 	}
 
 	// Read the response into the state
@@ -449,15 +440,14 @@ func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 	apiReadIdpAdapter, httpResp, err := r.apiClient.IdpAdaptersAPI.GetIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
-
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for an IdpAdapter", err, httpResp)
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an IdpAdapter", err, httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an IdpAdapter", err, httpResp)
+		}
 		return
-	}
-	// Log response JSON
-	responseJson, err := apiReadIdpAdapter.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	}
 
 	// Read the response into the state
@@ -504,21 +494,14 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdpAdapter", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
-	}
+
 	updateIdpAdapter = updateIdpAdapter.Body(*createUpdateRequest)
 	updateIdpAdapterResponse, httpResp, err := r.apiClient.IdpAdaptersAPI.UpdateIdpAdapterExecute(updateIdpAdapter)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating IdpAdapter", err, httpResp)
 		return
 	}
-	// Log response JSON
-	responseJson, err := updateIdpAdapterResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
-	}
+
 	// Read the response
 	var state idpAdapterResourceModel
 	readResponseDiags := readIdpAdapterResponse(ctx, updateIdpAdapterResponse, &state, plan)
