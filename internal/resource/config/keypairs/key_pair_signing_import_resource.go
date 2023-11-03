@@ -143,10 +143,6 @@ func (r *keyPairsSigningImportResource) Create(ctx context.Context, req resource
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for KeyPair Signing Import", err.Error())
 		return
 	}
-	_, requestErr := createKeyPairsSigningImport.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of the KeyPair Signing Import: %s", requestErr.Error())
-	}
 
 	apiCreateKeyPairsSigningImport := r.apiClient.KeyPairsSigningAPI.ImportSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateKeyPairsSigningImport = apiCreateKeyPairsSigningImport.Body(*createKeyPairsSigningImport)
@@ -154,10 +150,6 @@ func (r *keyPairsSigningImportResource) Create(ctx context.Context, req resource
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the KeyPair Signing Import", err, httpResp)
 		return
-	}
-	_, responseErr := keyPairsSigningImportResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the KeyPair Signing Import: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -187,11 +179,6 @@ func (r *keyPairsSigningImportResource) Read(ctx context.Context, req resource.R
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPair Signing Import", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadKeyPairsSigningImport.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the KeyPair Signing Import: %s", responseErr.Error())
 	}
 
 	// Read the response into the state

@@ -142,10 +142,6 @@ func (r *keyPairsSslServerImportResource) Create(ctx context.Context, req resour
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for KeyPair SSL Server Import", err.Error())
 		return
 	}
-	_, requestErr := createKeyPairsSslServerImport.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of the KeyPair SSL Server Import: %s", requestErr.Error())
-	}
 
 	apiCreateKeyPairsSslServerImport := r.apiClient.KeyPairsSslServerAPI.ImportSslServerKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateKeyPairsSslServerImport = apiCreateKeyPairsSslServerImport.Body(*createKeyPairsSslServerImport)
@@ -153,10 +149,6 @@ func (r *keyPairsSslServerImportResource) Create(ctx context.Context, req resour
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the KeyPair SSL Server Import", err, httpResp)
 		return
-	}
-	_, responseErr := keyPairsSslServerImportResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the KeyPair SSL Server Import: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -188,11 +180,6 @@ func (r *keyPairsSslServerImportResource) Read(ctx context.Context, req resource
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPair SSL Server Import", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadKeyPairsSslServerImport.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the KeyPair SSL Server Import: %s", responseErr.Error())
 	}
 
 	// Read the response into the state

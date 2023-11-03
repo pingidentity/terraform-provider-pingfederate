@@ -116,20 +116,12 @@ func (r *protocolMetadataLifetimeSettingsResource) Create(ctx context.Context, r
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Protocol Metadata Lifetime Settings", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Protocol Metadata Lifetime Settings: %s", requestErr.Error())
-	}
 
 	updateProtocolMetadataLifetimeSettings = updateProtocolMetadataLifetimeSettings.Body(*createUpdateRequest)
 	protocolMetadataLifetimeSettingsResponse, httpResp, err := r.apiClient.ProtocolMetadataAPI.UpdateLifetimeSettingsExecute(updateProtocolMetadataLifetimeSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Protocol Metadata Lifetime Settings", err, httpResp)
 		return
-	}
-	_, responseErr := protocolMetadataLifetimeSettingsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Protocol Metadata Lifetime Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -157,11 +149,6 @@ func (r *protocolMetadataLifetimeSettingsResource) Read(ctx context.Context, req
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Protocol Metadata Lifetime Settings", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadProtocolMetadataLifetimeSettings.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Protocol Metadata Lifetime Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -194,20 +181,12 @@ func (r *protocolMetadataLifetimeSettingsResource) Update(ctx context.Context, r
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Protocol Metadata Lifetime Settings", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Protocol Metadata Lifetime Settings: %s", requestErr.Error())
-	}
 
 	updateProtocolMetadataLifetimeSettings = updateProtocolMetadataLifetimeSettings.Body(*createUpdateRequest)
 	protocolMetadataLifetimeSettingsResponse, httpResp, err := r.apiClient.ProtocolMetadataAPI.UpdateLifetimeSettingsExecute(updateProtocolMetadataLifetimeSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Protocol Metadata Lifetime Settings", err, httpResp)
 		return
-	}
-	_, responseErr := protocolMetadataLifetimeSettingsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Protocol Metadata Lifetime Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state

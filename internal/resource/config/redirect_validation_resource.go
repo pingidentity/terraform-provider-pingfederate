@@ -311,10 +311,6 @@ func (r *redirectValidationResource) Create(ctx context.Context, req resource.Cr
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Redirect Validation", err.Error())
 		return
 	}
-	_, requestErr := createRedirectValidation.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Redirect Validation: %s", requestErr.Error())
-	}
 
 	apiCreateRedirectValidation := r.apiClient.RedirectValidationAPI.UpdateRedirectValidationSettings(ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateRedirectValidation = apiCreateRedirectValidation.Body(*createRedirectValidation)
@@ -322,10 +318,6 @@ func (r *redirectValidationResource) Create(ctx context.Context, req resource.Cr
 	if err != nil {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Redirect Validation", err, httpResp)
 		return
-	}
-	_, responseErr := redirectValidationResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Redirect Validation: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -353,11 +345,6 @@ func (r *redirectValidationResource) Read(ctx context.Context, req resource.Read
 			ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Redirect Validation", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadRedirectValidation.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Redirect Validation: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -391,21 +378,14 @@ func (r *redirectValidationResource) Update(ctx context.Context, req resource.Up
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Redirect Validation", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Redirect Validation: %s", requestErr.Error())
-	}
+
 	updateRedirectValidation = updateRedirectValidation.Body(*createUpdateRequest)
 	updateRedirectValidationResponse, httpResp, err := r.apiClient.RedirectValidationAPI.UpdateRedirectValidationSettingsExecute(updateRedirectValidation)
 	if err != nil {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Redirect Validation", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateRedirectValidationResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Redirect Validation: %s", responseErr.Error())
-	}
+
 	// Read the response
 	var state redirectValidationResourceModel
 	id, diags := id.GetID(ctx, req.State)

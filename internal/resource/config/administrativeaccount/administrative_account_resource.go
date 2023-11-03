@@ -301,11 +301,7 @@ func (r *administrativeAccountsResource) Update(ctx context.Context, req resourc
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Administrative Account", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateAdministrativeAccountResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an Administrative Account: %s", responseErr.Error())
-	}
+
 	// Read the response
 	readAdministrativeAccountResponse(ctx, updateAdministrativeAccountResponse, &state, &plan)
 

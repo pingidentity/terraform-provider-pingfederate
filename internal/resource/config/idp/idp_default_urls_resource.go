@@ -129,10 +129,6 @@ func (r *idpDefaultUrlsResource) Create(ctx context.Context, req resource.Create
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdpDefaultUrls", err.Error())
 		return
 	}
-	_, requestErr := createIdpDefaultUrls.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of the IdpDefaultUrls: %s", requestErr.Error())
-	}
 
 	apiCreateIdpDefaultUrls := r.apiClient.IdpDefaultUrlsAPI.UpdateDefaultUrlSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateIdpDefaultUrls = apiCreateIdpDefaultUrls.Body(*createIdpDefaultUrls)
@@ -140,10 +136,6 @@ func (r *idpDefaultUrlsResource) Create(ctx context.Context, req resource.Create
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Idp Default Urls", err, httpResp)
 		return
-	}
-	_, responseErr := idpDefaultUrlsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the Idp Default Urls: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -169,12 +161,6 @@ func (r *idpDefaultUrlsResource) Read(ctx context.Context, req resource.ReadRequ
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Idp Default Urls", err, httpResp)
 		}
 		return
-	}
-
-	// Log response JSON
-	_, responseErr := apiReadIdpDefaultUrls.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the Idp Default Urls: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -207,22 +193,14 @@ func (r *idpDefaultUrlsResource) Update(ctx context.Context, req resource.Update
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Idp Default Urls", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of the Idp Default Urls: %s", requestErr.Error())
-	}
+
 	updateIdpDefaultUrls = updateIdpDefaultUrls.Body(*createUpdateRequest)
 	updateIdpDefaultUrlsResponse, httpResp, err := r.apiClient.IdpDefaultUrlsAPI.UpdateDefaultUrlSettingsExecute(updateIdpDefaultUrls)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Idp Default Urls", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateIdpDefaultUrlsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the Idp Default Urls: %s", responseErr.Error())
-	}
-	// Read the response
+
 	// Get the current state to see how any attributes are changing
 	var state idpDefaultUrlsResourceModel
 	id, diags := id.GetID(ctx, req.State)
