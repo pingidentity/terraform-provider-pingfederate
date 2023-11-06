@@ -14,6 +14,7 @@ Manages an OAuth Issuer.
 
 ```terraform
 resource "pingfederate_oauth_issuer" "example" {
+  custom_id   = "MyOauthIssuer"
   description = "example description"
   host        = "example"
   name        = "example"
@@ -26,14 +27,11 @@ resource "pingfederate_oauth_issuer" "example" {
 
 ### Required
 
+- `custom_id` (String) The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-].
 - `description` (String)
 - `host` (String)
 - `name` (String)
 - `path` (String)
-
-### Optional
-
-- `custom_id` (String) The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
 
 ### Read-Only
 

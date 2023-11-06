@@ -3,12 +3,12 @@
 page_title: "pingfederate_password_credential_validator Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages Password Credential Validators
+  Manages a Password Credential Validator
 ---
 
 # pingfederate_password_credential_validator (Resource)
 
-Manages Password Credential Validators
+Manages a Password Credential Validator
 
 ## Example Usage
 
@@ -80,14 +80,15 @@ resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCre
   }
 }
 
-resource "pingfederate_password_credential_validators" "simpleUsernamePasswordCredentialValidatorWithParentRefExample" {
-  custom_id = "simpleUnPCVParentRefExample"
-  name      = "simpleUsernamePasswordCredentialValidatorWithParentRefExample"
+resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCredentialValidatorWithParentRefExample" {
+  depends_on = [pingfederate_password_credential_validator.simpleUsernamePasswordCredentialValidatorExample]
+  custom_id  = "simpleUnPCVParentRefExample"
+  name       = "simpleUsernamePasswordCredentialValidatorWithParentRefExample"
   plugin_descriptor_ref = {
     id = "org.sourceid.saml20.domain.SimpleUsernamePasswordCredentialValidator"
   }
   parent_ref = {
-    id = pingfederate_password_credential_validators.simpleUsernamePasswordCredentialValidatorExample.id
+    id = pingfederate_password_credential_validator.simpleUsernamePasswordCredentialValidatorExample.id
   }
   configuration = {
     tables = [

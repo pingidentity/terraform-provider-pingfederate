@@ -6,8 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -49,34 +47,22 @@ func (r *oauthIssuersResource) Schema(ctx context.Context, req resource.SchemaRe
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Required: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"description": schema.StringAttribute{
 				Required: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"host": schema.StringAttribute{
 				Required: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"path": schema.StringAttribute{
 				Required: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 		},
 	}
 
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, false, true,
-		"The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.")
+	id.ToSchemaCustomId(&schema, true,
+		"The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-].")
 	resp.Schema = schema
 }
 func addOptionalOauthIssuersFields(ctx context.Context, addRequest *client.Issuer, plan oauthIssuersResourceModel) error {
@@ -135,10 +121,6 @@ func (r *oauthIssuersResource) Create(ctx context.Context, req resource.CreateRe
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for an OAuth Issuer", err.Error())
 		return
 	}
-	_, requestErr := oauthIssuer.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of an OAuth Issuer: %s", requestErr.Error())
-	}
 
 	apiCreateOauthIssuer := r.apiClient.OauthIssuersAPI.AddOauthIssuer(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateOauthIssuer = apiCreateOauthIssuer.Body(*oauthIssuer)
@@ -147,10 +129,6 @@ func (r *oauthIssuersResource) Create(ctx context.Context, req resource.CreateRe
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating an OAuth Issuer", err, httpResp)
 		return
-	}
-	_, responseErr := oauthIssuerResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an OAuth Issuer: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -178,11 +156,6 @@ func (r *oauthIssuersResource) Read(ctx context.Context, req resource.ReadReques
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Issuer", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadOauthIssuer.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an OAuth Issuer: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -213,21 +186,14 @@ func (r *oauthIssuersResource) Update(ctx context.Context, req resource.UpdateRe
 		resp.Diagnostics.AddError("Failed to add optional properties to update request for an OAuth Issuer", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of an OAuth Issuer: %s", requestErr.Error())
-	}
+
 	updateOauthIssuer = updateOauthIssuer.Body(*createUpdateRequest)
 	updateOauthIssuerResponse, httpResp, err := r.apiClient.OauthIssuersAPI.UpdateOauthIssuerExecute(updateOauthIssuer)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an OAuth Issuer", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateOauthIssuerResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an OAuth Issuer: %s", responseErr.Error())
-	}
+
 	// Read the response
 	readOauthIssuersResponse(ctx, updateOauthIssuerResponse, &state, &plan)
 

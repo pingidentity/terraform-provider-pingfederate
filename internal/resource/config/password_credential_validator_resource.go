@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -25,9 +26,9 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource                = &passwordCredentialValidatorsResource{}
-	_ resource.ResourceWithConfigure   = &passwordCredentialValidatorsResource{}
-	_ resource.ResourceWithImportState = &passwordCredentialValidatorsResource{}
+	_ resource.Resource                = &passwordCredentialValidatorResource{}
+	_ resource.ResourceWithConfigure   = &passwordCredentialValidatorResource{}
+	_ resource.ResourceWithImportState = &passwordCredentialValidatorResource{}
 )
 
 var (
@@ -40,20 +41,22 @@ var (
 		"extended_attributes": basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
 		"inherited":           basetypes.BoolType{},
 	}
+
+	emptyAttrList, _ = types.ListValue(types.ObjectType{AttrTypes: attrType}, nil)
 )
 
-// PasswordCredentialValidatorsResource is a helper function to simplify the provider implementation.
-func PasswordCredentialValidatorsResource() resource.Resource {
-	return &passwordCredentialValidatorsResource{}
+// PasswordCredentialValidatorResource is a helper function to simplify the provider implementation.
+func PasswordCredentialValidatorResource() resource.Resource {
+	return &passwordCredentialValidatorResource{}
 }
 
-// passwordCredentialValidatorsResource is the resource implementation.
-type passwordCredentialValidatorsResource struct {
+// passwordCredentialValidatorResource is the resource implementation.
+type passwordCredentialValidatorResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
 }
 
-type passwordCredentialValidatorsResourceModel struct {
+type passwordCredentialValidatorResourceModel struct {
 	AttributeContract   types.Object `tfsdk:"attribute_contract"`
 	Id                  types.String `tfsdk:"id"`
 	CustomId            types.String `tfsdk:"custom_id"`
@@ -64,9 +67,9 @@ type passwordCredentialValidatorsResourceModel struct {
 }
 
 // GetSchema defines the schema for the resource.
-func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages Password Credential Validators",
+		Description: "Manages a Password Credential Validator",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Description: "The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
@@ -90,9 +93,6 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 				Description: "The list of attributes that the password credential validator provides.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
 				Attributes: map[string]schema.Attribute{
 					"core_attributes": schema.ListNestedAttribute{
 						Description: "A list of read-only attributes that are automatically populated by the password credential validator descriptor.",
@@ -107,9 +107,6 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 									Description: "The name of this attribute.",
 									Computed:    true,
 									Optional:    false,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 							},
 						},
@@ -118,9 +115,7 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 						Description: "A list of additional attributes that can be returned by the password credential validator. The extended attributes are only used if the adapter supports them.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.UseStateForUnknown(),
-						},
+						Default:     listdefault.StaticValue(emptyAttrList),
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -143,24 +138,12 @@ func (r *passwordCredentialValidatorsResource) Schema(ctx context.Context, req r
 	}
 
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, true, true,
+	id.ToSchemaCustomId(&schema, true,
 		"The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.")
 	resp.Schema = schema
 }
 
-func (r *passwordCredentialValidatorsResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var model passwordCredentialValidatorsResourceModel
-	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
-
-	if internaltypes.IsDefined(model.AttributeContract) {
-		if len(model.AttributeContract.Attributes()["extended_attributes"].(types.List).Elements()) == 0 {
-			resp.Diagnostics.AddError("Empty list!", "Please provide valid properties within extended_attributes. The list cannot be empty.\nIf no values are necessary, remove this property from your terraform file.")
-		}
-	}
-}
-
-func addOptionalPasswordCredentialValidatorsFields(ctx context.Context, addRequest *client.PasswordCredentialValidator, plan passwordCredentialValidatorsResourceModel) error {
-
+func addOptionalPasswordCredentialValidatorFields(ctx context.Context, addRequest *client.PasswordCredentialValidator, plan passwordCredentialValidatorResourceModel) error {
 	if internaltypes.IsDefined(plan.ParentRef) {
 		if plan.ParentRef.Attributes()["id"].(types.String).ValueString() != "" {
 			addRequest.ParentRef = client.NewResourceLinkWithDefaults()
@@ -187,11 +170,11 @@ func addOptionalPasswordCredentialValidatorsFields(ctx context.Context, addReque
 }
 
 // Metadata returns the resource type name.
-func (r *passwordCredentialValidatorsResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *passwordCredentialValidatorResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_password_credential_validator"
 }
 
-func (r *passwordCredentialValidatorsResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
+func (r *passwordCredentialValidatorResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -202,7 +185,7 @@ func (r *passwordCredentialValidatorsResource) Configure(_ context.Context, req 
 
 }
 
-func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.PasswordCredentialValidator, state *passwordCredentialValidatorsResourceModel, configurationFromPlan basetypes.ObjectValue) diag.Diagnostics {
+func readPasswordCredentialValidatorResponse(ctx context.Context, r *client.PasswordCredentialValidator, state *passwordCredentialValidatorResourceModel, configurationFromPlan basetypes.ObjectValue) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.Id = types.StringValue(r.Id)
 	state.CustomId = types.StringValue(r.Id)
@@ -253,8 +236,8 @@ func readPasswordCredentialValidatorsResponse(ctx context.Context, r *client.Pas
 	return diags
 }
 
-func (r *passwordCredentialValidatorsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan passwordCredentialValidatorsResourceModel
+func (r *passwordCredentialValidatorResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan passwordCredentialValidatorResourceModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -278,15 +261,12 @@ func (r *passwordCredentialValidatorsResource) Create(ctx context.Context, req r
 	}
 
 	createPasswordCredentialValidators := client.NewPasswordCredentialValidator(plan.CustomId.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
-	err = addOptionalPasswordCredentialValidatorsFields(ctx, createPasswordCredentialValidators, plan)
+	err = addOptionalPasswordCredentialValidatorFields(ctx, createPasswordCredentialValidators, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for a Password Credential Validator", err.Error())
 		return
 	}
-	_, requestErr := createPasswordCredentialValidators.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of a Password Credential Validator: %s", requestErr.Error())
-	}
+
 	apiCreatePasswordCredentialValidators := r.apiClient.PasswordCredentialValidatorsAPI.CreatePasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreatePasswordCredentialValidators = apiCreatePasswordCredentialValidators.Body(*createPasswordCredentialValidators)
 	passwordCredentialValidatorsResponse, httpResp, err := r.apiClient.PasswordCredentialValidatorsAPI.CreatePasswordCredentialValidatorExecute(apiCreatePasswordCredentialValidators)
@@ -294,22 +274,18 @@ func (r *passwordCredentialValidatorsResource) Create(ctx context.Context, req r
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating a Password Credential Validator", err, httpResp)
 		return
 	}
-	_, responseErr := passwordCredentialValidatorsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of a Password Credential Validator: %s", responseErr.Error())
-	}
 
 	// Read the response into the state
-	var state passwordCredentialValidatorsResourceModel
+	var state passwordCredentialValidatorResourceModel
 
-	diags = readPasswordCredentialValidatorsResponse(ctx, passwordCredentialValidatorsResponse, &state, plan.Configuration)
+	diags = readPasswordCredentialValidatorResponse(ctx, passwordCredentialValidatorsResponse, &state, plan.Configuration)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
-func (r *passwordCredentialValidatorsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state passwordCredentialValidatorsResourceModel
+func (r *passwordCredentialValidatorResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state passwordCredentialValidatorResourceModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -326,14 +302,9 @@ func (r *passwordCredentialValidatorsResource) Read(ctx context.Context, req res
 		}
 		return
 	}
-	// Log response JSON
-	_, responseErr := apiReadPasswordCredentialValidators.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of a Password Credential Validator: %s", responseErr.Error())
-	}
 
 	// Read the response into the state
-	diags = readPasswordCredentialValidatorsResponse(ctx, apiReadPasswordCredentialValidators, &state, state.Configuration)
+	diags = readPasswordCredentialValidatorResponse(ctx, apiReadPasswordCredentialValidators, &state, state.Configuration)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -342,8 +313,8 @@ func (r *passwordCredentialValidatorsResource) Read(ctx context.Context, req res
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
-func (r *passwordCredentialValidatorsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan passwordCredentialValidatorsResourceModel
+func (r *passwordCredentialValidatorResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan passwordCredentialValidatorResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -367,28 +338,21 @@ func (r *passwordCredentialValidatorsResource) Update(ctx context.Context, req r
 
 	updatePasswordCredentialValidators := r.apiClient.PasswordCredentialValidatorsAPI.UpdatePasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig), plan.CustomId.ValueString())
 	createUpdateRequest := client.NewPasswordCredentialValidator(plan.CustomId.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
-	err = addOptionalPasswordCredentialValidatorsFields(ctx, createUpdateRequest, plan)
+	err = addOptionalPasswordCredentialValidatorFields(ctx, createUpdateRequest, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for a Password Credential Validator", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of a Password Credential Validator: %s", requestErr.Error())
-	}
+
 	updatePasswordCredentialValidators = updatePasswordCredentialValidators.Body(*createUpdateRequest)
 	updatePasswordCredentialValidatorsResponse, httpResp, err := r.apiClient.PasswordCredentialValidatorsAPI.UpdatePasswordCredentialValidatorExecute(updatePasswordCredentialValidators)
 	if err != nil {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating a Password Credential Validator", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updatePasswordCredentialValidatorsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of a Password Credential Validator: %s", responseErr.Error())
-	}
+
 	// Read the response
-	diags = readPasswordCredentialValidatorsResponse(ctx, updatePasswordCredentialValidatorsResponse, &plan, plan.Configuration)
+	diags = readPasswordCredentialValidatorResponse(ctx, updatePasswordCredentialValidatorsResponse, &plan, plan.Configuration)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -397,8 +361,8 @@ func (r *passwordCredentialValidatorsResource) Update(ctx context.Context, req r
 }
 
 // // Delete deletes the resource and removes the Terraform state on success.
-func (r *passwordCredentialValidatorsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state passwordCredentialValidatorsResourceModel
+func (r *passwordCredentialValidatorResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state passwordCredentialValidatorResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -410,7 +374,7 @@ func (r *passwordCredentialValidatorsResource) Delete(ctx context.Context, req r
 	}
 }
 
-func (r *passwordCredentialValidatorsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *passwordCredentialValidatorResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("custom_id"), req, resp)
 }

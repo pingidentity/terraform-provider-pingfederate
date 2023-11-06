@@ -18,15 +18,19 @@ const fileData2 = "MIICMzCCAZygAwIBAgIJALiPnVsvq8dsMA0GCSqGSIb3DQEBBQUAMFMxCzAJB
 
 // Attributes to test with. Add optional properties to test here if desired.
 type certificatesResourceModel struct {
-	id      string
-	stateId string
+	id       string
+	fileData string
 }
 
 func TestAccCertificate(t *testing.T) {
 	resourceName := "myCertificateCa"
 	initialResourceModel := certificatesResourceModel{
-		id:      certificateId,
-		stateId: certificateId,
+		id:       certificateId,
+		fileData: fileData,
+	}
+	updatedResourceModel := certificatesResourceModel{
+		id:       certificateId,
+		fileData: fileData2,
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -39,6 +43,10 @@ func TestAccCertificate(t *testing.T) {
 			{
 				Config: testAccCertificate(resourceName, initialResourceModel),
 				Check:  testAccCheckExpectedCertificateAttributes(initialResourceModel),
+			},
+			{
+				Config: testAccCertificate(resourceName, updatedResourceModel),
+				Check:  testAccCheckExpectedCertificateAttributes(updatedResourceModel),
 			},
 			{
 				// Test importing the resource
@@ -64,7 +72,6 @@ data "pingfederate_certificate_ca" "%[1]s" {
 }`, resourceName,
 		resourceModel.id,
 		fileData,
-		fileData2,
 	)
 }
 
@@ -74,12 +81,12 @@ func testAccCheckExpectedCertificateAttributes(config certificatesResourceModel)
 		resourceType := "Certificate"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.CertificatesCaAPI.GetTrustedCert(ctx, config.stateId).Execute()
+		response, _, err := testClient.CertificatesCaAPI.GetTrustedCert(ctx, config.id).Execute()
 		if err != nil {
 			return err
 		}
 		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchString(resourceType, &config.stateId, "id",
+		err = acctest.TestAttributesMatchString(resourceType, &config.id, "id",
 			config.id, *response.Id)
 		if err != nil {
 			return err

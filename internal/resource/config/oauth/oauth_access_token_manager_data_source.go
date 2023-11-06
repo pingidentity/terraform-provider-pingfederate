@@ -337,16 +337,9 @@ func (r *oauthAccessTokenManagerDataSource) Read(ctx context.Context, req dataso
 	}
 
 	apiReadOauthAccessTokenManager, httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.GetTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
-
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Manager", err, httpResp)
 		return
-	}
-
-	// Log response JSON
-	_, responseErr := apiReadOauthAccessTokenManager.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an OAuth Access Token Manager: %s", responseErr.Error())
 	}
 
 	// Read the response into the state

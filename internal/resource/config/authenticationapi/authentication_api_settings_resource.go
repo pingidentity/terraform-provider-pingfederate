@@ -7,8 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -52,17 +51,13 @@ func (r *authenticationApiSettingsResource) Schema(ctx context.Context, req reso
 				Description: "Enable Authentication API",
 				Optional:    true,
 				Computed:    true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
+				Default:     booldefault.StaticBool(false),
 			},
 			"enable_api_descriptions": schema.BoolAttribute{
 				Description: "Enable API descriptions",
 				Optional:    true,
 				Computed:    true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
+				Default:     booldefault.StaticBool(false),
 			},
 			"default_application_ref": schema.SingleNestedAttribute{
 				Description: "Enable API descriptions",
@@ -73,17 +68,13 @@ func (r *authenticationApiSettingsResource) Schema(ctx context.Context, req reso
 				Description: "Enable restrict access to redirectless mode",
 				Optional:    true,
 				Computed:    true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
+				Default:     booldefault.StaticBool(false),
 			},
 			"include_request_context": schema.BoolAttribute{
 				Description: "Includes request context in API responses",
 				Optional:    true,
 				Computed:    true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
+				Default:     booldefault.StaticBool(false),
 			},
 		},
 	}
@@ -161,21 +152,14 @@ func (r *authenticationApiSettingsResource) Create(ctx context.Context, req reso
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Authentication Api Settings", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of the Authentication API Settings: %s", requestErr.Error())
-	}
+
 	updateAuthenticationApiSettings = updateAuthenticationApiSettings.Body(*createUpdateRequest)
 	updateAuthenticationApiSettingsResponse, httpResp, err := r.apiClient.AuthenticationApiAPI.UpdateAuthenticationApiSettingsExecute(updateAuthenticationApiSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Authentication Api Settings", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateAuthenticationApiSettingsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the Authentication API Settings: %s", responseErr.Error())
-	}
+
 	// Read the response
 	var state authenticationApiSettingsResourceModel
 	diags = readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, nil)
@@ -203,11 +187,6 @@ func (r *authenticationApiSettingsResource) Read(ctx context.Context, req resour
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Authentication Api Settings", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadAuthenticationApiSettings.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the Authentication API Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -240,21 +219,14 @@ func (r *authenticationApiSettingsResource) Update(ctx context.Context, req reso
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Authentication Api Settings", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of the Authentication API Settings: %s", requestErr.Error())
-	}
+
 	updateAuthenticationApiSettings = updateAuthenticationApiSettings.Body(*createUpdateRequest)
 	updateAuthenticationApiSettingsResponse, httpResp, err := r.apiClient.AuthenticationApiAPI.UpdateAuthenticationApiSettingsExecute(updateAuthenticationApiSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Authentication Api Settings", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateAuthenticationApiSettingsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the Authentication API Settings: %s", responseErr.Error())
-	}
+
 	// Read the response
 	var state authenticationApiSettingsResourceModel
 	id, diags := id.GetID(ctx, req.State)

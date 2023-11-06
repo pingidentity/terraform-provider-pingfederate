@@ -292,6 +292,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		localidentity.NewLocalIdentityIdentityProfileDataSource,
 		oauth.NewOauthAccessTokenManagerDataSource,
 		oauth.NewOauthAuthServerSettingsDataSource,
+		oauth.NewOauthAuthServerSettingsScopesCommonScopesDataSource,
 	}
 }
 
@@ -300,9 +301,9 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 	return []func() resource.Resource{
 		administrativeaccount.AdministrativeAccountResource,
 		authenticationapi.AuthenticationApiSettingsResource,
-		certificate.CertificateResource,
-		config.AuthenticationPolicyContractsResource,
-		config.PasswordCredentialValidatorsResource,
+		certificate.CertificateCAResource,
+		config.AuthenticationPolicyContractResource,
+		config.PasswordCredentialValidatorResource,
 		config.RedirectValidationResource,
 		config.TokenProcessorToTokenGeneratorMappingResource,
 		config.VirtualHostNamesResource,
@@ -313,7 +314,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		keypairs.KeyPairsSslServerImportResource,
 		license.LicenseAgreementResource,
 		license.LicenseResource,
-		localidentity.LocalIdentityIdentityProfilesResource,
+		localidentity.LocalIdentityIdentityProfileResource,
 		oauth.OauthAccessTokenManagerResource,
 		oauth.OauthAuthServerSettingsResource,
 		oauth.OauthAuthServerSettingsScopesCommonScopesResource,

@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
@@ -196,11 +195,6 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Read(ctx context.Contex
 			ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  TokenProcessorToTokenGeneratorMapping", err, httpResp)
 		}
 	}
-	// Log response JSON
-	responseJson, err := apiReadTokenProcessorToTokenGeneratorMapping.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
-	}
 
 	// Read the response into the state
 	diags = readTokenProcessorToTokenGeneratorMappingResponse(ctx, apiReadTokenProcessorToTokenGeneratorMapping, &state, state)
@@ -233,21 +227,14 @@ func (r *tokenProcessorToTokenGeneratorMappingsResource) Update(ctx context.Cont
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for TokenProcessorToTokenGeneratorMapping", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
-	}
+
 	updateTokenProcessorToTokenGeneratorMapping = updateTokenProcessorToTokenGeneratorMapping.Body(*createUpdateRequest)
 	updateTokenProcessorToTokenGeneratorMappingResponse, httpResp, err := r.apiClient.TokenProcessorToTokenGeneratorMappingsAPI.UpdateTokenToTokenMappingByIdExecute(updateTokenProcessorToTokenGeneratorMapping)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating TokenProcessorToTokenGeneratorMapping", err, httpResp)
 		return
 	}
-	// Log response JSON
-	responseJson, err := updateTokenProcessorToTokenGeneratorMappingResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
-	}
+
 	// Read the response
 	var state tokenProcessorToTokenGeneratorMappingsResourceModel
 	diags = readTokenProcessorToTokenGeneratorMappingResponse(ctx, updateTokenProcessorToTokenGeneratorMappingResponse, &state, plan)

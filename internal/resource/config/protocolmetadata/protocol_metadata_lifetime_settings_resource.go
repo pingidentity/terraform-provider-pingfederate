@@ -6,8 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -48,16 +47,13 @@ func (r *protocolMetadataLifetimeSettingsResource) Schema(ctx context.Context, r
 				Description: "This field adjusts the validity of your metadata in minutes. The default value is 1440 (1 day).",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown()},
+				Default:     int64default.StaticInt64(1440),
 			},
 			"reload_delay": schema.Int64Attribute{
 				Description: "This field adjusts the frequency of automatic reloading of SAML metadata in minutes. The default value is 1440 (1 day).",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown(),
-				},
+				Default:     int64default.StaticInt64(1440),
 			},
 		},
 	}
@@ -116,20 +112,12 @@ func (r *protocolMetadataLifetimeSettingsResource) Create(ctx context.Context, r
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Protocol Metadata Lifetime Settings", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Protocol Metadata Lifetime Settings: %s", requestErr.Error())
-	}
 
 	updateProtocolMetadataLifetimeSettings = updateProtocolMetadataLifetimeSettings.Body(*createUpdateRequest)
 	protocolMetadataLifetimeSettingsResponse, httpResp, err := r.apiClient.ProtocolMetadataAPI.UpdateLifetimeSettingsExecute(updateProtocolMetadataLifetimeSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Protocol Metadata Lifetime Settings", err, httpResp)
 		return
-	}
-	_, responseErr := protocolMetadataLifetimeSettingsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Protocol Metadata Lifetime Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -157,11 +145,6 @@ func (r *protocolMetadataLifetimeSettingsResource) Read(ctx context.Context, req
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Protocol Metadata Lifetime Settings", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadProtocolMetadataLifetimeSettings.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Protocol Metadata Lifetime Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -194,20 +177,12 @@ func (r *protocolMetadataLifetimeSettingsResource) Update(ctx context.Context, r
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Protocol Metadata Lifetime Settings", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Protocol Metadata Lifetime Settings: %s", requestErr.Error())
-	}
 
 	updateProtocolMetadataLifetimeSettings = updateProtocolMetadataLifetimeSettings.Body(*createUpdateRequest)
 	protocolMetadataLifetimeSettingsResponse, httpResp, err := r.apiClient.ProtocolMetadataAPI.UpdateLifetimeSettingsExecute(updateProtocolMetadataLifetimeSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Protocol Metadata Lifetime Settings", err, httpResp)
 		return
-	}
-	_, responseErr := protocolMetadataLifetimeSettingsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Protocol Metadata Lifetime Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
