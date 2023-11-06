@@ -3,12 +3,12 @@
 page_title: "pingfederate_local_identity_identity_profile Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages Local Identity Identity Profiles
+  Manages Local Identity Identity Profile
 ---
 
 # pingfederate_local_identity_identity_profile (Resource)
 
-Manages Local Identity Identity Profiles
+Manages Local Identity Identity Profile
 
 ## Example Usage
 
@@ -154,13 +154,13 @@ resource "pingfederate_local_identity_identity_profile" "myLocalIdentityIdentity
 ### Required
 
 - `apc_id` (Attributes) The reference to the authentication policy contract to use for this local identity profile. (see [below for nested schema](#nestedatt--apc_id))
+- `custom_id` (String) The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-].
 - `name` (String) The local identity profile name. Name is unique.
 
 ### Optional
 
 - `auth_source_update_policy` (Attributes) The attribute update policy for authentication sources. (see [below for nested schema](#nestedatt--auth_source_update_policy))
 - `auth_sources` (Attributes List) The local identity authentication sources. Sources are unique. (see [below for nested schema](#nestedatt--auth_sources))
-- `custom_id` (String) The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
 - `data_store_config` (Attributes) The local identity profile data store configuration. (see [below for nested schema](#nestedatt--data_store_config))
 - `email_verification_config` (Attributes) The local identity email verification configuration. (see [below for nested schema](#nestedatt--email_verification_config))
 - `field_config` (Attributes) The local identity profile field configuration. (see [below for nested schema](#nestedatt--field_config))
@@ -199,10 +199,13 @@ Optional:
 <a id="nestedatt--auth_sources"></a>
 ### Nested Schema for `auth_sources`
 
+Required:
+
+- `source` (String) The local identity authentication source. Source is unique.
+
 Optional:
 
 - `id` (String) The persistent, unique ID for the local identity authentication source. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
-- `source` (String) The local identity authentication source. Source is unique.
 
 
 <a id="nestedatt--data_store_config"></a>
@@ -250,11 +253,6 @@ Read-Only:
 <a id="nestedatt--email_verification_config"></a>
 ### Nested Schema for `email_verification_config`
 
-Required:
-
-- `field_for_email_to_verify` (String) Field used for email ownership verification. Note: Not required when emailVerificationEnabled is set to false.
-- `field_storing_verification_status` (String) Field used for storing email verification status. Note: Not required when emailVerificationEnabled is set to false.
-
 Optional:
 
 - `allowed_otp_character_set` (String) The allowed character set used to generate the OTP. The default is 23456789BCDFGHJKMNPQRSTVWXZbcdfghjkmnpqrstvwxz. Note: Only applicable if EmailVerificationType is OTP.
@@ -264,6 +262,8 @@ Optional:
 - `email_verification_sent_template_name` (String) The template name for email verification sent. The default is local.identity.email.verification.sent.html. Note:Only applicable if EmailVerificationType is OTL.
 - `email_verification_success_template_name` (String) The template name for email verification success. The default is local.identity.email.verification.success.html.
 - `email_verification_type` (String) Email Verification Type.
+- `field_for_email_to_verify` (String) Field used for email ownership verification. Note: Not required when emailVerificationEnabled is set to false.
+- `field_storing_verification_status` (String) Field used for storing email verification status. Note: Not required when emailVerificationEnabled is set to false.
 - `notification_publisher_ref` (Attributes) Reference to the associated notification publisher. (see [below for nested schema](#nestedatt--email_verification_config--notification_publisher_ref))
 - `otl_time_to_live` (Number) Field used OTL time to live. The default is 1440. Note: Only applicable if EmailVerificationType is OTL.
 - `otp_length` (Number) The OTP length generated for email verification. The default is 8. Note: Only applicable if EmailVerificationType is OTP.

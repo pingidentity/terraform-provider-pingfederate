@@ -25,11 +25,11 @@ resource "pingfederate_license_agreement" "myLicenseAgreement" {
 ### Optional
 
 - `accepted` (Boolean) Indicates whether license agreement has been accepted. The default value is false.
-- `license_agreement_url` (String) URL to license agreement
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `license_agreement_url` (String) URL to license agreement
 
 ## Import
 

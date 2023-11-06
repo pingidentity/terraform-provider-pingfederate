@@ -39,7 +39,7 @@ func TestAccLicenseAgreement(t *testing.T) {
 func testAccLicenseAgreement(resourceName string, accepted bool) string {
 	return fmt.Sprintf(`
 resource "pingfederate_license_agreement" "%[1]s" {
-  accepted              = %[2]t
+  accepted = %[2]t
 }
 
 data "pingfederate_license_agreement" "%[1]s" {

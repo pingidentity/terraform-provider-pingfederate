@@ -57,32 +57,32 @@ func testAccServerSettingsLogSettings(resourceName string, resourceModel serverS
 resource "pingfederate_server_settings_log_settings" "%[1]s" {
   log_categories = [
     {
-      id          = "policytree"
-      enabled     = false
+      id      = "policytree"
+      enabled = false
     },
     {
-      id          = "core"
-      enabled     = true
+      id      = "core"
+      enabled = true
     },
     {
-      id          = "trustedcas"
-      enabled     = true
+      id      = "trustedcas"
+      enabled = true
     },
     {
-      id          = "xmlsig"
-      enabled     = %[2]t
+      id      = "xmlsig"
+      enabled = %[2]t
     },
     {
-      id          = "requestheaders"
-      enabled     = false
+      id      = "requestheaders"
+      enabled = false
     },
     {
-      id          = "requestparams"
-      enabled     = true
+      id      = "requestparams"
+      enabled = true
     },
     {
-      id          = "restdatastore"
-      enabled     = true
+      id      = "restdatastore"
+      enabled = true
     },
   ]
 }`, resourceName,

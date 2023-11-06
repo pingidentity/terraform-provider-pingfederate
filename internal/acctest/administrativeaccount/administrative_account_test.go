@@ -70,11 +70,11 @@ func TestAccAdministrativeAccount(t *testing.T) {
 func testAccAdministrativeAccount(resourceName string, resourceModel administrativeAccountResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_administrative_account" "%[1]s" {
-  active      = %[2]t
-  description = "%[3]s"
-  roles       = %[4]s
-  password    = "%[5]s"
-  username    = "%[6]s"
+  active        = %[2]t
+  description   = "%[3]s"
+  roles         = %[4]s
+  password      = "%[5]s"
+  username      = "%[6]s"
   email_address = "%[7]s"
 }
 
