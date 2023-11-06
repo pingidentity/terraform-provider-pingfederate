@@ -19,7 +19,10 @@
 * **New Data Source:** `pingfederate_license_agreement` ([#70](https://github.com/pingidentity/terraform-provider-pingfederate/pull/70))
 * **New Data Source:** `pingfederate_license` ([#70](https://github.com/pingidentity/terraform-provider-pingfederate/pull/70))
 * **New Data Source:** `pingfederate_local_identity_identity_profile` ([#70](https://github.com/pingidentity/terraform-provider-pingfederate/pull/70))
-* **New Data Source:** `pingfederate_oauth_access_token_manager` ([#76](https://github.com/pingidentity/terraform-provider-pingfederate/pull/70))
+* **New Data Source:** `pingfederate_oauth_access_token_manager` ([#76](https://github.com/pingidentity/terraform-provider-pingfederate/pull/76))
+* **New Data Source:** `pingfederate_oauth_auth_server_settings` ([#78](https://github.com/pingidentity/terraform-provider-pingfederate/pull/78))
+* **New Data Source:** `pingfederate_oauth_auth_server_settings_scopes_common_scope` ([#85](https://github.com/pingidentity/terraform-provider-pingfederate/pull/85))
+* **New Data Source:** `pingfederate_oauth_auth_server_settings_scopes_exclusive_scope` ([#95](https://github.com/pingidentity/terraform-provider-pingfederate/pull/95))
 
 ​
 # v0.1.0 September 28, 2023
