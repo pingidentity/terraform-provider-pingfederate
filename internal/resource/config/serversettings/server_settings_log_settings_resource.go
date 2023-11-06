@@ -172,10 +172,6 @@ func (r *serverSettingsLogSettingsResource) Create(ctx context.Context, req reso
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings Log Settings", err.Error())
 		return
 	}
-	_, requestErr := createServerSettingsLogSettings.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Server Settings Log Settings: %s", requestErr.Error())
-	}
 
 	apiCreateServerSettingsLogSettings := r.apiClient.ServerSettingsAPI.UpdateLogSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateServerSettingsLogSettings = apiCreateServerSettingsLogSettings.Body(*createServerSettingsLogSettings)
@@ -183,10 +179,6 @@ func (r *serverSettingsLogSettingsResource) Create(ctx context.Context, req reso
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Server Settings Log Settings", err, httpResp)
 		return
-	}
-	_, responseErr := serverSettingsLogSettingsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Server Settings Log Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -215,11 +207,7 @@ func (r *serverSettingsLogSettingsResource) Read(ctx context.Context, req resour
 		}
 		return
 	}
-	// Log response JSON
-	_, responseErr := apiReadServerSettingsLogSettings.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Server Settings Log Settings: %s", responseErr.Error())
-	}
+
 	// Read the response into the state
 	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
@@ -251,21 +239,14 @@ func (r *serverSettingsLogSettingsResource) Update(ctx context.Context, req reso
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings Log Settings", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Server Settings Log Settings: %s", requestErr.Error())
-	}
+
 	updateServerSettingsLogSettings = updateServerSettingsLogSettings.Body(*createUpdateRequest)
 	updateServerSettingsLogSettingsResponse, httpResp, err := r.apiClient.ServerSettingsAPI.UpdateLogSettingsExecute(updateServerSettingsLogSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Server Settings Log Settings", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateServerSettingsLogSettingsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Server Settings Log Settings: %s", responseErr.Error())
-	}
+
 	// Read the response
 	var state serverSettingsLogSettingsResourceModel
 	id, diags := id.GetID(ctx, req.State)

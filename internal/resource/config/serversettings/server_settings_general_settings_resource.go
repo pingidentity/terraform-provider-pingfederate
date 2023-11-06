@@ -151,10 +151,6 @@ func (r *serverSettingsGeneralSettingsResource) Create(ctx context.Context, req 
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings General Settings", err.Error())
 		return
 	}
-	_, requestErr := createServerSettingsGeneralSettings.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Server Settings General Settings: %s", requestErr.Error())
-	}
 
 	apiCreateServerSettingsGeneralSettings := r.apiClient.ServerSettingsAPI.UpdateGeneralSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateServerSettingsGeneralSettings = apiCreateServerSettingsGeneralSettings.Body(*createServerSettingsGeneralSettings)
@@ -162,10 +158,6 @@ func (r *serverSettingsGeneralSettingsResource) Create(ctx context.Context, req 
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Server Settings General Settings", err, httpResp)
 		return
-	}
-	_, responseErr := serverSettingsGeneralSettingsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Server Settings General Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -195,11 +187,6 @@ func (r *serverSettingsGeneralSettingsResource) Read(ctx context.Context, req re
 		return
 	}
 
-	// Log response JSON
-	_, responseErr := apiReadServerSettingsGeneralSettings.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Server Settings General Settings: %s", responseErr.Error())
-	}
 	// Read the response into the state
 	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
@@ -230,21 +217,14 @@ func (r *serverSettingsGeneralSettingsResource) Update(ctx context.Context, req 
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings General Settings", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Server Settings General Settings: %s", requestErr.Error())
-	}
+
 	updateServerSettingsGeneralSettings = updateServerSettingsGeneralSettings.Body(*createUpdateRequest)
 	updateServerSettingsGeneralSettingsResponse, httpResp, err := r.apiClient.ServerSettingsAPI.UpdateGeneralSettingsExecute(updateServerSettingsGeneralSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Server Settings General Settings", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateServerSettingsGeneralSettingsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Server Settings General Settings: %s", responseErr.Error())
-	}
+
 	// Read the response
 	var state serverSettingsGeneralSettingsResourceModel
 	id, diags := id.GetID(ctx, req.State)

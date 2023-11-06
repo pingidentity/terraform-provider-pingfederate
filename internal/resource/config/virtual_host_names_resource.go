@@ -103,10 +103,6 @@ func (r *virtualHostNamesResource) Create(ctx context.Context, req resource.Crea
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Virtual Host Names", err.Error())
 		return
 	}
-	_, requestErr := createVirtualHostNames.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Virtual Host Names: %s", requestErr.Error())
-	}
 
 	apiCreateVirtualHostNames := r.apiClient.VirtualHostNamesAPI.UpdateVirtualHostNamesSettings(ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateVirtualHostNames = apiCreateVirtualHostNames.Body(*createVirtualHostNames)
@@ -114,10 +110,6 @@ func (r *virtualHostNamesResource) Create(ctx context.Context, req resource.Crea
 	if err != nil {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Virtual Host Names", err, httpResp)
 		return
-	}
-	_, responseErr := virtualHostNamesResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Virtual Host Names: %s", requestErr.Error())
 	}
 
 	// Read the response into the state
@@ -145,11 +137,6 @@ func (r *virtualHostNamesResource) Read(ctx context.Context, req resource.ReadRe
 			ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Virtual Host Names", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadVirtualHostNames.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Virtual Host Names: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -182,21 +169,14 @@ func (r *virtualHostNamesResource) Update(ctx context.Context, req resource.Upda
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Virtual Host Names", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Virtual Host Names: %s", requestErr.Error())
-	}
+
 	updateVirtualHostNames = updateVirtualHostNames.Body(*createUpdateRequest)
 	updateVirtualHostNamesResponse, httpResp, err := r.apiClient.VirtualHostNamesAPI.UpdateVirtualHostNamesSettingsExecute(updateVirtualHostNames)
 	if err != nil {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Virtual Host Names", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateVirtualHostNamesResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Virtual Host Names: %s", responseErr.Error())
-	}
+
 	// Read the response
 	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)

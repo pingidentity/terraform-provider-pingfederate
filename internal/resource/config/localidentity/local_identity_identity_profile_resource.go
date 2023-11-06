@@ -783,10 +783,6 @@ func (r *localIdentityIdentityProfilesResource) Create(ctx context.Context, req 
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the LocalIdentityIdentityProfiles", err, httpResp)
 		return
 	}
-	_, responseErr := localIdentityIdentityProfilesResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of a Local Identity Identity Profile: %s", responseErr.Error())
-	}
 
 	// Read the response into the state
 	var state localIdentityIdentityProfilesResourceModel
@@ -814,11 +810,6 @@ func (r *localIdentityIdentityProfilesResource) Read(ctx context.Context, req re
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Local Identity Profile", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadLocalIdentityIdentityProfiles.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of a Local Identity Identity Profile: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -857,11 +848,7 @@ func (r *localIdentityIdentityProfilesResource) Update(ctx context.Context, req 
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Local Identity Identity Profile", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateLocalIdentityIdentityProfilesResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of a Local Identity Identity Profile: %s", responseErr.Error())
-	}
+
 	// Read the response
 	diags = readLocalIdentityIdentityProfilesResponse(ctx, updateLocalIdentityIdentityProfilesResponse, &plan)
 	resp.Diagnostics.Append(diags...)
