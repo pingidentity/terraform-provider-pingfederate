@@ -72,6 +72,9 @@ resource "pingfederate_oauth_auth_server_settings_scopes_common_scope" "%[1]s" {
   dynamic     = %[2]t
   description = "%[3]s"
   name        = "%[4]s"
+}
+data "pingfederate_oauth_auth_server_settings_scopes_common_scope" "%[1]s" {
+  name = pingfederate_oauth_auth_server_settings_scopes_common_scope.%[1]s.name
 }`, resourceName,
 		resourceModel.dynamic,
 		resourceModel.description,

@@ -9,10 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
@@ -27,13 +26,33 @@ var (
 	_ resource.Resource                = &serverSettingsLogSettingsResource{}
 	_ resource.ResourceWithConfigure   = &serverSettingsLogSettingsResource{}
 	_ resource.ResourceWithImportState = &serverSettingsLogSettingsResource{}
+
+	logCategoriesAttrTypes = map[string]attr.Type{
+		"id":          basetypes.StringType{},
+		"name":        basetypes.StringType{},
+		"description": basetypes.StringType{},
+		"enabled":     basetypes.BoolType{},
+	}
+
+	logCategoriesDefault, _ = types.SetValue(types.ObjectType{AttrTypes: logCategoriesAttrTypes}, []attr.Value{
+		createDefaultLogCategoryObject("xmlsig"),
+		createDefaultLogCategoryObject("core"),
+		createDefaultLogCategoryObject("requestparams"),
+		createDefaultLogCategoryObject("requestheaders"),
+		createDefaultLogCategoryObject("trustedcas"),
+		createDefaultLogCategoryObject("restdatastore"),
+		createDefaultLogCategoryObject("policytree"),
+	})
 )
 
-var logCategoriesAttrTypes = map[string]attr.Type{
-	"id":          basetypes.StringType{},
-	"name":        basetypes.StringType{},
-	"description": basetypes.StringType{},
-	"enabled":     basetypes.BoolType{},
+func createDefaultLogCategoryObject(id string) types.Object {
+	defaultObj, _ := types.ObjectValue(logCategoriesAttrTypes, map[string]attr.Value{
+		"id":          types.StringValue(id),
+		"enabled":     types.BoolValue(false),
+		"name":        types.StringUnknown(),
+		"description": types.StringUnknown(),
+	})
+	return defaultObj
 }
 
 // ServerSettingsLogSettingsResource is a helper function to simplify the provider implementation.
@@ -59,7 +78,9 @@ func (r *serverSettingsLogSettingsResource) Schema(ctx context.Context, req reso
 		Attributes: map[string]schema.Attribute{
 			"log_categories": schema.SetNestedAttribute{
 				Description: "The log categories defined for the system and whether they are enabled. On a PUT request, if a category is not included in the list, it will be disabled.",
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
+				Default:     setdefault.StaticValue(logCategoriesDefault),
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.UseStateForUnknown(),
 				},
@@ -68,30 +89,31 @@ func (r *serverSettingsLogSettingsResource) Schema(ctx context.Context, req reso
 						"id": schema.StringAttribute{
 							Description: "The ID of the log category. This field must match one of the category IDs defined in log4j-categories.xml.",
 							Required:    true,
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.UseStateForUnknown(),
-							},
 						},
 						"name": schema.StringAttribute{
 							Description: "The description of the log category. This field is read-only and is ignored for PUT requests.",
-							Required:    true,
-							PlanModifiers: []planmodifier.String{
+							Optional:    false,
+							Computed:    true,
+							// Adding these plan modifiers also seems to cause issues with Terraform's set planning logic. Possibly related to the issue linked below
+							/*PlanModifiers: []planmodifier.String{
 								stringplanmodifier.UseStateForUnknown(),
-							},
+							},*/
 						},
 						"description": schema.StringAttribute{
 							Description: "The description of the log category. This field is read-only and is ignored for PUT requests.",
-							Required:    true,
-							PlanModifiers: []planmodifier.String{
+							Optional:    false,
+							Computed:    true,
+							// Adding these plan modifiers also seems to cause issues with Terraform's set planning logic. Possibly related to the issue linked below
+							/*PlanModifiers: []planmodifier.String{
 								stringplanmodifier.UseStateForUnknown(),
-							},
+							},*/
 						},
 						"enabled": schema.BoolAttribute{
-							Description: "Determines whether or not the log category is enabled. The default is false..",
-							Required:    true,
-							PlanModifiers: []planmodifier.Bool{
-								boolplanmodifier.UseStateForUnknown(),
-							},
+							Description: "Determines whether or not the log category is enabled. The default is false.",
+							Optional:    true,
+							Computed:    true,
+							// This default causes issues with unexpected plans - see https://github.com/hashicorp/terraform-plugin-framework/issues/867
+							// Default:     booldefault.StaticBool(false),
 						},
 					},
 				},

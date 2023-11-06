@@ -17,6 +17,7 @@ Manages a KeyPairsSslServerImport.
 # Please refer to the link below on how to best store state files and data within. #
 # https://developer.hashicorp.com/terraform/plugin/best-practices/sensitive-state #
 resource "pingfederate_key_pair_ssl_server_import" "myKeyPairsSslServerImport" {
+  custom_id = "MyKeyPairSSLServerImport"
   file_data = "example"
   format    = "PKCS12"
   # This value will be stored into your state file 

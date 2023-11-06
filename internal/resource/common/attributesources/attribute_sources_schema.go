@@ -6,11 +6,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -126,10 +127,7 @@ func LdapAttributeSourceSchemaAttributes() map[string]schema.Attribute {
 		Description: "Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.",
 		Computed:    true,
 		Optional:    true,
-		PlanModifiers: []planmodifier.Bool{
-			boolplanmodifier.UseStateForUnknown(),
-		},
-		Default: booldefault.StaticBool(false),
+		Default:     booldefault.StaticBool(false),
 	}
 	ldapAttributeSourceSchema["binary_attribute_settings"] = schema.MapNestedAttribute{
 		Description: "The advanced settings for binary LDAP attributes.",
@@ -150,10 +148,12 @@ func LdapAttributeSourceSchemaAttributes() map[string]schema.Attribute {
 }
 
 func ToSchema() schema.ListNestedAttribute {
+	attributeSourcesDefault, _ := types.ListValue(types.ObjectType{AttrTypes: ElemAttrType()}, nil)
 	return schema.ListNestedAttribute{
 		Description: "A list of configured data stores to look up attributes from.",
 		Computed:    true,
 		Optional:    true,
+		Default:     listdefault.StaticValue(attributeSourcesDefault),
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
 				"custom_attribute_source": schema.SingleNestedAttribute{

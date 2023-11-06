@@ -6,10 +6,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -53,36 +52,31 @@ func (r *serverSettingsGeneralSettingsResource) Schema(ctx context.Context, req 
 				Description: "Determines how long (in seconds) the result of testing a datastore connection is cached. The default is 300.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown()},
+				Default:     int64default.StaticInt64(300),
 			},
 			"disable_automatic_connection_validation": schema.BoolAttribute{
 				Description: "Boolean that disables automatic connection validation when set to true. The default is false.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown()},
+				Default:     booldefault.StaticBool(false),
 			},
 			"idp_connection_transaction_logging_override": schema.StringAttribute{
 				Description: "Determines the level of transaction logging for all identity provider connections. The default is DONT_OVERRIDE, in which case the logging level will be determined by each individual IdP connection [ DONT_OVERRIDE, NONE, FULL, STANDARD, ENHANCED ]",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown()},
+				Default:     stringdefault.StaticString("DONT_OVERRIDE"),
 			},
 			"request_header_for_correlation_id": schema.StringAttribute{
 				Description: "HTTP request header for retrieving correlation ID.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown()},
+				Default:     stringdefault.StaticString(""),
 			},
 			"sp_connection_transaction_logging_override": schema.StringAttribute{
 				Description: "Determines the level of transaction logging for all service provider connections. The default is DONT_OVERRIDE, in which case the logging level will be determined by each individual SP connection [ DONT_OVERRIDE, NONE, FULL, STANDARD, ENHANCED ]",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown()},
+				Default:     stringdefault.StaticString("DONT_OVERRIDE"),
 			},
 		},
 	}

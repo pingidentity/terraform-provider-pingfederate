@@ -9,11 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
@@ -52,6 +51,19 @@ var (
 	redirectValidationPartnerSettingsAttrTypes = map[string]attr.Type{
 		"enable_wreply_validation_slo": basetypes.BoolType{},
 	}
+
+	whiteListDefault, _                       = types.ListValue(types.ObjectType{AttrTypes: whiteListAttrTypes}, nil)
+	redirectValidationLocalSettingsDefault, _ = types.ObjectValue(redirectValidationLocalSettingsAttrTypes, map[string]attr.Value{
+		"enable_target_resource_validation_for_sso":           types.BoolValue(false),
+		"enable_target_resource_validation_for_slo":           types.BoolValue(false),
+		"enable_target_resource_validation_for_idp_discovery": types.BoolValue(false),
+		"enable_in_error_resource_validation":                 types.BoolValue(false),
+		"white_list":                                          whiteListDefault,
+	})
+
+	redirectValidationPartnerSettingsDefault, _ = types.ObjectValue(redirectValidationPartnerSettingsAttrTypes, map[string]attr.Value{
+		"enable_wreply_validation_slo": types.BoolValue(false),
+	})
 )
 
 // RedirectValidationResource is a helper function to simplify the provider implementation.
@@ -80,113 +92,84 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 				Description: "Settings for local redirect validation.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
+				Default:     objectdefault.StaticValue(redirectValidationLocalSettingsDefault),
 				Attributes: map[string]schema.Attribute{
 					"enable_target_resource_validation_for_sso": schema.BoolAttribute{
 						Description: "Enable target resource validation for SSO.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.Bool{
-							boolplanmodifier.UseStateForUnknown(),
-						},
+						Default:     booldefault.StaticBool(false),
 					},
 					"enable_target_resource_validation_for_slo": schema.BoolAttribute{
 						Description: "Enable target resource validation for SLO.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.Bool{
-							boolplanmodifier.UseStateForUnknown(),
-						},
+						Default:     booldefault.StaticBool(false),
 					},
 					"enable_target_resource_validation_for_idp_discovery": schema.BoolAttribute{
 						Description: "Enable target resource validation for IdP discovery.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.Bool{
-							boolplanmodifier.UseStateForUnknown(),
-						},
+						Default:     booldefault.StaticBool(false),
 					},
 					"enable_in_error_resource_validation": schema.BoolAttribute{
 						Description: "Enable validation for error resource.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.Bool{
-							boolplanmodifier.UseStateForUnknown(),
-						},
+						Default:     booldefault.StaticBool(false),
 					},
 					"white_list": schema.ListNestedAttribute{
 						Description: "List of URLs that are designated as valid target resources.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.UseStateForUnknown(),
-						},
+						Default:     listdefault.StaticValue(whiteListDefault),
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"target_resource_sso": schema.BoolAttribute{
 									Description: "Enable this target resource for SSO redirect validation.",
 									Computed:    true,
 									Optional:    true,
-									PlanModifiers: []planmodifier.Bool{
-										boolplanmodifier.UseStateForUnknown(),
-									},
+									Default:     booldefault.StaticBool(false),
 								},
 								"target_resource_slo": schema.BoolAttribute{
 									Description: "Enable this target resource for SLO redirect validation.",
 									Computed:    true,
 									Optional:    true,
-									PlanModifiers: []planmodifier.Bool{
-										boolplanmodifier.UseStateForUnknown(),
-									},
+									Default:     booldefault.StaticBool(false),
 								},
 								"in_error_resource": schema.BoolAttribute{
 									Description: "Enable this target resource for in error resource validation.",
 									Computed:    true,
 									Optional:    true,
-									PlanModifiers: []planmodifier.Bool{
-										boolplanmodifier.UseStateForUnknown(),
-									},
+									Default:     booldefault.StaticBool(false),
 								},
 								"idp_discovery": schema.BoolAttribute{
 									Description: "Enable this target resource for IdP discovery validation.",
 									Computed:    true,
 									Optional:    true,
-									PlanModifiers: []planmodifier.Bool{
-										boolplanmodifier.UseStateForUnknown(),
-									},
+									Default:     booldefault.StaticBool(false),
 								},
 								"valid_domain": schema.StringAttribute{
 									Description: "Domain of a valid resource.",
 									Required:    true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
 								},
 								"valid_path": schema.StringAttribute{
 									Description: "Path of a valid resource.",
 									Computed:    true,
 									Optional:    true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
+									Default:     stringdefault.StaticString(""),
 								},
 								"allow_query_and_fragment": schema.BoolAttribute{
 									Description: "Allow any query parameters and fragment in the resource.",
 									Computed:    true,
 									Optional:    true,
-									PlanModifiers: []planmodifier.Bool{
-										boolplanmodifier.UseStateForUnknown(),
-									},
+									Default:     booldefault.StaticBool(false),
 								},
 								"require_https": schema.BoolAttribute{
 									Description: "Require HTTPS for accessing this resource.",
 									Computed:    true,
 									Optional:    true,
-									PlanModifiers: []planmodifier.Bool{
-										boolplanmodifier.UseStateForUnknown(),
-									},
+									Default:     booldefault.StaticBool(false),
 								},
 							},
 						},
@@ -197,17 +180,13 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 				Description: "Settings for partner redirect validation.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
+				Default:     objectdefault.StaticValue(redirectValidationPartnerSettingsDefault),
 				Attributes: map[string]schema.Attribute{
 					"enable_wreply_validation_slo": schema.BoolAttribute{
 						Description: "Enable wreply validation for SLO.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.Bool{
-							boolplanmodifier.UseStateForUnknown(),
-						},
+						Default:     booldefault.StaticBool(false),
 					},
 				},
 			},
