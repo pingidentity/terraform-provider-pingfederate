@@ -9,12 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -26,6 +24,12 @@ var (
 	_ resource.Resource                = &authenticationPolicyContractResource{}
 	_ resource.ResourceWithConfigure   = &authenticationPolicyContractResource{}
 	_ resource.ResourceWithImportState = &authenticationPolicyContractResource{}
+
+	attributeElemAttrType = types.ObjectType{
+		AttrTypes: map[string]attr.Type{
+			"name": types.StringType,
+		},
+	}
 )
 
 // AuthenticationPolicyContractResource is a helper function to simplify the provider implementation.
@@ -49,39 +53,30 @@ type authenticationPolicyContractResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	extendedAttributesDefault, _ := types.SetValue(attributeElemAttrType, nil)
 	schema := schema.Schema{
 		Description: "Manages an Authentication Policy Contract.",
 		Attributes: map[string]schema.Attribute{
 			"core_attributes": schema.ListNestedAttribute{
 				Description: "A list of read-only assertion attributes (for example, subject) that are automatically populated by PingFederate.",
 				Required:    true,
-				PlanModifiers: []planmodifier.List{
-					listplanmodifier.UseStateForUnknown(),
-				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
 							Required: true,
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.UseStateForUnknown(),
-							},
 						},
 					},
 				},
 			},
 			"extended_attributes": schema.SetNestedAttribute{
 				Description: "A list of additional attributes as needed.",
-				Required:    true,
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
-				},
+				Optional:    true,
+				Computed:    true,
+				Default:     setdefault.StaticValue(extendedAttributesDefault),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
 							Required: true,
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.UseStateForUnknown(),
-							},
 						},
 					},
 				},
@@ -90,7 +85,6 @@ func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req r
 				Description: "The Authentication Policy Contract Name. Name is unique.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
@@ -103,20 +97,18 @@ func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req r
 }
 
 func addAuthenticationPolicyContractsFields(ctx context.Context, addRequest *client.AuthenticationPolicyContract, plan authenticationPolicyContractResourceModel) error {
-	if internaltypes.IsDefined(plan.CustomId) {
-		addRequest.Id = plan.CustomId.ValueStringPointer()
-	}
-	if internaltypes.IsDefined(plan.CoreAttributes) {
-		addRequest.CoreAttributes = []client.AuthenticationPolicyContractAttribute{}
-		for _, coreAttribute := range plan.CoreAttributes.Elements() {
-			unmarshalled := client.AuthenticationPolicyContractAttribute{}
-			err := json.Unmarshal([]byte(internaljson.FromValue(coreAttribute, false)), &unmarshalled)
-			if err != nil {
-				return err
-			}
-			addRequest.CoreAttributes = append(addRequest.CoreAttributes, unmarshalled)
+	addRequest.Id = plan.CustomId.ValueStringPointer()
+
+	addRequest.CoreAttributes = []client.AuthenticationPolicyContractAttribute{}
+	for _, coreAttribute := range plan.CoreAttributes.Elements() {
+		unmarshalled := client.AuthenticationPolicyContractAttribute{}
+		err := json.Unmarshal([]byte(internaljson.FromValue(coreAttribute, false)), &unmarshalled)
+		if err != nil {
+			return err
 		}
+		addRequest.CoreAttributes = append(addRequest.CoreAttributes, unmarshalled)
 	}
+
 	if internaltypes.IsDefined(plan.ExtendedAttributes) {
 		addRequest.ExtendedAttributes = []client.AuthenticationPolicyContractAttribute{}
 		for _, extendedAttribute := range plan.ExtendedAttributes.Elements() {
@@ -128,9 +120,8 @@ func addAuthenticationPolicyContractsFields(ctx context.Context, addRequest *cli
 			addRequest.ExtendedAttributes = append(addRequest.ExtendedAttributes, unmarshalled)
 		}
 	}
-	if internaltypes.IsDefined(plan.Name) {
-		addRequest.Name = plan.Name.ValueStringPointer()
-	}
+
+	addRequest.Name = plan.Name.ValueStringPointer()
 	return nil
 
 }
@@ -157,35 +148,12 @@ func readAuthenticationPolicyContractsResponse(ctx context.Context, r *client.Au
 	state.CustomId = internaltypes.StringTypeOrNil(r.Id, false)
 	state.Name = internaltypes.StringTypeOrNil(r.Name, false)
 
-	var attrType = map[string]attr.Type{"name": types.StringType}
-	clientCoreAttributes := r.GetCoreAttributes()
-	var caSlice = []attr.Value{}
-	cAobjSlice := types.ObjectType{AttrTypes: attrType}
-	for i := 0; i < len(clientCoreAttributes); i++ {
-		cAname := clientCoreAttributes[i].GetName()
-		cAnameVal := map[string]attr.Value{"name": types.StringValue(cAname)}
-		newCaObj, _ := types.ObjectValue(attrType, cAnameVal)
-		caSlice = append(caSlice, newCaObj)
-	}
-	caSliceOfObj, respDiags := types.ListValue(cAobjSlice, caSlice)
+	state.CoreAttributes, respDiags = types.ListValueFrom(ctx, attributeElemAttrType, r.GetCoreAttributes())
 	diags.Append(respDiags...)
 
-	clientExtAttributes := r.GetExtendedAttributes()
-	var eaSlice = []attr.Value{}
-	eAobjSlice := types.ObjectType{AttrTypes: attrType}
-	for i := 0; i < len(clientExtAttributes); i++ {
-		eAname := clientExtAttributes[i].GetName()
-		eAnameVal := map[string]attr.Value{"name": types.StringValue(eAname)}
-		newEaObj, _ := types.ObjectValue(attrType, eAnameVal)
-		eaSlice = append(eaSlice, newEaObj)
-	}
-	eaSliceOfObj, respDiags := types.SetValue(eAobjSlice, eaSlice)
+	state.ExtendedAttributes, respDiags = types.SetValueFrom(ctx, attributeElemAttrType, r.GetExtendedAttributes())
 	diags.Append(respDiags...)
 
-	state.CoreAttributes = basetypes.ListValue{}
-	state.CoreAttributes = caSliceOfObj
-	state.ExtendedAttributes = basetypes.SetValue{}
-	state.ExtendedAttributes = eaSliceOfObj
 	return diags
 }
 
