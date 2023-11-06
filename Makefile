@@ -70,8 +70,8 @@ testoneacc:
 testoneacccomplete: spincontainer testoneacc
 
 testacc:
-	$(call test_acc_env_vars) TF_ACC=1 go test `go list ./internal/... | grep -v github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/oauthauthserversettings` -timeout 10m -v -p 4 && \
-	$(call test_acc_env_vars) TF_ACC=1 go test `go list ./internal/... | grep github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/oauthauthserversettings` -timeout 10m -v -p 1
+	$(call export_p1_env_vars_from_ping_config) $(call test_acc_env_vars) TF_ACC=1 go test `go list ./internal/... | grep -v github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/oauthauthserversettings` -timeout 10m -v -p 4 && \
+	$(call test_acc_env_vars) TF_ACC=1 go test `go list ./internal/... | grep github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/oauthauthserversettings` -timeout 10m -v -p 1 && $(call unset_p1_env_vars_from_ping_config)
 
 testacccomplete: spincontainer testacc
 
