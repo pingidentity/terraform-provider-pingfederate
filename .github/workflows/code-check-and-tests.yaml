@@ -161,6 +161,6 @@ jobs:
         env:
           TF_ACC: "1"
           CONFIG: ${{ secrets.Config }}
-          PF_TF_P1_CONNECTION_ID: ${{ secrets.PfTfP1ConnectionId }}
-          PF_TF_P1_CONNECTION_ENV_ID: ${{ secrets.PfTfP1ConnectionEnvId }}
-          PF_TF_P1_LDAP_GATEWAY_ID: ${{ secrets.PfTfP1LdapGatewayId }}
+          PF_TF_P1_CONNECTION_ID: ${{ secrets.PF_TF_P1_CONNECTION_ID }}
+          PF_TF_P1_CONNECTION_ENV_ID: ${{ secrets.PF_TF_P1_CONNECTION_ENV_ID }}
+          PF_TF_P1_LDAP_GATEWAY_ID: ${{ secrets.PF_TF_P1_LDAP_GATEWAY_ID }}
