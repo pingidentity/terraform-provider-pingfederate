@@ -18,22 +18,18 @@ type authenticationApiSettingsResourceModel struct {
 	enableApiDescriptions            bool
 	restrictAccessToRedirectlessMode bool
 	includeRequestContext            bool
+	defaultApplicationRef            string
 }
 
 func TestAccAuthenticationApiSettings(t *testing.T) {
 	resourceName := "myAuthenticationApiSettings"
-	initialResourceModel := authenticationApiSettingsResourceModel{
-		apiEnabled:                       false,
-		enableApiDescriptions:            false,
-		restrictAccessToRedirectlessMode: false,
-		includeRequestContext:            false,
-	}
-
+	// Use values that differ from the resource defaults
 	updatedResourceModel := authenticationApiSettingsResourceModel{
 		apiEnabled:                       true,
 		enableApiDescriptions:            true,
-		restrictAccessToRedirectlessMode: false,
-		includeRequestContext:            false,
+		restrictAccessToRedirectlessMode: true,
+		includeRequestContext:            true,
+		defaultApplicationRef:            "myauthenticationapiapplication",
 	}
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
@@ -42,31 +38,49 @@ func TestAccAuthenticationApiSettings(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: testAccAuthenticationApiSettings(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedAuthenticationApiSettingsAttributes(initialResourceModel),
+				Config: testAccAuthenticationApiSettings(resourceName, nil),
 			},
 			{
-				Config: testAccAuthenticationApiSettings(resourceName, updatedResourceModel),
+				Config: testAccAuthenticationApiSettings(resourceName, &updatedResourceModel),
 				Check:  testAccCheckExpectedAuthenticationApiSettingsAttributes(updatedResourceModel),
 			},
 			{
 				// Test importing the resource
-				Config:            testAccAuthenticationApiSettings(resourceName, updatedResourceModel),
+				Config:            testAccAuthenticationApiSettings(resourceName, &updatedResourceModel),
 				ResourceName:      "pingfederate_authentication_api_settings." + resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+			{
+				Config: testAccAuthenticationApiSettings(resourceName, nil),
 			},
 		},
 	})
 }
 
-func testAccAuthenticationApiSettings(resourceName string, resourceModel authenticationApiSettingsResourceModel) string {
+func testAccAuthenticationApiSettings(resourceName string, resourceModel *authenticationApiSettingsResourceModel) string {
+	if resourceModel == nil {
+		// Use resource defaults
+		return fmt.Sprintf(`
+		resource "pingfederate_authentication_api_settings" "%[1]s" {
+		}
+		
+		data "pingfederate_authentication_api_settings" "%[1]s" {
+		  depends_on = [
+			pingfederate_authentication_api_settings.%[1]s
+		  ]
+		}`, resourceName)
+	}
+
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_api_settings" "%[1]s" {
   api_enabled                          = %[2]t
   enable_api_descriptions              = %[3]t
   restrict_access_to_redirectless_mode = %[4]t
   include_request_context              = %[5]t
+  default_application_ref = {
+	id = "%[6]s"
+  }
 }
 
 data "pingfederate_authentication_api_settings" "%[1]s" {
@@ -78,6 +92,7 @@ data "pingfederate_authentication_api_settings" "%[1]s" {
 		resourceModel.enableApiDescriptions,
 		resourceModel.restrictAccessToRedirectlessMode,
 		resourceModel.includeRequestContext,
+		resourceModel.defaultApplicationRef,
 	)
 }
 

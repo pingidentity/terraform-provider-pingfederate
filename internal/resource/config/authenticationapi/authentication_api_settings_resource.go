@@ -45,7 +45,7 @@ type authenticationApiSettingsResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *authenticationApiSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a AuthenticationApiSettings.",
+		Description: "Manages the Authentication API Application Settings.",
 		Attributes: map[string]schema.Attribute{
 			"api_enabled": schema.BoolAttribute{
 				Description: "Enable Authentication API",
@@ -60,7 +60,7 @@ func (r *authenticationApiSettingsResource) Schema(ctx context.Context, req reso
 				Default:     booldefault.StaticBool(false),
 			},
 			"default_application_ref": schema.SingleNestedAttribute{
-				Description: "Enable API descriptions",
+				Description: "Application for non authentication policy use cases",
 				Optional:    true,
 				Attributes:  resourcelink.ToSchema(),
 			},
