@@ -3,12 +3,12 @@
 page_title: "pingfederate_oauth_auth_server_settings_scopes_exclusive_scope Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a OauthAuthServerSettingsScopesCommonScopes.
+  Describes a OauthAuthServerSettingsScopesCommonScopes.
 ---
 
 # pingfederate_oauth_auth_server_settings_scopes_exclusive_scope (Data Source)
 
-Manages a OauthAuthServerSettingsScopesCommonScopes.
+Describes a OauthAuthServerSettingsScopesCommonScopes.
 
 ## Example Usage
 

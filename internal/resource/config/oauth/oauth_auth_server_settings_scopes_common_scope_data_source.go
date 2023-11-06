@@ -14,22 +14,22 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ datasource.DataSource              = &oauthAuthServerSettingsScopesCommonScopesDataSource{}
-	_ datasource.DataSourceWithConfigure = &oauthAuthServerSettingsScopesCommonScopesDataSource{}
+	_ datasource.DataSource              = &oauthAuthServerSettingsScopesCommonScopeDataSource{}
+	_ datasource.DataSourceWithConfigure = &oauthAuthServerSettingsScopesCommonScopeDataSource{}
 )
 
 // Create a Administrative Account data source
-func NewOauthAuthServerSettingsScopesCommonScopesDataSource() datasource.DataSource {
-	return &oauthAuthServerSettingsScopesCommonScopesDataSource{}
+func NewOauthAuthServerSettingsScopesCommonScopeDataSource() datasource.DataSource {
+	return &oauthAuthServerSettingsScopesCommonScopeDataSource{}
 }
 
-// oauthAuthServerSettingsScopesCommonScopesDataSource is the datasource implementation.
-type oauthAuthServerSettingsScopesCommonScopesDataSource struct {
+// oauthAuthServerSettingsScopesCommonScopeDataSource is the datasource implementation.
+type oauthAuthServerSettingsScopesCommonScopeDataSource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
 }
 
-type oauthAuthServerSettingsScopesCommonScopesDataSourceModel struct {
+type oauthAuthServerSettingsScopesCommonScopeDataSourceModel struct {
 	Id          types.String `tfsdk:"id"`
 	Name        types.String `tfsdk:"name"`
 	Description types.String `tfsdk:"description"`
@@ -37,9 +37,9 @@ type oauthAuthServerSettingsScopesCommonScopesDataSourceModel struct {
 }
 
 // GetSchema defines the schema for the datasource.
-func (r *oauthAuthServerSettingsScopesCommonScopesDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (r *oauthAuthServerSettingsScopesCommonScopeDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Manages a OauthAuthServerSettingsScopesCommonScopes.",
+		Description: "Describes a OauthAuthServerSettingsScopesCommonScope.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Description: "The name of the scope.",
@@ -64,12 +64,12 @@ func (r *oauthAuthServerSettingsScopesCommonScopesDataSource) Schema(ctx context
 }
 
 // Metadata returns the data source type name.
-func (r *oauthAuthServerSettingsScopesCommonScopesDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (r *oauthAuthServerSettingsScopesCommonScopeDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_oauth_auth_server_settings_scopes_common_scope"
 }
 
 // Configure adds the provider configured client to the data source.
-func (r *oauthAuthServerSettingsScopesCommonScopesDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, _ *datasource.ConfigureResponse) {
+func (r *oauthAuthServerSettingsScopesCommonScopeDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, _ *datasource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -79,8 +79,8 @@ func (r *oauthAuthServerSettingsScopesCommonScopesDataSource) Configure(_ contex
 	r.apiClient = providerCfg.ApiClient
 }
 
-// Read a OauthAuthServerSettingsScopesCommonScopesResponse object into the model struct
-func readOauthAuthServerSettingsScopesCommonScopesResponseDataSource(ctx context.Context, r *client.ScopeEntry, state *oauthAuthServerSettingsScopesCommonScopesDataSourceModel) {
+// Read a OauthAuthServerSettingsScopesCommonScopeResponse object into the model struct
+func readOauthAuthServerSettingsScopesCommonScopeResponseDataSource(ctx context.Context, r *client.ScopeEntry, state *oauthAuthServerSettingsScopesCommonScopeDataSourceModel) {
 	state.Id = types.StringValue(r.Name)
 	state.Name = types.StringValue(r.Name)
 	state.Description = types.StringValue(r.Description)
@@ -88,8 +88,8 @@ func readOauthAuthServerSettingsScopesCommonScopesResponseDataSource(ctx context
 }
 
 // Read resource information
-func (r *oauthAuthServerSettingsScopesCommonScopesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state oauthAuthServerSettingsScopesCommonScopesDataSourceModel
+func (r *oauthAuthServerSettingsScopesCommonScopeDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var state oauthAuthServerSettingsScopesCommonScopeDataSourceModel
 
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -97,7 +97,7 @@ func (r *oauthAuthServerSettingsScopesCommonScopesDataSource) Read(ctx context.C
 		return
 	}
 
-	apiReadOauthAuthServerSettingsScopesCommonScopes, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.GetCommonScope(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Name.ValueString()).Execute()
+	apiReadOauthAuthServerSettingsScopesCommonScope, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.GetCommonScope(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Name.ValueString()).Execute()
 
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Auth Server Settings Scopes Common Scope", err, httpResp)
@@ -105,7 +105,7 @@ func (r *oauthAuthServerSettingsScopesCommonScopesDataSource) Read(ctx context.C
 	}
 
 	// Read the response into the state
-	readOauthAuthServerSettingsScopesCommonScopesResponseDataSource(ctx, apiReadOauthAuthServerSettingsScopesCommonScopes, &state)
+	readOauthAuthServerSettingsScopesCommonScopeResponseDataSource(ctx, apiReadOauthAuthServerSettingsScopesCommonScope, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

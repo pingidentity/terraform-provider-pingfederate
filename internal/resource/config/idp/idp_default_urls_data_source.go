@@ -39,7 +39,7 @@ type idpDefaultUrlsDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *idpDefaultUrlsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Manages a IdpDefaultUrls.",
+		Description: "Describes a IdpDefaultUrls.",
 		Attributes: map[string]schema.Attribute{
 			"confirm_idp_slo": schema.BoolAttribute{
 				Description: "Prompt user to confirm Single Logout (SLO).",

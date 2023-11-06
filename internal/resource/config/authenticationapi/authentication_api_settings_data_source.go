@@ -59,7 +59,7 @@ type authenticationApiSettingsDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *authenticationApiSettingsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Manages a AuthenticationApiSettings.",
+		Description: "Describes a AuthenticationApiSettings.",
 		Attributes: map[string]schema.Attribute{
 			"api_enabled": schema.BoolAttribute{
 				Description: "Enable Authentication API",
