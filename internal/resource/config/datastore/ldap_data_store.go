@@ -23,7 +23,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -287,9 +286,12 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 	return ldapDataStoreSchema
 }
 
-func toStateLdapDataStore(con context.Context, clientValue *client.DataStoreAggregation, plan basetypes.ObjectValue) (types.Object, diag.Diagnostics) {
+func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataStore, plan basetypes.ObjectValue) (types.Object, diag.Diagnostics) {
 	var diags, allDiags diag.Diagnostics
-	ldapDataStore := *clientValue.LdapDataStore
+
+	if ldapDataStore != nil {
+		diags.AddError("Failed to read Custom data store from PingFederate.", "The response from PingFederate was nil.")
+	}
 
 	userDn := func() types.String {
 		if *ldapDataStore.BindAnonymously {
@@ -319,7 +321,7 @@ func toStateLdapDataStore(con context.Context, clientValue *client.DataStoreAggr
 		if ldapDataStore.LdapType == "PING_DIRECTORY" {
 			return types.BoolValue(false)
 		} else {
-			return types.BoolValue(*ldapDataStore.FollowLDAPReferrals)
+			return types.BoolPointerValue(ldapDataStore.FollowLDAPReferrals)
 		}
 	}
 
@@ -371,7 +373,7 @@ func readLdapDataStoreResponse(ctx context.Context, r *client.DataStoreAggregati
 	state.MaskAttributeValues = types.BoolPointerValue(r.LdapDataStore.MaskAttributeValues)
 	state.CustomDataStore = customDataStoreEmptyStateObj
 	state.JdbcDataStore = jdbcDataStoreEmptyStateObj
-	state.LdapDataStore, diags = toStateLdapDataStore(ctx, r, *plan)
+	state.LdapDataStore, diags = toStateLdapDataStore(ctx, r.LdapDataStore, *plan)
 	state.PingOneLdapGatewayDataStore = pingOneLdapGatewayDataStoreEmptyStateObj
 	return diags
 }
@@ -513,22 +515,16 @@ func createLdapDataStore(plan dataStoreResourceModel, con context.Context, req r
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for DataStore", err.Error())
 		return
 	}
-	requestJson, err := createLdapDataStore.MarshalJSON()
-	if err == nil {
-		tflog.Debug(con, "Add request: "+string(requestJson))
-	}
 
-	apiCreateDataStore := dsr.apiClient.DataStoresAPI.CreateDataStore(config.ProviderBasicAuthContext(con, dsr.providerConfig))
-	apiCreateDataStore = apiCreateDataStore.Body(createLdapDataStore)
-	ldapDataStoreResponse, httpResp, err := dsr.apiClient.DataStoresAPI.CreateDataStoreExecute(apiCreateDataStore)
+	response, httpResponse, err := createDataStore(createLdapDataStore, dsr, con, resp)
 	if err != nil {
-		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while creating the DataStore", err, httpResp)
+		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while creating the DataStore", err, httpResponse)
 		return
 	}
 
 	// Read the response into the state
 	var state dataStoreResourceModel
-	diags = readLdapDataStoreResponse(con, ldapDataStoreResponse, &state, &plan.LdapDataStore)
+	diags = readLdapDataStoreResponse(con, response, &state, &plan.LdapDataStore)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(con, state)
 	resp.Diagnostics.Append(diags...)
@@ -547,17 +543,15 @@ func updateLdapDataStore(plan dataStoreResourceModel, con context.Context, req r
 		return
 	}
 
-	updateLdapDataStoreRequest := dsr.apiClient.DataStoresAPI.UpdateDataStore(config.ProviderBasicAuthContext(con, dsr.providerConfig), plan.Id.ValueString())
-	updateLdapDataStoreRequest = updateLdapDataStoreRequest.Body(updateLdapDataStore)
-	updateLdapDataStoreResponse, httpResp, err := dsr.apiClient.DataStoresAPI.UpdateDataStoreExecute(updateLdapDataStoreRequest)
-	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while updating DataStore", err, httpResp)
+	response, httpResponse, err := updateDataStore(updateLdapDataStore, dsr, con, resp, plan.Id.ValueString())
+	if err != nil && (httpResponse == nil || httpResponse.StatusCode != 404) {
+		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while updating DataStore", err, httpResponse)
 		return
 	}
 
 	// Read the response
 	var state dataStoreResourceModel
-	diags = readLdapDataStoreResponse(con, updateLdapDataStoreResponse, &state, &plan.LdapDataStore)
+	diags = readLdapDataStoreResponse(con, response, &state, &plan.LdapDataStore)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values

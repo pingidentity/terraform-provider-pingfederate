@@ -56,12 +56,12 @@ func NewTestProvider() provider.Provider {
 
 // PingFederate ProviderModel maps provider schema data to a Go type.
 type pingfederateProviderModel struct {
-	HttpsHost                 types.String `tfsdk:"https_host"`
-	Username                  types.String `tfsdk:"username"`
-	Password                  types.String `tfsdk:"password"`
-	InsecureTrustAllTls       types.Bool   `tfsdk:"insecure_trust_all_tls"`
-	CACertificatePEMFiles     types.Set    `tfsdk:"ca_certificate_pem_files"`
-	XBypassExternalValidation types.Bool   `tfsdk:"x_bypass_external_validation"`
+	HttpsHost                       types.String `tfsdk:"https_host"`
+	Username                        types.String `tfsdk:"username"`
+	Password                        types.String `tfsdk:"password"`
+	InsecureTrustAllTls             types.Bool   `tfsdk:"insecure_trust_all_tls"`
+	CACertificatePEMFiles           types.Set    `tfsdk:"ca_certificate_pem_files"`
+	XBypassExternalValidationHeader types.Bool   `tfsdk:"x_bypass_external_validation_header"`
 }
 
 // pingfederateProvider is the provider implementation.
@@ -101,8 +101,8 @@ func (p *pingfederateProvider) Schema(_ context.Context, _ provider.SchemaReques
 				Description: "Paths to files containing PEM-encoded certificates to be trusted as root CAs when connecting to the PingFederate server over HTTPS. If not set, the host's root CA set will be used. Default value can be set with the `PINGFEDERATE_PROVIDER_CA_CERTIFICATE_PEM_FILES` environment variable, using commas to delimit multiple PEM files if necessary.",
 				Optional:    true,
 			},
-			"x_bypass_external_validation": schema.BoolAttribute{
-				Description: "Connection test will be bypassed when set to true. Default to false.",
+			"x_bypass_external_validation_header": schema.BoolAttribute{
+				Description: "Header value in request for PingFederate. The connection test will be bypassed when set to true. Default to false.",
 				Optional:    true,
 			},
 		},
@@ -230,13 +230,13 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 
 	var xBypassExternalValidation bool
 	var xBypassExternalValidationErr error
-	if !config.XBypassExternalValidation.IsUnknown() && !config.XBypassExternalValidation.IsNull() {
-		xBypassExternalValidation = config.XBypassExternalValidation.ValueBool()
+	if !config.XBypassExternalValidationHeader.IsUnknown() && !config.XBypassExternalValidationHeader.IsNull() {
+		xBypassExternalValidation = config.XBypassExternalValidationHeader.ValueBool()
 	} else {
-		xBypassExternalValidation, xBypassExternalValidationErr = strconv.ParseBool(os.Getenv("X_BYPASS_EXTERNAL_VALIDATION"))
+		xBypassExternalValidation, xBypassExternalValidationErr = strconv.ParseBool(os.Getenv("PINGFEDERATE_X_BYPASS_EXTERNAL_VALIDATION_HEADER"))
 		if xBypassExternalValidationErr != nil {
 			xBypassExternalValidation = false
-			tflog.Info(ctx, "Failed to parse boolean from 'X_BYPASS_EXTERNAL_VALIDATION' environment variable, defaulting 'x_bypass_external_validation' to false")
+			tflog.Info(ctx, "Failed to parse boolean from 'PINGFEDERATE_X_BYPASS_EXTERNAL_VALIDATION_HEADER' environment variable, defaulting 'x_bypass_external_validation_header' to false")
 		}
 	}
 

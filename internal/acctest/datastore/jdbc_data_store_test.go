@@ -99,7 +99,7 @@ func TestAccJdbcDataStore(t *testing.T) {
 	}
 
 	updatedResourceModel := jdbcDataStoreResourceModel{
-		maskAttributeValues: false,
+		maskAttributeValues: true,
 		jdbcDataStore:       *updatedJdbcDataStore(),
 	}
 

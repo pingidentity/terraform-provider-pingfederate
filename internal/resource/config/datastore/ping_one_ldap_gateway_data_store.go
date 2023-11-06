@@ -98,8 +98,13 @@ func toSchemaPingOneLdapGatewayDataStore() schema.SingleNestedAttribute {
 	return pingOneLdapGatewayDataStoreSchema
 }
 
-func toStatePingOneLdapGatewayDataStore(con context.Context, clientValue *client.DataStoreAggregation, plan basetypes.ObjectValue) (types.Object, diag.Diagnostics) {
+func toStatePingOneLdapGatewayDataStore(con context.Context, pingOneLdapGDS *client.PingOneLdapGatewayDataStore, plan basetypes.ObjectValue) (types.Object, diag.Diagnostics) {
 	var diags, allDiags diag.Diagnostics
+
+	if pingOneLdapGDS == nil {
+		diags.AddError("Failed to read PingOne LDAP Gateway data store from PingFederate.", "The response from PingFederate was nil.")
+	}
+
 	pingOneLdapGatewayDataStoreAttrType := map[string]attr.Type{
 		"ping_one_connection_ref":  basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
 		"ldap_type":                basetypes.StringType{},
@@ -111,26 +116,26 @@ func toStatePingOneLdapGatewayDataStore(con context.Context, clientValue *client
 		"ping_one_environment_id":  basetypes.StringType{},
 	}
 
-	clientVals := clientValue.PingOneLdapGatewayDataStore
-	pingOneConnectionRef, diags := resourcelink.ToState(con, &clientVals.PingOneConnectionRef)
+	pingOneConRefFromClient := pingOneLdapGDS.GetPingOneConnectionRef()
+	pingOneConnectionRef, diags := resourcelink.ToState(con, &pingOneConRefFromClient)
 	allDiags = append(allDiags, diags...)
-	binaryAttributes := clientVals.BinaryAttributes
+	binaryAttributesFromClient := pingOneLdapGDS.GetBinaryAttributes()
 	binaryAttributesVal := func() types.Set {
-		if len(binaryAttributes) == 0 {
+		if len(binaryAttributesFromClient) == 0 {
 			return types.SetNull(types.StringType)
 		} else {
-			return internaltypes.GetStringSet(clientVals.BinaryAttributes)
+			return internaltypes.GetStringSet(binaryAttributesFromClient)
 		}
 	}
 	pingOneLdapGatewayDataStoreVal := map[string]attr.Value{
 		"ping_one_connection_ref":  pingOneConnectionRef,
-		"ldap_type":                types.StringValue(clientVals.LdapType),
-		"ping_one_ldap_gateway_id": types.StringValue(clientVals.PingOneLdapGatewayId),
-		"use_ssl":                  types.BoolPointerValue(clientVals.UseSsl),
-		"name":                     types.StringPointerValue(clientVals.Name),
+		"ldap_type":                types.StringValue(pingOneLdapGDS.GetLdapType()),
+		"ping_one_ldap_gateway_id": types.StringValue(pingOneLdapGDS.GetPingOneLdapGatewayId()),
+		"use_ssl":                  types.BoolValue(pingOneLdapGDS.GetUseSsl()),
+		"name":                     types.StringValue(pingOneLdapGDS.GetName()),
 		"binary_attributes":        binaryAttributesVal(),
 		"type":                     types.StringValue("PING_ONE_LDAP_GATEWAY"),
-		"ping_one_environment_id":  types.StringValue(clientVals.PingOneEnvironmentId),
+		"ping_one_environment_id":  types.StringValue(pingOneLdapGDS.GetPingOneEnvironmentId()),
 	}
 
 	pingOneLdapGatewayDataStoreObj, diags := types.ObjectValue(pingOneLdapGatewayDataStoreAttrType, pingOneLdapGatewayDataStoreVal)
@@ -146,7 +151,7 @@ func readPingOneLdapGatewayDataStoreResponse(ctx context.Context, r *client.Data
 	state.CustomDataStore = customDataStoreEmptyStateObj
 	state.JdbcDataStore = jdbcDataStoreEmptyStateObj
 	state.LdapDataStore = ldapDataStoreEmptyStateObj
-	state.PingOneLdapGatewayDataStore, diags = toStatePingOneLdapGatewayDataStore(ctx, r, *plan)
+	state.PingOneLdapGatewayDataStore, diags = toStatePingOneLdapGatewayDataStore(ctx, r.PingOneLdapGatewayDataStore, *plan)
 	return diags
 }
 
@@ -202,17 +207,15 @@ func createPingOneLdapGatewayDataStore(plan dataStoreResourceModel, con context.
 		return
 	}
 
-	apiCreateDataStore := dsr.apiClient.DataStoresAPI.CreateDataStore(config.ProviderBasicAuthContext(con, dsr.providerConfig))
-	apiCreateDataStore = apiCreateDataStore.Body(createPingOneLdapGatewayDataStore)
-	ldapDataStoreResponse, httpResp, err := dsr.apiClient.DataStoresAPI.CreateDataStoreExecute(apiCreateDataStore)
+	response, httpResponse, err := createDataStore(createPingOneLdapGatewayDataStore, dsr, con, resp)
 	if err != nil {
-		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while creating the DataStore", err, httpResp)
+		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while creating the DataStore", err, httpResponse)
 		return
 	}
 
 	// Read the response into the state
 	var state dataStoreResourceModel
-	diags = readPingOneLdapGatewayDataStoreResponse(con, ldapDataStoreResponse, &state, &plan.PingOneLdapGatewayDataStore)
+	diags = readPingOneLdapGatewayDataStoreResponse(con, response, &state, &plan.PingOneLdapGatewayDataStore)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(con, state)
 	resp.Diagnostics.Append(diags...)
@@ -245,9 +248,7 @@ func updatePingOneLdapGatewayDataStore(plan dataStoreResourceModel, con context.
 		return
 	}
 
-	updatePingOneLdapGatewayDataStoreRequest := dsr.apiClient.DataStoresAPI.UpdateDataStore(config.ProviderBasicAuthContext(con, dsr.providerConfig), plan.Id.ValueString())
-	updatePingOneLdapGatewayDataStoreRequest = updatePingOneLdapGatewayDataStoreRequest.Body(updatePingOneLdapGatewayDataStore)
-	updatePingOneLdapGatewayDataStoreResponse, httpResp, err := dsr.apiClient.DataStoresAPI.UpdateDataStoreExecute(updatePingOneLdapGatewayDataStoreRequest)
+	response, httpResp, err := updateDataStore(updatePingOneLdapGatewayDataStore, dsr, con, resp, plan.Id.ValueString())
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while updating DataStore", err, httpResp)
 		return
@@ -255,7 +256,7 @@ func updatePingOneLdapGatewayDataStore(plan dataStoreResourceModel, con context.
 
 	// Read the response
 	var state dataStoreResourceModel
-	diags = readPingOneLdapGatewayDataStoreResponse(con, updatePingOneLdapGatewayDataStoreResponse, &state, &plan.PingOneLdapGatewayDataStore)
+	diags = readPingOneLdapGatewayDataStoreResponse(con, response, &state, &plan.PingOneLdapGatewayDataStore)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values

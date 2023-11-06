@@ -180,9 +180,6 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 			Computed:    true,
 			Optional:    true,
 			Default:     stringdefault.StaticString(""),
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
 		},
 	}
 
@@ -197,9 +194,12 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 	return jdbcDataStoreSchema
 }
 
-func toStateJdbcDataStore(con context.Context, clientValue *client.DataStoreAggregation, plan dataStoreResourceModel) (types.Object, diag.Diagnostics) {
+func toStateJdbcDataStore(con context.Context, jdbcDataStore *client.JdbcDataStore, plan dataStoreResourceModel) (types.Object, diag.Diagnostics) {
 	var allDiags, diags diag.Diagnostics
-	jdbcDataStore := *clientValue.JdbcDataStore
+
+	if jdbcDataStore == nil {
+		diags.AddError("Failed to read JDBC data store from PingFederate.", "The response from PingFederate was nil.")
+	}
 
 	connectionUrlTags := func() (types.Set, diag.Diagnostics) {
 		if len(jdbcDataStore.ConnectionUrlTags) > 0 {
@@ -225,7 +225,7 @@ func toStateJdbcDataStore(con context.Context, clientValue *client.DataStoreAggr
 	jdbcAttrValue := map[string]attr.Value{
 		"type":                         types.StringValue("JDBC"),
 		"blocking_timeout":             types.Int64PointerValue(jdbcDataStore.BlockingTimeout),
-		"connection_url":               types.StringValue(*jdbcDataStore.ConnectionUrl),
+		"connection_url":               types.StringPointerValue(jdbcDataStore.ConnectionUrl),
 		"driver_class":                 types.StringValue(jdbcDataStore.DriverClass),
 		"connection_url_tags":          connectionUrlSetVal,
 		"idle_timeout":                 types.Int64PointerValue(jdbcDataStore.IdleTimeout),
@@ -247,7 +247,7 @@ func readJdbcDataStoreResponse(ctx context.Context, r *client.DataStoreAggregati
 	state.Id = types.StringPointerValue(r.JdbcDataStore.Id)
 	state.CustomId = types.StringPointerValue(r.JdbcDataStore.Id)
 	state.MaskAttributeValues = types.BoolPointerValue(r.JdbcDataStore.MaskAttributeValues)
-	state.JdbcDataStore, diags = toStateJdbcDataStore(ctx, r, *plan)
+	state.JdbcDataStore, diags = toStateJdbcDataStore(ctx, r.JdbcDataStore, *plan)
 	state.CustomDataStore = customDataStoreEmptyStateObj
 	state.LdapDataStore = ldapDataStoreEmptyStateObj
 	state.PingOneLdapGatewayDataStore = pingOneLdapGatewayDataStoreEmptyStateObj
@@ -336,17 +336,15 @@ func createJdbcDataStore(plan dataStoreResourceModel, con context.Context, req r
 		return
 	}
 
-	apiCreateDataStore := dsr.apiClient.DataStoresAPI.CreateDataStore(config.ProviderBasicAuthContext(con, dsr.providerConfig))
-	apiCreateDataStore = apiCreateDataStore.Body(createJdbcDataStore)
-	customDataStoreResponse, httpResp, err := dsr.apiClient.DataStoresAPI.CreateDataStoreExecute(apiCreateDataStore)
+	response, httpResponse, err := createDataStore(createJdbcDataStore, dsr, con, resp)
 	if err != nil {
-		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while creating the DataStore", err, httpResp)
+		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while creating the DataStore", err, httpResponse)
 		return
 	}
 
 	// Read the response into the state
 	var state dataStoreResourceModel
-	diags = readJdbcDataStoreResponse(con, customDataStoreResponse, &state, &plan)
+	diags = readJdbcDataStoreResponse(con, response, &state, &plan)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(con, state)
 	resp.Diagnostics.Append(diags...)
@@ -367,17 +365,15 @@ func updateJdbcDataStore(plan dataStoreResourceModel, con context.Context, req r
 		return
 	}
 
-	updateJdbcDataStoreRequest := dsr.apiClient.DataStoresAPI.UpdateDataStore(config.ProviderBasicAuthContext(con, dsr.providerConfig), plan.Id.ValueString())
-	updateJdbcDataStoreRequest = updateJdbcDataStoreRequest.Body(updateJdbcDataStore)
-	updateJdbcDataStoreResponse, httpResp, err := dsr.apiClient.DataStoresAPI.UpdateDataStoreExecute(updateJdbcDataStoreRequest)
-	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while updating DataStore", err, httpResp)
+	response, httpResponse, err := updateDataStore(updateJdbcDataStore, dsr, con, resp, plan.Id.ValueString())
+	if err != nil && (httpResponse == nil || httpResponse.StatusCode != 404) {
+		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while updating DataStore", err, httpResponse)
 		return
 	}
 
 	// Read the response
 	var state dataStoreResourceModel
-	diags = readJdbcDataStoreResponse(con, updateJdbcDataStoreResponse, &state, &plan)
+	diags = readJdbcDataStoreResponse(con, response, &state, &plan)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values

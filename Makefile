@@ -48,13 +48,24 @@ removetestcontainer:
 	
 spincontainer: removetestcontainer starttestcontainer
 
+p1_env_vars=$(grep 'PF_TF_P1' "${HOME}/.pingidentity/config" | xargs)
+
+define export_p1_env_vars_from_ping_config
+	eval ${p1_env_vars};
+endef
+
+define unset_p1_env_vars_from_ping_config
+	unset ${p1_env_vars}
+endef
+
+
 define test_acc_env_vars 
-	PINGFEDERATE_PROVIDER_HTTPS_HOST=https://localhost:9999 PINGFEDERATE_PROVIDER_USERNAME=administrator PINGFEDERATE_PROVIDER_PASSWORD=2FederateM0re PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true X_BYPASS_EXTERNAL_VALIDATION=true
+	PINGFEDERATE_PROVIDER_HTTPS_HOST=https://localhost:9999 PINGFEDERATE_PROVIDER_USERNAME=administrator PINGFEDERATE_PROVIDER_PASSWORD=2FederateM0re PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true PINGFEDERATE_X_BYPASS_EXTERNAL_VALIDATION_HEADER=true
 endef
 
 # Set ACC_TEST_NAME to name of test in cli
 testoneacc:
-	$(call test_acc_env_vars) TF_ACC=1 go test ./... -timeout 10m --run ${ACC_TEST_NAME} -v -p 4 --count=1
+	$(call export_p1_env_vars_from_ping_config) $(call test_acc_env_vars) TF_ACC=1 go test ./... -timeout 10m --run ${ACC_TEST_NAME} -v -p 4 --count=1 && $(call unset_p1_env_vars_from_ping_config)
 
 testoneacccomplete: spincontainer testoneacc
 

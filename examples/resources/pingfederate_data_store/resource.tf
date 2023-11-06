@@ -5,7 +5,6 @@
 # x_bypass_external_validation may be used in the provider block to bypass the connection test.
 resource "pingfederate_data_store" "myCustomDataStore" {
   custom_id = "myCustomDataStore"
-  # mask_attribute_value= false
   custom_data_store = {
     name = "custom"
     plugin_descriptor_ref = {
@@ -174,8 +173,7 @@ resource "pingfederate_data_store" "myJdbcDataStore" {
 }
 
 resource "pingfederate_data_store" "myPingDirectoryLdapDataStore" {
-  custom_id             = "myPingDirectoryLdapDataStore"
-  mask_attribute_values = true
+  custom_id = "myPingDirectoryLdapDataStore"
   ldap_data_store = {
     ldap_type          = "PING_DIRECTORY"
     bind_anonymously   = false
@@ -207,8 +205,6 @@ resource "pingfederate_data_store" "myPingDirectoryLdapDataStore" {
     connection_timeout     = 300
     binary_attributes      = []
     dns_ttl                = 6000
-    ldap_dns_srv_prefix    = "_ldap._tcp"
-    ldaps_dns_srv_prefix   = "_ldaps._tcp"
   }
 }
 

@@ -20,8 +20,6 @@ import (
 const ldapDataStoreId = "ldapDataStoreId"
 const dataStoreType = "LDAP"
 const ldapType = "PING_DIRECTORY"
-const ldapDnsSrvPrefix = "_ldap._tcp."
-const ldapsDnsSrvPrefix = "_ldaps._tcp."
 const verifyHost = false
 const hostnames = "pingdirectory:1389"
 const userDn = "cn=userDN"
@@ -51,17 +49,17 @@ func updatedLdapDataStore() *client.LdapDataStore {
 	updatedLdapDataStore.Name = pointers.String("updatedLdapDataStore")
 	updatedLdapDataStore.Type = dataStoreType
 	updatedLdapDataStore.LdapType = ldapType
-	updatedLdapDataStore.MaskAttributeValues = pointers.Bool(true)
 	updatedLdapDataStore.BindAnonymously = pointers.Bool(true)
 	updatedLdapDataStore.UserDN = pointers.String(userDn)
 	updatedLdapDataStore.Password = pointers.String(passwordVal)
 	updatedLdapDataStore.Hostnames = []string{hostnames}
+	updatedLdapDataStore.VerifyHost = pointers.Bool(verifyHost)
+	updatedLdapDataStore.MaskAttributeValues = pointers.Bool(true)
 	updatedLdapDataStore.UseSsl = pointers.Bool(true)
 	updatedLdapDataStore.UseDnsSrvRecords = pointers.Bool(true)
 	updatedLdapDataStore.TestOnBorrow = pointers.Bool(true)
 	updatedLdapDataStore.TestOnReturn = pointers.Bool(true)
 	updatedLdapDataStore.CreateIfNecessary = pointers.Bool(true)
-	updatedLdapDataStore.VerifyHost = pointers.Bool(verifyHost)
 	updatedLdapDataStore.MinConnections = pointers.Int64(1)
 	updatedLdapDataStore.MaxConnections = pointers.Int64(200)
 	updatedLdapDataStore.MaxWait = pointers.Int64(1000)
@@ -70,8 +68,8 @@ func updatedLdapDataStore() *client.LdapDataStore {
 	updatedLdapDataStore.ConnectionTimeout = pointers.Int64(600)
 	updatedLdapDataStore.BinaryAttributes = []string{"updatedBinaryAttribute1", "updatedBinaryAttribute2"}
 	updatedLdapDataStore.DnsTtl = pointers.Int64(3000)
-	updatedLdapDataStore.LdapDnsSrvPrefix = pointers.String(ldapDnsSrvPrefix)
-	updatedLdapDataStore.LdapsDnsSrvPrefix = pointers.String(ldapsDnsSrvPrefix)
+	updatedLdapDataStore.LdapDnsSrvPrefix = pointers.String("_ldap._tcp")
+	updatedLdapDataStore.LdapsDnsSrvPrefix = pointers.String("_ldaps._tcp")
 	return updatedLdapDataStore
 }
 
@@ -216,12 +214,134 @@ func testAccCheckExpectedLdapDataStoreAttributes(config ldapDataStoreResourceMod
 			return err
 		}
 
-		err = acctest.TestAttributesMatchBool(resourceType, pointers.String(ldapDataStoreId), "mask_attribute_values", config.dataStore.GetMaskAttributeValues(), *resp.LdapDataStore.MaskAttributeValues)
+		if config.dataStore.MaskAttributeValues != nil {
+			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(ldapDataStoreId), "mask_attribute_values", *config.dataStore.MaskAttributeValues, *resp.LdapDataStore.MaskAttributeValues)
+			if err != nil {
+				return err
+			}
+		}
+
+		if config.dataStore.BindAnonymously != nil {
+			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(ldapDataStoreId), "bind_anonymously", *config.dataStore.BindAnonymously, *resp.LdapDataStore.BindAnonymously)
+			if err != nil {
+				return err
+			}
+		}
+
+		if config.dataStore.UseSsl != nil {
+			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(ldapDataStoreId), "use_ssl", *config.dataStore.UseSsl, *resp.LdapDataStore.UseSsl)
+			if err != nil {
+				return err
+			}
+		}
+
+		if config.dataStore.UseDnsSrvRecords != nil {
+			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(ldapDataStoreId), "use_dns_srv_records", *config.dataStore.UseDnsSrvRecords, *resp.LdapDataStore.UseDnsSrvRecords)
+			if err != nil {
+				return err
+			}
+		}
+
+		err = acctest.TestAttributesMatchStringSlice(resourceType, pointers.String(ldapDataStoreId), "hostnames", config.dataStore.Hostnames, resp.LdapDataStore.Hostnames)
 		if err != nil {
 			return err
 		}
 
-		// ldapDataStoreObj := resp.LdapDataStore
+		if config.dataStore.TestOnBorrow != nil {
+			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(ldapDataStoreId), "test_on_borrow", *config.dataStore.TestOnBorrow, *resp.LdapDataStore.TestOnBorrow)
+			if err != nil {
+				return err
+			}
+		}
+
+		if config.dataStore.TestOnReturn != nil {
+			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(ldapDataStoreId), "test_on_return", *config.dataStore.TestOnReturn, *resp.LdapDataStore.TestOnReturn)
+			if err != nil {
+				return err
+			}
+		}
+
+		if config.dataStore.CreateIfNecessary != nil {
+			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(ldapDataStoreId), "create_if_necessary", *config.dataStore.CreateIfNecessary, *resp.LdapDataStore.CreateIfNecessary)
+			if err != nil {
+				return err
+			}
+		}
+
+		err = acctest.TestAttributesMatchBool(resourceType, pointers.String(ldapDataStoreId), "verify_host", *config.dataStore.VerifyHost, *resp.LdapDataStore.VerifyHost)
+		if err != nil {
+			return err
+		}
+
+		if config.dataStore.MinConnections != nil {
+			err = acctest.TestAttributesMatchInt(resourceType, pointers.String(ldapDataStoreId), "min_connections", *config.dataStore.MinConnections, *resp.LdapDataStore.MinConnections)
+			if err != nil {
+				return err
+			}
+		}
+
+		if config.dataStore.MaxConnections != nil {
+			err = acctest.TestAttributesMatchInt(resourceType, pointers.String(ldapDataStoreId), "max_connections", *config.dataStore.MaxConnections, *resp.LdapDataStore.MaxConnections)
+			if err != nil {
+				return err
+			}
+		}
+
+		if config.dataStore.MaxWait != nil {
+			err = acctest.TestAttributesMatchInt(resourceType, pointers.String(ldapDataStoreId), "max_wait", *config.dataStore.MaxWait, *resp.LdapDataStore.MaxWait)
+			if err != nil {
+				return err
+			}
+		}
+
+		if config.dataStore.TimeBetweenEvictions != nil {
+			err = acctest.TestAttributesMatchInt(resourceType, pointers.String(ldapDataStoreId), "time_between_evictions", *config.dataStore.TimeBetweenEvictions, *resp.LdapDataStore.TimeBetweenEvictions)
+			if err != nil {
+				return err
+			}
+		}
+
+		if config.dataStore.ReadTimeout != nil {
+			err = acctest.TestAttributesMatchInt(resourceType, pointers.String(ldapDataStoreId), "read_timeout", *config.dataStore.ReadTimeout, *resp.LdapDataStore.ReadTimeout)
+			if err != nil {
+				return err
+			}
+		}
+
+		if config.dataStore.ConnectionTimeout != nil {
+			err = acctest.TestAttributesMatchInt(resourceType, pointers.String(ldapDataStoreId), "connection_timeout", *config.dataStore.ConnectionTimeout, *resp.LdapDataStore.ConnectionTimeout)
+			if err != nil {
+				return err
+			}
+		}
+
+		if config.dataStore.BinaryAttributes != nil {
+			err = acctest.TestAttributesMatchStringSlice(resourceType, pointers.String(ldapDataStoreId), "binary_attributes", config.dataStore.BinaryAttributes, resp.LdapDataStore.BinaryAttributes)
+			if err != nil {
+				return err
+			}
+		}
+
+		if config.dataStore.DnsTtl != nil {
+			err = acctest.TestAttributesMatchInt(resourceType, pointers.String(ldapDataStoreId), "dns_ttl", *config.dataStore.DnsTtl, *resp.LdapDataStore.DnsTtl)
+			if err != nil {
+				return err
+			}
+		}
+
+		if config.dataStore.LdapDnsSrvPrefix != nil {
+			err = acctest.TestAttributesMatchString(resourceType, pointers.String(ldapDataStoreId), "ldap_dns_srv_prefix", *config.dataStore.LdapDnsSrvPrefix, *resp.LdapDataStore.LdapDnsSrvPrefix)
+			if err != nil {
+				return err
+			}
+		}
+
+		if config.dataStore.LdapsDnsSrvPrefix != nil {
+			err = acctest.TestAttributesMatchString(resourceType, pointers.String(ldapDataStoreId), "ldaps_dns_srv_prefix", *config.dataStore.LdapsDnsSrvPrefix, *resp.LdapDataStore.LdapsDnsSrvPrefix)
+			if err != nil {
+				return err
+			}
+		}
 
 		return nil
 	}

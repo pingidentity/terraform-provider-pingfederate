@@ -2,11 +2,14 @@ package datastore
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -47,6 +50,7 @@ func (r *dataStoreResource) Schema(ctx context.Context, req resource.SchemaReque
 				Description: "Whether attribute values should be masked in the log.",
 				Computed:    true,
 				Optional:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 			"custom_data_store":                toSchemaCustomDataStore(),
 			"jdbc_data_store":                  toSchemaJdbcDataStore(),
@@ -55,7 +59,7 @@ func (r *dataStoreResource) Schema(ctx context.Context, req resource.SchemaReque
 		},
 	}
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, false, true,
+	id.ToSchemaCustomId(&schema, false,
 		"The persistent, unique ID for the data store. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.")
 
 	resp.Schema = schema
@@ -74,6 +78,12 @@ func (r *dataStoreResource) Configure(_ context.Context, req resource.ConfigureR
 	r.providerConfig = providerCfg.ProviderConfig
 	r.apiClient = providerCfg.ApiClient
 
+}
+
+func createDataStore(dataStore configurationapi.DataStoreAggregation, dsr *dataStoreResource, con context.Context, resp *resource.CreateResponse) (*client.DataStoreAggregation, *http.Response, error) {
+	apiCreateDataStore := dsr.apiClient.DataStoresAPI.CreateDataStore(config.ProviderBasicAuthContext(con, dsr.providerConfig))
+	apiCreateDataStore = apiCreateDataStore.Body(dataStore)
+	return dsr.apiClient.DataStoresAPI.CreateDataStoreExecute(apiCreateDataStore)
 }
 
 func (r *dataStoreResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -114,10 +124,10 @@ func (r *dataStoreResource) Read(ctx context.Context, req resource.ReadRequest, 
 	dataStoreGetReq, httpResp, err := r.apiClient.DataStoresAPI.GetDataStore(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the DataStore", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Data Store", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  DataStore", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  Data Store", err, httpResp)
 		}
 	}
 
@@ -144,6 +154,12 @@ func (r *dataStoreResource) Read(ctx context.Context, req resource.ReadRequest, 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
+}
+
+func updateDataStore(dataStore configurationapi.DataStoreAggregation, dsr *dataStoreResource, con context.Context, resp *resource.UpdateResponse, id string) (*client.DataStoreAggregation, *http.Response, error) {
+	updateDataStore := dsr.apiClient.DataStoresAPI.UpdateDataStore(config.ProviderBasicAuthContext(con, dsr.providerConfig), id)
+	updateDataStore = updateDataStore.Body(dataStore)
+	return dsr.apiClient.DataStoresAPI.UpdateDataStoreExecute(updateDataStore)
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
@@ -185,7 +201,7 @@ func (r *dataStoreResource) Delete(ctx context.Context, req resource.DeleteReque
 	}
 	httpResp, err := r.apiClient.DataStoresAPI.DeleteDataStore(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a Token Processor to Token Generator Mapping", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a Data Store", err, httpResp)
 		return
 	}
 }

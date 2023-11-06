@@ -2,6 +2,7 @@ package acctest_test
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"testing"
@@ -20,35 +21,32 @@ import (
 const pingOneLdapGatewayDataStoreId = "pingOneLdapGatewayDataStoreId"
 const pingOneLdapGDSType = "PING_ONE_LDAP_GATEWAY"
 const ldapTypeVal = "PING_DIRECTORY"
-const pingOneConnectionRefId = "noeOvj5ltBnf4rcmtZAKdJ"
-const pingOneEnvironmentId = "f5901536-2b60-4d4a-a987-3d56aadad46d"
-const pingOneLdapGatewayId = "3b7b5d9d-1820-4b21-bb29-a5336af65352"
 
 type pingOneLdapGatewayDataStoreResourceModel struct {
 	dataStore *client.PingOneLdapGatewayDataStore
 }
 
-func initialPingOneLdapGatewayDataStore() *client.PingOneLdapGatewayDataStore {
+func initialPingOneLdapGatewayDataStore(pingOneConRef, pingOneEnvId, pingOneLdapGwId string) *client.PingOneLdapGatewayDataStore {
 	initialPingOneLdapGatewayDataStore := client.NewPingOneLdapGatewayDataStoreWithDefaults()
 	initialPingOneLdapGatewayDataStore.Id = pointers.String(pingOneLdapGatewayDataStoreId)
 	initialPingOneLdapGatewayDataStore.Name = pointers.String("initialPingOneLdapGatewayDataStore")
 	initialPingOneLdapGatewayDataStore.LdapType = ldapTypeVal
 	initialPingOneLdapGatewayDataStore.Type = pingOneLdapGDSType
-	initialPingOneLdapGatewayDataStore.PingOneConnectionRef = *client.NewResourceLink(pingOneConnectionRefId)
-	initialPingOneLdapGatewayDataStore.PingOneEnvironmentId = pingOneEnvironmentId
-	initialPingOneLdapGatewayDataStore.PingOneLdapGatewayId = pingOneLdapGatewayId
+	initialPingOneLdapGatewayDataStore.PingOneConnectionRef = *client.NewResourceLink(pingOneConRef)
+	initialPingOneLdapGatewayDataStore.PingOneEnvironmentId = pingOneEnvId
+	initialPingOneLdapGatewayDataStore.PingOneLdapGatewayId = pingOneLdapGwId
 	return initialPingOneLdapGatewayDataStore
 }
 
-func updatedPingOneLdapGatewayDataStore() *client.PingOneLdapGatewayDataStore {
+func updatedPingOneLdapGatewayDataStore(pingOneConRef, pingOneEnvId, pingOneLdapGwId string) *client.PingOneLdapGatewayDataStore {
 	updatedPingOneLdapGatewayDataStore := client.NewPingOneLdapGatewayDataStoreWithDefaults()
 	updatedPingOneLdapGatewayDataStore.Id = pointers.String(pingOneLdapGatewayDataStoreId)
 	updatedPingOneLdapGatewayDataStore.Name = pointers.String("updatedPingOneLdapGatewayDataStore")
 	updatedPingOneLdapGatewayDataStore.LdapType = ldapTypeVal
 	updatedPingOneLdapGatewayDataStore.Type = pingOneLdapGDSType
-	updatedPingOneLdapGatewayDataStore.PingOneConnectionRef = *client.NewResourceLink(pingOneConnectionRefId)
-	updatedPingOneLdapGatewayDataStore.PingOneEnvironmentId = pingOneEnvironmentId
-	updatedPingOneLdapGatewayDataStore.PingOneLdapGatewayId = pingOneLdapGatewayId
+	updatedPingOneLdapGatewayDataStore.PingOneConnectionRef = *client.NewResourceLink(pingOneConRef)
+	updatedPingOneLdapGatewayDataStore.PingOneEnvironmentId = pingOneEnvId
+	updatedPingOneLdapGatewayDataStore.PingOneLdapGatewayId = pingOneLdapGwId
 	updatedPingOneLdapGatewayDataStore.UseSsl = pointers.Bool(true)
 	updatedPingOneLdapGatewayDataStore.Name = pointers.String("myPingOneLdapGatewayDataStore")
 	updatedPingOneLdapGatewayDataStore.MaskAttributeValues = pointers.Bool(true)
@@ -58,12 +56,17 @@ func updatedPingOneLdapGatewayDataStore() *client.PingOneLdapGatewayDataStore {
 
 func TestAccPingOneLdapGatewayDataStore(t *testing.T) {
 	resourceName := "myPingOneLdapGatewayDataStore"
+
+	var pingOneConnectionRefId = os.Getenv("PF_TF_P1_CONNECTION_ID")
+	var pingOneEnvironmentId = os.Getenv("PF_TF_P1_CONNECTION_ENV_ID")
+	var pingOneLdapGatewayId = os.Getenv("PF_TF_P1_LDAP_GATEWAY_ID")
+
 	initialResourceModel := pingOneLdapGatewayDataStoreResourceModel{
-		dataStore: initialPingOneLdapGatewayDataStore(),
+		dataStore: initialPingOneLdapGatewayDataStore(pingOneConnectionRefId, pingOneEnvironmentId, pingOneLdapGatewayId),
 	}
 
 	updatedResourceModel := pingOneLdapGatewayDataStoreResourceModel{
-		dataStore: updatedPingOneLdapGatewayDataStore(),
+		dataStore: updatedPingOneLdapGatewayDataStore(pingOneConnectionRefId, pingOneEnvironmentId, pingOneLdapGatewayId),
 	}
 
 	resource.Test(t, resource.TestCase{

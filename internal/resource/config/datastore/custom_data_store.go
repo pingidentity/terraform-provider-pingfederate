@@ -78,7 +78,13 @@ func toSchemaCustomDataStore() schema.SingleNestedAttribute {
 
 func toStateCustomDataStore(con context.Context, clientValue *client.DataStoreAggregation, plan basetypes.ObjectValue) (types.Object, diag.Diagnostics) {
 	var diags, allDiags diag.Diagnostics
-	customDataStore := *clientValue.CustomDataStore
+
+	if clientValue.CustomDataStore == nil {
+		diags.AddError("Failed to read custom data store from API", "The custom data store was nil")
+	}
+
+	customDataStore := clientValue.CustomDataStore
+
 	pluginDescriptorRef, diags := resourcelink.ToState(con, &customDataStore.PluginDescriptorRef)
 	allDiags = append(allDiags, diags...)
 	parentRef, diags := resourcelink.ToState(con, customDataStore.ParentRef)
@@ -161,17 +167,14 @@ func createCustomDataStore(plan dataStoreResourceModel, con context.Context, req
 		return
 	}
 
-	apiCreateDataStore := dsr.apiClient.DataStoresAPI.CreateDataStore(config.ProviderBasicAuthContext(con, dsr.providerConfig))
-	apiCreateDataStore = apiCreateDataStore.Body(createCustomDataStore)
-	customDataStoreResponse, httpResp, err := dsr.apiClient.DataStoresAPI.CreateDataStoreExecute(apiCreateDataStore)
+	response, httpResponse, err := createDataStore(createCustomDataStore, dsr, con, resp)
 	if err != nil {
-		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while creating the DataStore", err, httpResp)
+		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while creating the DataStore", err, httpResponse)
 		return
 	}
-
 	// Read the response into the state
 	var state dataStoreResourceModel
-	diags = readCustomDataStoreResponse(con, customDataStoreResponse, &state, &plan.CustomDataStore)
+	diags = readCustomDataStoreResponse(con, response, &state, &plan.CustomDataStore)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(con, state)
 	resp.Diagnostics.Append(diags...)
@@ -203,17 +206,14 @@ func updateCustomDataStore(plan dataStoreResourceModel, con context.Context, req
 		return
 	}
 
-	updateCustomDataStoreRequest := dsr.apiClient.DataStoresAPI.UpdateDataStore(config.ProviderBasicAuthContext(con, dsr.providerConfig), plan.Id.ValueString())
-	updateCustomDataStoreRequest = updateCustomDataStoreRequest.Body(updateCustomDataStore)
-	updateCustomDataStoreResponse, httpResp, err := dsr.apiClient.DataStoresAPI.UpdateDataStoreExecute(updateCustomDataStoreRequest)
-	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while updating DataStore", err, httpResp)
+	response, httpResponse, err := updateDataStore(updateCustomDataStore, dsr, con, resp, plan.Id.ValueString())
+	if err != nil {
+		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while updating the DataStore", err, httpResponse)
 		return
 	}
-
 	// Read the response
 	var state dataStoreResourceModel
-	diags = readCustomDataStoreResponse(con, updateCustomDataStoreResponse, &state, &plan.CustomDataStore)
+	diags = readCustomDataStoreResponse(con, response, &state, &plan.CustomDataStore)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
