@@ -266,20 +266,13 @@ func (r *passwordCredentialValidatorResource) Create(ctx context.Context, req re
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for a Password Credential Validator", err.Error())
 		return
 	}
-	_, requestErr := createPasswordCredentialValidators.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of a Password Credential Validator: %s", requestErr.Error())
-	}
+
 	apiCreatePasswordCredentialValidators := r.apiClient.PasswordCredentialValidatorsAPI.CreatePasswordCredentialValidator(ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreatePasswordCredentialValidators = apiCreatePasswordCredentialValidators.Body(*createPasswordCredentialValidators)
 	passwordCredentialValidatorsResponse, httpResp, err := r.apiClient.PasswordCredentialValidatorsAPI.CreatePasswordCredentialValidatorExecute(apiCreatePasswordCredentialValidators)
 	if err != nil {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating a Password Credential Validator", err, httpResp)
 		return
-	}
-	_, responseErr := passwordCredentialValidatorsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of a Password Credential Validator: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -308,11 +301,6 @@ func (r *passwordCredentialValidatorResource) Read(ctx context.Context, req reso
 			ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Password Credential Validator", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadPasswordCredentialValidators.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of a Password Credential Validator: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -355,21 +343,14 @@ func (r *passwordCredentialValidatorResource) Update(ctx context.Context, req re
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for a Password Credential Validator", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of a Password Credential Validator: %s", requestErr.Error())
-	}
+
 	updatePasswordCredentialValidators = updatePasswordCredentialValidators.Body(*createUpdateRequest)
 	updatePasswordCredentialValidatorsResponse, httpResp, err := r.apiClient.PasswordCredentialValidatorsAPI.UpdatePasswordCredentialValidatorExecute(updatePasswordCredentialValidators)
 	if err != nil {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating a Password Credential Validator", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updatePasswordCredentialValidatorsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of a Password Credential Validator: %s", responseErr.Error())
-	}
+
 	// Read the response
 	diags = readPasswordCredentialValidatorResponse(ctx, updatePasswordCredentialValidatorsResponse, &plan, plan.Configuration)
 	resp.Diagnostics.Append(diags...)

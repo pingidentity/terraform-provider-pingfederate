@@ -553,10 +553,6 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Manager", err.Error())
 		return
 	}
-	_, requestErr := createOauthAccessTokenManager.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of an OAuth Access Token Manager: %s", requestErr.Error())
-	}
 
 	apiCreateOauthAccessTokenManager := r.apiClient.OauthAccessTokenManagersAPI.CreateTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateOauthAccessTokenManager = apiCreateOauthAccessTokenManager.Body(*createOauthAccessTokenManager)
@@ -564,10 +560,6 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Access Token Manager", err, httpResp)
 		return
-	}
-	_, responseErr := oauthAccessTokenManagerResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an OAuth Access Token Manager: %s", requestErr.Error())
 	}
 
 	// Read the response into the state
@@ -598,11 +590,6 @@ func (r *oauthAccessTokenManagerResource) Read(ctx context.Context, req resource
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Manager", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadOauthAccessTokenManager.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an OAuth Access Token Manager: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -652,21 +639,14 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Manager", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of an OAuth Access Token Manager: %s", requestErr.Error())
-	}
+
 	updateOauthAccessTokenManager = updateOauthAccessTokenManager.Body(*createUpdateRequest)
 	updateOauthAccessTokenManagerResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.UpdateTokenManagerExecute(updateOauthAccessTokenManager)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an OAuth Access Token Manager", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateOauthAccessTokenManagerResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an OAuth Access Token Manager: %s", responseErr.Error())
-	}
+
 	// Read the response
 	diags = readOauthAccessTokenManagerResponse(ctx, updateOauthAccessTokenManagerResponse, &state, state.Configuration)
 	if diags.HasError() {

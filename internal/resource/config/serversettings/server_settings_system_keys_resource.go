@@ -254,10 +254,6 @@ func (r *serverSettingsSystemKeysResource) Create(ctx context.Context, req resou
 	}
 	createServerSettingsSystemKeys := client.NewSystemKeysWithDefaults()
 	addServerSettingsSystemKeysFields(ctx, createServerSettingsSystemKeys, plan)
-	_, requestErr := createServerSettingsSystemKeys.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Server Settings System Keys: %s", requestErr.Error())
-	}
 
 	apiCreateServerSettingsSystemKeys := r.apiClient.ServerSettingsAPI.UpdateSystemKeys(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateServerSettingsSystemKeys = apiCreateServerSettingsSystemKeys.Body(*createServerSettingsSystemKeys)
@@ -265,10 +261,6 @@ func (r *serverSettingsSystemKeysResource) Create(ctx context.Context, req resou
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Server Settings System Keys", err, httpResp)
 		return
-	}
-	_, responseErr := serverSettingsSystemKeysResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Server Settings System Keys: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -297,11 +289,6 @@ func (r *serverSettingsSystemKeysResource) Read(ctx context.Context, req resourc
 		}
 		return
 	}
-	// Log response JSON
-	_, responseErr := apiReadServerSettingsSystemKeys.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Server Settings System Keys: %s", responseErr.Error())
-	}
 
 	// Read the response into the state
 	id, diags := id.GetID(ctx, req.State)
@@ -329,10 +316,6 @@ func (r *serverSettingsSystemKeysResource) Update(ctx context.Context, req resou
 	}
 	createServerSettingsSystemKeys := client.NewSystemKeysWithDefaults()
 	addServerSettingsSystemKeysFields(ctx, createServerSettingsSystemKeys, plan)
-	_, requestErr := createServerSettingsSystemKeys.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Server Settings System Keys: %s", requestErr.Error())
-	}
 
 	apiCreateServerSettingsSystemKeys := r.apiClient.ServerSettingsAPI.UpdateSystemKeys(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateServerSettingsSystemKeys = apiCreateServerSettingsSystemKeys.Body(*createServerSettingsSystemKeys)
@@ -340,10 +323,6 @@ func (r *serverSettingsSystemKeysResource) Update(ctx context.Context, req resou
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Server Settings System Keys", err, httpResp)
 		return
-	}
-	_, responseErr := serverSettingsSystemKeysResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Server Settings System Keys: %s", responseErr.Error())
 	}
 
 	// Read the response into the state

@@ -121,10 +121,6 @@ func (r *oauthIssuersResource) Create(ctx context.Context, req resource.CreateRe
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for an OAuth Issuer", err.Error())
 		return
 	}
-	_, requestErr := oauthIssuer.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of an OAuth Issuer: %s", requestErr.Error())
-	}
 
 	apiCreateOauthIssuer := r.apiClient.OauthIssuersAPI.AddOauthIssuer(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateOauthIssuer = apiCreateOauthIssuer.Body(*oauthIssuer)
@@ -133,10 +129,6 @@ func (r *oauthIssuersResource) Create(ctx context.Context, req resource.CreateRe
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating an OAuth Issuer", err, httpResp)
 		return
-	}
-	_, responseErr := oauthIssuerResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an OAuth Issuer: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -164,11 +156,6 @@ func (r *oauthIssuersResource) Read(ctx context.Context, req resource.ReadReques
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Issuer", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadOauthIssuer.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an OAuth Issuer: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -199,21 +186,14 @@ func (r *oauthIssuersResource) Update(ctx context.Context, req resource.UpdateRe
 		resp.Diagnostics.AddError("Failed to add optional properties to update request for an OAuth Issuer", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of an OAuth Issuer: %s", requestErr.Error())
-	}
+
 	updateOauthIssuer = updateOauthIssuer.Body(*createUpdateRequest)
 	updateOauthIssuerResponse, httpResp, err := r.apiClient.OauthIssuersAPI.UpdateOauthIssuerExecute(updateOauthIssuer)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an OAuth Issuer", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateOauthIssuerResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an OAuth Issuer: %s", responseErr.Error())
-	}
+
 	// Read the response
 	readOauthIssuersResponse(ctx, updateOauthIssuerResponse, &state, &plan)
 

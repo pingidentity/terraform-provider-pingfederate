@@ -85,21 +85,12 @@ func (r *licenseResource) Create(ctx context.Context, req resource.CreateRequest
 	}
 
 	createLicense := client.NewLicenseFile(plan.FileData.ValueString())
-	_, requestErr := createLicense.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of the License: %s", requestErr.Error())
-	}
-
 	apiCreateLicense := r.apiClient.LicenseAPI.UpdateLicense(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateLicense = apiCreateLicense.Body(*createLicense)
 	licenseResponse, httpResp, err := r.apiClient.LicenseAPI.UpdateLicenseExecute(apiCreateLicense)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the License", err, httpResp)
 		return
-	}
-	_, responseErr := licenseResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the License: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -128,11 +119,6 @@ func (r *licenseResource) Read(ctx context.Context, req resource.ReadRequest, re
 		}
 		return
 	}
-	// Log response JSON
-	_, responseErr := apiReadLicense.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the request of the License: %s", responseErr.Error())
-	}
 
 	// Read the response into the state
 	id, diags := id.GetID(ctx, req.State)
@@ -159,21 +145,13 @@ func (r *licenseResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	updateLicense := r.apiClient.LicenseAPI.UpdateLicense(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewLicenseFile(plan.FileData.ValueString())
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of the License: %s", requestErr.Error())
-	}
 	updateLicense = updateLicense.Body(*createUpdateRequest)
 	updateLicenseResponse, httpResp, err := r.apiClient.LicenseAPI.UpdateLicenseExecute(updateLicense)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the License", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateLicenseResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the License: %s", responseErr.Error())
-	}
+
 	// Read the response
 	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)

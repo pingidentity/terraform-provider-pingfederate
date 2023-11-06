@@ -132,20 +132,13 @@ func (r *certificateCAResource) Create(ctx context.Context, req resource.CreateR
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for a CA Certificate", err.Error())
 		return
 	}
-	_, requestErr := createCertificate.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of a Certificate: %s", requestErr.Error())
-	}
+
 	apiCreateCertificate := r.apiClient.CertificatesCaAPI.ImportTrustedCA(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateCertificate = apiCreateCertificate.Body(*createCertificate)
 	certificateResponse, httpResp, err := r.apiClient.CertificatesCaAPI.ImportTrustedCAExecute(apiCreateCertificate)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating a CA Certificate", err, httpResp)
 		return
-	}
-	_, responseErr := certificateResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of a Certificate: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -175,11 +168,6 @@ func (r *certificateCAResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	// Log response JSON
-	_, responseErr := apiReadCertificate.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of a Certificate: %s", responseErr.Error())
-	}
 	// Read the response into the state
 	readCertificateResponse(ctx, apiReadCertificate, &state, &state, &resp.Diagnostics, state.FileData)
 

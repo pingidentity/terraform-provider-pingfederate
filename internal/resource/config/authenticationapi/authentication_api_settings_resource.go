@@ -152,21 +152,14 @@ func (r *authenticationApiSettingsResource) Create(ctx context.Context, req reso
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Authentication Api Settings", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of the Authentication API Settings: %s", requestErr.Error())
-	}
+
 	updateAuthenticationApiSettings = updateAuthenticationApiSettings.Body(*createUpdateRequest)
 	updateAuthenticationApiSettingsResponse, httpResp, err := r.apiClient.AuthenticationApiAPI.UpdateAuthenticationApiSettingsExecute(updateAuthenticationApiSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Authentication Api Settings", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateAuthenticationApiSettingsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the Authentication API Settings: %s", responseErr.Error())
-	}
+
 	// Read the response
 	var state authenticationApiSettingsResourceModel
 	diags = readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, nil)
@@ -194,11 +187,6 @@ func (r *authenticationApiSettingsResource) Read(ctx context.Context, req resour
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Authentication Api Settings", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadAuthenticationApiSettings.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the Authentication API Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -231,21 +219,14 @@ func (r *authenticationApiSettingsResource) Update(ctx context.Context, req reso
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Authentication Api Settings", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of the Authentication API Settings: %s", requestErr.Error())
-	}
+
 	updateAuthenticationApiSettings = updateAuthenticationApiSettings.Body(*createUpdateRequest)
 	updateAuthenticationApiSettingsResponse, httpResp, err := r.apiClient.AuthenticationApiAPI.UpdateAuthenticationApiSettingsExecute(updateAuthenticationApiSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Authentication Api Settings", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateAuthenticationApiSettingsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the Authentication API Settings: %s", responseErr.Error())
-	}
+
 	// Read the response
 	var state authenticationApiSettingsResourceModel
 	id, diags := id.GetID(ctx, req.State)

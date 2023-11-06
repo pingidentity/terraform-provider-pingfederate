@@ -2,32 +2,16 @@ package oauth
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopeentry"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopegroupentry"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -37,70 +21,22 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource                = &oauthAuthServerSettingsResource{}
-	_ resource.ResourceWithConfigure   = &oauthAuthServerSettingsResource{}
-	_ resource.ResourceWithImportState = &oauthAuthServerSettingsResource{}
-
-	scopesDefault, _ = types.SetValue(types.ObjectType{AttrTypes: scopeentry.AttrTypes()}, nil)
-
-	scopeGroupsDefault, _ = types.SetValue(types.ObjectType{AttrTypes: map[string]attr.Type{
-		"name":        types.StringType,
-		"description": types.StringType,
-		"scopes":      types.SetType{ElemType: types.StringType},
-	}}, nil)
-
-	persistentGrantReuseGrantTypesDefault, _ = types.SetValue(types.StringType, nil)
-	allowedOriginsDefault, _                 = types.ListValue(types.StringType, nil)
-
-	attributeAttrTypes = map[string]attr.Type{
-		"name": types.StringType,
-	}
-	attributeSetElementType = types.ObjectType{AttrTypes: attributeAttrTypes}
-
-	defaultCoreAttribute1, _ = types.ObjectValue(attributeAttrTypes, map[string]attr.Value{
-		"name": types.StringValue("USER_KEY"),
-	})
-	defaultCoreAttribute2, _ = types.ObjectValue(attributeAttrTypes, map[string]attr.Value{
-		"name": types.StringValue("USER_NAME"),
-	})
-
-	coreAttributesDefault, _ = types.SetValue(attributeSetElementType, []attr.Value{
-		defaultCoreAttribute1,
-		defaultCoreAttribute2,
-	})
-	extendedAttributesDefault, _ = types.SetValue(attributeSetElementType, nil)
-
-	persistentGrantContactDefault, _ = types.ObjectValue(map[string]attr.Type{
-		"core_attributes":     types.SetType{ElemType: attributeSetElementType},
-		"extended_attributes": types.SetType{ElemType: attributeSetElementType},
-	}, map[string]attr.Value{
-		"core_attributes":     coreAttributesDefault,
-		"extended_attributes": extendedAttributesDefault,
-	})
+	_ datasource.DataSource              = &oauthAuthServerSettingsDataSource{}
+	_ datasource.DataSourceWithConfigure = &oauthAuthServerSettingsDataSource{}
 )
 
-var (
-	nameAttributeType = map[string]attr.Type{
-		"name": basetypes.StringType{},
-	}
-	persistentGrantObjContractTypes = map[string]attr.Type{
-		"core_attributes":     basetypes.SetType{ElemType: types.ObjectType{AttrTypes: nameAttributeType}},
-		"extended_attributes": basetypes.SetType{ElemType: types.ObjectType{AttrTypes: nameAttributeType}},
-	}
-)
-
-// OauthAuthServerSettingsResource is a helper function to simplify the provider implementation.
-func OauthAuthServerSettingsResource() resource.Resource {
-	return &oauthAuthServerSettingsResource{}
+// Create a Administrative Account data source
+func NewOauthAuthServerSettingsDataSource() datasource.DataSource {
+	return &oauthAuthServerSettingsDataSource{}
 }
 
-// oauthAuthServerSettingsResource is the resource implementation.
-type oauthAuthServerSettingsResource struct {
+// oauthAuthServerSettingsDataSource is the datasource implementation.
+type oauthAuthServerSettingsDataSource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
 }
 
-type oauthAuthServerSettingsResourceModel struct {
+type oauthAuthServerSettingsDataSourceModel struct {
 	Id                                          types.String `tfsdk:"id"`
 	DefaultScopeDescription                     types.String `tfsdk:"default_scope_description"`
 	Scopes                                      types.Set    `tfsdk:"scopes"`
@@ -147,63 +83,75 @@ type oauthAuthServerSettingsResourceModel struct {
 	JwtSecuredAuthorizationResponseModeLifetime types.Int64  `tfsdk:"jwt_secured_authorization_response_mode_lifetime"`
 }
 
-// GetSchema defines the schema for the resource.
-func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	schema := schema.Schema{
+// GetSchema defines the schema for the datasource.
+func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	schemaDef := schema.Schema{
 		Description: "Manages OAuth Auth Server Settings",
 		Attributes: map[string]schema.Attribute{
 			"default_scope_description": schema.StringAttribute{
 				Description: "The default scope description.",
-				Required:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 			},
 			"scopes": schema.SetNestedAttribute{
 				Description: "The list of common scopes.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     setdefault.StaticValue(scopesDefault),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
 							Description: "The name of the scope.",
-							Required:    true,
+							Required:    false,
+							Optional:    false,
+							Computed:    true,
 							Validators: []validator.String{
 								configvalidators.NoWhitespace(),
 							},
 						},
 						"description": schema.StringAttribute{
 							Description: "The description of the scope that appears when the user is prompted for authorization.",
-							Required:    true,
+							Required:    false,
+							Optional:    false,
+							Computed:    true,
 						},
 						"dynamic": schema.BoolAttribute{
 							Description: "True if the scope is dynamic. (Defaults to false)",
+							Required:    false,
+							Optional:    false,
 							Computed:    true,
-							Optional:    true,
-							Default:     booldefault.StaticBool(false),
 						},
 					},
 				},
 			},
 			"scope_groups": schema.SetNestedAttribute{
 				Description: "The list of common scope groups.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     setdefault.StaticValue(scopeGroupsDefault),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
 							Description: "The name of the scope group.",
-							Required:    true,
+							Required:    false,
+							Optional:    false,
+							Computed:    true,
 							Validators: []validator.String{
 								configvalidators.NoWhitespace(),
 							},
 						},
 						"description": schema.StringAttribute{
 							Description: "The description of the scope group.",
-							Required:    true,
+							Required:    false,
+							Optional:    false,
+							Computed:    true,
 						},
 						"scopes": schema.SetAttribute{
 							Description: "The set of scopes for this scope group.",
-							Required:    true,
+							Required:    false,
+							Optional:    false,
+							Computed:    true,
 							ElementType: types.StringType,
 						},
 					},
@@ -211,52 +159,62 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 			},
 			"exclusive_scopes": schema.SetNestedAttribute{
 				Description: "The list of exclusive scopes.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     setdefault.StaticValue(scopesDefault),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
 							Description: "The name of the scope.",
-							Required:    true,
+							Required:    false,
+							Optional:    false,
+							Computed:    true,
 							Validators: []validator.String{
 								configvalidators.NoWhitespace(),
 							},
 						},
 						"description": schema.StringAttribute{
 							Description: "The description of the scope that appears when the user is prompted for authorization.",
-							Required:    true,
+							Required:    false,
+							Optional:    false,
+							Computed:    true,
 						},
 						"dynamic": schema.BoolAttribute{
 							Description: "True if the scope is dynamic. (Defaults to false)",
+							Required:    false,
+							Optional:    false,
 							Computed:    true,
-							Optional:    true,
-							Default:     booldefault.StaticBool(false),
 						},
 					},
 				},
 			},
 			"exclusive_scope_groups": schema.SetNestedAttribute{
 				Description: "The list of exclusive scope groups.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     setdefault.StaticValue(scopeGroupsDefault),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
 							Description: "The name of the scope group.",
-							Required:    true,
+							Required:    false,
+							Optional:    false,
+							Computed:    true,
 							Validators: []validator.String{
 								configvalidators.NoWhitespace(),
 							},
 						},
 						"description": schema.StringAttribute{
 							Description: "The description of the scope group.",
-							Required:    true,
+							Required:    false,
+							Optional:    false,
+							Computed:    true,
 						},
 						"scopes": schema.SetAttribute{
 							Description: "The set of scopes for this scope group.",
-							Required:    true,
+							Required:    false,
+							Optional:    false,
+							Computed:    true,
 							ElementType: types.StringType,
 						},
 					},
@@ -264,128 +222,135 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 			},
 			"authorization_code_timeout": schema.Int64Attribute{
 				Description: "The authorization code timeout, in seconds.",
-				Required:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 			},
 			"authorization_code_entropy": schema.Int64Attribute{
 				Description: "The authorization code entropy, in bytes.",
-				Required:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 			},
 			"disallow_plain_pkce": schema.BoolAttribute{
 				Description: "Determines whether PKCE's 'plain' code challenge method will be disallowed. The default value is false.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     booldefault.StaticBool(false),
 			},
 			"include_issuer_in_authorization_response": schema.BoolAttribute{
 				Description: "Determines whether the authorization server's issuer value is added to the authorization response or not. The default value is false.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     booldefault.StaticBool(false),
 			},
 			"track_user_sessions_for_logout": schema.BoolAttribute{
 				Description: "Determines whether user sessions are tracked for logout. If this property is not provided on a PUT, the setting is left unchanged.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     booldefault.StaticBool(false),
 			},
 			"token_endpoint_base_url": schema.StringAttribute{
 				Description: "The token endpoint base URL used to validate the 'aud' claim during Private Key JWT Client Authentication.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     stringdefault.StaticString(""),
 			},
 			"persistent_grant_lifetime": schema.Int64Attribute{
 				Description: "The persistent grant lifetime. The default value is indefinite. -1 indicates an indefinite amount of time.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     int64default.StaticInt64(-1),
 			},
 			"persistent_grant_lifetime_unit": schema.StringAttribute{
 				Description: "The persistent grant lifetime unit.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     stringdefault.StaticString("DAYS"),
 				Validators: []validator.String{
 					stringvalidator.OneOf([]string{"MINUTES", "DAYS", "HOURS"}...),
 				},
 			},
 			"persistent_grant_idle_timeout": schema.Int64Attribute{
 				Description: "The persistent grant idle timeout. The default value is 30 (days). -1 indicates an indefinite amount of time.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     int64default.StaticInt64(30),
 			},
 			"persistent_grant_idle_timeout_time_unit": schema.StringAttribute{
 				Description: "The persistent grant idle timeout time unit. The default value is DAYS",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     stringdefault.StaticString("DAYS"),
 				Validators: []validator.String{
 					stringvalidator.OneOf([]string{"MINUTES", "DAYS", "HOURS"}...),
 				},
 			},
 			"refresh_token_length": schema.Int64Attribute{
 				Description: "The refresh token length in number of characters.",
-				Required:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 			},
 			"roll_refresh_token_values": schema.BoolAttribute{
 				Description: "The roll refresh token values default policy. The default value is true.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     booldefault.StaticBool(true),
 			},
 			"refresh_token_rolling_grace_period": schema.Int64Attribute{
 				Description: "The grace period that a rolled refresh token remains valid in seconds. The default value is 0.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     int64default.StaticInt64(0),
 			},
 			"refresh_rolling_interval": schema.Int64Attribute{
 				Description: "The minimum interval to roll refresh tokens, in hours.",
-				Required:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 			},
 			"persistent_grant_reuse_grant_types": schema.SetAttribute{
 				Description: "The grant types that the OAuth AS can reuse rather than creating a new grant for each request. Only 'IMPLICIT' or 'AUTHORIZATION_CODE' or 'RESOURCE_OWNER_CREDENTIALS' are valid grant types.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     setdefault.StaticValue(persistentGrantReuseGrantTypesDefault),
 				ElementType: types.StringType,
 			},
 			"persistent_grant_contract": schema.SingleNestedAttribute{
 				Description: "The persistent grant contract defines attributes that are associated with OAuth persistent grants.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     objectdefault.StaticValue(persistentGrantContactDefault),
 				Attributes: map[string]schema.Attribute{
 					"core_attributes": schema.SetNestedAttribute{
 						Description: "This is a read-only list of persistent grant attributes and includes USER_KEY and USER_NAME. Changes to this field will be ignored.",
-						Computed:    true,
+						Required:    false,
 						Optional:    false,
-						Default:     setdefault.StaticValue(coreAttributesDefault),
+						Computed:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
 									Description: "The name of this attribute.",
-									Computed:    true,
+									Required:    false,
 									Optional:    false,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
+									Computed:    true,
 								},
 							},
-						},
-						PlanModifiers: []planmodifier.Set{
-							setplanmodifier.UseStateForUnknown(),
 						},
 					},
 					"extended_attributes": schema.SetNestedAttribute{
 						Description: "A list of additional attributes for the persistent grant contract.",
-						Optional:    true,
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
 									Description: "The name of this attribute.",
-									Required:    true,
+									Required:    false,
+									Optional:    false,
+									Computed:    true,
 								},
 							},
 						},
@@ -394,367 +359,166 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 			},
 			"bypass_authorization_for_approved_grants": schema.BoolAttribute{
 				Description: "Bypass authorization for previously approved persistent grants. The default value is false.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     booldefault.StaticBool(false),
 			},
 			"allow_unidentified_client_ro_creds": schema.BoolAttribute{
 				Description: "Allow unidentified clients to request resource owner password credentials grants. The default value is false.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     booldefault.StaticBool(false),
 			},
 			"allow_unidentified_client_extension_grants": schema.BoolAttribute{
 				Description: "Allow unidentified clients to request extension grants. The default value is false.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     booldefault.StaticBool(false),
 			},
 			"admin_web_service_pcv_ref": schema.SingleNestedAttribute{
 				Description: "The password credential validator reference that is used for authenticating access to the OAuth Administrative Web Service.",
-				Optional:    true,
-				Attributes:  resourcelink.ToSchema(),
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+				Attributes:  resourcelink.ToDataSourceSchema(),
 			},
 			"atm_id_for_oauth_grant_management": schema.StringAttribute{
 				Description: "The ID of the Access Token Manager used for OAuth enabled grant management.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     stringdefault.StaticString(""),
 			},
 			"scope_for_oauth_grant_management": schema.StringAttribute{
 				Description: "The OAuth scope to validate when accessing grant management service.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     stringdefault.StaticString(""),
 			},
 			"allowed_origins": schema.ListAttribute{
 				Description: "The list of allowed origins.",
 				ElementType: types.StringType,
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     listdefault.StaticValue(allowedOriginsDefault),
 				Validators: []validator.List{
 					configvalidators.ValidUrls(),
 				},
 			},
 			"user_authorization_url": schema.StringAttribute{
 				Description: "The URL used to generate 'verification_url' and 'verification_url_complete' values in a Device Authorization request",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     stringdefault.StaticString(""),
 			},
 			"registered_authorization_path": schema.StringAttribute{
 				Description: "The Registered Authorization Path is concatenated to PingFederate base URL to generate 'verification_url' and 'verification_url_complete' values in a Device Authorization request. PingFederate listens to this path if specified",
-				Required:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 				Validators: []validator.String{
 					configvalidators.StartsWith("/"),
 				},
 			},
 			"pending_authorization_timeout": schema.Int64Attribute{
 				Description: "The 'device_code' and 'user_code' timeout, in seconds.",
-				Required:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 			},
 			"device_polling_interval": schema.Int64Attribute{
 				Description: "The amount of time client should wait between polling requests, in seconds.",
-				Required:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 			},
 			"activation_code_check_mode": schema.StringAttribute{
 				Description: "Determines whether the user is prompted to enter or confirm the activation code after authenticating or before. The default is AFTER_AUTHENTICATION.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     stringdefault.StaticString("AFTER_AUTHENTICATION"),
 				Validators: []validator.String{
 					stringvalidator.OneOf([]string{"AFTER_AUTHENTICATION", "BEFORE_AUTHENTICATION"}...),
 				},
 			},
 			"bypass_activation_code_confirmation": schema.BoolAttribute{
 				Description: "Indicates if the Activation Code Confirmation page should be bypassed if 'verification_url_complete' is used by the end user to authorize a device.",
-				Required:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 			},
 			"user_authorization_consent_page_setting": schema.StringAttribute{
 				Description: "User Authorization Consent Page setting to use PingFederate's internal consent page or an external system",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     stringdefault.StaticString("INTERNAL"),
 				Validators: []validator.String{
 					stringvalidator.OneOf([]string{"INTERNAL", "ADAPTER"}...),
 				},
 			},
 			"user_authorization_consent_adapter": schema.StringAttribute{
 				Description: "Adapter ID of the external consent adapter to be used for the consent page user interface.",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 			},
 			"approved_scopes_attribute": schema.StringAttribute{
 				Description: "Attribute from the external consent adapter's contract, intended for storing approved scopes returned by the external consent page.",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 			},
 			"approved_authorization_detail_attribute": schema.StringAttribute{
 				Description: "Attribute from the external consent adapter's contract, intended for storing approved authorization details returned by the external consent page.",
-				Optional:    true,
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
 			},
 			"par_reference_timeout": schema.Int64Attribute{
 				Description: "The timeout, in seconds, of the pushed authorization request reference. The default value is 60.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     int64default.StaticInt64(60),
 			},
 			"par_reference_length": schema.Int64Attribute{
 				Description: "The entropy of pushed authorization request references, in bytes. The default value is 24.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     int64default.StaticInt64(24),
 			},
 			"par_status": schema.StringAttribute{
 				Description: "The status of pushed authorization request support. The default value is ENABLED.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     stringdefault.StaticString("ENABLED"),
 				Validators: []validator.String{
 					stringvalidator.OneOf([]string{"DISABLED", "ENABLED", "REQUIRED"}...),
 				},
 			},
 			"client_secret_retention_period": schema.Int64Attribute{
 				Description: "The length of time in minutes that client secrets will be retained as secondary secrets after secret change. The default value is 0, which will disable secondary client secret retention.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     int64default.StaticInt64(0),
 			},
 			"jwt_secured_authorization_response_mode_lifetime": schema.Int64Attribute{
 				Description: "The lifetime, in seconds, of the JWT Secured authorization response. The default value is 600.",
+				Required:    false,
+				Optional:    false,
 				Computed:    true,
-				Optional:    true,
-				Default:     int64default.StaticInt64(600),
 			},
 		},
 	}
-
-	id.ToSchema(&schema)
-	resp.Schema = schema
+	id.ToSchema(&schemaDef)
+	resp.Schema = schemaDef
 }
 
-func (r *oauthAuthServerSettingsResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-
-	var model oauthAuthServerSettingsResourceModel
-	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
-
-	// Scope list for comparing values in matchNameBtwnScopes variable
-	scopeNames := []string{}
-	// Test scope names for dynamic true, string must be prepended with *
-	if internaltypes.IsDefined(model.Scopes) {
-		scopeElems := model.Scopes.Elements()
-		for _, scopeElem := range scopeElems {
-			scopeElemObjectAttrs := scopeElem.(types.Object)
-			scopeEntryName := scopeElemObjectAttrs.Attributes()["name"].(basetypes.StringValue).ValueString()
-			scopeNames = append(scopeNames, scopeEntryName)
-			scopeEntryIsDynamic := scopeElemObjectAttrs.Attributes()["dynamic"].(basetypes.BoolValue).ValueBool()
-			if scopeEntryIsDynamic {
-				if strings.Index(scopeEntryName, "*") != 0 {
-					resp.Diagnostics.AddError("Scope name conflict!", fmt.Sprintf("Scope name \"%s\" must be prefixed with a \"*\" when dynamic is set to true.", scopeEntryName))
-				}
-			}
-		}
-	}
-
-	// Test exclusive scope names for dynamic true, string must be prepended with *
-	eScopeNames := []string{}
-	if internaltypes.IsDefined(model.ExclusiveScopes) {
-		exclusiveScopeElems := model.ExclusiveScopes.Elements()
-		for _, esElem := range exclusiveScopeElems {
-			esElemObjectAttrs := esElem.(types.Object)
-			eScopeEntryName := esElemObjectAttrs.Attributes()["name"].(basetypes.StringValue).ValueString()
-			eScopeNames = append(eScopeNames, eScopeEntryName)
-			eScopeEntryIsDynamic := esElemObjectAttrs.Attributes()["dynamic"].(basetypes.BoolValue).ValueBool()
-			if eScopeEntryIsDynamic {
-				if strings.Index(eScopeEntryName, "*") != 0 {
-					resp.Diagnostics.AddError("Exclusive scope name conflict!", fmt.Sprintf("Scope name \"%s\" must be prefixed with a \"*\" when dynamic is set to true.", eScopeEntryName))
-				}
-			}
-		}
-	}
-
-	// Test if values in sets match
-	matchVal := internaltypes.MatchStringInSets(scopeNames, eScopeNames)
-	if matchVal != nil {
-		resp.Diagnostics.AddError("Scope name conflict!", fmt.Sprintf("The scope name \"%s\" is already defined in another scope list", *matchVal))
-	}
-}
-
-func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *client.AuthorizationServerSettings, plan oauthAuthServerSettingsResourceModel) error {
-
-	if internaltypes.IsDefined(plan.Scopes) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.Scopes, false)), &addRequest.Scopes)
-		if err != nil {
-			return err
-		}
-	}
-
-	if internaltypes.IsDefined(plan.ScopeGroups) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ScopeGroups, false)), &addRequest.ScopeGroups)
-		if err != nil {
-			return err
-		}
-	}
-
-	if internaltypes.IsDefined(plan.ExclusiveScopes) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ExclusiveScopes, false)), &addRequest.ExclusiveScopes)
-		if err != nil {
-			return err
-		}
-	}
-
-	if internaltypes.IsDefined(plan.ExclusiveScopeGroups) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ExclusiveScopeGroups, false)), &addRequest.ExclusiveScopeGroups)
-		if err != nil {
-			return err
-		}
-	}
-
-	if internaltypes.IsDefined(plan.DisallowPlainPKCE) {
-		addRequest.DisallowPlainPKCE = plan.DisallowPlainPKCE.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.IncludeIssuerInAuthorizationResponse) {
-		addRequest.IncludeIssuerInAuthorizationResponse = plan.IncludeIssuerInAuthorizationResponse.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.TrackUserSessionsForLogout) {
-		addRequest.TrackUserSessionsForLogout = plan.TrackUserSessionsForLogout.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.TokenEndpointBaseUrl) {
-		addRequest.TokenEndpointBaseUrl = plan.TokenEndpointBaseUrl.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.PersistentGrantLifetime) {
-		addRequest.PersistentGrantLifetime = plan.PersistentGrantLifetime.ValueInt64Pointer()
-	}
-
-	if internaltypes.IsDefined(plan.PersistentGrantLifetimeUnit) {
-		addRequest.PersistentGrantLifetimeUnit = plan.PersistentGrantLifetimeUnit.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.PersistentGrantIdleTimeout) {
-		addRequest.PersistentGrantIdleTimeout = plan.PersistentGrantIdleTimeout.ValueInt64Pointer()
-	}
-
-	if internaltypes.IsDefined(plan.PersistentGrantIdleTimeoutTimeUnit) {
-		addRequest.PersistentGrantIdleTimeoutTimeUnit = plan.PersistentGrantIdleTimeoutTimeUnit.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.RollRefreshTokenValues) {
-		addRequest.RollRefreshTokenValues = plan.RollRefreshTokenValues.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.RefreshTokenRollingGracePeriod) {
-		addRequest.RefreshTokenRollingGracePeriod = plan.RefreshTokenRollingGracePeriod.ValueInt64Pointer()
-	}
-
-	if internaltypes.IsDefined(plan.PersistentGrantReuseGrantTypes) {
-		var slice []string
-		plan.PersistentGrantReuseGrantTypes.ElementsAs(ctx, &slice, false)
-		addRequest.PersistentGrantReuseGrantTypes = slice
-	}
-
-	if internaltypes.IsDefined(plan.PersistentGrantContract) {
-		addRequest.PersistentGrantContract = client.NewPersistentGrantContractWithDefaults()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.PersistentGrantContract, false)), addRequest.PersistentGrantContract)
-		if err != nil {
-			return err
-		}
-	}
-
-	if internaltypes.IsDefined(plan.BypassAuthorizationForApprovedGrants) {
-		addRequest.BypassAuthorizationForApprovedGrants = plan.BypassAuthorizationForApprovedGrants.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.AllowUnidentifiedClientROCreds) {
-		addRequest.AllowUnidentifiedClientROCreds = plan.AllowUnidentifiedClientROCreds.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.AllowUnidentifiedClientExtensionGrants) {
-		addRequest.AllowUnidentifiedClientExtensionGrants = plan.AllowUnidentifiedClientExtensionGrants.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.AdminWebServicePcvRef) {
-		addRequest.AdminWebServicePcvRef = client.NewResourceLinkWithDefaults()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AdminWebServicePcvRef, false)), addRequest.AdminWebServicePcvRef)
-		if err != nil {
-			return err
-		}
-	}
-
-	if internaltypes.IsDefined(plan.AtmIdForOAuthGrantManagement) {
-		addRequest.AtmIdForOAuthGrantManagement = plan.AtmIdForOAuthGrantManagement.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.ScopeForOAuthGrantManagement) {
-		addRequest.ScopeForOAuthGrantManagement = plan.ScopeForOAuthGrantManagement.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.AllowedOrigins) {
-		var slice []string
-		plan.AllowedOrigins.ElementsAs(ctx, &slice, false)
-		addRequest.AllowedOrigins = slice
-	}
-
-	if internaltypes.IsDefined(plan.UserAuthorizationUrl) {
-		addRequest.UserAuthorizationUrl = plan.UserAuthorizationUrl.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.DevicePollingInterval) {
-		addRequest.DevicePollingInterval = plan.DevicePollingInterval.ValueInt64()
-	}
-
-	if internaltypes.IsDefined(plan.ActivationCodeCheckMode) {
-		addRequest.ActivationCodeCheckMode = plan.ActivationCodeCheckMode.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.UserAuthorizationConsentPageSetting) {
-		addRequest.UserAuthorizationConsentPageSetting = plan.UserAuthorizationConsentPageSetting.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.UserAuthorizationConsentAdapter) {
-		addRequest.UserAuthorizationConsentAdapter = plan.UserAuthorizationConsentAdapter.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.ApprovedScopesAttribute) {
-		addRequest.ApprovedScopesAttribute = plan.ApprovedScopesAttribute.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.ApprovedAuthorizationDetailAttribute) {
-		addRequest.ApprovedAuthorizationDetailAttribute = plan.ApprovedAuthorizationDetailAttribute.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.ParReferenceTimeout) {
-		addRequest.ParReferenceTimeout = plan.ParReferenceTimeout.ValueInt64Pointer()
-	}
-
-	if internaltypes.IsDefined(plan.ParReferenceLength) {
-		addRequest.ParReferenceLength = plan.ParReferenceLength.ValueInt64Pointer()
-	}
-
-	if internaltypes.IsDefined(plan.ParStatus) {
-		addRequest.ParStatus = plan.ParStatus.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.ClientSecretRetentionPeriod) {
-		addRequest.ClientSecretRetentionPeriod = plan.ClientSecretRetentionPeriod.ValueInt64Pointer()
-	}
-
-	if internaltypes.IsDefined(plan.JwtSecuredAuthorizationResponseModeLifetime) {
-		addRequest.JwtSecuredAuthorizationResponseModeLifetime = plan.JwtSecuredAuthorizationResponseModeLifetime.ValueInt64Pointer()
-	}
-
-	return nil
-
-}
-
-// Metadata returns the resource type name.
-func (r *oauthAuthServerSettingsResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+// Metadata returns the data source type name.
+func (r *oauthAuthServerSettingsDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_oauth_auth_server_settings"
 }
 
-func (r *oauthAuthServerSettingsResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
+// Configure adds the provider configured client to the data source.
+func (r *oauthAuthServerSettingsDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, _ *datasource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -762,10 +526,10 @@ func (r *oauthAuthServerSettingsResource) Configure(_ context.Context, req resou
 	providerCfg := req.ProviderData.(internaltypes.ResourceConfiguration)
 	r.providerConfig = providerCfg.ProviderConfig
 	r.apiClient = providerCfg.ApiClient
-
 }
 
-func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsResourceModel, existingId *string) diag.Diagnostics {
+// Read a OauthAuthServerSettingsResponse object into the model struct
+func readOauthAuthServerSettingsResponseDataSource(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsDataSourceModel, existingId *string) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.Id = id.GenerateUUIDToState(existingId)
 	state.DefaultScopeDescription = types.StringValue(r.DefaultScopeDescription)
@@ -799,7 +563,7 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 	state.BypassAuthorizationForApprovedGrants = types.BoolPointerValue(r.BypassAuthorizationForApprovedGrants)
 	state.AllowUnidentifiedClientROCreds = types.BoolPointerValue(r.AllowUnidentifiedClientROCreds)
 	state.AllowUnidentifiedClientExtensionGrants = types.BoolPointerValue(r.AllowUnidentifiedClientExtensionGrants)
-	state.AdminWebServicePcvRef, respDiags = resourcelink.ToState(ctx, r.AdminWebServicePcvRef)
+	state.AdminWebServicePcvRef, respDiags = resourcelink.ToDataSourceState(ctx, r.AdminWebServicePcvRef)
 	diags.Append(respDiags...)
 	state.AtmIdForOAuthGrantManagement = types.StringPointerValue(r.AtmIdForOAuthGrantManagement)
 	state.ScopeForOAuthGrantManagement = types.StringPointerValue(r.ScopeForOAuthGrantManagement)
@@ -822,118 +586,25 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 	return diags
 }
 
-func (r *oauthAuthServerSettingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan oauthAuthServerSettingsResourceModel
+// Read resource information
+func (r *oauthAuthServerSettingsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var state oauthAuthServerSettingsDataSourceModel
 
-	diags := req.Plan.Get(ctx, &plan)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	var diags diag.Diagnostics
 
-	createOauthAuthServerSettings := client.NewAuthorizationServerSettings(plan.DefaultScopeDescription.ValueString(), plan.AuthorizationCodeTimeout.ValueInt64(), plan.AuthorizationCodeEntropy.ValueInt64(), plan.RefreshTokenLength.ValueInt64(), plan.RefreshRollingInterval.ValueInt64(), plan.RegisteredAuthorizationPath.ValueString(), plan.PendingAuthorizationTimeout.ValueInt64(), plan.DevicePollingInterval.ValueInt64(), plan.BypassActivationCodeConfirmation.ValueBool())
-	err := addOptionalOauthAuthServerSettingsFields(ctx, createOauthAuthServerSettings, plan)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Auth Server Settings", err.Error())
-		return
-	}
-
-	apiCreateOauthAuthServerSettings := r.apiClient.OauthAuthServerSettingsAPI.UpdateAuthorizationServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
-	apiCreateOauthAuthServerSettings = apiCreateOauthAuthServerSettings.Body(*createOauthAuthServerSettings)
-	oauthAuthServerSettingsResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.UpdateAuthorizationServerSettingsExecute(apiCreateOauthAuthServerSettings)
-	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Auth Server Settings", err, httpResp)
-		return
-	}
-
-	// Read the response into the state
-	var state oauthAuthServerSettingsResourceModel
-	diags = readOauthAuthServerSettingsResponse(ctx, oauthAuthServerSettingsResponse, &state, nil)
-	resp.Diagnostics.Append(diags...)
-	diags = resp.State.Set(ctx, state)
-	resp.Diagnostics.Append(diags...)
-}
-
-func (r *oauthAuthServerSettingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state oauthAuthServerSettingsResourceModel
-
-	diags := req.State.Get(ctx, &state)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
 	apiReadOauthAuthServerSettings, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.GetAuthorizationServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 
 	if err != nil {
-		if httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Auth Server Settings", err, httpResp)
-			resp.State.RemoveResource(ctx)
-		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Auth Server Settings", err, httpResp)
-		}
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Auth Server Settings", err, httpResp)
 		return
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readOauthAuthServerSettingsResponse(ctx, apiReadOauthAuthServerSettings, &state, id)
+	var id = "oauth_auth_server_settings_id"
+	diags = readOauthAuthServerSettingsResponseDataSource(ctx, apiReadOauthAuthServerSettings, &state, &id)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
-}
-
-// Update updates the resource and sets the updated Terraform state on success.
-func (r *oauthAuthServerSettingsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Retrieve values from plan
-	var plan oauthAuthServerSettingsResourceModel
-	diags := req.Plan.Get(ctx, &plan)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// Get the current state to see how any attributes are changing
-	updateOauthAuthServerSettings := r.apiClient.OauthAuthServerSettingsAPI.UpdateAuthorizationServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
-	createUpdateRequest := client.NewAuthorizationServerSettings(plan.DefaultScopeDescription.ValueString(), plan.AuthorizationCodeTimeout.ValueInt64(), plan.AuthorizationCodeEntropy.ValueInt64(), plan.RefreshTokenLength.ValueInt64(), plan.RefreshRollingInterval.ValueInt64(), plan.RegisteredAuthorizationPath.ValueString(), plan.PendingAuthorizationTimeout.ValueInt64(), plan.DevicePollingInterval.ValueInt64(), plan.BypassActivationCodeConfirmation.ValueBool())
-	err := addOptionalOauthAuthServerSettingsFields(ctx, createUpdateRequest, plan)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Auth Server Settings", err.Error())
-		return
-	}
-
-	updateOauthAuthServerSettings = updateOauthAuthServerSettings.Body(*createUpdateRequest)
-	updateOauthAuthServerSettingsResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.UpdateAuthorizationServerSettingsExecute(updateOauthAuthServerSettings)
-	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OAuth Auth Server Settings", err, httpResp)
-		return
-	}
-
-	// Read the response
-	var state oauthAuthServerSettingsResourceModel
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readOauthAuthServerSettingsResponse(ctx, updateOauthAuthServerSettingsResponse, &state, id)
-	resp.Diagnostics.Append(diags...)
-
-	// Update computed values
-	diags = resp.State.Set(ctx, state)
-	resp.Diagnostics.Append(diags...)
-}
-
-// This config object is edit-only, so Terraform can't delete it.
-func (r *oauthAuthServerSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-}
-
-func (r *oauthAuthServerSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

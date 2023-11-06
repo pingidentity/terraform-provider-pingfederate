@@ -121,10 +121,6 @@ func (r *sessionSettingsResource) Create(ctx context.Context, req resource.Creat
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Session Settings", err.Error())
 		return
 	}
-	_, requestErr := createSessionSettings.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Session Settings: %s", requestErr.Error())
-	}
 
 	apiCreateSessionSettings := r.apiClient.SessionAPI.UpdateSessionSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateSessionSettings = apiCreateSessionSettings.Body(*createSessionSettings)
@@ -132,10 +128,6 @@ func (r *sessionSettingsResource) Create(ctx context.Context, req resource.Creat
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Session Settings", err, httpResp)
 		return
-	}
-	_, responseErr := sessionSettingsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Session Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -163,11 +155,6 @@ func (r *sessionSettingsResource) Read(ctx context.Context, req resource.ReadReq
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Session Settings", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadSessionSettings.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Session Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -200,20 +187,12 @@ func (r *sessionSettingsResource) Update(ctx context.Context, req resource.Updat
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Session Settings", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Session Settings: %s", requestErr.Error())
-	}
+
 	updateSessionSettings = updateSessionSettings.Body(*createUpdateRequest)
 	updateSessionSettingsResponse, httpResp, err := r.apiClient.SessionAPI.UpdateSessionSettingsExecute(updateSessionSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Session Settings", err, httpResp)
 		return
-	}
-	// Log response JSON
-	_, responseErr := updateSessionSettingsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Session Settings: %s", responseErr.Error())
 	}
 
 	// Get the current state to see how any attributes are changing

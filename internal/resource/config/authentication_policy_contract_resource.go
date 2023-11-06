@@ -204,10 +204,6 @@ func (r *authenticationPolicyContractResource) Create(ctx context.Context, req r
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for an Authentication Policy Contract", err.Error())
 		return
 	}
-	_, requestErr := createAuthenticationPolicyContracts.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of an Authentication Policy Contract: %s", requestErr.Error())
-	}
 
 	apiCreateAuthenticationPolicyContracts := r.apiClient.AuthenticationPolicyContractsAPI.CreateAuthenticationPolicyContract(ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateAuthenticationPolicyContracts = apiCreateAuthenticationPolicyContracts.Body(*createAuthenticationPolicyContracts)
@@ -216,10 +212,7 @@ func (r *authenticationPolicyContractResource) Create(ctx context.Context, req r
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating an Authentication Policy Contract", err, httpResp)
 		return
 	}
-	_, responseErr := authenticationPolicyContractsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an Authentication Policy Contract: %s", responseErr.Error())
-	}
+
 	// Read the response into the state
 	var state authenticationPolicyContractResourceModel
 
@@ -246,11 +239,6 @@ func (r *authenticationPolicyContractResource) Read(ctx context.Context, req res
 			ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Authentication Policy Contract", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadAuthenticationPolicyContracts.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an Authentication Policy Contract: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -281,21 +269,14 @@ func (r *authenticationPolicyContractResource) Update(ctx context.Context, req r
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for an Authentication Policy Contract", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of an Authentication Policy Contract: %s", requestErr.Error())
-	}
+
 	updateAuthenticationPolicyContracts = updateAuthenticationPolicyContracts.Body(*createUpdateRequest)
 	updateAuthenticationPolicyContractsResponse, httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.UpdateAuthenticationPolicyContractExecute(updateAuthenticationPolicyContracts)
 	if err != nil {
 		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an Authentication Policy Contract", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateAuthenticationPolicyContractsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an Authentication Policy Contract: %s", responseErr.Error())
-	}
+
 	// Read the response
 	diags = readAuthenticationPolicyContractsResponse(ctx, updateAuthenticationPolicyContractsResponse, &state, &plan)
 	resp.Diagnostics.Append(diags...)

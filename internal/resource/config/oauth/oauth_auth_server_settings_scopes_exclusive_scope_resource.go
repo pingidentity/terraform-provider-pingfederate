@@ -137,10 +137,6 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Create(ctx contex
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Auth Server Settings Scopes Exclusive Scope", err.Error())
 		return
 	}
-	_, requestErr := createOauthAuthServerSettingsScopesExclusiveScopes.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of an OAuth Auth Server Settings Scopes Exclusive Scope: %s", requestErr.Error())
-	}
 
 	apiCreateOauthAuthServerSettingsScopesExclusiveScopes := r.apiClient.OauthAuthServerSettingsAPI.AddExclusiveScope(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateOauthAuthServerSettingsScopesExclusiveScopes = apiCreateOauthAuthServerSettingsScopesExclusiveScopes.Body(*createOauthAuthServerSettingsScopesExclusiveScopes)
@@ -148,10 +144,6 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Create(ctx contex
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Auth Server Settings Scopes Exclusive Scope", err, httpResp)
 		return
-	}
-	_, responseErr := oauthAuthServerSettingsScopesExclusiveScopesResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an OAuth Auth Server Settings Scopes Exclusive Scope: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -179,11 +171,6 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Read(ctx context.
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Auth Server Settings Scopes Exclusive Scope", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadOauthAuthServerSettingsScopesExclusiveScopes.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an OAuth Auth Server Settings Scopes Exclusive Scope: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -214,21 +201,14 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Update(ctx contex
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Auth Server Settings Scopes Exclusive Scope", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of an OAuth Auth Server Settings Scopes Exclusive Scope: %s", requestErr.Error())
-	}
+
 	updateOauthAuthServerSettingsScopesExclusiveScopes = updateOauthAuthServerSettingsScopesExclusiveScopes.Body(*createUpdateRequest)
 	updateOauthAuthServerSettingsScopesExclusiveScopesResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.UpdateExclusiveScopeExecute(updateOauthAuthServerSettingsScopesExclusiveScopes)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OAuth Auth Server Settings Scopes Exclusive Scope", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateOauthAuthServerSettingsScopesExclusiveScopesResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an OAuth Auth Server Settings Scopes Exclusive Scope: %s", responseErr.Error())
-	}
+
 	// Read the response
 	readOauthAuthServerSettingsScopesExclusiveScopesResponse(ctx, updateOauthAuthServerSettingsScopesExclusiveScopesResponse, &state, &plan)
 

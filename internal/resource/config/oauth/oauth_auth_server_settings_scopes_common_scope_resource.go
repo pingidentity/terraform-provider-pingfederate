@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -138,10 +137,6 @@ func (r *oauthAuthServerSettingsScopesCommonScopesResource) Create(ctx context.C
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Auth Server Settings Scopes Common Scope", err.Error())
 		return
 	}
-	_, requestErr := createOauthAuthServerSettingsScopesCommonScopes.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of a OAuth Auth Server Settings Scopes Common Scope: %s", requestErr.Error())
-	}
 
 	apiCreateOauthAuthServerSettingsScopesCommonScopes := r.apiClient.OauthAuthServerSettingsAPI.AddCommonScope(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateOauthAuthServerSettingsScopesCommonScopes = apiCreateOauthAuthServerSettingsScopesCommonScopes.Body(*createOauthAuthServerSettingsScopesCommonScopes)
@@ -149,10 +144,6 @@ func (r *oauthAuthServerSettingsScopesCommonScopesResource) Create(ctx context.C
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Auth Server Settings Scopes Common Scope", err, httpResp)
 		return
-	}
-	_, responseErr := oauthAuthServerSettingsScopesCommonScopesResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of a OAuth Auth Server Settings Scopes Common Scope: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -180,11 +171,6 @@ func (r *oauthAuthServerSettingsScopesCommonScopesResource) Read(ctx context.Con
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Auth Server Settings Scopes Common Scope", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	responseJson, err := apiReadOauthAuthServerSettingsScopesCommonScopes.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	}
 
 	// Read the response into the state
@@ -215,21 +201,14 @@ func (r *oauthAuthServerSettingsScopesCommonScopesResource) Update(ctx context.C
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Auth Server Settings Scopes Common Scope", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of a OAuth Auth Server Settings Scopes Common Scope: %s", requestErr.Error())
-	}
+
 	updateOauthAuthServerSettingsScopesCommonScopes = updateOauthAuthServerSettingsScopesCommonScopes.Body(*createUpdateRequest)
 	updateOauthAuthServerSettingsScopesCommonScopesResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.UpdateCommonScopeExecute(updateOauthAuthServerSettingsScopesCommonScopes)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OAuth Auth Server Settings Scopes Common Scope", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateOauthAuthServerSettingsScopesCommonScopesResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of a OAuth Auth Server Settings Scopes Common Scope: %s", responseErr.Error())
-	}
+
 	// Read the response
 	readOauthAuthServerSettingsScopesCommonScopesResponse(ctx, updateOauthAuthServerSettingsScopesCommonScopesResponse, &state, &plan)
 
