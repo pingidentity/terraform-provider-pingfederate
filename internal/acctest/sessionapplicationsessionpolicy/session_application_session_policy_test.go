@@ -60,6 +60,10 @@ func testAccSessionApplicationSessionPolicy(resourceName string, resourceModel s
 resource "pingfederate_session_application_session_policy" "%[1]s" {
   idle_timeout_mins = %[2]d
   max_timeout_mins  = %[3]d
+}
+data "pingfederate_session_application_session_policy" "%[1]s" {
+  idle_timeout_mins = pingfederate_session_application_session_policy.%[1]s.idle_timeout_mins
+  max_timeout_mins  = pingfederate_session_application_session_policy.%[1]s.max_timeout_mins
 }`, resourceName,
 		resourceModel.idleTimeoutMins,
 		resourceModel.maxTimeoutMins,
