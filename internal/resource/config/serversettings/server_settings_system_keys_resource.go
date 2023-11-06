@@ -4,14 +4,15 @@ import (
 	"context"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
@@ -25,13 +26,20 @@ var (
 	_ resource.Resource                = &serverSettingsSystemKeysResource{}
 	_ resource.ResourceWithConfigure   = &serverSettingsSystemKeysResource{}
 	_ resource.ResourceWithImportState = &serverSettingsSystemKeysResource{}
-)
 
-var systemKeyAttrTypes = map[string]attr.Type{
-	"creation_date":      basetypes.StringType{},
-	"encrypted_key_data": basetypes.StringType{},
-	"key_data":           basetypes.StringType{},
-}
+	systemKeyAttrTypes = map[string]attr.Type{
+		"creation_date":      basetypes.StringType{},
+		"encrypted_key_data": basetypes.StringType{},
+		"key_data":           basetypes.StringType{},
+	}
+
+	creationTimeDefault   = "0001-01-01T00:00:00Z"
+	previousKeyDefault, _ = types.ObjectValue(systemKeyAttrTypes, map[string]attr.Value{
+		"creation_date":      types.StringValue(creationTimeDefault),
+		"encrypted_key_data": types.StringValue(""),
+		"key_data":           types.StringValue(""),
+	})
+)
 
 // ServerSettingsSystemKeysResource is a helper function to simplify the provider implementation.
 func ServerSettingsSystemKeysResource() resource.Resource {
@@ -68,47 +76,54 @@ func (r *serverSettingsSystemKeysResource) Schema(ctx context.Context, req resou
 					},
 					"encrypted_key_data": schema.StringAttribute{
 						Description: "The system key encrypted.",
-						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
+						Computed:    true,
+						Default:     stringdefault.StaticString(""),
+						Validators: []validator.String{
+							stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("key_data")),
 						},
 					},
 					"key_data": schema.StringAttribute{
 						Description: "The clear text system key base 64 encoded. The system key must be 32 bytes before base 64 encoding",
+						Optional:    true,
 						Computed:    true,
-						Optional:    false,
-						Required:    false,
+						Default:     stringdefault.StaticString(""),
+						Validators: []validator.String{
+							stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("encrypted_key_data")),
+						},
 					},
 				},
 			},
 			"previous": schema.SingleNestedAttribute{
 				Description: "Previous SystemKeys Secrets that are used in cryptographic operations to generate and consume internal tokens.",
-				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
+				Computed:    true,
+				Default:     objectdefault.StaticValue(previousKeyDefault),
 				Attributes: map[string]schema.Attribute{
 					"creation_date": schema.StringAttribute{
 						Description: "Creation time of the key.",
 						Computed:    true,
 						Optional:    false,
 						Required:    false,
+						Default:     stringdefault.StaticString(creationTimeDefault),
 					},
 					"encrypted_key_data": schema.StringAttribute{
 						Description: "The system key encrypted.",
-						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
+						Computed:    true,
+						Default:     stringdefault.StaticString(""),
+						Validators: []validator.String{
+							stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("key_data")),
 						},
 					},
 					"key_data": schema.StringAttribute{
 						Description: "The clear text system key base 64 encoded. The system key must be 32 bytes before base 64 encoding",
+						Optional:    true,
 						Computed:    true,
-						Optional:    false,
-						Required:    false,
+						Default:     stringdefault.StaticString(""),
+						Validators: []validator.String{
+							stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("encrypted_key_data")),
+						},
 					},
 				},
 			},
@@ -124,17 +139,21 @@ func (r *serverSettingsSystemKeysResource) Schema(ctx context.Context, req resou
 					},
 					"encrypted_key_data": schema.StringAttribute{
 						Description: "The system key encrypted.",
-						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
+						Computed:    true,
+						Default:     stringdefault.StaticString(""),
+						Validators: []validator.String{
+							stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("key_data")),
 						},
 					},
 					"key_data": schema.StringAttribute{
 						Description: "The clear text system key base 64 encoded. The system key must be 32 bytes before base 64 encoding",
+						Optional:    true,
 						Computed:    true,
-						Optional:    false,
-						Required:    false,
+						Default:     stringdefault.StaticString(""),
+						Validators: []validator.String{
+							stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("encrypted_key_data")),
+						},
 					},
 				},
 			},

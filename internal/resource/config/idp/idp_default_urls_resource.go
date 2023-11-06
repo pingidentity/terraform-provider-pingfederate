@@ -6,9 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -50,25 +48,15 @@ func (r *idpDefaultUrlsResource) Schema(ctx context.Context, req resource.Schema
 				Description: "Prompt user to confirm Single Logout (SLO).",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
+				Default:     booldefault.StaticBool(false),
 			},
 			"idp_error_msg": schema.StringAttribute{
 				Description: "Provide the error text displayed in a user's browser when an SSO operation fails.",
 				Required:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-					stringplanmodifier.RequiresReplace(),
-				},
 			},
 			"idp_slo_success_url": schema.StringAttribute{
 				Description: "Provide the default URL you would like to send the user to when Single Logout has succeeded.",
-				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 		},
 	}

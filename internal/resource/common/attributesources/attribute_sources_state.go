@@ -63,17 +63,7 @@ func AttrType() map[string]attr.Type {
 	return map[string]attr.Type{
 		"attribute_sources": types.ListType{
 			ElemType: types.ObjectType{
-				AttrTypes: map[string]attr.Type{
-					"custom_attribute_source": types.ObjectType{
-						AttrTypes: CustomAttributeSourceAttrType(),
-					},
-					"jdbc_attribute_source": types.ObjectType{
-						AttrTypes: JdbcAttributeSourceAttrType(),
-					},
-					"ldap_attribute_source": types.ObjectType{
-						AttrTypes: LdapAttributeSourceAttrType(),
-					},
-				},
+				AttrTypes: ElemAttrType(),
 			},
 		},
 	}

@@ -12,21 +12,8 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const licenseAgreementUrlVal = "https://localhost:9999/pf-admin-api/license-agreement"
-const acceptedVal = true
-
-// Attributes to test with. Add optional properties to test here if desired.
-type licenseAgreementResourceModel struct {
-	licenseAgreementUrl string
-	accepted            bool
-}
-
 func TestAccLicenseAgreement(t *testing.T) {
 	resourceName := "myLicenseAgreement"
-	initialResourceModel := licenseAgreementResourceModel{
-		licenseAgreementUrl: licenseAgreementUrlVal,
-		accepted:            acceptedVal,
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
@@ -35,25 +22,24 @@ func TestAccLicenseAgreement(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: testAccLicenseAgreement(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedLicenseAgreementAttributes(initialResourceModel),
+				Config: testAccLicenseAgreement(resourceName, true),
+				Check:  testAccCheckExpectedLicenseAgreementAttributes(true),
 			},
 			{
 				// Test importing the resource
-				Config:            testAccLicenseAgreement(resourceName, initialResourceModel),
+				Config:            testAccLicenseAgreement(resourceName, true),
 				ResourceName:      "pingfederate_license_agreement." + resourceName,
 				ImportState:       true,
-				ImportStateVerify: false,
+				ImportStateVerify: true,
 			},
 		},
 	})
 }
 
-func testAccLicenseAgreement(resourceName string, resourceModel licenseAgreementResourceModel) string {
+func testAccLicenseAgreement(resourceName string, accepted bool) string {
 	return fmt.Sprintf(`
 resource "pingfederate_license_agreement" "%[1]s" {
-  license_agreement_url = "%[2]s"
-  accepted              = %[3]t
+  accepted = %[2]t
 }
 
 data "pingfederate_license_agreement" "%[1]s" {
@@ -61,13 +47,12 @@ data "pingfederate_license_agreement" "%[1]s" {
     pingfederate_license_agreement.%[1]s
   ]
 }`, resourceName,
-		resourceModel.licenseAgreementUrl,
-		resourceModel.accepted,
+		accepted,
 	)
 }
 
 // Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedLicenseAgreementAttributes(config licenseAgreementResourceModel) resource.TestCheckFunc {
+func testAccCheckExpectedLicenseAgreementAttributes(accepted bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		resourceType := "LicenseAgreement"
 		testClient := acctest.TestClient()
@@ -79,14 +64,8 @@ func testAccCheckExpectedLicenseAgreementAttributes(config licenseAgreementResou
 		}
 
 		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchString(resourceType, nil, "license_agreement_url",
-			config.licenseAgreementUrl, response.GetLicenseAgreementUrl())
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "accepted",
-			config.accepted, response.GetAccepted())
+			accepted, response.GetAccepted())
 		if err != nil {
 			return err
 		}

@@ -6,8 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -44,20 +43,17 @@ func (r *sessionApplicationSessionPolicyResource) Schema(ctx context.Context, re
 	schema := schema.Schema{
 		Description: "Manages a SessionApplicationSessionPolicy.",
 		Attributes: map[string]schema.Attribute{
-			// Add necessary attributes here
 			"idle_timeout_mins": schema.Int64Attribute{
 				Description: "The idle timeout period, in minutes. If set to -1, the idle timeout will be set to the maximum timeout. The default is 60.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown()},
+				Default:     int64default.StaticInt64(60),
 			},
 			"max_timeout_mins": schema.Int64Attribute{
 				Description: "The maximum timeout period, in minutes. If set to -1, sessions do not expire. The default is 480.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown()},
+				Default:     int64default.StaticInt64(480),
 			},
 		},
 	}

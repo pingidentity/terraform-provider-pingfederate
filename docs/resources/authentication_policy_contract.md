@@ -3,17 +3,18 @@
 page_title: "pingfederate_authentication_policy_contract Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a AuthenticationPolicyContracts.
+  Manages an Authentication Policy Contract.
 ---
 
 # pingfederate_authentication_policy_contract (Resource)
 
-Manages a AuthenticationPolicyContracts.
+Manages an Authentication Policy Contract.
 
 ## Example Usage
 
 ```terraform
 resource "pingfederate_authentication_policy_contract" "authenticationPolicyContractExample" {
+  custom_id           = "MyAuthenticationPolicyContract"
   core_attributes     = [{ name = "subject" }]
   extended_attributes = [{ name = "extended_attribute" }, { name = "extended_attribute2" }]
   name                = "example"
@@ -26,12 +27,9 @@ resource "pingfederate_authentication_policy_contract" "authenticationPolicyCont
 ### Required
 
 - `core_attributes` (Attributes List) A list of read-only assertion attributes (for example, subject) that are automatically populated by PingFederate. (see [below for nested schema](#nestedatt--core_attributes))
+- `custom_id` (String) The persistent, unique ID for the authentication policy contract. It can be any combination of [a-zA-Z0-9._-].
 - `extended_attributes` (Attributes Set) A list of additional attributes as needed. (see [below for nested schema](#nestedatt--extended_attributes))
 - `name` (String) The Authentication Policy Contract Name. Name is unique.
-
-### Optional
-
-- `custom_id` (String) The persistent, unique ID for the authentication policy contract. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
 
 ### Read-Only
 
