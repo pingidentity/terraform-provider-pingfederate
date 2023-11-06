@@ -553,8 +553,8 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 	}
 
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, false, true,
-		"The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.")
+	id.ToSchemaCustomId(&schema, true,
+		"The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-].")
 	resp.Schema = schema
 }
 

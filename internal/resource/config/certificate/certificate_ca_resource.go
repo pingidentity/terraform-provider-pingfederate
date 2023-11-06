@@ -47,15 +47,6 @@ func (r *certificateCAResource) Schema(ctx context.Context, req resource.SchemaR
 	schema := schema.Schema{
 		Description: "Manages a CertificateCA Import.",
 		Attributes: map[string]schema.Attribute{
-			"custom_id": schema.StringAttribute{
-				Description: "The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.",
-				Optional:    true,
-				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-					stringplanmodifier.RequiresReplace(),
-				},
-			},
 			"crypto_provider": schema.StringAttribute{
 				Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
 				Optional:    true,
@@ -78,6 +69,7 @@ func (r *certificateCAResource) Schema(ctx context.Context, req resource.SchemaR
 	}
 
 	id.ToSchema(&schema)
+	id.ToSchemaCustomId(&schema, false, "The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-].")
 	resp.Schema = schema
 }
 

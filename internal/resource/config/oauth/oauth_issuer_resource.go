@@ -61,8 +61,8 @@ func (r *oauthIssuersResource) Schema(ctx context.Context, req resource.SchemaRe
 	}
 
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, false, true,
-		"The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.")
+	id.ToSchemaCustomId(&schema, true,
+		"The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-].")
 	resp.Schema = schema
 }
 func addOptionalOauthIssuersFields(ctx context.Context, addRequest *client.Issuer, plan oauthIssuersResourceModel) error {

@@ -52,15 +52,6 @@ func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req r
 	schema := schema.Schema{
 		Description: "Manages an Authentication Policy Contract.",
 		Attributes: map[string]schema.Attribute{
-			"custom_id": schema.StringAttribute{
-				Description: "The persistent, unique ID for the authentication policy contract. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
-				Computed:    true,
-				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-					stringplanmodifier.RequiresReplace(),
-				},
-			},
 			"core_attributes": schema.ListNestedAttribute{
 				Description: "A list of read-only assertion attributes (for example, subject) that are automatically populated by PingFederate.",
 				Required:    true,
@@ -107,6 +98,7 @@ func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req r
 	}
 
 	id.ToSchema(&schema)
+	id.ToSchemaCustomId(&schema, false, "The persistent, unique ID for the authentication policy contract. It can be any combination of [a-zA-Z0-9._-].")
 	resp.Schema = schema
 }
 
