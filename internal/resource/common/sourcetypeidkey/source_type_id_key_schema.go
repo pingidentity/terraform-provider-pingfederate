@@ -3,6 +3,8 @@ package sourcetypeidkey
 import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
@@ -12,6 +14,9 @@ func ToSchema(computed bool) schema.SingleNestedAttribute {
 		Required:    !computed,
 		Optional:    computed,
 		Computed:    computed,
+		PlanModifiers: []planmodifier.Object{
+			objectplanmodifier.UseStateForUnknown(),
+		},
 		Attributes: map[string]schema.Attribute{
 			"type": schema.StringAttribute{
 				Description: "The source type of this key.",

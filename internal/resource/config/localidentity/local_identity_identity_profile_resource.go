@@ -355,6 +355,7 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 									Description: "Attributes of the local identity field.",
 									Computed:    true,
 									Optional:    true,
+									// Default set in ModifyPlan
 									ElementType: types.BoolType,
 								},
 							},

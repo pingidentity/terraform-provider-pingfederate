@@ -30,7 +30,6 @@ func ToSchema() schema.SingleNestedAttribute {
 								Attributes: map[string]schema.Attribute{
 									"fields": schema.ListNestedAttribute{
 										Description: "The configuration fields in the row.",
-										Computed:    true,
 										Optional:    true,
 										NestedObject: schema.NestedAttributeObject{
 											Attributes: map[string]schema.Attribute{
