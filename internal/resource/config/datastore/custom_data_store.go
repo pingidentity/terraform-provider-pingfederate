@@ -123,7 +123,7 @@ func readCustomDataStoreResponse(ctx context.Context, r *client.DataStoreAggrega
 	return diags
 }
 
-func addOptionalCustomDataStoreFields(addRequest client.DataStoreAggregation, con context.Context, createJdbcDataStore client.CustomDataStore, plan dataStoreResourceModel) error {
+func addOptionalCustomDataStoreFields(addRequest client.DataStoreAggregation, con context.Context, createCustomDataStore client.CustomDataStore, plan dataStoreResourceModel) error {
 	customDataStorePlan := plan.CustomDataStore.Attributes()
 
 	if internaltypes.IsDefined(plan.CustomId) {
