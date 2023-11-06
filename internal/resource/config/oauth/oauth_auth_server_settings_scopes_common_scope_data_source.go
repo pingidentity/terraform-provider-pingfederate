@@ -80,7 +80,7 @@ func (r *oauthAuthServerSettingsScopesCommonScopesDataSource) Configure(_ contex
 }
 
 // Read a OauthAuthServerSettingsScopesCommonScopesResponse object into the model struct
-func readOauthAuthServerSettingsScopesCommonScopesResponseDataSource(ctx context.Context, r *client.ScopeEntry, state *oauthAuthServerSettingsScopesCommonScopesDataSourceModel, expectedValues *oauthAuthServerSettingsScopesCommonScopesDataSourceModel) {
+func readOauthAuthServerSettingsScopesCommonScopesResponseDataSource(ctx context.Context, r *client.ScopeEntry, state *oauthAuthServerSettingsScopesCommonScopesDataSourceModel) {
 	state.Id = types.StringValue(r.Name)
 	state.Name = types.StringValue(r.Name)
 	state.Description = types.StringValue(r.Description)
@@ -105,7 +105,7 @@ func (r *oauthAuthServerSettingsScopesCommonScopesDataSource) Read(ctx context.C
 	}
 
 	// Read the response into the state
-	readOauthAuthServerSettingsScopesCommonScopesResponseDataSource(ctx, apiReadOauthAuthServerSettingsScopesCommonScopes, &state, &state)
+	readOauthAuthServerSettingsScopesCommonScopesResponseDataSource(ctx, apiReadOauthAuthServerSettingsScopesCommonScopes, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
