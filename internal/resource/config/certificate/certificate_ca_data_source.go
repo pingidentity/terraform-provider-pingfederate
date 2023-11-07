@@ -52,7 +52,7 @@ type certificatesDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *certificatesDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Manages CertificateCA Import.",
+		Description: "Describes CertificateCA Import.",
 		Attributes: map[string]schema.Attribute{
 			"serial_number": schema.StringAttribute{
 				Description: "The serial number assigned by the CA",

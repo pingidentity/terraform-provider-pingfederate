@@ -50,7 +50,7 @@ type localIdentityIdentityProfileDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Manages Local Identity Identity Profiles",
+		Description: "Describes Local Identity Identity Profiles",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Description: "The local identity profile name. Name is unique.",
