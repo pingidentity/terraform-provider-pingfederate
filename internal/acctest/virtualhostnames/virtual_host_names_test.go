@@ -55,9 +55,6 @@ func testAccVirtualHostNames(resourceName string, resourceModel virtualHostNames
 	return fmt.Sprintf(`
 resource "pingfederate_virtual_host_names" "%[1]s" {
   virtual_host_names = %[2]s
-}
-data "pingfederate_virtual_host_names" "%[1]s" {
-  virtual_host_names = pingfederate_virtual_host_names.%[1]s.virtual_host_names
 }`, resourceName,
 		acctest.StringSliceToTerraformString(resourceModel.virtualHostNames),
 	)

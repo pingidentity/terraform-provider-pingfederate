@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
@@ -37,11 +36,12 @@ type virtualHostNamesDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *virtualHostNamesDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Manages VirtualHostNames.",
+		Description: "Describes VirtualHostNames.",
 		Attributes: map[string]schema.Attribute{
 			"virtual_host_names": schema.ListAttribute{
 				Description: "List of virtual host names.",
 				ElementType: types.StringType,
+				Computed:    true,
 				Optional:    true,
 			},
 		},
@@ -68,42 +68,31 @@ func (r *virtualHostNamesDataSource) Configure(_ context.Context, req datasource
 }
 
 // Read a VirtualHostNamesResponse object into the model struct
-func readVirtualHostNamesResponseDataSource(ctx context.Context, r *client.VirtualHostNameSettings, state *virtualHostNamesDataSourceModel, existingId *string) diag.Diagnostics {
-	var diags, respDiags diag.Diagnostics
+func readVirtualHostNamesResponseDataSource(ctx context.Context, r *client.VirtualHostNameSettings, state *virtualHostNamesDataSourceModel, existingId *string) {
 	state.Id = id.GenerateUUIDToState(existingId)
 	state.VirtualHostNames = internaltypes.GetStringList(r.VirtualHostNames)
-	diags.Append(respDiags...)
-	return diags
 }
 
 // Read the data source state and convert it into the model
 func (r *virtualHostNamesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state virtualHostNamesDataSourceModel
-	var diags diag.Diagnostics
 
-	apiReadVirtualHostNames, httpResp, err := r.apiClient.VirtualHostNamesAPI.GetVirtualHostNamesSettings(ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
-	if err != nil {
-		if httpResp != nil && httpResp.StatusCode == 404 {
-			ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting Virtual Host Names", err, httpResp)
-			resp.State.RemoveResource(ctx)
-		} else {
-			ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Virtual Host Names", err, httpResp)
-		}
-		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadVirtualHostNames.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Virtual Host Names: %s", responseErr.Error())
-	}
-
-	// Read the response into the state
-	var id = "virtual_host_names_id"
-	diags = readVirtualHostNamesResponseDataSource(ctx, apiReadVirtualHostNames, &state, &id)
+	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	apiReadVirtualHostNames, httpResp, err := r.apiClient.VirtualHostNamesAPI.GetVirtualHostNamesSettings(ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	if err != nil {
+		ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Virtual Host Names", err, httpResp)
+		return
+	}
+
+	// Read the response into the state
+	var id = "virtual_host_names_id"
+	readVirtualHostNamesResponseDataSource(ctx, apiReadVirtualHostNames, &state, &id)
+	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
