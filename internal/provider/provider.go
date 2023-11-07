@@ -275,6 +275,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		oauth.NewOauthAuthServerSettingsDataSource,
 		oauth.NewOauthAuthServerSettingsScopesCommonScopeDataSource,
 		oauth.NewOauthAuthServerSettingsScopesExclusiveScopeDataSource,
+		oauth.NewOauthIssuerDataSource,
 	}
 }
 

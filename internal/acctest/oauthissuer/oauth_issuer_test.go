@@ -74,6 +74,9 @@ resource "pingfederate_oauth_issuer" "%[1]s" {
   host        = "%[4]s"
   name        = "%[5]s"
   path        = "%[6]s"
+}
+data "pingfederate_oauth_issuer" "%[1]s" {
+  custom_id = pingfederate_oauth_issuer.%[1]s.custom_id
 }`, resourceName,
 		resourceModel.stateId,
 		resourceModel.description,
