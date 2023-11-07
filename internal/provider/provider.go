@@ -102,7 +102,7 @@ func (p *pingfederateProvider) Schema(_ context.Context, _ provider.SchemaReques
 				Optional:    true,
 			},
 			"x_bypass_external_validation_header": schema.BoolAttribute{
-				Description: "Header value in request for PingFederate. The connection test will be bypassed when set to true. Default to false.",
+				Description: "Header value in request for PingFederate. The connection test will be bypassed when set to true. Default value is false.",
 				Optional:    true,
 			},
 		},
@@ -233,10 +233,10 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	if !config.XBypassExternalValidationHeader.IsUnknown() && !config.XBypassExternalValidationHeader.IsNull() {
 		xBypassExternalValidation = config.XBypassExternalValidationHeader.ValueBool()
 	} else {
-		xBypassExternalValidation, xBypassExternalValidationErr = strconv.ParseBool(os.Getenv("PINGFEDERATE_X_BYPASS_EXTERNAL_VALIDATION_HEADER"))
+		xBypassExternalValidation, xBypassExternalValidationErr = strconv.ParseBool(os.Getenv("PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER"))
 		if xBypassExternalValidationErr != nil {
 			xBypassExternalValidation = false
-			tflog.Info(ctx, "Failed to parse boolean from 'PINGFEDERATE_X_BYPASS_EXTERNAL_VALIDATION_HEADER' environment variable, defaulting 'x_bypass_external_validation_header' to false")
+			tflog.Info(ctx, "Failed to parse boolean from 'PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER' environment variable, defaulting 'x_bypass_external_validation_header' to false")
 		}
 	}
 

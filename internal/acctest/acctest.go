@@ -22,7 +22,7 @@ func ConfigurationPreCheck(t *testing.T) {
 		"PINGFEDERATE_PROVIDER_USERNAME",
 		"PINGFEDERATE_PROVIDER_PASSWORD",
 		"PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS",
-		"PINGFEDERATE_X_BYPASS_EXTERNAL_VALIDATION_HEADER",
+		"PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER",
 	}
 
 	errorFound := false
@@ -42,7 +42,7 @@ func TestClient() *client.APIClient {
 	httpsHost := os.Getenv("PINGFEDERATE_PROVIDER_HTTPS_HOST")
 	clientConfig := client.NewConfiguration()
 	clientConfig.DefaultHeader["X-Xsrf-Header"] = "PingFederate"
-	clientConfig.DefaultHeader["X-BypassExternalValidation"] = os.Getenv("PINGFEDERATE_X_BYPASS_EXTERNAL_VALIDATION_HEADER")
+	clientConfig.DefaultHeader["X-BypassExternalValidation"] = os.Getenv("PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER")
 	clientConfig.Servers = client.ServerConfigurations{
 		{
 			URL: httpsHost + "/pf-admin-api/v1",

@@ -19,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -80,9 +79,6 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 			Description: "The data store name with a unique value across all data sources. Omitting this attribute will set the value to a combination of the connection url and the username.",
 			Computed:    true,
 			Optional:    true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
 		},
 		"min_pool_size": schema.Int64Attribute{
 			Description: "The smallest number of database connections in the connection pool for the given data store. Omitting this attribute will set the value to the connection pool default.",
@@ -126,6 +122,7 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 				setplanmodifier.UseStateForUnknown(),
 			},
 			Validators: []validator.Set{
+				setvalidator.SizeAtLeast(1),
 				setvalidator.AtLeastOneOf(
 					path.Expression.AtName(path.MatchRoot("jdbc_data_store"), "connection_url_tags"),
 					path.Expression.AtName(path.MatchRoot("jdbc_data_store"), "connection_url"),

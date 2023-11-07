@@ -85,9 +85,6 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Description: "The data store name with a unique value across all data sources. Omitting this attribute will set the value to a combination of the connection url and the username.",
 			Computed:    true,
 			Optional:    true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
 		},
 		"read_timeout": schema.Int64Attribute{
 			Description: "The maximum number of milliseconds a connection waits for a response to be returned before producing an error. A value of -1 causes the connection to wait indefinitely. Omitting this attribute will set the value to the default value.",
@@ -99,8 +96,12 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 		},
 		"hostnames": schema.SetAttribute{
 			Description: "The default LDAP host names. This field is required if no mapping for host names and tags are specified.",
+			Computed:    true,
 			Optional:    true,
 			ElementType: types.StringType,
+			Validators: []validator.Set{
+				setvalidator.SizeAtLeast(1),
+			},
 		},
 		"verify_host": schema.BoolAttribute{
 			Description: "Verifies that the presented server certificate includes the address to which the client intended to establish a connection. Omitting this attribute will set the value to true.",
@@ -235,6 +236,7 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 				setplanmodifier.UseStateForUnknown(),
 			},
 			Validators: []validator.Set{
+				setvalidator.SizeAtLeast(1),
 				setvalidator.AtLeastOneOf(
 					path.Expression.AtName(path.MatchRoot("ldap_data_store"), "hostnames_tags"),
 					path.Expression.AtName(path.MatchRoot("ldap_data_store"), "hostnames"),

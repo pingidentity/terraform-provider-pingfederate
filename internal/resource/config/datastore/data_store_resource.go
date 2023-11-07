@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -78,6 +79,83 @@ func (r *dataStoreResource) Configure(_ context.Context, req resource.ConfigureR
 	r.providerConfig = providerCfg.ProviderConfig
 	r.apiClient = providerCfg.ApiClient
 
+}
+
+func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	var plan *dataStoreResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	var respDiags diag.Diagnostics
+
+	if plan == nil {
+		return
+	}
+
+	// Build name attribute for data stores that have it
+	if internaltypes.IsDefined(plan.JdbcDataStore) {
+		jdbcDataStore := plan.JdbcDataStore.Attributes()
+		if !internaltypes.IsDefined(jdbcDataStore["name"]) {
+			namePrefix := func() string {
+				topConnectionUrl := jdbcDataStore["connection_url"].(types.String)
+				if internaltypes.IsNonEmptyString(topConnectionUrl) {
+					return topConnectionUrl.ValueString()
+				}
+				connectionUrlTags := jdbcDataStore["connection_url_tags"].(types.Set)
+				if len(connectionUrlTags.Elements()) > 0 {
+					connectionUrlTagsFirstElem := connectionUrlTags.Elements()[0].(types.Object).Attributes()
+					return connectionUrlTagsFirstElem["connection_url"].(types.String).ValueString()
+				}
+				return ""
+			}
+			userName := jdbcDataStore["user_name"].(types.String).ValueString()
+			jdbcDataStore["name"] = types.StringValue(namePrefix() + " (" + userName + ")")
+			plan.JdbcDataStore, respDiags = types.ObjectValue(jdbcDataStoreAttrType, jdbcDataStore)
+			resp.Diagnostics.Append(respDiags...)
+		}
+	}
+
+	if internaltypes.IsDefined(plan.LdapDataStore) {
+		ldapDataStore := plan.LdapDataStore.Attributes()
+		if !internaltypes.IsDefined(ldapDataStore["name"]) {
+			namePrefix := func() string {
+				if internaltypes.IsDefined(ldapDataStore["hostnames"]) {
+					topHostNames := ldapDataStore["hostnames"].(types.Set)
+					if len(topHostNames.Elements()) > 0 {
+						topHostNamesFirstElem := topHostNames.Elements()[0].(types.String).ValueString()
+						return topHostNamesFirstElem
+					}
+				}
+				if internaltypes.IsDefined(ldapDataStore["hostnames_tags"]) {
+					hostnamesTags := ldapDataStore["hostnames_tags"].(types.Set)
+					if len(hostnamesTags.Elements()) > 0 {
+						hostnamesTagsFirstElem := hostnamesTags.Elements()[0].(types.Object).Attributes()
+						if len(hostnamesTagsFirstElem["hostnames"].(types.Set).Elements()) > 0 {
+							hostnamesTagsFirstElemHostnamesFirstElem := hostnamesTagsFirstElem["hostnames"].(types.Set).Elements()[0].(types.String).ValueString()
+							return hostnamesTagsFirstElemHostnamesFirstElem
+						}
+					}
+				}
+				return ""
+			}
+			userDn := ldapDataStore["user_dn"].(types.String).ValueString()
+			ldapDataStore["name"] = types.StringValue(namePrefix() + " (" + userDn + ")")
+			plan.LdapDataStore, respDiags = types.ObjectValue(ldapDataStoreAttrType, ldapDataStore)
+			resp.Diagnostics.Append(respDiags...)
+		}
+	}
+
+	if internaltypes.IsDefined(plan.PingOneLdapGatewayDataStore) {
+		pingOneLdapGatewayDataStore := plan.PingOneLdapGatewayDataStore.Attributes()
+		if !internaltypes.IsDefined(pingOneLdapGatewayDataStore["name"]) {
+			pingOneConnectionRefId := pingOneLdapGatewayDataStore["ping_one_connection_ref"].(types.Object).Attributes()["id"].(types.String).ValueString()
+			pingOneEnvironmentId := pingOneLdapGatewayDataStore["ping_one_environment_id"].(types.String).ValueString()
+			pingOneLdapGatewayId := pingOneLdapGatewayDataStore["ping_one_ldap_gateway_id"].(types.String).ValueString()
+			pingOneLdapGatewayDataStore["name"] = types.StringValue(pingOneConnectionRefId + ":" + pingOneEnvironmentId + ":" + pingOneLdapGatewayId)
+			plan.PingOneLdapGatewayDataStore, respDiags = types.ObjectValue(pingOneLdapGatewayDataStoreAttrType, pingOneLdapGatewayDataStore)
+			resp.Diagnostics.Append(respDiags...)
+		}
+	}
+
+	resp.Plan.Set(ctx, plan)
 }
 
 func createDataStore(dataStore configurationapi.DataStoreAggregation, dsr *dataStoreResource, con context.Context, resp *resource.CreateResponse) (*client.DataStoreAggregation, *http.Response, error) {

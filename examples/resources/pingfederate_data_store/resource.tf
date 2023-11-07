@@ -2,11 +2,11 @@
 # Please refer to the link below on how to best store state files and data within. #
 # https://developer.hashicorp.com/terraform/plugin/best-practices/sensitive-state #
 
-# x_bypass_external_validation may be used in the provider block to bypass the connection test.
+# x_bypass_external_validation_header may be used in the provider block to bypass the connection test.
 resource "pingfederate_data_store" "myCustomDataStore" {
   custom_id = "myCustomDataStore"
   custom_data_store = {
-    name = "custom"
+    name = "myCustomDataStore"
     plugin_descriptor_ref = {
       id = "com.pingidentity.pf.datastore.other.RestDataSourceDriver"
     }
@@ -153,7 +153,7 @@ resource "pingfederate_data_store" "myJdbcDataStore" {
   custom_id             = "myJdbcDataStore"
   mask_attribute_values = false
   jdbc_data_store = {
-    name                         = "jdbc"
+    name                         = "myJdbcDataStore"
     connection_url               = "jdbc:hsqldb:$${pf.server.data.dir}$${/}hypersonic$${/}ProvisionerDefaultDB;hsqldb.lock_file=false"
     driver_class                 = "org.hsqldb.jdbcDriver"
     user_name                    = "sa"
@@ -164,7 +164,7 @@ resource "pingfederate_data_store" "myJdbcDataStore" {
         connection_url = "jdbc:hsqldb:$${pf.server.data.dir}$${/}hypersonic$${/}ProvisionerDefaultDB;hsqldb.lock_file=false",
         default_source = true
       }
-    ],
+    ]
     min_pool_size    = 10
     max_pool_size    = 100
     blocking_timeout = 5000
@@ -211,7 +211,7 @@ resource "pingfederate_data_store" "myPingDirectoryLdapDataStore" {
 resource "pingfederate_data_store" "myPingOneDataStore" {
   custom_id = "myPingOneDataStore"
   custom_data_store = {
-    name = "PingOne Data Store"
+    name = "myPingOneDataStore"
     plugin_descriptor_ref = {
       id = "com.pingidentity.plugins.datastore.p14c.PingOneForCustomersDataStore"
     }
@@ -280,7 +280,7 @@ resource "pingfederate_data_store" "myPingOneLdapDataStore" {
   mask_attribute_values = false
   ping_one_ldap_gateway_data_store = {
     ldap_type = "PING_DIRECTORY"
-    name      = "PingOne LDAP Gateway Data Store"
+    name      = "myPingOneLdapDataStore"
     ping_one_connection_ref = {
       id = ""
     },
