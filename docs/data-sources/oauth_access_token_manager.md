@@ -3,12 +3,12 @@
 page_title: "pingfederate_oauth_access_token_manager Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages OAuth Access Token Manager
+  Describes OAuth Access Token Manager
 ---
 
 # pingfederate_oauth_access_token_manager (Data Source)
 
-Manages OAuth Access Token Manager
+Describes OAuth Access Token Manager
 
 ## Example Usage
 
