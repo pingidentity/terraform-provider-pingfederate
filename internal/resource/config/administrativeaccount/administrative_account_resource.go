@@ -6,9 +6,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
@@ -58,17 +57,13 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 				Description: "Indicates whether the account is active or not.",
 				Optional:    true,
 				Computed:    true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
+				Default:     booldefault.StaticBool(false),
 			},
 			"auditor": schema.BoolAttribute{
 				Description: "Indicates whether the account belongs to an Auditor. An Auditor has View-only permissions for all administrative functions. An Auditor cannot have any administrative roles.",
 				Optional:    true,
 				Computed:    true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
+				Default:     booldefault.StaticBool(false),
 			},
 			"department": schema.StringAttribute{
 				Description: "The Department name of account user.",
@@ -87,9 +82,6 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 			"email_address": schema.StringAttribute{
 				Description: "Email address associated with the account.",
 				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"password": schema.StringAttribute{
 				Description: "Password for the Account. This field is only applicable during account creation.",
@@ -111,24 +103,15 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 			"phone_number": schema.StringAttribute{
 				Description: "Phone number associated with the account.",
 				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"roles": schema.SetAttribute{
 				Description: "Roles available for an administrator. USER_ADMINISTRATOR - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. CRYPTO_ADMINISTRATOR - Can manage local keys and certificates. ADMINISTRATOR - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. EXPRESSION_ADMINISTRATOR - Can add and update OGNL expressions.",
 				Required:    true,
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
-				},
 				ElementType: types.StringType,
 			},
 			"username": schema.StringAttribute{
 				Description: "Username for the Administrative Account.",
 				Required:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 		},
 	}
@@ -301,11 +284,7 @@ func (r *administrativeAccountsResource) Update(ctx context.Context, req resourc
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Administrative Account", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateAdministrativeAccountResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an Administrative Account: %s", responseErr.Error())
-	}
+
 	// Read the response
 	readAdministrativeAccountResponse(ctx, updateAdministrativeAccountResponse, &state, &plan)
 

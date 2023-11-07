@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -97,14 +96,6 @@ func (r *licenseAgreementDataSource) Read(ctx context.Context, req datasource.Re
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the License Agreement", err, httpResp)
 		return
-	}
-
-	// Log response JSON
-	responseJson, responseErr := apiReadLicenseAgreement.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
-	} else {
-		diags.AddError("There was an issue retrieving the response of the License Agreement: %s", responseErr.Error())
 	}
 
 	// Read the response into the state

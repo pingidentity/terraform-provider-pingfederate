@@ -20,18 +20,13 @@ func ToSchema(s *schema.Schema) {
 	s.Attributes["id"] = schemaId
 }
 
-func ToSchemaCustomId(s *schema.Schema, required bool, characterLimit bool, description string) {
+func ToSchemaCustomId(s *schema.Schema, characterLimit bool, description string) {
 	customId := schema.StringAttribute{}
 	customId.Description = description
 	customId.PlanModifiers = []planmodifier.String{
 		stringplanmodifier.RequiresReplace(),
 	}
-	if required {
-		customId.Required = true
-	} else {
-		customId.Computed = true
-		customId.Optional = true
-	}
+	customId.Required = true
 	if characterLimit {
 		customId.Validators = []validator.String{configvalidators.ValidChars()}
 	}

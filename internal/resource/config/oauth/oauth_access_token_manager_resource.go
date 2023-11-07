@@ -9,9 +9,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -64,6 +67,27 @@ var (
 		"check_session_revocation_status": basetypes.BoolType{},
 		"update_authn_session_activity":   basetypes.BoolType{},
 	}
+
+	resourceUrisDefault, _      = types.ListValue(types.StringType, nil)
+	selectionSettingsDefault, _ = types.ObjectValue(selectionSettingsAttrType, map[string]attr.Value{
+		"inherited":     types.BoolValue(false),
+		"resource_uris": resourceUrisDefault,
+	})
+
+	allowedClientsDefault, _        = types.ListValue(types.ObjectType{AttrTypes: resourcelink.AttrType()}, nil)
+	accessControlSettingsDefault, _ = types.ObjectValue(accessControlSettingsAttrType, map[string]attr.Value{
+		"inherited":        types.BoolValue(false),
+		"restrict_clients": types.BoolValue(false),
+		"allowed_clients":  allowedClientsDefault,
+	})
+
+	sessionValidationSettingsDefault, _ = types.ObjectValue(sessionValidationSettingsAttrType, map[string]attr.Value{
+		"inherited":                       types.BoolValue(false),
+		"include_session_id":              types.BoolValue(false),
+		"check_valid_authn_session":       types.BoolValue(false),
+		"check_session_revocation_status": types.BoolValue(false),
+		"update_authn_session_activity":   types.BoolValue(false),
+	})
 )
 
 // OauthAccessTokenManagerResource is a helper function to simplify the provider implementation.
@@ -123,11 +147,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 			"configuration": pluginconfiguration.ToSchema(),
 			"attribute_contract": schema.SingleNestedAttribute{
 				Description: "The list of attributes that will be added to an access token.",
-				Computed:    true,
-				Optional:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
+				Required:    true,
 				Attributes: map[string]schema.Attribute{
 					"core_attributes": schema.ListNestedAttribute{
 						Description: "A list of core token attributes that are associated with the access token management plugin type. This field is read-only and is ignored on POST/PUT.",
@@ -159,8 +179,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 					},
 					"extended_attributes": schema.ListNestedAttribute{
 						Description: "A list of additional token attributes that are associated with this access token management plugin instance.",
-						Computed:    true,
-						Optional:    true,
+						Required:    true,
 						PlanModifiers: []planmodifier.List{
 							listplanmodifier.UseStateForUnknown(),
 						},
@@ -168,19 +187,13 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
 									Description: "The name of this attribute.",
-									Computed:    true,
-									Optional:    true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
-									},
+									Required:    true,
 								},
 								"multi_valued": schema.BoolAttribute{
 									Description: "Indicates whether attribute value is always returned as an array.",
 									Computed:    true,
 									Optional:    true,
-									PlanModifiers: []planmodifier.Bool{
-										boolplanmodifier.UseStateForUnknown(),
-									},
+									Default:     booldefault.StaticBool(false),
 								},
 							},
 						},
@@ -189,15 +202,11 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 						Description: "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
 						Optional:    true,
 						Computed:    true,
-						//Default:     booldefault.StaticBool(false),
+						Default:     booldefault.StaticBool(false),
 					},
 					"default_subject_attribute": schema.StringAttribute{
 						Description: "Default subject attribute to use for audit logging when validating the access token. Blank value means to use USER_KEY attribute value after grant lookup.",
 						Optional:    true,
-						Computed:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 				},
 			},
@@ -205,14 +214,19 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				Description: "Settings which determine how this token manager can be selected for use by an OAuth request.",
 				Computed:    true,
 				Optional:    true,
+				Default:     objectdefault.StaticValue(selectionSettingsDefault),
 				Attributes: map[string]schema.Attribute{
 					"inherited": schema.BoolAttribute{
 						Description: "If this token manager has a parent, this flag determines whether selection settings, such as resource URI's, are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
 						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 					"resource_uris": schema.ListAttribute{
 						Description: "The list of base resource URI's which map to this token manager. A resource URI, specified via the 'aud' parameter, can be used to select a specific token manager for an OAuth request.",
 						Optional:    true,
+						Computed:    true,
+						Default:     listdefault.StaticValue(resourceUrisDefault),
 						ElementType: types.StringType,
 					},
 				},
@@ -221,15 +235,19 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				Description: "Settings which determine which clients may access this token manager.",
 				Computed:    true,
 				Optional:    true,
+				Default:     objectdefault.StaticValue(accessControlSettingsDefault),
 				Attributes: map[string]schema.Attribute{
 					"inherited": schema.BoolAttribute{
 						Description: "If this token manager has a parent, this flag determines whether access control settings are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
 						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 					"restrict_clients": schema.BoolAttribute{
 						Description: "Determines whether access to this token manager is restricted to specific OAuth clients. If false, the 'allowedClients' field is ignored. The default value is false.",
 						Computed:    true,
 						Optional:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 					"allowed_clients": schema.ListNestedAttribute{
 						Description: "If 'restrictClients' is true, this field defines the list of OAuth clients that are allowed to access the token manager.",
@@ -238,9 +256,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: resourcelink.ToSchema(),
 						},
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.UseStateForUnknown(),
-						},
+						Default: listdefault.StaticValue(allowedClientsDefault),
 					},
 				},
 			},
@@ -248,30 +264,37 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				Description: "Settings which determine how the user session is associated with the access token.",
 				Computed:    true,
 				Optional:    true,
+				Default:     objectdefault.StaticValue(sessionValidationSettingsDefault),
 				Attributes: map[string]schema.Attribute{
 					"inherited": schema.BoolAttribute{
 						Description: "If this token manager has a parent, this flag determines whether session validation settings, such as checkValidAuthnSession, are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
 						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 					"include_session_id": schema.BoolAttribute{
 						Description: "Include the session identifier in the access token. Note that if any of the session validation features is enabled, the session identifier will already be included in the access tokens.",
 						Computed:    true,
 						Optional:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 					"check_valid_authn_session": schema.BoolAttribute{
 						Description: "Check for a valid authentication session when validating the access token.",
 						Computed:    true,
 						Optional:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 					"check_session_revocation_status": schema.BoolAttribute{
 						Description: "Check the session revocation status when validating the access token.",
 						Computed:    true,
 						Optional:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 					"update_authn_session_activity": schema.BoolAttribute{
 						Description: "Update authentication session activity when validating the access token.",
 						Computed:    true,
 						Optional:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 				},
 			},
@@ -287,7 +310,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 	}
 
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, true, true,
+	id.ToSchemaCustomId(&schema, true,
 		"The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.")
 	resp.Schema = schema
 }
@@ -297,8 +320,9 @@ func (r *oauthAccessTokenManagerResource) ValidateConfig(ctx context.Context, re
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
 
 	if internaltypes.IsDefined(model.AttributeContract) {
-		if len(model.AttributeContract.Attributes()["extended_attributes"].(types.List).Elements()) == 0 {
-			resp.Diagnostics.AddError("Empty set!", "Please provide valid properties within extended_attributes. The set cannot be empty.\nIf no values are necessary, remove this property from your terraform file.")
+		extendedAttributes := model.AttributeContract.Attributes()["extended_attributes"].(types.List)
+		if internaltypes.IsDefined(extendedAttributes) && len(extendedAttributes.Elements()) == 0 {
+			resp.Diagnostics.AddError("Empty attribute_contract.extended_attributes", "Please provide valid properties within attribute_contract.extended_attributes. The set cannot be empty if defined.")
 		}
 	}
 }
@@ -415,10 +439,14 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 		attributeContractExtendedAttributes, respDiags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
 		diags.Append(respDiags...)
 
+		inherited := false
+		if attrContract.Inherited != nil {
+			inherited = *attrContract.Inherited
+		}
 		attributeContractValues := map[string]attr.Value{
 			"core_attributes":           attributeContractCoreAttributes,
 			"extended_attributes":       attributeContractExtendedAttributes,
-			"inherited":                 types.BoolPointerValue(attrContract.Inherited),
+			"inherited":                 types.BoolValue(inherited),
 			"default_subject_attribute": types.StringPointerValue(attrContract.DefaultSubjectAttribute),
 		}
 		state.AttributeContract, respDiags = types.ObjectValue(attributeContractTypes, attributeContractValues)
@@ -429,7 +457,19 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 	if r.SelectionSettings == nil {
 		state.SelectionSettings = types.ObjectNull(selectionSettingsAttrType)
 	} else {
-		state.SelectionSettings, respDiags = types.ObjectValueFrom(ctx, selectionSettingsAttrType, r.SelectionSettings)
+		resourceUris, respDiags := types.ListValueFrom(ctx, types.StringType, r.SelectionSettings.ResourceUris)
+		diags.Append(respDiags...)
+
+		// The PF API returns false as empty for inherited in some cases
+		inherited := false
+		if r.SelectionSettings.Inherited != nil {
+			inherited = *r.SelectionSettings.Inherited
+		}
+
+		state.SelectionSettings, respDiags = types.ObjectValue(selectionSettingsAttrType, map[string]attr.Value{
+			"resource_uris": resourceUris,
+			"inherited":     types.BoolValue(inherited),
+		})
 		diags.Append(respDiags...)
 	}
 
@@ -437,7 +477,20 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 	if r.AccessControlSettings == nil {
 		state.AccessControlSettings = types.ObjectNull(accessControlSettingsAttrType)
 	} else {
-		state.AccessControlSettings, respDiags = types.ObjectValueFrom(ctx, accessControlSettingsAttrType, r.AccessControlSettings)
+		// The PF API returns false as empty for inherited in some cases
+		inherited := false
+		if r.AccessControlSettings.Inherited != nil {
+			inherited = *r.AccessControlSettings.Inherited
+		}
+
+		allowedClients, respDiags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: resourcelink.AttrType()}, r.AccessControlSettings.AllowedClients)
+		diags.Append(respDiags...)
+
+		state.AccessControlSettings, respDiags = types.ObjectValue(accessControlSettingsAttrType, map[string]attr.Value{
+			"inherited":        types.BoolValue(inherited),
+			"restrict_clients": types.BoolPointerValue(r.AccessControlSettings.RestrictClients),
+			"allowed_clients":  allowedClients,
+		})
 		diags.Append(respDiags...)
 	}
 
@@ -445,7 +498,19 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 	if r.SessionValidationSettings == nil {
 		state.SessionValidationSettings = types.ObjectNull(sessionValidationSettingsAttrType)
 	} else {
-		state.SessionValidationSettings, respDiags = types.ObjectValueFrom(ctx, sessionValidationSettingsAttrType, r.SessionValidationSettings)
+		// The PF API returns false as empty for inherited in some cases
+		inherited := false
+		if r.SessionValidationSettings.Inherited != nil {
+			inherited = *r.SessionValidationSettings.Inherited
+		}
+
+		state.SessionValidationSettings, respDiags = types.ObjectValue(sessionValidationSettingsAttrType, map[string]attr.Value{
+			"inherited":                       types.BoolValue(inherited),
+			"include_session_id":              types.BoolPointerValue(r.SessionValidationSettings.IncludeSessionId),
+			"check_valid_authn_session":       types.BoolPointerValue(r.SessionValidationSettings.CheckValidAuthnSession),
+			"check_session_revocation_status": types.BoolPointerValue(r.SessionValidationSettings.CheckSessionRevocationStatus),
+			"update_authn_session_activity":   types.BoolPointerValue(r.SessionValidationSettings.UpdateAuthnSessionActivity),
+		})
 		diags.Append(respDiags...)
 	}
 
@@ -488,10 +553,6 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Manager", err.Error())
 		return
 	}
-	_, requestErr := createOauthAccessTokenManager.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of an OAuth Access Token Manager: %s", requestErr.Error())
-	}
 
 	apiCreateOauthAccessTokenManager := r.apiClient.OauthAccessTokenManagersAPI.CreateTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateOauthAccessTokenManager = apiCreateOauthAccessTokenManager.Body(*createOauthAccessTokenManager)
@@ -499,10 +560,6 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Access Token Manager", err, httpResp)
 		return
-	}
-	_, responseErr := oauthAccessTokenManagerResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an OAuth Access Token Manager: %s", requestErr.Error())
 	}
 
 	// Read the response into the state
@@ -533,11 +590,6 @@ func (r *oauthAccessTokenManagerResource) Read(ctx context.Context, req resource
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Manager", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadOauthAccessTokenManager.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an OAuth Access Token Manager: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -587,21 +639,14 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Manager", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of an OAuth Access Token Manager: %s", requestErr.Error())
-	}
+
 	updateOauthAccessTokenManager = updateOauthAccessTokenManager.Body(*createUpdateRequest)
 	updateOauthAccessTokenManagerResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.UpdateTokenManagerExecute(updateOauthAccessTokenManager)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an OAuth Access Token Manager", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateOauthAccessTokenManagerResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an OAuth Access Token Manager: %s", responseErr.Error())
-	}
+
 	// Read the response
 	diags = readOauthAccessTokenManagerResponse(ctx, updateOauthAccessTokenManagerResponse, &state, state.Configuration)
 	if diags.HasError() {

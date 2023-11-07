@@ -13,7 +13,7 @@ Manages a OauthAuthServerSettingsScopesCommonScopes.
 ## Example Usage
 
 ```terraform
-resource "pingfederate_oauth_auth_server_settings_scopes_common_scope" "oauthAuthServerSettingsScopesCommonScopeExample" {
+resource "pingfederate_oauth_auth_server_settings_scopes_common_scope" "myOauthAuthServerSettingsScopesCommonScope" {
   dynamic     = true
   description = "example"
   name        = "*exampleCommonScope"
@@ -26,11 +26,11 @@ resource "pingfederate_oauth_auth_server_settings_scopes_common_scope" "oauthAut
 ### Required
 
 - `description` (String) The description of the scope that appears when the user is prompted for authorization.
+- `name` (String) The name of the scope.
 
 ### Optional
 
 - `dynamic` (Boolean) True if the scope is dynamic. (Defaults to false)
-- `name` (String) The name of the scope.
 
 ### Read-Only
 

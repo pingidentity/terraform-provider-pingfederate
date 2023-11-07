@@ -4,21 +4,30 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 )
 
 func ToSchema() schema.SingleNestedAttribute {
+	conditionalCriteriaDefault, _ := types.ListValue(ConditionalCriteriaElemType(), nil)
+	issuanceCriteriaDefault, _ := types.ObjectValue(AttrType(), map[string]attr.Value{
+		"conditional_criteria": conditionalCriteriaDefault,
+		"expression_criteria":  types.ListNull(ExpressionCriteriaElemType()),
+	})
 	return schema.SingleNestedAttribute{
 		Description: "The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled.",
 		Computed:    true,
 		Optional:    true,
+		Default:     objectdefault.StaticValue(issuanceCriteriaDefault),
 		Attributes: map[string]schema.Attribute{
 			"conditional_criteria": schema.ListNestedAttribute{
 				Description: "A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue.",
 				Computed:    true,
 				Optional:    true,
+				Default:     listdefault.StaticValue(conditionalCriteriaDefault),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"source": sourcetypeidkey.ToSchema(false),
@@ -62,18 +71,4 @@ func ToSchema() schema.SingleNestedAttribute {
 			},
 		},
 	}
-}
-
-func ConditionalCriteriaEmptyDefault() types.List {
-	conditionalCriteriaEmptyList, _ := types.ListValue(ConditionalCriteriaElemType(), []attr.Value{})
-	return conditionalCriteriaEmptyList
-}
-
-func EmptyDefault() types.Object {
-	expressionCriteriaNullList := types.ListNull(ExpressionCriteriaElemType())
-	issuanceCriteriaEmptyObject, _ := types.ObjectValue(AttrType(), map[string]attr.Value{
-		"conditional_criteria": ConditionalCriteriaEmptyDefault(),
-		"expression_criteria":  expressionCriteriaNullList,
-	})
-	return issuanceCriteriaEmptyObject
 }

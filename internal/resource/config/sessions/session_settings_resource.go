@@ -6,9 +6,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -50,22 +49,19 @@ func (r *sessionSettingsResource) Schema(ctx context.Context, req resource.Schem
 				Description: "Determines whether adapter sessions are tracked for cleanup during single logout. The default is false.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown()},
+				Default:     booldefault.StaticBool(false),
 			},
 			"revoke_user_session_on_logout": schema.BoolAttribute{
 				Description: "Determines whether the user's session is revoked on logout. If this property is not provided on a PUT, the setting is left unchanged.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown()},
+				Default:     booldefault.StaticBool(true),
 			},
 			"session_revocation_lifetime": schema.Int64Attribute{
 				Description: "How long a session revocation is tracked and stored, in minutes. If this property is not provided on a PUT, the setting is left unchanged.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown()},
+				Default:     int64default.StaticInt64(40),
 			},
 		},
 	}
@@ -125,10 +121,6 @@ func (r *sessionSettingsResource) Create(ctx context.Context, req resource.Creat
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Session Settings", err.Error())
 		return
 	}
-	_, requestErr := createSessionSettings.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Session Settings: %s", requestErr.Error())
-	}
 
 	apiCreateSessionSettings := r.apiClient.SessionAPI.UpdateSessionSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateSessionSettings = apiCreateSessionSettings.Body(*createSessionSettings)
@@ -136,10 +128,6 @@ func (r *sessionSettingsResource) Create(ctx context.Context, req resource.Creat
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Session Settings", err, httpResp)
 		return
-	}
-	_, responseErr := sessionSettingsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Session Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -167,11 +155,6 @@ func (r *sessionSettingsResource) Read(ctx context.Context, req resource.ReadReq
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Session Settings", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadSessionSettings.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Session Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -204,20 +187,12 @@ func (r *sessionSettingsResource) Update(ctx context.Context, req resource.Updat
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Session Settings", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Session Settings: %s", requestErr.Error())
-	}
+
 	updateSessionSettings = updateSessionSettings.Body(*createUpdateRequest)
 	updateSessionSettingsResponse, httpResp, err := r.apiClient.SessionAPI.UpdateSessionSettingsExecute(updateSessionSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Session Settings", err, httpResp)
 		return
-	}
-	// Log response JSON
-	_, responseErr := updateSessionSettingsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Session Settings: %s", responseErr.Error())
 	}
 
 	// Get the current state to see how any attributes are changing

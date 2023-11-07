@@ -6,8 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -44,20 +43,17 @@ func (r *sessionApplicationSessionPolicyResource) Schema(ctx context.Context, re
 	schema := schema.Schema{
 		Description: "Manages a SessionApplicationSessionPolicy.",
 		Attributes: map[string]schema.Attribute{
-			// Add necessary attributes here
 			"idle_timeout_mins": schema.Int64Attribute{
 				Description: "The idle timeout period, in minutes. If set to -1, the idle timeout will be set to the maximum timeout. The default is 60.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown()},
+				Default:     int64default.StaticInt64(60),
 			},
 			"max_timeout_mins": schema.Int64Attribute{
 				Description: "The maximum timeout period, in minutes. If set to -1, sessions do not expire. The default is 480.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown()},
+				Default:     int64default.StaticInt64(480),
 			},
 		},
 	}
@@ -114,10 +110,6 @@ func (r *sessionApplicationSessionPolicyResource) Create(ctx context.Context, re
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Session Application Session Policy", err.Error())
 		return
 	}
-	_, requestErr := createSessionApplicationSessionPolicy.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Session Application Session Policy: %s", requestErr.Error())
-	}
 
 	apiCreateSessionApplicationSessionPolicy := r.apiClient.SessionAPI.UpdateApplicationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateSessionApplicationSessionPolicy = apiCreateSessionApplicationSessionPolicy.Body(*createSessionApplicationSessionPolicy)
@@ -125,10 +117,6 @@ func (r *sessionApplicationSessionPolicyResource) Create(ctx context.Context, re
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Session Application Session Policy", err, httpResp)
 		return
-	}
-	_, responseErr := sessionApplicationSessionPolicyResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Session Application Session Policy: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -156,11 +144,6 @@ func (r *sessionApplicationSessionPolicyResource) Read(ctx context.Context, req 
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Session Application Session Policy", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadSessionApplicationSessionPolicy.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Session Application Session Policy: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -193,20 +176,12 @@ func (r *sessionApplicationSessionPolicyResource) Update(ctx context.Context, re
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Session Application Session Policy", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Session Application Session Policy: %s", requestErr.Error())
-	}
+
 	updateSessionApplicationSessionPolicy = updateSessionApplicationSessionPolicy.Body(*createUpdateRequest)
 	updateSessionApplicationSessionPolicyResponse, httpResp, err := r.apiClient.SessionAPI.UpdateApplicationPolicyExecute(updateSessionApplicationSessionPolicy)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Session Application Session Policy", err, httpResp)
 		return
-	}
-	// Log response JSON
-	_, responseErr := updateSessionApplicationSessionPolicyResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Session Application Session Policy: %s", responseErr.Error())
 	}
 
 	// Get the current state to see how any attributes are changing

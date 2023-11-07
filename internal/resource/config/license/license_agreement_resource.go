@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -47,7 +46,7 @@ func (r *licenseAgreementResource) Schema(ctx context.Context, req resource.Sche
 		Attributes: map[string]schema.Attribute{
 			"license_agreement_url": schema.StringAttribute{
 				Description: "URL to license agreement",
-				Optional:    true,
+				Optional:    false,
 				Computed:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
@@ -57,10 +56,7 @@ func (r *licenseAgreementResource) Schema(ctx context.Context, req resource.Sche
 				Description: "Indicates whether license agreement has been accepted. The default value is false.",
 				Optional:    true,
 				Computed:    true,
-				Default:     booldefault.StaticBool(true),
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
+				Default:     booldefault.StaticBool(false),
 			},
 		},
 	}
@@ -118,10 +114,6 @@ func (r *licenseAgreementResource) Create(ctx context.Context, req resource.Crea
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for License Agreement", err.Error())
 		return
 	}
-	_, requestErr := createLicenseAgreement.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of the License Agreement: %s", requestErr.Error())
-	}
 
 	apiCreateLicenseAgreement := r.apiClient.LicenseAPI.UpdateLicenseAgreement(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateLicenseAgreement = apiCreateLicenseAgreement.Body(*createLicenseAgreement)
@@ -129,10 +121,6 @@ func (r *licenseAgreementResource) Create(ctx context.Context, req resource.Crea
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the License Agreement", err, httpResp)
 		return
-	}
-	_, responseErr := licenseAgreementResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the License Agreement: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -163,11 +151,7 @@ func (r *licenseAgreementResource) Read(ctx context.Context, req resource.ReadRe
 		}
 		return
 	}
-	// Log response JSON
-	_, responseErr := apiReadLicenseAgreement.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the License Agreement: %s", responseErr.Error())
-	}
+
 	// Read the response into the state
 	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
@@ -197,22 +181,14 @@ func (r *licenseAgreementResource) Update(ctx context.Context, req resource.Upda
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for License Agreement", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of the License Agreement: %s", requestErr.Error())
-	}
+
 	updateLicenseAgreement = updateLicenseAgreement.Body(*createUpdateRequest)
 	updateLicenseAgreementResponse, httpResp, err := r.apiClient.LicenseAPI.UpdateLicenseAgreementExecute(updateLicenseAgreement)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating License Agreement", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateLicenseAgreementResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the License Agreement: %s", requestErr.Error())
-	}
-	// Read the response
+
 	// Get the current state to see how any attributes are changing
 	var state licenseAgreementResourceModel
 	id, diags := id.GetID(ctx, req.State)

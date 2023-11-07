@@ -20,17 +20,17 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource              = &certificatesResource{}
-	_ resource.ResourceWithConfigure = &certificatesResource{}
+	_ resource.Resource              = &certificateCAResource{}
+	_ resource.ResourceWithConfigure = &certificateCAResource{}
 )
 
-// CertificateResource is a helper function to simplify the provider implementation.
-func CertificateResource() resource.Resource {
-	return &certificatesResource{}
+// CertificateCAResource is a helper function to simplify the provider implementation.
+func CertificateCAResource() resource.Resource {
+	return &certificateCAResource{}
 }
 
-// certificatesResource is the resource implementation.
-type certificatesResource struct {
+// certificateCAResource is the resource implementation.
+type certificateCAResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
 }
@@ -43,19 +43,10 @@ type certificatesResourceModel struct {
 }
 
 // GetSchema defines the schema for the resource.
-func (r *certificatesResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *certificateCAResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages CertificateCA Import.",
+		Description: "Manages a CertificateCA Import.",
 		Attributes: map[string]schema.Attribute{
-			"custom_id": schema.StringAttribute{
-				Description: "The persistent, unique ID for the certificate",
-				Optional:    true,
-				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-					stringplanmodifier.RequiresReplace(),
-				},
-			},
 			"crypto_provider": schema.StringAttribute{
 				Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
 				Optional:    true,
@@ -71,7 +62,6 @@ func (r *certificatesResource) Schema(ctx context.Context, req resource.SchemaRe
 				Description: "The certificate data in PEM format. New line characters should be omitted or encoded in this value.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
@@ -79,6 +69,7 @@ func (r *certificatesResource) Schema(ctx context.Context, req resource.SchemaRe
 	}
 
 	id.ToSchema(&schema)
+	id.ToSchemaCustomId(&schema, false, "The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-].")
 	resp.Schema = schema
 }
 
@@ -94,11 +85,11 @@ func addOptionalCaCertsFields(ctx context.Context, addRequest *client.X509File, 
 }
 
 // Metadata returns the resource type name.
-func (r *certificatesResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *certificateCAResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_certificate_ca"
 }
 
-func (r *certificatesResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
+func (r *certificateCAResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -110,7 +101,7 @@ func (r *certificatesResource) Configure(_ context.Context, req resource.Configu
 }
 
 // ValidateConfig to check if crypto_provider attribute is present in the terraform file and act accordingly
-func (r *certificatesResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+func (r *certificateCAResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 	var model certificatesResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
 	if internaltypes.IsNonEmptyString(model.CryptoProvider) {
@@ -127,7 +118,7 @@ func readCertificateResponse(ctx context.Context, r *client.CertView, state *cer
 	state.FileData = types.StringValue(X509FileData.ValueString())
 }
 
-func (r *certificatesResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+func (r *certificateCAResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan certificatesResourceModel
 
 	diags := req.Plan.Get(ctx, &plan)
@@ -141,20 +132,13 @@ func (r *certificatesResource) Create(ctx context.Context, req resource.CreateRe
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for a CA Certificate", err.Error())
 		return
 	}
-	_, requestErr := createCertificate.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of a Certificate: %s", requestErr.Error())
-	}
+
 	apiCreateCertificate := r.apiClient.CertificatesCaAPI.ImportTrustedCA(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateCertificate = apiCreateCertificate.Body(*createCertificate)
 	certificateResponse, httpResp, err := r.apiClient.CertificatesCaAPI.ImportTrustedCAExecute(apiCreateCertificate)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating a CA Certificate", err, httpResp)
 		return
-	}
-	_, responseErr := certificateResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of a Certificate: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -165,7 +149,7 @@ func (r *certificatesResource) Create(ctx context.Context, req resource.CreateRe
 	resp.Diagnostics.Append(diags...)
 }
 
-func (r *certificatesResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+func (r *certificateCAResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state certificatesResourceModel
 
 	diags := req.State.Get(ctx, &state)
@@ -184,11 +168,6 @@ func (r *certificatesResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	// Log response JSON
-	_, responseErr := apiReadCertificate.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of a Certificate: %s", responseErr.Error())
-	}
 	// Read the response into the state
 	readCertificateResponse(ctx, apiReadCertificate, &state, &state, &resp.Diagnostics, state.FileData)
 
@@ -197,11 +176,13 @@ func (r *certificatesResource) Read(ctx context.Context, req resource.ReadReques
 	resp.Diagnostics.Append(diags...)
 }
 
-func (r *certificatesResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *certificateCAResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	// All attributes in this resource use the RequiresReplace plan modifier, so no updates can be done.
+	// The PF API does not support updating a certificate CA, only creating and deleting.
 }
 
 // // Delete deletes the resource and removes the Terraform state on success.
-func (r *certificatesResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *certificateCAResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
 	var state certificatesResourceModel
 	diags := req.State.Get(ctx, &state)
@@ -217,6 +198,6 @@ func (r *certificatesResource) Delete(ctx context.Context, req resource.DeleteRe
 	}
 }
 
-func (r *certificatesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *certificateCAResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("custom_id"), req, resp)
 }

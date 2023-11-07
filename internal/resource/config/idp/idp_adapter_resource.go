@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
@@ -75,6 +75,10 @@ var (
 		},
 		"inherited": types.BoolType,
 	}
+
+	extendedAttributesDefault, _ = types.SetValue(types.ObjectType{
+		AttrTypes: attributesAttrType,
+	}, nil)
 )
 
 // IdpAdapterResource is a helper function to simplify the provider implementation.
@@ -141,15 +145,15 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 									Description: "Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to false.",
 									Optional:    true,
 									Computed:    true,
-									// These defaults cause issues with unexpected plans
-									//Default:     booldefault.StaticBool(false),
+									// These defaults cause issues with unexpected plans - see https://github.com/hashicorp/terraform-plugin-framework/issues/867
+									// Default: booldefault.StaticBool(false),
 								},
 								"masked": schema.BoolAttribute{
 									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
 									Optional:    true,
 									Computed:    true,
-									// These defaults cause issues with unexpected plans
-									//Default:     booldefault.StaticBool(false),
+									// These defaults cause issues with unexpected plans - see https://github.com/hashicorp/terraform-plugin-framework/issues/867
+									// Default: booldefault.StaticBool(false),
 								},
 							},
 						},
@@ -182,6 +186,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 						Description: "A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them.",
 						Optional:    true,
 						Computed:    true,
+						Default:     setdefault.StaticValue(extendedAttributesDefault),
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -210,6 +215,8 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 					"mask_ognl_values": schema.BoolAttribute{
 						Description: "Whether or not all OGNL expressions used to fulfill an outgoing assertion contract should be masked in the logs. Defaults to false.",
 						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 					"inherited": schema.BoolAttribute{
 						Description: "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
@@ -237,7 +244,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 	}
 
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, true, true,
+	id.ToSchemaCustomId(&schema, true,
 		"The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.")
 	resp.Schema = schema
 }
@@ -414,10 +421,6 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdpAdapter", err.Error())
 		return
 	}
-	requestJson, err := createIdpAdapter.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
-	}
 
 	apiCreateIdpAdapter := r.apiClient.IdpAdaptersAPI.CreateIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateIdpAdapter = apiCreateIdpAdapter.Body(*createIdpAdapter)
@@ -425,10 +428,6 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the IdpAdapter", err, httpResp)
 		return
-	}
-	responseJson, err := idpAdapterResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
 	}
 
 	// Read the response into the state
@@ -449,15 +448,14 @@ func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 	apiReadIdpAdapter, httpResp, err := r.apiClient.IdpAdaptersAPI.GetIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
-
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for an IdpAdapter", err, httpResp)
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an IdpAdapter", err, httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an IdpAdapter", err, httpResp)
+		}
 		return
-	}
-	// Log response JSON
-	responseJson, err := apiReadIdpAdapter.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
 	}
 
 	// Read the response into the state
@@ -504,21 +502,14 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdpAdapter", err.Error())
 		return
 	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
-	}
+
 	updateIdpAdapter = updateIdpAdapter.Body(*createUpdateRequest)
 	updateIdpAdapterResponse, httpResp, err := r.apiClient.IdpAdaptersAPI.UpdateIdpAdapterExecute(updateIdpAdapter)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating IdpAdapter", err, httpResp)
 		return
 	}
-	// Log response JSON
-	responseJson, err := updateIdpAdapterResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
-	}
+
 	// Read the response
 	var state idpAdapterResourceModel
 	readResponseDiags := readIdpAdapterResponse(ctx, updateIdpAdapterResponse, &state, plan)

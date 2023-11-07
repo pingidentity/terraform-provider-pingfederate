@@ -51,7 +51,6 @@ func (r *keyPairsSslServerImportResource) Schema(ctx context.Context, req resour
 				Description: "Base-64 encoded PKCS12 or PEM file data. In the case of PEM, the raw (non-base-64) data is also accepted. In BCFIPS mode, only PEM with PBES2 and AES or Triple DES encryption is accepted and 128-bit salt is required.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
@@ -59,7 +58,6 @@ func (r *keyPairsSslServerImportResource) Schema(ctx context.Context, req resour
 				Description: "Key pair file format. If specified, this field will control what file format is expected, otherwise the format will be auto-detected. In BCFIPS mode, only PEM is supported. (PKCS12, PEM)",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
@@ -68,16 +66,13 @@ func (r *keyPairsSslServerImportResource) Schema(ctx context.Context, req resour
 				Required:    true,
 				Sensitive:   true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"crypto_provider": schema.StringAttribute{
 				Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. (LOCAL, HSM)",
-				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
@@ -85,7 +80,7 @@ func (r *keyPairsSslServerImportResource) Schema(ctx context.Context, req resour
 	}
 
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, true, true,
+	id.ToSchemaCustomId(&schema, true,
 		"The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.")
 	resp.Schema = schema
 }
@@ -142,10 +137,6 @@ func (r *keyPairsSslServerImportResource) Create(ctx context.Context, req resour
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for KeyPair SSL Server Import", err.Error())
 		return
 	}
-	_, requestErr := createKeyPairsSslServerImport.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of the KeyPair SSL Server Import: %s", requestErr.Error())
-	}
 
 	apiCreateKeyPairsSslServerImport := r.apiClient.KeyPairsSslServerAPI.ImportSslServerKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateKeyPairsSslServerImport = apiCreateKeyPairsSslServerImport.Body(*createKeyPairsSslServerImport)
@@ -153,10 +144,6 @@ func (r *keyPairsSslServerImportResource) Create(ctx context.Context, req resour
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the KeyPair SSL Server Import", err, httpResp)
 		return
-	}
-	_, responseErr := keyPairsSslServerImportResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the KeyPair SSL Server Import: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -188,11 +175,6 @@ func (r *keyPairsSslServerImportResource) Read(ctx context.Context, req resource
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPair SSL Server Import", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadKeyPairsSslServerImport.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of the KeyPair SSL Server Import: %s", responseErr.Error())
 	}
 
 	// Read the response into the state

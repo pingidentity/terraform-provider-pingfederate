@@ -3,19 +3,19 @@
 page_title: "pingfederate_certificate_ca Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages CertificateCA Import.
+  Manages a CertificateCA Import.
 ---
 
 # pingfederate_certificate_ca (Resource)
 
-Manages CertificateCA Import.
+Manages a CertificateCA Import.
 
 ## Example Usage
 
 ```terraform
 resource "pingfederate_certificate_ca" "myCertificateCa" {
+  custom_id = "MyCertificateCA"
   # this property needs to contain base64 encoded value of your pem certificate.
-  # when importing this resource, a subsequent apply is needed to store file_data into state for the future management of the resource
   file_data = ""
 }
 ```
@@ -25,12 +25,12 @@ resource "pingfederate_certificate_ca" "myCertificateCa" {
 
 ### Required
 
+- `custom_id` (String) The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-].
 - `file_data` (String) The certificate data in PEM format. New line characters should be omitted or encoded in this value.
 
 ### Optional
 
 - `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.
-- `custom_id` (String) The persistent, unique ID for the certificate
 
 ### Read-Only
 
