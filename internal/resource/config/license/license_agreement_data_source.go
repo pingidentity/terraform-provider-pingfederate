@@ -38,7 +38,7 @@ type licenseAgreementDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *licenseAgreementDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Manages a LicenseAgreement.",
+		Description: "Describes a LicenseAgreement.",
 		Attributes: map[string]schema.Attribute{
 			"license_agreement_url": schema.StringAttribute{
 				Description: "URL to license agreement",

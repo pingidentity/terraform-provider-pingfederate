@@ -292,7 +292,8 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		localidentity.NewLocalIdentityIdentityProfileDataSource,
 		oauth.NewOauthAccessTokenManagerDataSource,
 		oauth.NewOauthAuthServerSettingsDataSource,
-		oauth.NewOauthAuthServerSettingsScopesCommonScopesDataSource,
+		oauth.NewOauthAuthServerSettingsScopesCommonScopeDataSource,
+		oauth.NewOauthAuthServerSettingsScopesExclusiveScopeDataSource,
 	}
 }
 
