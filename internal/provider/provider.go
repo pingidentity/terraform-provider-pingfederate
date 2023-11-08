@@ -18,19 +18,36 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/administrativeaccount"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi/authenticationapisettings"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicycontract"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificate"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/idpadapter"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/idpdefaulturls"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypair/keypairsigningimport"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypair/keypairsslserverimport"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/license"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/license/licenseagreement"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/localidentity"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/protocolmetadata"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/oauthaccesstokenmanager"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/oauthauthserversettings"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/oauthauthserversettingsscopescommonscope"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/oauthauthserversettingsscopesexclusivescope"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/oauthissuer"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/oauthtokenexchangetokengeneratormappings"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/passwordcredentialvalidator"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/protocolmetadata/protocolmetadatalifetimesettings"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/redirectvalidation"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sessions"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sp"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/serversettingsgeneralsettings"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/serversettingslogsettings"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/serversettingssystemkeys"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/sessionapplicationsessionpolicy"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/sessionauthenticationsessionpolicies/sessionauthenticationsessionpoliciesglobal"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/sessionsettings"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sp/spauthenticationpolicycontractmapping"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/tokenprocessortotokengeneratormapping"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/virtualhostnames"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -263,18 +280,18 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		administrativeaccount.NewAdministrativeAccountDataSource,
-		authenticationapi.NewAuthenticationApiSettingsDataSource,
+		authenticationapisettings.NewAuthenticationApiSettingsDataSource,
 		certificate.NewCertificateDataSource,
-		idp.NewIdpDefaultUrlsDataSource,
-		keypairs.NewKeyPairsSigningImportDataSource,
-		keypairs.NewKeyPairsSslServerImportDataSource,
-		license.NewLicenseAgreementDataSource,
+		idpdefaulturls.NewIdpDefaultUrlsDataSource,
+		keypairsigningimport.NewKeyPairsSigningImportDataSource,
+		keypairsslserverimport.NewKeyPairsSslServerImportDataSource,
 		license.NewLicenseDataSource,
+		licenseagreement.NewLicenseAgreementDataSource,
 		localidentity.NewLocalIdentityIdentityProfileDataSource,
-		oauth.NewOauthAccessTokenManagerDataSource,
-		oauth.NewOauthAuthServerSettingsDataSource,
-		oauth.NewOauthAuthServerSettingsScopesCommonScopeDataSource,
-		oauth.NewOauthAuthServerSettingsScopesExclusiveScopeDataSource,
+		oauthaccesstokenmanager.NewOauthAccessTokenManagerDataSource,
+		oauthauthserversettings.NewOauthAuthServerSettingsDataSource,
+		oauthauthserversettingsscopescommonscope.NewOauthAuthServerSettingsScopesCommonScopeDataSource,
+		oauthauthserversettingsscopesexclusivescope.NewOauthAuthServerSettingsScopesExclusiveScopeDataSource,
 	}
 }
 
@@ -282,34 +299,34 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		administrativeaccount.AdministrativeAccountResource,
-		authenticationapi.AuthenticationApiSettingsResource,
+		authenticationapisettings.AuthenticationApiSettingsResource,
+		authenticationpolicycontract.AuthenticationPolicyContractResource,
 		certificate.CertificateCAResource,
-		config.AuthenticationPolicyContractResource,
-		config.PasswordCredentialValidatorResource,
-		config.RedirectValidationResource,
-		config.TokenProcessorToTokenGeneratorMappingResource,
-		config.VirtualHostNamesResource,
-		idp.IdpAdapterResource,
-		idp.IdpDefaultUrlsResource,
-		keypairs.KeyPairsSigningImportResource,
-		keypairs.KeyPairsSslServerImportResource,
-		license.LicenseAgreementResource,
+		idpadapter.IdpAdapterResource,
+		idpdefaulturls.IdpDefaultUrlsResource,
+		keypairsigningimport.KeyPairsSigningImportResource,
+		keypairsslserverimport.KeyPairsSslServerImportResource,
 		license.LicenseResource,
+		licenseagreement.LicenseAgreementResource,
 		localidentity.LocalIdentityIdentityProfileResource,
-		oauth.OauthAccessTokenManagerResource,
-		oauth.OauthAuthServerSettingsResource,
-		oauth.OauthAuthServerSettingsScopesCommonScopesResource,
-		oauth.OauthAuthServerSettingsScopesExclusiveScopesResource,
-		oauth.OauthIssuersResource,
-		oauth.OauthTokenExchangeTokenGeneratorMappingResource,
-		protocolmetadata.ProtocolMetadataLifetimeSettingsResource,
-		serversettings.ServerSettingsGeneralSettingsResource,
-		serversettings.ServerSettingsLogSettingsResource,
+		oauthaccesstokenmanager.OauthAccessTokenManagerResource,
+		oauthauthserversettings.OauthAuthServerSettingsResource,
+		oauthauthserversettingsscopescommonscope.OauthAuthServerSettingsScopesCommonScopesResource,
+		oauthauthserversettingsscopesexclusivescope.OauthAuthServerSettingsScopesExclusiveScopesResource,
+		oauthissuer.OauthIssuersResource,
+		oauthtokenexchangetokengeneratormappings.OauthTokenExchangeTokenGeneratorMappingResource,
+		passwordcredentialvalidator.PasswordCredentialValidatorResource,
+		protocolmetadatalifetimesettings.ProtocolMetadataLifetimeSettingsResource,
+		redirectvalidation.RedirectValidationResource,
 		serversettings.ServerSettingsResource,
-		serversettings.ServerSettingsSystemKeysResource,
-		sessions.SessionApplicationSessionPolicyResource,
-		sessions.SessionAuthenticationSessionPoliciesGlobalResource,
-		sessions.SessionSettingsResource,
-		sp.SpAuthenticationPolicyContractMappingResource,
+		serversettingsgeneralsettings.ServerSettingsGeneralSettingsResource,
+		serversettingslogsettings.ServerSettingsLogSettingsResource,
+		serversettingssystemkeys.ServerSettingsSystemKeysResource,
+		sessionapplicationsessionpolicy.SessionApplicationSessionPolicyResource,
+		sessionauthenticationsessionpoliciesglobal.SessionAuthenticationSessionPoliciesGlobalResource,
+		sessionsettings.SessionSettingsResource,
+		spauthenticationpolicycontractmapping.SpAuthenticationPolicyContractMappingResource,
+		tokenprocessortotokengeneratormapping.TokenProcessorToTokenGeneratorMappingResource,
+		virtualhostnames.VirtualHostNamesResource,
 	}
 }
