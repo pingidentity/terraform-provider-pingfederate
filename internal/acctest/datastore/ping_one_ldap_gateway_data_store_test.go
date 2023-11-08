@@ -72,15 +72,12 @@ func TestAccPingOneLdapGatewayDataStore(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.ConfigurationPreCheck(t)
-			var pingOneConnectionRefId = os.Getenv("PF_TF_P1_CONNECTION_ID")
 			if pingOneConnectionRefId == "" {
 				t.Fatal("PF_TF_P1_CONNECTION_ID must be set for the PingOneLdapGatewayDataStore acceptance test")
 			}
-			var pingOneEnvironmentId = os.Getenv("PF_TF_P1_CONNECTION_ENV_ID")
 			if pingOneEnvironmentId == "" {
 				t.Fatal("PF_TF_P1_CONNECTION_ENV_ID must be set for the PingOneLdapGatewayDataStore acceptance test")
 			}
-			var pingOneLdapGatewayId = os.Getenv("PF_TF_P1_LDAP_GATEWAY_ID")
 			if pingOneLdapGatewayId == "" {
 				t.Fatal("PF_TF_P1_LDAP_GATEWAY_ID must be set for the PingOneLdapGatewayDataStore acceptance test")
 			}
