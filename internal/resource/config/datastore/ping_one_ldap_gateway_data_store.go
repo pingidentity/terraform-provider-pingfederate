@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -12,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -78,8 +80,13 @@ func toSchemaPingOneLdapGatewayDataStore() schema.SingleNestedAttribute {
 		},
 		"binary_attributes": schema.SetAttribute{
 			Description: "A list of LDAP attributes to be handled as binary data.",
+			Computed:    true,
 			Optional:    true,
 			ElementType: types.StringType,
+			Default:     setdefault.StaticValue(types.SetNull(types.StringType)),
+			Validators: []validator.Set{
+				setvalidator.SizeAtLeast(1),
+			},
 		},
 		"ping_one_environment_id": schema.StringAttribute{
 			Description: "The environment ID that the gateway belongs to.",
@@ -119,12 +126,11 @@ func toStatePingOneLdapGatewayDataStore(con context.Context, pingOneLdapGDS *cli
 	pingOneConRefFromClient := pingOneLdapGDS.GetPingOneConnectionRef()
 	pingOneConnectionRef, diags := resourcelink.ToState(con, &pingOneConRefFromClient)
 	allDiags = append(allDiags, diags...)
-	binaryAttributesFromClient := pingOneLdapGDS.GetBinaryAttributes()
-	binaryAttributesVal := func() types.Set {
-		if len(binaryAttributesFromClient) == 0 {
-			return types.SetNull(types.StringType)
+	binaryAttributes := func() basetypes.SetValue {
+		if len(pingOneLdapGDS.BinaryAttributes) > 0 {
+			return internaltypes.GetStringSet(pingOneLdapGDS.BinaryAttributes)
 		} else {
-			return internaltypes.GetStringSet(binaryAttributesFromClient)
+			return types.SetNull(types.StringType)
 		}
 	}
 	pingOneLdapGatewayDataStoreVal := map[string]attr.Value{
@@ -133,7 +139,7 @@ func toStatePingOneLdapGatewayDataStore(con context.Context, pingOneLdapGDS *cli
 		"ping_one_ldap_gateway_id": types.StringValue(pingOneLdapGDS.GetPingOneLdapGatewayId()),
 		"use_ssl":                  types.BoolValue(pingOneLdapGDS.GetUseSsl()),
 		"name":                     types.StringValue(pingOneLdapGDS.GetName()),
-		"binary_attributes":        binaryAttributesVal(),
+		"binary_attributes":        binaryAttributes(),
 		"type":                     types.StringValue("PING_ONE_LDAP_GATEWAY"),
 		"ping_one_environment_id":  types.StringValue(pingOneLdapGDS.GetPingOneEnvironmentId()),
 	}

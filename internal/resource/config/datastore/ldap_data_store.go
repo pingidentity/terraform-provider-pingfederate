@@ -13,10 +13,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -90,9 +90,7 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Description: "The maximum number of milliseconds a connection waits for a response to be returned before producing an error. A value of -1 causes the connection to wait indefinitely. Omitting this attribute will set the value to the default value.",
 			Computed:    true,
 			Optional:    true,
-			PlanModifiers: []planmodifier.Int64{
-				int64planmodifier.UseStateForUnknown(),
-			},
+			Default:     int64default.StaticInt64(0),
 		},
 		"hostnames": schema.SetAttribute{
 			Description: "The default LDAP host names. This field is required if no mapping for host names and tags are specified.",
@@ -113,9 +111,7 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Description: "Indicates whether objects are validated before being returned to the pool.",
 			Computed:    true,
 			Optional:    true,
-			PlanModifiers: []planmodifier.Bool{
-				boolplanmodifier.UseStateForUnknown(),
-			},
+			Default:     booldefault.StaticBool(false),
 		},
 		"ldap_type": schema.StringAttribute{
 			Description: "A type that allows PingFederate to configure many provisioning settings automatically. The 'UNBOUNDID_DS' type has been deprecated, please use the 'PING_DIRECTORY' type instead.",
@@ -128,33 +124,25 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Description: "The maximum time in milliseconds that DNS information are cached. Omitting this attribute will set the value to the default value.",
 			Computed:    true,
 			Optional:    true,
-			PlanModifiers: []planmodifier.Int64{
-				int64planmodifier.UseStateForUnknown(),
-			},
+			Default:     int64default.StaticInt64(0),
 		},
 		"connection_timeout": schema.Int64Attribute{
 			Description: "The maximum number of milliseconds that a connection attempt should be allowed to continue before returning an error. A value of -1 causes the pool to wait indefinitely. Omitting this attribute will set the value to the default value.",
 			Computed:    true,
 			Optional:    true,
-			PlanModifiers: []planmodifier.Int64{
-				int64planmodifier.UseStateForUnknown(),
-			},
+			Default:     int64default.StaticInt64(0),
 		},
 		"min_connections": schema.Int64Attribute{
 			Description: "The smallest number of connections that can remain in each pool, without creating extra ones. Omitting this attribute will set the value to the default value.",
 			Computed:    true,
 			Optional:    true,
-			PlanModifiers: []planmodifier.Int64{
-				int64planmodifier.UseStateForUnknown(),
-			},
+			Default:     int64default.StaticInt64(10),
 		},
 		"max_connections": schema.Int64Attribute{
 			Description: "The largest number of active connections that can remain in each pool without releasing extra ones. Omitting this attribute will set the value to the default value.",
 			Computed:    true,
 			Optional:    true,
-			PlanModifiers: []planmodifier.Int64{
-				int64planmodifier.UseStateForUnknown(),
-			},
+			Default:     int64default.StaticInt64(100),
 		},
 		"use_ssl": schema.BoolAttribute{
 			Description: "Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS). The default value is false.",
@@ -166,17 +154,13 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Description: "Indicates whether objects are validated before being borrowed from the pool.",
 			Computed:    true,
 			Optional:    true,
-			PlanModifiers: []planmodifier.Bool{
-				boolplanmodifier.UseStateForUnknown(),
-			},
+			Default:     booldefault.StaticBool(false),
 		},
 		"ldap_dns_srv_prefix": schema.StringAttribute{
 			Description: "The prefix value used to discover LDAP DNS SRV record. Omitting this attribute will set the value to the default value.",
 			Computed:    true,
 			Optional:    true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
-			},
+			Default:     stringdefault.StaticString("_ldap._tcp"),
 		},
 		"use_dns_srv_records": schema.BoolAttribute{
 			Description: "Use DNS SRV Records to discover LDAP server information. The default value is false.",
@@ -188,26 +172,23 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Description: "Indicates whether temporary connections can be created when the Maximum Connections threshold is reached.",
 			Computed:    true,
 			Optional:    true,
-			PlanModifiers: []planmodifier.Bool{
-				boolplanmodifier.UseStateForUnknown(),
-			},
+			Default:     booldefault.StaticBool(false),
 		},
 		"binary_attributes": schema.SetAttribute{
 			ElementType: types.StringType,
 			Description: "A list of LDAP attributes to be handled as binary data.",
 			Computed:    true,
 			Optional:    true,
-			PlanModifiers: []planmodifier.Set{
-				setplanmodifier.UseStateForUnknown(),
+			Default:     setdefault.StaticValue(types.SetNull(types.StringType)),
+			Validators: []validator.Set{
+				setvalidator.SizeAtLeast(1),
 			},
 		},
 		"max_wait": schema.Int64Attribute{
 			Description: "The maximum number of milliseconds the pool waits for a connection to become available when trying to obtain a connection from the pool. Omitting this attribute or setting a value of -1 causes the pool not to wait at all and to either create a new connection or produce an error (when no connections are available).",
 			Computed:    true,
 			Optional:    true,
-			PlanModifiers: []planmodifier.Int64{
-				int64planmodifier.UseStateForUnknown(),
-			},
+			Default:     int64default.StaticInt64(-1),
 		},
 		"hostnames_tags": schema.SetNestedAttribute{
 			Description: "A LDAP data store's host names and tags configuration. This is required if no default LDAP host names are specified.",
@@ -247,9 +228,7 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Description: "The frequency, in milliseconds, that the evictor cleans up the connections in the pool. A value of -1 disables the evictor. Omitting this attribute will set the value to the default value.",
 			Computed:    true,
 			Optional:    true,
-			PlanModifiers: []planmodifier.Int64{
-				int64planmodifier.UseStateForUnknown(),
-			},
+			Default:     int64default.StaticInt64(0),
 		},
 		"user_dn": schema.StringAttribute{
 			Description: "The username credential required to access the data store.",
@@ -335,6 +314,14 @@ func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataSto
 		}
 	}
 
+	binaryAttributes := func() basetypes.SetValue {
+		if len(ldapDataStore.BinaryAttributes) > 0 {
+			return internaltypes.GetStringSet(ldapDataStore.BinaryAttributes)
+		} else {
+			return types.SetNull(types.StringType)
+		}
+	}
+
 	//  final obj value
 	ldapDataStoreAttrVal := map[string]attr.Value{
 		"hostnames":              internaltypes.GetStringSet(ldapDataStore.Hostnames),
@@ -353,7 +340,7 @@ func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataSto
 		"max_connections":        types.Int64PointerValue(ldapDataStore.MaxConnections),
 		"user_dn":                userDn(),
 		"create_if_necessary":    types.BoolPointerValue(ldapDataStore.CreateIfNecessary),
-		"binary_attributes":      internaltypes.GetStringSet(ldapDataStore.BinaryAttributes),
+		"binary_attributes":      binaryAttributes(),
 		"max_wait":               types.Int64PointerValue(ldapDataStore.MaxWait),
 		"hostnames_tags":         hostnamesTagsVal,
 		"time_between_evictions": types.Int64PointerValue(ldapDataStore.TimeBetweenEvictions),

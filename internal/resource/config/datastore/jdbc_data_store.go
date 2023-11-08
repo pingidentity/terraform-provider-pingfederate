@@ -13,8 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
@@ -84,17 +83,13 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 			Description: "The smallest number of database connections in the connection pool for the given data store. Omitting this attribute will set the value to the connection pool default.",
 			Computed:    true,
 			Optional:    true,
-			PlanModifiers: []planmodifier.Int64{
-				int64planmodifier.UseStateForUnknown(),
-			},
+			Default:     int64default.StaticInt64(0),
 		},
 		"max_pool_size": schema.Int64Attribute{
 			Description: "The largest number of database connections in the connection pool for the given data store. Omitting this attribute will set the value to the connection pool default.",
 			Computed:    true,
 			Optional:    true,
-			PlanModifiers: []planmodifier.Int64{
-				int64planmodifier.UseStateForUnknown(),
-			},
+			Default:     int64default.StaticInt64(0),
 		},
 		"connection_url_tags": schema.SetNestedAttribute{
 			Description: "A JDBC data store's connection URLs and tags configuration. This is required if no default JDBC database location is specified.",
@@ -133,17 +128,13 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 			Description: "The amount of time in milliseconds a request waits to get a connection from the connection pool before it fails. Omitting this attribute will set the value to the connection pool default.",
 			Computed:    true,
 			Optional:    true,
-			PlanModifiers: []planmodifier.Int64{
-				int64planmodifier.UseStateForUnknown(),
-			},
+			Default:     int64default.StaticInt64(0),
 		},
 		"idle_timeout": schema.Int64Attribute{
 			Description: "The length of time in minutes the connection can be idle in the pool before it is closed. Omitting this attribute will set the value to the connection pool default.",
 			Computed:    true,
 			Optional:    true,
-			PlanModifiers: []planmodifier.Int64{
-				int64planmodifier.UseStateForUnknown(),
-			},
+			Default:     int64default.StaticInt64(0),
 		},
 		"driver_class": schema.StringAttribute{
 			Description: "The name of the driver class used to communicate with the source database.",
@@ -168,9 +159,7 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 			Description: "Indicates that this data store can select more than one record from a column and return the results as a multi-value attribute.",
 			Computed:    true,
 			Optional:    true,
-			PlanModifiers: []planmodifier.Bool{
-				boolplanmodifier.UseStateForUnknown(),
-			},
+			Default:     booldefault.StaticBool(false),
 		},
 		"validate_connection_sql": schema.StringAttribute{
 			Description: "A simple SQL statement used by PingFederate at runtime to verify that the database connection is still active and to reconnect if needed.",

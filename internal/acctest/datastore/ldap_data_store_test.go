@@ -159,6 +159,20 @@ func hcl(lds *client.LdapDataStore) string {
 			%[22]s
 		}
 		`
+		hostnames := func() string {
+			if len(lds.GetHostnames()) > 0 {
+				return acctest.StringSliceToTerraformString(lds.GetHostnames())
+			} else {
+				return ""
+			}
+		}
+		binaryAttributes := func() string {
+			if len(lds.GetBinaryAttributes()) > 0 {
+				return acctest.StringSliceToTerraformString(lds.GetBinaryAttributes())
+			} else {
+				return ""
+			}
+		}
 		builder.WriteString(fmt.Sprintf(tf,
 			acctest.TfKeyValuePairToString("ldap_type", lds.LdapType, true),
 			acctest.TfKeyValuePairToString("bind_anonymously", strconv.FormatBool(lds.GetBindAnonymously()), false),
@@ -167,7 +181,7 @@ func hcl(lds *client.LdapDataStore) string {
 			acctest.TfKeyValuePairToString("use_ssl", strconv.FormatBool(lds.GetUseSsl()), false),
 			acctest.TfKeyValuePairToString("use_dns_srv_records", strconv.FormatBool(lds.GetUseDnsSrvRecords()), false),
 			acctest.TfKeyValuePairToString("name", *lds.Name, true),
-			acctest.TfKeyValuePairToString("hostnames", acctest.StringSliceToTerraformString(lds.GetHostnames()), false),
+			acctest.TfKeyValuePairToString("hostnames", hostnames(), false),
 			acctest.TfKeyValuePairToString("test_on_borrow", strconv.FormatBool(lds.GetTestOnBorrow()), false),
 			acctest.TfKeyValuePairToString("test_on_return", strconv.FormatBool(lds.GetTestOnReturn()), false),
 			acctest.TfKeyValuePairToString("create_if_necessary", strconv.FormatBool(lds.GetCreateIfNecessary()), false),
@@ -178,7 +192,7 @@ func hcl(lds *client.LdapDataStore) string {
 			acctest.TfKeyValuePairToString("time_between_evictions", strconv.FormatInt(lds.GetTimeBetweenEvictions(), 10), false),
 			acctest.TfKeyValuePairToString("read_timeout", strconv.FormatInt(lds.GetReadTimeout(), 10), false),
 			acctest.TfKeyValuePairToString("connection_timeout", strconv.FormatInt(lds.GetConnectionTimeout(), 10), false),
-			acctest.TfKeyValuePairToString("binary_attributes", acctest.StringSliceToTerraformString(lds.GetBinaryAttributes()), false),
+			acctest.TfKeyValuePairToString("binary_attributes", binaryAttributes(), false),
 			acctest.TfKeyValuePairToString("dns_ttl", strconv.FormatInt(lds.GetDnsTtl(), 10), false),
 			acctest.TfKeyValuePairToString("ldap_dns_srv_prefix", lds.GetLdapDnsSrvPrefix(), true),
 			acctest.TfKeyValuePairToString("ldaps_dns_srv_prefix", lds.GetLdapsDnsSrvPrefix(), true)),
