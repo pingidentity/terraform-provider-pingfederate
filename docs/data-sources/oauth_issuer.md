@@ -14,7 +14,7 @@ Describes an OAuth Issuer.
 
 ```terraform
 data "pingfederate_oauth_issuer" "myOauthIssuer" {
-  custom_id = "MyOauthIssuer"
+  custom_id = "example"
 }
 ```
 
