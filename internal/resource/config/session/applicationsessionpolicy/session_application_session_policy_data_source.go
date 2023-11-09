@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
@@ -39,7 +38,7 @@ type sessionApplicationSessionPolicyDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *sessionApplicationSessionPolicyDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a SessionApplicationSessionPolicy.",
+		Description: "Describes a SessionApplicationSessionPolicy.",
 		Attributes: map[string]schema.Attribute{
 			// Add necessary attributes here
 			"idle_timeout_mins": schema.Int64Attribute{
@@ -75,20 +74,21 @@ func (r *sessionApplicationSessionPolicyDataSource) Configure(_ context.Context,
 
 }
 
-func readSessionApplicationSessionPolicyResponseDataSource(ctx context.Context, r *client.ApplicationSessionPolicy, state *sessionApplicationSessionPolicyDataSourceModel) diag.Diagnostics {
-	var diags, respDiags diag.Diagnostics
+func readSessionApplicationSessionPolicyResponseDataSource(ctx context.Context, r *client.ApplicationSessionPolicy, state *sessionApplicationSessionPolicyDataSourceModel) {
 	state.Id = types.StringValue("sessionApplicationSessionPolicyId")
 	state.IdleTimeoutMins = types.Int64Value(r.GetIdleTimeoutMins())
 	state.MaxTimeoutMins = types.Int64Value(r.GetMaxTimeoutMins())
-	diags.Append(respDiags...)
-	return diags
 }
 
 func (r *sessionApplicationSessionPolicyDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state sessionApplicationSessionPolicyDataSourceModel
-	var diags diag.Diagnostics
 
-	//apiReadSessionApplicationSessionPolicy, httpResp, err := r.apiClient.SessionAPI.GetApplicationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	diags := req.Config.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	apiReadSessionApplicationSessionPolicy, httpResp, err := r.apiClient.SessionAPI.GetApplicationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	// Read the response into the state
 	if err != nil {
@@ -97,7 +97,7 @@ func (r *sessionApplicationSessionPolicyDataSource) Read(ctx context.Context, re
 	}
 
 	// Read the response into the state
-	diags = readSessionApplicationSessionPolicyResponseDataSource(ctx, apiReadSessionApplicationSessionPolicy, &state)
+	readSessionApplicationSessionPolicyResponseDataSource(ctx, apiReadSessionApplicationSessionPolicy, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
