@@ -14,8 +14,8 @@ Manages an Idp Adapter
 
 ```terraform
 resource "pingfederate_idp_adapter" "idpAdapterExample" {
-  idp_adapter_id = "HTMLFormPD"
-  name           = "HTMLFormPD"
+  adapter_id = "HTMLFormPD"
+  name       = "HTMLFormPD"
   plugin_descriptor_ref = {
     id = "com.pingidentity.adapters.htmlform.idp.HtmlFormIdpAuthnAdapter"
   }
@@ -287,8 +287,8 @@ resource "pingfederate_idp_adapter" "idpAdapterExample" {
 
 ### Required
 
+- `adapter_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--configuration))
-- `idp_adapter_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
 - `name` (String) The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
 - `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
 

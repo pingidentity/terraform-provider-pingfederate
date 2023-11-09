@@ -32,12 +32,12 @@ type oauthIssuerResource struct {
 }
 
 type oauthIssuerResourceModel struct {
-	Id            types.String `tfsdk:"id"`
-	OauthIssuerId types.String `tfsdk:"oauth_issuer_id"`
-	Name          types.String `tfsdk:"name"`
-	Description   types.String `tfsdk:"description"`
-	Host          types.String `tfsdk:"host"`
-	Path          types.String `tfsdk:"path"`
+	Id          types.String `tfsdk:"id"`
+	IssuerId    types.String `tfsdk:"issuer_id"`
+	Name        types.String `tfsdk:"name"`
+	Description types.String `tfsdk:"description"`
+	Host        types.String `tfsdk:"host"`
+	Path        types.String `tfsdk:"path"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -62,15 +62,15 @@ func (r *oauthIssuerResource) Schema(ctx context.Context, req resource.SchemaReq
 
 	id.ToSchema(&schema)
 	id.ToSchemaCustomId(&schema,
-		"oauth_issuer_id",
+		"issuer_id",
 		true,
 		"The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-].")
 	resp.Schema = schema
 }
 func addOptionalOauthIssuerFields(ctx context.Context, addRequest *client.Issuer, plan oauthIssuerResourceModel) error {
 	// Empty strings are treated as equivalent to null
-	if internaltypes.IsDefined(plan.OauthIssuerId) {
-		addRequest.Id = plan.OauthIssuerId.ValueStringPointer()
+	if internaltypes.IsDefined(plan.IssuerId) {
+		addRequest.Id = plan.IssuerId.ValueStringPointer()
 	}
 	if internaltypes.IsDefined(plan.Description) {
 		addRequest.Description = plan.Description.ValueStringPointer()
@@ -101,7 +101,7 @@ func (r *oauthIssuerResource) Configure(_ context.Context, req resource.Configur
 func readOauthIssuerResponse(ctx context.Context, r *client.Issuer, state *oauthIssuerResourceModel, expectedValues *oauthIssuerResourceModel) {
 	//TODO why is this a pointer?
 	state.Id = types.StringValue(*r.Id)
-	state.OauthIssuerId = types.StringValue(*r.Id)
+	state.IssuerId = types.StringValue(*r.Id)
 	state.Name = types.StringValue(r.Name)
 	state.Description = types.StringValue(*r.Description)
 	state.Host = types.StringValue(r.Host)
@@ -149,7 +149,7 @@ func (r *oauthIssuerResource) Read(ctx context.Context, req resource.ReadRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthIssuer, httpResp, err := r.apiClient.OauthIssuersAPI.GetOauthIssuerById(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.OauthIssuerId.ValueString()).Execute()
+	apiReadOauthIssuer, httpResp, err := r.apiClient.OauthIssuersAPI.GetOauthIssuerById(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.IssuerId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Issuer", err, httpResp)
@@ -181,7 +181,7 @@ func (r *oauthIssuerResource) Update(ctx context.Context, req resource.UpdateReq
 	// Get the current state to see how any attributes are changing
 	var state oauthIssuerResourceModel
 	req.State.Get(ctx, &state)
-	updateOauthIssuer := r.apiClient.OauthIssuersAPI.UpdateOauthIssuer(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.OauthIssuerId.ValueString())
+	updateOauthIssuer := r.apiClient.OauthIssuersAPI.UpdateOauthIssuer(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.IssuerId.ValueString())
 	createUpdateRequest := client.NewIssuer(plan.Name.ValueString(), plan.Host.ValueString())
 	err := addOptionalOauthIssuerFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -213,7 +213,7 @@ func (r *oauthIssuerResource) Delete(ctx context.Context, req resource.DeleteReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.OauthIssuersAPI.DeleteOauthIssuer(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.OauthIssuerId.ValueString()).Execute()
+	httpResp, err := r.apiClient.OauthIssuersAPI.DeleteOauthIssuer(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.IssuerId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Issuer", err, httpResp)
 		return
@@ -222,5 +222,5 @@ func (r *oauthIssuerResource) Delete(ctx context.Context, req resource.DeleteReq
 
 func (r *oauthIssuerResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("oauth_issuer_id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("issuer_id"), req, resp)
 }

@@ -72,8 +72,8 @@ func TestAccInternallyManagedReferenceOauthAccessTokenManager(t *testing.T) {
 func testAccInternallyManagedReferenceOauthAccessTokenManager(resourceName string, resourceModel internallyManagedReferenceOauthAccessTokenManagerResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_access_token_manager" "%[1]s" {
-  oauth_access_token_manager_id = "%[2]s"
-  name                          = "%[3]s"
+  manager_id = "%[2]s"
+  name       = "%[3]s"
   plugin_descriptor_ref = {
     id = "org.sourceid.oauth20.token.plugin.impl.ReferenceBearerAccessTokenManagementPlugin"
   }
@@ -139,7 +139,7 @@ resource "pingfederate_oauth_access_token_manager" "%[1]s" {
 }
 
 data "pingfederate_oauth_access_token_manager" "%[1]s" {
-  oauth_access_token_manager_id = pingfederate_oauth_access_token_manager.%[1]s.id
+  manager_id = pingfederate_oauth_access_token_manager.%[1]s.id
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.name,

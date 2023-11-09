@@ -36,10 +36,10 @@ type certificateCAResource struct {
 }
 
 type certificatesResourceModel struct {
-	Id              types.String `tfsdk:"id"`
-	CertificateCaId types.String `tfsdk:"certificate_ca_id"`
-	FileData        types.String `tfsdk:"file_data"`
-	CryptoProvider  types.String `tfsdk:"crypto_provider"`
+	Id             types.String `tfsdk:"id"`
+	CaId           types.String `tfsdk:"ca_id"`
+	FileData       types.String `tfsdk:"file_data"`
+	CryptoProvider types.String `tfsdk:"crypto_provider"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -70,7 +70,7 @@ func (r *certificateCAResource) Schema(ctx context.Context, req resource.SchemaR
 
 	id.ToSchema(&schema)
 	id.ToSchemaCustomId(&schema,
-		"certificate_ca_id",
+		"ca_id",
 		false,
 		"The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-].")
 	resp.Schema = schema
@@ -78,8 +78,8 @@ func (r *certificateCAResource) Schema(ctx context.Context, req resource.SchemaR
 
 func addOptionalCaCertsFields(ctx context.Context, addRequest *client.X509File, plan certificatesResourceModel) error {
 	// Empty strings are treated as equivalent to null
-	if internaltypes.IsDefined(plan.CertificateCaId) {
-		addRequest.Id = plan.CertificateCaId.ValueStringPointer()
+	if internaltypes.IsDefined(plan.CaId) {
+		addRequest.Id = plan.CaId.ValueStringPointer()
 	}
 	if internaltypes.IsDefined(plan.CryptoProvider) {
 		addRequest.CryptoProvider = plan.CryptoProvider.ValueStringPointer()
@@ -115,7 +115,7 @@ func (r *certificateCAResource) ValidateConfig(ctx context.Context, req resource
 
 func readCertificateResponse(ctx context.Context, r *client.CertView, state *certificatesResourceModel, expectedValues *certificatesResourceModel, diagnostics *diag.Diagnostics, createPlan types.String) {
 	X509FileData := createPlan
-	state.CertificateCaId = internaltypes.StringTypeOrNil(r.Id, false)
+	state.CaId = internaltypes.StringTypeOrNil(r.Id, false)
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
 	state.CryptoProvider = internaltypes.StringTypeOrNil(r.CryptoProvider, false)
 	state.FileData = types.StringValue(X509FileData.ValueString())
@@ -160,7 +160,7 @@ func (r *certificateCAResource) Read(ctx context.Context, req resource.ReadReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadCertificate, httpResp, err := r.apiClient.CertificatesCaAPI.GetTrustedCert(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CertificateCaId.ValueString()).Execute()
+	apiReadCertificate, httpResp, err := r.apiClient.CertificatesCaAPI.GetTrustedCert(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CaId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while looking for a Certificate", err, httpResp)
@@ -194,7 +194,7 @@ func (r *certificateCAResource) Delete(ctx context.Context, req resource.DeleteR
 		return
 	}
 
-	httpResp, err := r.apiClient.CertificatesCaAPI.DeleteTrustedCA(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CertificateCaId.ValueString()).Execute()
+	httpResp, err := r.apiClient.CertificatesCaAPI.DeleteTrustedCA(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CaId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a CA Certificate", err, httpResp)
 		return
@@ -202,5 +202,5 @@ func (r *certificateCAResource) Delete(ctx context.Context, req resource.DeleteR
 }
 
 func (r *certificateCAResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("certificate_ca_id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("ca_id"), req, resp)
 }

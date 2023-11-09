@@ -95,7 +95,7 @@ type idpAdapterResource struct {
 type idpAdapterResourceModel struct {
 	AuthnCtxClassRef    types.String `tfsdk:"authn_ctx_class_ref"`
 	Id                  types.String `tfsdk:"id"`
-	IdpAdapterId        types.String `tfsdk:"idp_adapter_id"`
+	AdapterId           types.String `tfsdk:"adapter_id"`
 	Name                types.String `tfsdk:"name"`
 	PluginDescriptorRef types.Object `tfsdk:"plugin_descriptor_ref"`
 	ParentRef           types.Object `tfsdk:"parent_ref"`
@@ -245,7 +245,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 
 	id.ToSchema(&schema)
 	id.ToSchemaCustomId(&schema,
-		"idp_adapter_id",
+		"adapter_id",
 		true,
 		"The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.")
 	resp.Schema = schema
@@ -320,7 +320,7 @@ func (r *idpAdapterResource) Configure(_ context.Context, req resource.Configure
 func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *idpAdapterResourceModel, plan idpAdapterResourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.AuthnCtxClassRef = internaltypes.StringTypeOrNil(r.AuthnCtxClassRef, false)
-	state.IdpAdapterId = types.StringValue(r.Id)
+	state.AdapterId = types.StringValue(r.Id)
 	state.Id = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
 	state.PluginDescriptorRef, diags = resourcelink.ToState(ctx, &r.PluginDescriptorRef)
@@ -417,7 +417,7 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	createIdpAdapter := client.NewIdpAdapter(plan.IdpAdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, configuration)
+	createIdpAdapter := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, configuration)
 	err = addOptionalIdpAdapterFields(ctx, createIdpAdapter, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdpAdapter", err.Error())
@@ -449,7 +449,7 @@ func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadIdpAdapter, httpResp, err := r.apiClient.IdpAdaptersAPI.GetIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.IdpAdapterId.ValueString()).Execute()
+	apiReadIdpAdapter, httpResp, err := r.apiClient.IdpAdaptersAPI.GetIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.AdapterId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an IdpAdapter", err, httpResp)
@@ -481,7 +481,7 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	// Get the current state to see how any attributes are changing
-	updateIdpAdapter := r.apiClient.IdpAdaptersAPI.UpdateIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.IdpAdapterId.ValueString())
+	updateIdpAdapter := r.apiClient.IdpAdaptersAPI.UpdateIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.AdapterId.ValueString())
 
 	var pluginDescriptorRef client.ResourceLink
 	err := json.Unmarshal([]byte(internaljson.FromValue(plan.PluginDescriptorRef, false)), &pluginDescriptorRef)
@@ -497,7 +497,7 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	createUpdateRequest := client.NewIdpAdapter(plan.IdpAdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, configuration)
+	createUpdateRequest := client.NewIdpAdapter(plan.AdapterId.ValueString(), plan.Name.ValueString(), pluginDescriptorRef, configuration)
 
 	err = addOptionalIdpAdapterFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -532,7 +532,7 @@ func (r *idpAdapterResource) Delete(ctx context.Context, req resource.DeleteRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.IdpAdaptersAPI.DeleteIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.IdpAdapterId.ValueString()).Execute()
+	httpResp, err := r.apiClient.IdpAdaptersAPI.DeleteIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.AdapterId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the Idp Adapter", err, httpResp)
 	}
@@ -540,5 +540,5 @@ func (r *idpAdapterResource) Delete(ctx context.Context, req resource.DeleteRequ
 
 func (r *idpAdapterResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("idp_adapter_id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("adapter_id"), req, resp)
 }

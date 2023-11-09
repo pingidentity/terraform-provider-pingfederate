@@ -3,8 +3,8 @@
 # https://developer.hashicorp.com/terraform/plugin/best-practices/sensitive-state #
 
 resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCredentialValidatorExample" {
-  password_credential_validator_id = "simpleUsernamePCV"
-  name                             = "simpleUsernamePasswordCredentialValidator"
+  validator_id = "simpleUsernamePCV"
+  name         = "simpleUsernamePasswordCredentialValidator"
   plugin_descriptor_ref = {
     id = "org.sourceid.saml20.domain.SimpleUsernamePasswordCredentialValidator"
   }
@@ -66,9 +66,9 @@ resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCre
 }
 
 resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCredentialValidatorWithParentRefExample" {
-  depends_on                       = [pingfederate_password_credential_validator.simpleUsernamePasswordCredentialValidatorExample]
-  password_credential_validator_id = "simpleUnPCVParentRefExample"
-  name                             = "simpleUsernamePasswordCredentialValidatorWithParentRefExample"
+  depends_on   = [pingfederate_password_credential_validator.simpleUsernamePasswordCredentialValidatorExample]
+  validator_id = "simpleUnPCVParentRefExample"
+  name         = "simpleUsernamePasswordCredentialValidatorWithParentRefExample"
   plugin_descriptor_ref = {
     id = "org.sourceid.saml20.domain.SimpleUsernamePasswordCredentialValidator"
   }
@@ -133,8 +133,8 @@ resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCre
 }
 
 resource "pingfederate_password_credential_validator" "radiusUsernamePasswordCredentialValidatorExample" {
-  password_credential_validator_id = "radiusUnPwPCV"
-  name                             = "radiusUsernamePasswordCredentialValidator"
+  validator_id = "radiusUnPwPCV"
+  name         = "radiusUsernamePasswordCredentialValidator"
   plugin_descriptor_ref = {
     id = "org.sourceid.saml20.domain.RadiusUsernamePasswordCredentialValidator"
   }
@@ -197,8 +197,8 @@ resource "pingfederate_password_credential_validator" "radiusUsernamePasswordCre
 }
 
 resource "pingfederate_password_credential_validator" "ldapUsernamePasswordCredentialValidatorExample" {
-  password_credential_validator_id = "ldapUnPwPCV"
-  name                             = "ldapUsernamePasswordCredentialValidatorExample"
+  validator_id = "ldapUnPwPCV"
+  name         = "ldapUsernamePasswordCredentialValidatorExample"
   plugin_descriptor_ref = {
     id = "org.sourceid.saml20.domain.LDAPUsernamePasswordCredentialValidator"
   }
@@ -277,8 +277,8 @@ resource "pingfederate_password_credential_validator" "ldapUsernamePasswordCrede
 }
 
 resource "pingfederate_password_credential_validator" "pingIdPasswordCredentialValidatorExample" {
-  password_credential_validator_id = "pingIdPCV"
-  name                             = "pingIdPasswordCredentialValidatorExample"
+  validator_id = "pingIdPCV"
+  name         = "pingIdPasswordCredentialValidatorExample"
   plugin_descriptor_ref = {
     id = "com.pingidentity.plugins.pcvs.pingid.PingIdPCV"
   }
@@ -513,8 +513,8 @@ resource "pingfederate_password_credential_validator" "pingIdPasswordCredentialV
 }
 
 resource "pingfederate_password_credential_validator" "pingOneForEnterpriseDirectoryPasswordCredentialValidatorExample" {
-  password_credential_validator_id = "pingOneForEnterpriseDirectoryPCV"
-  name                             = "pingOneForEnterpriseDirectoryPasswordCredentialValidatorExample"
+  validator_id = "pingOneForEnterpriseDirectoryPCV"
+  name         = "pingOneForEnterpriseDirectoryPasswordCredentialValidatorExample"
   plugin_descriptor_ref = {
     id = "com.pingconnect.alexandria.pingfed.pcv.PingOnePasswordValidator"
   }
@@ -558,8 +558,8 @@ resource "pingfederate_password_credential_validator" "pingOneForEnterpriseDirec
 }
 
 resource "pingfederate_password_credential_validator" "pingOnePasswordCredentialValidatorExample" {
-  password_credential_validator_id = "pingOnePCV"
-  name                             = "pingOnePasswordCredentialValidatorExample"
+  validator_id = "pingOnePCV"
+  name         = "pingOnePasswordCredentialValidatorExample"
   plugin_descriptor_ref = {
     id = "com.pingidentity.plugins.pcvs.p14c.PingOneForCustomersPCV"
   }

@@ -14,11 +14,11 @@ Manages an OAuth Issuer.
 
 ```terraform
 resource "pingfederate_oauth_issuer" "example" {
-  oauth_issuer_id = "MyOauthIssuer"
-  description     = "example description"
-  host            = "example"
-  name            = "example"
-  path            = "/example"
+  issuer_id   = "MyOauthIssuer"
+  description = "example description"
+  host        = "example"
+  name        = "example"
+  path        = "/example"
 }
 ```
 
@@ -29,8 +29,8 @@ resource "pingfederate_oauth_issuer" "example" {
 
 - `description` (String)
 - `host` (String)
+- `issuer_id` (String) The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-].
 - `name` (String)
-- `oauth_issuer_id` (String) The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-].
 - `path` (String)
 
 ### Read-Only

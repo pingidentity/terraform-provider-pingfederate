@@ -81,8 +81,8 @@ func TestAccJsonWebTokenOauthAccessTokenManager(t *testing.T) {
 func testAccJsonWebOauthAccessTokenManager(resourceName string, resourceModel jsonWebTokenOauthAccessTokenManagerResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_access_token_manager" "%[1]s" {
-  oauth_access_token_manager_id = "%[2]s"
-  name                          = "%[3]s"
+  manager_id = "%[2]s"
+  name       = "%[3]s"
   plugin_descriptor_ref = {
     id = "com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin"
   }
@@ -244,7 +244,7 @@ resource "pingfederate_oauth_access_token_manager" "%[1]s" {
   }
 }
 data "pingfederate_oauth_access_token_manager" "%[1]s" {
-  oauth_access_token_manager_id = pingfederate_oauth_access_token_manager.%[1]s.id
+  manager_id = pingfederate_oauth_access_token_manager.%[1]s.id
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.name,

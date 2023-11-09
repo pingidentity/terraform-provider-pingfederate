@@ -69,10 +69,10 @@ func TestAccAuthenticationPolicyContract(t *testing.T) {
 func testAccAuthenticationPolicyContract(resourceName string, resourceModel authenticationPolicyContractResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_policy_contract" "%[1]s" {
-  authentication_policy_contract_id = "%[2]s"
-  core_attributes                   = %[3]s
-  extended_attributes               = %[4]s
-  name                              = "%[5]s"
+  contract_id         = "%[2]s"
+  core_attributes     = %[3]s
+  extended_attributes = %[4]s
+  name                = "%[5]s"
 }`, resourceName,
 		resourceModel.id,
 		acctest.ObjectSliceOfKvStringsToTerraformString("name", resourceModel.coreAttributes),

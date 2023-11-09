@@ -3,7 +3,7 @@
 * **Administrative Account Resource:** Resolved issue where updating a managed `pingfederate_administrative_account` resource forces replacment ([#86](https://github.com/pingidentity/terraform-provider-pingfederate/pull/86)) 
 
 ### ENHANCEMENTS
-* **`custom_id`** changed to resource type id. For example, the `custom_id` in the `pingfederate_authentication_policy_contract` resource is now `authentication_policy_contract_id` ([#98](https://github.com/pingidentity/terraform-provider-pingfederate/pull/98))
+* **`custom_id`** changed to resource type id. For example, the `custom_id` in the `pingfederate_authentication_policy_contract` resource is now `contract_id` ([#98](https://github.com/pingidentity/terraform-provider-pingfederate/pull/98))
 
 ### FEATURES
 #### Resources
