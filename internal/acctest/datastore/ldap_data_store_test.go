@@ -32,7 +32,6 @@ type ldapDataStoreResourceModel struct {
 func initialLdapDataStore() *client.LdapDataStore {
 	initialLdapDataStore := client.NewLdapDataStoreWithDefaults()
 	initialLdapDataStore.Id = pointers.String(ldapDataStoreId)
-	initialLdapDataStore.Name = pointers.String("initialLdapDataStore")
 	initialLdapDataStore.Type = dataStoreType
 	initialLdapDataStore.LdapType = ldapType
 	initialLdapDataStore.BindAnonymously = pointers.Bool(false)
@@ -46,7 +45,7 @@ func initialLdapDataStore() *client.LdapDataStore {
 func updatedLdapDataStore() *client.LdapDataStore {
 	updatedLdapDataStore := client.NewLdapDataStoreWithDefaults()
 	updatedLdapDataStore.Id = pointers.String(ldapDataStoreId)
-	updatedLdapDataStore.Name = pointers.String("updatedLdapDataStore")
+	updatedLdapDataStore.Name = pointers.String("updatedLdapDataStoreName")
 	updatedLdapDataStore.Type = dataStoreType
 	updatedLdapDataStore.LdapType = ldapType
 	updatedLdapDataStore.BindAnonymously = pointers.Bool(true)
@@ -180,7 +179,7 @@ func hcl(lds *client.LdapDataStore) string {
 			acctest.TfKeyValuePairToString("password", *lds.Password, true),
 			acctest.TfKeyValuePairToString("use_ssl", strconv.FormatBool(lds.GetUseSsl()), false),
 			acctest.TfKeyValuePairToString("use_dns_srv_records", strconv.FormatBool(lds.GetUseDnsSrvRecords()), false),
-			acctest.TfKeyValuePairToString("name", *lds.Name, true),
+			acctest.TfKeyValuePairToString("name", lds.GetName(), true),
 			acctest.TfKeyValuePairToString("hostnames", hostnames(), false),
 			acctest.TfKeyValuePairToString("test_on_borrow", strconv.FormatBool(lds.GetTestOnBorrow()), false),
 			acctest.TfKeyValuePairToString("test_on_return", strconv.FormatBool(lds.GetTestOnReturn()), false),
@@ -222,8 +221,16 @@ func testAccCheckExpectedLdapDataStoreAttributes(config ldapDataStoreResourceMod
 			return err
 		}
 
+		nameValue := func() string {
+			if config.dataStore.Name != nil {
+				return *config.dataStore.Name
+			} else {
+				return config.dataStore.Hostnames[0] + " (" + *config.dataStore.UserDN + ")"
+			}
+		}
+
 		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchString(resourceType, pointers.String(ldapDataStoreId), "name", *config.dataStore.Name, *resp.LdapDataStore.Name)
+		err = acctest.TestAttributesMatchString(resourceType, pointers.String(ldapDataStoreId), "name", nameValue(), *resp.LdapDataStore.Name)
 		if err != nil {
 			return err
 		}

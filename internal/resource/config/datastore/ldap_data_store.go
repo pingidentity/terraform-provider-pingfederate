@@ -207,9 +207,9 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 					},
 					"default_source": schema.BoolAttribute{
 						Description: "Whether this is the default connection. Defaults to false if not specified.",
-						Default:     booldefault.StaticBool(false),
 						Computed:    true,
 						Optional:    true,
+						Default:     booldefault.StaticBool(true),
 					},
 				},
 			},
@@ -271,11 +271,11 @@ func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataSto
 	var diags, allDiags diag.Diagnostics
 
 	if ldapDataStore != nil {
-		diags.AddError("Failed to read Custom data store from PingFederate.", "The response from PingFederate was nil.")
+		diags.AddError("Failed to read Ldap data store from PingFederate.", "The response from PingFederate was nil.")
 	}
 
 	userDn := func() types.String {
-		if *ldapDataStore.BindAnonymously {
+		if ldapDataStore.BindAnonymously != nil && *ldapDataStore.BindAnonymously {
 			userDnFromPlan, ok := plan.Attributes()["user_dn"]
 			if ok {
 				return userDnFromPlan.(types.String)
