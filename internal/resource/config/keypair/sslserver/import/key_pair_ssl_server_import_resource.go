@@ -34,12 +34,12 @@ type keyPairsSslServerImportResource struct {
 }
 
 type keyPairsSslServerImportResourceModel struct {
-	Id             types.String `tfsdk:"id"`
-	CustomId       types.String `tfsdk:"custom_id"`
-	FileData       types.String `tfsdk:"file_data"`
-	Format         types.String `tfsdk:"format"`
-	Password       types.String `tfsdk:"password"`
-	CryptoProvider types.String `tfsdk:"crypto_provider"`
+	Id                       types.String `tfsdk:"id"`
+	KeyPairSslServerImportId types.String `tfsdk:"key_pair_ssl_server_import_id"`
+	FileData                 types.String `tfsdk:"file_data"`
+	Format                   types.String `tfsdk:"format"`
+	Password                 types.String `tfsdk:"password"`
+	CryptoProvider           types.String `tfsdk:"crypto_provider"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -80,15 +80,17 @@ func (r *keyPairsSslServerImportResource) Schema(ctx context.Context, req resour
 	}
 
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, true,
+	id.ToSchemaCustomId(&schema,
+		"key_pair_ssl_server_import_id",
+		true,
 		"The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.")
 	resp.Schema = schema
 }
 
 func addOptionalKeyPairsSslServerImportFields(ctx context.Context, addRequest *client.KeyPairFile, plan keyPairsSslServerImportResourceModel) error {
 
-	if internaltypes.IsDefined(plan.CustomId) {
-		addRequest.Id = plan.CustomId.ValueStringPointer()
+	if internaltypes.IsDefined(plan.KeyPairSslServerImportId) {
+		addRequest.Id = plan.KeyPairSslServerImportId.ValueStringPointer()
 	}
 	if internaltypes.IsDefined(plan.CryptoProvider) {
 		addRequest.CryptoProvider = plan.CryptoProvider.ValueStringPointer()
@@ -115,7 +117,7 @@ func (r *keyPairsSslServerImportResource) Configure(_ context.Context, req resou
 
 func readKeyPairsSslServerImportResponse(ctx context.Context, r *client.KeyPairView, state *keyPairsSslServerImportResourceModel, expectedValues *keyPairsSslServerImportResourceModel, planFileData string, planFormat string, planPassword string) {
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
-	state.CustomId = internaltypes.StringTypeOrNil(r.Id, false)
+	state.KeyPairSslServerImportId = internaltypes.StringTypeOrNil(r.Id, false)
 	state.FileData = internaltypes.StringTypeOrNil(&planFileData, false)
 	state.Format = internaltypes.StringTypeOrNil(&planFormat, false)
 	state.Password = types.StringValue(planPassword)
@@ -165,7 +167,7 @@ func (r *keyPairsSslServerImportResource) Read(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadKeyPairsSslServerImport, httpResp, err := r.apiClient.KeyPairsSslServerAPI.GetSslServerKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	apiReadKeyPairsSslServerImport, httpResp, err := r.apiClient.KeyPairsSslServerAPI.GetSslServerKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.KeyPairSslServerImportId.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -201,7 +203,7 @@ func (r *keyPairsSslServerImportResource) Delete(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.KeyPairsSslServerAPI.DeleteSslServerKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	httpResp, err := r.apiClient.KeyPairsSslServerAPI.DeleteSslServerKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.KeyPairSslServerImportId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a KeyPair SSL Server Import", err, httpResp)
 		return
@@ -210,5 +212,5 @@ func (r *keyPairsSslServerImportResource) Delete(ctx context.Context, req resour
 
 func (r *keyPairsSslServerImportResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("custom_id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("key_pair_ssl_server_import_id"), req, resp)
 }

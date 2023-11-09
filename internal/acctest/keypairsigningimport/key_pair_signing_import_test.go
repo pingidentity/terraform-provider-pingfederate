@@ -62,10 +62,10 @@ func TestAccKeyPairsSigningImport(t *testing.T) {
 func testAccKeyPairsSigningImport(resourceName string, resourceModel keyPairsSigningImportResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_key_pair_signing_import" "%[1]s" {
-  custom_id = "%[2]s"
-  file_data = "%[3]s"
-  format    = "%[4]s"
-  password  = "%[5]s"
+  key_pair_signing_import_id = "%[2]s"
+  file_data                  = "%[3]s"
+  format                     = "%[4]s"
+  password                   = "%[5]s"
 }
 
 data "pingfederate_key_pair_signing_import" "%[1]s" {

@@ -68,15 +68,15 @@ func TestAccLocalIdentityIdentityProfiles(t *testing.T) {
 func testAccLocalIdentityIdentityProfiles(resourceName string, resourceModel localIdentityIdentityProfilesResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_policy_contract" "authenticationPolicyContractsExample" {
-  custom_id           = "%[2]s"
-  core_attributes     = [{ name = "subject" }]
-  extended_attributes = [{ name = "extended_attribute" }, { name = "extended_attribute2" }]
-  name                = "example"
+  authentication_policy_contract_id = "%[2]s"
+  core_attributes                   = [{ name = "subject" }]
+  extended_attributes               = [{ name = "extended_attribute" }, { name = "extended_attribute2" }]
+  name                              = "example"
 }
 
 resource "pingfederate_local_identity_identity_profile" "%[1]s" {
-  custom_id = "%[2]s"
-  name      = "%[3]s"
+  local_identity_identity_profile_id = "%[2]s"
+  name                               = "%[3]s"
   apc_id = {
     id = pingfederate_authentication_policy_contract.authenticationPolicyContractsExample.id
   }

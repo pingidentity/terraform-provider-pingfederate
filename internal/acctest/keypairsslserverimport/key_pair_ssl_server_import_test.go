@@ -61,10 +61,10 @@ func TestAccKeyPairsSslServerImport(t *testing.T) {
 func testAccKeyPairsSslServerImport(resourceName string, resourceModel keyPairsSslServerImportResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_key_pair_ssl_server_import" "%[1]s" {
-  custom_id = "%[2]s"
-  file_data = "%[3]s"
-  format    = "%[4]s"
-  password  = "%[5]s"
+  key_pair_ssl_server_import_id = "%[2]s"
+  file_data                     = "%[3]s"
+  format                        = "%[4]s"
+  password                      = "%[5]s"
 }
 
 data "pingfederate_key_pair_ssl_server_import" "%[1]s" {

@@ -81,10 +81,10 @@ func TestAccSpAuthenticationPolicyContractMapping(t *testing.T) {
 func testAccSpAuthenticationPolicyContractMapping(resourceName string, resourceModel spAuthenticationPolicyContractMappingResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_policy_contract" "authenticationPolicyContractExample" {
-  core_attributes     = [{ name = "subject" }]
-  extended_attributes = [{ name = "extended_attribute" }, { name = "extended_attribute2" }]
-  name                = "example"
-  custom_id           = "authenticationpolicycontractid"
+  core_attributes                   = [{ name = "subject" }]
+  extended_attributes               = [{ name = "extended_attribute" }, { name = "extended_attribute2" }]
+  name                              = "example"
+  authentication_policy_contract_id = "authenticationpolicycontractid"
 }
 resource "pingfederate_sp_authentication_policy_contract_mapping" "%[1]s" {
   source_id = pingfederate_authentication_policy_contract.authenticationPolicyContractExample.id

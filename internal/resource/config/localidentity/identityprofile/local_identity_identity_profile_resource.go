@@ -161,22 +161,19 @@ type localIdentityIdentityProfileResource struct {
 }
 
 type localIdentityIdentityProfileResourceModel struct {
-	Id       types.String `tfsdk:"id"`
-	CustomId types.String `tfsdk:"custom_id"`
-	Name     types.String `tfsdk:"name"`
-	ApcId    types.Object `tfsdk:"apc_id"`
-
-	AuthSources            types.List   `tfsdk:"auth_sources"`
-	AuthSourceUpdatePolicy types.Object `tfsdk:"auth_source_update_policy"`
-	RegistrationEnabled    types.Bool   `tfsdk:"registration_enabled"`
-	RegistrationConfig     types.Object `tfsdk:"registration_config"`
-
-	ProfileConfig           types.Object `tfsdk:"profile_config"`
-	FieldConfig             types.Object `tfsdk:"field_config"`
-	EmailVerificationConfig types.Object `tfsdk:"email_verification_config"`
-
-	DataStoreConfig types.Object `tfsdk:"data_store_config"`
-	ProfileEnabled  types.Bool   `tfsdk:"profile_enabled"`
+	Id                             types.String `tfsdk:"id"`
+	LocalIdentityIdentityProfileId types.String `tfsdk:"local_identity_identity_profile_id"`
+	Name                           types.String `tfsdk:"name"`
+	ApcId                          types.Object `tfsdk:"apc_id"`
+	AuthSources                    types.List   `tfsdk:"auth_sources"`
+	AuthSourceUpdatePolicy         types.Object `tfsdk:"auth_source_update_policy"`
+	RegistrationEnabled            types.Bool   `tfsdk:"registration_enabled"`
+	RegistrationConfig             types.Object `tfsdk:"registration_config"`
+	ProfileConfig                  types.Object `tfsdk:"profile_config"`
+	FieldConfig                    types.Object `tfsdk:"field_config"`
+	EmailVerificationConfig        types.Object `tfsdk:"email_verification_config"`
+	DataStoreConfig                types.Object `tfsdk:"data_store_config"`
+	ProfileEnabled                 types.Bool   `tfsdk:"profile_enabled"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -553,15 +550,17 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 	}
 
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, true,
+	id.ToSchemaCustomId(&schema,
+		"local_identity_identity_profile_id",
+		true,
 		"The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-].")
 	resp.Schema = schema
 }
 
 func addOptionalLocalIdentityIdentityProfileFields(ctx context.Context, addRequest *client.LocalIdentityProfile, plan localIdentityIdentityProfileResourceModel) error {
 
-	if internaltypes.IsDefined(plan.CustomId) {
-		addRequest.Id = plan.CustomId.ValueStringPointer()
+	if internaltypes.IsDefined(plan.LocalIdentityIdentityProfileId) {
+		addRequest.Id = plan.LocalIdentityIdentityProfileId.ValueStringPointer()
 	}
 
 	if internaltypes.IsDefined(plan.Name) {
@@ -957,7 +956,7 @@ func (r *localIdentityIdentityProfileResource) ValidateConfig(ctx context.Contex
 func readLocalIdentityIdentityProfileResponse(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfileResourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
-	state.CustomId = internaltypes.StringTypeOrNil(r.Id, false)
+	state.LocalIdentityIdentityProfileId = internaltypes.StringTypeOrNil(r.Id, false)
 	state.Name = types.StringValue(r.Name)
 	state.ApcId, respDiags = resourcelink.ToState(ctx, &r.ApcId)
 	diags.Append(respDiags...)
@@ -1051,7 +1050,7 @@ func (r *localIdentityIdentityProfileResource) Read(ctx context.Context, req res
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadLocalIdentityIdentityProfiles, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.GetIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	apiReadLocalIdentityIdentityProfiles, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.GetIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.LocalIdentityIdentityProfileId.ValueString()).Execute()
 	if err != nil {
 		if httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Local Identity Profile", err, httpResp)
@@ -1080,7 +1079,7 @@ func (r *localIdentityIdentityProfileResource) Update(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	updateLocalIdentityIdentityProfiles := r.apiClient.LocalIdentityIdentityProfilesAPI.UpdateIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.CustomId.ValueString())
+	updateLocalIdentityIdentityProfiles := r.apiClient.LocalIdentityIdentityProfilesAPI.UpdateIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.LocalIdentityIdentityProfileId.ValueString())
 	apcResourceLink, err := resourcelink.ClientStruct(plan.ApcId)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add apc id to add request for Local Identity Identity Profile", err.Error())
@@ -1116,7 +1115,7 @@ func (r *localIdentityIdentityProfileResource) Delete(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.DeleteIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.DeleteIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.LocalIdentityIdentityProfileId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting Local Identity Profile", err, httpResp)
 	}
@@ -1125,5 +1124,5 @@ func (r *localIdentityIdentityProfileResource) Delete(ctx context.Context, req r
 
 func (r *localIdentityIdentityProfileResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("custom_id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("local_identity_identity_profile_id"), req, resp)
 }

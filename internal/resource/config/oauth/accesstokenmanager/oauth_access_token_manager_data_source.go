@@ -55,7 +55,7 @@ type oauthAccessTokenManagerDataSource struct {
 
 type oauthAccessTokenManagerDataSourceModel struct {
 	Id                        types.String `tfsdk:"id"`
-	CustomId                  types.String `tfsdk:"custom_id"`
+	OauthAccessTokenManagerId types.String `tfsdk:"oauth_access_token_manager_id"`
 	Name                      types.String `tfsdk:"name"`
 	PluginDescriptorRef       types.Object `tfsdk:"plugin_descriptor_ref"`
 	ParentRef                 types.Object `tfsdk:"parent_ref"`
@@ -254,7 +254,11 @@ func (r *oauthAccessTokenManagerDataSource) Schema(ctx context.Context, req data
 		},
 	}
 	id.ToDataSourceSchema(&schemaDef, false, "The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.")
-	id.ToDataSourceSchemaCustomId(&schemaDef, true, true, "The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.")
+	id.ToDataSourceSchemaCustomId(&schemaDef,
+		"oauth_access_token_manager_id",
+		true,
+		true,
+		"The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.")
 	resp.Schema = schemaDef
 }
 
@@ -279,7 +283,7 @@ func readOauthAccessTokenManagerResponseDataSource(ctx context.Context, r *clien
 	var diags, respDiags diag.Diagnostics
 
 	state.Id = types.StringValue(r.Id)
-	state.CustomId = types.StringValue(r.Id)
+	state.OauthAccessTokenManagerId = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
 	state.PluginDescriptorRef, respDiags = resourcelink.ToDataSourceState(ctx, &r.PluginDescriptorRef)
 	diags.Append(respDiags...)
@@ -336,7 +340,7 @@ func (r *oauthAccessTokenManagerDataSource) Read(ctx context.Context, req dataso
 		return
 	}
 
-	apiReadOauthAccessTokenManager, httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.GetTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	apiReadOauthAccessTokenManager, httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.GetTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.OauthAccessTokenManagerId.ValueString()).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Manager", err, httpResp)
 		return

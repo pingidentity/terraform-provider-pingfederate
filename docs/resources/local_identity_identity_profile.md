@@ -14,8 +14,8 @@ Manages Local Identity Identity Profile
 
 ```terraform
 resource "pingfederate_local_identity_identity_profile" "myLocalIdentityIdentityProfile" {
-  name      = "yourIdentityProfileName"
-  custom_id = "yourid"
+  name                               = "yourIdentityProfileName"
+  local_identity_identity_profile_id = "yourid"
   apc_id = {
     id = "apcid"
   }
@@ -154,7 +154,7 @@ resource "pingfederate_local_identity_identity_profile" "myLocalIdentityIdentity
 ### Required
 
 - `apc_id` (Attributes) The reference to the authentication policy contract to use for this local identity profile. (see [below for nested schema](#nestedatt--apc_id))
-- `custom_id` (String) The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-].
+- `local_identity_identity_profile_id` (String) The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-].
 - `name` (String) The local identity profile name. Name is unique.
 
 ### Optional

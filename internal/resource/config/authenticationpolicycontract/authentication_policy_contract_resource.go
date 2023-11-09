@@ -41,11 +41,11 @@ type authenticationPolicyContractResource struct {
 }
 
 type authenticationPolicyContractResourceModel struct {
-	Id                 types.String `tfsdk:"id"`
-	CustomId           types.String `tfsdk:"custom_id"`
-	Name               types.String `tfsdk:"name"`
-	CoreAttributes     types.List   `tfsdk:"core_attributes"`
-	ExtendedAttributes types.Set    `tfsdk:"extended_attributes"`
+	Id                             types.String `tfsdk:"id"`
+	AuthenticationPolicyContractId types.String `tfsdk:"authentication_policy_contract_id"`
+	Name                           types.String `tfsdk:"name"`
+	CoreAttributes                 types.List   `tfsdk:"core_attributes"`
+	ExtendedAttributes             types.Set    `tfsdk:"extended_attributes"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -99,13 +99,16 @@ func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req r
 	}
 
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, false, "The persistent, unique ID for the authentication policy contract. It can be any combination of [a-zA-Z0-9._-].")
+	id.ToSchemaCustomId(&schema,
+		"authentication_policy_contract_id",
+		false,
+		"The persistent, unique ID for the authentication policy contract. It can be any combination of [a-zA-Z0-9._-].")
 	resp.Schema = schema
 }
 
 func addAuthenticationPolicyContractsFields(ctx context.Context, addRequest *client.AuthenticationPolicyContract, plan authenticationPolicyContractResourceModel) error {
-	if internaltypes.IsDefined(plan.CustomId) {
-		addRequest.Id = plan.CustomId.ValueStringPointer()
+	if internaltypes.IsDefined(plan.AuthenticationPolicyContractId) {
+		addRequest.Id = plan.AuthenticationPolicyContractId.ValueStringPointer()
 	}
 	if internaltypes.IsDefined(plan.CoreAttributes) {
 		addRequest.CoreAttributes = []client.AuthenticationPolicyContractAttribute{}
@@ -155,7 +158,7 @@ func (r *authenticationPolicyContractResource) Configure(_ context.Context, req 
 func readAuthenticationPolicyContractsResponse(ctx context.Context, r *client.AuthenticationPolicyContract, state *authenticationPolicyContractResourceModel, expectedValues *authenticationPolicyContractResourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
-	state.CustomId = internaltypes.StringTypeOrNil(r.Id, false)
+	state.AuthenticationPolicyContractId = internaltypes.StringTypeOrNil(r.Id, false)
 	state.Name = internaltypes.StringTypeOrNil(r.Name, false)
 
 	var attrType = map[string]attr.Type{"name": types.StringType}
@@ -231,7 +234,7 @@ func (r *authenticationPolicyContractResource) Read(ctx context.Context, req res
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadAuthenticationPolicyContracts, httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.GetAuthenticationPolicyContract(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	apiReadAuthenticationPolicyContracts, httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.GetAuthenticationPolicyContract(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.AuthenticationPolicyContractId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a Authentication Policy Contract", err, httpResp)
@@ -263,7 +266,7 @@ func (r *authenticationPolicyContractResource) Update(ctx context.Context, req r
 
 	// Get the current state to see how any attributes are changing
 	var state authenticationPolicyContractResourceModel
-	updateAuthenticationPolicyContracts := r.apiClient.AuthenticationPolicyContractsAPI.UpdateAuthenticationPolicyContract(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.CustomId.ValueString())
+	updateAuthenticationPolicyContracts := r.apiClient.AuthenticationPolicyContractsAPI.UpdateAuthenticationPolicyContract(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.AuthenticationPolicyContractId.ValueString())
 	createUpdateRequest := client.NewAuthenticationPolicyContract()
 	err := addAuthenticationPolicyContractsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -296,7 +299,7 @@ func (r *authenticationPolicyContractResource) Delete(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.DeleteAuthenticationPolicyContract(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.DeleteAuthenticationPolicyContract(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.AuthenticationPolicyContractId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an Authentication Policy Contract", err, httpResp)
 		return
@@ -306,5 +309,5 @@ func (r *authenticationPolicyContractResource) Delete(ctx context.Context, req r
 
 func (r *authenticationPolicyContractResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("custom_id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("authentication_policy_contract_id"), req, resp)
 }

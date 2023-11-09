@@ -14,8 +14,8 @@ Manages OAuth Access Token Manager
 
 ```terraform
 resource "pingfederate_oauth_access_token_manager" "myInternallyManagedReferenceOauthAccessTokenManager" {
-  custom_id = "internallyManagedReferenceOatm"
-  name      = "internallyManagedReferenceExample"
+  oauth_access_token_manager_id = "internallyManagedReferenceOatm"
+  name                          = "internallyManagedReferenceExample"
   plugin_descriptor_ref = {
     id = "org.sourceid.oauth20.token.plugin.impl.ReferenceBearerAccessTokenManagementPlugin"
   }
@@ -81,8 +81,8 @@ resource "pingfederate_oauth_access_token_manager" "myInternallyManagedReference
 }
 
 resource "pingfederate_oauth_access_token_manager" "jsonWebTokenOauthAccessTokenManagerExample" {
-  custom_id = "jsonWebTokenOatm"
-  name      = "jsonWebTokenExample"
+  oauth_access_token_manager_id = "jsonWebTokenOatm"
+  name                          = "jsonWebTokenExample"
   plugin_descriptor_ref = {
     id = "com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin"
   }
@@ -252,8 +252,8 @@ resource "pingfederate_oauth_access_token_manager" "jsonWebTokenOauthAccessToken
 
 - `attribute_contract` (Attributes) The list of attributes that will be added to an access token. (see [below for nested schema](#nestedatt--attribute_contract))
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--configuration))
-- `custom_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
 - `name` (String) The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
+- `oauth_access_token_manager_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
 - `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
 
 ### Optional

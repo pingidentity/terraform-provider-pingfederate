@@ -63,12 +63,12 @@ func TestAccCertificate(t *testing.T) {
 func testAccCertificate(resourceName string, resourceModel certificatesResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_certificate_ca" "%[1]s" {
-  custom_id = "%[2]s"
-  file_data = "%[3]s"
+  certificate_ca_id = "%[2]s"
+  file_data         = "%[3]s"
 }
 
 data "pingfederate_certificate_ca" "%[1]s" {
-  id = pingfederate_certificate_ca.%[1]s.custom_id
+  id = pingfederate_certificate_ca.%[1]s.certificate_ca_id
 }`, resourceName,
 		resourceModel.id,
 		fileData,
