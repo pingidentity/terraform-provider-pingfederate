@@ -24,6 +24,7 @@
 * **New Data Source:** `pingfederate_oauth_auth_server_settings_scopes_common_scope` ([#85](https://github.com/pingidentity/terraform-provider-pingfederate/pull/85))
 * **New Data Source:** `pingfederate_oauth_auth_server_settings_scopes_exclusive_scope` ([#95](https://github.com/pingidentity/terraform-provider-pingfederate/pull/95))
 * **New Data Source:** `pingfederate_virtual_host_names` ([#87](https://github.com/pingidentity/terraform-provider-pingfederate/pull/87))
+* **New Data Source:** `pingfederate_session_application_session_policy` ([#94](https://github.com/pingidentity/terraform-provider-pingfederate/pull/94))
 
 ​
 # v0.1.0 September 28, 2023
