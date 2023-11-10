@@ -18,19 +18,37 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/administrativeaccount"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificate"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs"
+	authenticationapisettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi/settings"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicycontract"
+	certificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificate/ca"
+	datastore "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/datastore"
+	idpadapter "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/adapter"
+	idpdefaulturls "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/defaulturls"
+	keypairsigningimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypair/signing/import"
+	keypairsslserverimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypair/sslserver/import"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/license"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/localidentity"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/protocolmetadata"
+	licenseagreement "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/license/agreement"
+	localidentity "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/localidentity/identityprofile"
+	oauthaccesstokenmanager "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/accesstokenmanager"
+	oauthauthserversettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authserversettings"
+	oauthauthserversettingsscopescommonscope "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authserversettings/scopes/commonscope"
+	oauthauthserversettingsscopesexclusivescope "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authserversettings/scopes/exclusivescope"
+	oauthissuer "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/issuer"
+	oauthtokenexchangetokengeneratormappings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/tokengeneratormappings"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/passwordcredentialvalidator"
+	protocolmetadatalifetimesettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/protocolmetadata/lifetimesettings"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/redirectvalidation"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sessions"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sp"
+	serversettingsgeneralsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/generalsettings"
+	serversettingslogsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/logsettings"
+	serversettingssystemkeys "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/systemkeys"
+	sessionapplicationsessionpolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/applicationsessionpolicy"
+	sessionauthenticationsessionpoliciesglobal "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/authenticationsessionpolicies/global"
+	sessionsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/settings"
+	spauthenticationpolicycontractmapping "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sp/authenticationpolicycontractmapping"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/tokenprocessortotokengeneratormapping"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/virtualhostnames"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -55,11 +73,12 @@ func NewTestProvider() provider.Provider {
 
 // PingFederate ProviderModel maps provider schema data to a Go type.
 type pingfederateProviderModel struct {
-	HttpsHost             types.String `tfsdk:"https_host"`
-	Username              types.String `tfsdk:"username"`
-	Password              types.String `tfsdk:"password"`
-	InsecureTrustAllTls   types.Bool   `tfsdk:"insecure_trust_all_tls"`
-	CACertificatePEMFiles types.Set    `tfsdk:"ca_certificate_pem_files"`
+	HttpsHost                       types.String `tfsdk:"https_host"`
+	Username                        types.String `tfsdk:"username"`
+	Password                        types.String `tfsdk:"password"`
+	InsecureTrustAllTls             types.Bool   `tfsdk:"insecure_trust_all_tls"`
+	CACertificatePEMFiles           types.Set    `tfsdk:"ca_certificate_pem_files"`
+	XBypassExternalValidationHeader types.Bool   `tfsdk:"x_bypass_external_validation_header"`
 }
 
 // pingfederateProvider is the provider implementation.
@@ -97,6 +116,10 @@ func (p *pingfederateProvider) Schema(_ context.Context, _ provider.SchemaReques
 			"ca_certificate_pem_files": schema.SetAttribute{
 				ElementType: types.StringType,
 				Description: "Paths to files containing PEM-encoded certificates to be trusted as root CAs when connecting to the PingFederate server over HTTPS. If not set, the host's root CA set will be used. Default value can be set with the `PINGFEDERATE_PROVIDER_CA_CERTIFICATE_PEM_FILES` environment variable, using commas to delimit multiple PEM files if necessary.",
+				Optional:    true,
+			},
+			"x_bypass_external_validation_header": schema.BoolAttribute{
+				Description: "Header value in request for PingFederate. The connection test will be bypassed when set to true. Default value is false.",
 				Optional:    true,
 			},
 		},
@@ -222,6 +245,18 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 		}
 	}
 
+	var xBypassExternalValidation bool
+	var xBypassExternalValidationErr error
+	if !config.XBypassExternalValidationHeader.IsUnknown() && !config.XBypassExternalValidationHeader.IsNull() {
+		xBypassExternalValidation = config.XBypassExternalValidationHeader.ValueBool()
+	} else {
+		xBypassExternalValidation, xBypassExternalValidationErr = strconv.ParseBool(os.Getenv("PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER"))
+		if xBypassExternalValidationErr != nil {
+			xBypassExternalValidation = false
+			tflog.Info(ctx, "Failed to parse boolean from 'PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER' environment variable, defaulting 'x_bypass_external_validation_header' to false")
+		}
+	}
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -237,6 +272,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	resourceConfig.ProviderConfig = providerConfig
 	clientConfig := client.NewConfiguration()
 	clientConfig.DefaultHeader["X-Xsrf-Header"] = "PingFederate"
+	clientConfig.DefaultHeader["X-BypassExternalValidation"] = strconv.FormatBool(xBypassExternalValidation)
 	clientConfig.Servers = client.ServerConfigurations{
 		{
 			URL: httpsHost + "/pf-admin-api/v1",
@@ -263,17 +299,19 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		administrativeaccount.NewAdministrativeAccountDataSource,
-		authenticationapi.NewAuthenticationApiSettingsDataSource,
+		authenticationapisettings.NewAuthenticationApiSettingsDataSource,
 		certificate.NewCertificateDataSource,
-		idp.NewIdpDefaultUrlsDataSource,
-		keypairs.NewKeyPairsSigningImportDataSource,
-		keypairs.NewKeyPairsSslServerImportDataSource,
-		license.NewLicenseAgreementDataSource,
+		idpdefaulturls.NewIdpDefaultUrlsDataSource,
+		keypairsigningimport.NewKeyPairsSigningImportDataSource,
+		keypairsslserverimport.NewKeyPairsSslServerImportDataSource,
 		license.NewLicenseDataSource,
+		licenseagreement.NewLicenseAgreementDataSource,
 		localidentity.NewLocalIdentityIdentityProfileDataSource,
-		oauth.NewOauthAccessTokenManagerDataSource,
-		oauth.NewOauthAuthServerSettingsDataSource,
-		oauth.NewOauthAuthServerSettingsScopesCommonScopesDataSource,
+		oauthaccesstokenmanager.NewOauthAccessTokenManagerDataSource,
+		oauthauthserversettings.NewOauthAuthServerSettingsDataSource,
+		oauthauthserversettingsscopescommonscope.NewOauthAuthServerSettingsScopesCommonScopeDataSource,
+		oauthauthserversettingsscopesexclusivescope.NewOauthAuthServerSettingsScopesExclusiveScopeDataSource,
+		virtualhostnames.NewVirtualHostNamesDataSource,
 	}
 }
 
@@ -281,34 +319,35 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		administrativeaccount.AdministrativeAccountResource,
-		authenticationapi.AuthenticationApiSettingsResource,
+		authenticationapisettings.AuthenticationApiSettingsResource,
+		authenticationpolicycontract.AuthenticationPolicyContractResource,
 		certificate.CertificateCAResource,
-		config.AuthenticationPolicyContractResource,
-		config.PasswordCredentialValidatorResource,
-		config.RedirectValidationResource,
-		config.TokenProcessorToTokenGeneratorMappingResource,
-		config.VirtualHostNamesResource,
-		idp.IdpAdapterResource,
-		idp.IdpDefaultUrlsResource,
-		keypairs.KeyPairsSigningImportResource,
-		keypairs.KeyPairsSslServerImportResource,
-		license.LicenseAgreementResource,
+		idpadapter.IdpAdapterResource,
+		idpdefaulturls.IdpDefaultUrlsResource,
+		keypairsigningimport.KeyPairsSigningImportResource,
+		keypairsslserverimport.KeyPairsSslServerImportResource,
+		datastore.DataStoreResource,
 		license.LicenseResource,
+		licenseagreement.LicenseAgreementResource,
 		localidentity.LocalIdentityIdentityProfileResource,
-		oauth.OauthAccessTokenManagerResource,
-		oauth.OauthAuthServerSettingsResource,
-		oauth.OauthAuthServerSettingsScopesCommonScopesResource,
-		oauth.OauthAuthServerSettingsScopesExclusiveScopesResource,
-		oauth.OauthIssuersResource,
-		oauth.OauthTokenExchangeTokenGeneratorMappingResource,
-		protocolmetadata.ProtocolMetadataLifetimeSettingsResource,
-		serversettings.ServerSettingsGeneralSettingsResource,
-		serversettings.ServerSettingsLogSettingsResource,
+		oauthaccesstokenmanager.OauthAccessTokenManagerResource,
+		oauthauthserversettings.OauthAuthServerSettingsResource,
+		oauthauthserversettingsscopescommonscope.OauthAuthServerSettingsScopesCommonScopesResource,
+		oauthauthserversettingsscopesexclusivescope.OauthAuthServerSettingsScopesExclusiveScopesResource,
+		oauthissuer.OauthIssuerResource,
+		oauthtokenexchangetokengeneratormappings.OauthTokenExchangeTokenGeneratorMappingResource,
+		passwordcredentialvalidator.PasswordCredentialValidatorResource,
+		protocolmetadatalifetimesettings.ProtocolMetadataLifetimeSettingsResource,
+		redirectvalidation.RedirectValidationResource,
 		serversettings.ServerSettingsResource,
-		serversettings.ServerSettingsSystemKeysResource,
-		sessions.SessionApplicationSessionPolicyResource,
-		sessions.SessionAuthenticationSessionPoliciesGlobalResource,
-		sessions.SessionSettingsResource,
-		sp.SpAuthenticationPolicyContractMappingResource,
+		serversettingsgeneralsettings.ServerSettingsGeneralSettingsResource,
+		serversettingslogsettings.ServerSettingsLogSettingsResource,
+		serversettingssystemkeys.ServerSettingsSystemKeysResource,
+		sessionapplicationsessionpolicy.SessionApplicationSessionPolicyResource,
+		sessionauthenticationsessionpoliciesglobal.SessionAuthenticationSessionPoliciesGlobalResource,
+		sessionsettings.SessionSettingsResource,
+		spauthenticationpolicycontractmapping.SpAuthenticationPolicyContractMappingResource,
+		tokenprocessortotokengeneratormapping.TokenProcessorToTokenGeneratorMappingResource,
+		virtualhostnames.VirtualHostNamesResource,
 	}
 }

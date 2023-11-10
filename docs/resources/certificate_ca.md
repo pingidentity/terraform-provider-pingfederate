@@ -14,7 +14,7 @@ Manages a CertificateCA Import.
 
 ```terraform
 resource "pingfederate_certificate_ca" "myCertificateCa" {
-  custom_id = "MyCertificateCA"
+  ca_id = "MyCertificateCA"
   # this property needs to contain base64 encoded value of your pem certificate.
   file_data = ""
 }
@@ -25,7 +25,7 @@ resource "pingfederate_certificate_ca" "myCertificateCa" {
 
 ### Required
 
-- `custom_id` (String) The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-].
+- `ca_id` (String) The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-].
 - `file_data` (String) The certificate data in PEM format. New line characters should be omitted or encoded in this value.
 
 ### Optional

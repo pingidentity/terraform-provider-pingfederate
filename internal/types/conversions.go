@@ -90,6 +90,14 @@ func GetStringList(values []string) types.List {
 	return list
 }
 
+func SetTypeToStringSet(set types.Set) []string {
+	values := make([]string, 0, len(set.Elements()))
+	for _, v := range set.Elements() {
+		values = append(values, v.(types.String).ValueString())
+	}
+	return values
+}
+
 func InterfaceToStringSet(i interface{}) types.Set {
 	values := i.([]string)
 	setValues := make([]attr.Value, len(values))

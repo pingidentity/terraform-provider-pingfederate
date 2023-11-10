@@ -80,7 +80,7 @@ func testAccAuthenticationPolicyContract(resourceName string, resourceModel auth
 	}
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_policy_contract" "%[1]s" {
-  custom_id           = "%[2]s"
+  contract_id         = "%[2]s"
   core_attributes     = %[3]s
   name                = "%[4]s"
   %[5]s

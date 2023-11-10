@@ -13,7 +13,7 @@ Manages a OauthAuthServerSettingsScopesExclusiveScopes.
 ## Example Usage
 
 ```terraform
-resource "pingfederate_oauth_auth_server_settings_scopes_exclusive_scope" "oauthAuthServerSettingsScopesExclusiveScopeExample" {
+resource "pingfederate_oauth_auth_server_settings_scopes_exclusive_scope" "myOauthAuthServerSettingsScopesExclusiveScope" {
   dynamic     = true
   description = "example"
   name        = "*exampleExclusiveScope"

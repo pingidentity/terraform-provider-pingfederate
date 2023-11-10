@@ -3,18 +3,18 @@
 page_title: "pingfederate_oauth_access_token_manager Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages OAuth Access Token Manager
+  Describes OAuth Access Token Manager
 ---
 
 # pingfederate_oauth_access_token_manager (Data Source)
 
-Manages OAuth Access Token Manager
+Describes OAuth Access Token Manager
 
 ## Example Usage
 
 ```terraform
 data "pingfederate_oauth_access_token_manager" "myOauthAccessTokenManager" {
-  custom_id = "example"
+  manager_id = "example"
 }
 ```
 
@@ -23,7 +23,7 @@ data "pingfederate_oauth_access_token_manager" "myOauthAccessTokenManager" {
 
 ### Required
 
-- `custom_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
+- `manager_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
 
 ### Read-Only
 

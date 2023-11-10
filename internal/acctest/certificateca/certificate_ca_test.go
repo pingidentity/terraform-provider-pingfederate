@@ -64,12 +64,12 @@ func testAccCertificate(resourceName string, resourceModel certificatesResourceM
 	// Not testing with crypto_provider attribute since it requires setting up an HSM
 	return fmt.Sprintf(`
 resource "pingfederate_certificate_ca" "%[1]s" {
-  custom_id = "%[2]s"
+  ca_id     = "%[2]s"
   file_data = "%[3]s"
 }
 
 data "pingfederate_certificate_ca" "%[1]s" {
-  id = pingfederate_certificate_ca.%[1]s.custom_id
+  id = pingfederate_certificate_ca.%[1]s.ca_id
 }`, resourceName,
 		resourceModel.id,
 		fileData,
