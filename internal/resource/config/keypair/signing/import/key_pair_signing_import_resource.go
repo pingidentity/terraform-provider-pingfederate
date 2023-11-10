@@ -35,7 +35,7 @@ type keyPairsSigningImportResource struct {
 
 type keyPairsSigningImportResourceModel struct {
 	Id             types.String `tfsdk:"id"`
-	CustomId       types.String `tfsdk:"custom_id"`
+	ImportId       types.String `tfsdk:"import_id"`
 	FileData       types.String `tfsdk:"file_data"`
 	Format         types.String `tfsdk:"format"`
 	Password       types.String `tfsdk:"password"`
@@ -80,15 +80,17 @@ func (r *keyPairsSigningImportResource) Schema(ctx context.Context, req resource
 	}
 
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, true,
+	id.ToSchemaCustomId(&schema,
+		"import_id",
+		true,
 		"The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.")
 	resp.Schema = schema
 }
 
 func addOptionalKeyPairsSigningImportFields(ctx context.Context, addRequest *client.KeyPairFile, plan keyPairsSigningImportResourceModel) error {
 
-	if internaltypes.IsDefined(plan.CustomId) {
-		addRequest.Id = plan.CustomId.ValueStringPointer()
+	if internaltypes.IsDefined(plan.ImportId) {
+		addRequest.Id = plan.ImportId.ValueStringPointer()
 	}
 
 	if internaltypes.IsDefined(plan.CryptoProvider) {
@@ -116,7 +118,7 @@ func (r *keyPairsSigningImportResource) Configure(_ context.Context, req resourc
 
 func readKeyPairsSigningImportResponse(ctx context.Context, r *client.KeyPairView, state *keyPairsSigningImportResourceModel, expectedValues *keyPairsSigningImportResourceModel, planFileData string, planFormat string, planPassword string) {
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
-	state.CustomId = internaltypes.StringTypeOrNil(r.Id, false)
+	state.ImportId = internaltypes.StringTypeOrNil(r.Id, false)
 	state.FileData = internaltypes.StringTypeOrNil(&planFileData, false)
 	state.Format = internaltypes.StringTypeOrNil(&planFormat, false)
 	state.Password = types.StringValue(planPassword)
@@ -165,7 +167,7 @@ func (r *keyPairsSigningImportResource) Read(ctx context.Context, req resource.R
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadKeyPairsSigningImport, httpResp, err := r.apiClient.KeyPairsSigningAPI.GetSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	apiReadKeyPairsSigningImport, httpResp, err := r.apiClient.KeyPairsSigningAPI.GetSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ImportId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPair Signing Import", err, httpResp)
@@ -200,7 +202,7 @@ func (r *keyPairsSigningImportResource) Delete(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.KeyPairsSigningAPI.DeleteSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	httpResp, err := r.apiClient.KeyPairsSigningAPI.DeleteSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ImportId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a KeyPair Signing Import", err, httpResp)
 		return
@@ -210,5 +212,5 @@ func (r *keyPairsSigningImportResource) Delete(ctx context.Context, req resource
 
 func (r *keyPairsSigningImportResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("custom_id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("import_id"), req, resp)
 }

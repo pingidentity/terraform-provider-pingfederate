@@ -34,7 +34,7 @@ func ToSchema(s *datasourceschema.Schema) {
 	s.Attributes["id"] = schemaId
 }
 
-func ToDataSourceSchemaCustomId(s *datasourceschema.Schema, required bool, characterLimit bool, description string) {
+func ToDataSourceSchemaCustomId(s *datasourceschema.Schema, idName string, required bool, characterLimit bool, description string) {
 	customId := schema.StringAttribute{}
 	customId.Description = description
 	if required {
@@ -46,5 +46,5 @@ func ToDataSourceSchemaCustomId(s *datasourceschema.Schema, required bool, chara
 	if characterLimit {
 		customId.Validators = []validator.String{configvalidators.ValidChars()}
 	}
-	s.Attributes["custom_id"] = customId
+	s.Attributes[idName] = customId
 }

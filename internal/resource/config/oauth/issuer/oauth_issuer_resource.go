@@ -15,25 +15,25 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource                = &oauthIssuersResource{}
-	_ resource.ResourceWithConfigure   = &oauthIssuersResource{}
-	_ resource.ResourceWithImportState = &oauthIssuersResource{}
+	_ resource.Resource                = &oauthIssuerResource{}
+	_ resource.ResourceWithConfigure   = &oauthIssuerResource{}
+	_ resource.ResourceWithImportState = &oauthIssuerResource{}
 )
 
-// OauthIssuersResource is a helper function to simplify the provider implementation.
-func OauthIssuersResource() resource.Resource {
-	return &oauthIssuersResource{}
+// OauthIssuerResource is a helper function to simplify the provider implementation.
+func OauthIssuerResource() resource.Resource {
+	return &oauthIssuerResource{}
 }
 
-// oauthIssuersResource is the resource implementation.
-type oauthIssuersResource struct {
+// oauthIssuerResource is the resource implementation.
+type oauthIssuerResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
 }
 
-type oauthIssuersResourceModel struct {
+type oauthIssuerResourceModel struct {
 	Id          types.String `tfsdk:"id"`
-	CustomId    types.String `tfsdk:"custom_id"`
+	IssuerId    types.String `tfsdk:"issuer_id"`
 	Name        types.String `tfsdk:"name"`
 	Description types.String `tfsdk:"description"`
 	Host        types.String `tfsdk:"host"`
@@ -41,7 +41,7 @@ type oauthIssuersResourceModel struct {
 }
 
 // GetSchema defines the schema for the resource.
-func (r *oauthIssuersResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *oauthIssuerResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
 		Description: "Manages an OAuth Issuer.",
 		Attributes: map[string]schema.Attribute{
@@ -61,14 +61,16 @@ func (r *oauthIssuersResource) Schema(ctx context.Context, req resource.SchemaRe
 	}
 
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, true,
+	id.ToSchemaCustomId(&schema,
+		"issuer_id",
+		true,
 		"The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-].")
 	resp.Schema = schema
 }
-func addOptionalOauthIssuersFields(ctx context.Context, addRequest *client.Issuer, plan oauthIssuersResourceModel) error {
+func addOptionalOauthIssuerFields(ctx context.Context, addRequest *client.Issuer, plan oauthIssuerResourceModel) error {
 	// Empty strings are treated as equivalent to null
-	if internaltypes.IsDefined(plan.CustomId) {
-		addRequest.Id = plan.CustomId.ValueStringPointer()
+	if internaltypes.IsDefined(plan.IssuerId) {
+		addRequest.Id = plan.IssuerId.ValueStringPointer()
 	}
 	if internaltypes.IsDefined(plan.Description) {
 		addRequest.Description = plan.Description.ValueStringPointer()
@@ -81,11 +83,11 @@ func addOptionalOauthIssuersFields(ctx context.Context, addRequest *client.Issue
 }
 
 // Metadata returns the resource type name.
-func (r *oauthIssuersResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *oauthIssuerResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_oauth_issuer"
 }
 
-func (r *oauthIssuersResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
+func (r *oauthIssuerResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -96,18 +98,18 @@ func (r *oauthIssuersResource) Configure(_ context.Context, req resource.Configu
 
 }
 
-func readOauthIssuersResponse(ctx context.Context, r *client.Issuer, state *oauthIssuersResourceModel, expectedValues *oauthIssuersResourceModel) {
+func readOauthIssuerResponse(ctx context.Context, r *client.Issuer, state *oauthIssuerResourceModel, expectedValues *oauthIssuerResourceModel) {
 	//TODO why is this a pointer?
 	state.Id = types.StringValue(*r.Id)
-	state.CustomId = types.StringValue(*r.Id)
+	state.IssuerId = types.StringValue(*r.Id)
 	state.Name = types.StringValue(r.Name)
 	state.Description = types.StringValue(*r.Description)
 	state.Host = types.StringValue(r.Host)
 	state.Path = types.StringValue(*r.Path)
 }
 
-func (r *oauthIssuersResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan oauthIssuersResourceModel
+func (r *oauthIssuerResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan oauthIssuerResourceModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -116,7 +118,7 @@ func (r *oauthIssuersResource) Create(ctx context.Context, req resource.CreateRe
 	}
 
 	oauthIssuer := client.NewIssuer(plan.Name.ValueString(), plan.Host.ValueString())
-	err := addOptionalOauthIssuersFields(ctx, oauthIssuer, plan)
+	err := addOptionalOauthIssuerFields(ctx, oauthIssuer, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for an OAuth Issuer", err.Error())
 		return
@@ -132,22 +134,22 @@ func (r *oauthIssuersResource) Create(ctx context.Context, req resource.CreateRe
 	}
 
 	// Read the response into the state
-	var state oauthIssuersResourceModel
+	var state oauthIssuerResourceModel
 
-	readOauthIssuersResponse(ctx, oauthIssuerResponse, &state, &plan)
+	readOauthIssuerResponse(ctx, oauthIssuerResponse, &state, &plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
-func (r *oauthIssuersResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state oauthIssuersResourceModel
+func (r *oauthIssuerResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state oauthIssuerResourceModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthIssuer, httpResp, err := r.apiClient.OauthIssuersAPI.GetOauthIssuerById(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	apiReadOauthIssuer, httpResp, err := r.apiClient.OauthIssuersAPI.GetOauthIssuerById(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.IssuerId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Issuer", err, httpResp)
@@ -159,7 +161,7 @@ func (r *oauthIssuersResource) Read(ctx context.Context, req resource.ReadReques
 	}
 
 	// Read the response into the state
-	readOauthIssuersResponse(ctx, apiReadOauthIssuer, &state, &state)
+	readOauthIssuerResponse(ctx, apiReadOauthIssuer, &state, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -167,9 +169,9 @@ func (r *oauthIssuersResource) Read(ctx context.Context, req resource.ReadReques
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
-func (r *oauthIssuersResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *oauthIssuerResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	var plan oauthIssuersResourceModel
+	var plan oauthIssuerResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -177,11 +179,11 @@ func (r *oauthIssuersResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 
 	// Get the current state to see how any attributes are changing
-	var state oauthIssuersResourceModel
+	var state oauthIssuerResourceModel
 	req.State.Get(ctx, &state)
-	updateOauthIssuer := r.apiClient.OauthIssuersAPI.UpdateOauthIssuer(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.CustomId.ValueString())
+	updateOauthIssuer := r.apiClient.OauthIssuersAPI.UpdateOauthIssuer(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.IssuerId.ValueString())
 	createUpdateRequest := client.NewIssuer(plan.Name.ValueString(), plan.Host.ValueString())
-	err := addOptionalOauthIssuersFields(ctx, createUpdateRequest, plan)
+	err := addOptionalOauthIssuerFields(ctx, createUpdateRequest, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to update request for an OAuth Issuer", err.Error())
 		return
@@ -195,7 +197,7 @@ func (r *oauthIssuersResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 
 	// Read the response
-	readOauthIssuersResponse(ctx, updateOauthIssuerResponse, &state, &plan)
+	readOauthIssuerResponse(ctx, updateOauthIssuerResponse, &state, &plan)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
@@ -203,22 +205,22 @@ func (r *oauthIssuersResource) Update(ctx context.Context, req resource.UpdateRe
 }
 
 // // Delete deletes the resource and removes the Terraform state on success.
-func (r *oauthIssuersResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *oauthIssuerResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state oauthIssuersResourceModel
+	var state oauthIssuerResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.OauthIssuersAPI.DeleteOauthIssuer(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	httpResp, err := r.apiClient.OauthIssuersAPI.DeleteOauthIssuer(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.IssuerId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Issuer", err, httpResp)
 		return
 	}
 }
 
-func (r *oauthIssuersResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *oauthIssuerResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("custom_id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("issuer_id"), req, resp)
 }

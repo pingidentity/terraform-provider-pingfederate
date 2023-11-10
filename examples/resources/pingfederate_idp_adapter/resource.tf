@@ -1,6 +1,6 @@
 resource "pingfederate_idp_adapter" "idpAdapterExample" {
-  custom_id = "HTMLFormPD"
-  name      = "HTMLFormPD"
+  adapter_id = "HTMLFormPD"
+  name       = "HTMLFormPD"
   plugin_descriptor_ref = {
     id = "com.pingidentity.adapters.htmlform.idp.HtmlFormIdpAuthnAdapter"
   }
