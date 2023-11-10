@@ -22,11 +22,12 @@ const tokenProcSourceId = "tokenprocessor"
 const tokenGenTargetId = "tokengenerator"
 
 type tokenProcessorToTokenGeneratorMappingResourceModel struct {
-	attributeSource              *client.JdbcAttributeSource
+	attributeSource              *client.LdapAttributeSource
 	attributeContractFulfillment client.AttributeFulfillmentValue
 	issuanceCriteria             *client.ConditionalIssuanceCriteriaEntry
 	sourceId                     string
 	targetId                     string
+	defaultTargetResource        *string
 }
 
 func TestAccTokenProcessorToTokenGeneratorMapping(t *testing.T) {
@@ -37,11 +38,12 @@ func TestAccTokenProcessorToTokenGeneratorMapping(t *testing.T) {
 		targetId:                     tokenGenTargetId,
 	}
 	updatedResourceModel := tokenProcessorToTokenGeneratorMappingResourceModel{
-		attributeSource:              attributesources.JdbcClientStruct("CHANNEL_GROUP", "$${SAML_SUBJECT}", "JDBC", *client.NewResourceLink("ProvisionerDS")),
+		attributeSource:              attributesources.LdapClientStruct("(cn=example)", "SUBTREE", *client.NewResourceLink("pingdirectory")),
 		attributeContractFulfillment: attributecontractfulfillment.UpdatedAttributeContractFulfillment(),
 		issuanceCriteria:             issuancecriteria.ConditionalCriteria(),
 		sourceId:                     tokenProcSourceId,
 		targetId:                     tokenGenTargetId,
+		defaultTargetResource:        pointers.String("https://example.com"),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -68,11 +70,22 @@ func TestAccTokenProcessorToTokenGeneratorMapping(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
+			{
+				// Back to minimal model
+				Config: testAccTokenProcessorToTokenGeneratorMapping(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedTokenProcessorToTokenGeneratorMappingAttributes(initialResourceModel),
+			},
 		},
 	})
 }
 
 func testAccTokenProcessorToTokenGeneratorMapping(resourceName string, resourceModel tokenProcessorToTokenGeneratorMappingResourceModel) string {
+	defaultTargetResourceHcl := ""
+	if resourceModel.defaultTargetResource != nil {
+		defaultTargetResourceHcl = fmt.Sprintf("default_target_resource = \"%[1]s\"", *resourceModel.defaultTargetResource)
+	}
+
+	// license_connection_group can't be tested without some changes to the license
 	return fmt.Sprintf(`
 resource "pingfederate_token_processor_to_token_generator_mapping" "%[1]s" {
   source_id = "%[2]s"
@@ -84,12 +97,14 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "%[1]s" {
   }
 	%[5]s
 	%[6]s
+	%[7]s
 }`, resourceName,
 		resourceModel.sourceId,
 		resourceModel.targetId,
 		attributecontractfulfillment.Hcl(&resourceModel.attributeContractFulfillment),
-		attributesources.JdbcHcl(resourceModel.attributeSource),
+		attributesources.LdapHcl(resourceModel.attributeSource),
 		issuancecriteria.Hcl(resourceModel.issuanceCriteria),
+		defaultTargetResourceHcl,
 	)
 }
 
@@ -119,39 +134,39 @@ func testAccCheckExpectedTokenProcessorToTokenGeneratorMappingAttributes(config 
 
 		attributeSources := response.AttributeSources
 		for _, attributeSource := range attributeSources {
-			if attributeSource.JdbcAttributeSource != nil {
+			if attributeSource.LdapAttributeSource != nil {
 				err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "id",
-					config.attributeSource.DataStoreRef.Id, attributeSource.JdbcAttributeSource.DataStoreRef.Id)
+					config.attributeSource.DataStoreRef.Id, attributeSource.LdapAttributeSource.DataStoreRef.Id)
 				if err != nil {
 					return err
 				}
 
 				err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "description",
-					*config.attributeSource.Description, *attributeSource.JdbcAttributeSource.Description)
+					*config.attributeSource.Description, *attributeSource.LdapAttributeSource.Description)
 				if err != nil {
 					return err
 				}
 
 				err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "schema",
-					*config.attributeSource.Description, *attributeSource.JdbcAttributeSource.Description)
+					*config.attributeSource.Description, *attributeSource.LdapAttributeSource.Description)
 				if err != nil {
 					return err
 				}
 
-				err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "table",
-					config.attributeSource.Table, attributeSource.JdbcAttributeSource.Table)
+				err = acctest.TestAttributesMatchStringPointer(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "baseDn",
+					*config.attributeSource.BaseDn, attributeSource.LdapAttributeSource.BaseDn)
 				if err != nil {
 					return err
 				}
 
-				err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "filter",
-					config.attributeSource.Filter, "$"+attributeSource.JdbcAttributeSource.Filter)
+				err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "searchScope",
+					config.attributeSource.SearchScope, attributeSource.LdapAttributeSource.SearchScope)
 				if err != nil {
 					return err
 				}
 
-				err = acctest.TestAttributesMatchStringSlice(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "column_names",
-					config.attributeSource.ColumnNames, attributeSource.JdbcAttributeSource.ColumnNames)
+				err = acctest.TestAttributesMatchStringSlice(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "searchAttributes",
+					config.attributeSource.SearchAttributes, attributeSource.LdapAttributeSource.SearchAttributes)
 				if err != nil {
 					return err
 				}
