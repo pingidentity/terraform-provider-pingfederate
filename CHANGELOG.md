@@ -29,6 +29,7 @@
 * **New Data Source:** `pingfederate_oauth_auth_server_settings` ([#78](https://github.com/pingidentity/terraform-provider-pingfederate/pull/78))
 * **New Data Source:** `pingfederate_oauth_auth_server_settings_scopes_common_scope` ([#85](https://github.com/pingidentity/terraform-provider-pingfederate/pull/85))
 * **New Data Source:** `pingfederate_oauth_auth_server_settings_scopes_exclusive_scope` ([#95](https://github.com/pingidentity/terraform-provider-pingfederate/pull/95))
+* **New Data Source:** `pingfederate_oauth_issuer` ([#96](https://github.com/pingidentity/terraform-provider-pingfederate/pull/96))
 * **New Data Source:** `pingfederate_virtual_host_names` ([#87](https://github.com/pingidentity/terraform-provider-pingfederate/pull/87))
 
 ​
