@@ -110,6 +110,7 @@ func toStatePingOneLdapGatewayDataStore(con context.Context, pingOneLdapGDS *cli
 
 	if pingOneLdapGDS == nil {
 		diags.AddError("Failed to read PingOne LDAP Gateway data store from PingFederate.", "The response from PingFederate was nil.")
+		return pingOneLdapGatewayDataStoreEmptyStateObj, diags
 	}
 
 	pingOneLdapGatewayDataStoreAttrType := map[string]attr.Type{

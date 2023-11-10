@@ -81,6 +81,7 @@ func toStateCustomDataStore(con context.Context, clientValue *client.DataStoreAg
 
 	if clientValue.CustomDataStore == nil {
 		diags.AddError("Failed to read custom data store from API", "The custom data store was nil")
+		return types.ObjectNull(customDataStoreAttrType), diags
 	}
 
 	customDataStore := clientValue.CustomDataStore

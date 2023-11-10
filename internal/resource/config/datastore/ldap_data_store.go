@@ -299,28 +299,25 @@ func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataSto
 	hostnamesTagsVal, diags := hostnamesTags()
 	allDiags = append(allDiags, diags...)
 
-	followLdapReferrals := func() types.Bool {
-		if ldapDataStore.LdapType == "PING_DIRECTORY" {
-			return types.BoolValue(false)
-		} else {
-			return types.BoolPointerValue(ldapDataStore.FollowLDAPReferrals)
-		}
+	var followLdapReferrals types.Bool
+	if ldapDataStore.LdapType == "PING_DIRECTORY" {
+		followLdapReferrals = types.BoolValue(false)
+	} else {
+		followLdapReferrals = types.BoolPointerValue(ldapDataStore.FollowLDAPReferrals)
 	}
 
-	password := func() types.String {
-		if plan.Attributes()["password"] != nil {
-			return plan.Attributes()["password"].(types.String)
-		} else {
-			return types.StringNull()
-		}
+	var password types.String
+	if plan.Attributes()["password"] != nil {
+		password = plan.Attributes()["password"].(types.String)
+	} else {
+		password = types.StringNull()
 	}
 
-	binaryAttributes := func() basetypes.SetValue {
-		if len(ldapDataStore.BinaryAttributes) > 0 {
-			return internaltypes.GetStringSet(ldapDataStore.BinaryAttributes)
-		} else {
-			return types.SetNull(types.StringType)
-		}
+	var binaryAttributes basetypes.SetValue
+	if len(ldapDataStore.BinaryAttributes) > 0 {
+		binaryAttributes = internaltypes.GetStringSet(ldapDataStore.BinaryAttributes)
+	} else {
+		binaryAttributes = types.SetNull(types.StringType)
 	}
 
 	//  final obj value
@@ -341,14 +338,14 @@ func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataSto
 		"max_connections":        types.Int64PointerValue(ldapDataStore.MaxConnections),
 		"user_dn":                userDn(),
 		"create_if_necessary":    types.BoolPointerValue(ldapDataStore.CreateIfNecessary),
-		"binary_attributes":      binaryAttributes(),
+		"binary_attributes":      binaryAttributes,
 		"max_wait":               types.Int64PointerValue(ldapDataStore.MaxWait),
 		"hostnames_tags":         hostnamesTagsVal,
 		"time_between_evictions": types.Int64PointerValue(ldapDataStore.TimeBetweenEvictions),
 		"type":                   types.StringValue("LDAP"),
-		"password":               password(),
+		"password":               password,
 		"bind_anonymously":       types.BoolPointerValue(ldapDataStore.BindAnonymously),
-		"follow_ldap_referrals":  followLdapReferrals(),
+		"follow_ldap_referrals":  followLdapReferrals,
 	}
 
 	ldapDataStoreObj, diags := types.ObjectValue(ldapDataStoreAttrType, ldapDataStoreAttrVal)

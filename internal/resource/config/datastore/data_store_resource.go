@@ -203,6 +203,7 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 			hostnamesVal = nil
 		}
 
+		// Set hostname from the default source value in hostnames_tags, if defined
 		var hasHostnamesTags bool
 		var hostnamesTagsHostnamesVal []attr.Value
 		var hostnamesTagsTags basetypes.StringValue
