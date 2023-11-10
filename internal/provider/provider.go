@@ -22,6 +22,7 @@ import (
 	authenticationapisettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi/settings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicycontract"
 	certificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificate/ca"
+	datastore "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/datastore"
 	idpadapter "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/adapter"
 	idpdefaulturls "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/defaulturls"
 	keypairsigningimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypair/signing/import"
@@ -72,11 +73,12 @@ func NewTestProvider() provider.Provider {
 
 // PingFederate ProviderModel maps provider schema data to a Go type.
 type pingfederateProviderModel struct {
-	HttpsHost             types.String `tfsdk:"https_host"`
-	Username              types.String `tfsdk:"username"`
-	Password              types.String `tfsdk:"password"`
-	InsecureTrustAllTls   types.Bool   `tfsdk:"insecure_trust_all_tls"`
-	CACertificatePEMFiles types.Set    `tfsdk:"ca_certificate_pem_files"`
+	HttpsHost                       types.String `tfsdk:"https_host"`
+	Username                        types.String `tfsdk:"username"`
+	Password                        types.String `tfsdk:"password"`
+	InsecureTrustAllTls             types.Bool   `tfsdk:"insecure_trust_all_tls"`
+	CACertificatePEMFiles           types.Set    `tfsdk:"ca_certificate_pem_files"`
+	XBypassExternalValidationHeader types.Bool   `tfsdk:"x_bypass_external_validation_header"`
 }
 
 // pingfederateProvider is the provider implementation.
@@ -114,6 +116,10 @@ func (p *pingfederateProvider) Schema(_ context.Context, _ provider.SchemaReques
 			"ca_certificate_pem_files": schema.SetAttribute{
 				ElementType: types.StringType,
 				Description: "Paths to files containing PEM-encoded certificates to be trusted as root CAs when connecting to the PingFederate server over HTTPS. If not set, the host's root CA set will be used. Default value can be set with the `PINGFEDERATE_PROVIDER_CA_CERTIFICATE_PEM_FILES` environment variable, using commas to delimit multiple PEM files if necessary.",
+				Optional:    true,
+			},
+			"x_bypass_external_validation_header": schema.BoolAttribute{
+				Description: "Header value in request for PingFederate. The connection test will be bypassed when set to true. Default value can be set with the `PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER` environment variable.",
 				Optional:    true,
 			},
 		},
@@ -239,6 +245,18 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 		}
 	}
 
+	var xBypassExternalValidation bool
+	var xBypassExternalValidationErr error
+	if !config.XBypassExternalValidationHeader.IsUnknown() && !config.XBypassExternalValidationHeader.IsNull() {
+		xBypassExternalValidation = config.XBypassExternalValidationHeader.ValueBool()
+	} else {
+		xBypassExternalValidation, xBypassExternalValidationErr = strconv.ParseBool(os.Getenv("PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER"))
+		if xBypassExternalValidationErr != nil {
+			xBypassExternalValidation = false
+			tflog.Info(ctx, "Failed to parse boolean from 'PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER' environment variable, defaulting 'x_bypass_external_validation_header' to false")
+		}
+	}
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -254,6 +272,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	resourceConfig.ProviderConfig = providerConfig
 	clientConfig := client.NewConfiguration()
 	clientConfig.DefaultHeader["X-Xsrf-Header"] = "PingFederate"
+	clientConfig.DefaultHeader["X-BypassExternalValidation"] = strconv.FormatBool(xBypassExternalValidation)
 	clientConfig.Servers = client.ServerConfigurations{
 		{
 			URL: httpsHost + "/pf-admin-api/v1",
@@ -293,6 +312,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		oauthauthserversettingsscopescommonscope.NewOauthAuthServerSettingsScopesCommonScopeDataSource,
 		oauthauthserversettingsscopesexclusivescope.NewOauthAuthServerSettingsScopesExclusiveScopeDataSource,
 		sessionapplicationsessionpolicy.NewSessionApplicationSessionPolicyDataSource,
+		oauthissuer.NewOauthIssuerDataSource,
 		virtualhostnames.NewVirtualHostNamesDataSource,
 	}
 }
@@ -308,6 +328,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		idpdefaulturls.IdpDefaultUrlsResource,
 		keypairsigningimport.KeyPairsSigningImportResource,
 		keypairsslserverimport.KeyPairsSslServerImportResource,
+		datastore.DataStoreResource,
 		license.LicenseResource,
 		licenseagreement.LicenseAgreementResource,
 		localidentity.LocalIdentityIdentityProfileResource,
@@ -315,7 +336,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		oauthauthserversettings.OauthAuthServerSettingsResource,
 		oauthauthserversettingsscopescommonscope.OauthAuthServerSettingsScopesCommonScopesResource,
 		oauthauthserversettingsscopesexclusivescope.OauthAuthServerSettingsScopesExclusiveScopesResource,
-		oauthissuer.OauthIssuersResource,
+		oauthissuer.OauthIssuerResource,
 		oauthtokenexchangetokengeneratormappings.OauthTokenExchangeTokenGeneratorMappingResource,
 		passwordcredentialvalidator.PasswordCredentialValidatorResource,
 		protocolmetadatalifetimesettings.ProtocolMetadataLifetimeSettingsResource,

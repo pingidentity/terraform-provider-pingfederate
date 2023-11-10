@@ -295,8 +295,8 @@ func attributeMappingHclBlock(attributeMapping *client.IdpAdapterContractMapping
 func testAccIdpAdapter(resourceName string, resourceModel idpAdapterResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_idp_adapter" "%[1]s" {
-  custom_id = "%[2]s"
-  name      = "%[3]s"
+  adapter_id = "%[2]s"
+  name       = "%[3]s"
   plugin_descriptor_ref = {
     id = "%[4]s"
   }

@@ -69,11 +69,14 @@ func TestAccOauthIssuer(t *testing.T) {
 func testAccOauthIssuer(resourceName string, resourceModel oauthIssuerResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_issuer" "%[1]s" {
-  custom_id   = "%[2]s"
+  issuer_id   = "%[2]s"
   description = "%[3]s"
   host        = "%[4]s"
   name        = "%[5]s"
   path        = "%[6]s"
+}
+data "pingfederate_oauth_issuer" "%[1]s" {
+  issuer_id = pingfederate_oauth_issuer.%[1]s.id
 }`, resourceName,
 		resourceModel.stateId,
 		resourceModel.description,
