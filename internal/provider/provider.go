@@ -311,6 +311,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		oauthauthserversettings.NewOauthAuthServerSettingsDataSource,
 		oauthauthserversettingsscopescommonscope.NewOauthAuthServerSettingsScopesCommonScopeDataSource,
 		oauthauthserversettingsscopesexclusivescope.NewOauthAuthServerSettingsScopesExclusiveScopeDataSource,
+		sessionapplicationsessionpolicy.NewSessionApplicationSessionPolicyDataSource,
 		oauthissuer.NewOauthIssuerDataSource,
 		virtualhostnames.NewVirtualHostNamesDataSource,
 	}
