@@ -1,4 +1,4 @@
-# v0.2.0 (Unreleased)
+# v0.2.0 November 10, 2023
 ### BUG FIXES
 * **Administrative Account Resource:** Resolved issue where updating a managed `pingfederate_administrative_account` resource forces replacment ([#86](https://github.com/pingidentity/terraform-provider-pingfederate/pull/86)) 
 ### ENHANCEMENTS
