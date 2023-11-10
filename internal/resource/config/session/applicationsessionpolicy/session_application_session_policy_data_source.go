@@ -44,12 +44,12 @@ func (r *sessionApplicationSessionPolicyDataSource) Schema(ctx context.Context, 
 			"idle_timeout_mins": schema.Int64Attribute{
 				Description: "The idle timeout period, in minutes. If set to -1, the idle timeout will be set to the maximum timeout. The default is 60.",
 				Computed:    true,
-				Optional:    true,
+				Optional:    false,
 			},
 			"max_timeout_mins": schema.Int64Attribute{
 				Description: "The maximum timeout period, in minutes. If set to -1, sessions do not expire. The default is 480.",
 				Computed:    true,
-				Optional:    true,
+				Optional:    false,
 			},
 		},
 	}
@@ -92,13 +92,12 @@ func (r *sessionApplicationSessionPolicyDataSource) Read(ctx context.Context, re
 	apiReadSessionApplicationSessionPolicy, httpResp, err := r.apiClient.SessionAPI.GetApplicationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	// Read the response into the state
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Local Identity Profile", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Session Application Session Policy", err, httpResp)
 		return
 	}
 
 	// Read the response into the state
 	readSessionApplicationSessionPolicyResponseDataSource(ctx, apiReadSessionApplicationSessionPolicy, &state)
-	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
