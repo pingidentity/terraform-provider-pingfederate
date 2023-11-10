@@ -656,6 +656,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Description: "User password. To update the password, specify the plaintext value in this field. This field will not be populated for GET requests.",
 						Computed:    true,
 						Optional:    true,
+						Sensitive:   true,
 						Default:     stringdefault.StaticString(""),
 					},
 				},

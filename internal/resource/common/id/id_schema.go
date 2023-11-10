@@ -24,11 +24,14 @@ func ToSchemaCustomId(s *schema.Schema, idName string, characterLimit bool, desc
 	customId := schema.StringAttribute{}
 	customId.Description = description
 	customId.PlanModifiers = []planmodifier.String{
+		stringplanmodifier.UseStateForUnknown(),
 		stringplanmodifier.RequiresReplace(),
 	}
 	customId.Required = true
 	if characterLimit {
-		customId.Validators = []validator.String{configvalidators.ValidChars()}
+		customId.Validators = []validator.String{
+			configvalidators.ValidChars(),
+		}
 	}
 	s.Attributes[idName] = customId
 }
