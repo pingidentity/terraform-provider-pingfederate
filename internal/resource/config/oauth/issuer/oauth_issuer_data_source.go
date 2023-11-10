@@ -65,8 +65,8 @@ func (r *oauthIssuerDataSource) Schema(ctx context.Context, req datasource.Schem
 			},
 		},
 	}
-	id.ToDataSourceSchema(&schemaDef, false, "The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.")
-	id.ToDataSourceSchemaCustomId(&schemaDef, true, true, "The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.")
+	id.ToDataSourceSchema(&schemaDef, false, "The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-].")
+	id.ToDataSourceSchemaCustomId(&schemaDef, true, true, "The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-].")
 	resp.Schema = schemaDef
 }
 
@@ -88,13 +88,12 @@ func (r *oauthIssuerDataSource) Configure(_ context.Context, req datasource.Conf
 
 // Read a OauthIssuerResponse object into the model struct
 func readOauthIssuerResponseDataSource(ctx context.Context, r *client.Issuer, state *oauthIssuerDataSourceModel) {
-	//TODO why is this a pointer?
-	state.Id = types.StringValue(*r.Id)
-	state.CustomId = types.StringValue(*r.Id)
+	state.Id = types.StringPointerValue(r.Id)
+	state.CustomId = types.StringPointerValue(r.Id)
 	state.Name = types.StringValue(r.Name)
-	state.Description = types.StringValue(*r.Description)
+	state.Description = types.StringPointerValue(r.Description)
 	state.Host = types.StringValue(r.Host)
-	state.Path = types.StringValue(*r.Path)
+	state.Path = types.StringPointerValue(r.Path)
 }
 
 // Read resource information
