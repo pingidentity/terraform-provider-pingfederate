@@ -119,7 +119,7 @@ func (p *pingfederateProvider) Schema(_ context.Context, _ provider.SchemaReques
 				Optional:    true,
 			},
 			"x_bypass_external_validation_header": schema.BoolAttribute{
-				Description: "Header value in request for PingFederate. The connection test will be bypassed when set to true. Default value is false.",
+				Description: "Header value in request for PingFederate. The connection test will be bypassed when set to true. Default value can be set with the `PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER` environment variable.",
 				Optional:    true,
 			},
 		},
