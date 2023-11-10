@@ -1,4 +1,9 @@
-# v0.2.0 November 10, 2023
+# v0.3.0 (unreleased)
+### FEATURES
+#### Data Sources
+* **New Data Source:** `session-application-session-policy datasource` ([#94](https://github.com/pingidentity/terraform-provider-pingfederate/pull/94))
+
+# v0.2.1 November 10, 2023
 ### BUG FIXES
 * **Administrative Account Resource:** Resolved issue where updating a managed `pingfederate_administrative_account` resource forces replacement ([#86](https://github.com/pingidentity/terraform-provider-pingfederate/pull/86)) 
 ### ENHANCEMENTS
