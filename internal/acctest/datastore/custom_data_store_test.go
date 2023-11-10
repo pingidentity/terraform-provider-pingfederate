@@ -122,7 +122,7 @@ func TestAccCustomDataStore(t *testing.T) {
 func testAccCustomDataStore(resourceName string, resourceModel customDataStoreResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_data_store" "%[1]s" {
-  custom_id             = "%[2]s"
+  data_store_id         = "%[2]s"
   mask_attribute_values = %[3]t
   custom_data_store = {
     name = "%[4]s"

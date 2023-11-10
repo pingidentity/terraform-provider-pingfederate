@@ -124,7 +124,7 @@ func hcl(lds *client.LdapDataStore) string {
 	}
 	if lds != nil {
 		top := `
-		custom_id             = "%[1]s"
+		data_store_id             = "%[1]s"
 		%[2]s
 		`
 		builder.WriteString(

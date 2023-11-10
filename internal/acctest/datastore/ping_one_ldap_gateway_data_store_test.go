@@ -121,7 +121,7 @@ func pingOneLdapGDShcl(pingOneLdapGDS *client.PingOneLdapGatewayDataStore) strin
 	}
 	if pingOneLdapGDS != nil {
 		top := `
-		custom_id             = "%[1]s"
+		data_store_id             = "%[1]s"
 		%[2]s
 		`
 		builder.WriteString(

@@ -270,8 +270,9 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataStore, plan basetypes.ObjectValue) (types.Object, diag.Diagnostics) {
 	var diags, allDiags diag.Diagnostics
 
-	if ldapDataStore != nil {
+	if ldapDataStore == nil {
 		diags.AddError("Failed to read Ldap data store from PingFederate.", "The response from PingFederate was nil.")
+		return ldapDataStoreEmptyStateObj, diags
 	}
 
 	userDn := func() types.String {
@@ -358,7 +359,7 @@ func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataSto
 func readLdapDataStoreResponse(ctx context.Context, r *client.DataStoreAggregation, state *dataStoreResourceModel, plan *types.Object) diag.Diagnostics {
 	var diags diag.Diagnostics
 	state.Id = types.StringPointerValue(r.LdapDataStore.Id)
-	state.CustomId = types.StringPointerValue(r.LdapDataStore.Id)
+	state.DataStoreId = types.StringPointerValue(r.LdapDataStore.Id)
 	state.MaskAttributeValues = types.BoolPointerValue(r.LdapDataStore.MaskAttributeValues)
 	state.CustomDataStore = customDataStoreEmptyStateObj
 	state.JdbcDataStore = jdbcDataStoreEmptyStateObj
@@ -384,8 +385,8 @@ func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con 
 		addRequest.LdapDataStore.Password = password.(types.String).ValueStringPointer()
 	}
 
-	if internaltypes.IsDefined(plan.CustomId) {
-		addRequest.LdapDataStore.Id = plan.CustomId.ValueStringPointer()
+	if internaltypes.IsDefined(plan.DataStoreId) {
+		addRequest.LdapDataStore.Id = plan.DataStoreId.ValueStringPointer()
 	}
 
 	hostnames, ok := ldapDataStorePlan["hostnames"]

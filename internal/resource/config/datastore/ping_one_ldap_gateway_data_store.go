@@ -152,7 +152,7 @@ func toStatePingOneLdapGatewayDataStore(con context.Context, pingOneLdapGDS *cli
 func readPingOneLdapGatewayDataStoreResponse(ctx context.Context, r *client.DataStoreAggregation, state *dataStoreResourceModel, plan *types.Object) diag.Diagnostics {
 	var diags diag.Diagnostics
 	state.Id = types.StringPointerValue(r.PingOneLdapGatewayDataStore.Id)
-	state.CustomId = types.StringPointerValue(r.PingOneLdapGatewayDataStore.Id)
+	state.DataStoreId = types.StringPointerValue(r.PingOneLdapGatewayDataStore.Id)
 	state.MaskAttributeValues = types.BoolPointerValue(r.PingOneLdapGatewayDataStore.MaskAttributeValues)
 	state.CustomDataStore = customDataStoreEmptyStateObj
 	state.JdbcDataStore = jdbcDataStoreEmptyStateObj
@@ -180,8 +180,8 @@ func addOptionalPingOneLdapGatewayDataStoreFields(addRequest client.DataStoreAgg
 		addRequest.PingOneLdapGatewayDataStore.BinaryAttributes = internaltypes.SetTypeToStringSet(pingOneLdapGatewayDataStorePlan["binary_attributes"].(types.Set))
 	}
 
-	if internaltypes.IsDefined(plan.CustomId) {
-		addRequest.PingOneLdapGatewayDataStore.Id = plan.CustomId.ValueStringPointer()
+	if internaltypes.IsDefined(plan.DataStoreId) {
+		addRequest.PingOneLdapGatewayDataStore.Id = plan.DataStoreId.ValueStringPointer()
 	}
 
 	return nil

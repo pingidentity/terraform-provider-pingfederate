@@ -36,7 +36,7 @@ type dataStoreResource struct {
 
 type dataStoreResourceModel struct {
 	Id                          types.String `tfsdk:"id"`
-	CustomId                    types.String `tfsdk:"custom_id"`
+	DataStoreId                 types.String `tfsdk:"data_store_id"`
 	MaskAttributeValues         types.Bool   `tfsdk:"mask_attribute_values"`
 	CustomDataStore             types.Object `tfsdk:"custom_data_store"`
 	JdbcDataStore               types.Object `tfsdk:"jdbc_data_store"`
@@ -62,7 +62,9 @@ func (r *dataStoreResource) Schema(ctx context.Context, req resource.SchemaReque
 		},
 	}
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, false,
+	id.ToSchemaCustomId(&schema,
+		"data_store_id",
+		false,
 		"The persistent, unique ID for the data store. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.")
 
 	resp.Schema = schema
@@ -97,53 +99,59 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		jdbcDataStore := plan.JdbcDataStore.Attributes()
 
 		// Build connection_url and connection_url_tags attributes
-		topConnectionUrl := func() (bool, string) {
-			if internaltypes.IsDefined(jdbcDataStore["connection_url"]) {
-				return true, jdbcDataStore["connection_url"].(types.String).ValueString()
-			}
-			return false, ""
+		var hasTopConnectionUrl bool
+		var topConnectionUrlVal string
+		if internaltypes.IsDefined(jdbcDataStore["connection_url"]) {
+			hasTopConnectionUrl = true
+			topConnectionUrlVal = jdbcDataStore["connection_url"].(types.String).ValueString()
+		} else {
+			hasTopConnectionUrl = false
+			topConnectionUrlVal = ""
 		}
-		hasTopConnectionUrl, topConnectionUrlVal := topConnectionUrl()
 
-		connectionUrlTags := func() (bool, basetypes.StringValue, basetypes.StringValue, basetypes.BoolValue) {
-			if internaltypes.IsDefined(jdbcDataStore["connection_url_tags"]) {
-				connectionUrlTags := jdbcDataStore["connection_url_tags"].(types.Set)
-				if len(connectionUrlTags.Elements()) > 0 {
-					for _, elem := range connectionUrlTags.Elements() {
-						objAttrs := elem.(types.Object).Attributes()
-						connectionUrl := objAttrs["connection_url"].(types.String)
-						defaultSource := objAttrs["default_source"].(types.Bool)
-						tags := func() types.String {
-							if internaltypes.IsDefined(objAttrs["tags"]) {
-								return objAttrs["tags"].(types.String)
-							}
-							return types.StringNull()
-						}
-						if internaltypes.IsNonEmptyString(connectionUrl) && defaultSource.ValueBool() {
-							return true,
-								connectionUrl,
-								tags(),
-								defaultSource
-						}
+		var hasConnectionUrlTags bool
+		var connectionUrlTagsConnectionUrlVal basetypes.StringValue
+		var connectionUrlTagsTags basetypes.StringValue
+		var connectionUrlTagsDefaultSource basetypes.BoolValue
+		if internaltypes.IsDefined(jdbcDataStore["connection_url_tags"]) {
+			connectionUrlTags := jdbcDataStore["connection_url_tags"].(types.Set)
+			if len(connectionUrlTags.Elements()) > 0 {
+				for _, elem := range connectionUrlTags.Elements() {
+					objAttrs := elem.(types.Object).Attributes()
+					connectionUrl := objAttrs["connection_url"].(types.String)
+					defaultSource := objAttrs["default_source"].(types.Bool)
+					var tags types.String
+					if internaltypes.IsDefined(objAttrs["tags"]) {
+						tags = objAttrs["tags"].(types.String)
+					} else {
+						tags = types.StringNull()
+					}
+					if internaltypes.IsNonEmptyString(connectionUrl) && defaultSource.ValueBool() {
+						hasConnectionUrlTags = true
+						connectionUrlTagsConnectionUrlVal = connectionUrl
+						connectionUrlTagsTags = tags
+						connectionUrlTagsDefaultSource = defaultSource
 					}
 				}
 			}
-			return false, types.StringNull(), types.StringNull(), types.BoolValue(true)
+		} else {
+			hasConnectionUrlTags = false
+			connectionUrlTagsConnectionUrlVal = types.StringNull()
+			connectionUrlTagsTags = types.StringNull()
+			connectionUrlTagsDefaultSource = types.BoolValue(true)
 		}
-		hasConnectionUrlTags, connectionUrlTagsConnectionUrlVal, connectionUrlTagsTags, connectionUrlTagsDefaultSource := connectionUrlTags()
 
 		// If connection_url is not defined, use connection_url_tags connection_url value
-		connectionUrlVal := func() basetypes.StringValue {
-			if !hasTopConnectionUrl {
-				return connectionUrlTagsConnectionUrlVal
-			} else {
-				return types.StringValue(topConnectionUrlVal)
-			}
+		var connectionUrlVal basetypes.StringValue
+		if !hasTopConnectionUrl {
+			connectionUrlVal = connectionUrlTagsConnectionUrlVal
+		} else {
+			connectionUrlVal = types.StringValue(topConnectionUrlVal)
 		}
-		jdbcDataStore["connection_url"] = connectionUrlVal()
+		jdbcDataStore["connection_url"] = connectionUrlVal
 
 		connectionUrlTagsAttrVal := map[string]attr.Value{
-			"connection_url": connectionUrlVal(),
+			"connection_url": connectionUrlVal,
 			"tags":           connectionUrlTagsTags,
 			"default_source": connectionUrlTagsDefaultSource,
 		}
@@ -158,22 +166,22 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		jdbcDataStore["connection_url_tags"] = connectionUrlTagsSet
 
 		//  Build name attribute if not defined
-		namePrefix := func() basetypes.StringValue {
-			var prefix string
-			if !internaltypes.IsDefined(jdbcDataStore["name"]) {
-				if hasTopConnectionUrl {
-					prefix = topConnectionUrlVal
-				}
-				if hasConnectionUrlTags {
-					prefix = connectionUrlTagsConnectionUrlVal.ValueString()
-				}
-				userName := jdbcDataStore["user_name"].(types.String).ValueString()
-				return types.StringValue(prefix + " (" + userName + ")")
+		var namePrefix basetypes.StringValue
+		var prefix string
+		if !internaltypes.IsDefined(jdbcDataStore["name"]) {
+			if hasTopConnectionUrl {
+				prefix = topConnectionUrlVal
 			}
-			return jdbcDataStore["name"].(types.String)
+			if hasConnectionUrlTags {
+				prefix = connectionUrlTagsConnectionUrlVal.ValueString()
+			}
+			userName := jdbcDataStore["user_name"].(types.String).ValueString()
+			namePrefix = types.StringValue(prefix + " (" + userName + ")")
+		} else {
+			namePrefix = jdbcDataStore["name"].(types.String)
 		}
 
-		jdbcDataStore["name"] = namePrefix()
+		jdbcDataStore["name"] = namePrefix
 		plan.JdbcDataStore, respDiags = types.ObjectValue(jdbcDataStoreAttrType, jdbcDataStore)
 		resp.Diagnostics.Append(respDiags...)
 	}
@@ -182,57 +190,62 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		ldapDataStore := plan.LdapDataStore.Attributes()
 
 		// Build hostnames and hostnames_tags attributes
-		hostnames := func() (bool, []attr.Value) {
-			if internaltypes.IsDefined(ldapDataStore["hostnames"]) {
-				topHostNames := ldapDataStore["hostnames"].(types.Set)
-				if len(topHostNames.Elements()) > 0 {
-					return true, topHostNames.Elements()
-				}
+		var hasHostnames bool
+		var hostnamesVal []attr.Value
+		if internaltypes.IsDefined(ldapDataStore["hostnames"]) {
+			topHostNames := ldapDataStore["hostnames"].(types.Set)
+			if len(topHostNames.Elements()) > 0 {
+				hasHostnames = true
+				hostnamesVal = topHostNames.Elements()
 			}
-			return false, nil
+		} else {
+			hasHostnames = false
+			hostnamesVal = nil
 		}
-		hasHostnames, hostnamesVal := hostnames()
 
-		hostnamesTags := func() (bool, []attr.Value, basetypes.StringValue, basetypes.BoolValue) {
-			if internaltypes.IsDefined(ldapDataStore["hostnames_tags"]) {
-				hostnamesTags := ldapDataStore["hostnames_tags"].(types.Set)
-				if len(hostnamesTags.Elements()) > 0 {
-					hostnamesTagsFirstElem := hostnamesTags.Elements()[0].(types.Object).Attributes()
-					if len(hostnamesTagsFirstElem["hostnames"].(types.Set).Elements()) > 0 {
-						hostnames := hostnamesTagsFirstElem["hostnames"].(types.Set)
-						tags := func() types.String {
-							if internaltypes.IsDefined(hostnamesTagsFirstElem["tags"]) {
-								return hostnamesTagsFirstElem["tags"].(types.String)
-							}
-							return types.StringNull()
-						}
-						defaultSource := func() types.Bool {
-							if internaltypes.IsDefined(hostnamesTagsFirstElem["default_source"]) {
-								return hostnamesTagsFirstElem["default_source"].(types.Bool)
-							} else {
-								return types.BoolValue(true)
-							}
-						}
-						return true,
-							hostnames.Elements(),
-							tags(),
-							defaultSource()
+		var hasHostnamesTags bool
+		var hostnamesTagsHostnamesVal []attr.Value
+		var hostnamesTagsTags basetypes.StringValue
+		var hostnamesTagsDefaultSource basetypes.BoolValue
+		if internaltypes.IsDefined(ldapDataStore["hostnames_tags"]) {
+			hostnamesTags := ldapDataStore["hostnames_tags"].(types.Set)
+			if len(hostnamesTags.Elements()) > 0 {
+				hostnamesTagsFirstElem := hostnamesTags.Elements()[0].(types.Object).Attributes()
+				if len(hostnamesTagsFirstElem["hostnames"].(types.Set).Elements()) > 0 {
+					var tags types.String
+					if internaltypes.IsDefined(hostnamesTagsFirstElem["tags"]) {
+						tags = hostnamesTagsFirstElem["tags"].(types.String)
+					} else {
+						tags = types.StringNull()
 					}
+					var defaultSource types.Bool
+					if internaltypes.IsDefined(hostnamesTagsFirstElem["default_source"]) {
+						defaultSource = hostnamesTagsFirstElem["default_source"].(types.Bool)
+					} else {
+						defaultSource = types.BoolValue(true)
+					}
+					hasHostnamesTags = true
+					hostnamesTagsHostnamesVal = hostnamesTagsFirstElem["hostnames"].(types.Set).Elements()
+					hostnamesTagsTags = tags
+					hostnamesTagsDefaultSource = defaultSource
 				}
 			}
-			return false, nil, types.StringNull(), types.BoolValue(true)
+		} else {
+			hasHostnamesTags = false
+			hostnamesTagsHostnamesVal = nil
+			hostnamesTagsTags = types.StringNull()
+			hostnamesTagsDefaultSource = types.BoolValue(true)
 		}
-		hasHostnamesTags, hostnamesTagsHostnamesVal, hostnamesTagsTags, hostnamesTagsDefaultSource := hostnamesTags()
 
 		// If hostnames is not defined, use hostnames_tags hostnames value
-		hostnamesSetVal := func() []attr.Value {
-			if !hasHostnames {
-				return hostnamesTagsHostnamesVal
-			} else {
-				return hostnamesVal
-			}
+		var hostnamesSetVal []attr.Value
+		if !hasHostnames {
+			hostnamesSetVal = hostnamesTagsHostnamesVal
+		} else {
+			hostnamesSetVal = hostnamesVal
 		}
-		hostnamesBaseTypesSetValue, respDiags := types.SetValue(types.StringType, hostnamesSetVal())
+
+		hostnamesBaseTypesSetValue, respDiags := types.SetValue(types.StringType, hostnamesSetVal)
 		resp.Diagnostics.Append(respDiags...)
 		ldapDataStore["hostnames"] = hostnamesBaseTypesSetValue
 
@@ -250,26 +263,23 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		ldapDataStore["hostnames_tags"] = hostnamesTagsSet
 
 		//  Build name attribute if not defined
-		namePrefix := func() string {
-			if hasHostnames {
-				topHostNamesFirstElem := hostnamesVal[0].(types.String).ValueString()
-				return topHostNamesFirstElem
-			}
-			if hasHostnamesTags {
-				hostnamesTagsFirstElemHostnamesFirstElem := hostnamesTagsHostnamesVal[0].(types.String).ValueString()
-				return hostnamesTagsFirstElemHostnamesFirstElem
-			}
-			return ""
+		var namePrefix string
+		if hasHostnames {
+			namePrefix = hostnamesVal[0].(types.String).ValueString()
+		}
+		if hasHostnamesTags {
+			namePrefix = hostnamesTagsHostnamesVal[0].(types.String).ValueString()
 		}
 
-		nameValue := func() basetypes.StringValue {
-			if ldapDataStore["name"].IsUnknown() {
-				userDn := ldapDataStore["user_dn"].(types.String).ValueString()
-				return types.StringValue(namePrefix() + " (" + userDn + ")")
-			}
-			return ldapDataStore["name"].(types.String)
+		var nameValue basetypes.StringValue
+		if ldapDataStore["name"].IsUnknown() {
+			userDn := ldapDataStore["user_dn"].(types.String).ValueString()
+			nameValue = types.StringValue(namePrefix + " (" + userDn + ")")
+		} else {
+			nameValue = ldapDataStore["name"].(types.String)
 		}
-		ldapDataStore["name"] = nameValue()
+
+		ldapDataStore["name"] = nameValue
 		plan.LdapDataStore, respDiags = types.ObjectValue(ldapDataStoreAttrType, ldapDataStore)
 		resp.Diagnostics.Append(respDiags...)
 	}

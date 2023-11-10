@@ -19,7 +19,7 @@ Manages a Data Store
 
 # x_bypass_external_validation_header may be used in the provider block to bypass the connection test.
 resource "pingfederate_data_store" "myCustomDataStore" {
-  custom_id = "myCustomDataStore"
+  data_store_id = "myCustomDataStore"
   custom_data_store = {
     name = "myCustomDataStore"
     plugin_descriptor_ref = {
@@ -165,7 +165,7 @@ resource "pingfederate_data_store" "myCustomDataStore" {
 }
 
 resource "pingfederate_data_store" "myJdbcDataStore" {
-  custom_id             = "myJdbcDataStore"
+  data_store_id         = "myJdbcDataStore"
   mask_attribute_values = false
   jdbc_data_store = {
     name                         = "myJdbcDataStore"
@@ -188,7 +188,7 @@ resource "pingfederate_data_store" "myJdbcDataStore" {
 }
 
 resource "pingfederate_data_store" "myPingDirectoryLdapDataStore" {
-  custom_id = "myPingDirectoryLdapDataStore"
+  data_store_id = "myPingDirectoryLdapDataStore"
   ldap_data_store = {
     ldap_type          = "PING_DIRECTORY"
     bind_anonymously   = false
@@ -224,7 +224,7 @@ resource "pingfederate_data_store" "myPingDirectoryLdapDataStore" {
 }
 
 resource "pingfederate_data_store" "myPingOneDataStore" {
-  custom_id = "myPingOneDataStore"
+  data_store_id = "myPingOneDataStore"
   custom_data_store = {
     name = "myPingOneDataStore"
     plugin_descriptor_ref = {
@@ -291,7 +291,7 @@ resource "pingfederate_data_store" "myPingOneDataStore" {
 }
 
 resource "pingfederate_data_store" "myPingOneLdapDataStore" {
-  custom_id             = "myPingOneLdapDataStore"
+  data_store_id         = "myPingOneLdapDataStore"
   mask_attribute_values = false
   ping_one_ldap_gateway_data_store = {
     ldap_type = "PING_DIRECTORY"
@@ -311,7 +311,7 @@ resource "pingfederate_data_store" "myPingOneLdapDataStore" {
 
 ### Required
 
-- `custom_id` (String) The persistent, unique ID for the data store. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
+- `data_store_id` (String) The persistent, unique ID for the data store. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
 
 ### Optional
 

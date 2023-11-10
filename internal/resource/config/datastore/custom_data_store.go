@@ -114,7 +114,7 @@ func toStateCustomDataStore(con context.Context, clientValue *client.DataStoreAg
 func readCustomDataStoreResponse(ctx context.Context, r *client.DataStoreAggregation, state *dataStoreResourceModel, plan *types.Object) diag.Diagnostics {
 	var diags diag.Diagnostics
 	state.Id = types.StringPointerValue(r.CustomDataStore.Id)
-	state.CustomId = types.StringPointerValue(r.CustomDataStore.Id)
+	state.DataStoreId = types.StringPointerValue(r.CustomDataStore.Id)
 	state.MaskAttributeValues = types.BoolPointerValue(r.CustomDataStore.MaskAttributeValues)
 	state.JdbcDataStore = jdbcDataStoreEmptyStateObj
 	state.CustomDataStore, diags = toStateCustomDataStore(ctx, r, *plan)
@@ -126,8 +126,8 @@ func readCustomDataStoreResponse(ctx context.Context, r *client.DataStoreAggrega
 func addOptionalCustomDataStoreFields(addRequest client.DataStoreAggregation, con context.Context, createCustomDataStore client.CustomDataStore, plan dataStoreResourceModel) error {
 	customDataStorePlan := plan.CustomDataStore.Attributes()
 
-	if internaltypes.IsDefined(plan.CustomId) {
-		addRequest.CustomDataStore.Id = plan.CustomId.ValueStringPointer()
+	if internaltypes.IsDefined(plan.DataStoreId) {
+		addRequest.CustomDataStore.Id = plan.DataStoreId.ValueStringPointer()
 	}
 
 	parentRef := customDataStorePlan["parent_ref"]

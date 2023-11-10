@@ -231,7 +231,7 @@ func toStateJdbcDataStore(con context.Context, jdbcDataStore *client.JdbcDataSto
 func readJdbcDataStoreResponse(ctx context.Context, r *client.DataStoreAggregation, state *dataStoreResourceModel, plan *dataStoreResourceModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 	state.Id = types.StringPointerValue(r.JdbcDataStore.Id)
-	state.CustomId = types.StringPointerValue(r.JdbcDataStore.Id)
+	state.DataStoreId = types.StringPointerValue(r.JdbcDataStore.Id)
 	state.MaskAttributeValues = types.BoolPointerValue(r.JdbcDataStore.MaskAttributeValues)
 	state.JdbcDataStore, diags = toStateJdbcDataStore(ctx, r.JdbcDataStore, *plan)
 	state.CustomDataStore = customDataStoreEmptyStateObj
@@ -246,8 +246,8 @@ func addOptionalJdbcDataStoreFields(addRequest client.DataStoreAggregation, con 
 		addRequest.JdbcDataStore.MaskAttributeValues = plan.MaskAttributeValues.ValueBoolPointer()
 	}
 
-	if internaltypes.IsDefined(plan.CustomId) {
-		addRequest.JdbcDataStore.Id = plan.CustomId.ValueStringPointer()
+	if internaltypes.IsDefined(plan.DataStoreId) {
+		addRequest.JdbcDataStore.Id = plan.DataStoreId.ValueStringPointer()
 	}
 
 	jdbcDataStorePlan := plan.JdbcDataStore.Attributes()
