@@ -1,6 +1,6 @@
 # v0.2.0 November 10, 2023
 ### BUG FIXES
-* **Administrative Account Resource:** Resolved issue where updating a managed `pingfederate_administrative_account` resource forces replacment ([#86](https://github.com/pingidentity/terraform-provider-pingfederate/pull/86)) 
+* **Administrative Account Resource:** Resolved issue where updating a managed `pingfederate_administrative_account` resource forces replacement ([#86](https://github.com/pingidentity/terraform-provider-pingfederate/pull/86)) 
 ### ENHANCEMENTS
 * Include values computed from PingFederate in provider state ([#72](https://github.com/pingidentity/terraform-provider-pingfederate/pull/72))
 * Use lists instead of sets in most cases ([#81](https://github.com/pingidentity/terraform-provider-pingfederate/pull/81))
