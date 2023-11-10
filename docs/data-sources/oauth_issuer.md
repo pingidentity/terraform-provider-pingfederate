@@ -23,7 +23,7 @@ data "pingfederate_oauth_issuer" "myOauthIssuer" {
 
 ### Required
 
-- `custom_id` (String) The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-].
+- `issuer_id` (String) The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-].
 
 ### Read-Only
 

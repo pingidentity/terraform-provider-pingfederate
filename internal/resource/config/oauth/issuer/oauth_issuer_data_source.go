@@ -31,7 +31,7 @@ type oauthIssuerDataSource struct {
 
 type oauthIssuerDataSourceModel struct {
 	Id          types.String `tfsdk:"id"`
-	CustomId    types.String `tfsdk:"custom_id"`
+	IssuerId    types.String `tfsdk:"issuer_id"`
 	Name        types.String `tfsdk:"name"`
 	Description types.String `tfsdk:"description"`
 	Host        types.String `tfsdk:"host"`
@@ -66,7 +66,11 @@ func (r *oauthIssuerDataSource) Schema(ctx context.Context, req datasource.Schem
 		},
 	}
 	id.ToDataSourceSchema(&schemaDef, false, "The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-].")
-	id.ToDataSourceSchemaCustomId(&schemaDef, true, true, "The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-].")
+	id.ToDataSourceSchemaCustomId(&schemaDef,
+		"issuer_id",
+		true,
+		true,
+		"The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-].")
 	resp.Schema = schemaDef
 }
 
@@ -89,7 +93,7 @@ func (r *oauthIssuerDataSource) Configure(_ context.Context, req datasource.Conf
 // Read a OauthIssuerResponse object into the model struct
 func readOauthIssuerResponseDataSource(ctx context.Context, r *client.Issuer, state *oauthIssuerDataSourceModel) {
 	state.Id = types.StringPointerValue(r.Id)
-	state.CustomId = types.StringPointerValue(r.Id)
+	state.IssuerId = types.StringPointerValue(r.Id)
 	state.Name = types.StringValue(r.Name)
 	state.Description = types.StringPointerValue(r.Description)
 	state.Host = types.StringValue(r.Host)
@@ -106,7 +110,7 @@ func (r *oauthIssuerDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	apiReadOauthIssuer, httpResp, err := r.apiClient.OauthIssuersAPI.GetOauthIssuerById(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CustomId.ValueString()).Execute()
+	apiReadOauthIssuer, httpResp, err := r.apiClient.OauthIssuersAPI.GetOauthIssuerById(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.IssuerId.ValueString()).Execute()
 
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Issuer", err, httpResp)

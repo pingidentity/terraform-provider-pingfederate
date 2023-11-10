@@ -1,3 +1,3 @@
 data "pingfederate_oauth_access_token_manager" "myOauthAccessTokenManager" {
-  custom_id = "example"
+  manager_id = "example"
 }
