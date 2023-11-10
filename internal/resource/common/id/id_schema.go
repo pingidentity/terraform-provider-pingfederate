@@ -20,7 +20,7 @@ func ToSchema(s *schema.Schema) {
 	s.Attributes["id"] = schemaId
 }
 
-func ToSchemaCustomId(s *schema.Schema, characterLimit bool, description string) {
+func ToSchemaCustomId(s *schema.Schema, idName string, characterLimit bool, description string) {
 	customId := schema.StringAttribute{}
 	customId.Description = description
 	customId.PlanModifiers = []planmodifier.String{
@@ -33,5 +33,5 @@ func ToSchemaCustomId(s *schema.Schema, characterLimit bool, description string)
 			configvalidators.ValidChars(),
 		}
 	}
-	s.Attributes["custom_id"] = customId
+	s.Attributes[idName] = customId
 }

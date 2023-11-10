@@ -311,6 +311,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		oauthauthserversettings.NewOauthAuthServerSettingsDataSource,
 		oauthauthserversettingsscopescommonscope.NewOauthAuthServerSettingsScopesCommonScopeDataSource,
 		oauthauthserversettingsscopesexclusivescope.NewOauthAuthServerSettingsScopesExclusiveScopeDataSource,
+		virtualhostnames.NewVirtualHostNamesDataSource,
 	}
 }
 
@@ -333,7 +334,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		oauthauthserversettings.OauthAuthServerSettingsResource,
 		oauthauthserversettingsscopescommonscope.OauthAuthServerSettingsScopesCommonScopesResource,
 		oauthauthserversettingsscopesexclusivescope.OauthAuthServerSettingsScopesExclusiveScopesResource,
-		oauthissuer.OauthIssuersResource,
+		oauthissuer.OauthIssuerResource,
 		oauthtokenexchangetokengeneratormappings.OauthTokenExchangeTokenGeneratorMappingResource,
 		passwordcredentialvalidator.PasswordCredentialValidatorResource,
 		protocolmetadatalifetimesettings.ProtocolMetadataLifetimeSettingsResource,
