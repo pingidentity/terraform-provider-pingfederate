@@ -60,6 +60,9 @@ func testAccProtocolMetadataLifetimeSettings(resourceName string, resourceModel 
 resource "pingfederate_protocol_metadata_lifetime_settings" "%[1]s" {
   cache_duration = %[2]d
   reload_delay   = %[3]d
+}
+data "pingfederate_protocol_metadata_lifetime_settings" "%[1]s" {
+  depends_on = [pingfederate_protocol_metadata_lifetime_settings.%[1]s]
 }`, resourceName,
 		resourceModel.cacheDuration,
 		resourceModel.reloadDelay,
