@@ -101,5 +101,3 @@ func (r *protocolMetadataLifetimeSettingsDataSource) Read(ctx context.Context, r
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 }
-
-// Update updates the datasource and sets the updated Terraform state on success.
