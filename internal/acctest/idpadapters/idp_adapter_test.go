@@ -56,6 +56,8 @@ func updatedAttributeContract() *client.IdpAdapterAttributeContract {
 		Pseudonym: pointers.Bool(false),
 		Masked:    pointers.Bool(false),
 	})
+	contract.UniqueUserKeyAttribute = pointers.String("username")
+	contract.Inherited = pointers.Bool(false)
 	return contract
 }
 
