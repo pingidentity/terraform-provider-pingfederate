@@ -3,6 +3,7 @@
 #### Data Sources
 * **New Data Source:** `session-application-session-policy datasource` ([#94](https://github.com/pingidentity/terraform-provider-pingfederate/pull/94))
 * **New Data Source:** `protocol-metadata-lifetime-settings datasource` ([#100](https://github.com/pingidentity/terraform-provider-pingfederate/pull/100))
+* **New Data Source:** `server-settings-general-settings datasource` ([#101](https://github.com/pingidentity/terraform-provider-pingfederate/pull/101))
 
 # v0.2.1 November 10, 2023
 ### BUG FIXES
