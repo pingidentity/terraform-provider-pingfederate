@@ -19,23 +19,23 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource                = &oauthAuthServerSettingsScopesExclusiveScopesResource{}
-	_ resource.ResourceWithConfigure   = &oauthAuthServerSettingsScopesExclusiveScopesResource{}
-	_ resource.ResourceWithImportState = &oauthAuthServerSettingsScopesExclusiveScopesResource{}
+	_ resource.Resource                = &oauthAuthServerSettingsScopesExclusiveScopeResource{}
+	_ resource.ResourceWithConfigure   = &oauthAuthServerSettingsScopesExclusiveScopeResource{}
+	_ resource.ResourceWithImportState = &oauthAuthServerSettingsScopesExclusiveScopeResource{}
 )
 
-// OauthAuthServerSettingsScopesExclusiveScopesResource is a helper function to simplify the provider implementation.
-func OauthAuthServerSettingsScopesExclusiveScopesResource() resource.Resource {
-	return &oauthAuthServerSettingsScopesExclusiveScopesResource{}
+// OauthAuthServerSettingsScopesExclusiveScopeResource is a helper function to simplify the provider implementation.
+func OauthAuthServerSettingsScopesExclusiveScopeResource() resource.Resource {
+	return &oauthAuthServerSettingsScopesExclusiveScopeResource{}
 }
 
-// oauthAuthServerSettingsScopesExclusiveScopesResource is the resource implementation.
-type oauthAuthServerSettingsScopesExclusiveScopesResource struct {
+// oauthAuthServerSettingsScopesExclusiveScopeResource is the resource implementation.
+type oauthAuthServerSettingsScopesExclusiveScopeResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
 }
 
-type oauthAuthServerSettingsScopesExclusiveScopesResourceModel struct {
+type oauthAuthServerSettingsScopesExclusiveScopeResourceModel struct {
 	Id          types.String `tfsdk:"id"`
 	Name        types.String `tfsdk:"name"`
 	Description types.String `tfsdk:"description"`
@@ -43,9 +43,9 @@ type oauthAuthServerSettingsScopesExclusiveScopesResourceModel struct {
 }
 
 // GetSchema defines the schema for the resource.
-func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *oauthAuthServerSettingsScopesExclusiveScopeResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a OauthAuthServerSettingsScopesExclusiveScopes.",
+		Description: "Manages a OauthAuthServerSettingsScopesExclusiveScope.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Description: "The name of the scope.",
@@ -71,8 +71,8 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Schema(ctx contex
 	resp.Schema = schema
 }
 
-func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) ValidateConfig(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	var model oauthAuthServerSettingsScopesExclusiveScopesResourceModel
+func (r *oauthAuthServerSettingsScopesExclusiveScopeResource) ValidateConfig(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	var model oauthAuthServerSettingsScopesExclusiveScopeResourceModel
 	req.Plan.Get(ctx, &model)
 	if model.Dynamic.ValueBool() && (model.Name.ValueString() != "" || !model.Name.IsNull()) {
 		{
@@ -84,7 +84,7 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) ValidateConfig(ct
 	}
 }
 
-func addOptionalOauthAuthServerSettingsScopesExclusiveScopesFields(ctx context.Context, addRequest *client.ScopeEntry, plan oauthAuthServerSettingsScopesExclusiveScopesResourceModel) error {
+func addOptionalOauthAuthServerSettingsScopesExclusiveScopesFields(ctx context.Context, addRequest *client.ScopeEntry, plan oauthAuthServerSettingsScopesExclusiveScopeResourceModel) error {
 
 	if internaltypes.IsDefined(plan.Name) {
 		addRequest.Name = plan.Name.ValueString()
@@ -100,11 +100,11 @@ func addOptionalOauthAuthServerSettingsScopesExclusiveScopesFields(ctx context.C
 }
 
 // Metadata returns the resource type name.
-func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *oauthAuthServerSettingsScopesExclusiveScopeResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_oauth_auth_server_settings_scopes_exclusive_scope"
 }
 
-func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
+func (r *oauthAuthServerSettingsScopesExclusiveScopeResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -115,15 +115,15 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Configure(_ conte
 
 }
 
-func readOauthAuthServerSettingsScopesExclusiveScopesResponse(ctx context.Context, r *client.ScopeEntry, state *oauthAuthServerSettingsScopesExclusiveScopesResourceModel, expectedValues *oauthAuthServerSettingsScopesExclusiveScopesResourceModel) {
+func readOauthAuthServerSettingsScopesExclusiveScopesResponse(ctx context.Context, r *client.ScopeEntry, state *oauthAuthServerSettingsScopesExclusiveScopeResourceModel, expectedValues *oauthAuthServerSettingsScopesExclusiveScopeResourceModel) {
 	state.Id = types.StringValue(r.Name)
 	state.Name = types.StringValue(r.Name)
 	state.Description = types.StringValue(r.Description)
 	state.Dynamic = types.BoolPointerValue(r.Dynamic)
 }
 
-func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan oauthAuthServerSettingsScopesExclusiveScopesResourceModel
+func (r *oauthAuthServerSettingsScopesExclusiveScopeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan oauthAuthServerSettingsScopesExclusiveScopeResourceModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -147,15 +147,15 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Create(ctx contex
 	}
 
 	// Read the response into the state
-	var state oauthAuthServerSettingsScopesExclusiveScopesResourceModel
+	var state oauthAuthServerSettingsScopesExclusiveScopeResourceModel
 
 	readOauthAuthServerSettingsScopesExclusiveScopesResponse(ctx, oauthAuthServerSettingsScopesExclusiveScopesResponse, &state, &plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
-func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state oauthAuthServerSettingsScopesExclusiveScopesResourceModel
+func (r *oauthAuthServerSettingsScopesExclusiveScopeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state oauthAuthServerSettingsScopesExclusiveScopeResourceModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -182,9 +182,9 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Read(ctx context.
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
-func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+func (r *oauthAuthServerSettingsScopesExclusiveScopeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	var plan oauthAuthServerSettingsScopesExclusiveScopesResourceModel
+	var plan oauthAuthServerSettingsScopesExclusiveScopeResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -192,7 +192,7 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Update(ctx contex
 	}
 
 	// Get the current state to see how any attributes are changing
-	var state oauthAuthServerSettingsScopesExclusiveScopesResourceModel
+	var state oauthAuthServerSettingsScopesExclusiveScopeResourceModel
 	req.State.Get(ctx, &state)
 	updateOauthAuthServerSettingsScopesExclusiveScopes := r.apiClient.OauthAuthServerSettingsAPI.UpdateExclusiveScope(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Name.ValueString())
 	createUpdateRequest := client.NewScopeEntry(plan.Name.ValueString(), plan.Description.ValueString())
@@ -218,9 +218,9 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Update(ctx contex
 }
 
 // // Delete deletes the resource and removes the Terraform state on success.
-func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *oauthAuthServerSettingsScopesExclusiveScopeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state oauthAuthServerSettingsScopesExclusiveScopesResourceModel
+	var state oauthAuthServerSettingsScopesExclusiveScopeResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -233,7 +233,7 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) Delete(ctx contex
 	}
 }
 
-func (r *oauthAuthServerSettingsScopesExclusiveScopesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *oauthAuthServerSettingsScopesExclusiveScopeResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("name"), req, resp)
 }

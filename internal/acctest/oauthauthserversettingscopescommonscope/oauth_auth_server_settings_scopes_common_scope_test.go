@@ -12,8 +12,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const oauthAuthServerSettingsScopesCommonScopesId = "exampleCommonScope"
-const dynamicVal = false
+const oauthAuthServerSettingsScopesCommonScopesId = "*exampleCommonScope"
 
 // Attributes to test with. Add optional properties to test here if desired.
 type oauthAuthServerSettingsScopesCommonScopesResourceModel struct {
@@ -29,13 +28,13 @@ func TestAccOauthAuthServerSettingsScopesCommonScopes(t *testing.T) {
 		id:          oauthAuthServerSettingsScopesCommonScopesId,
 		name:        oauthAuthServerSettingsScopesCommonScopesId,
 		description: "example",
-		dynamic:     dynamicVal,
+		dynamic:     false,
 	}
 	updatedResourceModel := oauthAuthServerSettingsScopesCommonScopesResourceModel{
 		id:          oauthAuthServerSettingsScopesCommonScopesId,
 		name:        oauthAuthServerSettingsScopesCommonScopesId,
 		description: "updated description",
-		dynamic:     dynamicVal,
+		dynamic:     true,
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -62,23 +61,33 @@ func TestAccOauthAuthServerSettingsScopesCommonScopes(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
+			{
+				// Back to minimal model
+				Config: testAccOauthAuthServerSettingsScopesCommonScopes(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedOauthAuthServerSettingsScopesCommonScopesAttributes(initialResourceModel),
+			},
 		},
 	})
 }
 
 func testAccOauthAuthServerSettingsScopesCommonScopes(resourceName string, resourceModel oauthAuthServerSettingsScopesCommonScopesResourceModel) string {
+	dynamicHcl := ""
+	// Leave off dynamic if false to test not including it, since it is optional
+	if resourceModel.dynamic {
+		dynamicHcl = "dynamic = true"
+	}
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_auth_server_settings_scopes_common_scope" "%[1]s" {
-  dynamic     = %[2]t
-  description = "%[3]s"
-  name        = "%[4]s"
+  description = "%[2]s"
+  name        = "%[3]s"
+  %[4]s
 }
 data "pingfederate_oauth_auth_server_settings_scopes_common_scope" "%[1]s" {
   name = pingfederate_oauth_auth_server_settings_scopes_common_scope.%[1]s.name
 }`, resourceName,
-		resourceModel.dynamic,
 		resourceModel.description,
 		resourceModel.name,
+		dynamicHcl,
 	)
 }
 
