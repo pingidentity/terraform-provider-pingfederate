@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -19,26 +20,23 @@ const internallyManagedReferenceOauthAccessTokenManagerName = "internallyManaged
 type internallyManagedReferenceOauthAccessTokenManagerResourceModel struct {
 	id                           string
 	name                         string
-	tokenLength                  string
-	tokenLifetime                string
-	checkSessionRevocationStatus bool
+	tokenLength                  *string
+	tokenLifetime                *string
+	checkSessionRevocationStatus *bool
 }
 
 func TestAccInternallyManagedReferenceOauthAccessTokenManager(t *testing.T) {
 	resourceName := "myInternallyManagedReferenceOauthAccessTokenManager"
 	initialResourceModel := internallyManagedReferenceOauthAccessTokenManagerResourceModel{
-		id:                           internallyManagedReferenceOauthAccessTokenManagerId,
-		name:                         internallyManagedReferenceOauthAccessTokenManagerName,
-		tokenLength:                  "28",
-		tokenLifetime:                "120",
-		checkSessionRevocationStatus: false,
+		id:   internallyManagedReferenceOauthAccessTokenManagerId,
+		name: internallyManagedReferenceOauthAccessTokenManagerName,
 	}
 	updatedResourceModel := internallyManagedReferenceOauthAccessTokenManagerResourceModel{
 		id:                           internallyManagedReferenceOauthAccessTokenManagerId,
 		name:                         internallyManagedReferenceOauthAccessTokenManagerName,
-		tokenLength:                  "56",
-		tokenLifetime:                "240",
-		checkSessionRevocationStatus: true,
+		tokenLength:                  pointers.String("56"),
+		tokenLifetime:                pointers.String("240"),
+		checkSessionRevocationStatus: pointers.Bool(true),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -49,13 +47,13 @@ func TestAccInternallyManagedReferenceOauthAccessTokenManager(t *testing.T) {
 		CheckDestroy: testAccCheckInternallyManagedReferenceOauthAccessTokenManagerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccInternallyManagedReferenceOauthAccessTokenManager(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagerAttributes(initialResourceModel),
+				Config: testAccInternallyManagedReferenceOauthAccessTokenManagerMinimal(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagerAttributes(initialResourceModel, true),
 			},
 			{
 				// Test updating some fields
 				Config: testAccInternallyManagedReferenceOauthAccessTokenManager(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagerAttributes(updatedResourceModel),
+				Check:  testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagerAttributes(updatedResourceModel, false),
 			},
 			{
 				// Test importing the resource
@@ -65,8 +63,42 @@ func TestAccInternallyManagedReferenceOauthAccessTokenManager(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerifyIgnore: []string{"configuration.fields.value"},
 			},
+			{
+				// Back to minimal model
+				Config: testAccInternallyManagedReferenceOauthAccessTokenManagerMinimal(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagerAttributes(initialResourceModel, true),
+			},
 		},
 	})
+}
+
+func testAccInternallyManagedReferenceOauthAccessTokenManagerMinimal(resourceName string, resourceModel internallyManagedReferenceOauthAccessTokenManagerResourceModel) string {
+	return fmt.Sprintf(`
+resource "pingfederate_oauth_access_token_manager" "%[1]s" {
+  manager_id = "%[2]s"
+  name       = "%[3]s"
+  plugin_descriptor_ref = {
+    id = "org.sourceid.oauth20.token.plugin.impl.ReferenceBearerAccessTokenManagementPlugin"
+  }
+  configuration = {
+  }
+  attribute_contract = {
+    coreAttributes = []
+    extended_attributes = [
+      {
+        name         = "extended_contract"
+        multi_valued = true
+      }
+    ]
+  }
+}
+
+data "pingfederate_oauth_access_token_manager" "%[1]s" {
+  manager_id = pingfederate_oauth_access_token_manager.%[1]s.id
+}`, resourceName,
+		resourceModel.id,
+		resourceModel.name,
+	)
 }
 
 func testAccInternallyManagedReferenceOauthAccessTokenManager(resourceName string, resourceModel internallyManagedReferenceOauthAccessTokenManagerResourceModel) string {
@@ -143,14 +175,14 @@ data "pingfederate_oauth_access_token_manager" "%[1]s" {
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.name,
-		resourceModel.tokenLength,
-		resourceModel.tokenLifetime,
-		resourceModel.checkSessionRevocationStatus,
+		*resourceModel.tokenLength,
+		*resourceModel.tokenLifetime,
+		*resourceModel.checkSessionRevocationStatus,
 	)
 }
 
 // Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagerAttributes(config internallyManagedReferenceOauthAccessTokenManagerResourceModel) resource.TestCheckFunc {
+func testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagerAttributes(config internallyManagedReferenceOauthAccessTokenManagerResourceModel, minimal bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		resourceType := "OauthAccessTokenManager"
 		testClient := acctest.TestClient()
@@ -161,24 +193,37 @@ func testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagerAttrib
 			return err
 		}
 
+		// Check for the always-defined extended attribute
+		for _, extendedAttr := range response.AttributeContract.ExtendedAttributes {
+			err = acctest.TestAttributesMatchString(resourceType, &config.id, "extended_attribute.name", "extended_contract", extendedAttr.Name)
+			if err != nil {
+				return err
+			}
+		}
+
+		// When checking the minimal model, there's nothing else to verify
+		if minimal {
+			return nil
+		}
+
 		// Verify that attributes have expected values
 		getFields := response.Configuration.Fields
 		for _, field := range getFields {
 			if field.Name == "Token Length" {
-				err = acctest.TestAttributesMatchString(resourceType, &config.id, "name", config.tokenLength, *field.Value)
+				err = acctest.TestAttributesMatchString(resourceType, &config.id, "name", *config.tokenLength, *field.Value)
 				if err != nil {
 					return err
 				}
 			}
 			if field.Name == "Token Lifetime" {
-				err = acctest.TestAttributesMatchString(resourceType, &config.id, "name", config.tokenLifetime, *field.Value)
+				err = acctest.TestAttributesMatchString(resourceType, &config.id, "name", *config.tokenLifetime, *field.Value)
 				if err != nil {
 					return err
 				}
 			}
 		}
 
-		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "check_session_revocation_status", config.checkSessionRevocationStatus, *response.SessionValidationSettings.CheckSessionRevocationStatus)
+		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "check_session_revocation_status", *config.checkSessionRevocationStatus, *response.SessionValidationSettings.CheckSessionRevocationStatus)
 		if err != nil {
 			return err
 		}
