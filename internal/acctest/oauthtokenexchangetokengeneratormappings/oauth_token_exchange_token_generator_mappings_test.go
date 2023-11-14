@@ -172,6 +172,11 @@ func TestAccTokenExchangeProcessorPolicyToTokenGeneratorMapping(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
+			{
+				// Back to minimal model
+				Config: testAccTokenExchangeProcessorPolicyToTokenGeneratorMapping(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedTokenExchangeProcessorPolicyToTokenGeneratorMappingAttributes(initialResourceModel),
+			},
 		},
 	})
 }
