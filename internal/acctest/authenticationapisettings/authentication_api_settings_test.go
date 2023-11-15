@@ -62,14 +62,14 @@ func testAccAuthenticationApiSettings(resourceName string, resourceModel *authen
 	if resourceModel == nil {
 		// Use resource defaults
 		return fmt.Sprintf(`
-		resource "pingfederate_authentication_api_settings" "%[1]s" {
-		}
-		
-		data "pingfederate_authentication_api_settings" "%[1]s" {
-		  depends_on = [
-			pingfederate_authentication_api_settings.%[1]s
-		  ]
-		}`, resourceName)
+resource "pingfederate_authentication_api_settings" "%[1]s" {
+}
+
+data "pingfederate_authentication_api_settings" "%[1]s" {
+  depends_on = [
+    pingfederate_authentication_api_settings.%[1]s
+  ]
+}`, resourceName)
 	}
 
 	return fmt.Sprintf(`
@@ -79,7 +79,7 @@ resource "pingfederate_authentication_api_settings" "%[1]s" {
   restrict_access_to_redirectless_mode = %[4]t
   include_request_context              = %[5]t
   default_application_ref = {
-	id = "%[6]s"
+    id = "%[6]s"
   }
 }
 

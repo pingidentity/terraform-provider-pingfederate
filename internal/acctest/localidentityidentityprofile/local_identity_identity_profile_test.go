@@ -498,7 +498,7 @@ func testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(config localIde
 
 		if config.dataStoreConfig != nil {
 			err = acctest.TestAttributesMatchString(resourceType, &config.id, "data_store_config.base_dn",
-				config.dataStoreConfig.BaseDn, *&response.DataStoreConfig.BaseDn)
+				config.dataStoreConfig.BaseDn, response.DataStoreConfig.BaseDn)
 			if err != nil {
 				return err
 			}

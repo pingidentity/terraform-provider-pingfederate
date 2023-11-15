@@ -124,22 +124,22 @@ resource "pingfederate_server_settings" "%[1]s" {
   }
 
   federation_info = {
-    base_url         = "%[7]s"
-    saml_2_entity_id = "%[8]s"
-	saml_1x_issuer_id = "example.com"
+    base_url          = "%[7]s"
+    saml_2_entity_id  = "%[8]s"
+    saml_1x_issuer_id = "example.com"
     saml_1x_source_id = ""
     wsfed_realm       = "myrealm"
   }
 
   email_server = {
-    source_addr  = "%[9]s"
-    email_server = "%[10]s"
-	use_ssl                     = true
+    source_addr                 = "%[9]s"
+    email_server                = "%[10]s"
+    use_ssl                     = true
     verify_hostname             = true
     enable_utf8_message_headers = true
     use_debugging               = false
-    username     = "EmailServerAdmin"
-    password     = "EmailServerAdminPassword"
+    username                    = "EmailServerAdmin"
+    password                    = "EmailServerAdminPassword"
   }
 
   notifications = {

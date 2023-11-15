@@ -91,7 +91,7 @@ func testAccSessionAuthenticationSessionPoliciesGlobal(resourceName string, reso
 
 	return fmt.Sprintf(`
 resource "pingfederate_session_authentication_session_policies_global" "%s" {
-  enable_sessions                = %t
+  enable_sessions = %t
   %s
 }`, resourceName,
 		resourceModel.enableSessions,

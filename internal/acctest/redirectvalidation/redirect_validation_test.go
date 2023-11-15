@@ -66,30 +66,30 @@ func testAccRedirectValidation(resourceName string, resourceModel redirectValida
 	return fmt.Sprintf(`
 resource "pingfederate_redirect_validation" "%[1]s" {
   redirect_validation_local_settings = {
-    enable_target_resource_validation_for_sso = %[2]t,
-	enable_target_resource_validation_for_slo           = true,
-	enable_target_resource_validation_for_idp_discovery = true,
-	enable_in_error_resource_validation                 = true,
+    enable_target_resource_validation_for_sso           = %[2]t
+    enable_target_resource_validation_for_slo           = true
+    enable_target_resource_validation_for_idp_discovery = true
+    enable_in_error_resource_validation                 = true
     white_list = [
       {
-		target_resource_sso      = true,
-		target_resource_slo      = true,
-		in_error_resource        = true,
-		idp_discovery            = true,
-        valid_domain = "%[3]s"
-		valid_path               = "/path",
-		allow_query_and_fragment = true,
-		require_https            = true
+        target_resource_sso      = true,
+        target_resource_slo      = true,
+        in_error_resource        = true,
+        idp_discovery            = true,
+        valid_domain             = "%[3]s",
+        valid_path               = "/path",
+        allow_query_and_fragment = true,
+        require_https            = true
       },
       {
-		target_resource_sso      = false,
-		target_resource_slo      = true,
-		in_error_resource        = true,
-		idp_discovery            = true,
-        valid_domain = "anotherexample.com"
-		valid_path               = "/path2",
-		allow_query_and_fragment = false,
-		require_https            = true
+        target_resource_sso      = false,
+        target_resource_slo      = true,
+        in_error_resource        = true,
+        idp_discovery            = true,
+        valid_domain             = "anotherexample.com",
+        valid_path               = "/path2",
+        allow_query_and_fragment = false,
+        require_https            = true
       }
     ]
   }

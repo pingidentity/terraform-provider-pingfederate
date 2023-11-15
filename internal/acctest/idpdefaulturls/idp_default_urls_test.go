@@ -75,7 +75,7 @@ func testAccIdpDefaultUrls(resourceName string, resourceModel idpDefaultUrlsReso
 	}
 	return fmt.Sprintf(`
 resource "pingfederate_idp_default_urls" "%[1]s" {
-  idp_error_msg       = "%[2]s"
+  idp_error_msg = "%[2]s"
   %[3]s
   %[4]s
 }
