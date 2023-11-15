@@ -62,6 +62,7 @@ func TestAccOauthIssuer(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
+			// No need to go back to "minimal" here since everything is required on this resource
 		},
 	})
 }

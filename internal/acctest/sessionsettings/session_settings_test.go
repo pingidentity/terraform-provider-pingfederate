@@ -21,15 +21,10 @@ type sessionSettingsResourceModel struct {
 
 func TestAccSessionSettings(t *testing.T) {
 	resourceName := "mySessionSettings"
-	initialResourceModel := sessionSettingsResourceModel{
-		trackAdapterSessionsForLogout: true,
-		revokeUserSessionOnLogout:     true,
-		sessionRevocationLifetime:     60,
-	}
 	updatedResourceModel := sessionSettingsResourceModel{
-		trackAdapterSessionsForLogout: false,
-		revokeUserSessionOnLogout:     true,
-		sessionRevocationLifetime:     40,
+		trackAdapterSessionsForLogout: true,
+		revokeUserSessionOnLogout:     false,
+		sessionRevocationLifetime:     60,
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -39,40 +34,53 @@ func TestAccSessionSettings(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSessionSettings(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedSessionSettingsAttributes(initialResourceModel),
+				Config: testAccSessionSettings(resourceName, nil),
+				Check:  testAccCheckExpectedSessionSettingsAttributes(nil),
 			},
 			{
 				// Test updating some fields
-				Config: testAccSessionSettings(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedSessionSettingsAttributes(updatedResourceModel),
+				Config: testAccSessionSettings(resourceName, &updatedResourceModel),
+				Check:  testAccCheckExpectedSessionSettingsAttributes(&updatedResourceModel),
 			},
 			{
 				// Test importing the resource
-				Config:            testAccSessionSettings(resourceName, updatedResourceModel),
+				Config:            testAccSessionSettings(resourceName, &updatedResourceModel),
 				ResourceName:      "pingfederate_session_settings." + resourceName,
 				ImportState:       true,
-				ImportStateVerify: false,
+				ImportStateVerify: true,
+			},
+			{
+				// Back to minimal model
+				Config: testAccSessionSettings(resourceName, nil),
+				Check:  testAccCheckExpectedSessionSettingsAttributes(nil),
 			},
 		},
 	})
 }
 
-func testAccSessionSettings(resourceName string, resourceModel sessionSettingsResourceModel) string {
+func testAccSessionSettings(resourceName string, resourceModel *sessionSettingsResourceModel) string {
+	optionalHcl := ""
+	if resourceModel != nil {
+		optionalHcl = fmt.Sprintf(`
+		  track_adapter_sessions_for_logout = %t
+		  revoke_user_session_on_logout     = %t
+		  session_revocation_lifetime       = %d
+		`, resourceModel.trackAdapterSessionsForLogout,
+			resourceModel.revokeUserSessionOnLogout,
+			resourceModel.sessionRevocationLifetime,
+		)
+	}
+
 	return fmt.Sprintf(`
-resource "pingfederate_session_settings" "%[1]s" {
-  track_adapter_sessions_for_logout = %[2]t
-  revoke_user_session_on_logout     = %[3]t
-  session_revocation_lifetime       = %[4]d
+resource "pingfederate_session_settings" "%s" {
+  %s
 }`, resourceName,
-		resourceModel.trackAdapterSessionsForLogout,
-		resourceModel.revokeUserSessionOnLogout,
-		resourceModel.sessionRevocationLifetime,
+		optionalHcl,
 	)
 }
 
 // Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedSessionSettingsAttributes(config sessionSettingsResourceModel) resource.TestCheckFunc {
+func testAccCheckExpectedSessionSettingsAttributes(config *sessionSettingsResourceModel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		resourceType := "SessionSettings"
 		testClient := acctest.TestClient()
@@ -82,6 +90,11 @@ func testAccCheckExpectedSessionSettingsAttributes(config sessionSettingsResourc
 		if err != nil {
 			return err
 		}
+
+		if config == nil {
+			return nil
+		}
+
 		// Verify that attributes have expected values
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "track_adapter_sessions_for_logout",
 			config.trackAdapterSessionsForLogout, *response.TrackAdapterSessionsForLogout)

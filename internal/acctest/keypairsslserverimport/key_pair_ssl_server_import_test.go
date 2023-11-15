@@ -34,6 +34,12 @@ func TestAccKeyPairsSslServerImport(t *testing.T) {
 		format:   format,
 		password: password,
 	}
+	updatedResourceModel := keyPairsSslServerImportResourceModel{
+		id:       keyPairsSslServerImportId,
+		fileData: fileData2,
+		format:   format,
+		password: password,
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
@@ -45,6 +51,11 @@ func TestAccKeyPairsSslServerImport(t *testing.T) {
 			{
 				Config: testAccKeyPairsSslServerImport(resourceName, initialResourceModel),
 				Check:  testAccCheckExpectedKeyPairsSslServerImportAttributes(initialResourceModel),
+			},
+			{
+				// Test an update. This should force a replace.
+				Config: testAccKeyPairsSslServerImport(resourceName, updatedResourceModel),
+				Check:  testAccCheckExpectedKeyPairsSslServerImportAttributes(updatedResourceModel),
 			},
 			{
 				// Test importing the resource
@@ -74,7 +85,6 @@ data "pingfederate_key_pair_ssl_server_import" "%[1]s" {
 		resourceModel.fileData,
 		resourceModel.format,
 		resourceModel.password,
-		fileData2,
 	)
 }
 

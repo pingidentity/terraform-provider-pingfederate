@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -24,30 +25,28 @@ type jsonWebTokenOauthAccessTokenManagerResourceModel struct {
 	name                   string
 	keyId                  string
 	key                    string
-	tokenLifetime          string
+	tokenLifetime          *string
 	activeSymmetricKeyId   string
-	checkValidAuthnSession bool
+	checkValidAuthnSession *bool
 }
 
 func TestAccJsonWebTokenOauthAccessTokenManager(t *testing.T) {
 	resourceName := "myJsonWebTokenOauthAccessTokenManager"
 	initialResourceModel := jsonWebTokenOauthAccessTokenManagerResourceModel{
-		id:                     jsonWebTokenOauthAccessTokenManagerId,
-		name:                   jsonWebTokenOauthAccessTokenManagerName,
-		keyId:                  "keyidentifier",
-		key:                    "+d5OB5b+I4dqn1Mjp8YE/M/QFWvDX7Nxz3gC8mAEwRLqL67SrHcwRyMtGvZKxvIn",
-		tokenLifetime:          "28",
-		activeSymmetricKeyId:   "keyidentifier",
-		checkValidAuthnSession: false,
+		id:                   jsonWebTokenOauthAccessTokenManagerId,
+		name:                 jsonWebTokenOauthAccessTokenManagerName,
+		keyId:                "keyidentifier",
+		key:                  "+d5OB5b+I4dqn1Mjp8YE/M/QFWvDX7Nxz3gC8mAEwRLqL67SrHcwRyMtGvZKxvIn",
+		activeSymmetricKeyId: "keyidentifier",
 	}
 	updatedResourceModel := jsonWebTokenOauthAccessTokenManagerResourceModel{
 		id:                     jsonWebTokenOauthAccessTokenManagerId,
 		name:                   jsonWebTokenOauthAccessTokenManagerName,
 		keyId:                  "keyidentifier2",
 		key:                    "e1oDxOiC3Jboz3um8hBVmW3JRZNo9z7C0DMm/oj2V1gclQRcgi2gKM2DBj9N05G4",
-		tokenLifetime:          "56",
+		tokenLifetime:          pointers.String("56"),
 		activeSymmetricKeyId:   "keyidentifier2",
-		checkValidAuthnSession: true,
+		checkValidAuthnSession: pointers.Bool(true),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -58,13 +57,13 @@ func TestAccJsonWebTokenOauthAccessTokenManager(t *testing.T) {
 		CheckDestroy: testAccCheckJsonWebOauthAccessTokenManagerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccJsonWebOauthAccessTokenManager(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedJsonWebOauthAccessTokenManagerAttributes(initialResourceModel),
+				Config: testAccJsonWebOauthAccessTokenManagerMinimal(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedJsonWebOauthAccessTokenManagerAttributes(initialResourceModel, true),
 			},
 			{
 				// Test updating some fields
 				Config: testAccJsonWebOauthAccessTokenManager(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedJsonWebOauthAccessTokenManagerAttributes(updatedResourceModel),
+				Check:  testAccCheckExpectedJsonWebOauthAccessTokenManagerAttributes(updatedResourceModel, false),
 			},
 			{
 				// Test importing the resource
@@ -74,8 +73,89 @@ func TestAccJsonWebTokenOauthAccessTokenManager(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerifyIgnore: []string{"configuration.fields.value"},
 			},
+			{
+				// Back to minimal model
+				Config: testAccJsonWebOauthAccessTokenManagerMinimal(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedJsonWebOauthAccessTokenManagerAttributes(initialResourceModel, true),
+			},
 		},
 	})
+}
+
+func testAccJsonWebOauthAccessTokenManagerMinimal(resourceName string, resourceModel jsonWebTokenOauthAccessTokenManagerResourceModel) string {
+	return fmt.Sprintf(`
+resource "pingfederate_oauth_access_token_manager" "%[1]s" {
+  manager_id = "%[2]s"
+  name       = "%[3]s"
+  plugin_descriptor_ref = {
+    id = "com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin"
+  }
+  configuration = {
+    tables = [
+      {
+        name = "Symmetric Keys"
+        rows = [
+          {
+            fields = [
+              {
+                name  = "Key ID"
+                value = "%[4]s"
+              },
+              {
+                name  = "Key"
+                value = "%[5]s"
+              },
+              {
+                name  = "Encoding"
+                value = "b64u"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        name = "Certificates"
+        rows = []
+      }
+    ]
+    fields = [
+      {
+        name  = "Active Symmetric Key ID"
+        value = "%[6]s"
+      },
+      {
+        name  = "JWE Algorithm"
+        value = "dir"
+      },
+      {
+        name  = "JWE Content Encryption Algorithm"
+        value = "A192CBC-HS384"
+      },
+      {
+        name  = "Active Symmetric Encryption Key ID"
+        value = "%[6]s"
+      },
+    ]
+  }
+  attribute_contract = {
+    extended_attributes = [
+      {
+        name         = "contract"
+        multi_valued = false
+      }
+    ]
+  }
+}
+
+data "pingfederate_oauth_access_token_manager" "%[1]s" {
+  manager_id = pingfederate_oauth_access_token_manager.%[1]s.id
+}`, resourceName,
+		resourceModel.id,
+		resourceModel.name,
+		resourceModel.keyId,
+		resourceModel.key,
+		resourceModel.activeSymmetricKeyId,
+	)
 }
 
 func testAccJsonWebOauthAccessTokenManager(resourceName string, resourceModel jsonWebTokenOauthAccessTokenManagerResourceModel) string {
@@ -250,14 +330,14 @@ data "pingfederate_oauth_access_token_manager" "%[1]s" {
 		resourceModel.name,
 		resourceModel.keyId,
 		resourceModel.key,
-		resourceModel.tokenLifetime,
+		*resourceModel.tokenLifetime,
 		resourceModel.activeSymmetricKeyId,
-		resourceModel.checkValidAuthnSession,
+		*resourceModel.checkValidAuthnSession,
 	)
 }
 
 // Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedJsonWebOauthAccessTokenManagerAttributes(config jsonWebTokenOauthAccessTokenManagerResourceModel) resource.TestCheckFunc {
+func testAccCheckExpectedJsonWebOauthAccessTokenManagerAttributes(config jsonWebTokenOauthAccessTokenManagerResourceModel, minimal bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		resourceType := "OauthAccessTokenManager"
 		testClient := acctest.TestClient()
@@ -266,6 +346,14 @@ func testAccCheckExpectedJsonWebOauthAccessTokenManagerAttributes(config jsonWeb
 
 		if err != nil {
 			return err
+		}
+
+		// Check for the always-defined extended attribute
+		for _, extendedAttr := range response.AttributeContract.ExtendedAttributes {
+			err = acctest.TestAttributesMatchString(resourceType, &config.id, "extended_attribute.name", "contract", extendedAttr.Name)
+			if err != nil {
+				return err
+			}
 		}
 
 		// Verify that attributes have expected values
@@ -284,8 +372,8 @@ func testAccCheckExpectedJsonWebOauthAccessTokenManagerAttributes(config jsonWeb
 		}
 		getFields := response.Configuration.Fields
 		for _, field := range getFields {
-			if field.Name == "Token Lifetime" {
-				err = acctest.TestAttributesMatchString(resourceType, &config.id, "name", config.tokenLifetime, *field.Value)
+			if field.Name == "Token Lifetime" && !minimal {
+				err = acctest.TestAttributesMatchString(resourceType, &config.id, "name", *config.tokenLifetime, *field.Value)
 				if err != nil {
 					return err
 				}
@@ -298,9 +386,11 @@ func testAccCheckExpectedJsonWebOauthAccessTokenManagerAttributes(config jsonWeb
 			}
 		}
 
-		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "check_valid_authn_session", config.checkValidAuthnSession, *response.SessionValidationSettings.CheckValidAuthnSession)
-		if err != nil {
-			return err
+		if !minimal {
+			err = acctest.TestAttributesMatchBool(resourceType, &config.id, "check_valid_authn_session", *config.checkValidAuthnSession, *response.SessionValidationSettings.CheckValidAuthnSession)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil

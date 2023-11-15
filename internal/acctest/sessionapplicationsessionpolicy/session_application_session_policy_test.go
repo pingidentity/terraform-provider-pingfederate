@@ -20,10 +20,6 @@ type sessionApplicationSessionPolicyResourceModel struct {
 
 func TestAccSessionApplicationSessionPolicy(t *testing.T) {
 	resourceName := "mySessionApplicationSessionPolicy"
-	initialResourceModel := sessionApplicationSessionPolicyResourceModel{
-		idleTimeoutMins: 60,
-		maxTimeoutMins:  90,
-	}
 	updatedResourceModel := sessionApplicationSessionPolicyResourceModel{
 		idleTimeoutMins: -1,
 		maxTimeoutMins:  60,
@@ -36,41 +32,55 @@ func TestAccSessionApplicationSessionPolicy(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSessionApplicationSessionPolicy(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedSessionApplicationSessionPolicyAttributes(initialResourceModel),
+				Config: testAccSessionApplicationSessionPolicy(resourceName, nil),
+				Check:  testAccCheckExpectedSessionApplicationSessionPolicyAttributes(nil),
 			},
 			{
 				// Test updating some fields
-				Config: testAccSessionApplicationSessionPolicy(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedSessionApplicationSessionPolicyAttributes(updatedResourceModel),
+				Config: testAccSessionApplicationSessionPolicy(resourceName, &updatedResourceModel),
+				Check:  testAccCheckExpectedSessionApplicationSessionPolicyAttributes(&updatedResourceModel),
 			},
 			{
 				// Test importing the resource
-				Config:            testAccSessionApplicationSessionPolicy(resourceName, updatedResourceModel),
+				Config:            testAccSessionApplicationSessionPolicy(resourceName, &updatedResourceModel),
 				ResourceName:      "pingfederate_session_application_session_policy." + resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+			{
+				// Back to minimal model
+				Config: testAccSessionApplicationSessionPolicy(resourceName, nil),
+				Check:  testAccCheckExpectedSessionApplicationSessionPolicyAttributes(nil),
 			},
 		},
 	})
 }
 
-func testAccSessionApplicationSessionPolicy(resourceName string, resourceModel sessionApplicationSessionPolicyResourceModel) string {
+func testAccSessionApplicationSessionPolicy(resourceName string, resourceModel *sessionApplicationSessionPolicyResourceModel) string {
+	optionalHcl := ""
+	if resourceModel != nil {
+		optionalHcl = fmt.Sprintf(`
+  idle_timeout_mins = %d
+  max_timeout_mins  = %d
+`,
+			resourceModel.idleTimeoutMins,
+			resourceModel.maxTimeoutMins,
+		)
+	}
+
 	return fmt.Sprintf(`
-resource "pingfederate_session_application_session_policy" "%[1]s" {
-  idle_timeout_mins = %[2]d
-  max_timeout_mins  = %[3]d
+resource "pingfederate_session_application_session_policy" "%s" {
+  %s
 }
 data "pingfederate_session_application_session_policy" "%[1]s" {
   depends_on = [pingfederate_session_application_session_policy.%[1]s]
 }`, resourceName,
-		resourceModel.idleTimeoutMins,
-		resourceModel.maxTimeoutMins,
+		optionalHcl,
 	)
 }
 
 // Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedSessionApplicationSessionPolicyAttributes(config sessionApplicationSessionPolicyResourceModel) resource.TestCheckFunc {
+func testAccCheckExpectedSessionApplicationSessionPolicyAttributes(config *sessionApplicationSessionPolicyResourceModel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		resourceType := "SessionApplicationSessionPolicy"
 		testClient := acctest.TestClient()
@@ -79,6 +89,10 @@ func testAccCheckExpectedSessionApplicationSessionPolicyAttributes(config sessio
 
 		if err != nil {
 			return err
+		}
+
+		if config == nil {
+			return nil
 		}
 
 		// Verify that attributes have expected values

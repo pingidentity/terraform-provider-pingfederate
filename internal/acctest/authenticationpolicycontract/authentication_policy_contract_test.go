@@ -29,13 +29,13 @@ func TestAccAuthenticationPolicyContract(t *testing.T) {
 		id:                 authenticationPolicyContractId,
 		name:               "example",
 		coreAttributes:     []string{coreAttr},
-		extendedAttributes: []string{"extended_attribute", "extended_attribute2"},
+		extendedAttributes: []string{},
 	}
 	updatedResourceModel := authenticationPolicyContractResourceModel{
 		id:                 authenticationPolicyContractId,
 		name:               "example",
 		coreAttributes:     []string{coreAttr},
-		extendedAttributes: []string{"extended_attribute"},
+		extendedAttributes: []string{"extended_attribute", "extended_attribute2"},
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -46,11 +46,12 @@ func TestAccAuthenticationPolicyContract(t *testing.T) {
 		CheckDestroy: testAccCheckAuthenticationPolicyContractDestroy,
 		Steps: []resource.TestStep{
 			{
+				// Minimal model
 				Config: testAccAuthenticationPolicyContract(resourceName, initialResourceModel),
 				Check:  testAccCheckExpectedAuthenticationPolicyContractAttributes(initialResourceModel),
 			},
 			{
-				// Test updating some fields
+				// More complete model
 				Config: testAccAuthenticationPolicyContract(resourceName, updatedResourceModel),
 				Check:  testAccCheckExpectedAuthenticationPolicyContractAttributes(updatedResourceModel),
 			},
@@ -62,22 +63,32 @@ func TestAccAuthenticationPolicyContract(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
+			{
+				// Back to minimal model
+				Config: testAccAuthenticationPolicyContract(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedAuthenticationPolicyContractAttributes(initialResourceModel),
+			},
 		},
 	})
 }
 
 func testAccAuthenticationPolicyContract(resourceName string, resourceModel authenticationPolicyContractResourceModel) string {
+	extendedAttrsHcl := ""
+	if len(resourceModel.extendedAttributes) > 0 {
+		extendedAttrsHcl = fmt.Sprintf("extended_attributes = %[1]s",
+			acctest.ObjectSliceOfKvStringsToTerraformString("name", resourceModel.extendedAttributes))
+	}
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_policy_contract" "%[1]s" {
-  contract_id         = "%[2]s"
-  core_attributes     = %[3]s
-  extended_attributes = %[4]s
-  name                = "%[5]s"
+  contract_id     = "%[2]s"
+  core_attributes = %[3]s
+  name            = "%[4]s"
+  %[5]s
 }`, resourceName,
 		resourceModel.id,
 		acctest.ObjectSliceOfKvStringsToTerraformString("name", resourceModel.coreAttributes),
-		acctest.ObjectSliceOfKvStringsToTerraformString("name", resourceModel.extendedAttributes),
 		resourceModel.name,
+		extendedAttrsHcl,
 	)
 }
 
@@ -103,7 +114,7 @@ func testAccCheckExpectedAuthenticationPolicyContractAttributes(config authentic
 		for i := 0; i < len(newSet); i++ {
 			newSet[i] = rEa[i].Name
 		}
-		err = acctest.TestAttributesMatchStringSlice(resourceType, &config.id, "extended_properties",
+		err = acctest.TestAttributesMatchStringSlice(resourceType, &config.id, "extended_attributes",
 			config.extendedAttributes, newSet)
 		if err != nil {
 			return err

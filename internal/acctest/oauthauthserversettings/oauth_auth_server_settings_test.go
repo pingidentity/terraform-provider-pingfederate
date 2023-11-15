@@ -57,26 +57,97 @@ func TestAccOauthAuthServerSettings(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOauthAuthServerSettings(resourceName, initialResourceModel),
+				Config: testAccOauthAuthServerSettings(resourceName, initialResourceModel, false),
 				Check:  testAccCheckExpectedOauthAuthServerSettingsAttributes(initialResourceModel),
 			},
 			{
 				// Test updating some fields
-				Config: testAccOauthAuthServerSettings(resourceName, updatedResourceModel),
+				Config: testAccOauthAuthServerSettings(resourceName, updatedResourceModel, true),
 				Check:  testAccCheckExpectedOauthAuthServerSettingsAttributes(updatedResourceModel),
 			},
 			{
 				// Test importing the resource
-				Config:            testAccOauthAuthServerSettings(resourceName, updatedResourceModel),
+				Config:            testAccOauthAuthServerSettings(resourceName, updatedResourceModel, true),
 				ResourceName:      "pingfederate_oauth_auth_server_settings." + resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+			{
+				// Back to minimal model
+				Config: testAccOauthAuthServerSettings(resourceName, initialResourceModel, false),
+				Check:  testAccCheckExpectedOauthAuthServerSettingsAttributes(initialResourceModel),
 			},
 		},
 	})
 }
 
-func testAccOauthAuthServerSettings(resourceName string, resourceModel oauthAuthServerSettingsResourceModel) string {
+func testAccOauthAuthServerSettings(resourceName string, resourceModel oauthAuthServerSettingsResourceModel, includeAllAttributes bool) string {
+	optionalHcl := ""
+	if includeAllAttributes {
+		optionalHcl = `
+  scopes = [
+    {
+      name        = "examplescope",
+      description = "example scope",
+      dynamic     = false
+    }
+  ]
+  scope_groups = [
+    {
+      name        = "examplescopegroup",
+      description = "example scope group"
+      scopes      = ["examplescope"]
+    }
+  ]
+  exclusive_scopes = [
+    {
+      name        = "exampleexclusivescope",
+      description = "example scope",
+      dynamic     = false
+    }
+  ]
+  exclusive_scope_groups = [
+    {
+      name        = "exampleexclusivescopegroup",
+      description = "example exclusive scope group"
+      scopes      = ["exampleexclusivescope"]
+    }
+  ]
+  disallow_plain_pkce                      = false
+  include_issuer_in_authorization_response = false
+  persistent_grant_lifetime                = -1
+  persistent_grant_lifetime_unit           = "DAYS"
+  persistent_grant_idle_timeout            = 30
+  persistent_grant_idle_timeout_time_unit  = "DAYS"
+  roll_refresh_token_values                = true
+  refresh_token_rolling_grace_period       = 0
+  persistent_grant_reuse_grant_types       = []
+  persistent_grant_contract = {
+    extended_attributes = [
+      {
+        name = "example_extended_attribute"
+      }
+    ]
+  }
+  bypass_authorization_for_approved_grants         = false
+  allow_unidentified_client_ro_creds               = false
+  allow_unidentified_client_extension_grants       = false
+  token_endpoint_base_url                          = ""
+  user_authorization_url                           = ""
+  activation_code_check_mode                       = "BEFORE_AUTHENTICATION"
+  user_authorization_consent_page_setting          = "INTERNAL"
+  atm_id_for_oauth_grant_management                = ""
+  scope_for_oauth_grant_management                 = ""
+  allowed_origins                                  = []
+  track_user_sessions_for_logout                   = false
+  par_reference_timeout                            = 60
+  par_reference_length                             = 24
+  par_status                                       = "ENABLED"
+  client_secret_retention_period                   = 0
+  jwt_secured_authorization_response_mode_lifetime = 600
+		`
+	}
+
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_auth_server_settings" "%[1]s" {
   authorization_code_entropy          = %[2]d
@@ -88,6 +159,7 @@ resource "pingfederate_oauth_auth_server_settings" "%[1]s" {
   refresh_rolling_interval            = %[8]d
   refresh_token_length                = %[9]d
   bypass_activation_code_confirmation = %[10]t
+  %[11]s
 }
 data "pingfederate_oauth_auth_server_settings" "%[1]s" {
   depends_on = [
@@ -103,6 +175,7 @@ data "pingfederate_oauth_auth_server_settings" "%[1]s" {
 		resourceModel.refreshRollingInterval,
 		resourceModel.refreshTokenLength,
 		resourceModel.bypassActivationCodeConfirmation,
+		optionalHcl,
 	)
 }
 

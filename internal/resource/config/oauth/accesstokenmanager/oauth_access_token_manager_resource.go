@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -139,10 +138,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 			"parent_ref": schema.SingleNestedAttribute{
 				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
 				Optional:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
-				Attributes: resourcelink.ToSchema(),
+				Attributes:  resourcelink.ToSchema(),
 			},
 			"configuration": pluginconfiguration.ToSchema(),
 			"attribute_contract": schema.SingleNestedAttribute{
@@ -180,9 +176,6 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 					"extended_attributes": schema.ListNestedAttribute{
 						Description: "A list of additional token attributes that are associated with this access token management plugin instance.",
 						Required:    true,
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.UseStateForUnknown(),
-						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{

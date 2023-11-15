@@ -238,7 +238,7 @@ func (r *licenseDataSource) Configure(_ context.Context, req datasource.Configur
 // Read a DseeCompatAdministrativeAccountResponse object into the model struct
 func readLicenseResponseDataSource(ctx context.Context, r *client.LicenseView, state *licenseDataSourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.Id = types.StringValue("id")
+	state.Id = types.StringValue("license_id")
 	state.Name = internaltypes.StringTypeOrNil(r.Name, false)
 	state.MaxConnections = internaltypes.Int64TypeOrNil(r.MaxConnections)
 	state.UsedConnections = internaltypes.Int64TypeOrNil(r.UsedConnections)
