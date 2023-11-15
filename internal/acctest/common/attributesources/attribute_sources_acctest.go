@@ -130,3 +130,83 @@ func LdapClientStruct(searchFilter, searchScope string, dataStoreRef client.Reso
 	ldapAttributeSource.BinaryAttributeSettings = &map[string]client.BinaryLdapAttributeSettings{}
 	return ldapAttributeSource
 }
+
+func ValidateResponseAttributes(resourceType string, resourceName *string, expectedJdbcAttrSource *client.JdbcAttributeSource,
+	expectedLdapAttrSource *client.LdapAttributeSource, actualAttrSources []client.AttributeSourceAggregation) error {
+	if expectedJdbcAttrSource == nil && expectedLdapAttrSource == nil {
+		return nil
+	}
+
+	var err error
+	for _, attributeSource := range actualAttrSources {
+		if attributeSource.JdbcAttributeSource != nil && expectedJdbcAttrSource != nil {
+			err = acctest.TestAttributesMatchString(resourceType, resourceName, "id",
+				expectedJdbcAttrSource.DataStoreRef.Id, attributeSource.JdbcAttributeSource.DataStoreRef.Id)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, resourceName, "description",
+				*expectedJdbcAttrSource.Description, *attributeSource.JdbcAttributeSource.Description)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, resourceName, "schema",
+				*expectedJdbcAttrSource.Description, *attributeSource.JdbcAttributeSource.Description)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, resourceName, "table",
+				expectedJdbcAttrSource.Table, attributeSource.JdbcAttributeSource.Table)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchStringSlice(resourceType, resourceName, "column_names",
+				expectedJdbcAttrSource.ColumnNames, attributeSource.JdbcAttributeSource.ColumnNames)
+			if err != nil {
+				return err
+			}
+		}
+		if attributeSource.LdapAttributeSource != nil && expectedLdapAttrSource != nil {
+			err = acctest.TestAttributesMatchString(resourceType, resourceName, "id",
+				expectedLdapAttrSource.DataStoreRef.Id, attributeSource.LdapAttributeSource.DataStoreRef.Id)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, resourceName, "description",
+				*expectedLdapAttrSource.Description, *attributeSource.LdapAttributeSource.Description)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, resourceName, "schema",
+				*expectedLdapAttrSource.Description, *attributeSource.LdapAttributeSource.Description)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchStringPointer(resourceType, resourceName, "baseDn",
+				*expectedLdapAttrSource.BaseDn, attributeSource.LdapAttributeSource.BaseDn)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, resourceName, "searchScope",
+				expectedLdapAttrSource.SearchScope, attributeSource.LdapAttributeSource.SearchScope)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchStringSlice(resourceType, resourceName, "searchAttributes",
+				expectedLdapAttrSource.SearchAttributes, attributeSource.LdapAttributeSource.SearchAttributes)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}

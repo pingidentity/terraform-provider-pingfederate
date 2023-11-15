@@ -132,46 +132,8 @@ func testAccCheckExpectedTokenProcessorToTokenGeneratorMappingAttributes(config 
 			return err
 		}
 
-		attributeSources := response.AttributeSources
-		for _, attributeSource := range attributeSources {
-			if attributeSource.LdapAttributeSource != nil {
-				err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "id",
-					config.attributeSource.DataStoreRef.Id, attributeSource.LdapAttributeSource.DataStoreRef.Id)
-				if err != nil {
-					return err
-				}
-
-				err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "description",
-					*config.attributeSource.Description, *attributeSource.LdapAttributeSource.Description)
-				if err != nil {
-					return err
-				}
-
-				err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "schema",
-					*config.attributeSource.Description, *attributeSource.LdapAttributeSource.Description)
-				if err != nil {
-					return err
-				}
-
-				err = acctest.TestAttributesMatchStringPointer(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "baseDn",
-					*config.attributeSource.BaseDn, attributeSource.LdapAttributeSource.BaseDn)
-				if err != nil {
-					return err
-				}
-
-				err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "searchScope",
-					config.attributeSource.SearchScope, attributeSource.LdapAttributeSource.SearchScope)
-				if err != nil {
-					return err
-				}
-
-				err = acctest.TestAttributesMatchStringSlice(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "searchAttributes",
-					config.attributeSource.SearchAttributes, attributeSource.LdapAttributeSource.SearchAttributes)
-				if err != nil {
-					return err
-				}
-			}
-		}
+		attributesources.ValidateResponseAttributes(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), nil,
+			config.attributeSource, response.AttributeSources)
 
 		if response.IssuanceCriteria != nil {
 			conditionalCriteria := response.IssuanceCriteria.ConditionalCriteria

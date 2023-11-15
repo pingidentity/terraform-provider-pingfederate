@@ -11,6 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/attributesources"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -226,45 +228,10 @@ func testAccCheckExpectedTokenExchangeProcessorPolicyToTokenGeneratorMappingAttr
 			return err
 		}
 
-		attributeSources := response.AttributeSources
-		for _, attributeSource := range attributeSources {
-			if attributeSource.JdbcAttributeSource != nil {
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(tokenExchangeProcessorPolicyToTokenGeneratorMappingId), "id",
-					config.attributeSource.DataStoreRef.Id, attributeSource.JdbcAttributeSource.DataStoreRef.Id)
-				if err != nil {
-					return err
-				}
-
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(tokenExchangeProcessorPolicyToTokenGeneratorMappingId), "description",
-					*config.attributeSource.Description, *attributeSource.JdbcAttributeSource.Description)
-				if err != nil {
-					return err
-				}
-
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(tokenExchangeProcessorPolicyToTokenGeneratorMappingId), "schema",
-					*config.attributeSource.Description, *attributeSource.JdbcAttributeSource.Description)
-				if err != nil {
-					return err
-				}
-
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(tokenExchangeProcessorPolicyToTokenGeneratorMappingId), "table",
-					config.attributeSource.Table, attributeSource.JdbcAttributeSource.Table)
-				if err != nil {
-					return err
-				}
-
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(tokenExchangeProcessorPolicyToTokenGeneratorMappingId), "filter",
-					config.attributeSource.Filter, attributeSource.JdbcAttributeSource.Filter)
-				if err != nil {
-					return err
-				}
-
-				err = acctest.TestAttributesMatchStringSlice(resourceType, stringPointer(tokenExchangeProcessorPolicyToTokenGeneratorMappingId), "column_names",
-					config.attributeSource.ColumnNames, attributeSource.JdbcAttributeSource.ColumnNames)
-				if err != nil {
-					return err
-				}
-			}
+		err = attributesources.ValidateResponseAttributes(resourceType, pointers.String(tokenExchangeProcessorPolicyToTokenGeneratorMappingId),
+			config.attributeSource, nil, response.AttributeSources)
+		if err != nil {
+			return err
 		}
 
 		if response.IssuanceCriteria != nil {

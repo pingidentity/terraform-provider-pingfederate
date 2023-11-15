@@ -13,6 +13,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/issuancecriteria"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -29,9 +30,6 @@ type spAuthenticationPolicyContractMappingResourceModel struct {
 	targetId                     string
 }
 
-func stringPointer(val string) *string {
-	return &val
-}
 func TestAccSpAuthenticationPolicyContractMapping(t *testing.T) {
 	resourceName := "spAuthenticationPolicyContractMapping"
 	initialResourceModel := spAuthenticationPolicyContractMappingResourceModel{
@@ -119,82 +117,46 @@ func testAccCheckExpectedSpAuthenticationPolicyContractMappingAttributes(config 
 		}
 
 		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchString(resourceType, stringPointer(spAuthenticationPolicyContractMappingId), "type",
+		err = acctest.TestAttributesMatchString(resourceType, pointers.String(spAuthenticationPolicyContractMappingId), "type",
 			config.attributeContractFulfillment.Source.Type, response.AttributeContractFulfillment["subject"].Source.Type)
 		if err != nil {
 			return err
 		}
 
-		err = acctest.TestAttributesMatchString(resourceType, stringPointer(spAuthenticationPolicyContractMappingId), "value",
+		err = acctest.TestAttributesMatchString(resourceType, pointers.String(spAuthenticationPolicyContractMappingId), "value",
 			config.attributeContractFulfillment.Value, response.AttributeContractFulfillment["subject"].Value)
 		if err != nil {
 			return err
 		}
 
-		attributeSources := response.AttributeSources
-		for _, attributeSource := range attributeSources {
-			if attributeSource.JdbcAttributeSource != nil {
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(spAuthenticationPolicyContractMappingId), "id",
-					config.jdbcAttributeSource.DataStoreRef.Id, attributeSource.JdbcAttributeSource.DataStoreRef.Id)
-				if err != nil {
-					return err
-				}
-
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(spAuthenticationPolicyContractMappingId), "description",
-					*config.jdbcAttributeSource.Description, *attributeSource.JdbcAttributeSource.Description)
-				if err != nil {
-					return err
-				}
-
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(spAuthenticationPolicyContractMappingId), "schema",
-					*config.jdbcAttributeSource.Description, *attributeSource.JdbcAttributeSource.Description)
-				if err != nil {
-					return err
-				}
-
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(spAuthenticationPolicyContractMappingId), "table",
-					config.jdbcAttributeSource.Table, attributeSource.JdbcAttributeSource.Table)
-				if err != nil {
-					return err
-				}
-
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(spAuthenticationPolicyContractMappingId), "filter",
-					config.jdbcAttributeSource.Filter, "$"+attributeSource.JdbcAttributeSource.Filter)
-				if err != nil {
-					return err
-				}
-
-				err = acctest.TestAttributesMatchStringSlice(resourceType, stringPointer(spAuthenticationPolicyContractMappingId), "column_names",
-					config.jdbcAttributeSource.ColumnNames, attributeSource.JdbcAttributeSource.ColumnNames)
-				if err != nil {
-					return err
-				}
-			}
-			//TODO ldap
+		err = attributesources.ValidateResponseAttributes(resourceType, pointers.String(spAuthenticationPolicyContractMappingId),
+			config.jdbcAttributeSource, config.ldapAttributeSource, response.AttributeSources)
+		if err != nil {
+			return err
 		}
 
 		if response.IssuanceCriteria != nil {
 			conditionalCriteria := response.IssuanceCriteria.ConditionalCriteria
 			for _, conditionalCriteriaEntry := range conditionalCriteria {
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(spAuthenticationPolicyContractMappingId), "type",
+				err = acctest.TestAttributesMatchString(resourceType, pointers.String(spAuthenticationPolicyContractMappingId), "type",
 					config.issuanceCriteria.Source.Type, conditionalCriteriaEntry.Source.Type)
 				if err != nil {
 					return err
 				}
 
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(spAuthenticationPolicyContractMappingId), "attribute_name",
+				err = acctest.TestAttributesMatchString(resourceType, pointers.String(spAuthenticationPolicyContractMappingId), "attribute_name",
 					config.issuanceCriteria.AttributeName, conditionalCriteriaEntry.AttributeName)
 				if err != nil {
 					return err
 				}
 
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(spAuthenticationPolicyContractMappingId), "condition",
+				err = acctest.TestAttributesMatchString(resourceType, pointers.String(spAuthenticationPolicyContractMappingId), "condition",
 					config.issuanceCriteria.Condition, conditionalCriteriaEntry.Condition)
 				if err != nil {
 					return err
 				}
 
-				err = acctest.TestAttributesMatchString(resourceType, stringPointer(spAuthenticationPolicyContractMappingId), "value",
+				err = acctest.TestAttributesMatchString(resourceType, pointers.String(spAuthenticationPolicyContractMappingId), "value",
 					config.issuanceCriteria.Value, conditionalCriteriaEntry.Value)
 				if err != nil {
 					return err
