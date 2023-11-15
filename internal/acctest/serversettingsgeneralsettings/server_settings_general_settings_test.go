@@ -72,6 +72,9 @@ resource "pingfederate_server_settings_general_settings" "%[1]s" {
   idp_connection_transaction_logging_override = "%[4]s"
   request_header_for_correlation_id           = "%[5]s"
   sp_connection_transaction_logging_override  = "%[6]s"
+}
+data "pingfederate_server_settings_general_settings" "%[1]s" {
+  depends_on = [pingfederate_server_settings_general_settings.%[1]s]
 }`, resourceName,
 		resourceModel.datastoreValidationIntervalSecs,
 		resourceModel.disableAutomaticConnectionValidation,
