@@ -1,6 +1,13 @@
-# v0.2.0 (Unreleased)
+# v0.3.0 (unreleased)
+### FEATURES
+#### Data Sources
+* **New Data Source:** `session-application-session-policy datasource` ([#94](https://github.com/pingidentity/terraform-provider-pingfederate/pull/94))
+* **New Data Source:** `protocol-metadata-lifetime-settings datasource` ([#100](https://github.com/pingidentity/terraform-provider-pingfederate/pull/100))
+* **New Data Source:** `server-settings-general-settings datasource` ([#101](https://github.com/pingidentity/terraform-provider-pingfederate/pull/101))
+
+# v0.2.1 November 10, 2023
 ### BUG FIXES
-* **Administrative Account Resource:** Resolved issue where updating a managed `pingfederate_administrative_account` resource forces replacment ([#86](https://github.com/pingidentity/terraform-provider-pingfederate/pull/86)) 
+* **Administrative Account Resource:** Resolved issue where updating a managed `pingfederate_administrative_account` resource forces replacement ([#86](https://github.com/pingidentity/terraform-provider-pingfederate/pull/86)) 
 ### ENHANCEMENTS
 * Include values computed from PingFederate in provider state ([#72](https://github.com/pingidentity/terraform-provider-pingfederate/pull/72))
 * Use lists instead of sets in most cases ([#81](https://github.com/pingidentity/terraform-provider-pingfederate/pull/81))
@@ -29,7 +36,9 @@
 * **New Data Source:** `pingfederate_oauth_auth_server_settings` ([#78](https://github.com/pingidentity/terraform-provider-pingfederate/pull/78))
 * **New Data Source:** `pingfederate_oauth_auth_server_settings_scopes_common_scope` ([#85](https://github.com/pingidentity/terraform-provider-pingfederate/pull/85))
 * **New Data Source:** `pingfederate_oauth_auth_server_settings_scopes_exclusive_scope` ([#95](https://github.com/pingidentity/terraform-provider-pingfederate/pull/95))
+* **New Data Source:** `pingfederate_oauth_issuer` ([#96](https://github.com/pingidentity/terraform-provider-pingfederate/pull/96))
 * **New Data Source:** `pingfederate_virtual_host_names` ([#87](https://github.com/pingidentity/terraform-provider-pingfederate/pull/87))
+* **New Data Source:** `pingfederate_session_application_session_policy` ([#94](https://github.com/pingidentity/terraform-provider-pingfederate/pull/94))
 
 ​
 # v0.1.0 September 28, 2023

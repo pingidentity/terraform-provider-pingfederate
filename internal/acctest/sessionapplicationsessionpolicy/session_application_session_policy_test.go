@@ -71,6 +71,9 @@ func testAccSessionApplicationSessionPolicy(resourceName string, resourceModel *
 	return fmt.Sprintf(`
 resource "pingfederate_session_application_session_policy" "%s" {
   %s
+}
+data "pingfederate_session_application_session_policy" "%[1]s" {
+  depends_on = [pingfederate_session_application_session_policy.%[1]s]
 }`, resourceName,
 		optionalHcl,
 	)

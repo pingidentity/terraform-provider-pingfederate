@@ -132,8 +132,11 @@ func testAccCheckExpectedTokenProcessorToTokenGeneratorMappingAttributes(config 
 			return err
 		}
 
-		attributesources.ValidateResponseAttributes(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), nil,
+		err = attributesources.ValidateResponseAttributes(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), nil,
 			config.attributeSource, response.AttributeSources)
+		if err != nil {
+			return err
+		}
 
 		if response.IssuanceCriteria != nil {
 			conditionalCriteria := response.IssuanceCriteria.ConditionalCriteria

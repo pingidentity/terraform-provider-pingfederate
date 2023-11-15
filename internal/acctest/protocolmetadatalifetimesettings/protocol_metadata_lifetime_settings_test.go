@@ -70,6 +70,9 @@ func testAccProtocolMetadataLifetimeSettings(resourceName string, resourceModel 
 	return fmt.Sprintf(`
 resource "pingfederate_protocol_metadata_lifetime_settings" "%s" {
   %s
+}
+data "pingfederate_protocol_metadata_lifetime_settings" "%[1]s" {
+  depends_on = [pingfederate_protocol_metadata_lifetime_settings.%[1]s]
 }`, resourceName,
 		optionalHcl,
 	)
