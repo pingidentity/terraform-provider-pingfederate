@@ -92,12 +92,12 @@ func (r *serverSettingsGeneralSettingsDataSource) Configure(_ context.Context, r
 }
 
 func readServerSettingsGeneralSettingsDataSource(ctx context.Context, r *client.GeneralSettings, state *serverSettingsGeneralSettingsDataSourceModel) {
-	state.Id = types.StringValue("serverSettingsGeneralSettingsId")
+	state.Id = types.StringValue("server_settings_general_settings_id")
 	state.DisableAutomaticConnectionValidation = types.BoolPointerValue(r.DisableAutomaticConnectionValidation)
-	state.IdpConnectionTransactionLoggingOverride = internaltypes.StringTypeOrNil(r.IdpConnectionTransactionLoggingOverride, true)
-	state.SpConnectionTransactionLoggingOverride = internaltypes.StringTypeOrNil(r.SpConnectionTransactionLoggingOverride, true)
+	state.IdpConnectionTransactionLoggingOverride = types.StringPointerValue(r.IdpConnectionTransactionLoggingOverride)
+	state.SpConnectionTransactionLoggingOverride = types.StringPointerValue(r.SpConnectionTransactionLoggingOverride)
 	state.DatastoreValidationIntervalSecs = types.Int64PointerValue(r.DatastoreValidationIntervalSecs)
-	state.RequestHeaderForCorrelationId = internaltypes.StringTypeOrNil(r.RequestHeaderForCorrelationId, true)
+	state.RequestHeaderForCorrelationId = types.StringPointerValue(r.RequestHeaderForCorrelationId)
 }
 
 func (r *serverSettingsGeneralSettingsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
