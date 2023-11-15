@@ -28,8 +28,11 @@ resource "pingfederate_authentication_policy_contract" "authenticationPolicyCont
 
 - `contract_id` (String) The persistent, unique ID for the authentication policy contract. It can be any combination of [a-zA-Z0-9._-].
 - `core_attributes` (Attributes List) A list of read-only assertion attributes (for example, subject) that are automatically populated by PingFederate. (see [below for nested schema](#nestedatt--core_attributes))
-- `extended_attributes` (Attributes Set) A list of additional attributes as needed. (see [below for nested schema](#nestedatt--extended_attributes))
 - `name` (String) The Authentication Policy Contract Name. Name is unique.
+
+### Optional
+
+- `extended_attributes` (Attributes Set) A list of additional attributes as needed. (see [below for nested schema](#nestedatt--extended_attributes))
 
 ### Read-Only
 

@@ -12,8 +12,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const oauthAuthServerSettingsScopesExclusiveScopesId = "exampleExclusiveScope"
-const dynamicVal = false
+const oauthAuthServerSettingsScopesExclusiveScopesId = "*exampleExclusiveScope"
 
 // Attributes to test with. Add optional properties to test here if desired.
 type oauthAuthServerSettingsScopesExclusiveScopesResourceModel struct {
@@ -29,13 +28,13 @@ func TestAccOauthAuthServerSettingsScopesExclusiveScopes(t *testing.T) {
 		id:          oauthAuthServerSettingsScopesExclusiveScopesId,
 		name:        oauthAuthServerSettingsScopesExclusiveScopesId,
 		description: "example",
-		dynamic:     dynamicVal,
+		dynamic:     false,
 	}
 	updatedResourceModel := oauthAuthServerSettingsScopesExclusiveScopesResourceModel{
 		id:          oauthAuthServerSettingsScopesExclusiveScopesId,
 		name:        oauthAuthServerSettingsScopesExclusiveScopesId,
 		description: "updated description",
-		dynamic:     dynamicVal,
+		dynamic:     true,
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -62,23 +61,33 @@ func TestAccOauthAuthServerSettingsScopesExclusiveScopes(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
+			{
+				// Back to minimal model
+				Config: testAccOauthAuthServerSettingsScopesExclusiveScopes(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedOauthAuthServerSettingsScopesExclusiveScopesAttributes(initialResourceModel),
+			},
 		},
 	})
 }
 
 func testAccOauthAuthServerSettingsScopesExclusiveScopes(resourceName string, resourceModel oauthAuthServerSettingsScopesExclusiveScopesResourceModel) string {
+	dynamicHcl := ""
+	// Leave off dynamic if false to test not including it, since it is optional
+	if resourceModel.dynamic {
+		dynamicHcl = "dynamic = true"
+	}
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_auth_server_settings_scopes_exclusive_scope" "%[1]s" {
-  dynamic     = %[2]t
-  description = "%[3]s"
-  name        = "%[4]s"
+  description = "%[2]s"
+  name        = "%[3]s"
+  %[4]s
 }
 data "pingfederate_oauth_auth_server_settings_scopes_exclusive_scope" "%[1]s" {
   name = pingfederate_oauth_auth_server_settings_scopes_exclusive_scope.%[1]s.name
 }`, resourceName,
-		resourceModel.dynamic,
 		resourceModel.description,
 		resourceModel.name,
+		dynamicHcl,
 	)
 }
 

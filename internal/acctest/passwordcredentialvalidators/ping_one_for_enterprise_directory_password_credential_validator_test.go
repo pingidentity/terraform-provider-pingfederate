@@ -20,6 +20,7 @@ type pingOneForEnterpriseDirectoryPasswordCredentialValidatorsResourceModel stru
 	name                  string
 	connectionPoolTimeout string
 	clientSecret          string
+	includeOptionalFields bool
 }
 
 func TestAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(t *testing.T) {
@@ -29,12 +30,14 @@ func TestAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(t *testing
 		name:                  "example",
 		connectionPoolTimeout: "4000",
 		clientSecret:          "2FederateM0re",
+		includeOptionalFields: false,
 	}
 	updatedResourceModel := pingOneForEnterpriseDirectoryPasswordCredentialValidatorsResourceModel{
 		id:                    pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId,
 		name:                  "updated example",
 		connectionPoolTimeout: "3000",
 		clientSecret:          "2FederateM0re!",
+		includeOptionalFields: true,
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -55,17 +58,40 @@ func TestAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(t *testing
 			},
 			{
 				// Test importing the resource
-				Config:                  testAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(resourceName, updatedResourceModel),
-				ResourceName:            "pingfederate_password_credential_validator." + resourceName,
-				ImportStateId:           pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId,
-				ImportState:             true,
-				ImportStateVerifyIgnore: []string{"configuration.fields.value"},
+				Config:            testAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(resourceName, updatedResourceModel),
+				ResourceName:      "pingfederate_password_credential_validator." + resourceName,
+				ImportStateId:     pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Have to ignore fields because they get imported into fields_all
+				ImportStateVerifyIgnore: []string{"configuration.fields"},
+			},
+			{
+				// Back to minimal model
+				Config: testAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedPingOneForEnterpriseDirectoryPasswordCredentialValidatorsAttributes(initialResourceModel),
 			},
 		},
 	})
 }
 
 func testAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(resourceName string, resourceModel pingOneForEnterpriseDirectoryPasswordCredentialValidatorsResourceModel) string {
+	tablesHcl := ""
+	optionalHcl := ""
+	if resourceModel.includeOptionalFields {
+		tablesHcl = "tables = []"
+		optionalHcl = `
+		attribute_contract = {
+			extended_attributes = [
+				{
+					name = "example"
+				}
+			]
+			inherited = false
+	  	}
+		`
+	}
+
 	return fmt.Sprintf(`
 resource "pingfederate_password_credential_validator" "%[1]s" {
   validator_id = "%[2]s"
@@ -74,7 +100,7 @@ resource "pingfederate_password_credential_validator" "%[1]s" {
     id = "com.pingconnect.alexandria.pingfed.pcv.PingOnePasswordValidator"
   }
   configuration = {
-    tables = [],
+    %[6]s
     fields = [
       {
         name  = "Client Id"
@@ -110,11 +136,14 @@ resource "pingfederate_password_credential_validator" "%[1]s" {
       }
     ]
   }
+  %[7]s
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.name,
 		resourceModel.clientSecret,
 		resourceModel.connectionPoolTimeout,
+		tablesHcl,
+		optionalHcl,
 	)
 }
 
