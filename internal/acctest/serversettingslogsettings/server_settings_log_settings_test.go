@@ -85,6 +85,10 @@ resource "pingfederate_server_settings_log_settings" "%[1]s" {
       enabled = true
     },
   ]
+}
+
+data "pingfederate_server_settings_log_settings" "%[1]s" {
+  depends_on = [pingfederate_server_settings_log_settings.%[1]s]
 }`, resourceName,
 		resourceModel.logCategoriesEnabled,
 	)
