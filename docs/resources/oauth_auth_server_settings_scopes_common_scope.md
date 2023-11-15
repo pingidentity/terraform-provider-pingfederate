@@ -3,12 +3,12 @@
 page_title: "pingfederate_oauth_auth_server_settings_scopes_common_scope Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a OauthAuthServerSettingsScopesCommonScopes.
+  Manages an Oauth Auth Server Settings Scopes Common Scope.
 ---
 
 # pingfederate_oauth_auth_server_settings_scopes_common_scope (Resource)
 
-Manages a OauthAuthServerSettingsScopesCommonScopes.
+Manages an Oauth Auth Server Settings Scopes Common Scope.
 
 ## Example Usage
 
