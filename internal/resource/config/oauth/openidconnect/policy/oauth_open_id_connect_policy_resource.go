@@ -191,7 +191,6 @@ func (r *oauthOpenIdConnectPolicyResource) Configure(_ context.Context, req reso
 	providerCfg := req.ProviderData.(internaltypes.ResourceConfiguration)
 	r.providerConfig = providerCfg.ProviderConfig
 	r.apiClient = providerCfg.ApiClient
-
 }
 
 func readOauthOpenIdConnectPolicyResponse(ctx context.Context, state *oauthOpenIdConnectPolicyResourceModel) {

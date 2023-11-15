@@ -12,60 +12,57 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const oauthOpenIdConnectPoliciesId = "2"
+const oauthOpenIdConnectPoliciesId = "testOpenIdConnectPolicy"
 
 // Attributes to test with. Add optional properties to test here if desired.
 type oauthOpenIdConnectPoliciesResourceModel struct {
 	id string
-	id string	
-	name string	
-	accessTokenManagerRef 	
-	idTokenLifetime int64	
-	includeSriInIdToken bool	
-	includeUserInfoInIdToken bool	
-	includeSHashInIdToken bool	
-	returnIdTokenOnRefreshGrant bool	
-	reissueIdTokenInHybridFlow bool	
-	attributeContract 	
-	attributeMapping 	
-	scopeAttributeMappings determine this value manually
+	/*name string
+	accessTokenManagerRef
+	idTokenLifetime int64
+	includeSriInIdToken bool
+	includeUserInfoInIdToken bool
+	includeSHashInIdToken bool
+	returnIdTokenOnRefreshGrant bool
+	reissueIdTokenInHybridFlow bool
+	attributeContract
+	attributeMapping
+	scopeAttributeMappings determine this value manually*/
 }
 
 func TestAccOauthOpenIdConnectPolicies(t *testing.T) {
 	resourceName := "myOauthOpenIdConnectPolicies"
 	initialResourceModel := oauthOpenIdConnectPoliciesResourceModel{
-		id: fill in test value,	
-		name: fill in test value,	
-		accessTokenManagerRef: fill in test value,	
-		idTokenLifetime: fill in test value,	
-		includeSriInIdToken: fill in test value,	
-		includeUserInfoInIdToken: fill in test value,	
-		includeSHashInIdToken: fill in test value,	
-		returnIdTokenOnRefreshGrant: fill in test value,	
-		reissueIdTokenInHybridFlow: fill in test value,	
-		attributeContract: fill in test value,	
-		attributeMapping: fill in test value,	
-		scopeAttributeMappings: fill in test value,
+		/*name: fill in test value,
+		accessTokenManagerRef: fill in test value,
+		idTokenLifetime: fill in test value,
+		includeSriInIdToken: fill in test value,
+		includeUserInfoInIdToken: fill in test value,
+		includeSHashInIdToken: fill in test value,
+		returnIdTokenOnRefreshGrant: fill in test value,
+		reissueIdTokenInHybridFlow: fill in test value,
+		attributeContract: fill in test value,
+		attributeMapping: fill in test value,
+		scopeAttributeMappings: fill in test value,*/
 	}
 	updatedResourceModel := oauthOpenIdConnectPoliciesResourceModel{
-		id: fill in test value,	
-		name: fill in test value,	
-		accessTokenManagerRef: fill in test value,	
-		idTokenLifetime: fill in test value,	
-		includeSriInIdToken: fill in test value,	
-		includeUserInfoInIdToken: fill in test value,	
-		includeSHashInIdToken: fill in test value,	
-		returnIdTokenOnRefreshGrant: fill in test value,	
-		reissueIdTokenInHybridFlow: fill in test value,	
-		attributeContract: fill in test value,	
-		attributeMapping: fill in test value,	
-		scopeAttributeMappings: fill in test value,
+		/*name: fill in test value,
+		accessTokenManagerRef: fill in test value,
+		idTokenLifetime: fill in test value,
+		includeSriInIdToken: fill in test value,
+		includeUserInfoInIdToken: fill in test value,
+		includeSHashInIdToken: fill in test value,
+		returnIdTokenOnRefreshGrant: fill in test value,
+		reissueIdTokenInHybridFlow: fill in test value,
+		attributeContract: fill in test value,
+		attributeMapping: fill in test value,
+		scopeAttributeMappings: fill in test value,*/
 	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
-			"pingfederate": providerserver.NewProtocol6WithError(provider.New()),
+			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
 		CheckDestroy: testAccCheckOauthOpenIdConnectPoliciesDestroy,
 		Steps: []resource.TestStep{
@@ -80,11 +77,16 @@ func TestAccOauthOpenIdConnectPolicies(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:                  testAccOauthOpenIdConnectPolicies(resourceName, updatedResourceModel),
-				ResourceName:            "pingfederate_oauth_open_id_connect_policies." + resourceName,
-				ImportStateId:           oauthOpenIdConnectPoliciesId,
-				ImportState:             true,
-				ImportStateVerify:       true,
+				Config:            testAccOauthOpenIdConnectPolicies(resourceName, updatedResourceModel),
+				ResourceName:      "pingfederate_oauth_open_id_connect_policy." + resourceName,
+				ImportStateId:     oauthOpenIdConnectPoliciesId,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+			{
+				// Back to minimal model
+				Config: testAccOauthOpenIdConnectPolicies(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedOauthOpenIdConnectPoliciesAttributes(initialResourceModel),
 			},
 		},
 	})
@@ -92,29 +94,27 @@ func TestAccOauthOpenIdConnectPolicies(t *testing.T) {
 
 func testAccOauthOpenIdConnectPolicies(resourceName string, resourceModel oauthOpenIdConnectPoliciesResourceModel) string {
 	return fmt.Sprintf(`
-resource "pingfederate_oauth_open_id_connect_policies" "%[1]s" {
+resource "pingfederate_oauth_open_id_connect_policy" "%[1]s" {
 	id = "%[2]s"
-	FILL THIS IN
+	// FILL THIS IN
 }`, resourceName,
-		resourceModel.id,
-	
+		oauthOpenIdConnectPoliciesId,
 	)
 }
 
 // Test that the expected attributes are set on the PingFederate server
 func testAccCheckExpectedOauthOpenIdConnectPoliciesAttributes(config oauthOpenIdConnectPoliciesResourceModel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resourceType := "OauthOpenIdConnectPolicies"
+		//resourceType := "OauthOpenIdConnectPolicy"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.<RESOURCE_API>.GetOauthOpenIdConnectPolicies(ctx, oauthOpenIdConnectPoliciesId).Execute()
+		_, _, err := testClient.OauthOpenIdConnectAPI.GetOIDCPolicy(ctx, oauthOpenIdConnectPoliciesId).Execute()
 
 		if err != nil {
 			return err
 		}
 
-		// Verify that attributes have expected values
-		FILL THESE in! 
+		//TODO Verify that attributes have expected values
 
 		return nil
 	}
@@ -124,9 +124,9 @@ func testAccCheckExpectedOauthOpenIdConnectPoliciesAttributes(config oauthOpenId
 func testAccCheckOauthOpenIdConnectPoliciesDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.<RESOURCE_API>.DeleteOauthOpenIdConnectPolicies(ctx, oauthOpenIdConnectPoliciesId).Execute()
+	_, err := testClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(ctx, oauthOpenIdConnectPoliciesId).Execute()
 	if err == nil {
-		return acctest.ExpectedDestroyError("OauthOpenIdConnectPolicies", oauthOpenIdConnectPoliciesId)
+		return acctest.ExpectedDestroyError("OauthOpenIdConnectPolict", oauthOpenIdConnectPoliciesId)
 	}
 	return nil
 }
