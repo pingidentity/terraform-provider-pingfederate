@@ -1,4 +1,5 @@
 resource "pingfederate_authentication_policy_contract" "authenticationPolicyContractExample" {
+  contract_id = "example"
   core_attributes     = [{ name = "subject" }]
   extended_attributes = [{ name = "extended_attribute" }, { name = "extended_attribute2" }]
   name                = "example"
@@ -41,6 +42,6 @@ resource "pingfederate_sp_authentication_policy_contract_mapping" "spAuthenticat
       }
     ]
   }
-  source_id = pingfederate_authentication_policy_contract.authenticationPolicyContractExample.id
+  source_id = pingfederate_authentication_policy_contract.authenticationPolicyContractExample.contract_id
   target_id = "spadapter"
 }

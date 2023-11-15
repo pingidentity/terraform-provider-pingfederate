@@ -10,6 +10,19 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 )
 
+func Hcl(jdbcAttrSource *client.JdbcAttributeSource, ldapAttrSource *client.LdapAttributeSource) string {
+	if jdbcAttrSource == nil && ldapAttrSource == nil {
+		return ""
+	}
+
+	return fmt.Sprintf(`
+		attribute_sources = [
+			%s
+			%s
+		]
+	`, JdbcHcl(jdbcAttrSource), LdapHcl(ldapAttrSource))
+}
+
 func JdbcHcl(attrSource *client.JdbcAttributeSource) string {
 	if attrSource == nil {
 		return ""
@@ -17,7 +30,6 @@ func JdbcHcl(attrSource *client.JdbcAttributeSource) string {
 	var builder strings.Builder
 	if attrSource != nil {
 		tf := `
-		attribute_sources = [
 			{
 				jdbc_attribute_source = {
 					data_store_ref = {
@@ -30,8 +42,7 @@ func JdbcHcl(attrSource *client.JdbcAttributeSource) string {
 					filter       = "%s"
 					column_names = %s
 				}
-			}
-		]
+			},
 	`
 		builder.WriteString(fmt.Sprintf(tf,
 			attrSource.DataStoreRef.Id,
@@ -51,7 +62,7 @@ func JdbcClientStruct(table string, filter string, attributeSourceType string, r
 	)
 	jdbcAttributeSource.Id = pointers.String("jdbcattributesourceid")
 	jdbcAttributeSource.ColumnNames = []string{"CREATED"}
-	jdbcAttributeSource.Description = pointers.String("description")
+	jdbcAttributeSource.Description = pointers.String("jdbcdescription")
 	jdbcAttributeSource.Schema = pointers.String("PUBLIC")
 	return jdbcAttributeSource
 }
@@ -72,7 +83,6 @@ func LdapHcl(attrSource *client.LdapAttributeSource) string {
 		}
 
 		tf := `
-		attribute_sources = [
 			{
 				ldap_attribute_source = {
 					member_of_nested_group = %s
@@ -90,8 +100,7 @@ func LdapHcl(attrSource *client.LdapAttributeSource) string {
 						%s
 					}
 				}
-			}
-		]
+			},
 	`
 		builder.WriteString(fmt.Sprintf(tf,
 			strconv.FormatBool(*attrSource.MemberOfNestedGroup),
@@ -112,7 +121,7 @@ func LdapClientStruct(searchFilter, searchScope string, dataStoreRef client.Reso
 	ldapAttributeSource.MemberOfNestedGroup = pointers.Bool(false)
 	ldapAttributeSource.Id = pointers.String("ldapattributesourceid")
 	ldapAttributeSource.BaseDn = pointers.String("dc=example,dc=com")
-	ldapAttributeSource.Description = pointers.String("description")
+	ldapAttributeSource.Description = pointers.String("ldapdescription")
 	ldapAttributeSource.SearchAttributes = []string{
 		"cn",
 		"sn",

@@ -266,7 +266,7 @@ func attributeMappingHclBlock(attributeMapping *client.IdpAdapterContractMapping
 	builder.WriteString("attribute_mapping = {\n")
 	if len(attributeMapping.AttributeSources) > 0 {
 		// Only have logic for JDBC attribute sources right now, assume it is the right type
-		attributesources.JdbcHcl(attributeMapping.AttributeSources[0].JdbcAttributeSource)
+		attributesources.Hcl(attributeMapping.AttributeSources[0].JdbcAttributeSource, nil)
 	}
 	if attributeMapping.AttributeContractFulfillment != nil {
 		builder.WriteString("    attribute_contract_fulfillment = {\n")

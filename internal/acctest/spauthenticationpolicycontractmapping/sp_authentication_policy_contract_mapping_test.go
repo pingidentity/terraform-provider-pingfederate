@@ -21,7 +21,8 @@ const apcSourceId = "authenticationpolicycontractid"
 const spTargetId = "spadapter"
 
 type spAuthenticationPolicyContractMappingResourceModel struct {
-	attributeSource              *client.JdbcAttributeSource
+	jdbcAttributeSource          *client.JdbcAttributeSource
+	ldapAttributeSource          *client.LdapAttributeSource
 	attributeContractFulfillment client.AttributeFulfillmentValue
 	issuanceCriteria             *client.ConditionalIssuanceCriteriaEntry
 	sourceId                     string
@@ -39,7 +40,8 @@ func TestAccSpAuthenticationPolicyContractMapping(t *testing.T) {
 		targetId:                     spTargetId,
 	}
 	updatedResourceModel := spAuthenticationPolicyContractMappingResourceModel{
-		attributeSource:              attributesources.JdbcClientStruct("CHANNEL_GROUP", "$${subject}", "JDBC", *client.NewResourceLink("ProvisionerDS")),
+		jdbcAttributeSource:          attributesources.JdbcClientStruct("CHANNEL_GROUP", "$${subject}", "JDBC", *client.NewResourceLink("ProvisionerDS")),
+		ldapAttributeSource:          attributesources.LdapClientStruct("(cn=John)", "SUBTREE", *client.NewResourceLink("pingdirectory")),
 		attributeContractFulfillment: attributecontractfulfillment.UpdatedAttributeContractFulfillment(),
 		issuanceCriteria:             issuancecriteria.ConditionalCriteria(),
 		sourceId:                     apcSourceId,
@@ -100,7 +102,7 @@ resource "pingfederate_sp_authentication_policy_contract_mapping" "%[1]s" {
 		resourceModel.sourceId,
 		resourceModel.targetId,
 		attributecontractfulfillment.Hcl(&resourceModel.attributeContractFulfillment),
-		attributesources.JdbcHcl(resourceModel.attributeSource),
+		attributesources.Hcl(resourceModel.jdbcAttributeSource, resourceModel.ldapAttributeSource),
 		issuancecriteria.Hcl(resourceModel.issuanceCriteria),
 	)
 }
@@ -133,41 +135,42 @@ func testAccCheckExpectedSpAuthenticationPolicyContractMappingAttributes(config 
 		for _, attributeSource := range attributeSources {
 			if attributeSource.JdbcAttributeSource != nil {
 				err = acctest.TestAttributesMatchString(resourceType, stringPointer(spAuthenticationPolicyContractMappingId), "id",
-					config.attributeSource.DataStoreRef.Id, attributeSource.JdbcAttributeSource.DataStoreRef.Id)
+					config.jdbcAttributeSource.DataStoreRef.Id, attributeSource.JdbcAttributeSource.DataStoreRef.Id)
 				if err != nil {
 					return err
 				}
 
 				err = acctest.TestAttributesMatchString(resourceType, stringPointer(spAuthenticationPolicyContractMappingId), "description",
-					*config.attributeSource.Description, *attributeSource.JdbcAttributeSource.Description)
+					*config.jdbcAttributeSource.Description, *attributeSource.JdbcAttributeSource.Description)
 				if err != nil {
 					return err
 				}
 
 				err = acctest.TestAttributesMatchString(resourceType, stringPointer(spAuthenticationPolicyContractMappingId), "schema",
-					*config.attributeSource.Description, *attributeSource.JdbcAttributeSource.Description)
+					*config.jdbcAttributeSource.Description, *attributeSource.JdbcAttributeSource.Description)
 				if err != nil {
 					return err
 				}
 
 				err = acctest.TestAttributesMatchString(resourceType, stringPointer(spAuthenticationPolicyContractMappingId), "table",
-					config.attributeSource.Table, attributeSource.JdbcAttributeSource.Table)
+					config.jdbcAttributeSource.Table, attributeSource.JdbcAttributeSource.Table)
 				if err != nil {
 					return err
 				}
 
 				err = acctest.TestAttributesMatchString(resourceType, stringPointer(spAuthenticationPolicyContractMappingId), "filter",
-					config.attributeSource.Filter, "$"+attributeSource.JdbcAttributeSource.Filter)
+					config.jdbcAttributeSource.Filter, "$"+attributeSource.JdbcAttributeSource.Filter)
 				if err != nil {
 					return err
 				}
 
 				err = acctest.TestAttributesMatchStringSlice(resourceType, stringPointer(spAuthenticationPolicyContractMappingId), "column_names",
-					config.attributeSource.ColumnNames, attributeSource.JdbcAttributeSource.ColumnNames)
+					config.jdbcAttributeSource.ColumnNames, attributeSource.JdbcAttributeSource.ColumnNames)
 				if err != nil {
 					return err
 				}
 			}
+			//TODO ldap
 		}
 
 		if response.IssuanceCriteria != nil {

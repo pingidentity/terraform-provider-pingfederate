@@ -102,7 +102,7 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "%[1]s" {
 		resourceModel.sourceId,
 		resourceModel.targetId,
 		attributecontractfulfillment.Hcl(&resourceModel.attributeContractFulfillment),
-		attributesources.LdapHcl(resourceModel.attributeSource),
+		attributesources.Hcl(nil, resourceModel.attributeSource),
 		issuancecriteria.Hcl(resourceModel.issuanceCriteria),
 		defaultTargetResourceHcl,
 	)
