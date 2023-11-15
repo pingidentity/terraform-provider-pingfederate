@@ -3,12 +3,12 @@
 page_title: "pingfederate_license Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a License.
+  Describes a License.
 ---
 
 # pingfederate_license (Data Source)
 
-Manages a License.
+Describes a License.
 
 ## Example Usage
 
@@ -22,33 +22,33 @@ data "pingfederate_license" "myLicense" {
 
 ### Read-Only
 
-- `bridge_mode` (Boolean) Indicates whether license agreement has been accepted. The default value is false.
-- `enforcement_type` (String) Name of the person the license was issued to.
-- `expiration_date` (String) Name of the person the license was issued to.
-- `features` (Attributes Set) The subject alternative names (SAN) (see [below for nested schema](#nestedatt--features))
-- `grace_period` (Number) The public key size
+- `bridge_mode` (Boolean) Indicates whether this license is a bridge license or not.
+- `enforcement_type` (String) The enforcement type is a 3-bit binary value, expressed as a decimal digit. The bits from left to right are: 1: Shutdown on expire. 2: Notify on expire. 4: Enforce minor version. if all three enforcements are active, the enforcement type will be 7 (1 + 2 + 4); if only the first two are active, you have an enforcement type of 3 (1 + 2).
+- `expiration_date` (String) The expiration date value from the license file (if applicable).
+- `features` (Attributes List) Other licence features, if applicable. (see [below for nested schema](#nestedatt--features))
+- `grace_period` (Number) Number of days provided as grace period, past the expiration date (if applicable).
 - `id` (String) Unique identifier of a license.
-- `issue_date` (String) Name of the person the license was issued to.
-- `license_groups` (Attributes Set) The subject alternative names (SAN) (see [below for nested schema](#nestedatt--license_groups))
-- `max_connections` (Number) The public key size
+- `issue_date` (String) The issue date value from the license file.
+- `license_groups` (Attributes List) License connection groups, if applicable. (see [below for nested schema](#nestedatt--license_groups))
+- `max_connections` (Number) Maximum number of connections that can be created under this license (if applicable).
 - `name` (String) Name of the person the license was issued to.
-- `node_limit` (Number) The public key size
-- `oauth_enabled` (Boolean) Indicates whether license agreement has been accepted. The default value is false.
-- `organization` (String) Name of the person the license was issued to.
-- `product` (String) Name of the person the license was issued to.
-- `provisioning_enabled` (Boolean) Indicates whether license agreement has been accepted. The default value is false.
-- `tier` (String) Name of the person the license was issued to.
-- `used_connections` (Number) The public key size
-- `version` (String) Name of the person the license was issued to.
-- `ws_trust_enabled` (Boolean) Indicates whether license agreement has been accepted. The default value is false.
+- `node_limit` (Number) Maximum number of clustered nodes allowed under this license (if applicable).
+- `oauth_enabled` (Boolean) Indicates whether OAuth role is enabled for this license.
+- `organization` (String) The organization value from the license file.
+- `product` (String) The Ping Identity product value from the license file.
+- `provisioning_enabled` (Boolean) Indicates whether Provisioning role is enabled for this license.
+- `tier` (String) The tier value from the license file. The possible values are FREE, PERPETUAL or SUBSCRIPTION.
+- `used_connections` (Number) Number of used connections under this license.
+- `version` (String) The Ping Identity product version from the license file.
+- `ws_trust_enabled` (Boolean) Indicates whether WS-Trust role is enabled for this license.
 
 <a id="nestedatt--features"></a>
 ### Nested Schema for `features`
 
 Read-Only:
 
-- `name` (String) The persistent, unique ID for the local identity authentication source. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
-- `value` (String) The public key size
+- `name` (String) The name of the license feature.
+- `value` (String) The value of the license feature.
 
 
 <a id="nestedatt--license_groups"></a>
@@ -56,7 +56,7 @@ Read-Only:
 
 Read-Only:
 
-- `connection_count` (Number) The public key size
-- `end_date` (String) The persistent, unique ID for the local identity authentication source. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
-- `name` (String) The persistent, unique ID for the local identity authentication source. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
-- `start_date` (String) The persistent, unique ID for the local identity authentication source. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
+- `connection_count` (Number) Maximum number of connections permitted under the group.
+- `end_date` (String) End date for the group.
+- `name` (String) Group name from the license file.
+- `start_date` (String) Start date for the group.

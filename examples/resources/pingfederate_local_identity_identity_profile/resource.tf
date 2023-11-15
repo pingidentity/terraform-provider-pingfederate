@@ -1,6 +1,6 @@
 resource "pingfederate_local_identity_identity_profile" "myLocalIdentityIdentityProfile" {
-  name = "yourIdentityProfileName"
-  id   = "yourid"
+  name       = "yourIdentityProfileName"
+  profile_id = "yourid"
   apc_id = {
     id = "apcid"
   }

@@ -91,11 +91,11 @@ resource "pingfederate_server_settings" "serverSettingsExample" {
 - `contact_info` (Attributes) Information that identifies the server. (see [below for nested schema](#nestedatt--contact_info))
 - `email_server` (Attributes) Email Server Settings. (see [below for nested schema](#nestedatt--email_server))
 - `notifications` (Attributes) Notification settings for license and certificate expiration events. (see [below for nested schema](#nestedatt--notifications))
-- `roles_and_protocols` (Attributes) Configure roles and protocols. (see [below for nested schema](#nestedatt--roles_and_protocols))
 
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `roles_and_protocols` (Attributes) Configure roles and protocols. (see [below for nested schema](#nestedatt--roles_and_protocols))
 
 <a id="nestedatt--federation_info"></a>
 ### Nested Schema for `federation_info`
@@ -103,12 +103,12 @@ resource "pingfederate_server_settings" "serverSettingsExample" {
 Required:
 
 - `base_url` (String) The fully qualified host name, port, and path (if applicable) on which the PingFederate server runs.
+- `saml_2_entity_id` (String) This ID defines your organization as the entity operating the server for SAML 2.0 transactions. It is usually defined as an organization's URL or a DNS address; for example: pingidentity.com. The SAML SourceID used for artifact resolution is derived from this ID using SHA1.
 
 Optional:
 
 - `saml_1x_issuer_id` (String) This ID identifies your federation server for SAML 1.x transactions. As with SAML 2.0, it is usually defined as an organization's URL or a DNS address. The SourceID used for artifact resolution is derived from this ID using SHA1.
 - `saml_1x_source_id` (String) If supplied, the Source ID value entered here is used for SAML 1.x, instead of being derived from the SAML 1.x Issuer/Audience.
-- `saml_2_entity_id` (String) This ID defines your organization as the entity operating the server for SAML 2.0 transactions. It is usually defined as an organization's URL or a DNS address; for example: pingidentity.com. The SAML SourceID used for artifact resolution is derived from this ID using SHA1.
 - `wsfed_realm` (String) The URI of the realm associated with the PingFederate server. A realm represents a single unit of security administration or trust.
 
 Read-Only:
@@ -122,9 +122,6 @@ Read-Only:
 Required:
 
 - `secret_key` (String) Secret key for reCAPTCHA. GETs will not return this attribute. To update this field, specify the new value in this attribute.
-
-Optional:
-
 - `site_key` (String) Site key for reCAPTCHA.
 
 
@@ -151,7 +148,7 @@ Required:
 Optional:
 
 - `enable_utf8_message_headers` (Boolean) Only set this flag to true if the email server supports UTF-8 characters in message headers. Otherwise, this is defaulted to false.
-- `password` (String) User password. To update the password, specify the plaintext value in this field. This field will not be populated for GET requests.
+- `password` (String, Sensitive) User password. To update the password, specify the plaintext value in this field. This field will not be populated for GET requests.
 - `port` (Number) The SMTP port on your email server. Allowable values: 1 - 65535. The default value is 25.
 - `retry_attempts` (Number) The number of times PingFederate tries to resend an email upon unsuccessful delivery. The default value is 2.
 - `retry_delay` (Number) The number of minutes PingFederate waits before the next retry attempt. The default value is 2.

@@ -18,9 +18,6 @@ type virtualHostNamesResourceModel struct {
 
 func TestAccVirtualHostNames(t *testing.T) {
 	resourceName := "myVirtualHostNames"
-	initialResourceModel := virtualHostNamesResourceModel{
-		virtualHostNames: []string{"example1", "example2"},
-	}
 	updatedResourceModel := virtualHostNamesResourceModel{
 		virtualHostNames: []string{"example1", "example2", "example3"},
 	}
@@ -32,8 +29,7 @@ func TestAccVirtualHostNames(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVirtualHostNames(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedVirtualHostNamesAttributes(initialResourceModel),
+				Config: testAccVirtualHostNamesMinimal(resourceName),
 			},
 			{
 				// Test updating some fields
@@ -47,14 +43,27 @@ func TestAccVirtualHostNames(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
+			{
+				// Back to minimal model
+				Config: testAccVirtualHostNamesMinimal(resourceName),
+			},
 		},
 	})
+}
+
+func testAccVirtualHostNamesMinimal(resourceName string) string {
+	return fmt.Sprintf(`
+resource "pingfederate_virtual_host_names" "%[1]s" {
+}`, resourceName)
 }
 
 func testAccVirtualHostNames(resourceName string, resourceModel virtualHostNamesResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_virtual_host_names" "%[1]s" {
   virtual_host_names = %[2]s
+}
+data "pingfederate_virtual_host_names" "%[1]s" {
+  depends_on = [pingfederate_virtual_host_names.%[1]s]
 }`, resourceName,
 		acctest.StringSliceToTerraformString(resourceModel.virtualHostNames),
 	)

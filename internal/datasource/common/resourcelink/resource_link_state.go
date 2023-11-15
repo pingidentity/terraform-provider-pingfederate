@@ -17,7 +17,7 @@ var (
 	}
 )
 
-func ToState(ctx context.Context, r *client.ResourceLink) (basetypes.ObjectValue, diag.Diagnostics) {
+func ToDataSourceState(ctx context.Context, r *client.ResourceLink) (basetypes.ObjectValue, diag.Diagnostics) {
 	if r == nil {
 		return types.ObjectNull(resourceLinkAttrTypes), diag.Diagnostics{}
 	}

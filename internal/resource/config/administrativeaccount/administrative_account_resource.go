@@ -6,12 +6,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -37,16 +35,17 @@ type administrativeAccountsResource struct {
 }
 
 type administrativeAccountResourceModel struct {
-	Active       types.Bool   `tfsdk:"active"`
-	Auditor      types.Bool   `tfsdk:"auditor"`
-	Department   types.String `tfsdk:"department"`
-	Description  types.String `tfsdk:"description"`
-	EmailAddress types.String `tfsdk:"email_address"`
-	Id           types.String `tfsdk:"id"`
-	Password     types.String `tfsdk:"password"`
-	PhoneNumber  types.String `tfsdk:"phone_number"`
-	Roles        types.Set    `tfsdk:"roles"`
-	Username     types.String `tfsdk:"username"`
+	Active            types.Bool   `tfsdk:"active"`
+	Auditor           types.Bool   `tfsdk:"auditor"`
+	Department        types.String `tfsdk:"department"`
+	Description       types.String `tfsdk:"description"`
+	EmailAddress      types.String `tfsdk:"email_address"`
+	EncryptedPassword types.String `tfsdk:"encrypted_password"`
+	Id                types.String `tfsdk:"id"`
+	Password          types.String `tfsdk:"password"`
+	PhoneNumber       types.String `tfsdk:"phone_number"`
+	Roles             types.Set    `tfsdk:"roles"`
+	Username          types.String `tfsdk:"username"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -58,76 +57,55 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 				Description: "Indicates whether the account is active or not.",
 				Optional:    true,
 				Computed:    true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
+				Default:     booldefault.StaticBool(false),
 			},
 			"auditor": schema.BoolAttribute{
 				Description: "Indicates whether the account belongs to an Auditor. An Auditor has View-only permissions for all administrative functions. An Auditor cannot have any administrative roles.",
 				Optional:    true,
 				Computed:    true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown(),
-				},
+				Default:     booldefault.StaticBool(false),
 			},
 			"department": schema.StringAttribute{
 				Description: "The Department name of account user.",
 				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-					stringplanmodifier.RequiresReplace(),
-				},
 			},
 			"description": schema.StringAttribute{
 				Description: "Description of the account.",
 				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-					stringplanmodifier.RequiresReplace(),
-				},
 			},
 			"email_address": schema.StringAttribute{
 				Description: "Email address associated with the account.",
 				Optional:    true,
-				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-					stringplanmodifier.RequiresReplace(),
-				},
 			},
 			"password": schema.StringAttribute{
-				Description: "Password for the Account. This field is only applicable during a POST operation.",
+				Description: "Password for the Account. This field is only applicable during account creation.",
 				Required:    true,
 				Sensitive:   true,
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"encrypted_password": schema.StringAttribute{
+				Description: "Read-only attribute. This field holds the value returned from PingFederate and used for updating an existing Administrative Account.",
+				Computed:    true,
+				Optional:    false,
+				Sensitive:   true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"phone_number": schema.StringAttribute{
 				Description: "Phone number associated with the account.",
 				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-					stringplanmodifier.RequiresReplace(),
-				},
 			},
 			"roles": schema.SetAttribute{
 				Description: "Roles available for an administrator. USER_ADMINISTRATOR - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. CRYPTO_ADMINISTRATOR - Can manage local keys and certificates. ADMINISTRATOR - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. EXPRESSION_ADMINISTRATOR - Can add and update OGNL expressions.",
 				Required:    true,
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
-					setplanmodifier.RequiresReplace(),
-				},
 				ElementType: types.StringType,
 			},
 			"username": schema.StringAttribute{
 				Description: "Username for the Administrative Account.",
 				Required:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-					stringplanmodifier.RequiresReplace(),
-				},
 			},
 		},
 	}
@@ -135,26 +113,37 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 	id.ToSchema(&schema)
 	resp.Schema = schema
 }
-func addOptionalAdministrativeAccountFields(ctx context.Context, addRequest *client.AdministrativeAccount, plan administrativeAccountResourceModel) error {
+
+func addOptionalAdministrativeAccountFields(ctx context.Context, addRequest *client.AdministrativeAccount, plan administrativeAccountResourceModel, isCreate bool) error {
 	// Empty strings are treated as equivalent to null
 	if internaltypes.IsDefined(plan.Active) {
 		addRequest.Active = plan.Active.ValueBoolPointer()
 	}
+
 	if internaltypes.IsDefined(plan.Auditor) {
 		addRequest.Auditor = plan.Auditor.ValueBoolPointer()
 	}
+
 	if internaltypes.IsDefined(plan.Department) {
 		addRequest.Department = plan.Department.ValueStringPointer()
 	}
+
 	if internaltypes.IsDefined(plan.Description) {
 		addRequest.Description = plan.Description.ValueStringPointer()
 	}
+
 	if internaltypes.IsDefined(plan.EmailAddress) {
 		addRequest.EmailAddress = plan.EmailAddress.ValueStringPointer()
 	}
-	if internaltypes.IsDefined(plan.Password) {
+
+	if isCreate {
 		addRequest.Password = plan.Password.ValueStringPointer()
 	}
+
+	if internaltypes.IsDefined(plan.EncryptedPassword) {
+		addRequest.EncryptedPassword = plan.EncryptedPassword.ValueStringPointer()
+	}
+
 	if internaltypes.IsDefined(plan.PhoneNumber) {
 		addRequest.PhoneNumber = plan.PhoneNumber.ValueStringPointer()
 	}
@@ -163,6 +152,7 @@ func addOptionalAdministrativeAccountFields(ctx context.Context, addRequest *cli
 		plan.Roles.ElementsAs(ctx, &slice, false)
 		addRequest.Roles = slice
 	}
+
 	return nil
 }
 
@@ -182,10 +172,18 @@ func (r *administrativeAccountsResource) Configure(_ context.Context, req resour
 
 }
 
-func readAdministrativeAccountResponse(ctx context.Context, r *client.AdministrativeAccount, state *administrativeAccountResourceModel, expectedValues *administrativeAccountResourceModel, passwordPlan basetypes.StringValue) {
+func readAdministrativeAccountResponse(ctx context.Context, r *client.AdministrativeAccount, state *administrativeAccountResourceModel, plan *administrativeAccountResourceModel) {
 	state.Id = types.StringValue(r.Username)
 	state.Username = types.StringValue(r.Username)
-	state.Password = types.StringValue(passwordPlan.ValueString())
+	state.Password = types.StringValue(plan.Password.ValueString())
+
+	// state.EncryptedPassword
+	if internaltypes.IsDefined(plan.EncryptedPassword) {
+		state.EncryptedPassword = types.StringValue(plan.EncryptedPassword.ValueString())
+	} else {
+		state.EncryptedPassword = types.StringPointerValue(r.EncryptedPassword)
+	}
+
 	state.Active = types.BoolValue(*r.Active)
 	state.Description = internaltypes.StringTypeOrNil(r.Description, false)
 	state.Auditor = types.BoolValue(*r.Auditor)
@@ -205,15 +203,10 @@ func (r *administrativeAccountsResource) Create(ctx context.Context, req resourc
 	}
 
 	createAdministrativeAccount := client.NewAdministrativeAccount(plan.Username.ValueString())
-	err := addOptionalAdministrativeAccountFields(ctx, createAdministrativeAccount, plan)
+	err := addOptionalAdministrativeAccountFields(ctx, createAdministrativeAccount, plan, true)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Administrative Account", err.Error())
 		return
-	}
-
-	_, requestErr := createAdministrativeAccount.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of an Administrative Account: %s", requestErr.Error())
 	}
 
 	apiCreateAdministrativeAccount := r.apiClient.AdministrativeAccountsAPI.AddAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig))
@@ -224,15 +217,10 @@ func (r *administrativeAccountsResource) Create(ctx context.Context, req resourc
 		return
 	}
 
-	_, responseErr := administrativeAccountResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an Administrative Account: %s", responseErr.Error())
-	}
-
 	// Read the response into the state
 	var state administrativeAccountResourceModel
 
-	readAdministrativeAccountResponse(ctx, administrativeAccountResponse, &state, &plan, plan.Password)
+	readAdministrativeAccountResponse(ctx, administrativeAccountResponse, &state, &plan)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -255,14 +243,9 @@ func (r *administrativeAccountsResource) Read(ctx context.Context, req resource.
 		}
 		return
 	}
-	// Log response JSON
-	_, responseErr := apiReadAdministrativeAccount.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an Administrative Account: %s", responseErr.Error())
-	}
 
 	// Read the response into the state
-	readAdministrativeAccountResponse(ctx, apiReadAdministrativeAccount, &state, &state, state.Password)
+	readAdministrativeAccountResponse(ctx, apiReadAdministrativeAccount, &state, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -283,15 +266,10 @@ func (r *administrativeAccountsResource) Update(ctx context.Context, req resourc
 	req.State.Get(ctx, &state)
 	updateAdministrativeAccount := r.apiClient.AdministrativeAccountsAPI.UpdateAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Username.ValueString())
 	createUpdateRequest := client.NewAdministrativeAccount(plan.Username.ValueString())
-	err := addOptionalAdministrativeAccountFields(ctx, createUpdateRequest, plan)
+	err := addOptionalAdministrativeAccountFields(ctx, createUpdateRequest, plan, false)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Administrative Account", err.Error())
 		return
-	}
-
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of an Administrative Account: %s", requestErr.Error())
 	}
 
 	updateAdministrativeAccount = updateAdministrativeAccount.Body(*createUpdateRequest)
@@ -300,13 +278,9 @@ func (r *administrativeAccountsResource) Update(ctx context.Context, req resourc
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Administrative Account", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateAdministrativeAccountResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of an Administrative Account: %s", responseErr.Error())
-	}
+
 	// Read the response
-	readAdministrativeAccountResponse(ctx, updateAdministrativeAccountResponse, &state, &plan, state.Password)
+	readAdministrativeAccountResponse(ctx, updateAdministrativeAccountResponse, &state, &plan)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)

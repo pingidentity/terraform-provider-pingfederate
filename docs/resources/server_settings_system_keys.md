@@ -49,11 +49,11 @@ resource "pingfederate_server_settings_system_keys" "serverSettingsSystemKeysExa
 Optional:
 
 - `encrypted_key_data` (String) The system key encrypted.
+- `key_data` (String) The clear text system key base 64 encoded. The system key must be 32 bytes before base 64 encoding
 
 Read-Only:
 
 - `creation_date` (String) Creation time of the key.
-- `key_data` (String) The clear text system key base 64 encoded. The system key must be 32 bytes before base 64 encoding
 
 
 <a id="nestedatt--pending"></a>
@@ -62,11 +62,11 @@ Read-Only:
 Optional:
 
 - `encrypted_key_data` (String) The system key encrypted.
+- `key_data` (String) The clear text system key base 64 encoded. The system key must be 32 bytes before base 64 encoding
 
 Read-Only:
 
 - `creation_date` (String) Creation time of the key.
-- `key_data` (String) The clear text system key base 64 encoded. The system key must be 32 bytes before base 64 encoding
 
 
 <a id="nestedatt--previous"></a>
@@ -75,11 +75,11 @@ Read-Only:
 Optional:
 
 - `encrypted_key_data` (String) The system key encrypted.
+- `key_data` (String) The clear text system key base 64 encoded. The system key must be 32 bytes before base 64 encoding
 
 Read-Only:
 
 - `creation_date` (String) Creation time of the key.
-- `key_data` (String) The clear text system key base 64 encoded. The system key must be 32 bytes before base 64 encoding
 
 ## Import
 

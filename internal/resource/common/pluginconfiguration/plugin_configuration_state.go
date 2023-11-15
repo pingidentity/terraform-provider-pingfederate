@@ -33,6 +33,10 @@ var (
 	}
 )
 
+func AttrType() map[string]attr.Type {
+	return configurationAttrTypes
+}
+
 // Creates state values for fields. Returns one value that only includes values specified in the plan, and a second value that includes all fields values
 func ToFieldsListValue(fields []client.ConfigField, planFields *types.List, diags *diag.Diagnostics) (types.List, types.List) {
 	plannedObjValues := []attr.Value{}
@@ -89,8 +93,13 @@ func ToFieldsListValue(fields []client.ConfigField, planFields *types.List, diag
 
 func ToRowsListValue(rows []client.ConfigRow, planRows *types.List, diags *diag.Diagnostics) types.List {
 	objValues := []attr.Value{}
-	// If rows is null in the plan, just return everything. Otherwise only return rows corresponding with the plan
-	if planRows == nil {
+	if planRows == nil || planRows.IsNull() {
+		if len(rows) == 0 {
+			// If the API returned no rows, treat it as null
+			return types.ListNull(types.ObjectType{
+				AttrTypes: rowAttrTypes,
+			})
+		}
 		for _, row := range rows {
 			attrValues := map[string]attr.Value{}
 			attrValues["default_row"] = types.BoolPointerValue(row.DefaultRow)
@@ -129,8 +138,13 @@ func ToRowsListValue(rows []client.ConfigRow, planRows *types.List, diags *diag.
 
 func ToTablesListValue(tables []client.ConfigTable, planTables *types.List, diags *diag.Diagnostics) types.List {
 	objValues := []attr.Value{}
-	// If tables is null in the plan, just return everything. Otherwise only return tables corresponding with the plan
-	if planTables == nil {
+	if planTables == nil || planTables.IsNull() {
+		if len(tables) == 0 {
+			// If the API returned no tables, treat it as null
+			return types.ListNull(types.ObjectType{
+				AttrTypes: tableAttrTypes,
+			})
+		}
 		for _, table := range tables {
 			attrValues := map[string]attr.Value{}
 			attrValues["inherited"] = types.BoolPointerValue(table.Inherited)

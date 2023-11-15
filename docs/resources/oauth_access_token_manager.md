@@ -13,9 +13,9 @@ Manages OAuth Access Token Manager
 ## Example Usage
 
 ```terraform
-resource "pingfederate_oauth_access_token_manager" "internallyManagedReferenceOauthAccessTokenManagerExample" {
-  custom_id = "internallyManagedReferenceOatm"
-  name      = "internallyManagedReferenceExample"
+resource "pingfederate_oauth_access_token_manager" "myInternallyManagedReferenceOauthAccessTokenManager" {
+  manager_id = "internallyManagedReferenceOatm"
+  name       = "internallyManagedReferenceExample"
   plugin_descriptor_ref = {
     id = "org.sourceid.oauth20.token.plugin.impl.ReferenceBearerAccessTokenManagementPlugin"
   }
@@ -81,8 +81,8 @@ resource "pingfederate_oauth_access_token_manager" "internallyManagedReferenceOa
 }
 
 resource "pingfederate_oauth_access_token_manager" "jsonWebTokenOauthAccessTokenManagerExample" {
-  custom_id = "jsonWebTokenOatm"
-  name      = "jsonWebTokenExample"
+  manager_id = "jsonWebTokenOatm"
+  name       = "jsonWebTokenExample"
   plugin_descriptor_ref = {
     id = "com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin"
   }
@@ -250,15 +250,15 @@ resource "pingfederate_oauth_access_token_manager" "jsonWebTokenOauthAccessToken
 
 ### Required
 
+- `attribute_contract` (Attributes) The list of attributes that will be added to an access token. (see [below for nested schema](#nestedatt--attribute_contract))
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--configuration))
-- `custom_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
+- `manager_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
 - `name` (String) The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
 - `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
 
 ### Optional
 
 - `access_control_settings` (Attributes) Settings which determine which clients may access this token manager. (see [below for nested schema](#nestedatt--access_control_settings))
-- `attribute_contract` (Attributes) The list of attributes that will be added to an access token. (see [below for nested schema](#nestedatt--attribute_contract))
 - `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides) (see [below for nested schema](#nestedatt--parent_ref))
 - `selection_settings` (Attributes) Settings which determine how this token manager can be selected for use by an OAuth request. (see [below for nested schema](#nestedatt--selection_settings))
 - `session_validation_settings` (Attributes) Settings which determine how the user session is associated with the access token. (see [below for nested schema](#nestedatt--session_validation_settings))
@@ -267,6 +267,44 @@ resource "pingfederate_oauth_access_token_manager" "jsonWebTokenOauthAccessToken
 
 - `id` (String) The ID of this resource.
 - `sequence_number` (Number) Number added to an access token to identify which Access Token Manager issued the token.
+
+<a id="nestedatt--attribute_contract"></a>
+### Nested Schema for `attribute_contract`
+
+Required:
+
+- `extended_attributes` (Attributes List) A list of additional token attributes that are associated with this access token management plugin instance. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
+
+Optional:
+
+- `default_subject_attribute` (String) Default subject attribute to use for audit logging when validating the access token. Blank value means to use USER_KEY attribute value after grant lookup.
+- `inherited` (Boolean) Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.
+
+Read-Only:
+
+- `core_attributes` (Attributes List) A list of core token attributes that are associated with the access token management plugin type. This field is read-only and is ignored on POST/PUT. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
+
+<a id="nestedatt--attribute_contract--extended_attributes"></a>
+### Nested Schema for `attribute_contract.extended_attributes`
+
+Required:
+
+- `name` (String) The name of this attribute.
+
+Optional:
+
+- `multi_valued` (Boolean) Indicates whether attribute value is always returned as an array.
+
+
+<a id="nestedatt--attribute_contract--core_attributes"></a>
+### Nested Schema for `attribute_contract.core_attributes`
+
+Read-Only:
+
+- `multi_valued` (Boolean) Indicates whether attribute value is always returned as an array.
+- `name` (String) The name of this attribute.
+
+
 
 <a id="nestedatt--configuration"></a>
 ### Nested Schema for `configuration`
@@ -370,38 +408,6 @@ Required:
 Read-Only:
 
 - `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
-
-<a id="nestedatt--attribute_contract"></a>
-### Nested Schema for `attribute_contract`
-
-Optional:
-
-- `default_subject_attribute` (String) Default subject attribute to use for audit logging when validating the access token. Blank value means to use USER_KEY attribute value after grant lookup.
-- `extended_attributes` (Attributes List) A list of additional token attributes that are associated with this access token management plugin instance. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
-- `inherited` (Boolean) Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.
-
-Read-Only:
-
-- `core_attributes` (Attributes List) A list of core token attributes that are associated with the access token management plugin type. This field is read-only and is ignored on POST/PUT. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
-
-<a id="nestedatt--attribute_contract--extended_attributes"></a>
-### Nested Schema for `attribute_contract.extended_attributes`
-
-Optional:
-
-- `multi_valued` (Boolean) Indicates whether attribute value is always returned as an array.
-- `name` (String) The name of this attribute.
-
-
-<a id="nestedatt--attribute_contract--core_attributes"></a>
-### Nested Schema for `attribute_contract.core_attributes`
-
-Read-Only:
-
-- `multi_valued` (Boolean) Indicates whether attribute value is always returned as an array.
-- `name` (String) The name of this attribute.
 
 
 

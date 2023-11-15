@@ -24,4 +24,4 @@ The PingFederate provider supports version `11.2` of PingFederate.
 - `insecure_trust_all_tls` (Boolean) Set to true to trust any certificate when connecting to the PingFederate server. This is insecure and should not be enabled outside of testing. Default value can be set with the `PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS` environment variable.
 - `password` (String, Sensitive) Password for PingFederate Admin user. Default value can be set with the `PINGFEDERATE_PROVIDER_PASSWORD` environment variable.
 - `username` (String) Username for PingFederate Admin user. Default value can be set with the `PINGFEDERATE_PROVIDER_USERNAME` environment variable.
-
+- `x_bypass_external_validation_header` (Boolean) Header value in request for PingFederate. The connection test will be bypassed when set to true. Default value is false.

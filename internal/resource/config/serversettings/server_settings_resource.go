@@ -11,11 +11,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -139,6 +139,61 @@ var (
 		"site_key":   basetypes.StringType{},
 		"secret_key": basetypes.StringType{},
 	}
+
+	contactInfoDefault, _ = types.ObjectValue(contactInfoAttrType, map[string]attr.Value{
+		"company":    types.StringNull(),
+		"email":      types.StringNull(),
+		"first_name": types.StringNull(),
+		"last_name":  types.StringNull(),
+		"phone":      types.StringNull(),
+	})
+
+	notificationsDefault, _ = types.ObjectValue(notificationsAttrType, map[string]attr.Value{
+		"license_events":                             types.ObjectNull(notificationSettingsAttrType),
+		"certificate_expirations":                    types.ObjectNull(certificateExpirationsAttrType),
+		"notify_admin_user_password_changes":         types.BoolValue(false),
+		"account_changes_notification_publisher_ref": types.ObjectNull(resourcelink.AttrType()),
+		"metadata_notification_settings":             types.ObjectNull(notificationSettingsAttrType),
+	})
+
+	oauthRoleDefault, _ = types.ObjectValue(oauthRoleAttrType, map[string]attr.Value{
+		"enable_oauth":           types.BoolValue(true),
+		"enable_open_id_connect": types.BoolValue(true),
+	})
+	idpSamlProfileDefault, _ = types.ObjectValue(idpSaml20ProfileAttrType, map[string]attr.Value{
+		"enable":              types.BoolValue(true),
+		"enable_auto_connect": types.BoolNull(),
+	})
+	spSamlProfileDefault, _ = types.ObjectValue(spSaml20ProfileAttrType, map[string]attr.Value{
+		"enable":              types.BoolValue(true),
+		"enable_auto_connect": types.BoolNull(),
+		"enable_xasp":         types.BoolValue(true),
+	})
+	idpRoleDefault, _ = types.ObjectValue(idpRoleAttrType, map[string]attr.Value{
+		"enable":                       types.BoolValue(true),
+		"enable_saml_1_1":              types.BoolValue(true),
+		"enable_saml_1_0":              types.BoolValue(true),
+		"enable_ws_fed":                types.BoolValue(true),
+		"enable_ws_trust":              types.BoolValue(true),
+		"saml_2_0_profile":             idpSamlProfileDefault,
+		"enable_outbound_provisioning": types.BoolValue(true),
+	})
+	spRoleDefault, _ = types.ObjectValue(spRoleAttrType, map[string]attr.Value{
+		"enable":                      types.BoolValue(true),
+		"enable_saml_1_1":             types.BoolValue(true),
+		"enable_saml_1_0":             types.BoolValue(true),
+		"enable_ws_fed":               types.BoolValue(true),
+		"enable_ws_trust":             types.BoolValue(true),
+		"saml_2_0_profile":            spSamlProfileDefault,
+		"enable_open_id_connect":      types.BoolValue(true),
+		"enable_inbound_provisioning": types.BoolValue(true),
+	})
+	rolesAndProtocolsDefault, _ = types.ObjectValue(rolesAndProtocolsAttrType, map[string]attr.Value{
+		"oauth_role":           oauthRoleDefault,
+		"idp_role":             idpRoleDefault,
+		"sp_role":              spRoleDefault,
+		"enable_idp_discovery": types.BoolValue(true),
+	})
 )
 
 // ServerSettingsResource is a helper function to simplify the provider implementation.
@@ -171,52 +226,30 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 				Description: "Information that identifies the server.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
+				Default:     objectdefault.StaticValue(contactInfoDefault),
 				Attributes: map[string]schema.Attribute{
 					"company": schema.StringAttribute{
 						Description: "Company name.",
-						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"email": schema.StringAttribute{
 						Description: "Contact email address.",
-						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 						Validators: []validator.String{
 							configvalidators.ValidEmail(),
 						},
 					},
 					"first_name": schema.StringAttribute{
 						Description: "Contact first name.",
-						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"last_name": schema.StringAttribute{
 						Description: "Contact last name.",
-						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"phone": schema.StringAttribute{
 						Description: "Contact phone number.",
-						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 				},
 			},
@@ -224,23 +257,15 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 				Description: "Notification settings for license and certificate expiration events.",
 				Optional:    true,
 				Computed:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
+				Default:     objectdefault.StaticValue(notificationsDefault),
 				Attributes: map[string]schema.Attribute{
 					"license_events": schema.SingleNestedAttribute{
 						Description: "Settings for license event notifications.",
 						Optional:    true,
-						PlanModifiers: []planmodifier.Object{
-							objectplanmodifier.UseStateForUnknown(),
-						},
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
 								Description: "The email address where notifications are sent.",
 								Required:    true,
-								PlanModifiers: []planmodifier.String{
-									stringplanmodifier.UseStateForUnknown(),
-								},
 								Validators: []validator.String{
 									configvalidators.ValidEmail(),
 								},
@@ -248,26 +273,17 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 							"notification_publisher_ref": schema.SingleNestedAttribute{
 								Description: "Reference to the associated notification publisher.",
 								Optional:    true,
-								PlanModifiers: []planmodifier.Object{
-									objectplanmodifier.UseStateForUnknown(),
-								},
-								Attributes: resourcelink.ToSchema(),
+								Attributes:  resourcelink.ToSchema(),
 							},
 						},
 					},
 					"certificate_expirations": schema.SingleNestedAttribute{
 						Description: "Settings for license event notifications.",
 						Optional:    true,
-						PlanModifiers: []planmodifier.Object{
-							objectplanmodifier.UseStateForUnknown(),
-						},
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
 								Description: "The email address where notifications are sent.",
 								Required:    true,
-								PlanModifiers: []planmodifier.String{
-									stringplanmodifier.UseStateForUnknown(),
-								},
 								Validators: []validator.String{
 									configvalidators.ValidEmail(),
 								},
@@ -275,9 +291,6 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 							"initial_warning_period": schema.Int64Attribute{
 								Description: "Time before certificate expiration when initial warning is sent (in days).",
 								Optional:    true,
-								PlanModifiers: []planmodifier.Int64{
-									int64planmodifier.UseStateForUnknown(),
-								},
 							},
 							"final_warning_period": schema.Int64Attribute{
 								Description: "Time before certificate expiration when final warning is sent (in days).",
@@ -290,10 +303,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 							"notification_publisher_ref": schema.SingleNestedAttribute{
 								Description: "Reference to the associated notification publisher.",
 								Optional:    true,
-								PlanModifiers: []planmodifier.Object{
-									objectplanmodifier.UseStateForUnknown(),
-								},
-								Attributes: resourcelink.ToSchema(),
+								Attributes:  resourcelink.ToSchema(),
 							},
 						},
 					},
@@ -302,24 +312,15 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
-						PlanModifiers: []planmodifier.Bool{
-							boolplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"account_changes_notification_publisher_ref": schema.SingleNestedAttribute{
 						Description: "Reference to the associated notification publisher for admin user account changes.",
 						Optional:    true,
-						PlanModifiers: []planmodifier.Object{
-							objectplanmodifier.UseStateForUnknown(),
-						},
-						Attributes: resourcelink.ToSchema(),
+						Attributes:  resourcelink.ToSchema(),
 					},
 					"metadata_notification_settings": schema.SingleNestedAttribute{
 						Description: "Settings for metadata update event notifications.",
 						Optional:    true,
-						PlanModifiers: []planmodifier.Object{
-							objectplanmodifier.UseStateForUnknown(),
-						},
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
 								Description: "The email address where notifications are sent.",
@@ -327,17 +328,11 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								Validators: []validator.String{
 									configvalidators.ValidEmail(),
 								},
-								PlanModifiers: []planmodifier.String{
-									stringplanmodifier.UseStateForUnknown(),
-								},
 							},
 							"notification_publisher_ref": schema.SingleNestedAttribute{
 								Description: "Reference to the associated notification publisher.",
 								Optional:    true,
-								PlanModifiers: []planmodifier.Object{
-									objectplanmodifier.UseStateForUnknown(),
-								},
-								Attributes: resourcelink.ToSchema(),
+								Attributes:  resourcelink.ToSchema(),
 							},
 						},
 					},
@@ -346,34 +341,26 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 			"roles_and_protocols": schema.SingleNestedAttribute{
 				Description: "Configure roles and protocols.",
 				Computed:    true,
-				Optional:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
+				Optional:    false,
+				Default:     objectdefault.StaticValue(rolesAndProtocolsDefault),
 				Attributes: map[string]schema.Attribute{
 					"oauth_role": schema.SingleNestedAttribute{
 						Description: "OAuth role settings.",
 						Computed:    true,
 						Optional:    false,
-						PlanModifiers: []planmodifier.Object{
-							objectplanmodifier.UseStateForUnknown(),
-						},
+						Default:     objectdefault.StaticValue(oauthRoleDefault),
 						Attributes: map[string]schema.Attribute{
 							"enable_oauth": schema.BoolAttribute{
 								Description: "Enable OAuth 2.0 Authorization Server (AS) Role.",
 								Computed:    true,
 								Optional:    false,
-								PlanModifiers: []planmodifier.Bool{
-									boolplanmodifier.UseStateForUnknown(),
-								},
+								Default:     booldefault.StaticBool(true),
 							},
 							"enable_open_id_connect": schema.BoolAttribute{
 								Description: "Enable Open ID Connect.",
 								Computed:    true,
 								Optional:    false,
-								PlanModifiers: []planmodifier.Bool{
-									boolplanmodifier.UseStateForUnknown(),
-								},
+								Default:     booldefault.StaticBool(true),
 							},
 						},
 					},
@@ -381,73 +368,55 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Description: "Identity Provider (IdP) settings.",
 						Computed:    true,
 						Optional:    false,
-						PlanModifiers: []planmodifier.Object{
-							objectplanmodifier.UseStateForUnknown(),
-						},
+						Default:     objectdefault.StaticValue(idpRoleDefault),
 						Attributes: map[string]schema.Attribute{
 							"enable": schema.BoolAttribute{
 								Description: "Enable Identity Provider Role.",
 								Computed:    true,
 								Optional:    false,
-								PlanModifiers: []planmodifier.Bool{
-									boolplanmodifier.UseStateForUnknown(),
-								},
+								Default:     booldefault.StaticBool(true),
 							},
 							"enable_saml_1_1": schema.BoolAttribute{
 								Description: "Enable SAML 1.1.",
 								Computed:    true,
 								Optional:    false,
-								PlanModifiers: []planmodifier.Bool{
-									boolplanmodifier.UseStateForUnknown(),
-								},
+								Default:     booldefault.StaticBool(true),
 							},
 							"enable_saml_1_0": schema.BoolAttribute{
 								Description: "Enable SAML 1.0.",
 								Computed:    true,
 								Optional:    false,
-								PlanModifiers: []planmodifier.Bool{
-									boolplanmodifier.UseStateForUnknown(),
-								},
+								Default:     booldefault.StaticBool(true),
 							},
 							"enable_ws_fed": schema.BoolAttribute{
 								Description: "Enable WS Federation.",
 								Computed:    true,
 								Optional:    false,
-								PlanModifiers: []planmodifier.Bool{
-									boolplanmodifier.UseStateForUnknown(),
-								},
+								Default:     booldefault.StaticBool(true),
 							},
 							"enable_ws_trust": schema.BoolAttribute{
 								Description: "Enable WS Trust.",
 								Computed:    true,
 								Optional:    false,
-								PlanModifiers: []planmodifier.Bool{
-									boolplanmodifier.UseStateForUnknown(),
-								},
+								Default:     booldefault.StaticBool(true),
 							},
 							"saml_2_0_profile": schema.SingleNestedAttribute{
 								Description: "SAML 2.0 Profile settings.",
 								Computed:    true,
 								Optional:    false,
-								PlanModifiers: []planmodifier.Object{
-									objectplanmodifier.UseStateForUnknown(),
-								},
+								Default:     objectdefault.StaticValue(idpSamlProfileDefault),
 								Attributes: map[string]schema.Attribute{
 									"enable": schema.BoolAttribute{
 										Description: "Enable SAML2.0 profile.",
 										Computed:    true,
 										Optional:    false,
-										PlanModifiers: []planmodifier.Bool{
-											boolplanmodifier.UseStateForUnknown(),
-										},
+										Default:     booldefault.StaticBool(true),
 									},
 									"enable_auto_connect": schema.BoolAttribute{
 										Description: "This property has been deprecated and no longer used.",
 										Computed:    true,
 										Optional:    false,
-										PlanModifiers: []planmodifier.Bool{
-											boolplanmodifier.UseStateForUnknown(),
-										},
+										Default:     booldefault.StaticBool(true),
 									},
 								},
 							},
@@ -455,9 +424,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								Description: "Enable Outbound Provisioning.",
 								Computed:    true,
 								Optional:    false,
-								PlanModifiers: []planmodifier.Bool{
-									boolplanmodifier.UseStateForUnknown(),
-								},
+								Default:     booldefault.StaticBool(true),
 							},
 						},
 					},
@@ -465,81 +432,61 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Description: "Service Provider (SP) settings.",
 						Computed:    true,
 						Optional:    false,
-						PlanModifiers: []planmodifier.Object{
-							objectplanmodifier.UseStateForUnknown(),
-						},
+						Default:     objectdefault.StaticValue(spRoleDefault),
 						Attributes: map[string]schema.Attribute{
 							"enable": schema.BoolAttribute{
 								Description: "Enable Service Provider Role.",
 								Computed:    true,
 								Optional:    false,
-								PlanModifiers: []planmodifier.Bool{
-									boolplanmodifier.UseStateForUnknown(),
-								},
+								Default:     booldefault.StaticBool(true),
 							},
 							"enable_saml_1_1": schema.BoolAttribute{
 								Description: "Enable SAML 1.1.",
 								Computed:    true,
 								Optional:    false,
-								PlanModifiers: []planmodifier.Bool{
-									boolplanmodifier.UseStateForUnknown(),
-								},
+								Default:     booldefault.StaticBool(true),
 							},
 							"enable_saml_1_0": schema.BoolAttribute{
 								Description: "Enable SAML 1.0.",
 								Computed:    true,
 								Optional:    false,
-								PlanModifiers: []planmodifier.Bool{
-									boolplanmodifier.UseStateForUnknown(),
-								},
+								Default:     booldefault.StaticBool(true),
 							},
 							"enable_ws_fed": schema.BoolAttribute{
 								Description: "Enable WS Federation.",
 								Computed:    true,
 								Optional:    false,
-								PlanModifiers: []planmodifier.Bool{
-									boolplanmodifier.UseStateForUnknown(),
-								},
+								Default:     booldefault.StaticBool(true),
 							},
 							"enable_ws_trust": schema.BoolAttribute{
 								Description: "Enable WS Trust.",
 								Computed:    true,
 								Optional:    false,
-								PlanModifiers: []planmodifier.Bool{
-									boolplanmodifier.UseStateForUnknown(),
-								},
+								Default:     booldefault.StaticBool(true),
 							},
 							"saml_2_0_profile": schema.SingleNestedAttribute{
 								Description: "SAML 2.0 Profile settings.",
 								Computed:    true,
 								Optional:    false,
-								PlanModifiers: []planmodifier.Object{
-									objectplanmodifier.UseStateForUnknown(),
-								},
+								Default:     objectdefault.StaticValue(spSamlProfileDefault),
 								Attributes: map[string]schema.Attribute{
 									"enable": schema.BoolAttribute{
 										Description: "Enable SAML2.0 profile.",
 										Computed:    true,
 										Optional:    false,
-										PlanModifiers: []planmodifier.Bool{
-											boolplanmodifier.UseStateForUnknown(),
-										},
+										Default:     booldefault.StaticBool(true),
 									},
 									"enable_auto_connect": schema.BoolAttribute{
 										Description: "This property has been deprecated and no longer used.",
 										Computed:    true,
 										Optional:    false,
-										PlanModifiers: []planmodifier.Bool{
-											boolplanmodifier.UseStateForUnknown(),
-										},
+										Default:     booldefault.StaticBool(true),
 									},
 									"enable_xasp": schema.BoolAttribute{
 										Description: "Enable Attribute Requester Mapping for X.509 Attribute Sharing Profile (XASP)",
 										Computed:    true,
 										Optional:    false,
-										PlanModifiers: []planmodifier.Bool{
-											boolplanmodifier.UseStateForUnknown(),
-										},
+										Default:     booldefault.StaticBool(true),
 									},
 								},
 							},
@@ -547,17 +494,13 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								Description: "Enable OpenID Connect.",
 								Computed:    true,
 								Optional:    false,
-								PlanModifiers: []planmodifier.Bool{
-									boolplanmodifier.UseStateForUnknown(),
-								},
+								Default:     booldefault.StaticBool(true),
 							},
 							"enable_inbound_provisioning": schema.BoolAttribute{
 								Description: "Enable Inbound Provisioning.",
 								Computed:    true,
 								Optional:    false,
-								PlanModifiers: []planmodifier.Bool{
-									boolplanmodifier.UseStateForUnknown(),
-								},
+								Default:     booldefault.StaticBool(true),
 							},
 						},
 					},
@@ -565,18 +508,13 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Description: "Enable IdP Discovery.",
 						Computed:    true,
 						Optional:    false,
-						PlanModifiers: []planmodifier.Bool{
-							boolplanmodifier.UseStateForUnknown(),
-						},
+						Default:     booldefault.StaticBool(true),
 					},
 				},
 			},
 			"federation_info": schema.SingleNestedAttribute{
 				Description: "Federation Info.",
 				Required:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
 				Attributes: map[string]schema.Attribute{
 					"base_url": schema.StringAttribute{
 						Description: "The fully qualified host name, port, and path (if applicable) on which the PingFederate server runs.",
@@ -584,49 +522,34 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Validators: []validator.String{
 							configvalidators.ValidUrl(),
 						},
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"saml_2_entity_id": schema.StringAttribute{
 						Description: "This ID defines your organization as the entity operating the server for SAML 2.0 transactions. It is usually defined as an organization's URL or a DNS address; for example: pingidentity.com. The SAML SourceID used for artifact resolution is derived from this ID using SHA1.",
-						Computed:    true,
-						Optional:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
+						Required:    true,
 					},
 					"auto_connect_entity_id": schema.StringAttribute{
 						Description: "This property has been deprecated and no longer used",
 						Computed:    true,
 						Optional:    false,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
+						Default:     stringdefault.StaticString(""),
 					},
 					"saml_1x_issuer_id": schema.StringAttribute{
 						Description: "This ID identifies your federation server for SAML 1.x transactions. As with SAML 2.0, it is usually defined as an organization's URL or a DNS address. The SourceID used for artifact resolution is derived from this ID using SHA1.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
+						Default:     stringdefault.StaticString(""),
 					},
 					"saml_1x_source_id": schema.StringAttribute{
 						Description: "If supplied, the Source ID value entered here is used for SAML 1.x, instead of being derived from the SAML 1.x Issuer/Audience.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
+						Default:     stringdefault.StaticString(""),
 					},
 					"wsfed_realm": schema.StringAttribute{
 						Description: "The URI of the realm associated with the PingFederate server. A realm represents a single unit of security administration or trust.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
+						Default:     stringdefault.StaticString(""),
 					},
 				},
 			},
@@ -634,9 +557,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 				Description: "Email Server Settings.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
+				Default:     objectdefault.StaticValue(types.ObjectNull(emailServerAttrType)),
 				Attributes: map[string]schema.Attribute{
 					"source_addr": schema.StringAttribute{
 						Description: "The email address that appears in the 'From' header line in email messages generated by PingFederate. The address must be in valid format but need not be set up on your system.",
@@ -698,41 +619,31 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Description: "Requires the use of SSL/TLS on the port specified by 'sslPort'. If this option is enabled, it overrides the 'useTLS' option.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.Bool{
-							boolplanmodifier.UseStateForUnknown(),
-						},
+						Default:     booldefault.StaticBool(false),
 					},
 					"use_tls": schema.BoolAttribute{
 						Description: "Requires the use of the STARTTLS protocol on the port specified by 'port'.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.Bool{
-							boolplanmodifier.UseStateForUnknown(),
-						},
+						Default:     booldefault.StaticBool(false),
 					},
 					"verify_hostname": schema.BoolAttribute{
 						Description: "If useSSL or useTLS is enabled, this flag determines whether the email server hostname is verified against the server's SMTPS certificate.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.Bool{
-							boolplanmodifier.UseStateForUnknown(),
-						},
+						Default:     booldefault.StaticBool(false),
 					},
 					"enable_utf8_message_headers": schema.BoolAttribute{
 						Description: "Only set this flag to true if the email server supports UTF-8 characters in message headers. Otherwise, this is defaulted to false.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.Bool{
-							boolplanmodifier.UseStateForUnknown(),
-						},
+						Default:     booldefault.StaticBool(false),
 					},
 					"use_debugging": schema.BoolAttribute{
 						Description: "Turns on detailed error messages for the PingFederate server log to help troubleshoot any problems.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.Bool{
-							boolplanmodifier.UseStateForUnknown(),
-						},
+						Default:     booldefault.StaticBool(false),
 					},
 					"username": schema.StringAttribute{
 						Description: "Authorized email username. Required if the password is provided.",
@@ -745,9 +656,8 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Description: "User password. To update the password, specify the plaintext value in this field. This field will not be populated for GET requests.",
 						Computed:    true,
 						Optional:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
+						Sensitive:   true,
+						Default:     stringdefault.StaticString(""),
 					},
 				},
 			},
@@ -755,17 +665,11 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 				Description: "Captcha Settings.",
 				Computed:    true,
 				Optional:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
+				Default:     objectdefault.StaticValue(types.ObjectNull(captchaSettingsAttrType)),
 				Attributes: map[string]schema.Attribute{
 					"site_key": schema.StringAttribute{
 						Description: "Site key for reCAPTCHA.",
-						Computed:    true,
-						Optional:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
+						Required:    true,
 					},
 					"secret_key": schema.StringAttribute{
 						Description: "Secret key for reCAPTCHA. GETs will not return this attribute. To update this field, specify the new value in this attribute.",
@@ -1006,10 +910,6 @@ func (r *serverSettingsResource) Create(ctx context.Context, req resource.Create
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings", err.Error())
 		return
 	}
-	_, requestErr := createServerSettings.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Server Settings: %s", requestErr.Error())
-	}
 
 	apiCreateServerSettings := r.apiClient.ServerSettingsAPI.UpdateServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateServerSettings = apiCreateServerSettings.Body(*createServerSettings)
@@ -1017,10 +917,6 @@ func (r *serverSettingsResource) Create(ctx context.Context, req resource.Create
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Server Settings", err, httpResp)
 		return
-	}
-	_, responseErr := serverSettingsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Server Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -1032,11 +928,6 @@ func (r *serverSettingsResource) Create(ctx context.Context, req resource.Create
 }
 
 // Read the server settings resource from the PingFederate API and update the state accordingly.
-// It retrieves the current state of the resource, sends a GET request to the PingFederate API to get the server settings,
-// and updates the state with the response. If an error occurs, it logs the error and returns the error message.
-// If the server settings resource is not found, it removes the resource from the state.
-// It also logs the response JSON and sets the refreshed state.
-// If the response is empty, it logs a warning and removes the resource from the state.
 func (r *serverSettingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state serverSettingsResourceModel
 
@@ -1055,11 +946,6 @@ func (r *serverSettingsResource) Read(ctx context.Context, req resource.ReadRequ
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings", err, httpResp)
 		}
 		return
-	}
-	// Log response JSON
-	_, responseErr := apiReadServerSettings.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Server Settings: %s", responseErr.Error())
 	}
 
 	// Read the response into the state
@@ -1093,21 +979,14 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings", err.Error())
 		return
 	}
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of Server Settings: %s", requestErr.Error())
-	}
+
 	updateServerSettings = updateServerSettings.Body(*createUpdateRequest)
 	updateServerSettingsResponse, httpResp, err := r.apiClient.ServerSettingsAPI.UpdateServerSettingsExecute(updateServerSettings)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Server Settings", err, httpResp)
 		return
 	}
-	// Log response JSON
-	_, responseErr := updateServerSettingsResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of Server Settings: %s", responseErr.Error())
-	}
+
 	// Read the response
 	var state serverSettingsResourceModel
 	id, diags := id.GetID(ctx, req.State)

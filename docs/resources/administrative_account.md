@@ -13,10 +13,15 @@ Manages a AdministrativeAccount.
 ## Example Usage
 
 ```terraform
+# WARNING! You will need to secure your state file properly when using this resource! #
+# Please refer to the link below on how to best store state files and data within. #
+# https://developer.hashicorp.com/terraform/plugin/best-practices/sensitive-state #
+
 resource "pingfederate_administrative_account" "myAdministrativeAccount" {
-  username = "example"
-  password = "2FederateM0re"
-  roles    = ["USER_ADMINISTRATOR"]
+  username    = "example"
+  description = "description"
+  password    = "2FederateM0re"
+  roles       = ["USER_ADMINISTRATOR"]
 }
 ```
 
@@ -25,7 +30,7 @@ resource "pingfederate_administrative_account" "myAdministrativeAccount" {
 
 ### Required
 
-- `password` (String, Sensitive) Password for the Account. This field is only applicable during a POST operation.
+- `password` (String, Sensitive) Password for the Account. This field is only applicable during account creation.
 - `roles` (Set of String) Roles available for an administrator. USER_ADMINISTRATOR - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. CRYPTO_ADMINISTRATOR - Can manage local keys and certificates. ADMINISTRATOR - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. EXPRESSION_ADMINISTRATOR - Can add and update OGNL expressions.
 - `username` (String) Username for the Administrative Account.
 
@@ -40,6 +45,7 @@ resource "pingfederate_administrative_account" "myAdministrativeAccount" {
 
 ### Read-Only
 
+- `encrypted_password` (String, Sensitive) Read-only attribute. This field holds the value returned from PingFederate and used for updating an existing Administrative Account.
 - `id` (String) The ID of this resource.
 
 ## Import

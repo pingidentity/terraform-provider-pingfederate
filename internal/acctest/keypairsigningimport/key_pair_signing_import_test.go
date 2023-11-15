@@ -35,6 +35,12 @@ func TestAccKeyPairsSigningImport(t *testing.T) {
 		format:   format,
 		password: password,
 	}
+	updatedResourceModel := keyPairsSigningImportResourceModel{
+		id:       keyPairsSigningImportId,
+		fileData: fileData2,
+		format:   format,
+		password: password,
+	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
@@ -48,11 +54,17 @@ func TestAccKeyPairsSigningImport(t *testing.T) {
 				Check:  testAccCheckExpectedKeyPairsSigningImportAttributes(initialResourceModel),
 			},
 			{
+				// Test updating the resource. This should force a replace.
+				Config: testAccKeyPairsSigningImport(resourceName, updatedResourceModel),
+				Check:  testAccCheckExpectedKeyPairsSigningImportAttributes(updatedResourceModel),
+			},
+			{
 				// Test importing the resource
-				Config:            testAccKeyPairsSigningImport(resourceName, initialResourceModel),
-				ResourceName:      "pingfederate_key_pair_signing_import." + resourceName,
-				ImportStateId:     keyPairsSigningImportId,
-				ImportState:       true,
+				Config:        testAccKeyPairsSigningImport(resourceName, initialResourceModel),
+				ResourceName:  "pingfederate_key_pair_signing_import." + resourceName,
+				ImportStateId: keyPairsSigningImportId,
+				ImportState:   true,
+				// PF won't return info about the key pair, so we can't verify the import state
 				ImportStateVerify: false,
 			},
 		},
@@ -62,7 +74,7 @@ func TestAccKeyPairsSigningImport(t *testing.T) {
 func testAccKeyPairsSigningImport(resourceName string, resourceModel keyPairsSigningImportResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_key_pair_signing_import" "%[1]s" {
-  custom_id = "%[2]s"
+  import_id = "%[2]s"
   file_data = "%[3]s"
   format    = "%[4]s"
   password  = "%[5]s"
@@ -75,7 +87,6 @@ data "pingfederate_key_pair_signing_import" "%[1]s" {
 		resourceModel.fileData,
 		resourceModel.format,
 		resourceModel.password,
-		fileData2,
 	)
 }
 

@@ -9,22 +9,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-// Attributes to test with. Add optional properties to test here if desired.
-type serverSettingsLogSettingsResourceModel struct {
-	logCategoriesEnabled bool
-}
-
 func TestAccServerSettingsLogSettings(t *testing.T) {
 	resourceName := "myServerSettingsLogSettings"
-	initialResourceModel := serverSettingsLogSettingsResourceModel{
-		logCategoriesEnabled: false,
-	}
-	updatedResourceModel := serverSettingsLogSettingsResourceModel{
-		logCategoriesEnabled: true,
-	}
+	//TODO when the plugin framework fixes issues with Set plans, we can test this resource with a
+	// minimal model. For now, just testing setting all values. See the schema
+	// in server_settings_log_settings_resource.go for details.
+	logCategoriesEnabledInitial := pointers.Bool(true)
+	logCategoriesEnabled := pointers.Bool(true)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
@@ -33,79 +28,77 @@ func TestAccServerSettingsLogSettings(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: testAccServerSettingsLogSettings(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedServerSettingsLogSettingsAttributes(initialResourceModel),
+				Config: testAccServerSettingsLogSettings(resourceName, logCategoriesEnabledInitial),
+				Check:  testAccCheckExpectedServerSettingsLogSettingsAttributes(logCategoriesEnabledInitial),
 			},
 			{
 				// Test updating some fields
-				Config: testAccServerSettingsLogSettings(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedServerSettingsLogSettingsAttributes(updatedResourceModel),
+				Config: testAccServerSettingsLogSettings(resourceName, logCategoriesEnabled),
+				Check:  testAccCheckExpectedServerSettingsLogSettingsAttributes(logCategoriesEnabled),
 			},
 			{
 				// Test importing the resource
-				Config:            testAccServerSettingsLogSettings(resourceName, updatedResourceModel),
+				Config:            testAccServerSettingsLogSettings(resourceName, logCategoriesEnabled),
 				ResourceName:      "pingfederate_server_settings_log_settings." + resourceName,
 				ImportState:       true,
-				ImportStateVerify: false,
+				ImportStateVerify: true,
+			},
+			{
+				// Back to minimal model
+				Config: testAccServerSettingsLogSettings(resourceName, logCategoriesEnabledInitial),
+				Check:  testAccCheckExpectedServerSettingsLogSettingsAttributes(logCategoriesEnabledInitial),
 			},
 		},
 	})
 }
 
-func testAccServerSettingsLogSettings(resourceName string, resourceModel serverSettingsLogSettingsResourceModel) string {
-	return fmt.Sprintf(`
-resource "pingfederate_server_settings_log_settings" "%[1]s" {
-  log_categories = [
+func testAccServerSettingsLogSettings(resourceName string, logCategoriesEnabled *bool) string {
+	logCategoriesHcl := ""
+	if logCategoriesEnabled != nil {
+		logCategoriesHcl = fmt.Sprintf(`
+log_categories = [
     {
-      id          = "core"
-      name        = "Core"
-      description = "Debug logging for core components."
-      enabled     = true
+      id      = "policytree"
+      enabled = false
     },
     {
-      id          = "policytree"
-      name        = "Policy Tree"
-      description = "Policy tree debug logging."
-      enabled     = false
+      id      = "core"
+      enabled = true
     },
     {
-      id          = "trustedcas"
-      name        = "Trusted CAs"
-      description = "Log PingFederate and JRE trusted CAs when they are loaded."
-      enabled     = true
+      id      = "trustedcas"
+      enabled = true
     },
     {
-      id          = "xmlsig"
-      name        = "XML Signatures"
-      description = "Debug logging for XML signature operations."
-      enabled     = %[2]t
+      id      = "xmlsig"
+      enabled = %t
     },
     {
-      id          = "requestheaders"
-      name        = "HTTP Request Headers"
-      description = "Log HTTP request headers. Sensitive information, such as passwords, may be logged when this category is enabled."
-      enabled     = false
+      id      = "requestheaders"
+      enabled = false
     },
     {
-      id          = "requestparams"
-      name        = "HTTP Request Parameters"
-      description = "Log HTTP GET request parameters. Sensitive information, such as passwords, may be logged when this category is enabled."
-      enabled     = true
+      id      = "requestparams"
+      enabled = true
     },
     {
-      id          = "restdatastore"
-      name        = "REST Data Store Requests and Responses"
-      description = "Log REST datastore requests and responses. Sensitive information, such as passwords, may be logged when this category is enabled."
-      enabled     = true
+      id      = "restdatastore"
+      enabled = true
     },
   ]
+`, *logCategoriesEnabled)
+	}
+
+	return fmt.Sprintf(`
+resource "pingfederate_server_settings_log_settings" "%s" {
+	%s
 }`, resourceName,
-		resourceModel.logCategoriesEnabled,
+		logCategoriesHcl,
 	)
 }
 
 // Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedServerSettingsLogSettingsAttributes(config serverSettingsLogSettingsResourceModel) resource.TestCheckFunc {
+func testAccCheckExpectedServerSettingsLogSettingsAttributes(logCategoriesEnabled *bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		resourceType := "ServerSettingsLogSettings"
 		testClient := acctest.TestClient()
@@ -115,6 +108,11 @@ func testAccCheckExpectedServerSettingsLogSettingsAttributes(config serverSettin
 		if err != nil {
 			return err
 		}
+
+		if logCategoriesEnabled == nil {
+			return nil
+		}
+
 		var logCategoryEnabledVal *bool
 		logCategories := response.GetLogCategories()
 		for i := 0; i < len(logCategories); i++ {
@@ -123,7 +121,7 @@ func testAccCheckExpectedServerSettingsLogSettingsAttributes(config serverSettin
 				logCategoryEnabledVal = logCategories[i].Enabled
 			}
 		}
-		err = acctest.TestAttributesMatchBool(resourceType, nil, "enabled", config.logCategoriesEnabled, *logCategoryEnabledVal)
+		err = acctest.TestAttributesMatchBool(resourceType, nil, "enabled", *logCategoriesEnabled, *logCategoryEnabledVal)
 		if err != nil {
 			return err
 		}

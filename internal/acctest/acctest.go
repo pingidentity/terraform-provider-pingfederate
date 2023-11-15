@@ -22,6 +22,7 @@ func ConfigurationPreCheck(t *testing.T) {
 		"PINGFEDERATE_PROVIDER_USERNAME",
 		"PINGFEDERATE_PROVIDER_PASSWORD",
 		"PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS",
+		"PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER",
 	}
 
 	errorFound := false
@@ -41,6 +42,7 @@ func TestClient() *client.APIClient {
 	httpsHost := os.Getenv("PINGFEDERATE_PROVIDER_HTTPS_HOST")
 	clientConfig := client.NewConfiguration()
 	clientConfig.DefaultHeader["X-Xsrf-Header"] = "PingFederate"
+	clientConfig.DefaultHeader["X-BypassExternalValidation"] = os.Getenv("PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER")
 	clientConfig.Servers = client.ServerConfigurations{
 		{
 			URL: httpsHost + "/pf-admin-api/v1",
@@ -122,6 +124,22 @@ func InterfaceSliceToStringSlice(values []interface{}) []string {
 		stringSlice = append(stringSlice, element)
 	}
 	return stringSlice
+}
+
+func TfKeyValuePairToString(key string, value string, addDoubleQuotes bool) string {
+	if len(value) > 0 && value != "0" {
+		quoteVal := func() string {
+			if addDoubleQuotes {
+				return "\""
+			}
+			return ""
+		}
+
+		q := quoteVal()
+		return fmt.Sprintf("%s = %s%s%s", key, q, value, q)
+	} else {
+		return ""
+	}
 }
 
 // Utility methods for testing whether attributes match the expected values

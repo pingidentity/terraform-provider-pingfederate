@@ -3,12 +3,12 @@
 page_title: "pingfederate_key_pair_ssl_server_import Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a KeyPairsSslServerImport.
+  Describes a KeyPairsSslServerImport.
 ---
 
 # pingfederate_key_pair_ssl_server_import (Data Source)
 
-Manages a KeyPairsSslServerImport.
+Describes a KeyPairsSslServerImport.
 
 ## Example Usage
 

@@ -3,17 +3,17 @@
 page_title: "pingfederate_oauth_auth_server_settings_scopes_exclusive_scope Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a OauthAuthServerSettingsScopesExclusiveScopes.
+  Manages an Oauth Auth Server Settings Scopes Exclusive Scope.
 ---
 
 # pingfederate_oauth_auth_server_settings_scopes_exclusive_scope (Resource)
 
-Manages a OauthAuthServerSettingsScopesExclusiveScopes.
+Manages an Oauth Auth Server Settings Scopes Exclusive Scope.
 
 ## Example Usage
 
 ```terraform
-resource "pingfederate_oauth_auth_server_settings_scopes_exclusive_scope" "oauthAuthServerSettingsScopesExclusiveScopeExample" {
+resource "pingfederate_oauth_auth_server_settings_scopes_exclusive_scope" "myOauthAuthServerSettingsScopesExclusiveScope" {
   dynamic     = true
   description = "example"
   name        = "*exampleExclusiveScope"
@@ -26,11 +26,11 @@ resource "pingfederate_oauth_auth_server_settings_scopes_exclusive_scope" "oauth
 ### Required
 
 - `description` (String) The description of the scope that appears when the user is prompted for authorization.
+- `name` (String) The name of the scope.
 
 ### Optional
 
 - `dynamic` (Boolean) True if the scope is dynamic. (Defaults to false)
-- `name` (String) The name of the scope.
 
 ### Read-Only
 

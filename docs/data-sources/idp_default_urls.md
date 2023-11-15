@@ -3,12 +3,12 @@
 page_title: "pingfederate_idp_default_urls Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a IdpDefaultUrls.
+  Describes a IdpDefaultUrls.
 ---
 
 # pingfederate_idp_default_urls (Data Source)
 
-Manages a IdpDefaultUrls.
+Describes a IdpDefaultUrls.
 
 ## Example Usage
 
