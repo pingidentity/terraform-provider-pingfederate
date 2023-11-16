@@ -6,10 +6,13 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
@@ -138,6 +141,9 @@ func (r *oauthOpenIdConnectPolicyResource) Schema(ctx context.Context, req resou
 						Description: "A list of read-only attributes (for example, sub) that are automatically populated by PingFederate.",
 						Computed:    true,
 						Optional:    false,
+						PlanModifiers: []planmodifier.List{
+							listplanmodifier.UseStateForUnknown(),
+						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -215,24 +221,24 @@ func (r *oauthOpenIdConnectPolicyResource) Schema(ctx context.Context, req resou
 	resp.Schema = schema
 }
 
-func addOptionalOauthOpenIdConnectPolicyFields(ctx context.Context, addRequest *client.OpenIdConnectPolicy, plan oauthOpenIdConnectPolicyResourceModel) error {
+func addOptionalOauthOpenIdConnectPolicyFields(ctx context.Context, policy *client.OpenIdConnectPolicy, plan oauthOpenIdConnectPolicyResourceModel) error {
 	if internaltypes.IsDefined(plan.IdTokenLifetime) {
-		addRequest.IdTokenLifetime = plan.IdTokenLifetime.ValueInt64Pointer()
+		policy.IdTokenLifetime = plan.IdTokenLifetime.ValueInt64Pointer()
 	}
 	if internaltypes.IsDefined(plan.IncludeSriInIdToken) {
-		addRequest.IncludeSriInIdToken = plan.IncludeSriInIdToken.ValueBoolPointer()
+		policy.IncludeSriInIdToken = plan.IncludeSriInIdToken.ValueBoolPointer()
 	}
 	if internaltypes.IsDefined(plan.IncludeUserInfoInIdToken) {
-		addRequest.IncludeUserInfoInIdToken = plan.IncludeUserInfoInIdToken.ValueBoolPointer()
+		policy.IncludeUserInfoInIdToken = plan.IncludeUserInfoInIdToken.ValueBoolPointer()
 	}
 	if internaltypes.IsDefined(plan.IncludeSHashInIdToken) {
-		addRequest.IncludeSHashInIdToken = plan.IncludeSHashInIdToken.ValueBoolPointer()
+		policy.IncludeSHashInIdToken = plan.IncludeSHashInIdToken.ValueBoolPointer()
 	}
 	if internaltypes.IsDefined(plan.ReturnIdTokenOnRefreshGrant) {
-		addRequest.ReturnIdTokenOnRefreshGrant = plan.ReturnIdTokenOnRefreshGrant.ValueBoolPointer()
+		policy.ReturnIdTokenOnRefreshGrant = plan.ReturnIdTokenOnRefreshGrant.ValueBoolPointer()
 	}
 	if internaltypes.IsDefined(plan.ReissueIdTokenInHybridFlow) {
-		addRequest.ReissueIdTokenInHybridFlow = plan.ReissueIdTokenInHybridFlow.ValueBoolPointer()
+		policy.ReissueIdTokenInHybridFlow = plan.ReissueIdTokenInHybridFlow.ValueBoolPointer()
 	}
 	if internaltypes.IsDefined(plan.ScopeAttributeMappings) {
 		scopeAttributeMappings := map[string]client.ParameterValues{}
@@ -240,7 +246,7 @@ func addOptionalOauthOpenIdConnectPolicyFields(ctx context.Context, addRequest *
 		if err != nil {
 			return err
 		}
-		addRequest.ScopeAttributeMappings = &scopeAttributeMappings
+		policy.ScopeAttributeMappings = &scopeAttributeMappings
 	}
 	return nil
 }
@@ -282,10 +288,38 @@ func readOauthOpenIdConnectPolicyResponse(ctx context.Context, response *client.
 	state.AttributeMapping, diags = types.ObjectValueFrom(ctx, attributeMappingAttrTypes, response.AttributeMapping)
 	respDiags.Append(diags...)
 
-	//TODO nil check?
+	//TODO nil check? Test if passing in nil causes a panic
 	state.ScopeAttributeMappings, diags = types.MapValueFrom(ctx, types.ObjectType{AttrTypes: scopeAttributeMappingsElemAttrTypes}, response.ScopeAttributeMappings)
 	respDiags.Append(diags...)
 	return respDiags
+}
+
+// Get fields required for client as client structs
+func getRequiredOauthOpenIDConnectPolicyFields(plan oauthOpenIdConnectPolicyResourceModel, diags *diag.Diagnostics) (*client.ResourceLink, *client.OpenIdConnectAttributeContract, *client.AttributeMapping) {
+	var accessTokenManagerRef client.ResourceLink
+	err := json.Unmarshal([]byte(internaljson.FromValue(plan.AccessTokenManagerRef, false)), &accessTokenManagerRef)
+	if err != nil {
+		diags.AddError("Failed to read access_token_manager_ref from plan", err.Error())
+		return nil, nil, nil
+	}
+
+	// attribute contract
+	var attributeContract client.OpenIdConnectAttributeContract
+	err = json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContract, false)), &attributeContract)
+	if err != nil {
+		diags.AddError("Failed to read attribute_contract from plan", err.Error())
+		return nil, nil, nil
+	}
+
+	// attribute mapping
+	var attributeMapping client.AttributeMapping
+	err = json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeMapping, false)), &attributeMapping)
+	if err != nil {
+		diags.AddError("Failed to read attribute_mapping from plan", err.Error())
+		return nil, nil, nil
+	}
+
+	return &accessTokenManagerRef, &attributeContract, &attributeMapping
 }
 
 func (r *oauthOpenIdConnectPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -297,39 +331,21 @@ func (r *oauthOpenIdConnectPolicyResource) Create(ctx context.Context, req resou
 		return
 	}
 
-	// Get fields required for client as client structs
-	var accessTokenManagerRef client.ResourceLink
-	err := json.Unmarshal([]byte(internaljson.FromValue(plan.AccessTokenManagerRef, false)), &accessTokenManagerRef)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to read access_token_manager_ref from plan", err.Error())
+	accessTokenManagerRef, attributeContract, attributeMapping := getRequiredOauthOpenIDConnectPolicyFields(plan, &resp.Diagnostics)
+	if accessTokenManagerRef == nil || attributeContract == nil || attributeMapping == nil {
+		// Diagnostics are already added to the response in the above method, just return here
 		return
 	}
 
-	// attribute contract
-	var attributeContract client.OpenIdConnectAttributeContract
-	err = json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContract, false)), &attributeContract)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to read attribute_contract from plan", err.Error())
-		return
-	}
-
-	// attribute mapping
-	var attributeMapping client.AttributeMapping
-	err = json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeMapping, false)), &attributeMapping)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to read attribute_mapping from plan", err.Error())
-		return
-	}
-
-	createOIDCPolicy := client.NewOpenIdConnectPolicy(plan.PolicyId.ValueString(), plan.Name.ValueString(), accessTokenManagerRef, attributeContract, attributeMapping)
-	err = addOptionalOauthOpenIdConnectPolicyFields(ctx, createOIDCPolicy, plan)
+	newOIDCPolicy := client.NewOpenIdConnectPolicy(plan.PolicyId.ValueString(), plan.Name.ValueString(), *accessTokenManagerRef, *attributeContract, *attributeMapping)
+	err := addOptionalOauthOpenIdConnectPolicyFields(ctx, newOIDCPolicy, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OIDC Policy", err.Error())
 		return
 	}
 
 	apiCreateOIDCPolicy := r.apiClient.OauthOpenIdConnectAPI.CreateOIDCPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
-	apiCreateOIDCPolicy = apiCreateOIDCPolicy.Body(*createOIDCPolicy)
+	apiCreateOIDCPolicy = apiCreateOIDCPolicy.Body(*newOIDCPolicy)
 	oidcPolicyResponse, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.CreateOIDCPolicyExecute(apiCreateOIDCPolicy)
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OIDC Policy", err, httpResp)
@@ -373,10 +389,64 @@ func (r *oauthOpenIdConnectPolicyResource) Read(ctx context.Context, req resourc
 }
 
 func (r *oauthOpenIdConnectPolicyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	// Retrieve values from plan
+	var plan oauthOpenIdConnectPolicyResourceModel
+	diags := req.Plan.Get(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	updateOIDCPolicyRequest := r.apiClient.OauthOpenIdConnectAPI.UpdateOIDCPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.PolicyId.ValueString())
+
+	accessTokenManagerRef, attributeContract, attributeMapping := getRequiredOauthOpenIDConnectPolicyFields(plan, &resp.Diagnostics)
+	if accessTokenManagerRef == nil || attributeContract == nil || attributeMapping == nil {
+		// Diagnostics are already added to the response in the above method, just return here
+		return
+	}
+
+	updatedPolicy := client.NewOpenIdConnectPolicy(plan.PolicyId.ValueString(), plan.Name.ValueString(),
+		*accessTokenManagerRef, *attributeContract, *attributeMapping)
+
+	err := addOptionalOauthOpenIdConnectPolicyFields(ctx, updatedPolicy, plan)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for the OIDC Policy", err.Error())
+		return
+	}
+
+	updateOIDCPolicyRequest = updateOIDCPolicyRequest.Body(*updatedPolicy)
+	updateResponse, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.UpdateOIDCPolicyExecute(updateOIDCPolicyRequest)
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the OIDC Policy", err, httpResp)
+		return
+	}
+
+	// Read the response
+	var state oauthOpenIdConnectPolicyResourceModel
+	readResponseDiags := readOauthOpenIdConnectPolicyResponse(ctx, updateResponse, &state)
+	resp.Diagnostics.Append(readResponseDiags...)
+
+	// Update computed values
+	diags = resp.State.Set(ctx, state)
+	resp.Diagnostics.Append(diags...)
+
 }
 
 func (r *oauthOpenIdConnectPolicyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// Retrieve values from state
+	var state oauthOpenIdConnectPolicyResourceModel
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	httpResp, err := r.apiClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.PolicyId.ValueString()).Execute()
+	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the OIDC Policy", err, httpResp)
+	}
 }
 
 func (r *oauthOpenIdConnectPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Retrieve import ID and save to policy_id attribute
+	resource.ImportStatePassthroughID(ctx, path.Root("policy_id"), req, resp)
 }
