@@ -5,6 +5,9 @@
 * **New Data Source:** `protocol-metadata-lifetime-settings datasource` ([#100](https://github.com/pingidentity/terraform-provider-pingfederate/pull/100))
 * **New Data Source:** `server-settings-general-settings datasource` ([#101](https://github.com/pingidentity/terraform-provider-pingfederate/pull/101))
 
+* **New Data Source:** `server-settings-general-settings datasource` ([#105](https://github.com/pingidentity/terraform-provider-pingfederate/pull/105))
+
+
 # v0.2.1 November 10, 2023
 ### BUG FIXES
 * **Administrative Account Resource:** Resolved issue where updating a managed `pingfederate_administrative_account` resource forces replacement ([#86](https://github.com/pingidentity/terraform-provider-pingfederate/pull/86)) 
