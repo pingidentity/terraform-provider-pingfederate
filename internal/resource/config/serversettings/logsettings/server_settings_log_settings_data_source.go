@@ -3,9 +3,9 @@ package serversettingslogsettings
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
@@ -41,7 +41,7 @@ func (r *serverSettingsLogSettingsDataSource) Schema(ctx context.Context, req da
 		Description: "Describes the settings related to server logging.",
 		Attributes: map[string]schema.Attribute{
 			"log_categories": schema.SetNestedAttribute{
-				Description: "The log categories defined for the system and whether they are enabled. On a PUT request, if a category is not included in the list, it will be disabled.",
+				Description: "The log categories defined for the system and whether they are enabled.",
 				Computed:    true,
 				Optional:    false,
 				NestedObject: schema.NestedAttributeObject{
@@ -52,12 +52,12 @@ func (r *serverSettingsLogSettingsDataSource) Schema(ctx context.Context, req da
 							Optional:    false,
 						},
 						"name": schema.StringAttribute{
-							Description: "The description of the log category. This field is read-only and is ignored for PUT requests.",
+							Description: "The description of the log category.",
 							Computed:    true,
 							Optional:    false,
 						},
 						"description": schema.StringAttribute{
-							Description: "The description of the log category. This field is read-only and is ignored for PUT requests.",
+							Description: "The description of the log category.",
 							Computed:    true,
 							Optional:    false,
 						},
@@ -92,26 +92,16 @@ func (r *serverSettingsLogSettingsDataSource) Configure(_ context.Context, req d
 
 }
 
-func readServerSettingsLogSettingsDataSource(ctx context.Context, r *client.LogSettings, state *serverSettingsLogSettingsDataSourceModel) {
-	//	var diags, respDiags diag.Diagnostics
+func readServerSettingsLogSettingsDataSource(ctx context.Context, r *client.LogSettings, state *serverSettingsLogSettingsDataSourceModel) diag.Diagnostics {
+	var diags, respDiags diag.Diagnostics
 	state.Id = types.StringValue("server_settings_log_settings_id")
-	logCategorySettings := r.GetLogCategories()
-	var LogCategorySliceAttrVal = []attr.Value{}
-	LogCategorySliceType := types.ObjectType{AttrTypes: logCategoriesAttrTypes}
-	for i := 0; i < len(logCategorySettings); i++ {
-		logCategoriesAttrValues := map[string]attr.Value{
-			"id":          types.StringValue(logCategorySettings[i].Id),
-			"name":        types.StringPointerValue(logCategorySettings[i].Name),
-			"description": types.StringPointerValue(logCategorySettings[i].Description),
-			"enabled":     types.BoolPointerValue(logCategorySettings[i].Enabled),
-		}
-		LogCategoryObj, _ := types.ObjectValue(logCategoriesAttrTypes, logCategoriesAttrValues)
-		LogCategorySliceAttrVal = append(LogCategorySliceAttrVal, LogCategoryObj)
-	}
-	LogCategorySlice, _ := types.SetValue(LogCategorySliceType, LogCategorySliceAttrVal)
-	//	diags.Append(respDiags...)
-	state.LogCategories = LogCategorySlice
-	// return diags
+
+	logCategorySlice, respDiags := types.SetValueFrom(ctx, types.ObjectType{AttrTypes: logCategoriesAttrTypes}, r.LogCategories)
+
+	diags.Append(respDiags...)
+	state.LogCategories = logCategorySlice
+
+	return diags
 }
 
 func (r *serverSettingsLogSettingsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
@@ -128,9 +118,11 @@ func (r *serverSettingsLogSettingsDataSource) Read(ctx context.Context, req data
 		return
 	}
 
-	readServerSettingsLogSettingsDataSource(ctx, apiReadServerSettingsLogSettings, &state)
+	diags = readServerSettingsLogSettingsDataSource(ctx, apiReadServerSettingsLogSettings, &state)
+	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
+
 }
