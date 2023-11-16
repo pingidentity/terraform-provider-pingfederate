@@ -1,9 +1,10 @@
 # v0.3.0 (unreleased)
 ### FEATURES
 #### Data Sources
-* **New Data Source:** `session-application-session-policy datasource` ([#94](https://github.com/pingidentity/terraform-provider-pingfederate/pull/94))
-* **New Data Source:** `protocol-metadata-lifetime-settings datasource` ([#100](https://github.com/pingidentity/terraform-provider-pingfederate/pull/100))
-* **New Data Source:** `server-settings-general-settings datasource` ([#101](https://github.com/pingidentity/terraform-provider-pingfederate/pull/101))
+* **New Data Source:** `session_application_session_policy datasource` ([#94](https://github.com/pingidentity/terraform-provider-pingfederate/pull/94))
+* **New Data Source:** `protocol_metadata_lifetime_settings datasource` ([#100](https://github.com/pingidentity/terraform-provider-pingfederate/pull/100))
+* **New Data Source:** `server_settings_general_settings datasource` ([#101](https://github.com/pingidentity/terraform-provider-pingfederate/pull/101))
+* **New Data Source:** `server_settings_log_settings datasource` ([#104](https://github.com/pingidentity/terraform-provider-pingfederate/pull/104))
 
 # v0.2.1 November 10, 2023
 ### BUG FIXES

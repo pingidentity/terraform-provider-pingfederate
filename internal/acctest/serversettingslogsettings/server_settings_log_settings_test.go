@@ -92,6 +92,10 @@ log_categories = [
 	return fmt.Sprintf(`
 resource "pingfederate_server_settings_log_settings" "%s" {
 	%s
+}
+
+data "pingfederate_server_settings_log_settings" "%[1]s" {
+  depends_on = [pingfederate_server_settings_log_settings.%[1]s]
 }`, resourceName,
 		logCategoriesHcl,
 	)
