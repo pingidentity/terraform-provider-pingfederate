@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
@@ -126,6 +127,8 @@ func (r *oauthOpenIdConnectPolicyResource) Schema(ctx context.Context, req resou
 			"reissue_id_token_in_hybrid_flow": schema.BoolAttribute{
 				Description: "Determines whether a new ID Token should be returned during token request of the hybrid flow.",
 				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 			"attribute_contract": schema.SingleNestedAttribute{
 				Description: "The list of attributes that will be returned to OAuth clients in response to requests received at the PingFederate UserInfo endpoint.",
