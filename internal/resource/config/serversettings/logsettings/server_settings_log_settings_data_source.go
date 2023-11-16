@@ -93,14 +93,10 @@ func (r *serverSettingsLogSettingsDataSource) Configure(_ context.Context, req d
 }
 
 func readServerSettingsLogSettingsDataSource(ctx context.Context, r *client.LogSettings, state *serverSettingsLogSettingsDataSourceModel) diag.Diagnostics {
-	var diags, respDiags diag.Diagnostics
+	var diags diag.Diagnostics
 	state.Id = types.StringValue("server_settings_log_settings_id")
 
-	logCategorySlice, respDiags := types.SetValueFrom(ctx, types.ObjectType{AttrTypes: logCategoriesAttrTypes}, r.LogCategories)
-
-	diags.Append(respDiags...)
-	state.LogCategories = logCategorySlice
-
+	state.LogCategories, diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: logCategoriesAttrTypes}, r.LogCategories)
 	return diags
 }
 
