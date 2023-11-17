@@ -89,63 +89,63 @@ func TestAccOauthOpenIdConnectPolicies(t *testing.T) {
 func accessTokenManagerHcl() string {
 	return `
 resource "pingfederate_oauth_access_token_manager" "jsonWebTokenOauthAccessTokenManagerExample" {
-	manager_id = "oidcJsonWebTokenExample"
-	name       = "oidcJsonWebTokenExample"
-	plugin_descriptor_ref = {
-	  id = "com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin"
-	}
-	configuration = {
-	  tables = [
-		{
-		  name = "Symmetric Keys"
-		  rows = [
-			{
-			  fields = [
-				{
-				  name  = "Key ID"
-				  value = "keyidentifier"
-				},
-				{
-				  name  = "Key"
-				  value = "e1oDxOiC3Jboz3um8hBVmW3JRZNo9z7C0DMm/oj2V1gclQRcgi2gKM2DBj9N05G4"
-				},
-				{
-				  name  = "Encoding"
-				  value = "b64u"
-				}
-			  ]
-			}
-		  ]
-		},
-		{
-		  name = "Certificates"
-		  rows = []
-		}
-	  ]
-	  fields = [
-		{
-		  name  = "JWE Algorithm"
-		  value = "dir"
-		},
-		{
-		  name  = "JWE Content Encryption Algorithm"
-		  value = "A192CBC-HS384"
-		},
-		{
-		  name  = "Active Symmetric Encryption Key ID"
-		  value = "keyidentifier"
-		},
-	  ]
-	}
-	attribute_contract = {
-	  extended_attributes = [
-		{
-		  name         = "contract"
-		  multi_valued = false
-		}
-	  ]
-	}
-  }`
+  manager_id = "oidcJsonWebTokenExample"
+  name       = "oidcJsonWebTokenExample"
+  plugin_descriptor_ref = {
+    id = "com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin"
+  }
+  configuration = {
+    tables = [
+      {
+        name = "Symmetric Keys"
+        rows = [
+          {
+            fields = [
+              {
+                name  = "Key ID"
+                value = "keyidentifier"
+              },
+              {
+                name  = "Key"
+                value = "e1oDxOiC3Jboz3um8hBVmW3JRZNo9z7C0DMm/oj2V1gclQRcgi2gKM2DBj9N05G4"
+              },
+              {
+                name  = "Encoding"
+                value = "b64u"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        name = "Certificates"
+        rows = []
+      }
+    ]
+    fields = [
+      {
+        name  = "JWE Algorithm"
+        value = "dir"
+      },
+      {
+        name  = "JWE Content Encryption Algorithm"
+        value = "A192CBC-HS384"
+      },
+      {
+        name  = "Active Symmetric Encryption Key ID"
+        value = "keyidentifier"
+      },
+    ]
+  }
+  attribute_contract = {
+    extended_attributes = [
+      {
+        name         = "contract"
+        multi_valued = false
+      }
+    ]
+  }
+}`
 }
 
 func attributeMappingHcl(resourceModel oauthOpenIdConnectPoliciesResourceModel) string {
@@ -195,14 +195,14 @@ func testAccOauthOpenIdConnectPolicies(resourceName string, resourceModel oauthO
 	return fmt.Sprintf(`
 	%s
 resource "pingfederate_oauth_open_id_connect_policy" "%s" {
-	policy_id = "%s"
-	name = "%s"
-	access_token_manager_ref = {
-		id = pingfederate_oauth_access_token_manager.jsonWebTokenOauthAccessTokenManagerExample.manager_id
-	}
-	attribute_contract = {
-		extended_attributes = []
-	}
+  policy_id = "%s"
+  name      = "%s"
+  access_token_manager_ref = {
+    id = pingfederate_oauth_access_token_manager.jsonWebTokenOauthAccessTokenManagerExample.manager_id
+  }
+  attribute_contract = {
+    extended_attributes = []
+  }
 	%s
 	%s
 }`, accessTokenManagerHcl(),
