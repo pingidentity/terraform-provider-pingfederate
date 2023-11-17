@@ -20,10 +20,6 @@ type protocolMetadataLifetimeSettingsResourceModel struct {
 
 func TestAccProtocolMetadataLifetimeSettings(t *testing.T) {
 	resourceName := "myProtocolMetadataLifetimeSettings"
-	initialResourceModel := protocolMetadataLifetimeSettingsResourceModel{
-		cacheDuration: 1,
-		reloadDelay:   1,
-	}
 	updatedResourceModel := protocolMetadataLifetimeSettingsResourceModel{
 		cacheDuration: 1440,
 		reloadDelay:   1440,
@@ -36,38 +32,54 @@ func TestAccProtocolMetadataLifetimeSettings(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: testAccProtocolMetadataLifetimeSettings(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedProtocolMetadataLifetimeSettingsAttributes(initialResourceModel),
+				Config: testAccProtocolMetadataLifetimeSettings(resourceName, nil),
+				Check:  testAccCheckExpectedProtocolMetadataLifetimeSettingsAttributes(nil),
 			},
 			{
 				// Test updating some fields
-				Config: testAccProtocolMetadataLifetimeSettings(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedProtocolMetadataLifetimeSettingsAttributes(updatedResourceModel),
+				Config: testAccProtocolMetadataLifetimeSettings(resourceName, &updatedResourceModel),
+				Check:  testAccCheckExpectedProtocolMetadataLifetimeSettingsAttributes(&updatedResourceModel),
 			},
 			{
 				// Test importing the resource
-				Config:            testAccProtocolMetadataLifetimeSettings(resourceName, updatedResourceModel),
+				Config:            testAccProtocolMetadataLifetimeSettings(resourceName, &updatedResourceModel),
 				ResourceName:      "pingfederate_protocol_metadata_lifetime_settings." + resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+			{
+				// Back to minimal model
+				Config: testAccProtocolMetadataLifetimeSettings(resourceName, nil),
+				Check:  testAccCheckExpectedProtocolMetadataLifetimeSettingsAttributes(nil),
 			},
 		},
 	})
 }
 
-func testAccProtocolMetadataLifetimeSettings(resourceName string, resourceModel protocolMetadataLifetimeSettingsResourceModel) string {
+func testAccProtocolMetadataLifetimeSettings(resourceName string, resourceModel *protocolMetadataLifetimeSettingsResourceModel) string {
+	optionalHcl := ""
+	if resourceModel != nil {
+		optionalHcl = fmt.Sprintf(`
+		cache_duration = %d
+		reload_delay   = %d
+		`,
+			resourceModel.cacheDuration,
+			resourceModel.reloadDelay)
+	}
+
 	return fmt.Sprintf(`
-resource "pingfederate_protocol_metadata_lifetime_settings" "%[1]s" {
-  cache_duration = %[2]d
-  reload_delay   = %[3]d
+resource "pingfederate_protocol_metadata_lifetime_settings" "%s" {
+  %s
+}
+data "pingfederate_protocol_metadata_lifetime_settings" "%[1]s" {
+  depends_on = [pingfederate_protocol_metadata_lifetime_settings.%[1]s]
 }`, resourceName,
-		resourceModel.cacheDuration,
-		resourceModel.reloadDelay,
+		optionalHcl,
 	)
 }
 
 // Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedProtocolMetadataLifetimeSettingsAttributes(config protocolMetadataLifetimeSettingsResourceModel) resource.TestCheckFunc {
+func testAccCheckExpectedProtocolMetadataLifetimeSettingsAttributes(config *protocolMetadataLifetimeSettingsResourceModel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		resourceType := "ProtocolMetadataLifetimeSettings"
 		testClient := acctest.TestClient()
@@ -76,6 +88,10 @@ func testAccCheckExpectedProtocolMetadataLifetimeSettingsAttributes(config proto
 
 		if err != nil {
 			return err
+		}
+
+		if config == nil {
+			return nil
 		}
 
 		// Verify that attributes have expected values

@@ -221,6 +221,8 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 					"inherited": schema.BoolAttribute{
 						Description: "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
 						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 				},
 			},
@@ -339,7 +341,14 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 		respDiags.Append(diags...)
 		attributeContractValues["unique_user_key_attribute"] = types.StringPointerValue(r.AttributeContract.UniqueUserKeyAttribute)
 		attributeContractValues["mask_ognl_values"] = types.BoolPointerValue(r.AttributeContract.MaskOgnlValues)
-		attributeContractValues["inherited"] = types.BoolPointerValue(r.AttributeContract.Inherited)
+
+		// PF returns false as nil for inherited in some cases
+		inherited := false
+		if r.AttributeContract.Inherited != nil {
+			inherited = *r.AttributeContract.Inherited
+		}
+
+		attributeContractValues["inherited"] = types.BoolValue(inherited)
 
 		// Only include core_attributes specified in the plan in the response
 		if internaltypes.IsDefined(plan.AttributeContract) && internaltypes.IsDefined(plan.AttributeContract.Attributes()["core_attributes"]) {
@@ -480,7 +489,6 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
 	updateIdpAdapter := r.apiClient.IdpAdaptersAPI.UpdateIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.AdapterId.ValueString())
 
 	var pluginDescriptorRef client.ResourceLink
@@ -539,6 +547,6 @@ func (r *idpAdapterResource) Delete(ctx context.Context, req resource.DeleteRequ
 }
 
 func (r *idpAdapterResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
+	// Retrieve import ID and save to adapter_id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("adapter_id"), req, resp)
 }

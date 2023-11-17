@@ -41,7 +41,9 @@ func updateAdministrativeAccount() *client.AdministrativeAccount {
 	updateAdministrativeAccount.Department = pointers.String("updated department")
 	updateAdministrativeAccount.EmailAddress = pointers.String("test@example.com")
 	updateAdministrativeAccount.PhoneNumber = pointers.String("555-555-5555")
-	updateAdministrativeAccount.Roles = []string{"USER_ADMINISTRATOR", "CRYPTO_ADMINISTRATOR"}
+	updateAdministrativeAccount.Roles = []string{}
+	updateAdministrativeAccount.Auditor = pointers.Bool(true)
+	updateAdministrativeAccount.Department = pointers.String("department")
 	return updateAdministrativeAccount
 }
 
@@ -61,6 +63,7 @@ func hcl(aa *client.AdministrativeAccount) string {
 		%[7]s
 		%[8]s
 		%[9]s
+		%[10]s
 		`
 		passwords := func() (string, string) {
 			if aa.EncryptedPassword != nil {
@@ -74,6 +77,10 @@ func hcl(aa *client.AdministrativeAccount) string {
 			}
 		}
 		encryptedPasswordTfVal, passwordTfVal := passwords()
+		auditor := ""
+		if aa.Auditor != nil {
+			auditor = strconv.FormatBool(*aa.Auditor)
+		}
 		builder.WriteString(
 			fmt.Sprintf(tf,
 				acctest.TfKeyValuePairToString("active", strconv.FormatBool(aa.GetActive()), true),
@@ -85,6 +92,7 @@ func hcl(aa *client.AdministrativeAccount) string {
 				acctest.TfKeyValuePairToString("password", passwordTfVal, true),
 				acctest.TfKeyValuePairToString("phone_number", aa.GetPhoneNumber(), true),
 				acctest.TfKeyValuePairToString("username", aa.Username, true),
+				acctest.TfKeyValuePairToString("auditor", auditor, false),
 			),
 		)
 	}

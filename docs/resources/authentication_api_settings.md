@@ -3,12 +3,12 @@
 page_title: "pingfederate_authentication_api_settings Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a AuthenticationApiSettings.
+  Manages the Authentication API Application Settings.
 ---
 
 # pingfederate_authentication_api_settings (Resource)
 
-Manages a AuthenticationApiSettings.
+Manages the Authentication API Application Settings.
 
 ## Example Usage
 
@@ -31,7 +31,7 @@ resource "pingfederate_authentication_api_settings" "myAuthenticationApiSettings
 ### Optional
 
 - `api_enabled` (Boolean) Enable Authentication API
-- `default_application_ref` (Attributes) Enable API descriptions (see [below for nested schema](#nestedatt--default_application_ref))
+- `default_application_ref` (Attributes) Application for non authentication policy use cases (see [below for nested schema](#nestedatt--default_application_ref))
 - `enable_api_descriptions` (Boolean) Enable API descriptions
 - `include_request_context` (Boolean) Includes request context in API responses
 - `restrict_access_to_redirectless_mode` (Boolean) Enable restrict access to redirectless mode

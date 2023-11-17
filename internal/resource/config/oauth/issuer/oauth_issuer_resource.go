@@ -99,9 +99,9 @@ func (r *oauthIssuerResource) Configure(_ context.Context, req resource.Configur
 }
 
 func readOauthIssuerResponse(ctx context.Context, r *client.Issuer, state *oauthIssuerResourceModel, expectedValues *oauthIssuerResourceModel) {
-	//TODO why is this a pointer?
-	state.Id = types.StringValue(*r.Id)
-	state.IssuerId = types.StringValue(*r.Id)
+	// Why doesn't PF guarantee the id will be returned on this resource?
+	state.Id = types.StringPointerValue(r.Id)
+	state.IssuerId = types.StringPointerValue(r.Id)
 	state.Name = types.StringValue(r.Name)
 	state.Description = types.StringValue(*r.Description)
 	state.Host = types.StringValue(r.Host)

@@ -16,22 +16,25 @@ const simpleUsernamePasswordPasswordCredentialValidatorsId = "simpleUsernamePass
 
 // Attributes to test with. Add optional properties to test here if desired.
 type simpleUsernamePasswordPasswordCredentialValidatorsResourceModel struct {
-	id       string
-	name     string
-	password string
+	id                    string
+	name                  string
+	password              string
+	includeOptionalFields bool
 }
 
 func TestAccSimpleUsernamePasswordCredentialValidators(t *testing.T) {
 	resourceName := "mySimpleUsernamePasswordCredentialValidators"
 	initialResourceModel := simpleUsernamePasswordPasswordCredentialValidatorsResourceModel{
-		id:       simpleUsernamePasswordPasswordCredentialValidatorsId,
-		name:     "example",
-		password: "2FederateM0re",
+		id:                    simpleUsernamePasswordPasswordCredentialValidatorsId,
+		name:                  "example",
+		password:              "2FederateM0re",
+		includeOptionalFields: false,
 	}
 	updatedResourceModel := simpleUsernamePasswordPasswordCredentialValidatorsResourceModel{
-		id:       simpleUsernamePasswordPasswordCredentialValidatorsId,
-		name:     "updated example",
-		password: "2FederateM0re!",
+		id:                    simpleUsernamePasswordPasswordCredentialValidatorsId,
+		name:                  "updated example",
+		password:              "2FederateM0re!",
+		includeOptionalFields: true,
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -52,17 +55,38 @@ func TestAccSimpleUsernamePasswordCredentialValidators(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:                  testAccPasswordCredentialValidators(resourceName, updatedResourceModel),
-				ResourceName:            "pingfederate_password_credential_validator." + resourceName,
-				ImportStateId:           simpleUsernamePasswordPasswordCredentialValidatorsId,
-				ImportState:             true,
-				ImportStateVerifyIgnore: []string{"configuration.fields.value"},
+				Config:            testAccPasswordCredentialValidators(resourceName, updatedResourceModel),
+				ResourceName:      "pingfederate_password_credential_validator." + resourceName,
+				ImportStateId:     simpleUsernamePasswordPasswordCredentialValidatorsId,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Have to ignore this since the password values can't be imported
+				ImportStateVerifyIgnore: []string{
+					"configuration.tables.0.rows.0.fields.1.value",
+					"configuration.tables.0.rows.0.fields.2.value",
+					"configuration.tables.0.rows.1.fields.1.value",
+					"configuration.tables.0.rows.1.fields.2.value",
+				},
+			},
+			{
+				// Back to minimal model
+				Config: testAccPasswordCredentialValidators(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedPasswordCredentialValidatorsAttributes(initialResourceModel),
 			},
 		},
 	})
 }
 
 func testAccPasswordCredentialValidators(resourceName string, resourceModel simpleUsernamePasswordPasswordCredentialValidatorsResourceModel) string {
+	optionalHcl := ""
+	if resourceModel.includeOptionalFields {
+		optionalHcl = `
+		attribute_contract = {
+			extended_attributes = []
+			inherited = false
+		}
+		`
+	}
 	return fmt.Sprintf(`
 resource "pingfederate_password_credential_validator" "%[1]s" {
   validator_id = "%[2]s"
@@ -125,10 +149,12 @@ resource "pingfederate_password_credential_validator" "%[1]s" {
       }
     ]
   }
+  %[5]s
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.name,
 		resourceModel.password,
+		optionalHcl,
 	)
 }
 

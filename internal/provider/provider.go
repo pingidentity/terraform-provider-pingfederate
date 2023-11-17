@@ -36,6 +36,7 @@ import (
 	oauthauthserversettingsscopesexclusivescope "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authserversettings/scopes/exclusivescope"
 	oauthclient "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/client"
 	oauthissuer "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/issuer"
+	oauthopenidconnectpolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/openidconnect/policy"
 	oauthtokenexchangetokengeneratormappings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/tokengeneratormappings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/passwordcredentialvalidator"
 	protocolmetadatalifetimesettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/protocolmetadata/lifetimesettings"
@@ -313,6 +314,10 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		oauthauthserversettingsscopescommonscope.NewOauthAuthServerSettingsScopesCommonScopeDataSource,
 		oauthauthserversettingsscopesexclusivescope.NewOauthAuthServerSettingsScopesExclusiveScopeDataSource,
 		oauthissuer.NewOauthIssuerDataSource,
+		protocolmetadatalifetimesettings.NewProtocolMetadataLifetimeSettingsDataSource,
+		serversettingsgeneralsettings.NewServerSettingsGeneralSettingsDataSource,
+		serversettingslogsettings.NewServerSettingsLogSettingsDataSource,
+		sessionapplicationsessionpolicy.NewSessionApplicationSessionPolicyDataSource,
 		virtualhostnames.NewVirtualHostNamesDataSource,
 	}
 }
@@ -334,10 +339,11 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		localidentity.LocalIdentityIdentityProfileResource,
 		oauthaccesstokenmanager.OauthAccessTokenManagerResource,
 		oauthauthserversettings.OauthAuthServerSettingsResource,
-		oauthauthserversettingsscopescommonscope.OauthAuthServerSettingsScopesCommonScopesResource,
-		oauthauthserversettingsscopesexclusivescope.OauthAuthServerSettingsScopesExclusiveScopesResource,
+		oauthauthserversettingsscopescommonscope.OauthAuthServerSettingsScopesCommonScopeResource,
+		oauthauthserversettingsscopesexclusivescope.OauthAuthServerSettingsScopesExclusiveScopeResource,
 		oauthclient.OauthClientResource,
 		oauthissuer.OauthIssuerResource,
+		oauthopenidconnectpolicy.OauthOpenIdConnectPolicyResource,
 		oauthtokenexchangetokengeneratormappings.OauthTokenExchangeTokenGeneratorMappingResource,
 		passwordcredentialvalidator.PasswordCredentialValidatorResource,
 		protocolmetadatalifetimesettings.ProtocolMetadataLifetimeSettingsResource,

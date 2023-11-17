@@ -83,7 +83,7 @@ func (r *idpDefaultUrlsDataSource) Configure(_ context.Context, req datasource.C
 
 // Read a IdpDefaultUrlsResponse object into the model struct
 func readIdpDefaultUrlsResponseDataSource(ctx context.Context, r *client.IdpDefaultUrl, state *idpDefaultUrlsDataSourceModel) {
-	state.Id = types.StringValue("id")
+	state.Id = types.StringValue("idp_default_urls_id")
 	state.ConfirmIdpSlo = types.BoolPointerValue(r.ConfirmIdpSlo)
 	state.IdpSloSuccessUrl = internaltypes.StringTypeOrNil(r.IdpSloSuccessUrl, false)
 	state.IdpErrorMsg = types.StringValue(r.IdpErrorMsg)

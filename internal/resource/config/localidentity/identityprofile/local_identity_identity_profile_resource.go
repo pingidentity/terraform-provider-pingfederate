@@ -951,6 +951,14 @@ func (r *localIdentityIdentityProfileResource) ValidateConfig(ctx context.Contex
 			}
 		}
 	}
+	if internaltypes.IsDefined(model.RegistrationConfig) {
+		captchaEnabled := model.RegistrationConfig.Attributes()["captcha_enabled"].(types.Bool)
+		captchaProviderRef := model.RegistrationConfig.Attributes()["captcha_provider_ref"].(types.Object)
+		if captchaEnabled.ValueBool() != internaltypes.IsDefined(captchaProviderRef) {
+			resp.Diagnostics.AddError("Invalid registration captcha settings",
+				"If registration_config.captcha_enabled is set to true, then registration_config.captcha_provider_ref must be configured. If registration_config.captcha_enabled is false, then registration_config.captcha_provider_ref must not be configured.")
+		}
+	}
 }
 
 func readLocalIdentityIdentityProfileResponse(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfileResourceModel) diag.Diagnostics {

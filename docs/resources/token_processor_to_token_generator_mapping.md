@@ -3,12 +3,12 @@
 page_title: "pingfederate_token_processor_to_token_generator_mapping Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages Token Processor To Token Generator Mappings
+  Manages a Token Processor To Token Generator Mapping
 ---
 
 # pingfederate_token_processor_to_token_generator_mapping (Resource)
 
-Manages Token Processor To Token Generator Mappings
+Manages a Token Processor To Token Generator Mapping
 
 ## Example Usage
 

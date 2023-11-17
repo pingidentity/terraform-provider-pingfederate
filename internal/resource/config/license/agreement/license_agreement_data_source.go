@@ -77,7 +77,7 @@ func (r *licenseAgreementDataSource) Configure(_ context.Context, req datasource
 
 // Read a DseeCompatAdministrativeAccountResponse object into the model struct
 func readLicenseAgreementResponseDataSource(ctx context.Context, r *client.LicenseAgreementInfo, state *licenseAgreementDataSourceModel) {
-	state.Id = types.StringValue("id")
+	state.Id = types.StringValue("license_agreement_id")
 	state.LicenseAgreementUrl = internaltypes.StringTypeOrNil(r.LicenseAgreementUrl, false)
 	state.Accepted = internaltypes.BoolTypeOrNil(r.Accepted)
 }

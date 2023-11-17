@@ -68,16 +68,10 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 			"department": schema.StringAttribute{
 				Description: "The Department name of account user.",
 				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"description": schema.StringAttribute{
 				Description: "Description of the account.",
 				Optional:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"email_address": schema.StringAttribute{
 				Description: "Email address associated with the account.",
