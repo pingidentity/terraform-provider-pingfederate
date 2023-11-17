@@ -47,7 +47,6 @@ var (
 		"extended_attributes": attributesListAttrType,
 	}
 
-	//TODO common?
 	attributeMappingAttrTypes = map[string]attr.Type{
 		"attribute_sources": types.ListType{
 			ElemType: types.ObjectType{
@@ -202,7 +201,6 @@ func (r *oauthOpenIdConnectPolicyResource) Schema(ctx context.Context, req resou
 					},
 				},
 			},
-			//TODO common?
 			"attribute_mapping": schema.SingleNestedAttribute{
 				Description: "The attributes mapping from attribute sources to attribute targets.",
 				Required:    true,
