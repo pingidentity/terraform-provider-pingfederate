@@ -8,7 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/attributesources"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -16,47 +19,38 @@ const oauthOpenIdConnectPoliciesId = "testOpenIdConnectPolicy"
 
 // Attributes to test with. Add optional properties to test here if desired.
 type oauthOpenIdConnectPoliciesResourceModel struct {
-	id string
-	/*name string
-	accessTokenManagerRef
-	idTokenLifetime int64
-	includeSriInIdToken bool
-	includeUserInfoInIdToken bool
-	includeSHashInIdToken bool
-	returnIdTokenOnRefreshGrant bool
-	reissueIdTokenInHybridFlow bool
-	attributeContract
-	attributeMapping
-	scopeAttributeMappings determine this value manually*/
+	id                        string
+	name                      string
+	includeOptionalAttributes bool
+
+	attributeSource             *client.LdapAttributeSource
+	idTokenLifetime             *int64
+	includeSriInIdToken         *bool
+	includeUserInfoInIdToken    *bool
+	includeSHashInIdToken       *bool
+	returnIdTokenOnRefreshGrant *bool
+	reissueIdTokenInHybridFlow  *bool
 }
 
 func TestAccOauthOpenIdConnectPolicies(t *testing.T) {
 	resourceName := "myOauthOpenIdConnectPolicies"
+
 	initialResourceModel := oauthOpenIdConnectPoliciesResourceModel{
-		/*name: fill in test value,
-		accessTokenManagerRef: fill in test value,
-		idTokenLifetime: fill in test value,
-		includeSriInIdToken: fill in test value,
-		includeUserInfoInIdToken: fill in test value,
-		includeSHashInIdToken: fill in test value,
-		returnIdTokenOnRefreshGrant: fill in test value,
-		reissueIdTokenInHybridFlow: fill in test value,
-		attributeContract: fill in test value,
-		attributeMapping: fill in test value,
-		scopeAttributeMappings: fill in test value,*/
+		id:                        oauthOpenIdConnectPoliciesId,
+		name:                      "initialName",
+		includeOptionalAttributes: false,
 	}
 	updatedResourceModel := oauthOpenIdConnectPoliciesResourceModel{
-		/*name: fill in test value,
-		accessTokenManagerRef: fill in test value,
-		idTokenLifetime: fill in test value,
-		includeSriInIdToken: fill in test value,
-		includeUserInfoInIdToken: fill in test value,
-		includeSHashInIdToken: fill in test value,
-		returnIdTokenOnRefreshGrant: fill in test value,
-		reissueIdTokenInHybridFlow: fill in test value,
-		attributeContract: fill in test value,
-		attributeMapping: fill in test value,
-		scopeAttributeMappings: fill in test value,*/
+		id:                          oauthOpenIdConnectPoliciesId,
+		name:                        "updatedName",
+		includeOptionalAttributes:   true,
+		attributeSource:             attributesources.LdapClientStruct("(cn=Mudkip)", "SUBTREE", *client.NewResourceLink("pingdirectory")),
+		idTokenLifetime:             pointers.Int64(5),
+		includeSriInIdToken:         pointers.Bool(false),
+		includeUserInfoInIdToken:    pointers.Bool(true),
+		includeSHashInIdToken:       pointers.Bool(false),
+		returnIdTokenOnRefreshGrant: pointers.Bool(true),
+		reissueIdTokenInHybridFlow:  pointers.Bool(false),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -92,29 +86,278 @@ func TestAccOauthOpenIdConnectPolicies(t *testing.T) {
 	})
 }
 
-func testAccOauthOpenIdConnectPolicies(resourceName string, resourceModel oauthOpenIdConnectPoliciesResourceModel) string {
+// TODO reduce this where possible
+func accessTokenManagerHcl() string {
+	return `
+resource "pingfederate_oauth_access_token_manager" "jsonWebTokenOauthAccessTokenManagerExample" {
+	manager_id = "oidcJsonWebTokenExample"
+	name       = "oidcJsonWebTokenExample"
+	plugin_descriptor_ref = {
+	  id = "com.pingidentity.pf.access.token.management.plugins.JwtBearerAccessTokenManagementPlugin"
+	}
+	configuration = {
+	  tables = [
+		{
+		  name = "Symmetric Keys"
+		  rows = [
+			{
+			  fields = [
+				{
+				  name  = "Key ID"
+				  value = "keyidentifier"
+				},
+				{
+				  name  = "Key"
+				  value = "e1oDxOiC3Jboz3um8hBVmW3JRZNo9z7C0DMm/oj2V1gclQRcgi2gKM2DBj9N05G4"
+				},
+				{
+				  name  = "Encoding"
+				  value = "b64u"
+				}
+			  ]
+			  default_row = false
+			}
+		  ]
+		},
+		{
+		  name = "Certificates"
+		  rows = []
+		}
+	  ]
+	  fields = [
+		{
+		  name  = "Token Lifetime"
+		  value = "120"
+		},
+		{
+		  name  = "Use Centralized Signing Key"
+		  value = "false"
+		},
+		{
+		  name  = "JWS Algorithm"
+		  value = ""
+		},
+		{
+		  name  = "Active Symmetric Key ID"
+		  value = "keyidentifier"
+		},
+		{
+		  name  = "Active Signing Certificate Key ID"
+		  value = ""
+		},
+		{
+		  name  = "JWE Algorithm"
+		  value = "dir"
+		},
+		{
+		  name  = "JWE Content Encryption Algorithm"
+		  value = "A192CBC-HS384"
+		},
+		{
+		  name  = "Active Symmetric Encryption Key ID"
+		  value = "keyidentifier"
+		},
+		{
+		  name  = "Asymmetric Encryption Key"
+		  value = ""
+		},
+		{
+		  name  = "Asymmetric Encryption JWKS URL"
+		  value = ""
+		},
+		{
+		  name  = "Enable Token Revocation"
+		  value = "false"
+		},
+		{
+		  name  = "Include Key ID Header Parameter"
+		  value = "true"
+		},
+		{
+		  name  = "Default JWKS URL Cache Duration"
+		  value = "720"
+		},
+		{
+		  name  = "Include JWE Key ID Header Parameter"
+		  value = "true"
+		},
+		{
+		  name  = "Client ID Claim Name"
+		  value = "client_id"
+		},
+		{
+		  name  = "Scope Claim Name"
+		  value = "scope"
+		},
+		{
+		  name  = "Space Delimit Scope Values"
+		  value = "true"
+		},
+		{
+		  name  = "Authorization Details Claim Name"
+		  value = "authorization_details"
+		},
+		{
+		  name  = "Issuer Claim Value"
+		  value = ""
+		},
+		{
+		  name  = "Audience Claim Value"
+		  value = ""
+		},
+		{
+		  name  = "JWT ID Claim Length"
+		  value = "22"
+		},
+		{
+		  name  = "Access Grant GUID Claim Name"
+		  value = ""
+		},
+		{
+		  name  = "JWKS Endpoint Path"
+		  value = ""
+		},
+		{
+		  name  = "JWKS Endpoint Cache Duration"
+		  value = "720"
+		},
+		{
+		  name  = "Expand Scope Groups"
+		  value = "false"
+		},
+		{
+		  name  = "Type Header Value"
+		  value = ""
+		}
+	  ]
+	}
+	attribute_contract = {
+	  extended_attributes = [
+		{
+		  name         = "contract"
+		  multi_valued = false
+		}
+	  ]
+	}
+	selection_settings = {
+	  resource_uris = []
+	}
+	access_control_settings = {
+	  restrict_clients = false
+	}
+	session_validation_settings = {
+	  check_valid_authn_session       = false
+	  check_session_revocation_status = false
+	  update_authn_session_activity   = false
+	  include_session_id              = false
+	}
+  }`
+}
+
+func attributeMappingHcl(resourceModel oauthOpenIdConnectPoliciesResourceModel) string {
+	issuanceCriteriaHcl := ""
+	if resourceModel.includeOptionalAttributes {
+		issuanceCriteriaHcl = `
+	    issuance_criteria = {
+			conditional_criteria = []
+		}
+		`
+	}
+
 	return fmt.Sprintf(`
-resource "pingfederate_oauth_open_id_connect_policy" "%[1]s" {
-	id = "%[2]s"
-	// FILL THIS IN
-}`, resourceName,
+	attribute_mapping = {
+		attribute_contract_fulfillment = {
+			"sub" = {
+				source = {
+		  			type = "TOKEN"
+				}
+				value = "contract"
+			}
+		}
+		%s
+		%s
+	}
+	`, attributesources.Hcl(nil, resourceModel.attributeSource), issuanceCriteriaHcl)
+}
+
+func testAccOauthOpenIdConnectPolicies(resourceName string, resourceModel oauthOpenIdConnectPoliciesResourceModel) string {
+	optionalHcl := ""
+	if resourceModel.includeOptionalAttributes {
+		optionalHcl = fmt.Sprintf(`
+		scope_attribute_mappings = {}
+		return_id_token_on_refresh_grant = %t
+		include_sri_in_id_token = %t
+		include_s_hash_in_id_token = %t
+		include_user_info_in_id_token = %t
+		id_token_lifetime = %d
+		`,
+			*resourceModel.returnIdTokenOnRefreshGrant,
+			*resourceModel.includeSriInIdToken,
+			*resourceModel.includeSHashInIdToken,
+			*resourceModel.includeUserInfoInIdToken,
+			*resourceModel.idTokenLifetime)
+	}
+
+	return fmt.Sprintf(`
+	%s
+resource "pingfederate_oauth_open_id_connect_policy" "%s" {
+	policy_id = "%s"
+	name = "%s"
+	access_token_manager_ref = {
+		id = pingfederate_oauth_access_token_manager.jsonWebTokenOauthAccessTokenManagerExample.manager_id
+	}
+	attribute_contract = {
+		extended_attributes = []
+	}
+	%s
+	%s
+}`, accessTokenManagerHcl(),
+		resourceName,
 		oauthOpenIdConnectPoliciesId,
+		resourceModel.name,
+		attributeMappingHcl(resourceModel),
+		optionalHcl,
 	)
 }
 
 // Test that the expected attributes are set on the PingFederate server
 func testAccCheckExpectedOauthOpenIdConnectPoliciesAttributes(config oauthOpenIdConnectPoliciesResourceModel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		//resourceType := "OauthOpenIdConnectPolicy"
+		resourceType := "OauthOpenIdConnectPolicy"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		_, _, err := testClient.OauthOpenIdConnectAPI.GetOIDCPolicy(ctx, oauthOpenIdConnectPoliciesId).Execute()
+		response, _, err := testClient.OauthOpenIdConnectAPI.GetOIDCPolicy(ctx, oauthOpenIdConnectPoliciesId).Execute()
 
 		if err != nil {
 			return err
 		}
 
-		//TODO Verify that attributes have expected values
+		// Verify that attributes have expected values
+		err = acctest.TestAttributesMatchString(resourceType, pointers.String(oauthOpenIdConnectPoliciesId), "name", config.name, response.Name)
+		if err != nil {
+			return err
+		}
+
+		if !config.includeOptionalAttributes {
+			return nil
+		}
+
+		// Verify some optional attributes
+		err = attributesources.ValidateResponseAttributes(resourceType, pointers.String(oauthOpenIdConnectPoliciesId),
+			nil, config.attributeSource, response.AttributeMapping.AttributeSources)
+		if err != nil {
+			return err
+		}
+
+		err = acctest.TestAttributesMatchInt(resourceType, pointers.String(oauthOpenIdConnectPoliciesId), "idTokenLifetime", *config.idTokenLifetime, *response.IdTokenLifetime)
+		if err != nil {
+			return err
+		}
+
+		err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthOpenIdConnectPoliciesId), "returnIdTokenOnRefreshGrant", *config.returnIdTokenOnRefreshGrant, *response.ReturnIdTokenOnRefreshGrant)
+		if err != nil {
+			return err
+		}
 
 		return nil
 	}
@@ -126,7 +369,7 @@ func testAccCheckOauthOpenIdConnectPoliciesDestroy(s *terraform.State) error {
 	ctx := acctest.TestBasicAuthContext()
 	_, err := testClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(ctx, oauthOpenIdConnectPoliciesId).Execute()
 	if err == nil {
-		return acctest.ExpectedDestroyError("OauthOpenIdConnectPolict", oauthOpenIdConnectPoliciesId)
+		return acctest.ExpectedDestroyError("OauthOpenIdConnectPolicy", oauthOpenIdConnectPoliciesId)
 	}
 	return nil
 }

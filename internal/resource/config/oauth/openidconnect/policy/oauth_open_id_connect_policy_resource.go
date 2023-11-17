@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
@@ -62,6 +63,8 @@ var (
 	scopeAttributeMappingsElemAttrTypes = map[string]attr.Type{
 		"values": types.ListType{ElemType: types.StringType},
 	}
+
+	scopeAttributeMappingsDefault, _ = types.MapValue(types.ObjectType{AttrTypes: scopeAttributeMappingsElemAttrTypes}, nil)
 )
 
 // OauthOpenIdConnectPolicyResource is a helper function to simplify the provider implementation.
@@ -114,18 +117,26 @@ func (r *oauthOpenIdConnectPolicyResource) Schema(ctx context.Context, req resou
 			"include_sri_in_id_token": schema.BoolAttribute{
 				Description: "Determines whether a Session Reference Identifier is included in the ID token.",
 				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 			"include_user_info_in_id_token": schema.BoolAttribute{
 				Description: "Determines whether the User Info is always included in the ID token",
 				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 			"include_s_hash_in_id_token": schema.BoolAttribute{
 				Description: "Determines whether the State Hash should be included in the ID token.",
 				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 			"return_id_token_on_refresh_grant": schema.BoolAttribute{
 				Description: "Determines whether an ID Token should be returned when refresh grant is requested or not.",
 				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 			"reissue_id_token_in_hybrid_flow": schema.BoolAttribute{
 				Description: "Determines whether a new ID Token should be returned during token request of the hybrid flow.",
@@ -204,6 +215,8 @@ func (r *oauthOpenIdConnectPolicyResource) Schema(ctx context.Context, req resou
 			"scope_attribute_mappings": schema.MapNestedAttribute{
 				Description: "The attribute scope mappings from scopes to attribute names.",
 				Optional:    true,
+				Computed:    true,
+				Default:     mapdefault.StaticValue(scopeAttributeMappingsDefault),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"values": schema.ListAttribute{
@@ -285,10 +298,25 @@ func readOauthOpenIdConnectPolicyResponse(ctx context.Context, response *client.
 	state.AttributeContract, diags = types.ObjectValueFrom(ctx, attributeContractAttrTypes, response.AttributeContract)
 	respDiags.Append(diags...)
 
-	state.AttributeMapping, diags = types.ObjectValueFrom(ctx, attributeMappingAttrTypes, response.AttributeMapping)
+	// Attribute mapping
+	attributeMappingValues := map[string]attr.Value{}
+
+	// Build attribute_contract_fulfillment value
+	attributeMappingValues["attribute_contract_fulfillment"], diags = attributecontractfulfillment.ToState(ctx, response.AttributeMapping.AttributeContractFulfillment)
 	respDiags.Append(diags...)
 
-	//TODO nil check? Test if passing in nil causes a panic
+	// Build issuance_criteria value
+	attributeMappingValues["issuance_criteria"], diags = issuancecriteria.ToState(ctx, response.AttributeMapping.IssuanceCriteria)
+	respDiags.Append(diags...)
+
+	// Build attribute_sources value
+	attributeMappingValues["attribute_sources"], respDiags = attributesources.ToState(ctx, response.AttributeMapping.AttributeSources)
+	diags.Append(respDiags...)
+
+	// Build complete attribute mapping value
+	state.AttributeMapping, diags = types.ObjectValue(attributeMappingAttrTypes, attributeMappingValues)
+	respDiags.Append(diags...)
+
 	state.ScopeAttributeMappings, diags = types.MapValueFrom(ctx, types.ObjectType{AttrTypes: scopeAttributeMappingsElemAttrTypes}, response.ScopeAttributeMappings)
 	respDiags.Append(diags...)
 	return respDiags
@@ -312,10 +340,28 @@ func getRequiredOauthOpenIDConnectPolicyFields(plan oauthOpenIdConnectPolicyReso
 	}
 
 	// attribute mapping
-	var attributeMapping client.AttributeMapping
-	err = json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeMapping, false)), &attributeMapping)
+	attributeMapping := client.AttributeMapping{}
+	planAttrs := plan.AttributeMapping.Attributes()
+
+	attrContractFulfillmentAttr := planAttrs["attribute_contract_fulfillment"].(types.Map)
+	attributeMapping.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(attrContractFulfillmentAttr)
 	if err != nil {
-		diags.AddError("Failed to read attribute_mapping from plan", err.Error())
+		diags.AddError("Failed to read attribute_mapping.attribute_contract_fulfillment from plan", err.Error())
+		return nil, nil, nil
+	}
+
+	issuanceCriteriaAttr := planAttrs["issuance_criteria"].(types.Object)
+	attributeMapping.IssuanceCriteria, err = issuancecriteria.ClientStruct(issuanceCriteriaAttr)
+	if err != nil {
+		diags.AddError("Failed to read attribute_mapping.issuance_criteria from plan", err.Error())
+		return nil, nil, nil
+	}
+
+	attributeSourcesAttr := planAttrs["attribute_sources"].(types.List)
+	attributeMapping.AttributeSources = []client.AttributeSourceAggregation{}
+	attributeMapping.AttributeSources, err = attributesources.ClientStruct(attributeSourcesAttr)
+	if err != nil {
+		diags.AddError("Failed to read attribute_mapping.attribute_sources from plan", err.Error())
 		return nil, nil, nil
 	}
 
