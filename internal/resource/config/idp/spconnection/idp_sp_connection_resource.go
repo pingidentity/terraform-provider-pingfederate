@@ -2,7 +2,6 @@ package idpspconnection
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -13,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -39,6 +38,7 @@ type idpSpConnectionResource struct {
 type idpSpConnectionResourceModel struct {
 	SpBrowserSso                           types.Object `tfsdk:"sp_browser_sso"`
 	Type                                   types.String `tfsdk:"type"`
+	ConnectionId                           types.String `tfsdk:"connection_id"`
 	Id                                     types.String `tfsdk:"id"`
 	EntityId                               types.String `tfsdk:"entity_id"`
 	Name                                   types.String `tfsdk:"name"`
@@ -66,6 +66,7 @@ type idpSpConnectionResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
+		Description: "Manages an IdP SP Connection",
 		Attributes: map[string]schema.Attribute{
 			"active": schema.BoolAttribute{
 				Optional:            true,
@@ -3350,12 +3351,16 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 		},
 	}
 
+	id.ToSchema(&schema)
+	id.ToSchemaCustomId(&schema,
+		"connection_id",
+		true,
+		"The persistent, unique ID for the connection. It can be any combination of [a-zA-Z0-9._-].")
 	resp.Schema = schema
 }
 
 func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.SpConnection, plan idpSpConnectionResourceModel) error {
-
-	if internaltypes.IsDefined(plan.SpBrowserSso) {
+	/*if internaltypes.IsDefined(plan.SpBrowserSso) {
 		addRequest.SpBrowserSso = &client.SpBrowserSso{}
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.SpBrowserSso, false)), addRequest.SpBrowserSso)
 		if err != nil {
@@ -3367,16 +3372,8 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 		addRequest.Type = plan.Type.ValueStringPointer()
 	}
 
-	if internaltypes.IsDefined(plan.Id) {
-		addRequest.Id = plan.Id.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.EntityId) {
-		addRequest.EntityId = plan.EntityId.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.Name) {
-		addRequest.Name = plan.Name.ValueStringPointer()
+	if internaltypes.IsDefined(plan.ConnectionId) {
+		addRequest.Id = plan.ConnectionId.ValueStringPointer()
 	}
 
 	if internaltypes.IsDefined(plan.ModificationDate) {
@@ -3399,11 +3396,11 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 		addRequest.DefaultVirtualEntityId = plan.DefaultVirtualEntityId.ValueStringPointer()
 	}
 
-	/*if internaltypes.IsDefined(plan.VirtualEntityIds) {
+	if internaltypes.IsDefined(plan.VirtualEntityIds) {
 		var slice []correct_type
 		//you may need to build the slice using a client method here, otherwise use a primitive type if applicable
 		addRequest.VirtualEntityIds = slice
-	}*/
+	}
 
 	if internaltypes.IsDefined(plan.MetadataReloadSettings) {
 		addRequest.MetadataReloadSettings = &client.MetadataReloadSettings{}
@@ -3487,7 +3484,7 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 
 	if internaltypes.IsDefined(plan.ConnectionTargetType) {
 		addRequest.ConnectionTargetType = plan.ConnectionTargetType.ValueStringPointer()
-	}
+	}*/
 
 	return nil
 
@@ -3506,7 +3503,6 @@ func (r *idpSpConnectionResource) Configure(_ context.Context, req resource.Conf
 	providerCfg := req.ProviderData.(internaltypes.ResourceConfiguration)
 	r.providerConfig = providerCfg.ProviderConfig
 	r.apiClient = providerCfg.ApiClient
-
 }
 
 func readIdpSpconnectionResponse(ctx context.Context, r *client.SpConnection, state *idpSpConnectionResourceModel) diag.Diagnostics {
@@ -3550,10 +3546,10 @@ func (r *idpSpConnectionResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	createIdpSpconnection := client.NewSpConnection()
+	createIdpSpconnection := client.NewSpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
 	err := addOptionalIdpSpconnectionFields(ctx, createIdpSpconnection, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdpSpconnection", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdP SP Connection", err.Error())
 		return
 	}
 
@@ -3561,7 +3557,7 @@ func (r *idpSpConnectionResource) Create(ctx context.Context, req resource.Creat
 	apiCreateIdpSpconnection = apiCreateIdpSpconnection.Body(*createIdpSpconnection)
 	idpSpconnectionResponse, httpResp, err := r.apiClient.IdpSpConnectionsAPI.CreateSpConnectionExecute(apiCreateIdpSpconnection)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the IdpSpconnection", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the IdP SP Connection", err, httpResp)
 		return
 	}
 
@@ -3582,14 +3578,14 @@ func (r *idpSpConnectionResource) Read(ctx context.Context, req resource.ReadReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadIdpSpconnection, httpResp, err := r.apiClient.IdpSpConnectionsAPI.GetSpConnection(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.VALUE.ValueString()).Execute()
+	apiReadIdpSpconnection, httpResp, err := r.apiClient.IdpSpConnectionsAPI.GetSpConnection(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ConnectionId.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the IdpSpconnection", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the IdP SP Connection", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  IdpSpconnection", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  IdP SP Connection", err, httpResp)
 		}
 	}
 
@@ -3603,7 +3599,6 @@ func (r *idpSpConnectionResource) Read(ctx context.Context, req resource.ReadReq
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *idpSpConnectionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-
 	var plan idpSpConnectionResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -3611,29 +3606,29 @@ func (r *idpSpConnectionResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	updateIdpSpconnection := r.apiClient.IdpSpConnectionsAPI.UpdateSpConnection(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.VALUE.ValueString())
-	createUpdateRequest := client.NewSpConnection()
+	updateIdpSpconnection := r.apiClient.IdpSpConnectionsAPI.UpdateSpConnection(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.ConnectionId.ValueString())
+	createUpdateRequest := client.NewSpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
 	err := addOptionalIdpSpconnectionFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdpSpconnection", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdP SP Connection", err.Error())
 		return
 	}
 
 	_, requestErr := createUpdateRequest.MarshalJSON()
 	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of IdpSpconnection: %s", requestErr.Error())
+		diags.AddError("There was an issue retrieving the request of IdP SP Connection: %s", requestErr.Error())
 	}
 	updateIdpSpconnection = updateIdpSpconnection.Body(*createUpdateRequest)
 	updateIdpSpconnectionResponse, httpResp, err := r.apiClient.IdpSpConnectionsAPI.UpdateSpConnectionExecute(updateIdpSpconnection)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating IdpSpconnection", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating IdP SP Connection", err, httpResp)
 		return
 	}
 
 	// Log response JSON
 	_, responseErr := updateIdpSpconnectionResponse.MarshalJSON()
 	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of IdpSpconnection: %s", responseErr.Error())
+		diags.AddError("There was an issue retrieving the response of IdP SP Connection: %s", responseErr.Error())
 	}
 	// Read the response
 	var state idpSpConnectionResourceModel
@@ -3645,11 +3640,21 @@ func (r *idpSpConnectionResource) Update(ctx context.Context, req resource.Updat
 	resp.Diagnostics.Append(diags...)
 }
 
-// This config object is edit-only, so Terraform can't delete it.
 func (r *idpSpConnectionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// Retrieve values from state
+	var state idpSpConnectionResourceModel
+	diags := req.State.Get(ctx, &state)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	httpResp, err := r.apiClient.IdpSpConnectionsAPI.DeleteSpConnection(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ConnectionId.ValueString()).Execute()
+	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the IdP SP Connection", err, httpResp)
+	}
 }
 
 func (r *idpSpConnectionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("custom_id"), req, resp)
+	// Retrieve import ID and save to connection_id attribute
+	resource.ImportStatePassthroughID(ctx, path.Root("connection_id"), req, resp)
 }
