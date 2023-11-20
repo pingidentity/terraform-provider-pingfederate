@@ -3,39 +3,33 @@ from glob import glob
 
 # Verify that all resources contain an import.sh file and an entry in CHANGELOG.md
 has_no_import_files = False
-in_changelog = False
-no_import_dirs = []
-missing_changelog_entries = []
+missing_in_changelog = False
+no_import_dirs = set()
+missing_changelog_entries = set()
 
 dirs = glob("./examples/resources/*/", recursive=True)
 for dir in dirs:
   resource_name = str(dir).split("/")[-2].encode()
   with open(r'./CHANGELOG.md', 'rb', 0) as file:
     s = mmap.mmap(file.fileno(), 0, access=mmap.ACCESS_READ)
-    if s.find(resource_name) != -1:
-      in_changelog = True
-      continue
-    else:
-      in_changelog = False
-      if resource_name not in missing_changelog_entries:
-        missing_changelog_entries.append(resource_name.decode())
-      continue
+    if s.find(resource_name) == -1:
+      missing_changelog_entries.add(resource_name.decode())
   
   has_import_file = os.path.isfile(f"{dir}/import.sh")
   if not has_import_file:
-    no_import_dirs.append(dir)
-    has_no_import_files = True
-  else:
-    continue
+    no_import_dirs.add(dir)
 
-if not in_changelog:
+if len(missing_changelog_entries) > 0:
+  missing_in_changelog = True
   print(f"Resource(s) {missing_changelog_entries} not found in CHANGELOG.md!")
-  exit(1)
 else:
   print("All resources found in CHANGELOG.md")
 
-if has_no_import_files:
+if len(no_import_dirs) > 0:
+  has_no_import_files = True
   print(f"No import.sh content found for resource(s) in {no_import_dirs}!") 
-  exit(1)
 else:
   print("All resources contain an import.sh for documentation")
+
+if has_no_import_files or missing_in_changelog:
+  exit(1)
