@@ -55,7 +55,7 @@ type keyPairsSigningImportDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *keyPairsSigningImportDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes the file for importing a key pair.",
+		Description: "Describes details of a signing key pair.",
 		Attributes: map[string]schema.Attribute{
 			"serial_number": schema.StringAttribute{
 				Description: "The serial number assigned by the CA",
