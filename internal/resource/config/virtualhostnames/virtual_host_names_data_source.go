@@ -37,7 +37,7 @@ type virtualHostNamesDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *virtualHostNamesDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes VirtualHostNames.",
+		Description: "Describes settings for virtual host names.",
 		Attributes: map[string]schema.Attribute{
 			"virtual_host_names": schema.ListAttribute{
 				Description: "List of virtual host names.",

@@ -3,12 +3,12 @@
 page_title: "pingfederate_key_pair_ssl_server_import Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a KeyPairsSslServerImport.
+  Manages a file for importing an SSL key pair.
 ---
 
 # pingfederate_key_pair_ssl_server_import (Resource)
 
-Manages a KeyPairsSslServerImport.
+Manages a file for importing an SSL key pair.
 
 ## Example Usage
 

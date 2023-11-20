@@ -70,7 +70,7 @@ type oauthAccessTokenManagerDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *oauthAccessTokenManagerDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes OAuth Access Token Manager",
+		Description: "Describes an OAuth access token manager plugin instance.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Description: "The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",

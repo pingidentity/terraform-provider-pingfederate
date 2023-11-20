@@ -46,7 +46,7 @@ type administrativeAccountDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *administrativeAccountDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes a Administrative Account.",
+		Description: "Describes an administrative account.",
 		Attributes: map[string]schema.Attribute{
 			"active": schema.BoolAttribute{
 				Description: "Indicates whether the account is active or not.",
@@ -61,7 +61,7 @@ func (r *administrativeAccountDataSource) Schema(ctx context.Context, req dataso
 				Computed:    true,
 			},
 			"department": schema.StringAttribute{
-				Description: "The Department name of account user.",
+				Description: "The Department name of the account user.",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
@@ -157,7 +157,7 @@ func (r *administrativeAccountDataSource) Read(ctx context.Context, req datasour
 
 	apiReadAdministrativeAccount, httpResp, err := r.apiClient.AdministrativeAccountsAPI.GetAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Username.ValueString()).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Administrative Account", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the administrative account", err, httpResp)
 		return
 	}
 

@@ -3,12 +3,12 @@
 page_title: "pingfederate_administrative_account Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes a Administrative Account.
+  Describes an administrative account.
 ---
 
 # pingfederate_administrative_account (Data Source)
 
-Describes a Administrative Account.
+Describes an administrative account.
 
 ## Example Usage
 
@@ -29,7 +29,7 @@ data "pingfederate_administrative_account" "myAdministrativeAccount" {
 
 - `active` (Boolean) Indicates whether the account is active or not.
 - `auditor` (Boolean) Indicates whether the account belongs to an Auditor. An Auditor has View-only permissions for all administrative functions. An Auditor cannot have any administrative roles.
-- `department` (String) The Department name of account user.
+- `department` (String) The Department name of the account user.
 - `description` (String) Description of the account.
 - `email_address` (String) Email address associated with the account.
 - `encrypted_password` (String) For GET requests, this field contains the encrypted account password. For POST and PUT requests, if you wish to re-use the password from an API response to this endpoint, this field should be passed back unchanged.

@@ -43,7 +43,7 @@ type sessionSettingsResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *sessionSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a SessionSettings.",
+		Description: "Manages the settings for general session management.",
 		Attributes: map[string]schema.Attribute{
 			"track_adapter_sessions_for_logout": schema.BoolAttribute{
 				Description: "Determines whether adapter sessions are tracked for cleanup during single logout. The default is false.",

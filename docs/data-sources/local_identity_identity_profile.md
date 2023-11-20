@@ -3,12 +3,12 @@
 page_title: "pingfederate_local_identity_identity_profile Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes Local Identity Identity Profiles
+  Describes a configured local identity profile.
 ---
 
 # pingfederate_local_identity_identity_profile (Data Source)
 
-Describes Local Identity Identity Profiles
+Describes a configured local identity profile.
 
 ## Example Usage
 

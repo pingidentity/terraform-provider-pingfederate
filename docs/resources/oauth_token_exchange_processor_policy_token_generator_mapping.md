@@ -3,12 +3,12 @@
 page_title: "pingfederate_oauth_token_exchange_processor_policy_token_generator_mapping Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a Token Exchange Processor Policy To Token Generator Mapping.
+  Manages the mapping from a token exchange processor policy to a token generator.
 ---
 
 # pingfederate_oauth_token_exchange_processor_policy_token_generator_mapping (Resource)
 
-Manages a Token Exchange Processor Policy To Token Generator Mapping.
+Manages the mapping from a token exchange processor policy to a token generator.
 
 ## Example Usage
 

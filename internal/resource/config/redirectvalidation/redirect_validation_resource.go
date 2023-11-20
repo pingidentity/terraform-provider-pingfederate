@@ -87,7 +87,7 @@ type redirectValidationResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *redirectValidationResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a RedirectValidation.",
+		Description: "Manages the settings for redirect validation.",
 		Attributes: map[string]schema.Attribute{
 			"redirect_validation_local_settings": schema.SingleNestedAttribute{
 				Description: "Settings for local redirect validation.",

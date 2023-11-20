@@ -74,7 +74,7 @@ type serverSettingsLogSettingsResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *serverSettingsLogSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "LogSettings Settings related to server logging.",
+		Description: "Manages the settings related to server logging.",
 		Attributes: map[string]schema.Attribute{
 			"log_categories": schema.SetNestedAttribute{
 				Description: "The log categories defined for the system and whether they are enabled. On a PUT request, if a category is not included in the list, it will be disabled.",

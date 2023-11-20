@@ -45,7 +45,7 @@ type keyPairsSigningImportResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *keyPairsSigningImportResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a KeyPairsSigningImport.",
+		Description: "Manages a file for importing a key pair.",
 		Attributes: map[string]schema.Attribute{
 			"file_data": schema.StringAttribute{
 				Description: "Base-64 encoded PKCS12 or PEM file data. In the case of PEM, the raw (non-base-64) data is also accepted. In BCFIPS mode, only PEM with PBES2 and AES or Triple DES encryption is accepted and 128-bit salt is required.",
@@ -137,7 +137,7 @@ func (r *keyPairsSigningImportResource) Create(ctx context.Context, req resource
 	createKeyPairsSigningImport := client.NewKeyPairFile(plan.FileData.ValueString(), plan.Password.ValueString())
 	err := addOptionalKeyPairsSigningImportFields(ctx, createKeyPairsSigningImport, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for KeyPair Signing Import", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for a key pair signing import resource", err.Error())
 		return
 	}
 
@@ -145,7 +145,7 @@ func (r *keyPairsSigningImportResource) Create(ctx context.Context, req resource
 	apiCreateKeyPairsSigningImport = apiCreateKeyPairsSigningImport.Body(*createKeyPairsSigningImport)
 	keyPairsSigningImportResponse, httpResp, err := r.apiClient.KeyPairsSigningAPI.ImportSigningKeyPairExecute(apiCreateKeyPairsSigningImport)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the KeyPair Signing Import", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the key pair signing import resource", err, httpResp)
 		return
 	}
 
@@ -170,10 +170,10 @@ func (r *keyPairsSigningImportResource) Read(ctx context.Context, req resource.R
 	apiReadKeyPairsSigningImport, httpResp, err := r.apiClient.KeyPairsSigningAPI.GetSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ImportId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPair Signing Import", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the key pair signing import resource", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPair Signing Import", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the key pair signing import resource", err, httpResp)
 		}
 		return
 	}
@@ -204,7 +204,7 @@ func (r *keyPairsSigningImportResource) Delete(ctx context.Context, req resource
 	}
 	httpResp, err := r.apiClient.KeyPairsSigningAPI.DeleteSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ImportId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a KeyPair Signing Import", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a key pair signing import resource", err, httpResp)
 		return
 	}
 

@@ -51,7 +51,7 @@ type tokenProcessorToTokenGeneratorMappingResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *tokenProcessorToTokenGeneratorMappingResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a Token Processor To Token Generator Mapping",
+		Description: "Manages the mapping from token processor to a token generator.",
 		Attributes: map[string]schema.Attribute{
 			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
 			"attribute_sources":              attributesources.ToSchema(),

@@ -3,12 +3,12 @@
 page_title: "pingfederate_local_identity_identity_profile Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages Local Identity Identity Profile
+  Manages a configured local identity profile
 ---
 
 # pingfederate_local_identity_identity_profile (Resource)
 
-Manages Local Identity Identity Profile
+Manages a configured local identity profile
 
 ## Example Usage
 

@@ -38,7 +38,7 @@ type sessionApplicationSessionPolicyDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *sessionApplicationSessionPolicyDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Describes a SessionApplicationSessionPolicy.",
+		Description: "Describes the settings for an application session policy.",
 		Attributes: map[string]schema.Attribute{
 			// Add necessary attributes here
 			"idle_timeout_mins": schema.Int64Attribute{

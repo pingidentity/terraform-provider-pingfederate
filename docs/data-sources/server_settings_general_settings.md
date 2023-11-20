@@ -3,12 +3,12 @@
 page_title: "pingfederate_server_settings_general_settings Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes ServerSettingsGeneralSettings.
+  Describes the general server settings.
 ---
 
 # pingfederate_server_settings_general_settings (Data Source)
 
-Describes ServerSettingsGeneralSettings.
+Describes the general server settings.
 
 ## Example Usage
 
