@@ -33,10 +33,16 @@ type emailServerResourceModel struct {
 	emailServer string
 }
 
+type captchaSettingsResourceModel struct {
+	siteKey   string
+	secretKey string
+}
+
 type serverSettingsResourceModel struct {
-	contactInfo    *contactInfoResourceModel
-	federationInfo federationInfoResourceModel
-	emailServer    *emailServerResourceModel
+	contactInfo     *contactInfoResourceModel
+	federationInfo  federationInfoResourceModel
+	emailServer     *emailServerResourceModel
+	captchaSettings *captchaSettingsResourceModel
 }
 
 func TestAccServerSettings(t *testing.T) {
@@ -64,6 +70,10 @@ func TestAccServerSettings(t *testing.T) {
 			sourceAddr:  "updatedEmailServerAdmin@example.com",
 			emailServer: "updatedemailserver.example.com",
 		},
+		captchaSettings: &captchaSettingsResourceModel{
+			siteKey:   "exampleCaptchaProviderV2",
+			secretKey: "2FederateM0re",
+		},
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -88,7 +98,7 @@ func TestAccServerSettings(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				// Email server details are not returned by PF
-				ImportStateVerifyIgnore: []string{"email_server"},
+				ImportStateVerifyIgnore: []string{"email_server", "captcha_settings"},
 			},
 			{
 				// Back to minimal model
@@ -168,6 +178,11 @@ resource "pingfederate_server_settings" "%[1]s" {
       }
     }
   }
+
+  captcha_settings = {
+    site_key   = "%[11]s"
+    secret_key = "%[12]s"
+  }
 }`, resourceName,
 		resourceModel.contactInfo.company,
 		resourceModel.contactInfo.email,
@@ -178,6 +193,8 @@ resource "pingfederate_server_settings" "%[1]s" {
 		resourceModel.federationInfo.saml2EntityId,
 		resourceModel.emailServer.sourceAddr,
 		resourceModel.emailServer.emailServer,
+		resourceModel.captchaSettings.siteKey,
+		resourceModel.captchaSettings.secretKey,
 	)
 }
 
@@ -247,6 +264,14 @@ func testAccCheckExpectedServerSettingsAttributes(config serverSettingsResourceM
 
 			err = acctest.TestAttributesMatchString(resourceType, nil, "email_server",
 				config.emailServer.emailServer, response.EmailServer.EmailServer)
+			if err != nil {
+				return err
+			}
+		}
+
+		if config.captchaSettings != nil {
+			err = acctest.TestAttributesMatchString(resourceType, nil, "site_key",
+				config.captchaSettings.siteKey, *response.CaptchaSettings.SiteKey)
 			if err != nil {
 				return err
 			}
