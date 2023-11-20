@@ -2,6 +2,7 @@ package idpspconnection
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -9,10 +10,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
@@ -347,6 +352,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 		Attributes: map[string]schema.Attribute{
 			"active": schema.BoolAttribute{
 				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 				Description: "Specifies whether the connection is active and ready to process incoming requests. The default value is false.",
 			},
 			"additional_allowed_entities_configuration": schema.SingleNestedAttribute{
@@ -474,7 +481,11 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Description: "Contact information.",
 			},
 			"creation_date": schema.StringAttribute{
-				Optional:    true,
+				Optional: false,
+				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 				Description: "The time at which the connection was created. This property is read only and is ignored on PUT and POST requests.",
 			},
 			"credentials": schema.SingleNestedAttribute{
@@ -639,7 +650,11 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Description: "Configuration settings to enable automatic reload of partner's metadata.",
 			},
 			"modification_date": schema.StringAttribute{
-				Optional:    true,
+				Optional: false,
+				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 				Description: "The time at which the connection was last changed. This property is read only and is ignored on PUT and POST requests.",
 			},
 			"name": schema.StringAttribute{
@@ -1433,59 +1448,35 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 }
 
 func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.SpConnection, plan idpSpConnectionResourceModel) error {
-	/*if internaltypes.IsDefined(plan.SpBrowserSso) {
-		addRequest.SpBrowserSso = &client.SpBrowserSso{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.SpBrowserSso, false)), addRequest.SpBrowserSso)
+	addRequest.Type = plan.Type.ValueStringPointer()
+	addRequest.Active = plan.Active.ValueBoolPointer()
+	addRequest.BaseUrl = plan.BaseUrl.ValueStringPointer()
+	addRequest.DefaultVirtualEntityId = plan.DefaultVirtualEntityId.ValueStringPointer()
+	addRequest.LicenseConnectionGroup = plan.LicenseConnectionGroup.ValueStringPointer()
+	addRequest.LoggingMode = plan.LoggingMode.ValueStringPointer()
+	addRequest.ApplicationName = plan.ApplicationName.ValueStringPointer()
+	addRequest.ApplicationIconUrl = plan.ApplicationIconUrl.ValueStringPointer()
+	addRequest.ConnectionTargetType = plan.ConnectionTargetType.ValueStringPointer()
+
+	if internaltypes.IsDefined(plan.VirtualEntityIds) {
+		addRequest.VirtualEntityIds = []string{}
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.VirtualEntityIds, false)), &addRequest.VirtualEntityIds)
 		if err != nil {
 			return err
 		}
-	}*/
-
-	if internaltypes.IsDefined(plan.Type) {
-		addRequest.Type = plan.Type.ValueStringPointer()
-	}
-
-	/*if internaltypes.IsDefined(plan.ConnectionId) {
-		addRequest.Id = plan.ConnectionId.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.ModificationDate) {
-		addRequest.ModificationDate = plan.ModificationDate.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.CreationDate) {
-		addRequest.CreationDate = plan.CreationDate.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.Active) {
-		addRequest.Active = plan.Active.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.BaseUrl) {
-		addRequest.BaseUrl = plan.BaseUrl.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.DefaultVirtualEntityId) {
-		addRequest.DefaultVirtualEntityId = plan.DefaultVirtualEntityId.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.VirtualEntityIds) {
-		var slice []correct_type
-		//you may need to build the slice using a client method here, otherwise use a primitive type if applicable
-		addRequest.VirtualEntityIds = slice
 	}
 
 	if internaltypes.IsDefined(plan.MetadataReloadSettings) {
-		addRequest.MetadataReloadSettings = &client.MetadataReloadSettings{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.MetadataReloadSettings, false)), addRequest.MetadataReloadSettings)
+		addRequest.MetadataReloadSettings = &client.ConnectionMetadataUrl{}
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.MetadataReloadSettings, false)), &addRequest.MetadataReloadSettings)
 		if err != nil {
 			return err
 		}
 	}
 
 	if internaltypes.IsDefined(plan.Credentials) {
-		addRequest.Credentials = &client.Credentials{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.Credentials, false)), addRequest.Credentials)
+		addRequest.Credentials = &client.ConnectionCredentials{}
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.Credentials, false)), &addRequest.Credentials)
 		if err != nil {
 			return err
 		}
@@ -1493,71 +1484,67 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 
 	if internaltypes.IsDefined(plan.ContactInfo) {
 		addRequest.ContactInfo = &client.ContactInfo{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ContactInfo, false)), addRequest.ContactInfo)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ContactInfo, false)), &addRequest.ContactInfo)
 		if err != nil {
 			return err
 		}
 	}
 
-	if internaltypes.IsDefined(plan.LicenseConnectionGroup) {
-		addRequest.LicenseConnectionGroup = plan.LicenseConnectionGroup.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.LoggingMode) {
-		addRequest.LoggingMode = plan.LoggingMode.ValueStringPointer()
+	if internaltypes.IsDefined(plan.ContactInfo) {
+		addRequest.ContactInfo = &client.ContactInfo{}
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ContactInfo, false)), &addRequest.ContactInfo)
+		if err != nil {
+			return err
+		}
 	}
 
 	if internaltypes.IsDefined(plan.AdditionalAllowedEntitiesConfiguration) {
 		addRequest.AdditionalAllowedEntitiesConfiguration = &client.AdditionalAllowedEntitiesConfiguration{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AdditionalAllowedEntitiesConfiguration, false)), addRequest.AdditionalAllowedEntitiesConfiguration)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AdditionalAllowedEntitiesConfiguration, false)), &addRequest.AdditionalAllowedEntitiesConfiguration)
 		if err != nil {
 			return err
 		}
 	}
 
 	if internaltypes.IsDefined(plan.ExtendedProperties) {
-		addRequest.ExtendedProperties = &client.ExtendedProperties{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ExtendedProperties, false)), addRequest.ExtendedProperties)
+		addRequest.ExtendedProperties = &map[string]client.ParameterValues{}
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ExtendedProperties, false)), &addRequest.ExtendedProperties)
+		if err != nil {
+			return err
+		}
+	}
+
+	if internaltypes.IsDefined(plan.SpBrowserSso) {
+		addRequest.SpBrowserSso = &client.SpBrowserSso{}
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.SpBrowserSso, false)), &addRequest.SpBrowserSso)
 		if err != nil {
 			return err
 		}
 	}
 
 	if internaltypes.IsDefined(plan.AttributeQuery) {
-		addRequest.AttributeQuery = &client.AttributeQuery{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeQuery, false)), addRequest.AttributeQuery)
+		addRequest.AttributeQuery = &client.SpAttributeQuery{}
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeQuery, false)), &addRequest.AttributeQuery)
 		if err != nil {
 			return err
 		}
 	}
 
 	if internaltypes.IsDefined(plan.WsTrust) {
-		addRequest.WsTrust = &client.WsTrust{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.WsTrust, false)), addRequest.WsTrust)
+		addRequest.WsTrust = &client.SpWsTrust{}
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.WsTrust, false)), &addRequest.WsTrust)
 		if err != nil {
 			return err
 		}
-	}
-
-	if internaltypes.IsDefined(plan.ApplicationName) {
-		addRequest.ApplicationName = plan.ApplicationName.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.ApplicationIconUrl) {
-		addRequest.ApplicationIconUrl = plan.ApplicationIconUrl.ValueStringPointer()
 	}
 
 	if internaltypes.IsDefined(plan.OutboundProvision) {
 		addRequest.OutboundProvision = &client.OutboundProvision{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.OutboundProvision, false)), addRequest.OutboundProvision)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.OutboundProvision, false)), &addRequest.OutboundProvision)
 		if err != nil {
 			return err
 		}
 	}
-
-	if internaltypes.IsDefined(plan.ConnectionTargetType) {
-		addRequest.ConnectionTargetType = plan.ConnectionTargetType.ValueStringPointer()
-	}*/
 
 	return nil
 
