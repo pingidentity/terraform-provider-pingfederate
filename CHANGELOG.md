@@ -8,8 +8,8 @@
 * **New Data Source:** `protocol_metadata_lifetime_settings datasource` ([#100](https://github.com/pingidentity/terraform-provider-pingfederate/pull/100))
 * **New Data Source:** `server_settings_general_settings datasource` ([#101](https://github.com/pingidentity/terraform-provider-pingfederate/pull/101))
 * **New Data Source:** `server_settings_log_settings datasource` ([#104](https://github.com/pingidentity/terraform-provider-pingfederate/pull/104))
-
-* **New Data Source:** `server-settings-general-settings datasource` ([#105](https://github.com/pingidentity/terraform-provider-pingfederate/pull/105))
+* **New Data Source:** `server_settings_general_settings datasource` ([#105](https://github.com/pingidentity/terraform-provider-pingfederate/pull/105))
+* **New Data Source:** `server_settings_system_keys datasource` ([#112](https://github.com/pingidentity/terraform-provider-pingfederate/pull/112))
 
 
 # v0.2.1 November 10, 2023
