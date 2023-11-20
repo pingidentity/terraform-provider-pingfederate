@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
@@ -47,14 +48,14 @@ type idpSpConnectionResourceModel struct {
 	Active                                 types.Bool   `tfsdk:"active"`
 	BaseUrl                                types.String `tfsdk:"base_url"`
 	DefaultVirtualEntityId                 types.String `tfsdk:"default_virtual_entity_id"`
-	VirtualEntityIds                       types.Set    `tfsdk:"virtual_entity_ids"`
+	VirtualEntityIds                       types.List   `tfsdk:"virtual_entity_ids"`
 	MetadataReloadSettings                 types.Object `tfsdk:"metadata_reload_settings"`
 	Credentials                            types.Object `tfsdk:"credentials"`
 	ContactInfo                            types.Object `tfsdk:"contact_info"`
 	LicenseConnectionGroup                 types.String `tfsdk:"license_connection_group"`
 	LoggingMode                            types.String `tfsdk:"logging_mode"`
 	AdditionalAllowedEntitiesConfiguration types.Object `tfsdk:"additional_allowed_entities_configuration"`
-	ExtendedProperties                     types.Object `tfsdk:"extended_properties"`
+	ExtendedProperties                     types.Map    `tfsdk:"extended_properties"`
 	AttributeQuery                         types.Object `tfsdk:"attribute_query"`
 	WsTrust                                types.Object `tfsdk:"ws_trust"`
 	ApplicationName                        types.String `tfsdk:"application_name"`
@@ -2331,6 +2332,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"type": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString("IDP"),
 				Description: "The type of this connection. Default is 'IDP'.",
 				Validators: []validator.String{
 					stringvalidator.OneOf(
@@ -2684,13 +2687,13 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 		if err != nil {
 			return err
 		}
-	}
+	}*/
 
 	if internaltypes.IsDefined(plan.Type) {
 		addRequest.Type = plan.Type.ValueStringPointer()
 	}
 
-	if internaltypes.IsDefined(plan.ConnectionId) {
+	/*if internaltypes.IsDefined(plan.ConnectionId) {
 		addRequest.Id = plan.ConnectionId.ValueStringPointer()
 	}
 
