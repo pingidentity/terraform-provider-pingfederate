@@ -1,6 +1,7 @@
 # v0.3.0 (unreleased)
 ### FEATURES
 #### Resources
+* **New Resource:** `pingfederate_oauth_client` ([#111](https://github.com/pingidentity/terraform-provider-pingfederate/pull/111))
 * **New Resource:** `pingfederate_oauth_open_id_connect_policy` ([#105](https://github.com/pingidentity/terraform-provider-pingfederate/pull/105))
 
 #### Data Sources

@@ -25,7 +25,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -794,9 +793,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 			"token_introspection_encryption_algorithm": schema.StringAttribute{
 				MarkdownDescription: "The JSON Web Encryption [JWE] encryption algorithm used to encrypt the content-encryption key of the Token Introspection Response.\nDIR - Direct Encryption with symmetric key\nA128KW - AES-128 Key Wrap\nA192KW - AES-192 Key Wrap\nA256KW - AES-256 Key Wrap\nA128GCMKW - AES-GCM-128 key encryption\nA192GCMKW - AES-GCM-192 key encryption\nA256GCMKW - AES-GCM-256 key encryption\nECDH_ES - ECDH-ES\nECDH_ES_A128KW - ECDH-ES with AES-128 Key Wrap\nECDH_ES_A192KW - ECDH-ES with AES-192 Key Wrap\nECDH_ES_A256KW - ECDH-ES with AES-256 Key Wrap\nRSA_OAEP - RSAES OAEP\nRSA_OAEP_256 - RSAES OAEP using SHA-256 and MGF1 with SHA-256",
 				Description:         "The JSON Web Encryption [JWE] encryption algorithm used to encrypt the content-encryption key of the Token Introspection Response. DIR - Direct Encryption with symmetric key, A128KW - AES-128 Key Wrap, A192KW - AES-192 Key Wrap, A256KW - AES-256 Key Wrap, A128GCMKW - AES-GCM-128 key encryption, A192GCMKW - AES-GCM-192 key encryption, A256GCMKW - AES-GCM-256 key encryption, ECDH_ES - ECDH-ES, ECDH_ES_A128KW - ECDH-ES with AES-128 Key Wrap, ECDH_ES_A192KW - ECDH-ES with AES-192 Key Wrap, ECDH_ES_A256KW - ECDH-ES with AES-256 Key Wrap, RSA_OAEP - RSAES OAEP, RSA_OAEP_256 - RSAES OAEP using SHA-256 and MGF1 with SHA-256",
-				Computed:            true,
 				Optional:            true,
-				Default:             stringdefault.StaticString("DIR"),
 				Validators: []validator.String{
 					stringvalidator.OneOf("DIR",
 						"A128KW",
@@ -1548,10 +1545,6 @@ func (r *oauthClientResource) Update(ctx context.Context, req resource.UpdateReq
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OauthClient", err, httpResp)
 		return
-	}
-	requestJson, err := updateOauthClientResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
 	}
 
 	// Read the response
