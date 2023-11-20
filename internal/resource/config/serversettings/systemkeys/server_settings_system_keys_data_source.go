@@ -42,7 +42,7 @@ type serverSettingsSystemKeysDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *serverSettingsSystemKeysDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Describes Server Settings System Keys.",
+		Description: "Describes the settings for server system keys.",
 		Attributes: map[string]schema.Attribute{
 			"current": schema.SingleNestedAttribute{
 				Description: "Current SystemKeys Secrets that are used in cryptographic operations to generate and consume internal tokens.",
@@ -53,7 +53,6 @@ func (r *serverSettingsSystemKeysDataSource) Schema(ctx context.Context, req dat
 						Description: "Creation time of the key.",
 						Computed:    true,
 						Optional:    false,
-						Required:    false,
 					},
 					"encrypted_key_data": schema.StringAttribute{
 						Description: "The system key encrypted.",
@@ -91,7 +90,8 @@ func (r *serverSettingsSystemKeysDataSource) Schema(ctx context.Context, req dat
 			},
 			"pending": schema.SingleNestedAttribute{
 				Description: "Pending SystemKeys Secrets that are used in cryptographic operations to generate and consume internal tokens.",
-				Required:    true,
+				Computed:    true,
+				Optional:    false,
 				Attributes: map[string]schema.Attribute{
 					"creation_date": schema.StringAttribute{
 						Description: "Creation time of the key.",
@@ -142,7 +142,8 @@ func readServerSettingsSystemKeysDataSource(ctx context.Context, r *client.Syste
 		"encrypted_key_data": types.StringValue(currentAttrs.GetEncryptedKeyData()),
 		"key_data":           types.StringValue(currentAttrs.GetKeyData()),
 	}
-	currentAttrsObjVal := internaltypes.MaptoObjValue(systemKeyAttrTypes, currentAttrVals, &diags)
+	currentAttrsObjVal, respDiags := types.ObjectValue(systemKeyAttrTypes, currentAttrVals)
+	diags = append(diags, respDiags...)
 
 	previousAttrs := r.GetPrevious()
 	previousAttrVals := map[string]attr.Value{
@@ -150,7 +151,8 @@ func readServerSettingsSystemKeysDataSource(ctx context.Context, r *client.Syste
 		"encrypted_key_data": types.StringValue(previousAttrs.GetEncryptedKeyData()),
 		"key_data":           types.StringValue(previousAttrs.GetKeyData()),
 	}
-	previousAttrsObjVal := internaltypes.MaptoObjValue(systemKeyAttrTypes, previousAttrVals, &diags)
+	previousAttrsObjVal, respDiags := types.ObjectValue(systemKeyAttrTypes, previousAttrVals)
+	diags = append(diags, respDiags...)
 
 	pendingAttrs := r.GetPending()
 	pendingAttrVals := map[string]attr.Value{
@@ -158,7 +160,8 @@ func readServerSettingsSystemKeysDataSource(ctx context.Context, r *client.Syste
 		"encrypted_key_data": types.StringValue(pendingAttrs.GetEncryptedKeyData()),
 		"key_data":           types.StringValue(pendingAttrs.GetKeyData()),
 	}
-	pendingAttrsObjVal := internaltypes.MaptoObjValue(systemKeyAttrTypes, pendingAttrVals, &diags)
+	pendingAttrsObjVal, respDiags := types.ObjectValue(systemKeyAttrTypes, pendingAttrVals)
+	diags = append(diags, respDiags...)
 
 	state.Current = currentAttrsObjVal
 	state.Pending = pendingAttrsObjVal
@@ -174,24 +177,15 @@ func (r *serverSettingsSystemKeysDataSource) Read(ctx context.Context, req datas
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
 	apiReadServerSettingsSystemKeys, httpResp, err := r.apiClient.ServerSettingsAPI.GetSystemKeys(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
-		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings System Keys", err, httpResp)
-			resp.State.RemoveDataSource(ctx)
-		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings System Keys", err, httpResp)
-		}
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings System Keys", err, httpResp)
 		return
 	}
 
 	// Read the response into the state
-	id, diags := id.GetID(ctx, req.State)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	diags = readServerSettingsSystemKeysResponse(ctx, apiReadServerSettingsSystemKeys, &state, id)
+	diags = readServerSettingsSystemKeysDataSource(ctx, apiReadServerSettingsSystemKeys, &state, nil)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
