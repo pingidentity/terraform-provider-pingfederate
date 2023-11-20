@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: install generate fmt vet test starttestcontainer removetestcontainer spincontainer clearstates kaboom testacc testacccomplete generateresource openlocalwebapi golangcilint tfproviderlint tflint terrafmtlint importfmtlint devcheck devchecknotest openapp testoneacc verifyresourceimportcontent
+.PHONY: install generate fmt vet test starttestcontainer removetestcontainer spincontainer clearstates kaboom testacc testacccomplete generateresource openlocalwebapi golangcilint tfproviderlint tflint terrafmtlint importfmtlint devcheck devchecknotest openapp testoneacc verifycontent
 
 default: install
 
@@ -69,10 +69,10 @@ kaboom: clearstates spincontainer install
 
 devchecknotest: install golangcilint generate tfproviderlint tflint terrafmtlint importfmtlint
 
-verifyresourceimportcontent:
-	python3 ./devcheck/checkImportContent.py
+verifycontent:
+	python3 ./devcheck/verifyContent.py
 
-devcheck: verifyresourceimportcontent devchecknotest kaboom testacc
+devcheck: verifycontent devchecknotest kaboom testacc
 
 generateresource:
 	PINGFEDERATE_GENERATED_ENDPOINT=serverSettings \
