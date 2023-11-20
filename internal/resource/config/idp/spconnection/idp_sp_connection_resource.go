@@ -13,7 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -66,6 +70,278 @@ type idpSpConnectionResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	//TODO is this different from the common one?
+	//TODO maybe move all these into common? Or into a separate file in this package?
+	attributeContractFulfillmentSchema := schema.MapNestedAttribute{
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: map[string]schema.Attribute{
+				"source": schema.SingleNestedAttribute{
+					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							Optional:    true,
+							Description: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+						},
+						"type": schema.StringAttribute{
+							Required:    true,
+							Description: "The source type of this key.",
+							Validators: []validator.String{
+								stringvalidator.OneOf(
+									"TOKEN_EXCHANGE_PROCESSOR_POLICY",
+									"ACCOUNT_LINK",
+									"ADAPTER",
+									"ASSERTION",
+									"CONTEXT",
+									"CUSTOM_DATA_STORE",
+									"EXPRESSION",
+									"JDBC_DATA_STORE",
+									"LDAP_DATA_STORE",
+									"PING_ONE_LDAP_GATEWAY_DATA_STORE",
+									"MAPPED_ATTRIBUTES",
+									"NO_MAPPING",
+									"TEXT",
+									"TOKEN",
+									"REQUEST",
+									"OAUTH_PERSISTENT_GRANT",
+									"SUBJECT_TOKEN",
+									"ACTOR_TOKEN",
+									"PASSWORD_CREDENTIAL_VALIDATOR",
+									"IDP_CONNECTION",
+									"AUTHENTICATION_POLICY_CONTRACT",
+									"CLAIMS",
+									"LOCAL_IDENTITY_PROFILE",
+									"EXTENDED_CLIENT_METADATA",
+									"EXTENDED_PROPERTIES",
+									"TRACKED_HTTP_PARAMS",
+									"FRAGMENT",
+									"INPUTS",
+									"ATTRIBUTE_QUERY",
+									"IDENTITY_STORE_USER",
+									"IDENTITY_STORE_GROUP",
+									"SCIM_USER",
+									"SCIM_GROUP",
+								),
+							},
+						},
+					},
+					Required:    true,
+					Description: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
+				},
+				"value": schema.StringAttribute{
+					Required:    true,
+					Description: "The value for this attribute.",
+				},
+			},
+		},
+		Required:    true,
+		Description: "A list of mappings from attribute names to their fulfillment values.",
+	}
+
+	certsSchema := schema.ListNestedAttribute{
+		NestedObject: schema.NestedAttributeObject{
+			Attributes: map[string]schema.Attribute{
+				"active_verification_cert": schema.BoolAttribute{
+					Optional:    true,
+					Description: "Indicates whether this is an active signature verification certificate.",
+				},
+				"cert_view": schema.SingleNestedAttribute{
+					Attributes: map[string]schema.Attribute{
+						"crypto_provider": schema.StringAttribute{
+							Optional:    true,
+							Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
+							Validators: []validator.String{
+								stringvalidator.OneOf(
+									"LOCAL",
+									"HSM",
+								),
+							},
+						},
+						"expires": schema.StringAttribute{
+							Optional:    true,
+							Description: "The end date up until which the item is valid, in ISO 8601 format (UTC).",
+						},
+						"id": schema.StringAttribute{
+							Optional:    true,
+							Description: "The persistent, unique ID for the certificate.",
+						},
+						"issuer_dn": schema.StringAttribute{
+							Optional:    true,
+							Description: "The issuer's distinguished name.",
+						},
+						"key_algorithm": schema.StringAttribute{
+							Optional:    true,
+							Description: "The public key algorithm.",
+						},
+						"key_size": schema.Int64Attribute{
+							Optional:    true,
+							Description: "The public key size.",
+						},
+						"serial_number": schema.StringAttribute{
+							Optional:    true,
+							Description: "The serial number assigned by the CA.",
+						},
+						"sha1fingerprint": schema.StringAttribute{
+							Optional:    true,
+							Description: "SHA-1 fingerprint in Hex encoding.",
+						},
+						"sha256fingerprint": schema.StringAttribute{
+							Optional:    true,
+							Description: "SHA-256 fingerprint in Hex encoding.",
+						},
+						"signature_algorithm": schema.StringAttribute{
+							Optional:    true,
+							Description: "The signature algorithm.",
+						},
+						"status": schema.StringAttribute{
+							Optional:    true,
+							Description: "Status of the item.",
+							Validators: []validator.String{
+								stringvalidator.OneOf(
+									"VALID",
+									"EXPIRED",
+									"NOT_YET_VALID",
+									"REVOKED",
+								),
+							},
+						},
+						"subject_alternative_names": schema.ListAttribute{
+							ElementType: types.StringType,
+							Optional:    true,
+							Description: "The subject alternative names (SAN).",
+						},
+						"subject_dn": schema.StringAttribute{
+							Optional:    true,
+							Description: "The subject's distinguished name.",
+						},
+						"valid_from": schema.StringAttribute{
+							Optional:    true,
+							Description: "The start date from which the item is valid, in ISO 8601 format (UTC).",
+						},
+						"version": schema.Int64Attribute{
+							Optional:    true,
+							Description: "The X.509 version to which the item conforms.",
+						},
+					},
+					Optional:    true,
+					Description: "Certificate details.",
+				},
+				"encryption_cert": schema.BoolAttribute{
+					Optional:    true,
+					Description: "Indicates whether to use this cert to encrypt outgoing assertions. Only one certificate in the collection can have this flag set.",
+				},
+				"primary_verification_cert": schema.BoolAttribute{
+					Optional:    true,
+					Description: "Indicates whether this is the primary signature verification certificate. Only one certificate in the collection can have this flag set.",
+				},
+				"secondary_verification_cert": schema.BoolAttribute{
+					Optional:    true,
+					Description: "Indicates whether this is the secondary signature verification certificate. Only one certificate in the collection can have this flag set.",
+				},
+				"x509file": schema.SingleNestedAttribute{
+					Attributes: map[string]schema.Attribute{
+						"crypto_provider": schema.StringAttribute{
+							Optional:    true,
+							Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
+							Validators: []validator.String{
+								stringvalidator.OneOf(
+									"LOCAL",
+									"HSM",
+								),
+							},
+						},
+						"file_data": schema.StringAttribute{
+							Required:    true,
+							Description: "The certificate data in PEM format. New line characters should be omitted or encoded in this value.",
+						},
+						"id": schema.StringAttribute{
+							Optional:    true,
+							Description: "The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.",
+						},
+					},
+					Required:    true,
+					Description: "Encoded certificate data.",
+				},
+			},
+		},
+		Optional:    true,
+		Description: "The certificates used for signature verification and XML encryption.",
+	}
+
+	httpBasicCredentialsSchema := schema.SingleNestedAttribute{
+		Attributes: map[string]schema.Attribute{
+			"encrypted_password": schema.StringAttribute{
+				Optional:    true,
+				Description: "For GET requests, this field contains the encrypted password, if one exists.  For POST and PUT requests, if you wish to reuse the existing password, this field should be passed back unchanged.",
+			},
+			"password": schema.StringAttribute{
+				Optional:    true,
+				Description: "User password.  To update the password, specify the plaintext value in this field.  This field will not be populated for GET requests.",
+			},
+			"username": schema.StringAttribute{
+				Optional:    true,
+				Description: "The username.",
+			},
+		},
+		Optional:    true,
+		Description: "Username and password credentials.",
+	}
+
+	adapterOverrideSettingsAttribute := schema.NestedAttributeObject{
+		Attributes: map[string]schema.Attribute{
+			"masked": schema.BoolAttribute{
+				Optional:    true,
+				Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
+			},
+			"name": schema.StringAttribute{
+				Required:    true,
+				Description: "The name of this attribute.",
+			},
+			"pseudonym": schema.BoolAttribute{
+				Optional:    true,
+				Description: "Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to false.",
+			},
+		},
+	}
+
+	spBrowserSSOAttribute := schema.NestedAttributeObject{
+		Attributes: map[string]schema.Attribute{
+			"name": schema.StringAttribute{
+				Required:    true,
+				Description: "The name of this attribute.",
+			},
+			"name_format": schema.StringAttribute{
+				Required:    true,
+				Description: "The SAML Name Format for the attribute.",
+			},
+		},
+	}
+
+	wsTrustAttribute := schema.NestedAttributeObject{
+		Attributes: map[string]schema.Attribute{
+			"name": schema.StringAttribute{
+				Required:    true,
+				Description: "The name of this attribute.",
+			},
+			"namespace": schema.StringAttribute{
+				Required:    true,
+				Description: "The attribute namespace.  This is required when the Default Token Type is SAML2.0 or SAML1.1 or SAML1.1 for Office 365.",
+			},
+		},
+	}
+
+	messageCustomizationsNestedObject := schema.NestedAttributeObject{
+		Attributes: map[string]schema.Attribute{
+			"context_name": schema.StringAttribute{
+				Optional:    true,
+				Description: "The context in which the customization will be applied. Depending on the connection type and protocol, this can either be 'assertion', 'authn-response' or 'authn-request'.",
+			},
+			"message_expression": schema.StringAttribute{
+				Optional:    true,
+				Description: "The OGNL expression that will be executed. Refer to the Admin Manual for a list of variables provided by PingFederate.",
+			},
+		},
+	}
+
+	//TODO descriptions for resource links
 	schema := schema.Schema{
 		Description: "Manages an IdP SP Connection",
 		Attributes: map[string]schema.Attribute{
@@ -113,74 +389,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"attribute_query": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"attribute_contract_fulfillment": schema.MapNestedAttribute{
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"source": schema.SingleNestedAttribute{
-									Attributes: map[string]schema.Attribute{
-										"id": schema.StringAttribute{
-											Optional:    true,
-											Description: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-										},
-										"type": schema.StringAttribute{
-											Required:    true,
-											Description: "The source type of this key.",
-											Validators: []validator.String{
-												stringvalidator.OneOf(
-													"TOKEN_EXCHANGE_PROCESSOR_POLICY",
-													"ACCOUNT_LINK",
-													"ADAPTER",
-													"ASSERTION",
-													"CONTEXT",
-													"CUSTOM_DATA_STORE",
-													"EXPRESSION",
-													"JDBC_DATA_STORE",
-													"LDAP_DATA_STORE",
-													"PING_ONE_LDAP_GATEWAY_DATA_STORE",
-													"MAPPED_ATTRIBUTES",
-													"NO_MAPPING",
-													"TEXT",
-													"TOKEN",
-													"REQUEST",
-													"OAUTH_PERSISTENT_GRANT",
-													"SUBJECT_TOKEN",
-													"ACTOR_TOKEN",
-													"PASSWORD_CREDENTIAL_VALIDATOR",
-													"IDP_CONNECTION",
-													"AUTHENTICATION_POLICY_CONTRACT",
-													"CLAIMS",
-													"LOCAL_IDENTITY_PROFILE",
-													"EXTENDED_CLIENT_METADATA",
-													"EXTENDED_PROPERTIES",
-													"TRACKED_HTTP_PARAMS",
-													"FRAGMENT",
-													"INPUTS",
-													"ATTRIBUTE_QUERY",
-													"IDENTITY_STORE_USER",
-													"IDENTITY_STORE_GROUP",
-													"SCIM_USER",
-													"SCIM_GROUP",
-												),
-											},
-										},
-									},
-									Required:    true,
-									Description: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
-								},
-								"value": schema.StringAttribute{
-									Required:    true,
-									Description: "The value for this attribute.",
-								},
-							},
-						},
-						Required:    true,
-						Description: "A list of mappings from attribute names to their fulfillment values.",
-					},
-					"attribute_sources": schema.ListAttribute{
-						ElementType: types.StringType,
-						Required:    true,
-						Description: "A list of configured data stores to look up attributes from.",
-					},
+					"attribute_contract_fulfillment": attributeContractFulfillmentSchema,
+					"attribute_sources":              attributesources.ToSchema(),
 					"attributes": schema.ListAttribute{
 						ElementType: types.StringType,
 						Required:    true,
@@ -189,119 +399,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							listvalidator.UniqueValues(),
 						},
 					},
-					"issuance_criteria": schema.SingleNestedAttribute{
-						Attributes: map[string]schema.Attribute{
-							"conditional_criteria": schema.ListNestedAttribute{
-								NestedObject: schema.NestedAttributeObject{
-									Attributes: map[string]schema.Attribute{
-										"attribute_name": schema.StringAttribute{
-											Required:    true,
-											Description: "The name of the attribute to use in this issuance criterion.",
-										},
-										"condition": schema.StringAttribute{
-											Required:    true,
-											Description: "The condition that will be applied to the source attribute's value and the expected value.",
-											Validators: []validator.String{
-												stringvalidator.OneOf(
-													"EQUALS",
-													"EQUALS_CASE_INSENSITIVE",
-													"EQUALS_DN",
-													"NOT_EQUAL",
-													"NOT_EQUAL_CASE_INSENSITIVE",
-													"NOT_EQUAL_DN",
-													"MULTIVALUE_CONTAINS",
-													"MULTIVALUE_CONTAINS_CASE_INSENSITIVE",
-													"MULTIVALUE_CONTAINS_DN",
-													"MULTIVALUE_DOES_NOT_CONTAIN",
-													"MULTIVALUE_DOES_NOT_CONTAIN_CASE_INSENSITIVE",
-													"MULTIVALUE_DOES_NOT_CONTAIN_DN",
-												),
-											},
-										},
-										"error_result": schema.StringAttribute{
-											Optional:    true,
-											Description: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-										},
-										"source": schema.SingleNestedAttribute{
-											Attributes: map[string]schema.Attribute{
-												"id": schema.StringAttribute{
-													Optional:    true,
-													Description: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-												},
-												"type": schema.StringAttribute{
-													Required:    true,
-													Description: "The source type of this key.",
-													Validators: []validator.String{
-														stringvalidator.OneOf(
-															"TOKEN_EXCHANGE_PROCESSOR_POLICY",
-															"ACCOUNT_LINK",
-															"ADAPTER",
-															"ASSERTION",
-															"CONTEXT",
-															"CUSTOM_DATA_STORE",
-															"EXPRESSION",
-															"JDBC_DATA_STORE",
-															"LDAP_DATA_STORE",
-															"PING_ONE_LDAP_GATEWAY_DATA_STORE",
-															"MAPPED_ATTRIBUTES",
-															"NO_MAPPING",
-															"TEXT",
-															"TOKEN",
-															"REQUEST",
-															"OAUTH_PERSISTENT_GRANT",
-															"SUBJECT_TOKEN",
-															"ACTOR_TOKEN",
-															"PASSWORD_CREDENTIAL_VALIDATOR",
-															"IDP_CONNECTION",
-															"AUTHENTICATION_POLICY_CONTRACT",
-															"CLAIMS",
-															"LOCAL_IDENTITY_PROFILE",
-															"EXTENDED_CLIENT_METADATA",
-															"EXTENDED_PROPERTIES",
-															"TRACKED_HTTP_PARAMS",
-															"FRAGMENT",
-															"INPUTS",
-															"ATTRIBUTE_QUERY",
-															"IDENTITY_STORE_USER",
-															"IDENTITY_STORE_GROUP",
-															"SCIM_USER",
-															"SCIM_GROUP",
-														),
-													},
-												},
-											},
-											Required:    true,
-											Description: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
-										},
-										"value": schema.StringAttribute{
-											Required:    true,
-											Description: "The expected value of this issuance criterion.",
-										},
-									},
-								},
-								Optional:    true,
-								Description: "A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue.",
-							},
-							"expression_criteria": schema.ListNestedAttribute{
-								NestedObject: schema.NestedAttributeObject{
-									Attributes: map[string]schema.Attribute{
-										"error_result": schema.StringAttribute{
-											Optional:    true,
-											Description: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-										},
-										"expression": schema.StringAttribute{
-											Required:    true,
-											Description: "The OGNL expression to evaluate.",
-										},
-									},
-								},
-								Optional:    true,
-								Description: "A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue.",
-							},
-						},
-						Optional:    true,
-						Description: "A list of criteria that determines whether a transaction (usually a SSO transaction) is continued. All criteria must pass in order for the transaction to continue.",
-					},
+					"issuance_criteria": issuancecriteria.ToSchema(),
 					"policy": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
 							"encrypt_assertion": schema.BoolAttribute{
@@ -385,302 +483,16 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Optional:    true,
 						Description: "The algorithm used to encrypt assertions sent to this partner. AES_128, AES_256, AES_128_GCM, AES_192_GCM, AES_256_GCM and Triple_DES are supported.",
 					},
-					"certs": schema.ListNestedAttribute{
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"active_verification_cert": schema.BoolAttribute{
-									Optional:    true,
-									Description: "Indicates whether this is an active signature verification certificate.",
-								},
-								"cert_view": schema.SingleNestedAttribute{
-									Attributes: map[string]schema.Attribute{
-										"crypto_provider": schema.StringAttribute{
-											Optional:    true,
-											Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
-											Validators: []validator.String{
-												stringvalidator.OneOf(
-													"LOCAL",
-													"HSM",
-												),
-											},
-										},
-										"expires": schema.StringAttribute{
-											Optional:    true,
-											Description: "The end date up until which the item is valid, in ISO 8601 format (UTC).",
-										},
-										"id": schema.StringAttribute{
-											Optional:    true,
-											Description: "The persistent, unique ID for the certificate.",
-										},
-										"issuer_dn": schema.StringAttribute{
-											Optional:    true,
-											Description: "The issuer's distinguished name.",
-										},
-										"key_algorithm": schema.StringAttribute{
-											Optional:    true,
-											Description: "The public key algorithm.",
-										},
-										"key_size": schema.Int64Attribute{
-											Optional:    true,
-											Description: "The public key size.",
-										},
-										"serial_number": schema.StringAttribute{
-											Optional:    true,
-											Description: "The serial number assigned by the CA.",
-										},
-										"sha1fingerprint": schema.StringAttribute{
-											Optional:    true,
-											Description: "SHA-1 fingerprint in Hex encoding.",
-										},
-										"sha256fingerprint": schema.StringAttribute{
-											Optional:    true,
-											Description: "SHA-256 fingerprint in Hex encoding.",
-										},
-										"signature_algorithm": schema.StringAttribute{
-											Optional:    true,
-											Description: "The signature algorithm.",
-										},
-										"status": schema.StringAttribute{
-											Optional:    true,
-											Description: "Status of the item.",
-											Validators: []validator.String{
-												stringvalidator.OneOf(
-													"VALID",
-													"EXPIRED",
-													"NOT_YET_VALID",
-													"REVOKED",
-												),
-											},
-										},
-										"subject_alternative_names": schema.ListAttribute{
-											ElementType: types.StringType,
-											Optional:    true,
-											Description: "The subject alternative names (SAN).",
-										},
-										"subject_dn": schema.StringAttribute{
-											Optional:    true,
-											Description: "The subject's distinguished name.",
-										},
-										"valid_from": schema.StringAttribute{
-											Optional:    true,
-											Description: "The start date from which the item is valid, in ISO 8601 format (UTC).",
-										},
-										"version": schema.Int64Attribute{
-											Optional:    true,
-											Description: "The X.509 version to which the item conforms.",
-										},
-									},
-									Optional:    true,
-									Description: "Certificate details.",
-								},
-								"encryption_cert": schema.BoolAttribute{
-									Optional:    true,
-									Description: "Indicates whether to use this cert to encrypt outgoing assertions. Only one certificate in the collection can have this flag set.",
-								},
-								"primary_verification_cert": schema.BoolAttribute{
-									Optional:    true,
-									Description: "Indicates whether this is the primary signature verification certificate. Only one certificate in the collection can have this flag set.",
-								},
-								"secondary_verification_cert": schema.BoolAttribute{
-									Optional:    true,
-									Description: "Indicates whether this is the secondary signature verification certificate. Only one certificate in the collection can have this flag set.",
-								},
-								"x509file": schema.SingleNestedAttribute{
-									Attributes: map[string]schema.Attribute{
-										"crypto_provider": schema.StringAttribute{
-											Optional:    true,
-											Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
-											Validators: []validator.String{
-												stringvalidator.OneOf(
-													"LOCAL",
-													"HSM",
-												),
-											},
-										},
-										"file_data": schema.StringAttribute{
-											Required:    true,
-											Description: "The certificate data in PEM format. New line characters should be omitted or encoded in this value.",
-										},
-										"id": schema.StringAttribute{
-											Optional:    true,
-											Description: "The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.",
-										},
-									},
-									Required:    true,
-									Description: "Encoded certificate data.",
-								},
-							},
-						},
-						Optional:    true,
-						Description: "The certificates used for signature verification and XML encryption.",
-					},
-					"decryption_key_pair_ref": schema.SingleNestedAttribute{
-						Attributes: map[string]schema.Attribute{
-							"id": schema.StringAttribute{
-								Required:    true,
-								Description: "The ID of the resource.",
-							},
-							"location": schema.StringAttribute{
-								Optional:    true,
-								Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-							},
-						},
-						Optional:    true,
-						Description: "A reference to a resource.",
-					},
+					"certs":                   certsSchema,
+					"decryption_key_pair_ref": resourcelink.ToCompleteSchema(),
 					"inbound_back_channel_auth": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
-							"certs": schema.ListNestedAttribute{
-								NestedObject: schema.NestedAttributeObject{
-									Attributes: map[string]schema.Attribute{
-										"active_verification_cert": schema.BoolAttribute{
-											Optional:    true,
-											Description: "Indicates whether this is an active signature verification certificate.",
-										},
-										"cert_view": schema.SingleNestedAttribute{
-											Attributes: map[string]schema.Attribute{
-												"crypto_provider": schema.StringAttribute{
-													Optional:    true,
-													Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
-													Validators: []validator.String{
-														stringvalidator.OneOf(
-															"LOCAL",
-															"HSM",
-														),
-													},
-												},
-												"expires": schema.StringAttribute{
-													Optional:    true,
-													Description: "The end date up until which the item is valid, in ISO 8601 format (UTC).",
-												},
-												"id": schema.StringAttribute{
-													Optional:    true,
-													Description: "The persistent, unique ID for the certificate.",
-												},
-												"issuer_dn": schema.StringAttribute{
-													Optional:    true,
-													Description: "The issuer's distinguished name.",
-												},
-												"key_algorithm": schema.StringAttribute{
-													Optional:    true,
-													Description: "The public key algorithm.",
-												},
-												"key_size": schema.Int64Attribute{
-													Optional:    true,
-													Description: "The public key size.",
-												},
-												"serial_number": schema.StringAttribute{
-													Optional:    true,
-													Description: "The serial number assigned by the CA.",
-												},
-												"sha1fingerprint": schema.StringAttribute{
-													Optional:    true,
-													Description: "SHA-1 fingerprint in Hex encoding.",
-												},
-												"sha256fingerprint": schema.StringAttribute{
-													Optional:    true,
-													Description: "SHA-256 fingerprint in Hex encoding.",
-												},
-												"signature_algorithm": schema.StringAttribute{
-													Optional:    true,
-													Description: "The signature algorithm.",
-												},
-												"status": schema.StringAttribute{
-													Optional:    true,
-													Description: "Status of the item.",
-													Validators: []validator.String{
-														stringvalidator.OneOf(
-															"VALID",
-															"EXPIRED",
-															"NOT_YET_VALID",
-															"REVOKED",
-														),
-													},
-												},
-												"subject_alternative_names": schema.ListAttribute{
-													ElementType: types.StringType,
-													Optional:    true,
-													Description: "The subject alternative names (SAN).",
-												},
-												"subject_dn": schema.StringAttribute{
-													Optional:    true,
-													Description: "The subject's distinguished name.",
-												},
-												"valid_from": schema.StringAttribute{
-													Optional:    true,
-													Description: "The start date from which the item is valid, in ISO 8601 format (UTC).",
-												},
-												"version": schema.Int64Attribute{
-													Optional:    true,
-													Description: "The X.509 version to which the item conforms.",
-												},
-											},
-											Optional:    true,
-											Description: "Certificate details.",
-										},
-										"encryption_cert": schema.BoolAttribute{
-											Optional:    true,
-											Description: "Indicates whether to use this cert to encrypt outgoing assertions. Only one certificate in the collection can have this flag set.",
-										},
-										"primary_verification_cert": schema.BoolAttribute{
-											Optional:    true,
-											Description: "Indicates whether this is the primary signature verification certificate. Only one certificate in the collection can have this flag set.",
-										},
-										"secondary_verification_cert": schema.BoolAttribute{
-											Optional:    true,
-											Description: "Indicates whether this is the secondary signature verification certificate. Only one certificate in the collection can have this flag set.",
-										},
-										"x509file": schema.SingleNestedAttribute{
-											Attributes: map[string]schema.Attribute{
-												"crypto_provider": schema.StringAttribute{
-													Optional:    true,
-													Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
-													Validators: []validator.String{
-														stringvalidator.OneOf(
-															"LOCAL",
-															"HSM",
-														),
-													},
-												},
-												"file_data": schema.StringAttribute{
-													Required:    true,
-													Description: "The certificate data in PEM format. New line characters should be omitted or encoded in this value.",
-												},
-												"id": schema.StringAttribute{
-													Optional:    true,
-													Description: "The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.",
-												},
-											},
-											Required:    true,
-											Description: "Encoded certificate data.",
-										},
-									},
-								},
-								Optional:    true,
-								Description: "The certificate used for signature verification and XML encryption.",
-							},
+							"certs": certsSchema,
 							"digital_signature": schema.BoolAttribute{
 								Optional:    true,
 								Description: "If incoming or outgoing messages must be signed.",
 							},
-							"http_basic_credentials": schema.SingleNestedAttribute{
-								Attributes: map[string]schema.Attribute{
-									"encrypted_password": schema.StringAttribute{
-										Optional:    true,
-										Description: "For GET requests, this field contains the encrypted password, if one exists.  For POST and PUT requests, if you wish to reuse the existing password, this field should be passed back unchanged.",
-									},
-									"password": schema.StringAttribute{
-										Optional:    true,
-										Description: "User password.  To update the password, specify the plaintext value in this field.  This field will not be populated for GET requests.",
-									},
-									"username": schema.StringAttribute{
-										Optional:    true,
-										Description: "The username.",
-									},
-								},
-								Optional:    true,
-								Description: "Username and password credentials.",
-							},
+							"http_basic_credentials": httpBasicCredentialsSchema,
 							"require_ssl": schema.BoolAttribute{
 								Optional:    true,
 								Description: "Incoming HTTP transmissions must use a secure channel.",
@@ -716,38 +528,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Optional:    true,
 								Description: "If incoming or outgoing messages must be signed.",
 							},
-							"http_basic_credentials": schema.SingleNestedAttribute{
-								Attributes: map[string]schema.Attribute{
-									"encrypted_password": schema.StringAttribute{
-										Optional:    true,
-										Description: "For GET requests, this field contains the encrypted password, if one exists.  For POST and PUT requests, if you wish to reuse the existing password, this field should be passed back unchanged.",
-									},
-									"password": schema.StringAttribute{
-										Optional:    true,
-										Description: "User password.  To update the password, specify the plaintext value in this field.  This field will not be populated for GET requests.",
-									},
-									"username": schema.StringAttribute{
-										Optional:    true,
-										Description: "The username.",
-									},
-								},
-								Optional:    true,
-								Description: "Username and password credentials.",
-							},
-							"ssl_auth_key_pair_ref": schema.SingleNestedAttribute{
-								Attributes: map[string]schema.Attribute{
-									"id": schema.StringAttribute{
-										Required:    true,
-										Description: "The ID of the resource.",
-									},
-									"location": schema.StringAttribute{
-										Optional:    true,
-										Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-									},
-								},
-								Optional:    true,
-								Description: "A reference to a resource.",
-							},
+							"http_basic_credentials": httpBasicCredentialsSchema,
+							"ssl_auth_key_pair_ref":  resourcelink.ToCompleteSchema(),
 							"type": schema.StringAttribute{
 								Required:    true,
 								Description: "The back channel authentication type.",
@@ -765,20 +547,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						},
 						Optional: true,
 					},
-					"secondary_decryption_key_pair_ref": schema.SingleNestedAttribute{
-						Attributes: map[string]schema.Attribute{
-							"id": schema.StringAttribute{
-								Required:    true,
-								Description: "The ID of the resource.",
-							},
-							"location": schema.StringAttribute{
-								Optional:    true,
-								Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-							},
-						},
-						Optional:    true,
-						Description: "A reference to a resource.",
-					},
+					"secondary_decryption_key_pair_ref": resourcelink.ToCompleteSchema(),
 					"signing_settings": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
 							"algorithm": schema.StringAttribute{
@@ -787,16 +556,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"alternative_signing_key_pair_refs": schema.ListNestedAttribute{
 								NestedObject: schema.NestedAttributeObject{
-									Attributes: map[string]schema.Attribute{
-										"id": schema.StringAttribute{
-											Required:    true,
-											Description: "The ID of the resource.",
-										},
-										"location": schema.StringAttribute{
-											Optional:    true,
-											Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-										},
-									},
+									Attributes: resourcelink.ToSchema(),
 								},
 								Optional:    true,
 								Description: "The list of IDs of alternative key pairs used to sign messages sent to this partner. The ID of the key pair is also known as the alias and can be found by viewing the corresponding certificate under 'Signing & Decryption Keys & Certificates' in the PingFederate admin console.",
@@ -809,20 +569,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Optional:    true,
 								Description: "Determines whether the <KeyValue> element with the raw public key is included in the signature <KeyInfo> element.",
 							},
-							"signing_key_pair_ref": schema.SingleNestedAttribute{
-								Attributes: map[string]schema.Attribute{
-									"id": schema.StringAttribute{
-										Required:    true,
-										Description: "The ID of the resource.",
-									},
-									"location": schema.StringAttribute{
-										Optional:    true,
-										Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-									},
-								},
-								Required:    true,
-								Description: "A reference to a resource.",
-							},
+							"signing_key_pair_ref": resourcelink.ToCompleteSchema(),
 						},
 						Optional:    true,
 						Description: "Settings related to signing messages sent to this partner.",
@@ -886,20 +633,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Optional:    true,
 						Description: "Specifies whether the metadata of the connection will be automatically reloaded. The default value is true.",
 					},
-					"metadata_url_ref": schema.SingleNestedAttribute{
-						Attributes: map[string]schema.Attribute{
-							"id": schema.StringAttribute{
-								Required:    true,
-								Description: "The ID of the resource.",
-							},
-							"location": schema.StringAttribute{
-								Optional:    true,
-								Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-							},
-						},
-						Required:    true,
-						Description: "A reference to a resource.",
-					},
+					"metadata_url_ref": resourcelink.ToCompleteSchema(),
 				},
 				Optional:    true,
 				Description: "Configuration settings to enable automatic reload of partner's metadata.",
@@ -1060,20 +794,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Required:    true,
 											Description: "Setting to detect changes to a user or a group.",
 										},
-										"data_source": schema.SingleNestedAttribute{
-											Attributes: map[string]schema.Attribute{
-												"id": schema.StringAttribute{
-													Required:    true,
-													Description: "The ID of the resource.",
-												},
-												"location": schema.StringAttribute{
-													Optional:    true,
-													Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-												},
-											},
-											Required:    true,
-											Description: "A reference to a resource.",
-										},
+										"data_source": resourcelink.ToCompleteSchema(),
 										"group_membership_detection": schema.SingleNestedAttribute{
 											Attributes: map[string]schema.Attribute{
 												"group_member_attribute_name": schema.StringAttribute{
@@ -1233,44 +954,14 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										"attribute_contract": schema.SingleNestedAttribute{
 											Attributes: map[string]schema.Attribute{
 												"core_attributes": schema.ListNestedAttribute{
-													NestedObject: schema.NestedAttributeObject{
-														Attributes: map[string]schema.Attribute{
-															"masked": schema.BoolAttribute{
-																Optional:    true,
-																Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
-															},
-															"name": schema.StringAttribute{
-																Required:    true,
-																Description: "The name of this attribute.",
-															},
-															"pseudonym": schema.BoolAttribute{
-																Optional:    true,
-																Description: "Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to false.",
-															},
-														},
-													},
-													Required:    true,
-													Description: "A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type.",
+													NestedObject: adapterOverrideSettingsAttribute,
+													Required:     true,
+													Description:  "A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type.",
 												},
 												"extended_attributes": schema.ListNestedAttribute{
-													NestedObject: schema.NestedAttributeObject{
-														Attributes: map[string]schema.Attribute{
-															"masked": schema.BoolAttribute{
-																Optional:    true,
-																Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
-															},
-															"name": schema.StringAttribute{
-																Required:    true,
-																Description: "The name of this attribute.",
-															},
-															"pseudonym": schema.BoolAttribute{
-																Optional:    true,
-																Description: "Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to false.",
-															},
-														},
-													},
-													Optional:    true,
-													Description: "A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them.",
+													NestedObject: adapterOverrideSettingsAttribute,
+													Optional:     true,
+													Description:  "A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them.",
 												},
 												"inherited": schema.BoolAttribute{
 													Optional:    true,
@@ -1290,191 +981,13 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										},
 										"attribute_mapping": schema.SingleNestedAttribute{
 											Attributes: map[string]schema.Attribute{
-												"attribute_contract_fulfillment": schema.MapNestedAttribute{
-													NestedObject: schema.NestedAttributeObject{
-														Attributes: map[string]schema.Attribute{
-															"source": schema.SingleNestedAttribute{
-																Attributes: map[string]schema.Attribute{
-																	"id": schema.StringAttribute{
-																		Optional:    true,
-																		Description: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-																	},
-																	"type": schema.StringAttribute{
-																		Required:    true,
-																		Description: "The source type of this key.",
-																		Validators: []validator.String{
-																			stringvalidator.OneOf(
-																				"TOKEN_EXCHANGE_PROCESSOR_POLICY",
-																				"ACCOUNT_LINK",
-																				"ADAPTER",
-																				"ASSERTION",
-																				"CONTEXT",
-																				"CUSTOM_DATA_STORE",
-																				"EXPRESSION",
-																				"JDBC_DATA_STORE",
-																				"LDAP_DATA_STORE",
-																				"PING_ONE_LDAP_GATEWAY_DATA_STORE",
-																				"MAPPED_ATTRIBUTES",
-																				"NO_MAPPING",
-																				"TEXT",
-																				"TOKEN",
-																				"REQUEST",
-																				"OAUTH_PERSISTENT_GRANT",
-																				"SUBJECT_TOKEN",
-																				"ACTOR_TOKEN",
-																				"PASSWORD_CREDENTIAL_VALIDATOR",
-																				"IDP_CONNECTION",
-																				"AUTHENTICATION_POLICY_CONTRACT",
-																				"CLAIMS",
-																				"LOCAL_IDENTITY_PROFILE",
-																				"EXTENDED_CLIENT_METADATA",
-																				"EXTENDED_PROPERTIES",
-																				"TRACKED_HTTP_PARAMS",
-																				"FRAGMENT",
-																				"INPUTS",
-																				"ATTRIBUTE_QUERY",
-																				"IDENTITY_STORE_USER",
-																				"IDENTITY_STORE_GROUP",
-																				"SCIM_USER",
-																				"SCIM_GROUP",
-																			),
-																		},
-																	},
-																},
-																Required:    true,
-																Description: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
-															},
-															"value": schema.StringAttribute{
-																Required:    true,
-																Description: "The value for this attribute.",
-															},
-														},
-													},
-													Required:    true,
-													Description: "A list of mappings from attribute names to their fulfillment values.",
-												},
-												"attribute_sources": schema.ListAttribute{
-													ElementType: types.StringType,
-													Optional:    true,
-													Description: "A list of configured data stores to look up attributes from.",
-												},
+												"attribute_contract_fulfillment": attributeContractFulfillmentSchema,
+												"attribute_sources":              attributesources.ToSchema(),
 												"inherited": schema.BoolAttribute{
 													Optional:    true,
 													Description: "Whether this attribute mapping is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
 												},
-												"issuance_criteria": schema.SingleNestedAttribute{
-													Attributes: map[string]schema.Attribute{
-														"conditional_criteria": schema.ListNestedAttribute{
-															NestedObject: schema.NestedAttributeObject{
-																Attributes: map[string]schema.Attribute{
-																	"attribute_name": schema.StringAttribute{
-																		Required:    true,
-																		Description: "The name of the attribute to use in this issuance criterion.",
-																	},
-																	"condition": schema.StringAttribute{
-																		Required:    true,
-																		Description: "The condition that will be applied to the source attribute's value and the expected value.",
-																		Validators: []validator.String{
-																			stringvalidator.OneOf(
-																				"EQUALS",
-																				"EQUALS_CASE_INSENSITIVE",
-																				"EQUALS_DN",
-																				"NOT_EQUAL",
-																				"NOT_EQUAL_CASE_INSENSITIVE",
-																				"NOT_EQUAL_DN",
-																				"MULTIVALUE_CONTAINS",
-																				"MULTIVALUE_CONTAINS_CASE_INSENSITIVE",
-																				"MULTIVALUE_CONTAINS_DN",
-																				"MULTIVALUE_DOES_NOT_CONTAIN",
-																				"MULTIVALUE_DOES_NOT_CONTAIN_CASE_INSENSITIVE",
-																				"MULTIVALUE_DOES_NOT_CONTAIN_DN",
-																			),
-																		},
-																	},
-																	"error_result": schema.StringAttribute{
-																		Optional:    true,
-																		Description: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-																	},
-																	"source": schema.SingleNestedAttribute{
-																		Attributes: map[string]schema.Attribute{
-																			"id": schema.StringAttribute{
-																				Optional:    true,
-																				Description: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-																			},
-																			"type": schema.StringAttribute{
-																				Required:    true,
-																				Description: "The source type of this key.",
-																				Validators: []validator.String{
-																					stringvalidator.OneOf(
-																						"TOKEN_EXCHANGE_PROCESSOR_POLICY",
-																						"ACCOUNT_LINK",
-																						"ADAPTER",
-																						"ASSERTION",
-																						"CONTEXT",
-																						"CUSTOM_DATA_STORE",
-																						"EXPRESSION",
-																						"JDBC_DATA_STORE",
-																						"LDAP_DATA_STORE",
-																						"PING_ONE_LDAP_GATEWAY_DATA_STORE",
-																						"MAPPED_ATTRIBUTES",
-																						"NO_MAPPING",
-																						"TEXT",
-																						"TOKEN",
-																						"REQUEST",
-																						"OAUTH_PERSISTENT_GRANT",
-																						"SUBJECT_TOKEN",
-																						"ACTOR_TOKEN",
-																						"PASSWORD_CREDENTIAL_VALIDATOR",
-																						"IDP_CONNECTION",
-																						"AUTHENTICATION_POLICY_CONTRACT",
-																						"CLAIMS",
-																						"LOCAL_IDENTITY_PROFILE",
-																						"EXTENDED_CLIENT_METADATA",
-																						"EXTENDED_PROPERTIES",
-																						"TRACKED_HTTP_PARAMS",
-																						"FRAGMENT",
-																						"INPUTS",
-																						"ATTRIBUTE_QUERY",
-																						"IDENTITY_STORE_USER",
-																						"IDENTITY_STORE_GROUP",
-																						"SCIM_USER",
-																						"SCIM_GROUP",
-																					),
-																				},
-																			},
-																		},
-																		Required:    true,
-																		Description: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
-																	},
-																	"value": schema.StringAttribute{
-																		Required:    true,
-																		Description: "The expected value of this issuance criterion.",
-																	},
-																},
-															},
-															Optional:    true,
-															Description: "A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue.",
-														},
-														"expression_criteria": schema.ListNestedAttribute{
-															NestedObject: schema.NestedAttributeObject{
-																Attributes: map[string]schema.Attribute{
-																	"error_result": schema.StringAttribute{
-																		Optional:    true,
-																		Description: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-																	},
-																	"expression": schema.StringAttribute{
-																		Required:    true,
-																		Description: "The OGNL expression to evaluate.",
-																	},
-																},
-															},
-															Optional:    true,
-															Description: "A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue.",
-														},
-													},
-													Optional:    true,
-													Description: "A list of criteria that determines whether a transaction (usually a SSO transaction) is continued. All criteria must pass in order for the transaction to continue.",
-												},
+												"issuance_criteria": issuancecriteria.ToSchema(),
 											},
 											Optional:    true,
 											Description: "An IdP Adapter Contract Mapping.",
@@ -1483,88 +996,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Optional:    true,
 											Description: "The fixed value that indicates how the user was authenticated.",
 										},
-										"configuration": schema.SingleNestedAttribute{
-											Attributes: map[string]schema.Attribute{
-												"fields": schema.ListNestedAttribute{
-													NestedObject: schema.NestedAttributeObject{
-														Attributes: map[string]schema.Attribute{
-															"encrypted_value": schema.StringAttribute{
-																Optional:    true,
-																Description: "For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. If you do not want to update the stored value, this attribute should be passed back unchanged.",
-															},
-															"inherited": schema.BoolAttribute{
-																Optional:    true,
-																Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-															},
-															"name": schema.StringAttribute{
-																Required:    true,
-																Description: "The name of the configuration field.",
-															},
-															"value": schema.StringAttribute{
-																Optional:    true,
-																Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
-															},
-														},
-													},
-													Optional:    true,
-													Description: "List of configuration fields.",
-												},
-												"tables": schema.ListNestedAttribute{
-													NestedObject: schema.NestedAttributeObject{
-														Attributes: map[string]schema.Attribute{
-															"inherited": schema.BoolAttribute{
-																Optional:    true,
-																Description: "Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.",
-															},
-															"name": schema.StringAttribute{
-																Required:    true,
-																Description: "The name of the table.",
-															},
-															"rows": schema.ListNestedAttribute{
-																NestedObject: schema.NestedAttributeObject{
-																	Attributes: map[string]schema.Attribute{
-																		"default_row": schema.BoolAttribute{
-																			Optional:    true,
-																			Description: "Whether this row is the default.",
-																		},
-																		"fields": schema.ListNestedAttribute{
-																			NestedObject: schema.NestedAttributeObject{
-																				Attributes: map[string]schema.Attribute{
-																					"encrypted_value": schema.StringAttribute{
-																						Optional:    true,
-																						Description: "For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. If you do not want to update the stored value, this attribute should be passed back unchanged.",
-																					},
-																					"inherited": schema.BoolAttribute{
-																						Optional:    true,
-																						Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-																					},
-																					"name": schema.StringAttribute{
-																						Required:    true,
-																						Description: "The name of the configuration field.",
-																					},
-																					"value": schema.StringAttribute{
-																						Optional:    true,
-																						Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
-																					},
-																				},
-																			},
-																			Required:    true,
-																			Description: "The configuration fields in the row.",
-																		},
-																	},
-																},
-																Optional:    true,
-																Description: "List of table rows.",
-															},
-														},
-													},
-													Optional:    true,
-													Description: "List of configuration tables.",
-												},
-											},
-											Required:    true,
-											Description: "Configuration settings for a plugin instance.",
-										},
+										"configuration": pluginconfiguration.ToSchema(),
 										"id": schema.StringAttribute{
 											Required:    true,
 											Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.",
@@ -1573,232 +1005,15 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Required:    true,
 											Description: "The plugin instance name. The name can be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.",
 										},
-										"parent_ref": schema.SingleNestedAttribute{
-											Attributes: map[string]schema.Attribute{
-												"id": schema.StringAttribute{
-													Required:    true,
-													Description: "The ID of the resource.",
-												},
-												"location": schema.StringAttribute{
-													Optional:    true,
-													Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-												},
-											},
-											Optional:    true,
-											Description: "A reference to a resource.",
-										},
-										"plugin_descriptor_ref": schema.SingleNestedAttribute{
-											Attributes: map[string]schema.Attribute{
-												"id": schema.StringAttribute{
-													Required:    true,
-													Description: "The ID of the resource.",
-												},
-												"location": schema.StringAttribute{
-													Optional:    true,
-													Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-												},
-											},
-											Required:    true,
-											Description: "A reference to a resource.",
-										},
+										"parent_ref":            resourcelink.ToCompleteSchema(),
+										"plugin_descriptor_ref": resourcelink.ToCompleteSchema(),
 									},
 									Optional: true,
 								},
-								"attribute_contract_fulfillment": schema.MapNestedAttribute{
-									NestedObject: schema.NestedAttributeObject{
-										Attributes: map[string]schema.Attribute{
-											"source": schema.SingleNestedAttribute{
-												Attributes: map[string]schema.Attribute{
-													"id": schema.StringAttribute{
-														Optional:    true,
-														Description: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-													},
-													"type": schema.StringAttribute{
-														Required:    true,
-														Description: "The source type of this key.",
-														Validators: []validator.String{
-															stringvalidator.OneOf(
-																"TOKEN_EXCHANGE_PROCESSOR_POLICY",
-																"ACCOUNT_LINK",
-																"ADAPTER",
-																"ASSERTION",
-																"CONTEXT",
-																"CUSTOM_DATA_STORE",
-																"EXPRESSION",
-																"JDBC_DATA_STORE",
-																"LDAP_DATA_STORE",
-																"PING_ONE_LDAP_GATEWAY_DATA_STORE",
-																"MAPPED_ATTRIBUTES",
-																"NO_MAPPING",
-																"TEXT",
-																"TOKEN",
-																"REQUEST",
-																"OAUTH_PERSISTENT_GRANT",
-																"SUBJECT_TOKEN",
-																"ACTOR_TOKEN",
-																"PASSWORD_CREDENTIAL_VALIDATOR",
-																"IDP_CONNECTION",
-																"AUTHENTICATION_POLICY_CONTRACT",
-																"CLAIMS",
-																"LOCAL_IDENTITY_PROFILE",
-																"EXTENDED_CLIENT_METADATA",
-																"EXTENDED_PROPERTIES",
-																"TRACKED_HTTP_PARAMS",
-																"FRAGMENT",
-																"INPUTS",
-																"ATTRIBUTE_QUERY",
-																"IDENTITY_STORE_USER",
-																"IDENTITY_STORE_GROUP",
-																"SCIM_USER",
-																"SCIM_GROUP",
-															),
-														},
-													},
-												},
-												Required:    true,
-												Description: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
-											},
-											"value": schema.StringAttribute{
-												Required:    true,
-												Description: "The value for this attribute.",
-											},
-										},
-									},
-									Required:    true,
-									Description: "A list of mappings from attribute names to their fulfillment values.",
-								},
-								"attribute_sources": schema.ListAttribute{
-									ElementType: types.StringType,
-									Optional:    true,
-									Description: "A list of configured data stores to look up attributes from.",
-								},
-								"idp_adapter_ref": schema.SingleNestedAttribute{
-									Attributes: map[string]schema.Attribute{
-										"id": schema.StringAttribute{
-											Required:    true,
-											Description: "The ID of the resource.",
-										},
-										"location": schema.StringAttribute{
-											Optional:    true,
-											Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-										},
-									},
-									Required:    true,
-									Description: "A reference to a resource.",
-								},
-								"issuance_criteria": schema.SingleNestedAttribute{
-									Attributes: map[string]schema.Attribute{
-										"conditional_criteria": schema.ListNestedAttribute{
-											NestedObject: schema.NestedAttributeObject{
-												Attributes: map[string]schema.Attribute{
-													"attribute_name": schema.StringAttribute{
-														Required:    true,
-														Description: "The name of the attribute to use in this issuance criterion.",
-													},
-													"condition": schema.StringAttribute{
-														Required:    true,
-														Description: "The condition that will be applied to the source attribute's value and the expected value.",
-														Validators: []validator.String{
-															stringvalidator.OneOf(
-																"EQUALS",
-																"EQUALS_CASE_INSENSITIVE",
-																"EQUALS_DN",
-																"NOT_EQUAL",
-																"NOT_EQUAL_CASE_INSENSITIVE",
-																"NOT_EQUAL_DN",
-																"MULTIVALUE_CONTAINS",
-																"MULTIVALUE_CONTAINS_CASE_INSENSITIVE",
-																"MULTIVALUE_CONTAINS_DN",
-																"MULTIVALUE_DOES_NOT_CONTAIN",
-																"MULTIVALUE_DOES_NOT_CONTAIN_CASE_INSENSITIVE",
-																"MULTIVALUE_DOES_NOT_CONTAIN_DN",
-															),
-														},
-													},
-													"error_result": schema.StringAttribute{
-														Optional:    true,
-														Description: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-													},
-													"source": schema.SingleNestedAttribute{
-														Attributes: map[string]schema.Attribute{
-															"id": schema.StringAttribute{
-																Optional:    true,
-																Description: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-															},
-															"type": schema.StringAttribute{
-																Required:    true,
-																Description: "The source type of this key.",
-																Validators: []validator.String{
-																	stringvalidator.OneOf(
-																		"TOKEN_EXCHANGE_PROCESSOR_POLICY",
-																		"ACCOUNT_LINK",
-																		"ADAPTER",
-																		"ASSERTION",
-																		"CONTEXT",
-																		"CUSTOM_DATA_STORE",
-																		"EXPRESSION",
-																		"JDBC_DATA_STORE",
-																		"LDAP_DATA_STORE",
-																		"PING_ONE_LDAP_GATEWAY_DATA_STORE",
-																		"MAPPED_ATTRIBUTES",
-																		"NO_MAPPING",
-																		"TEXT",
-																		"TOKEN",
-																		"REQUEST",
-																		"OAUTH_PERSISTENT_GRANT",
-																		"SUBJECT_TOKEN",
-																		"ACTOR_TOKEN",
-																		"PASSWORD_CREDENTIAL_VALIDATOR",
-																		"IDP_CONNECTION",
-																		"AUTHENTICATION_POLICY_CONTRACT",
-																		"CLAIMS",
-																		"LOCAL_IDENTITY_PROFILE",
-																		"EXTENDED_CLIENT_METADATA",
-																		"EXTENDED_PROPERTIES",
-																		"TRACKED_HTTP_PARAMS",
-																		"FRAGMENT",
-																		"INPUTS",
-																		"ATTRIBUTE_QUERY",
-																		"IDENTITY_STORE_USER",
-																		"IDENTITY_STORE_GROUP",
-																		"SCIM_USER",
-																		"SCIM_GROUP",
-																	),
-																},
-															},
-														},
-														Required:    true,
-														Description: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
-													},
-													"value": schema.StringAttribute{
-														Required:    true,
-														Description: "The expected value of this issuance criterion.",
-													},
-												},
-											},
-											Optional:    true,
-											Description: "A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue.",
-										},
-										"expression_criteria": schema.ListNestedAttribute{
-											NestedObject: schema.NestedAttributeObject{
-												Attributes: map[string]schema.Attribute{
-													"error_result": schema.StringAttribute{
-														Optional:    true,
-														Description: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-													},
-													"expression": schema.StringAttribute{
-														Required:    true,
-														Description: "The OGNL expression to evaluate.",
-													},
-												},
-											},
-											Optional:    true,
-											Description: "A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue.",
-										},
-									},
-									Optional:    true,
-									Description: "A list of criteria that determines whether a transaction (usually a SSO transaction) is continued. All criteria must pass in order for the transaction to continue.",
-								},
+								"attribute_contract_fulfillment": attributeContractFulfillmentSchema,
+								"attribute_sources":              attributesources.ToSchema(),
+								"idp_adapter_ref":                resourcelink.ToCompleteSchema(),
+								"issuance_criteria":              issuancecriteria.ToSchema(),
 								"restrict_virtual_entity_ids": schema.BoolAttribute{
 									Optional:    true,
 									Description: "Restricts this mapping to specific virtual entity IDs.",
@@ -1864,36 +1079,14 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					"attribute_contract": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
 							"core_attributes": schema.ListNestedAttribute{
-								NestedObject: schema.NestedAttributeObject{
-									Attributes: map[string]schema.Attribute{
-										"name": schema.StringAttribute{
-											Required:    true,
-											Description: "The name of this attribute.",
-										},
-										"name_format": schema.StringAttribute{
-											Required:    true,
-											Description: "The SAML Name Format for the attribute.",
-										},
-									},
-								},
-								Optional:    true,
-								Description: "A list of read-only assertion attributes (for example, SAML_SUBJECT) that are automatically populated by PingFederate.",
+								NestedObject: spBrowserSSOAttribute,
+								Optional:     true,
+								Description:  "A list of read-only assertion attributes (for example, SAML_SUBJECT) that are automatically populated by PingFederate.",
 							},
 							"extended_attributes": schema.ListNestedAttribute{
-								NestedObject: schema.NestedAttributeObject{
-									Attributes: map[string]schema.Attribute{
-										"name": schema.StringAttribute{
-											Required:    true,
-											Description: "The name of this attribute.",
-										},
-										"name_format": schema.StringAttribute{
-											Required:    true,
-											Description: "The SAML Name Format for the attribute.",
-										},
-									},
-								},
-								Optional:    true,
-								Description: "A list of additional attributes that are added to the outgoing assertion.",
+								NestedObject: spBrowserSSOAttribute,
+								Optional:     true,
+								Description:  "A list of additional attributes that are added to the outgoing assertion.",
 							},
 						},
 						Required:    true,
@@ -1906,201 +1099,10 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Optional:    true,
 									Description: "If set to true, SSO transaction will be aborted as a fail-safe when the data-store's attribute mappings fail to complete the attribute contract. Otherwise, the attribute contract with default values is used. By default, this value is false.",
 								},
-								"attribute_contract_fulfillment": schema.MapNestedAttribute{
-									NestedObject: schema.NestedAttributeObject{
-										Attributes: map[string]schema.Attribute{
-											"source": schema.SingleNestedAttribute{
-												Attributes: map[string]schema.Attribute{
-													"id": schema.StringAttribute{
-														Optional:    true,
-														Description: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-													},
-													"type": schema.StringAttribute{
-														Required:    true,
-														Description: "The source type of this key.",
-														Validators: []validator.String{
-															stringvalidator.OneOf(
-																"TOKEN_EXCHANGE_PROCESSOR_POLICY",
-																"ACCOUNT_LINK",
-																"ADAPTER",
-																"ASSERTION",
-																"CONTEXT",
-																"CUSTOM_DATA_STORE",
-																"EXPRESSION",
-																"JDBC_DATA_STORE",
-																"LDAP_DATA_STORE",
-																"PING_ONE_LDAP_GATEWAY_DATA_STORE",
-																"MAPPED_ATTRIBUTES",
-																"NO_MAPPING",
-																"TEXT",
-																"TOKEN",
-																"REQUEST",
-																"OAUTH_PERSISTENT_GRANT",
-																"SUBJECT_TOKEN",
-																"ACTOR_TOKEN",
-																"PASSWORD_CREDENTIAL_VALIDATOR",
-																"IDP_CONNECTION",
-																"AUTHENTICATION_POLICY_CONTRACT",
-																"CLAIMS",
-																"LOCAL_IDENTITY_PROFILE",
-																"EXTENDED_CLIENT_METADATA",
-																"EXTENDED_PROPERTIES",
-																"TRACKED_HTTP_PARAMS",
-																"FRAGMENT",
-																"INPUTS",
-																"ATTRIBUTE_QUERY",
-																"IDENTITY_STORE_USER",
-																"IDENTITY_STORE_GROUP",
-																"SCIM_USER",
-																"SCIM_GROUP",
-															),
-														},
-													},
-												},
-												Required:    true,
-												Description: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
-											},
-											"value": schema.StringAttribute{
-												Required:    true,
-												Description: "The value for this attribute.",
-											},
-										},
-									},
-									Required:    true,
-									Description: "A list of mappings from attribute names to their fulfillment values.",
-								},
-								"attribute_sources": schema.ListAttribute{
-									ElementType: types.StringType,
-									Optional:    true,
-									Description: "A list of configured data stores to look up attributes from.",
-								},
-								"authentication_policy_contract_ref": schema.SingleNestedAttribute{
-									Attributes: map[string]schema.Attribute{
-										"id": schema.StringAttribute{
-											Required:    true,
-											Description: "The ID of the resource.",
-										},
-										"location": schema.StringAttribute{
-											Optional:    true,
-											Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-										},
-									},
-									Required:    true,
-									Description: "A reference to a resource.",
-								},
-								"issuance_criteria": schema.SingleNestedAttribute{
-									Attributes: map[string]schema.Attribute{
-										"conditional_criteria": schema.ListNestedAttribute{
-											NestedObject: schema.NestedAttributeObject{
-												Attributes: map[string]schema.Attribute{
-													"attribute_name": schema.StringAttribute{
-														Required:    true,
-														Description: "The name of the attribute to use in this issuance criterion.",
-													},
-													"condition": schema.StringAttribute{
-														Required:    true,
-														Description: "The condition that will be applied to the source attribute's value and the expected value.",
-														Validators: []validator.String{
-															stringvalidator.OneOf(
-																"EQUALS",
-																"EQUALS_CASE_INSENSITIVE",
-																"EQUALS_DN",
-																"NOT_EQUAL",
-																"NOT_EQUAL_CASE_INSENSITIVE",
-																"NOT_EQUAL_DN",
-																"MULTIVALUE_CONTAINS",
-																"MULTIVALUE_CONTAINS_CASE_INSENSITIVE",
-																"MULTIVALUE_CONTAINS_DN",
-																"MULTIVALUE_DOES_NOT_CONTAIN",
-																"MULTIVALUE_DOES_NOT_CONTAIN_CASE_INSENSITIVE",
-																"MULTIVALUE_DOES_NOT_CONTAIN_DN",
-															),
-														},
-													},
-													"error_result": schema.StringAttribute{
-														Optional:    true,
-														Description: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-													},
-													"source": schema.SingleNestedAttribute{
-														Attributes: map[string]schema.Attribute{
-															"id": schema.StringAttribute{
-																Optional:    true,
-																Description: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-															},
-															"type": schema.StringAttribute{
-																Required:    true,
-																Description: "The source type of this key.",
-																Validators: []validator.String{
-																	stringvalidator.OneOf(
-																		"TOKEN_EXCHANGE_PROCESSOR_POLICY",
-																		"ACCOUNT_LINK",
-																		"ADAPTER",
-																		"ASSERTION",
-																		"CONTEXT",
-																		"CUSTOM_DATA_STORE",
-																		"EXPRESSION",
-																		"JDBC_DATA_STORE",
-																		"LDAP_DATA_STORE",
-																		"PING_ONE_LDAP_GATEWAY_DATA_STORE",
-																		"MAPPED_ATTRIBUTES",
-																		"NO_MAPPING",
-																		"TEXT",
-																		"TOKEN",
-																		"REQUEST",
-																		"OAUTH_PERSISTENT_GRANT",
-																		"SUBJECT_TOKEN",
-																		"ACTOR_TOKEN",
-																		"PASSWORD_CREDENTIAL_VALIDATOR",
-																		"IDP_CONNECTION",
-																		"AUTHENTICATION_POLICY_CONTRACT",
-																		"CLAIMS",
-																		"LOCAL_IDENTITY_PROFILE",
-																		"EXTENDED_CLIENT_METADATA",
-																		"EXTENDED_PROPERTIES",
-																		"TRACKED_HTTP_PARAMS",
-																		"FRAGMENT",
-																		"INPUTS",
-																		"ATTRIBUTE_QUERY",
-																		"IDENTITY_STORE_USER",
-																		"IDENTITY_STORE_GROUP",
-																		"SCIM_USER",
-																		"SCIM_GROUP",
-																	),
-																},
-															},
-														},
-														Required:    true,
-														Description: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
-													},
-													"value": schema.StringAttribute{
-														Required:    true,
-														Description: "The expected value of this issuance criterion.",
-													},
-												},
-											},
-											Optional:    true,
-											Description: "A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue.",
-										},
-										"expression_criteria": schema.ListNestedAttribute{
-											NestedObject: schema.NestedAttributeObject{
-												Attributes: map[string]schema.Attribute{
-													"error_result": schema.StringAttribute{
-														Optional:    true,
-														Description: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-													},
-													"expression": schema.StringAttribute{
-														Required:    true,
-														Description: "The OGNL expression to evaluate.",
-													},
-												},
-											},
-											Optional:    true,
-											Description: "A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue.",
-										},
-									},
-									Optional:    true,
-									Description: "A list of criteria that determines whether a transaction (usually a SSO transaction) is continued. All criteria must pass in order for the transaction to continue.",
-								},
+								"attribute_contract_fulfillment":     attributeContractFulfillmentSchema,
+								"attribute_sources":                  attributesources.ToSchema(),
+								"authentication_policy_contract_ref": resourcelink.ToCompleteSchema(),
+								"issuance_criteria":                  issuancecriteria.ToSchema(),
 								"restrict_virtual_entity_ids": schema.BoolAttribute{
 									Optional:    true,
 									Description: "Restricts this mapping to specific virtual entity IDs.",
@@ -2159,20 +1161,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						},
 					},
 					"message_customizations": schema.ListNestedAttribute{
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"context_name": schema.StringAttribute{
-									Optional:    true,
-									Description: "The context in which the customization will be applied. Depending on the connection type and protocol, this can either be 'assertion', 'authn-response' or 'authn-request'.",
-								},
-								"message_expression": schema.StringAttribute{
-									Optional:    true,
-									Description: "The OGNL expression that will be executed. Refer to the Admin Manual for a list of variables provided by PingFederate.",
-								},
-							},
-						},
-						Optional:    true,
-						Description: "The message customizations for browser-based SSO. Depending on server settings, connection type, and protocol this may or may not be supported.",
+						NestedObject: messageCustomizationsNestedObject,
+						Optional:     true,
+						Description:  "The message customizations for browser-based SSO. Depending on server settings, connection type, and protocol this may or may not be supported.",
 					},
 					"protocol": schema.StringAttribute{
 						Required:    true,
@@ -2259,8 +1250,6 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										stringvalidator.OneOf(
 											"ARTIFACT",
 											"POST",
-											"REDIRECT",
-											"SOAP",
 										),
 									},
 								},
@@ -2356,36 +1345,14 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					"attribute_contract": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
 							"core_attributes": schema.ListNestedAttribute{
-								NestedObject: schema.NestedAttributeObject{
-									Attributes: map[string]schema.Attribute{
-										"name": schema.StringAttribute{
-											Required:    true,
-											Description: "The name of this attribute.",
-										},
-										"namespace": schema.StringAttribute{
-											Required:    true,
-											Description: "The attribute namespace.  This is required when the Default Token Type is SAML2.0 or SAML1.1 or SAML1.1 for Office 365.",
-										},
-									},
-								},
-								Optional:    true,
-								Description: "A list of read-only assertion attributes that are automatically populated by PingFederate.",
+								NestedObject: wsTrustAttribute,
+								Optional:     true,
+								Description:  "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 							},
 							"extended_attributes": schema.ListNestedAttribute{
-								NestedObject: schema.NestedAttributeObject{
-									Attributes: map[string]schema.Attribute{
-										"name": schema.StringAttribute{
-											Required:    true,
-											Description: "The name of this attribute.",
-										},
-										"namespace": schema.StringAttribute{
-											Required:    true,
-											Description: "The attribute namespace.  This is required when the Default Token Type is SAML2.0 or SAML1.1 or SAML1.1 for Office 365.",
-										},
-									},
-								},
-								Optional:    true,
-								Description: "A list of additional attributes that are added to the outgoing assertion.",
+								NestedObject: wsTrustAttribute,
+								Optional:     true,
+								Description:  "A list of additional attributes that are added to the outgoing assertion.",
 							},
 						},
 						Required:    true,
@@ -2411,20 +1378,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Description: "When selected, the STS generates a symmetric key to be used in conjunction with the \"Holder of Key\" (HoK) designation for the assertion's Subject Confirmation Method.  This option does not apply to OAuth assertion profiles.",
 					},
 					"message_customizations": schema.ListNestedAttribute{
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"context_name": schema.StringAttribute{
-									Optional:    true,
-									Description: "The context in which the customization will be applied. Depending on the connection type and protocol, this can either be 'assertion', 'authn-response' or 'authn-request'.",
-								},
-								"message_expression": schema.StringAttribute{
-									Optional:    true,
-									Description: "The OGNL expression that will be executed. Refer to the Admin Manual for a list of variables provided by PingFederate.",
-								},
-							},
-						},
-						Optional:    true,
-						Description: "The message customizations for WS-Trust. Depending on server settings, connection type, and protocol this may or may not be supported.",
+						NestedObject: messageCustomizationsNestedObject,
+						Optional:     true,
+						Description:  "The message customizations for WS-Trust. Depending on server settings, connection type, and protocol this may or may not be supported.",
 					},
 					"minutes_after": schema.Int64Attribute{
 						Optional:    true,
@@ -2443,218 +1399,14 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Required:    true,
 						Description: "The partner service identifiers.",
 					},
-					"request_contract_ref": schema.SingleNestedAttribute{
-						Attributes: map[string]schema.Attribute{
-							"id": schema.StringAttribute{
-								Required:    true,
-								Description: "The ID of the resource.",
-							},
-							"location": schema.StringAttribute{
-								Optional:    true,
-								Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-							},
-						},
-						Optional:    true,
-						Description: "A reference to a resource.",
-					},
+					"request_contract_ref": resourcelink.ToCompleteSchema(),
 					"token_processor_mappings": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
-								"attribute_contract_fulfillment": schema.MapNestedAttribute{
-									NestedObject: schema.NestedAttributeObject{
-										Attributes: map[string]schema.Attribute{
-											"source": schema.SingleNestedAttribute{
-												Attributes: map[string]schema.Attribute{
-													"id": schema.StringAttribute{
-														Optional:    true,
-														Description: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-													},
-													"type": schema.StringAttribute{
-														Required:    true,
-														Description: "The source type of this key.",
-														Validators: []validator.String{
-															stringvalidator.OneOf(
-																"TOKEN_EXCHANGE_PROCESSOR_POLICY",
-																"ACCOUNT_LINK",
-																"ADAPTER",
-																"ASSERTION",
-																"CONTEXT",
-																"CUSTOM_DATA_STORE",
-																"EXPRESSION",
-																"JDBC_DATA_STORE",
-																"LDAP_DATA_STORE",
-																"PING_ONE_LDAP_GATEWAY_DATA_STORE",
-																"MAPPED_ATTRIBUTES",
-																"NO_MAPPING",
-																"TEXT",
-																"TOKEN",
-																"REQUEST",
-																"OAUTH_PERSISTENT_GRANT",
-																"SUBJECT_TOKEN",
-																"ACTOR_TOKEN",
-																"PASSWORD_CREDENTIAL_VALIDATOR",
-																"IDP_CONNECTION",
-																"AUTHENTICATION_POLICY_CONTRACT",
-																"CLAIMS",
-																"LOCAL_IDENTITY_PROFILE",
-																"EXTENDED_CLIENT_METADATA",
-																"EXTENDED_PROPERTIES",
-																"TRACKED_HTTP_PARAMS",
-																"FRAGMENT",
-																"INPUTS",
-																"ATTRIBUTE_QUERY",
-																"IDENTITY_STORE_USER",
-																"IDENTITY_STORE_GROUP",
-																"SCIM_USER",
-																"SCIM_GROUP",
-															),
-														},
-													},
-												},
-												Required:    true,
-												Description: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
-											},
-											"value": schema.StringAttribute{
-												Required:    true,
-												Description: "The value for this attribute.",
-											},
-										},
-									},
-									Required:    true,
-									Description: "A list of mappings from attribute names to their fulfillment values.",
-								},
-								"attribute_sources": schema.ListAttribute{
-									ElementType: types.StringType,
-									Optional:    true,
-									Description: "A list of configured data stores to look up attributes from.",
-								},
-								"idp_token_processor_ref": schema.SingleNestedAttribute{
-									Attributes: map[string]schema.Attribute{
-										"id": schema.StringAttribute{
-											Required:    true,
-											Description: "The ID of the resource.",
-										},
-										"location": schema.StringAttribute{
-											Optional:    true,
-											Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-										},
-									},
-									Required:    true,
-									Description: "A reference to a resource.",
-								},
-								"issuance_criteria": schema.SingleNestedAttribute{
-									Attributes: map[string]schema.Attribute{
-										"conditional_criteria": schema.ListNestedAttribute{
-											NestedObject: schema.NestedAttributeObject{
-												Attributes: map[string]schema.Attribute{
-													"attribute_name": schema.StringAttribute{
-														Required:    true,
-														Description: "The name of the attribute to use in this issuance criterion.",
-													},
-													"condition": schema.StringAttribute{
-														Required:    true,
-														Description: "The condition that will be applied to the source attribute's value and the expected value.",
-														Validators: []validator.String{
-															stringvalidator.OneOf(
-																"EQUALS",
-																"EQUALS_CASE_INSENSITIVE",
-																"EQUALS_DN",
-																"NOT_EQUAL",
-																"NOT_EQUAL_CASE_INSENSITIVE",
-																"NOT_EQUAL_DN",
-																"MULTIVALUE_CONTAINS",
-																"MULTIVALUE_CONTAINS_CASE_INSENSITIVE",
-																"MULTIVALUE_CONTAINS_DN",
-																"MULTIVALUE_DOES_NOT_CONTAIN",
-																"MULTIVALUE_DOES_NOT_CONTAIN_CASE_INSENSITIVE",
-																"MULTIVALUE_DOES_NOT_CONTAIN_DN",
-															),
-														},
-													},
-													"error_result": schema.StringAttribute{
-														Optional:    true,
-														Description: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-													},
-													"source": schema.SingleNestedAttribute{
-														Attributes: map[string]schema.Attribute{
-															"id": schema.StringAttribute{
-																Optional:    true,
-																Description: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-															},
-															"type": schema.StringAttribute{
-																Required:    true,
-																Description: "The source type of this key.",
-																Validators: []validator.String{
-																	stringvalidator.OneOf(
-																		"TOKEN_EXCHANGE_PROCESSOR_POLICY",
-																		"ACCOUNT_LINK",
-																		"ADAPTER",
-																		"ASSERTION",
-																		"CONTEXT",
-																		"CUSTOM_DATA_STORE",
-																		"EXPRESSION",
-																		"JDBC_DATA_STORE",
-																		"LDAP_DATA_STORE",
-																		"PING_ONE_LDAP_GATEWAY_DATA_STORE",
-																		"MAPPED_ATTRIBUTES",
-																		"NO_MAPPING",
-																		"TEXT",
-																		"TOKEN",
-																		"REQUEST",
-																		"OAUTH_PERSISTENT_GRANT",
-																		"SUBJECT_TOKEN",
-																		"ACTOR_TOKEN",
-																		"PASSWORD_CREDENTIAL_VALIDATOR",
-																		"IDP_CONNECTION",
-																		"AUTHENTICATION_POLICY_CONTRACT",
-																		"CLAIMS",
-																		"LOCAL_IDENTITY_PROFILE",
-																		"EXTENDED_CLIENT_METADATA",
-																		"EXTENDED_PROPERTIES",
-																		"TRACKED_HTTP_PARAMS",
-																		"FRAGMENT",
-																		"INPUTS",
-																		"ATTRIBUTE_QUERY",
-																		"IDENTITY_STORE_USER",
-																		"IDENTITY_STORE_GROUP",
-																		"SCIM_USER",
-																		"SCIM_GROUP",
-																	),
-																},
-															},
-														},
-														Required:    true,
-														Description: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
-													},
-													"value": schema.StringAttribute{
-														Required:    true,
-														Description: "The expected value of this issuance criterion.",
-													},
-												},
-											},
-											Optional:    true,
-											Description: "A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue.",
-										},
-										"expression_criteria": schema.ListNestedAttribute{
-											NestedObject: schema.NestedAttributeObject{
-												Attributes: map[string]schema.Attribute{
-													"error_result": schema.StringAttribute{
-														Optional:    true,
-														Description: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-													},
-													"expression": schema.StringAttribute{
-														Required:    true,
-														Description: "The OGNL expression to evaluate.",
-													},
-												},
-											},
-											Optional:    true,
-											Description: "A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue.",
-										},
-									},
-									Optional:    true,
-									Description: "A list of criteria that determines whether a transaction (usually a SSO transaction) is continued. All criteria must pass in order for the transaction to continue.",
-								},
+								"attribute_contract_fulfillment": attributeContractFulfillmentSchema,
+								"attribute_sources":              attributesources.ToSchema(),
+								"idp_token_processor_ref":        resourcelink.ToCompleteSchema(),
+								"issuance_criteria":              issuancecriteria.ToSchema(),
 								"restricted_virtual_entity_ids": schema.ListAttribute{
 									ElementType: types.StringType,
 									Optional:    true,
