@@ -52,7 +52,7 @@ type certificatesDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *certificatesDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes CertificateCA Import.",
+		Description: "Describes a trusted Certificate CA.",
 		Attributes: map[string]schema.Attribute{
 			"serial_number": schema.StringAttribute{
 				Description: "The serial number assigned by the CA",
@@ -192,7 +192,7 @@ func (r *certificatesDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	apiReadCertificate, httpResp, err := r.apiClient.CertificatesCaAPI.GetTrustedCert(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a Certificate", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a trusted certificate CA", err, httpResp)
 		return
 	}
 

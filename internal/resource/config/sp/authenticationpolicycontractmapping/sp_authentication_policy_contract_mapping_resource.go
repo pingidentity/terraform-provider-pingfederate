@@ -49,7 +49,7 @@ type spAuthenticationPolicyContractMappingResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *spAuthenticationPolicyContractMappingResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "The Authentication Policy Contract (APC) to SP Adapter Mapping.",
+		Description: "Manages the mappings from an Authentication Policy Contract (APC) to a Service Provider (SP).",
 		Attributes: map[string]schema.Attribute{
 			"attribute_sources":              attributesources.ToSchema(),
 			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),

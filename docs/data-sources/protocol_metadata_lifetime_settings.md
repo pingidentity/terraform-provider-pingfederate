@@ -3,12 +3,12 @@
 page_title: "pingfederate_protocol_metadata_lifetime_settings Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes a ProtocolMetadataLifetimeSettings.
+  Describes the settings for the metadata cache duration and reload delay for protocol metadata.
 ---
 
 # pingfederate_protocol_metadata_lifetime_settings (Data Source)
 
-Describes a ProtocolMetadataLifetimeSettings.
+Describes the settings for the metadata cache duration and reload delay for protocol metadata.
 
 ## Example Usage
 

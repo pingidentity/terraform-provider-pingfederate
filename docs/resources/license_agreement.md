@@ -3,12 +3,12 @@
 page_title: "pingfederate_license_agreement Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a LicenseAgreement.
+  Manages a license agreement link.
 ---
 
 # pingfederate_license_agreement (Resource)
 
-Manages a LicenseAgreement.
+Manages a license agreement link.
 
 ## Example Usage
 

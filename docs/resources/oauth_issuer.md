@@ -3,12 +3,12 @@
 page_title: "pingfederate_oauth_issuer Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages an OAuth Issuer.
+  Manages a virtual OAuth issuer.
 ---
 
 # pingfederate_oauth_issuer (Resource)
 
-Manages an OAuth Issuer.
+Manages a virtual OAuth issuer.
 
 ## Example Usage
 

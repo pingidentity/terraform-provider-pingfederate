@@ -70,13 +70,13 @@ var (
 
 func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 	ldapDataStoreSchema := schema.SingleNestedAttribute{}
-	ldapDataStoreSchema.Description = "A LDAP Data Store"
+	ldapDataStoreSchema.Description = "An LDAP Data Store"
 	ldapDataStoreSchema.Default = objectdefault.StaticValue(types.ObjectNull(ldapDataStoreAttrType))
 	ldapDataStoreSchema.Computed = true
 	ldapDataStoreSchema.Optional = true
 	ldapDataStoreSchema.Attributes = map[string]schema.Attribute{
 		"type": schema.StringAttribute{
-			Description: "The",
+			Description: "The data store type.",
 			Computed:    true,
 			Optional:    false,
 			Default:     stringdefault.StaticString("LDAP"),

@@ -42,7 +42,7 @@ type licenseAgreementResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *licenseAgreementResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a LicenseAgreement.",
+		Description: "Manages a license agreement link.",
 		Attributes: map[string]schema.Attribute{
 			"license_agreement_url": schema.StringAttribute{
 				Description: "URL to license agreement",
@@ -111,7 +111,7 @@ func (r *licenseAgreementResource) Create(ctx context.Context, req resource.Crea
 	createLicenseAgreement := client.NewLicenseAgreementInfo()
 	err := addOptionalLicenseAgreementFields(ctx, createLicenseAgreement, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for License Agreement", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for the license agreement", err.Error())
 		return
 	}
 
@@ -119,7 +119,7 @@ func (r *licenseAgreementResource) Create(ctx context.Context, req resource.Crea
 	apiCreateLicenseAgreement = apiCreateLicenseAgreement.Body(*createLicenseAgreement)
 	licenseAgreementResponse, httpResp, err := r.apiClient.LicenseAPI.UpdateLicenseAgreementExecute(apiCreateLicenseAgreement)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the License Agreement", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the license agreement", err, httpResp)
 		return
 	}
 
@@ -144,10 +144,10 @@ func (r *licenseAgreementResource) Read(ctx context.Context, req resource.ReadRe
 	apiReadLicenseAgreement, httpResp, err := r.apiClient.LicenseAPI.GetLicenseAgreement(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the License Agreement", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the license agreement", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the License Agreement", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the license agreement", err, httpResp)
 		}
 		return
 	}
@@ -178,14 +178,14 @@ func (r *licenseAgreementResource) Update(ctx context.Context, req resource.Upda
 	createUpdateRequest := client.NewLicenseAgreementInfo()
 	err := addOptionalLicenseAgreementFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for License Agreement", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for license agreement", err.Error())
 		return
 	}
 
 	updateLicenseAgreement = updateLicenseAgreement.Body(*createUpdateRequest)
 	updateLicenseAgreementResponse, httpResp, err := r.apiClient.LicenseAPI.UpdateLicenseAgreementExecute(updateLicenseAgreement)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating License Agreement", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating license agreement", err, httpResp)
 		return
 	}
 

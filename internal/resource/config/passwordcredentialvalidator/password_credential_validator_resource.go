@@ -71,7 +71,7 @@ type passwordCredentialValidatorResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a Password Credential Validator",
+		Description: "Manages a password credential validator plugin instance.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Description: "The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",

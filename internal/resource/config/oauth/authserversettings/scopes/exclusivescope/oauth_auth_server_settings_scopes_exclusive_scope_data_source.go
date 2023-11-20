@@ -39,7 +39,7 @@ type oauthAuthServerSettingsScopesExclusiveScopeDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *oauthAuthServerSettingsScopesExclusiveScopeDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes a OauthAuthServerSettingsScopesCommonScopes.",
+		Description: "Describes an exclusive scope in the authorization server settings.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Description: "The name of the scope.",

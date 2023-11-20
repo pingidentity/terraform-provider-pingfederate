@@ -47,7 +47,7 @@ type dataStoreResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *dataStoreResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a Data Store",
+		Description: "Manages a data store resource",
 		Attributes: map[string]schema.Attribute{
 			"mask_attribute_values": schema.BoolAttribute{
 				Description: "Whether attribute values should be masked in the log.",
@@ -344,10 +344,10 @@ func (r *dataStoreResource) Read(ctx context.Context, req resource.ReadRequest, 
 	dataStoreGetReq, httpResp, err := r.apiClient.DataStoresAPI.GetDataStore(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Data Store", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the data store", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  Data Store", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the data store", err, httpResp)
 		}
 	}
 
@@ -421,7 +421,7 @@ func (r *dataStoreResource) Delete(ctx context.Context, req resource.DeleteReque
 	}
 	httpResp, err := r.apiClient.DataStoresAPI.DeleteDataStore(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a Data Store", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a data store", err, httpResp)
 		return
 	}
 }

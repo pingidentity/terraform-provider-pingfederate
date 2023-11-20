@@ -3,12 +3,12 @@
 page_title: "pingfederate_virtual_host_names Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a VirtualHostNames.
+  Manages settings for virtual host names.
 ---
 
 # pingfederate_virtual_host_names (Resource)
 
-Manages a VirtualHostNames.
+Manages settings for virtual host names.
 
 ## Example Usage
 

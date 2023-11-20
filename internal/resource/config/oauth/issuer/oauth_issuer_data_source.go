@@ -41,7 +41,7 @@ type oauthIssuerDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *oauthIssuerDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes an OAuth Issuer.",
+		Description: "Describes a virtual OAuth issuer.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Required: false,

@@ -45,7 +45,7 @@ type authenticationApiSettingsResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *authenticationApiSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages the Authentication API Application Settings.",
+		Description: "Manages the Authentication API application settings.",
 		Attributes: map[string]schema.Attribute{
 			"api_enabled": schema.BoolAttribute{
 				Description: "Enable Authentication API",
@@ -149,14 +149,14 @@ func (r *authenticationApiSettingsResource) Create(ctx context.Context, req reso
 	createUpdateRequest := client.NewAuthnApiSettings()
 	err := addAuthenticationApiSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Authentication Api Settings", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for the authentication API settings", err.Error())
 		return
 	}
 
 	updateAuthenticationApiSettings = updateAuthenticationApiSettings.Body(*createUpdateRequest)
 	updateAuthenticationApiSettingsResponse, httpResp, err := r.apiClient.AuthenticationApiAPI.UpdateAuthenticationApiSettingsExecute(updateAuthenticationApiSettings)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Authentication Api Settings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the authentication API settings", err, httpResp)
 		return
 	}
 
@@ -181,10 +181,10 @@ func (r *authenticationApiSettingsResource) Read(ctx context.Context, req resour
 	apiReadAuthenticationApiSettings, httpResp, err := r.apiClient.AuthenticationApiAPI.GetAuthenticationApiSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a Authentication Api Settings", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the authentication API settings", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Authentication Api Settings", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the authentication API settings", err, httpResp)
 		}
 		return
 	}
@@ -216,14 +216,14 @@ func (r *authenticationApiSettingsResource) Update(ctx context.Context, req reso
 	createUpdateRequest := client.NewAuthnApiSettings()
 	err := addAuthenticationApiSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Authentication Api Settings", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for the authentication API settings", err.Error())
 		return
 	}
 
 	updateAuthenticationApiSettings = updateAuthenticationApiSettings.Body(*createUpdateRequest)
 	updateAuthenticationApiSettingsResponse, httpResp, err := r.apiClient.AuthenticationApiAPI.UpdateAuthenticationApiSettingsExecute(updateAuthenticationApiSettings)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Authentication Api Settings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the authentication API settings", err, httpResp)
 		return
 	}
 
