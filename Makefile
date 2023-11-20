@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: install generate fmt vet test starttestcontainer removetestcontainer spincontainer clearstates kaboom testacc testacccomplete generateresource openlocalwebapi golangcilint tfproviderlint tflint terrafmtlint importfmtlint devcheck devchecknotest openapp testoneacc verifyresourceimportcontent
+.PHONY: install generate fmt vet test starttestcontainer removetestcontainer spincontainer clearstates kaboom testacc testacccomplete generateresource openlocalwebapi golangcilint tfproviderlint tflint terrafmtlint importfmtlint devcheck devchecknotest openapp testoneacc verifycontent
 
 default: install
 
@@ -18,9 +18,6 @@ fmt:
 
 vet:
 	go vet ./...
-	
-test:
-	go test -parallel=4 ./...
 
 starttestcontainer:
 	docker run --name pingfederate_terraform_provider_container \
@@ -54,13 +51,14 @@ endef
 
 # Set ACC_TEST_NAME to name of test in cli
 testoneacc:
-	$(call test_acc_env_vars) TF_ACC=1 go test ./... -timeout 10m --run ${ACC_TEST_NAME} -v -p 4 --count=1
+	$(call test_acc_env_vars) TF_ACC=1 go test ./internal/acctest/... -timeout 10m --run ${ACC_TEST_NAME} -v -p 4 --count=1
 
 testoneacccomplete: spincontainer testoneacc
 
+# Some tests can step on each other's toes so run those tests in single threaded mode. Run the rest in parallel
 testacc:
-	$(call test_acc_env_vars) TF_ACC=1 go test `go list ./internal/... | grep -v github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/oauthauthserversettings` -timeout 10m -v -p 4 && \
-	$(call test_acc_env_vars) TF_ACC=1 go test `go list ./internal/... | grep github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/oauthauthserversettings` -timeout 10m -v -p 1
+	$(call test_acc_env_vars) TF_ACC=1 go test `go list ./internal/acctest/... | grep -v -e oauthauthserversettings -e oauthopenidconnectpolicy` -timeout 10m -v -p 4 && \
+	$(call test_acc_env_vars) TF_ACC=1 go test `go list ./internal/acctest/... | grep -e oauthauthserversettings -e oauthopenidconnectpolicy` -timeout 10m -v -p 1
 
 testacccomplete: spincontainer testacc
 
@@ -71,10 +69,10 @@ kaboom: clearstates spincontainer install
 
 devchecknotest: install golangcilint generate tfproviderlint tflint terrafmtlint importfmtlint
 
-verifyresourceimportcontent:
-	python3 ./devcheck/checkImportContent.py
+verifycontent:
+	python3 ./devcheck/verifyContent.py
 
-devcheck: verifyresourceimportcontent devchecknotest kaboom testacc
+devcheck: verifycontent devchecknotest kaboom testacc
 
 generateresource:
 	PINGFEDERATE_GENERATED_ENDPOINT=serverSettings \

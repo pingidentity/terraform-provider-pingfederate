@@ -489,7 +489,6 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
 	updateIdpAdapter := r.apiClient.IdpAdaptersAPI.UpdateIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.AdapterId.ValueString())
 
 	var pluginDescriptorRef client.ResourceLink
@@ -548,6 +547,6 @@ func (r *idpAdapterResource) Delete(ctx context.Context, req resource.DeleteRequ
 }
 
 func (r *idpAdapterResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
+	// Retrieve import ID and save to adapter_id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("adapter_id"), req, resp)
 }

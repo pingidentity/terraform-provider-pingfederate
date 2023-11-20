@@ -1,5 +1,8 @@
 # v0.3.0 (unreleased)
 ### FEATURES
+#### Resources
+* **New Resource:** `pingfederate_oauth_open_id_connect_policy` ([#105](https://github.com/pingidentity/terraform-provider-pingfederate/pull/105))
+
 #### Data Sources
 * **New Data Source:** `session_application_session_policy datasource` ([#94](https://github.com/pingidentity/terraform-provider-pingfederate/pull/94))
 * **New Data Source:** `protocol_metadata_lifetime_settings datasource` ([#100](https://github.com/pingidentity/terraform-provider-pingfederate/pull/100))
