@@ -3,12 +3,12 @@
 page_title: "pingfederate_authentication_api_settings Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes a AuthenticationApiSettings.
+  Describes the authentication API application settings.
 ---
 
 # pingfederate_authentication_api_settings (Data Source)
 
-Describes a AuthenticationApiSettings.
+Describes the authentication API application settings.
 
 ## Example Usage
 

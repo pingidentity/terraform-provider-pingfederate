@@ -107,7 +107,7 @@ type idpAdapterResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages an Idp Adapter",
+		Description: "Manages an IdP adapter instance.",
 		Attributes: map[string]schema.Attribute{
 			"authn_ctx_class_ref": schema.StringAttribute{
 				Description: "The fixed value that indicates how the user was authenticated.",
@@ -532,7 +532,7 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 
 }
 
-// Delete the Idp Adapter
+// Delete the IdP Adapter
 func (r *idpAdapterResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
 	var state idpAdapterResourceModel
@@ -543,7 +543,7 @@ func (r *idpAdapterResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 	httpResp, err := r.apiClient.IdpAdaptersAPI.DeleteIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.AdapterId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the Idp Adapter", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the IdP adapter", err, httpResp)
 	}
 }
 

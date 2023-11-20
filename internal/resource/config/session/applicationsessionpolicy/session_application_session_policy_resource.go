@@ -41,7 +41,7 @@ type sessionApplicationSessionPolicyResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *sessionApplicationSessionPolicyResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a SessionApplicationSessionPolicy.",
+		Description: "Manages the settings for an application session policy.",
 		Attributes: map[string]schema.Attribute{
 			"idle_timeout_mins": schema.Int64Attribute{
 				Description: "The idle timeout period, in minutes. If set to -1, the idle timeout will be set to the maximum timeout. The default is 60.",

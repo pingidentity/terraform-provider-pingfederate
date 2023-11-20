@@ -42,7 +42,7 @@ type virtualHostNamesResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *virtualHostNamesResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a VirtualHostNames.",
+		Description: "Manages settings for virtual host names.",
 		Attributes: map[string]schema.Attribute{
 			"virtual_host_names": schema.ListAttribute{
 				Description: "List of virtual host names.",

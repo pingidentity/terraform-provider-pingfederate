@@ -3,12 +3,12 @@
 page_title: "pingfederate_key_pair_signing_import Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes a KeyPairsSigningImport.
+  Describes the file for importing a key pair.
 ---
 
 # pingfederate_key_pair_signing_import (Data Source)
 
-Describes a KeyPairsSigningImport.
+Describes the file for importing a key pair.
 
 ## Example Usage
 

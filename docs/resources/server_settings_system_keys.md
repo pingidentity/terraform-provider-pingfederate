@@ -3,12 +3,12 @@
 page_title: "pingfederate_server_settings_system_keys Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a Server Settings SystemKeys.
+  Manages the system encryption keys.
 ---
 
 # pingfederate_server_settings_system_keys (Resource)
 
-Manages a Server Settings SystemKeys.
+Manages the system encryption keys.
 
 ## Example Usage
 

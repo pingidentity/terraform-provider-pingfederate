@@ -121,7 +121,7 @@ func (r *oauthAccessTokenManagerResource) Schema(ctx context.Context, req resour
 
 func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse, setOptionalToComputed bool) {
 	schema := schema.Schema{
-		Description: "Manages OAuth Access Token Manager",
+		Description: "Manages an OAuth access token manager plugin instance.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Description: "The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
@@ -631,14 +631,14 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 	createUpdateRequest := client.NewAccessTokenManager(state.ManagerId.ValueString(), state.Name.ValueString(), *pluginDescRefResLink, *configuration)
 	err := addOptionalOauthAccessTokenManagerFields(ctx, createUpdateRequest, state)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Manager", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for an OAuth access token manager", err.Error())
 		return
 	}
 
 	updateOauthAccessTokenManager = updateOauthAccessTokenManager.Body(*createUpdateRequest)
 	updateOauthAccessTokenManagerResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.UpdateTokenManagerExecute(updateOauthAccessTokenManager)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an OAuth Access Token Manager", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an OAuth access token manager", err, httpResp)
 		return
 	}
 
@@ -664,7 +664,7 @@ func (r *oauthAccessTokenManagerResource) Delete(ctx context.Context, req resour
 	}
 	httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.DeleteTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ManagerId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Access Token Manager", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth access token manager", err, httpResp)
 		return
 	}
 }

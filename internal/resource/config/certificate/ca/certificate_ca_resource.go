@@ -45,7 +45,7 @@ type certificatesResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *certificateCAResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a Certificate CA.",
+		Description: "Manages a trusted Certificate CA.",
 		Attributes: map[string]schema.Attribute{
 			"crypto_provider": schema.StringAttribute{
 				Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",

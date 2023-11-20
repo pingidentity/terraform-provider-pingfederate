@@ -3,12 +3,12 @@
 page_title: "pingfederate_server_settings_general_settings Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a ServerSettingsGeneralSettings.
+  Manages the general server settings.
 ---
 
 # pingfederate_server_settings_general_settings (Resource)
 
-Manages a ServerSettingsGeneralSettings.
+Manages the general server settings.
 
 ## Example Usage
 

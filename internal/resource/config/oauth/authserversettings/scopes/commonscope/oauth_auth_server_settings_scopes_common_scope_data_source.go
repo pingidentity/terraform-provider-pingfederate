@@ -39,7 +39,7 @@ type oauthAuthServerSettingsScopesCommonScopeDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *oauthAuthServerSettingsScopesCommonScopeDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes a OauthAuthServerSettingsScopesCommonScope.",
+		Description: "Describes a common scope in the authorization server settings.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Description: "The name of the scope.",

@@ -3,12 +3,12 @@
 page_title: "pingfederate_oauth_access_token_manager Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages OAuth Access Token Manager
+  Manages an OAuth access token manager plugin instance.
 ---
 
 # pingfederate_oauth_access_token_manager (Resource)
 
-Manages OAuth Access Token Manager
+Manages an OAuth access token manager plugin instance.
 
 ## Example Usage
 

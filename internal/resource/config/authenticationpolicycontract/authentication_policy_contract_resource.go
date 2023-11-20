@@ -56,7 +56,7 @@ type authenticationPolicyContractResourceModel struct {
 func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	extendedAttributesDefault, _ := types.SetValue(attributeElemAttrType, nil)
 	schema := schema.Schema{
-		Description: "Manages an Authentication Policy Contract.",
+		Description: "Manages an authentication policy contract.",
 		Attributes: map[string]schema.Attribute{
 			"core_attributes": schema.ListNestedAttribute{
 				Description: "A list of read-only assertion attributes (for example, subject) that are automatically populated by PingFederate.",
@@ -83,7 +83,7 @@ func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req r
 				},
 			},
 			"name": schema.StringAttribute{
-				Description: "The Authentication Policy Contract Name. Name is unique.",
+				Description: "The Authentication Policy contract name. Name is unique.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -175,7 +175,7 @@ func (r *authenticationPolicyContractResource) Create(ctx context.Context, req r
 	createAuthenticationPolicyContracts := client.NewAuthenticationPolicyContract()
 	err := addAuthenticationPolicyContractsFields(ctx, createAuthenticationPolicyContracts, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for an Authentication Policy Contract", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for an authentication policy contract", err.Error())
 		return
 	}
 
@@ -183,7 +183,7 @@ func (r *authenticationPolicyContractResource) Create(ctx context.Context, req r
 	apiCreateAuthenticationPolicyContracts = apiCreateAuthenticationPolicyContracts.Body(*createAuthenticationPolicyContracts)
 	authenticationPolicyContractsResponse, httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.CreateAuthenticationPolicyContractExecute(apiCreateAuthenticationPolicyContracts)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating an Authentication Policy Contract", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating an authentication policy contract", err, httpResp)
 		return
 	}
 
@@ -207,10 +207,10 @@ func (r *authenticationPolicyContractResource) Read(ctx context.Context, req res
 	apiReadAuthenticationPolicyContracts, httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.GetAuthenticationPolicyContract(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ContractId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a Authentication Policy Contract", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an authentication policy contract", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Authentication Policy Contract", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an authentication policy contract", err, httpResp)
 		}
 		return
 	}
@@ -240,14 +240,14 @@ func (r *authenticationPolicyContractResource) Update(ctx context.Context, req r
 	createUpdateRequest := client.NewAuthenticationPolicyContract()
 	err := addAuthenticationPolicyContractsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for an Authentication Policy Contract", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for an authentication policy contract", err.Error())
 		return
 	}
 
 	updateAuthenticationPolicyContracts = updateAuthenticationPolicyContracts.Body(*createUpdateRequest)
 	updateAuthenticationPolicyContractsResponse, httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.UpdateAuthenticationPolicyContractExecute(updateAuthenticationPolicyContracts)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an Authentication Policy Contract", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an authentication policy contract", err, httpResp)
 		return
 	}
 
@@ -271,7 +271,7 @@ func (r *authenticationPolicyContractResource) Delete(ctx context.Context, req r
 	}
 	httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.DeleteAuthenticationPolicyContract(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ContractId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an Authentication Policy Contract", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an authentication policy contract", err, httpResp)
 		return
 	}
 

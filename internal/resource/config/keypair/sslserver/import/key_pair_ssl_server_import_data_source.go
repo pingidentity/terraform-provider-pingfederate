@@ -55,7 +55,7 @@ type keyPairsSslServerImportDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *keyPairsSslServerImportDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes a KeyPairsSslServerImport.",
+		Description: "Describes a file for importing an SSL key pair.",
 		Attributes: map[string]schema.Attribute{
 			"serial_number": schema.StringAttribute{
 				Description: "The serial number assigned by the CA",

@@ -3,12 +3,12 @@
 page_title: "pingfederate_sp_authentication_policy_contract_mapping Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  The Authentication Policy Contract (APC) to SP Adapter Mapping.
+  Manages the mappings from an Authentication Policy Contract (APC) to a Service Provider (SP).
 ---
 
 # pingfederate_sp_authentication_policy_contract_mapping (Resource)
 
-The Authentication Policy Contract (APC) to SP Adapter Mapping.
+Manages the mappings from an Authentication Policy Contract (APC) to a Service Provider (SP).
 
 
 

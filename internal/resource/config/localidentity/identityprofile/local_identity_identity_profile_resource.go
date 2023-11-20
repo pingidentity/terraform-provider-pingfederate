@@ -179,7 +179,7 @@ type localIdentityIdentityProfileResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages Local Identity Identity Profile",
+		Description: "Manages a configured local identity profile",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Description: "The local identity profile name. Name is unique.",
@@ -1024,20 +1024,20 @@ func (r *localIdentityIdentityProfileResource) Create(ctx context.Context, req r
 	}
 	apcResourceLink, err := resourcelink.ClientStruct(plan.ApcId)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add apc id to add request for Local Identity Identity Profile", err.Error())
+		resp.Diagnostics.AddError("Failed to add apc id to add request for a local identity profile", err.Error())
 		return
 	}
 	createLocalIdentityIdentityProfiles := client.NewLocalIdentityProfile(plan.Name.ValueString(), *apcResourceLink)
 	err = addOptionalLocalIdentityIdentityProfileFields(ctx, createLocalIdentityIdentityProfiles, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for a Local Identity Identity Profile", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for a local identity profile", err.Error())
 		return
 	}
 	apiCreateLocalIdentityIdentityProfiles := r.apiClient.LocalIdentityIdentityProfilesAPI.CreateIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateLocalIdentityIdentityProfiles = apiCreateLocalIdentityIdentityProfiles.Body(*createLocalIdentityIdentityProfiles)
 	localIdentityIdentityProfilesResponse, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.CreateIdentityProfileExecute(apiCreateLocalIdentityIdentityProfiles)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the LocalIdentityIdentityProfiles", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the local identity profiles", err, httpResp)
 		return
 	}
 
@@ -1061,10 +1061,10 @@ func (r *localIdentityIdentityProfileResource) Read(ctx context.Context, req res
 	apiReadLocalIdentityIdentityProfiles, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.GetIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ProfileId.ValueString()).Execute()
 	if err != nil {
 		if httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Local Identity Profile", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the local identity profile", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Local Identity Profile", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the local identity profile", err, httpResp)
 		}
 		return
 	}
@@ -1090,19 +1090,19 @@ func (r *localIdentityIdentityProfileResource) Update(ctx context.Context, req r
 	updateLocalIdentityIdentityProfiles := r.apiClient.LocalIdentityIdentityProfilesAPI.UpdateIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.ProfileId.ValueString())
 	apcResourceLink, err := resourcelink.ClientStruct(plan.ApcId)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add apc id to add request for Local Identity Identity Profile", err.Error())
+		resp.Diagnostics.AddError("Failed to add apc id to add request for local identity profile", err.Error())
 		return
 	}
 	createUpdateRequest := client.NewLocalIdentityProfile(plan.Name.ValueString(), *apcResourceLink)
 	err = addOptionalLocalIdentityIdentityProfileFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Local Identity Identity Profile", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for a local identity profile", err.Error())
 		return
 	}
 	updateLocalIdentityIdentityProfiles = updateLocalIdentityIdentityProfiles.Body(*createUpdateRequest)
 	updateLocalIdentityIdentityProfilesResponse, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.UpdateIdentityProfileExecute(updateLocalIdentityIdentityProfiles)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Local Identity Identity Profile", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating a local identity profile", err, httpResp)
 		return
 	}
 
@@ -1125,7 +1125,7 @@ func (r *localIdentityIdentityProfileResource) Delete(ctx context.Context, req r
 	}
 	httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.DeleteIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ProfileId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting Local Identity Profile", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting local identity profile", err, httpResp)
 	}
 
 }

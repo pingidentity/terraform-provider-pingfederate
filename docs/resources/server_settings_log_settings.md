@@ -3,12 +3,12 @@
 page_title: "pingfederate_server_settings_log_settings Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  LogSettings Settings related to server logging.
+  Manages the settings related to server logging.
 ---
 
 # pingfederate_server_settings_log_settings (Resource)
 
-LogSettings Settings related to server logging.
+Manages the settings related to server logging.
 
 ## Example Usage
 

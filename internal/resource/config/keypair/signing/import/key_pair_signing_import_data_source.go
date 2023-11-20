@@ -55,7 +55,7 @@ type keyPairsSigningImportDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *keyPairsSigningImportDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes a KeyPairsSigningImport.",
+		Description: "Describes the file for importing a key pair.",
 		Attributes: map[string]schema.Attribute{
 			"serial_number": schema.StringAttribute{
 				Description: "The serial number assigned by the CA",
@@ -259,7 +259,7 @@ func (r *keyPairsSigningImportDataSource) Read(ctx context.Context, req datasour
 
 	apiReadKeyPairsSigningImport, httpResp, err := r.apiClient.KeyPairsSigningAPI.GetSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPair Signing Import", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the key pair signing import file", err, httpResp)
 		return
 	}
 

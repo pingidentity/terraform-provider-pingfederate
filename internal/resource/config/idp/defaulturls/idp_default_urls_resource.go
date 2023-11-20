@@ -42,7 +42,7 @@ type idpDefaultUrlsResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *idpDefaultUrlsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a IdpDefaultUrls.",
+		Description: "Manages the IdP default URL settings",
 		Attributes: map[string]schema.Attribute{
 			"confirm_idp_slo": schema.BoolAttribute{
 				Description: "Prompt user to confirm Single Logout (SLO).",
@@ -114,7 +114,7 @@ func (r *idpDefaultUrlsResource) Create(ctx context.Context, req resource.Create
 	createIdpDefaultUrls := client.NewIdpDefaultUrl(plan.IdpErrorMsg.ValueString())
 	err := addOptionalIdpDefaultUrlsFields(ctx, createIdpDefaultUrls, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdpDefaultUrls", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdP default URL settings", err.Error())
 		return
 	}
 
@@ -122,7 +122,7 @@ func (r *idpDefaultUrlsResource) Create(ctx context.Context, req resource.Create
 	apiCreateIdpDefaultUrls = apiCreateIdpDefaultUrls.Body(*createIdpDefaultUrls)
 	idpDefaultUrlsResponse, httpResp, err := r.apiClient.IdpDefaultUrlsAPI.UpdateDefaultUrlSettingsExecute(apiCreateIdpDefaultUrls)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Idp Default Urls", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the IdP default URL settings", err, httpResp)
 		return
 	}
 
@@ -143,10 +143,10 @@ func (r *idpDefaultUrlsResource) Read(ctx context.Context, req resource.ReadRequ
 	apiReadIdpDefaultUrls, httpResp, err := r.apiClient.IdpDefaultUrlsAPI.GetDefaultUrl(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Idp Default Urls", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the IdP default URL settings", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Idp Default Urls", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the IdP default URL settings", err, httpResp)
 		}
 		return
 	}
@@ -178,14 +178,14 @@ func (r *idpDefaultUrlsResource) Update(ctx context.Context, req resource.Update
 	createUpdateRequest := client.NewIdpDefaultUrl(plan.IdpErrorMsg.ValueString())
 	err := addOptionalIdpDefaultUrlsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Idp Default Urls", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdP default URL settings", err.Error())
 		return
 	}
 
 	updateIdpDefaultUrls = updateIdpDefaultUrls.Body(*createUpdateRequest)
 	updateIdpDefaultUrlsResponse, httpResp, err := r.apiClient.IdpDefaultUrlsAPI.UpdateDefaultUrlSettingsExecute(updateIdpDefaultUrls)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Idp Default Urls", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating IdP default URL settings", err, httpResp)
 		return
 	}
 
