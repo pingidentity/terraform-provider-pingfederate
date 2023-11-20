@@ -3,12 +3,12 @@
 page_title: "pingfederate_idp_adapter Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages an Idp Adapter
+  Manages an IdP adapter instance.
 ---
 
 # pingfederate_idp_adapter (Resource)
 
-Manages an Idp Adapter
+Manages an IdP adapter instance.
 
 ## Example Usage
 
@@ -734,6 +734,6 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-# "idpAdapterId" should be the id of the Idp Adapter to be imported
+# "idpAdapterId" should be the ID of the IdP adapter to be imported
 terraform import pingfederate_idp_adapter.idpAdapter idpAdapterId
 ```

@@ -41,7 +41,7 @@ type protocolMetadataLifetimeSettingsResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *protocolMetadataLifetimeSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a ProtocolMetadataLifetimeSettings.",
+		Description: "Manages the settings for the metadata cache duration and reload delay for protocol metadata.",
 		Attributes: map[string]schema.Attribute{
 			"cache_duration": schema.Int64Attribute{
 				Description: "This field adjusts the validity of your metadata in minutes. The default value is 1440 (1 day).",

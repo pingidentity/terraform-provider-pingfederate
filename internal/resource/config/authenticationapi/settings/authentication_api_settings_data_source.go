@@ -59,7 +59,7 @@ type authenticationApiSettingsDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *authenticationApiSettingsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes a AuthenticationApiSettings.",
+		Description: "Describes the authentication API application settings.",
 		Attributes: map[string]schema.Attribute{
 			"api_enabled": schema.BoolAttribute{
 				Description: "Enable Authentication API",
@@ -123,7 +123,7 @@ func (r *authenticationApiSettingsDataSource) Read(ctx context.Context, req data
 
 	apiReadAuthenticationApiSettings, httpResp, err := r.apiClient.AuthenticationApiAPI.GetAuthenticationApiSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Authentication Api Settings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the authentication API settings", err, httpResp)
 		return
 	}
 

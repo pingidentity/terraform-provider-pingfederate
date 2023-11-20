@@ -50,7 +50,7 @@ type oauthTokenExchangeTokenGeneratorMappingResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *oauthTokenExchangeTokenGeneratorMappingResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a Token Exchange Processor Policy To Token Generator Mapping.",
+		Description: "Manages the mapping from a token exchange processor policy to a token generator.",
 		Attributes: map[string]schema.Attribute{
 			"attribute_sources":              attributesources.ToSchema(),
 			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),

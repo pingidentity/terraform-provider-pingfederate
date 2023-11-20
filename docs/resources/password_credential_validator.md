@@ -3,12 +3,12 @@
 page_title: "pingfederate_password_credential_validator Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a Password Credential Validator
+  Manages a password credential validator plugin instance.
 ---
 
 # pingfederate_password_credential_validator (Resource)
 
-Manages a Password Credential Validator
+Manages a password credential validator plugin instance.
 
 ## Example Usage
 

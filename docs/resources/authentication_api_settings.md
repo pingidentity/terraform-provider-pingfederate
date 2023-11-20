@@ -3,12 +3,12 @@
 page_title: "pingfederate_authentication_api_settings Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages the Authentication API Application Settings.
+  Manages the Authentication API application settings.
 ---
 
 # pingfederate_authentication_api_settings (Resource)
 
-Manages the Authentication API Application Settings.
+Manages the Authentication API application settings.
 
 ## Example Usage
 

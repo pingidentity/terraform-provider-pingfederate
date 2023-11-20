@@ -3,12 +3,12 @@
 page_title: "pingfederate_virtual_host_names Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes VirtualHostNames.
+  Describes settings for virtual host names.
 ---
 
 # pingfederate_virtual_host_names (Data Source)
 
-Describes VirtualHostNames.
+Describes settings for virtual host names.
 
 ## Example Usage
 

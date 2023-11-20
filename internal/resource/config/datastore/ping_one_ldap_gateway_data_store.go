@@ -89,7 +89,7 @@ func toSchemaPingOneLdapGatewayDataStore() schema.SingleNestedAttribute {
 			},
 		},
 		"ping_one_environment_id": schema.StringAttribute{
-			Description: "The environment ID that the gateway belongs to.",
+			Description: "The environment ID to which the gateway belongs.",
 			Required:    true,
 		},
 	}

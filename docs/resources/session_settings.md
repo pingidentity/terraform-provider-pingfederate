@@ -3,12 +3,12 @@
 page_title: "pingfederate_session_settings Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a SessionSettings.
+  Manages the settings for general session management.
 ---
 
 # pingfederate_session_settings (Resource)
 
-Manages a SessionSettings.
+Manages the settings for general session management.
 
 ## Example Usage
 

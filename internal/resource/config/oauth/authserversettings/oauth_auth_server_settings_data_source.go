@@ -86,7 +86,7 @@ type oauthAuthServerSettingsDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes OAuth Auth Server Settings",
+		Description: "Describes the OAuth authorization server settings.",
 		Attributes: map[string]schema.Attribute{
 			"default_scope_description": schema.StringAttribute{
 				Description: "The default scope description.",

@@ -50,7 +50,7 @@ type localIdentityIdentityProfileDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes Local Identity Identity Profiles",
+		Description: "Describes a configured local identity profile.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Description: "The local identity profile name. Name is unique.",
@@ -623,7 +623,7 @@ func (r *localIdentityIdentityProfileDataSource) Read(ctx context.Context, req d
 
 	apiReadLocalIdentityIdentityProfile, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.GetIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Local Identity Profile", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the local identity profile", err, httpResp)
 		return
 	}
 
