@@ -318,6 +318,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		serversettingslogsettings.NewServerSettingsLogSettingsDataSource,
 		serversettingssystemkeys.NewServerSettingsSystemKeysDataSource,
 		sessionapplicationsessionpolicy.NewSessionApplicationSessionPolicyDataSource,
+		sessionsettings.NewSessionSettingsDataSource,
 		virtualhostnames.NewVirtualHostNamesDataSource,
 	}
 }
