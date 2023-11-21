@@ -1,4 +1,7 @@
 # v0.3.0 (unreleased)
+### ENHANCEMENTS
+* Refactor and simplify state method for the `server_settings_log_settings` resource ([114](https://github.com/pingidentity/terraform-provider-pingfederate/pull/114))
+
 ### FEATURES
 #### Resources
 * **New Resource:** `pingfederate_oauth_open_id_connect_policy` ([#105](https://github.com/pingidentity/terraform-provider-pingfederate/pull/105))
