@@ -335,13 +335,13 @@ var (
 				"change_detection_settings": types.ObjectType{AttrTypes: map[string]attr.Type{
 					"user_object_class":         types.StringType,
 					"group_object_class":        types.StringType,
-					"changed_user_algorithm":    types.StringType,
+					"changed_users_algorithm":   types.StringType,
 					"usn_attribute_name":        types.StringType,
 					"time_stamp_attribute_name": types.StringType,
 				}},
 				"group_membership_detection": types.ObjectType{AttrTypes: map[string]attr.Type{
-					"member_of_group_attribute":   types.StringType,
-					"group_member_attribute_name": types.StringType,
+					"member_of_group_attribute_name": types.StringType,
+					"group_member_attribute_name":    types.StringType,
 				}},
 				"account_management_settings": types.ObjectType{AttrTypes: map[string]attr.Type{
 					"account_status_attribute_name": types.StringType,
@@ -667,7 +667,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Description: "The name of this attribute.",
 			},
 			"namespace": schema.StringAttribute{
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString(""),
 				Description: "The attribute namespace.  This is required when the Default Token Type is SAML2.0 or SAML1.1 or SAML1.1 for Office 365.",
 			},
 		},
@@ -1499,7 +1501,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Optional:    true,
 								Description: "The list of outgoing SAML assertion attributes that will be encrypted. The 'encryptAssertion' property takes precedence over this.",
 							},
-							"slo_subject_name_idencrypted": schema.BoolAttribute{
+							"slo_subject_name_id_encrypted": schema.BoolAttribute{
 								Optional:    true,
 								Description: "Allow the encryption of the name-identifier attribute for inbound SLO messages. This can be set if SP initiated SLO is enabled.",
 							},
@@ -1724,7 +1726,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							),
 						},
 					},
-					"encrypt_saml2assertion": schema.BoolAttribute{
+					"encrypt_saml2_assertion": schema.BoolAttribute{
 						Optional:    true,
 						Description: "When selected, the STS encrypts the SAML 2.0 assertion. Applicable only to SAML 2.0 security token.  This option does not apply to OAuth assertion profiles.",
 					},
@@ -1745,7 +1747,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Optional:    true,
 						Description: "The amount of time before the SAML token was issued during which it is to be considered valid. The default value is 5.",
 					},
-					"o_auth_assertion_profiles": schema.BoolAttribute{
+					"oauth_assertion_profiles": schema.BoolAttribute{
 						Optional:    true,
 						Description: "When selected, four additional token-type requests become available.",
 					},
@@ -1788,6 +1790,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 }
 
 func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.SpConnection, plan idpSpConnectionResourceModel) error {
+	addRequest.Id = plan.ConnectionId.ValueStringPointer()
 	addRequest.Type = plan.Type.ValueStringPointer()
 	addRequest.Active = plan.Active.ValueBoolPointer()
 	addRequest.BaseUrl = plan.BaseUrl.ValueStringPointer()
@@ -1800,7 +1803,7 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 
 	if internaltypes.IsDefined(plan.VirtualEntityIds) {
 		addRequest.VirtualEntityIds = []string{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.VirtualEntityIds, false)), &addRequest.VirtualEntityIds)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.VirtualEntityIds, true)), &addRequest.VirtualEntityIds)
 		if err != nil {
 			return err
 		}
@@ -1808,7 +1811,7 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 
 	if internaltypes.IsDefined(plan.MetadataReloadSettings) {
 		addRequest.MetadataReloadSettings = &client.ConnectionMetadataUrl{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.MetadataReloadSettings, false)), &addRequest.MetadataReloadSettings)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.MetadataReloadSettings, true)), &addRequest.MetadataReloadSettings)
 		if err != nil {
 			return err
 		}
@@ -1816,7 +1819,7 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 
 	if internaltypes.IsDefined(plan.Credentials) {
 		addRequest.Credentials = &client.ConnectionCredentials{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.Credentials, false)), &addRequest.Credentials)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.Credentials, true)), &addRequest.Credentials)
 		if err != nil {
 			return err
 		}
@@ -1824,15 +1827,7 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 
 	if internaltypes.IsDefined(plan.ContactInfo) {
 		addRequest.ContactInfo = &client.ContactInfo{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ContactInfo, false)), &addRequest.ContactInfo)
-		if err != nil {
-			return err
-		}
-	}
-
-	if internaltypes.IsDefined(plan.ContactInfo) {
-		addRequest.ContactInfo = &client.ContactInfo{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ContactInfo, false)), &addRequest.ContactInfo)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ContactInfo, true)), &addRequest.ContactInfo)
 		if err != nil {
 			return err
 		}
@@ -1840,7 +1835,7 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 
 	if internaltypes.IsDefined(plan.AdditionalAllowedEntitiesConfiguration) {
 		addRequest.AdditionalAllowedEntitiesConfiguration = &client.AdditionalAllowedEntitiesConfiguration{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AdditionalAllowedEntitiesConfiguration, false)), &addRequest.AdditionalAllowedEntitiesConfiguration)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AdditionalAllowedEntitiesConfiguration, true)), &addRequest.AdditionalAllowedEntitiesConfiguration)
 		if err != nil {
 			return err
 		}
@@ -1848,7 +1843,7 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 
 	if internaltypes.IsDefined(plan.ExtendedProperties) {
 		addRequest.ExtendedProperties = &map[string]client.ParameterValues{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ExtendedProperties, false)), &addRequest.ExtendedProperties)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ExtendedProperties, true)), &addRequest.ExtendedProperties)
 		if err != nil {
 			return err
 		}
@@ -1856,7 +1851,7 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 
 	if internaltypes.IsDefined(plan.SpBrowserSso) {
 		addRequest.SpBrowserSso = &client.SpBrowserSso{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.SpBrowserSso, false)), &addRequest.SpBrowserSso)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.SpBrowserSso, true)), &addRequest.SpBrowserSso)
 		if err != nil {
 			return err
 		}
@@ -1864,7 +1859,7 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 
 	if internaltypes.IsDefined(plan.AttributeQuery) {
 		addRequest.AttributeQuery = &client.SpAttributeQuery{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeQuery, false)), &addRequest.AttributeQuery)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeQuery, true)), &addRequest.AttributeQuery)
 		if err != nil {
 			return err
 		}
@@ -1872,7 +1867,7 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 
 	if internaltypes.IsDefined(plan.WsTrust) {
 		addRequest.WsTrust = &client.SpWsTrust{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.WsTrust, false)), &addRequest.WsTrust)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.WsTrust, true)), &addRequest.WsTrust)
 		if err != nil {
 			return err
 		}
@@ -1880,7 +1875,7 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 
 	if internaltypes.IsDefined(plan.OutboundProvision) {
 		addRequest.OutboundProvision = &client.OutboundProvision{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.OutboundProvision, false)), &addRequest.OutboundProvision)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.OutboundProvision, true)), &addRequest.OutboundProvision)
 		if err != nil {
 			return err
 		}
@@ -2019,6 +2014,7 @@ func (r *idpSpConnectionResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	// Read the response into the state
+	//TODO what if apiReadIdpSpconnection is nil here
 	readIdpSpconnectionResponse(ctx, apiReadIdpSpconnection, &state)
 
 	// Set refreshed state
@@ -2043,10 +2039,6 @@ func (r *idpSpConnectionResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	_, requestErr := createUpdateRequest.MarshalJSON()
-	if requestErr != nil {
-		diags.AddError("There was an issue retrieving the request of IdP SP Connection: %s", requestErr.Error())
-	}
 	updateIdpSpconnection = updateIdpSpconnection.Body(*createUpdateRequest)
 	updateIdpSpconnectionResponse, httpResp, err := r.apiClient.IdpSpConnectionsAPI.UpdateSpConnectionExecute(updateIdpSpconnection)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
@@ -2054,11 +2046,6 @@ func (r *idpSpConnectionResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	// Log response JSON
-	_, responseErr := updateIdpSpconnectionResponse.MarshalJSON()
-	if responseErr != nil {
-		diags.AddError("There was an issue retrieving the response of IdP SP Connection: %s", responseErr.Error())
-	}
 	// Read the response
 	var state idpSpConnectionResourceModel
 	diags = readIdpSpconnectionResponse(ctx, updateIdpSpconnectionResponse, &state)
