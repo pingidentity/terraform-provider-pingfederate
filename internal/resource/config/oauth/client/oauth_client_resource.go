@@ -66,6 +66,8 @@ var (
 		"expiry_time": basetypes.StringType{},
 	}
 
+	secondarySecretsEmptyObj, _ = types.SetValue(types.ObjectType{AttrTypes: secondarySecretsAttrType}, []attr.Value{})
+
 	clientAuthAttrType = map[string]attr.Type{
 		"type":                                  basetypes.StringType{},
 		"secret":                                basetypes.StringType{},
@@ -565,7 +567,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						Description: "The list of secondary client secrets that are temporarily retained.",
 						Computed:    true,
 						Optional:    true,
-						Default:     setdefault.StaticValue(types.SetNull(types.ObjectType{AttrTypes: secondarySecretsAttrType})),
+						Default:     setdefault.StaticValue(secondarySecretsEmptyObj),
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"secret": schema.StringAttribute{
@@ -944,8 +946,11 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 			if clientAuthDefined {
 				clientAuthType := clientAuthAttributes["type"].(types.String).ValueString()
 				clientAuthSecret := clientAuthAttributes["secret"].(types.String).ValueString()
-				if clientAuthType != "NONE" && clientAuthSecret == "" {
-					resp.Diagnostics.AddError("client_auth must be defined when \"CLIENT_CREDENTIALS\" is included in grant_types.", "")
+				if clientAuthType != "NONE" {
+					resp.Diagnostics.AddError("client_auth.type must be set to \"SECRET\" when \"CLIENT_CREDENTIALS\" is included in grant_types.", "")
+				}
+				if clientAuthSecret == "" {
+					resp.Diagnostics.AddError("client_auth.secret cannot be empty when \"CLIENT_CREDENTIALS\" is included in grant_types.", "")
 				}
 			} else if !clientAuthDefined {
 				resp.Diagnostics.AddError("client_auth must be defined when \"CLIENT_CREDENTIALS\" is included in grant_types.", "")
@@ -1093,11 +1098,10 @@ func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state 
 				diags.Append(respDiags...)
 				secondarySecretsSetSlice = append(secondarySecretsSetSlice, secondarySecretsAttrVal)
 			}
-			secondarySecretsObjToState, respDiags = types.SetValue(types.ObjectType{AttrTypes: secondarySecretsAttrType}, secondarySecretsSetSlice)
-			diags.Append(respDiags...)
-		} else {
-			secondarySecretsObjToState = types.SetNull(types.ObjectType{AttrTypes: secondarySecretsAttrType})
 		}
+		secondarySecretsObjToState, respDiags = types.SetValue(types.ObjectType{AttrTypes: secondarySecretsAttrType}, secondarySecretsSetSlice)
+		diags.Append(respDiags...)
+
 		clientAuthAttrValue := map[string]attr.Value{}
 		clientAuthAttrValue["type"] = types.StringPointerValue(r.ClientAuth.Type)
 		clientAuthAttrValue["secret"] = secretToState
