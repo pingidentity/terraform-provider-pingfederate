@@ -6,6 +6,7 @@
 #### Data Sources
 * **New Data Source:** `session_application_session_policy` ([#94](https://github.com/pingidentity/terraform-provider-pingfederate/pull/94))
 * **New Data Source:** `protocol_metadata_lifetime_settings` ([#100](https://github.com/pingidentity/terraform-provider-pingfederate/pull/100))
+* **New Data Source:** `redirect_validation` ([#116](https://github.com/pingidentity/terraform-provider-pingfederate/pull/116))
 * **New Data Source:** `server_settings_general_settings` ([#101](https://github.com/pingidentity/terraform-provider-pingfederate/pull/101))
 * **New Data Source:** `server_settings_log_settings` ([#104](https://github.com/pingidentity/terraform-provider-pingfederate/pull/104))
 * **New Data Source:** `server_settings_general_settings` ([#105](https://github.com/pingidentity/terraform-provider-pingfederate/pull/105))
