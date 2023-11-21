@@ -93,6 +93,10 @@ func testAccSessionAuthenticationSessionPoliciesGlobal(resourceName string, reso
 resource "pingfederate_session_authentication_session_policies_global" "%s" {
   enable_sessions = %t
   %s
+}
+
+data "pingfederate_session_authentication_session_policies_global" "%[1]s" {
+  depends_on = [pingfederate_session_authentication_session_policies_global.%[1]s]
 }`, resourceName,
 		resourceModel.enableSessions,
 		optionalHcl,
