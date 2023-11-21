@@ -142,11 +142,12 @@ var (
 			"name_format": types.StringType,
 		},
 	}
-	attributeContractFullfilmentAttrType = types.MapType{
-		ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
-			"source": types.ObjectType{AttrTypes: sourcetypeidkey.AttrType()},
-			"value":  types.StringType,
-		}},
+	attributeContractFulfillmentElemAttrType = types.ObjectType{AttrTypes: map[string]attr.Type{
+		"source": types.ObjectType{AttrTypes: sourcetypeidkey.AttrType()},
+		"value":  types.StringType,
+	}}
+	attributeContractFulfillmentAttrType = types.MapType{
+		ElemType: attributeContractFulfillmentElemAttrType,
 	}
 	issuanceCriteriaAttrType = types.ObjectType{
 		AttrTypes: issuancecriteria.AttrType(),
@@ -223,7 +224,7 @@ var (
 				"authn_ctx_class_ref":   types.StringType,
 				"attribute_mapping": types.ObjectType{AttrTypes: map[string]attr.Type{
 					"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
-					"attribute_contract_fulfillment": attributeContractFullfilmentAttrType,
+					"attribute_contract_fulfillment": attributeContractFulfillmentAttrType,
 					"issuance_criteria":              issuanceCriteriaAttrType,
 					"inherited":                      types.BoolType,
 				}},
@@ -237,7 +238,7 @@ var (
 			}},
 			"abort_sso_transaction_as_fail_safe": types.BoolType,
 			"attribute_sources":                  types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
-			"attribute_contract_fulfillment":     attributeContractFullfilmentAttrType,
+			"attribute_contract_fulfillment":     attributeContractFulfillmentAttrType,
 			"issuance_criteria":                  issuanceCriteriaAttrType,
 		}}},
 		"authentication_policy_contract_assertion_mappings": types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
@@ -246,7 +247,7 @@ var (
 			"restricted_virtual_entity_ids":      types.ListType{ElemType: types.StringType},
 			"abort_sso_transaction_as_fail_safe": types.BoolType,
 			"attribute_sources":                  types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
-			"attribute_contract_fulfillment":     attributeContractFullfilmentAttrType,
+			"attribute_contract_fulfillment":     attributeContractFulfillmentAttrType,
 			"issuance_criteria":                  issuanceCriteriaAttrType,
 		}}},
 		"assertion_lifetime": types.ObjectType{AttrTypes: map[string]attr.Type{
@@ -255,18 +256,19 @@ var (
 		}},
 	}
 
+	policyAttrTypes = map[string]attr.Type{
+		"sign_response":                  types.BoolType,
+		"sign_assertion":                 types.BoolType,
+		"encrypt_assertion":              types.BoolType,
+		"require_signed_attribute_query": types.BoolType,
+		"require_encrypted_name_id":      types.BoolType,
+	}
 	attributeQueryAttrTypes = map[string]attr.Type{
 		"attributes":                     types.ListType{ElemType: types.StringType},
-		"attribute_contract_fulfillment": attributeContractFullfilmentAttrType,
+		"attribute_contract_fulfillment": attributeContractFulfillmentAttrType,
 		"issuance_criteria":              issuanceCriteriaAttrType,
-		"policy": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"sign_response":                  types.BoolType,
-			"sign_assertion":                 types.BoolType,
-			"encrypt_assertion":              types.BoolType,
-			"require_signed_attribute_query": types.BoolType,
-			"require_encrypted_name_id":      types.BoolType,
-		}},
-		"attribute_sources": types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
+		"policy":                         types.ObjectType{AttrTypes: policyAttrTypes},
+		"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
 	}
 
 	spWsTrustAttributeAttrType = types.ObjectType{
@@ -291,7 +293,7 @@ var (
 			"idp_token_processor_ref":        resourceLinkObjectType,
 			"restricted_virtual_entity_ids":  types.ListType{ElemType: types.StringType},
 			"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
-			"attribute_contract_fulfillment": attributeContractFullfilmentAttrType,
+			"attribute_contract_fulfillment": attributeContractFulfillmentAttrType,
 			"issuance_criteria":              issuanceCriteriaAttrType,
 		}}},
 		"abort_if_not_fulfilled_from_request": types.BoolType,
@@ -1967,8 +1969,26 @@ func readIdpSpconnectionResponse(ctx context.Context, r *client.SpConnection, st
 	state.SpBrowserSso, respDiags = types.ObjectValueFrom(ctx, spBrowserSSOAttrTypes, r.SpBrowserSso)
 	diags.Append(respDiags...)
 
-	state.AttributeQuery, respDiags = types.ObjectValueFrom(ctx, attributeQueryAttrTypes, r.AttributeQuery)
-	diags.Append(respDiags...)
+	if r.AttributeQuery != nil {
+		attributeQueryValues := map[string]attr.Value{}
+		attributeQueryValues["attributes"], respDiags = types.ListValueFrom(ctx, types.StringType, r.AttributeQuery.Attributes)
+		diags.Append(respDiags...)
+
+		attributeQueryValues["attribute_contract_fulfillment"], respDiags = types.MapValueFrom(ctx, attributeContractFulfillmentElemAttrType, r.AttributeQuery.AttributeContractFulfillment)
+		diags.Append(respDiags...)
+
+		attributeQueryValues["issuance_criteria"], respDiags = issuancecriteria.ToState(ctx, r.AttributeQuery.IssuanceCriteria)
+		diags.Append(respDiags...)
+
+		attributeQueryValues["policy"], respDiags = types.ObjectValueFrom(ctx, policyAttrTypes, r.AttributeQuery.Policy)
+		diags.Append(respDiags...)
+
+		attributeQueryValues["attribute_sources"], respDiags = attributesources.ToState(ctx, r.AttributeQuery.AttributeSources)
+		diags.Append(respDiags...)
+
+		state.AttributeQuery, respDiags = types.ObjectValueFrom(ctx, attributeQueryAttrTypes, r.AttributeQuery)
+		diags.Append(respDiags...)
+	}
 
 	state.WsTrust, respDiags = types.ObjectValueFrom(ctx, wsTrustAttrTypes, r.WsTrust)
 	diags.Append(respDiags...)
