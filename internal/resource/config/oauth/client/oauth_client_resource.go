@@ -19,12 +19,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -323,6 +323,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Description: "The grant types that the OAuth AS can reuse rather than creating a new grant for each request. This value will override the Reuse Existing Persistent Access Grants for Grant Types on the Authorization Server Settings. Only 'IMPLICIT' or 'AUTHORIZATION_CODE' or 'RESOURCE_OWNER_CREDENTIALS' are valid grant types.",
 				Computed:    true,
 				Optional:    true,
+				Default:     setdefault.StaticValue(emptyStringSet),
 				ElementType: types.StringType,
 				Validators: []validator.Set{
 					setvalidator.SizeAtLeast(1),
@@ -338,9 +339,6 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 							"TOKEN_EXCHANGE",
 						),
 					),
-				},
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"allow_authentication_api_init": schema.BoolAttribute{
@@ -908,28 +906,19 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
 
 	// Persistent Grant Expiration Validation
-	if internaltypes.IsDefined(model.PersistentGrantExpirationType) && model.PersistentGrantExpirationType.ValueString() != "OVERRIDE_SERVER_DEFAULT" {
-		if !internaltypes.IsDefined(model.PersistentGrantExpirationTime) || !internaltypes.IsDefined(model.PersistentGrantExpirationTimeUnit) {
-			resp.Diagnostics.AddError("persistent_grant_expiration_type must be configured to \"OVERRIDE_SERVER_DEFAULT\" to modify the other persistent_grant_expiration values.", "")
-		}
-	}
 	if (internaltypes.IsDefined(model.PersistentGrantExpirationTime) || internaltypes.IsDefined(model.PersistentGrantExpirationTimeUnit)) && model.PersistentGrantExpirationType.ValueString() != "OVERRIDE_SERVER_DEFAULT" {
 		resp.Diagnostics.AddError("persistent_grant_expiration_type must be configured to \"OVERRIDE_SERVER_DEFAULT\" to modify the other persistent_grant_expiration values.", "")
 	}
 
 	// Refresh Token Rolling Validation
-	if model.RefreshTokenRollingIntervalType.ValueString() == "OVERRIDE_SERVER_DEFAULT" && !internaltypes.IsDefined(model.RefreshTokenRollingInterval) {
+	if (model.RefreshTokenRollingIntervalType.ValueString() == "OVERRIDE_SERVER_DEFAULT") != internaltypes.IsDefined(model.RefreshTokenRollingInterval) {
 		resp.Diagnostics.AddError("refresh_token_rolling_interval must be configured when refresh_token_rolling_interval_type is \"OVERRIDE_SERVER_DEFAULT\".", "")
-	}
-	if internaltypes.IsDefined(model.RefreshTokenRollingInterval) && model.RefreshTokenRollingIntervalType.ValueString() != "OVERRIDE_SERVER_DEFAULT" {
-		resp.Diagnostics.AddError("refresh_token_rolling_interval_type must be configured to \"OVERRIDE_SERVER_DEFAULT\" to modify the refresh_token_rolling value.", "")
 	}
 
 	//  Client Auth Defined
-	var clientAuthDefined bool
 	var clientAuthAttributes map[string]attr.Value
-	if internaltypes.IsDefined(model.ClientAuth) {
-		clientAuthDefined = true
+	clientAuthDefined := internaltypes.IsDefined(model.ClientAuth)
+	if clientAuthDefined {
 		clientAuthAttributes = model.ClientAuth.Attributes()
 		if internaltypes.IsDefined(clientAuthAttributes["type"]) {
 			clientAuthType := clientAuthAttributes["type"].(types.String).ValueString()
@@ -944,8 +933,6 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 				}
 			}
 		}
-	} else {
-		clientAuthDefined = false
 	}
 
 	// Grant Types Validation
@@ -978,10 +965,7 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 		internaltypes.IsDefined(model.CibaUserCodeSupported)) {
 		resp.Diagnostics.AddError("ciba attributes can only be configured when \"CIBA\" is included in grant_types.", "")
 	}
-	if hasCibaGrantType &&
-		(internaltypes.IsDefined(model.CibaDeliveryMode) &&
-			model.CibaDeliveryMode.ValueString() == "PING" &&
-			!internaltypes.IsDefined(model.CibaNotificationEndpoint)) {
+	if hasCibaGrantType && (model.CibaDeliveryMode.ValueString() == "PING" && !internaltypes.IsDefined(model.CibaNotificationEndpoint)) {
 		resp.Diagnostics.AddError("ciba_notification_endpoint must be defined when ciba_delivery_mode is \"PING\".", "")
 	}
 
@@ -1030,7 +1014,7 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 	// JWKS Settings Validation
 	if !internaltypes.IsDefined(model.JwksSettings) {
 		if internaltypes.IsDefined(model.TokenIntrospectionEncryptionAlgorithm) {
-			resp.Diagnostics.AddError("token_introspection_encryption_algorithm must not be configured jwks_settings is configured.", "")
+			resp.Diagnostics.AddError("token_introspection_encryption_algorithm must not be configured when jwks_settings is not configured.", "")
 		}
 		if model.RequireSignedRequests.ValueBool() {
 			resp.Diagnostics.AddError("require_signed_requests must be false when jwks_settings is not configured.", "")
@@ -1059,7 +1043,7 @@ func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state 
 	state.RefreshTokenRollingInterval = types.Int64PointerValue(r.RefreshTokenRollingInterval)
 	state.PersistentGrantExpirationType = types.StringPointerValue(r.PersistentGrantExpirationType)
 	state.PersistentGrantExpirationTime = types.Int64PointerValue(r.PersistentGrantExpirationTime)
-	if types.StringPointerValue(r.PersistentGrantExpirationTimeUnit).ValueString() == "" {
+	if r.GetPersistentGrantExpirationTimeUnit() == "" {
 		state.PersistentGrantExpirationTimeUnit = types.StringValue("DAYS")
 	} else {
 		state.PersistentGrantExpirationTimeUnit = types.StringPointerValue(r.PersistentGrantExpirationTimeUnit)
@@ -1097,7 +1081,7 @@ func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state 
 		if secretVal != nil {
 			secretToState = types.StringValue(secretVal.(types.String).ValueString())
 		} else {
-			secretToState = types.StringValue("")
+			secretToState = types.StringNull()
 		}
 
 		var secondarySecretsSetSlice []attr.Value
@@ -1190,6 +1174,49 @@ func grantTypes(grantTypesSet types.Set) []string {
 }
 
 func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client, plan oauthClientResourceModel) error {
+	addRequest.Enabled = plan.Enabled.ValueBoolPointer()
+	addRequest.Description = plan.Description.ValueStringPointer()
+	addRequest.LogoUrl = plan.LogoUrl.ValueStringPointer()
+	addRequest.RestrictToDefaultAccessTokenManager = plan.RestrictToDefaultAccessTokenManager.ValueBoolPointer()
+	addRequest.ValidateUsingAllEligibleAtms = plan.ValidateUsingAllEligibleAtms.ValueBoolPointer()
+	addRequest.RefreshRolling = plan.RefreshRolling.ValueStringPointer()
+	addRequest.RefreshTokenRollingIntervalType = plan.RefreshTokenRollingIntervalType.ValueStringPointer()
+	addRequest.RefreshTokenRollingInterval = plan.RefreshTokenRollingInterval.ValueInt64Pointer()
+	addRequest.PersistentGrantExpirationType = plan.PersistentGrantExpirationType.ValueStringPointer()
+	addRequest.PersistentGrantExpirationTime = plan.PersistentGrantExpirationTime.ValueInt64Pointer()
+	addRequest.PersistentGrantExpirationTimeUnit = plan.PersistentGrantExpirationTimeUnit.ValueStringPointer()
+	addRequest.PersistentGrantIdleTimeoutType = plan.PersistentGrantIdleTimeoutType.ValueStringPointer()
+	addRequest.PersistentGrantIdleTimeout = plan.PersistentGrantIdleTimeout.ValueInt64Pointer()
+	addRequest.PersistentGrantIdleTimeoutTimeUnit = plan.PersistentGrantIdleTimeoutTimeUnit.ValueStringPointer()
+	addRequest.PersistentGrantReuseType = plan.PersistentGrantReuseType.ValueStringPointer()
+	addRequest.AllowAuthenticationApiInit = plan.AllowAuthenticationApiInit.ValueBoolPointer()
+	addRequest.BypassApprovalPage = plan.BypassApprovalPage.ValueBoolPointer()
+	addRequest.RequirePushedAuthorizationRequests = plan.RequirePushedAuthorizationRequests.ValueBoolPointer()
+	addRequest.RequireJwtSecuredAuthorizationResponseMode = plan.RequireJwtSecuredAuthorizationResponseMode.ValueBoolPointer()
+	addRequest.RequireSignedRequests = plan.RequireSignedRequests.ValueBoolPointer()
+	addRequest.RequestObjectSigningAlgorithm = plan.RequestObjectSigningAlgorithm.ValueStringPointer()
+	addRequest.DeviceFlowSettingType = plan.DeviceFlowSettingType.ValueStringPointer()
+	addRequest.UserAuthorizationUrlOverride = plan.UserAuthorizationUrlOverride.ValueStringPointer()
+	addRequest.PendingAuthorizationTimeoutOverride = plan.PendingAuthorizationTimeoutOverride.ValueInt64Pointer()
+	addRequest.DevicePollingIntervalOverride = plan.DevicePollingIntervalOverride.ValueInt64Pointer()
+	addRequest.BypassActivationCodeConfirmationOverride = plan.BypassActivationCodeConfirmationOverride.ValueBoolPointer()
+	addRequest.RequireProofKeyForCodeExchange = plan.RequireProofKeyForCodeExchange.ValueBoolPointer()
+	addRequest.CibaDeliveryMode = plan.CibaDeliveryMode.ValueStringPointer()
+	addRequest.CibaNotificationEndpoint = plan.CibaNotificationEndpoint.ValueStringPointer()
+	addRequest.CibaPollingInterval = plan.CibaPollingInterval.ValueInt64Pointer()
+	addRequest.CibaRequireSignedRequests = plan.CibaRequireSignedRequests.ValueBoolPointer()
+	addRequest.CibaRequestObjectSigningAlgorithm = plan.CibaRequestObjectSigningAlgorithm.ValueStringPointer()
+	addRequest.CibaUserCodeSupported = plan.CibaUserCodeSupported.ValueBoolPointer()
+	addRequest.RefreshTokenRollingGracePeriodType = plan.RefreshTokenRollingGracePeriodType.ValueStringPointer()
+	addRequest.RefreshTokenRollingGracePeriod = plan.RefreshTokenRollingGracePeriod.ValueInt64Pointer()
+	addRequest.ClientSecretRetentionPeriodType = plan.ClientSecretRetentionPeriodType.ValueStringPointer()
+	addRequest.ClientSecretRetentionPeriod = plan.ClientSecretRetentionPeriod.ValueInt64Pointer()
+	addRequest.TokenIntrospectionSigningAlgorithm = plan.TokenIntrospectionSigningAlgorithm.ValueStringPointer()
+	addRequest.TokenIntrospectionEncryptionAlgorithm = plan.TokenIntrospectionEncryptionAlgorithm.ValueStringPointer()
+	addRequest.TokenIntrospectionContentEncryptionAlgorithm = plan.TokenIntrospectionContentEncryptionAlgorithm.ValueStringPointer()
+	addRequest.JwtSecuredAuthorizationResponseModeSigningAlgorithm = plan.JwtSecuredAuthorizationResponseModeSigningAlgorithm.ValueStringPointer()
+	addRequest.JwtSecuredAuthorizationResponseModeEncryptionAlgorithm = plan.JwtSecuredAuthorizationResponseModeEncryptionAlgorithm.ValueStringPointer()
+	addRequest.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm = plan.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm.ValueStringPointer()
 
 	if internaltypes.IsDefined(plan.ExclusiveScopes) {
 		var slice []string
@@ -1197,22 +1224,10 @@ func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client
 		addRequest.ExclusiveScopes = slice
 	}
 
-	if internaltypes.IsDefined(plan.Enabled) {
-		addRequest.Enabled = plan.Enabled.ValueBoolPointer()
-	}
-
 	if internaltypes.IsDefined(plan.RedirectUris) {
 		var slice []string
 		plan.RedirectUris.ElementsAs(ctx, &slice, false)
 		addRequest.RedirectUris = slice
-	}
-
-	if internaltypes.IsDefined(plan.Description) {
-		addRequest.Description = plan.Description.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.LogoUrl) {
-		addRequest.LogoUrl = plan.LogoUrl.ValueStringPointer()
 	}
 
 	if internaltypes.IsDefined(plan.DefaultAccessTokenManagerRef) {
@@ -1223,66 +1238,10 @@ func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client
 		}
 	}
 
-	if internaltypes.IsDefined(plan.RestrictToDefaultAccessTokenManager) {
-		addRequest.RestrictToDefaultAccessTokenManager = plan.RestrictToDefaultAccessTokenManager.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.ValidateUsingAllEligibleAtms) {
-		addRequest.ValidateUsingAllEligibleAtms = plan.ValidateUsingAllEligibleAtms.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.RefreshRolling) {
-		addRequest.RefreshRolling = plan.RefreshRolling.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.RefreshTokenRollingIntervalType) {
-		addRequest.RefreshTokenRollingIntervalType = plan.RefreshTokenRollingIntervalType.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.RefreshTokenRollingInterval) {
-		addRequest.RefreshTokenRollingInterval = plan.RefreshTokenRollingInterval.ValueInt64Pointer()
-	}
-
-	if internaltypes.IsDefined(plan.PersistentGrantExpirationType) {
-		addRequest.PersistentGrantExpirationType = plan.PersistentGrantExpirationType.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.PersistentGrantExpirationTime) {
-		addRequest.PersistentGrantExpirationTime = plan.PersistentGrantExpirationTime.ValueInt64Pointer()
-	}
-
-	if internaltypes.IsDefined(plan.PersistentGrantExpirationTimeUnit) {
-		addRequest.PersistentGrantExpirationTimeUnit = plan.PersistentGrantExpirationTimeUnit.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.PersistentGrantIdleTimeoutType) {
-		addRequest.PersistentGrantIdleTimeoutType = plan.PersistentGrantIdleTimeoutType.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.PersistentGrantIdleTimeout) {
-		addRequest.PersistentGrantIdleTimeout = plan.PersistentGrantIdleTimeout.ValueInt64Pointer()
-	}
-
-	if internaltypes.IsDefined(plan.PersistentGrantIdleTimeoutTimeUnit) {
-		addRequest.PersistentGrantIdleTimeoutTimeUnit = plan.PersistentGrantIdleTimeoutTimeUnit.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.PersistentGrantReuseType) {
-		addRequest.PersistentGrantReuseType = plan.PersistentGrantReuseType.ValueStringPointer()
-	}
-
 	if internaltypes.IsDefined(plan.PersistentGrantReuseGrantTypes) {
 		var slice []string
 		plan.PersistentGrantReuseGrantTypes.ElementsAs(ctx, &slice, false)
 		addRequest.PersistentGrantReuseGrantTypes = slice
-	}
-
-	if internaltypes.IsDefined(plan.AllowAuthenticationApiInit) {
-		addRequest.AllowAuthenticationApiInit = plan.AllowAuthenticationApiInit.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.BypassApprovalPage) {
-		addRequest.BypassApprovalPage = plan.BypassApprovalPage.ValueBoolPointer()
 	}
 
 	if internaltypes.IsDefined(plan.RestrictScopes) {
@@ -1304,22 +1263,6 @@ func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client
 		var slice []string
 		plan.RestrictedResponseTypes.ElementsAs(ctx, &slice, false)
 		addRequest.RestrictedResponseTypes = slice
-	}
-
-	if internaltypes.IsDefined(plan.RequirePushedAuthorizationRequests) {
-		addRequest.RequirePushedAuthorizationRequests = plan.RequirePushedAuthorizationRequests.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.RequireJwtSecuredAuthorizationResponseMode) {
-		addRequest.RequireJwtSecuredAuthorizationResponseMode = plan.RequireJwtSecuredAuthorizationResponseMode.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.RequireSignedRequests) {
-		addRequest.RequireSignedRequests = plan.RequireSignedRequests.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.RequestObjectSigningAlgorithm) {
-		addRequest.RequestObjectSigningAlgorithm = plan.RequestObjectSigningAlgorithm.ValueStringPointer()
 	}
 
 	if internaltypes.IsDefined(plan.OidcPolicy) {
@@ -1355,54 +1298,6 @@ func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client
 		}
 	}
 
-	if internaltypes.IsDefined(plan.DeviceFlowSettingType) {
-		addRequest.DeviceFlowSettingType = plan.DeviceFlowSettingType.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.UserAuthorizationUrlOverride) {
-		addRequest.UserAuthorizationUrlOverride = plan.UserAuthorizationUrlOverride.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.PendingAuthorizationTimeoutOverride) {
-		addRequest.PendingAuthorizationTimeoutOverride = plan.PendingAuthorizationTimeoutOverride.ValueInt64Pointer()
-	}
-
-	if internaltypes.IsDefined(plan.DevicePollingIntervalOverride) {
-		addRequest.DevicePollingIntervalOverride = plan.DevicePollingIntervalOverride.ValueInt64Pointer()
-	}
-
-	if internaltypes.IsDefined(plan.BypassActivationCodeConfirmationOverride) {
-		addRequest.BypassActivationCodeConfirmationOverride = plan.BypassActivationCodeConfirmationOverride.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.RequireProofKeyForCodeExchange) {
-		addRequest.RequireProofKeyForCodeExchange = plan.RequireProofKeyForCodeExchange.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.CibaDeliveryMode) {
-		addRequest.CibaDeliveryMode = plan.CibaDeliveryMode.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.CibaNotificationEndpoint) {
-		addRequest.CibaNotificationEndpoint = plan.CibaNotificationEndpoint.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.CibaPollingInterval) {
-		addRequest.CibaPollingInterval = plan.CibaPollingInterval.ValueInt64Pointer()
-	}
-
-	if internaltypes.IsDefined(plan.CibaRequireSignedRequests) {
-		addRequest.CibaRequireSignedRequests = plan.CibaRequireSignedRequests.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.CibaRequestObjectSigningAlgorithm) {
-		addRequest.CibaRequestObjectSigningAlgorithm = plan.CibaRequestObjectSigningAlgorithm.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.CibaUserCodeSupported) {
-		addRequest.CibaUserCodeSupported = plan.CibaUserCodeSupported.ValueBoolPointer()
-	}
-
 	if internaltypes.IsDefined(plan.RequestPolicyRef) {
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.RequestPolicyRef, false)), addRequest.RequestPolicyRef)
 		if err != nil {
@@ -1416,46 +1311,6 @@ func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client
 		if err != nil {
 			return err
 		}
-	}
-
-	if internaltypes.IsDefined(plan.RefreshTokenRollingGracePeriodType) {
-		addRequest.RefreshTokenRollingGracePeriodType = plan.RefreshTokenRollingGracePeriodType.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.RefreshTokenRollingGracePeriod) {
-		addRequest.RefreshTokenRollingGracePeriod = plan.RefreshTokenRollingGracePeriod.ValueInt64Pointer()
-	}
-
-	if internaltypes.IsDefined(plan.ClientSecretRetentionPeriodType) {
-		addRequest.ClientSecretRetentionPeriodType = plan.ClientSecretRetentionPeriodType.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.ClientSecretRetentionPeriod) {
-		addRequest.ClientSecretRetentionPeriod = plan.ClientSecretRetentionPeriod.ValueInt64Pointer()
-	}
-
-	if internaltypes.IsDefined(plan.TokenIntrospectionSigningAlgorithm) {
-		addRequest.TokenIntrospectionSigningAlgorithm = plan.TokenIntrospectionSigningAlgorithm.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.TokenIntrospectionEncryptionAlgorithm) {
-		addRequest.TokenIntrospectionEncryptionAlgorithm = plan.TokenIntrospectionEncryptionAlgorithm.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.TokenIntrospectionContentEncryptionAlgorithm) {
-		addRequest.TokenIntrospectionContentEncryptionAlgorithm = plan.TokenIntrospectionContentEncryptionAlgorithm.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.JwtSecuredAuthorizationResponseModeSigningAlgorithm) {
-		addRequest.JwtSecuredAuthorizationResponseModeSigningAlgorithm = plan.JwtSecuredAuthorizationResponseModeSigningAlgorithm.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.JwtSecuredAuthorizationResponseModeEncryptionAlgorithm) {
-		addRequest.JwtSecuredAuthorizationResponseModeEncryptionAlgorithm = plan.JwtSecuredAuthorizationResponseModeEncryptionAlgorithm.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm) {
-		addRequest.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm = plan.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm.ValueStringPointer()
 	}
 
 	return nil
@@ -1474,7 +1329,7 @@ func (r *oauthClientResource) Create(ctx context.Context, req resource.CreateReq
 	createOauthClient := client.NewClient(plan.ClientId.ValueString(), grantTypes(plan.GrantTypes), plan.Name.ValueString())
 	err := addOptionalOauthClientFields(ctx, createOauthClient, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OauthClient", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Client", err.Error())
 		return
 	}
 
@@ -1482,7 +1337,7 @@ func (r *oauthClientResource) Create(ctx context.Context, req resource.CreateReq
 	apiCreateOauthClient = apiCreateOauthClient.Body(*createOauthClient)
 	oauthClientResponse, httpResp, err := r.apiClient.OauthClientsAPI.CreateOauthClientExecute(apiCreateOauthClient)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OauthClient", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Client", err, httpResp)
 		return
 	}
 
@@ -1507,15 +1362,16 @@ func (r *oauthClientResource) Read(ctx context.Context, req resource.ReadRequest
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the OauthClient", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Client", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  OauthClient", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  OAuth Client", err, httpResp)
 		}
 	}
 
 	// Read the response into the state
-	readOauthClientResponse(ctx, apiReadOauthClient, &state, &state)
+	diags = readOauthClientResponse(ctx, apiReadOauthClient, &state, &state)
+	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -1536,14 +1392,19 @@ func (r *oauthClientResource) Update(ctx context.Context, req resource.UpdateReq
 	createUpdateRequest := client.NewClient(plan.ClientId.ValueString(), grantTypes(plan.GrantTypes), plan.Name.ValueString())
 	err := addOptionalOauthClientFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OauthClient", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Client", err.Error())
 		return
+	}
+
+	requestJson, err := createUpdateRequest.MarshalJSON()
+	if err == nil {
+		tflog.Debug(ctx, "Add request: "+string(requestJson))
 	}
 
 	updateOauthClient = updateOauthClient.Body(*createUpdateRequest)
 	updateOauthClientResponse, httpResp, err := r.apiClient.OauthClientsAPI.UpdateOauthClientExecute(updateOauthClient)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OauthClient", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OAuth Client", err, httpResp)
 		return
 	}
 
@@ -1557,7 +1418,6 @@ func (r *oauthClientResource) Update(ctx context.Context, req resource.UpdateReq
 	resp.Diagnostics.Append(diags...)
 }
 
-// This config object is edit-only, so Terraform can't delete it.
 func (r *oauthClientResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
 	var state oauthClientResourceModel

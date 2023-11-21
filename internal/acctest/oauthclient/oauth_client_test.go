@@ -128,12 +128,12 @@ func TestAccOauthClient(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOauthClient(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedOauthClientAttributes(initialResourceModel, false),
+				Check:  testAccCheckExpectedOauthClientAttributes(initialResourceModel),
 			},
 			{
 				// Test updating some fields
 				Config: testAccOauthClient(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedOauthClientAttributes(updatedResourceModel, true),
+				Check:  testAccCheckExpectedOauthClientAttributes(updatedResourceModel),
 			},
 			{
 				// Test importing the resource
@@ -147,7 +147,7 @@ func TestAccOauthClient(t *testing.T) {
 			{
 				// Back to minimal model
 				Config: testAccOauthClient(resourceName, minimalResourceModel),
-				Check:  testAccCheckExpectedOauthClientAttributes(minimalResourceModel, false),
+				Check:  testAccCheckExpectedOauthClientAttributes(minimalResourceModel),
 			},
 		},
 	})
@@ -274,7 +274,7 @@ resource "pingfederate_oauth_client" "%s" {
 }
 
 // Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedOauthClientAttributes(config oauthClientResourceModel, testOptionalAttributes bool) resource.TestCheckFunc {
+func testAccCheckExpectedOauthClientAttributes(config oauthClientResourceModel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		resourceType := "OauthClient"
 		testClient := acctest.TestClient()
@@ -303,7 +303,7 @@ func testAccCheckExpectedOauthClientAttributes(config oauthClientResourceModel, 
 			}
 		}
 
-		if testOptionalAttributes {
+		if config.includeOptionalAttributes {
 			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "enabled", *config.enabled, *response.Enabled)
 			if err != nil {
 				return err

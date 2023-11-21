@@ -654,7 +654,6 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 	resp.Diagnostics.Append(diags...)
 }
 
-// This config object is edit-only, so Terraform can't delete it.
 func (r *oauthAccessTokenManagerResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var state oauthAccessTokenManagerResourceModel
 	diags := req.State.Get(ctx, &state)
