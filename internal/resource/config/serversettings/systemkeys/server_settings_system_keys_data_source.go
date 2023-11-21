@@ -42,7 +42,7 @@ type serverSettingsSystemKeysDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *serverSettingsSystemKeysDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Describes the settings for server system keys.",
+		Description: "Describes the server system keys.",
 		Attributes: map[string]schema.Attribute{
 			"current": schema.SingleNestedAttribute{
 				Description: "Current SystemKeys Secrets that are used in cryptographic operations to generate and consume internal tokens.",
@@ -135,7 +135,7 @@ func (r *serverSettingsSystemKeysDataSource) Configure(_ context.Context, req da
 
 func readServerSettingsSystemKeysDataSource(ctx context.Context, r *client.SystemKeys, state *serverSettingsSystemKeysDataSourceModel, existingId *string) diag.Diagnostics {
 	var diags diag.Diagnostics
-	state.Id = id.GenerateUUIDToState(existingId)
+	state.Id = types.StringValue("server_settings_system_keys_id")
 	currentAttrs := r.GetCurrent()
 	currentAttrVals := map[string]attr.Value{
 		"creation_date":      types.StringValue(currentAttrs.GetCreationDate().Format(time.RFC3339Nano)),
