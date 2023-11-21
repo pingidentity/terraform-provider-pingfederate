@@ -3,12 +3,12 @@
 page_title: "pingfederate_server_settings_system_keys Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes the settings for server system keys.
+  Describes the server system keys.
 ---
 
 # pingfederate_server_settings_system_keys (Data Source)
 
-Describes the settings for server system keys.
+Describes the server system keys.
 
 ## Example Usage
 
