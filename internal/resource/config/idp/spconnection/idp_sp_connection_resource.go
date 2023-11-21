@@ -2011,10 +2011,10 @@ func (r *idpSpConnectionResource) Read(ctx context.Context, req resource.ReadReq
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  IdP SP Connection", err, httpResp)
 		}
+		return
 	}
 
 	// Read the response into the state
-	//TODO what if apiReadIdpSpconnection is nil here
 	readIdpSpconnectionResponse(ctx, apiReadIdpSpconnection, &state)
 
 	// Set refreshed state
