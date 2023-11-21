@@ -231,7 +231,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Optional:    true,
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
-					"attribute_sources":              attributesources.ToSchema(),
+					"attribute_sources":              attributesources.ToSchema(0),
 					"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(false, true),
 					"issuance_criteria":              issuancecriteria.ToSchema(),
 					"inherited": schema.BoolAttribute{

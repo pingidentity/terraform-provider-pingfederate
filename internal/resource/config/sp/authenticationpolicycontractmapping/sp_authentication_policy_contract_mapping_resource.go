@@ -51,7 +51,7 @@ func (r *spAuthenticationPolicyContractMappingResource) Schema(ctx context.Conte
 	schema := schema.Schema{
 		Description: "The Authentication Policy Contract (APC) to SP Adapter Mapping.",
 		Attributes: map[string]schema.Attribute{
-			"attribute_sources":              attributesources.ToSchema(),
+			"attribute_sources":              attributesources.ToSchema(0),
 			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
 			"issuance_criteria":              issuancecriteria.ToSchema(),
 			"source_id": schema.StringAttribute{

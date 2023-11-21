@@ -739,13 +739,14 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			"attribute_query": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"attribute_contract_fulfillment": attributeContractFulfillmentSchema,
-					"attribute_sources":              attributesources.ToSchema(),
+					"attribute_sources":              attributesources.ToSchema(1),
 					"attributes": schema.ListAttribute{
 						ElementType: types.StringType,
 						Required:    true,
 						Description: "The list of attributes that may be returned to the SP in the response to an attribute request.",
 						Validators: []validator.List{
 							listvalidator.UniqueValues(),
+							listvalidator.SizeAtLeast(1),
 						},
 					},
 					"issuance_criteria": issuancecriteria.ToSchema(),
@@ -838,7 +839,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"certs":                   certsSchema,
 					"decryption_key_pair_ref": resourcelink.ToCompleteSchema(),
-					"inbound_back_channel_auth": schema.SingleNestedAttribute{
+					"inbound_back_channel_auth": schema.SingleNestedAttribute{ //TODO required? conditionally required?
 						Attributes: map[string]schema.Attribute{
 							"certs": certsSchema,
 							"digital_signature": schema.BoolAttribute{
@@ -1339,7 +1340,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										"attribute_mapping": schema.SingleNestedAttribute{
 											Attributes: map[string]schema.Attribute{
 												"attribute_contract_fulfillment": attributeContractFulfillmentSchema,
-												"attribute_sources":              attributesources.ToSchema(),
+												"attribute_sources":              attributesources.ToSchema(0),
 												"inherited": schema.BoolAttribute{
 													Optional:    true,
 													Description: "Whether this attribute mapping is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
@@ -1368,7 +1369,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Optional: true,
 								},
 								"attribute_contract_fulfillment": attributeContractFulfillmentSchema,
-								"attribute_sources":              attributesources.ToSchema(),
+								"attribute_sources":              attributesources.ToSchema(0),
 								"idp_adapter_ref":                resourcelink.ToCompleteSchema(),
 								"issuance_criteria":              issuancecriteria.ToSchema(),
 								"restrict_virtual_entity_ids": schema.BoolAttribute{
@@ -1457,7 +1458,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Description: "If set to true, SSO transaction will be aborted as a fail-safe when the data-store's attribute mappings fail to complete the attribute contract. Otherwise, the attribute contract with default values is used. By default, this value is false.",
 								},
 								"attribute_contract_fulfillment":     attributeContractFulfillmentSchema,
-								"attribute_sources":                  attributesources.ToSchema(),
+								"attribute_sources":                  attributesources.ToSchema(0),
 								"authentication_policy_contract_ref": resourcelink.ToCompleteSchema(),
 								"issuance_criteria":                  issuancecriteria.ToSchema(),
 								"restrict_virtual_entity_ids": schema.BoolAttribute{
@@ -1677,16 +1678,10 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Description: "The SAML settings used to enable secure browser-based SSO to resources at your partner's site.",
 			},
 			"type": schema.StringAttribute{
-				Optional:    true,
+				Optional:    false,
 				Computed:    true,
-				Default:     stringdefault.StaticString("IDP"),
-				Description: "The type of this connection. Default is 'IDP'.",
-				Validators: []validator.String{
-					stringvalidator.OneOf(
-						"IDP",
-						"SP",
-					),
-				},
+				Default:     stringdefault.StaticString("SP"),
+				Description: "The type of this connection.",
 			},
 			"virtual_entity_ids": schema.ListAttribute{
 				ElementType: types.StringType,
@@ -1761,7 +1756,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"attribute_contract_fulfillment": attributeContractFulfillmentSchema,
-								"attribute_sources":              attributesources.ToSchema(),
+								"attribute_sources":              attributesources.ToSchema(0),
 								"idp_token_processor_ref":        resourcelink.ToCompleteSchema(),
 								"issuance_criteria":              issuancecriteria.ToSchema(),
 								"restricted_virtual_entity_ids": schema.ListAttribute{
@@ -1859,7 +1854,30 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 
 	if internaltypes.IsDefined(plan.AttributeQuery) {
 		addRequest.AttributeQuery = &client.SpAttributeQuery{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeQuery, true)), &addRequest.AttributeQuery)
+
+		addRequest.AttributeQuery.Attributes = []string{}
+		for _, attribute := range plan.AttributeQuery.Attributes()["attributes"].(types.List).Elements() {
+			addRequest.AttributeQuery.Attributes = append(addRequest.AttributeQuery.Attributes, attribute.(types.String).ValueString())
+		}
+
+		addRequest.AttributeQuery.AttributeContractFulfillment = map[string]client.AttributeFulfillmentValue{}
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeQuery.Attributes()["attribute_contract_fulfillment"], true)), &addRequest.AttributeQuery.AttributeContractFulfillment)
+		if err != nil {
+			return err
+		}
+
+		addRequest.AttributeQuery.IssuanceCriteria, err = issuancecriteria.ClientStruct(plan.AttributeQuery.Attributes()["issuance_criteria"].(types.Object))
+		if err != nil {
+			return err
+		}
+
+		addRequest.AttributeQuery.Policy = &client.SpAttributeQueryPolicy{}
+		err = json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeQuery.Attributes()["policy"], true)), &addRequest.AttributeQuery.Policy)
+		if err != nil {
+			return err
+		}
+
+		addRequest.AttributeQuery.AttributeSources, err = attributesources.ClientStruct(plan.AttributeQuery.Attributes()["attribute_sources"].(types.List))
 		if err != nil {
 			return err
 		}

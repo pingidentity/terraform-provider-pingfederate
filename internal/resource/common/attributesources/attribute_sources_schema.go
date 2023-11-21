@@ -1,6 +1,7 @@
 package attributesources
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -147,13 +148,18 @@ func LdapAttributeSourceSchemaAttributes() map[string]schema.Attribute {
 	return ldapAttributeSourceSchema
 }
 
-func ToSchema() schema.ListNestedAttribute {
+func ToSchema(sizeAtLeast int) schema.ListNestedAttribute {
 	attributeSourcesDefault, _ := types.ListValue(types.ObjectType{AttrTypes: ElemAttrType()}, nil)
+	validators := []validator.List{}
+	if sizeAtLeast > 0 {
+		validators = append(validators, listvalidator.SizeAtLeast(sizeAtLeast))
+	}
 	return schema.ListNestedAttribute{
 		Description: "A list of configured data stores to look up attributes from.",
 		Computed:    true,
 		Optional:    true,
 		Default:     listdefault.StaticValue(attributeSourcesDefault),
+		Validators:  validators,
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
 				"custom_attribute_source": schema.SingleNestedAttribute{

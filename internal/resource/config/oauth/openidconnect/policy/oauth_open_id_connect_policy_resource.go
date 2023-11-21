@@ -205,7 +205,7 @@ func (r *oauthOpenIdConnectPolicyResource) Schema(ctx context.Context, req resou
 				Description: "The attributes mapping from attribute sources to attribute targets.",
 				Required:    true,
 				Attributes: map[string]schema.Attribute{
-					"attribute_sources":              attributesources.ToSchema(),
+					"attribute_sources":              attributesources.ToSchema(0),
 					"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
 					"issuance_criteria":              issuancecriteria.ToSchema(),
 				},
