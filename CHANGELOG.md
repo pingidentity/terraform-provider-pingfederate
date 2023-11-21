@@ -10,7 +10,7 @@
 * **New Data Source:** `server_settings_log_settings` ([#104](https://github.com/pingidentity/terraform-provider-pingfederate/pull/104))
 * **New Data Source:** `server_settings_general_settings` ([#105](https://github.com/pingidentity/terraform-provider-pingfederate/pull/105))
 * **New Data Source:** `server_settings_system_keys` ([#112](https://github.com/pingidentity/terraform-provider-pingfederate/pull/112))
-* **New Data Source:** `session_settings` ([#11](https://github.com/pingidentity/terraform-provider-pingfederate/pull/11))
+* **New Data Source:** `session_settings` ([#115](https://github.com/pingidentity/terraform-provider-pingfederate/pull/115))
 
 
 # v0.2.1 November 10, 2023
