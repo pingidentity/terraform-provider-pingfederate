@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -16,21 +17,19 @@ const idpErrMessage = "errorDetail.idpSsoFailure"
 
 // Attributes to test with. Add optional properties to test here if desired.
 type idpDefaultUrlsResourceModel struct {
-	confirmIdpSlo    bool
-	idpSloSuccessUrl string
+	confirmIdpSlo    *bool
+	idpSloSuccessUrl *string
 	idpErrorMsg      string
 }
 
 func TestAccIdpDefaultUrls(t *testing.T) {
 	resourceName := "myIdpDefaultUrls"
 	initialResourceModel := idpDefaultUrlsResourceModel{
-		confirmIdpSlo:    true,
-		idpSloSuccessUrl: "https://localhost",
-		idpErrorMsg:      idpErrMessage,
+		idpErrorMsg: idpErrMessage,
 	}
 	updatedResourceModel := idpDefaultUrlsResourceModel{
-		confirmIdpSlo:    false,
-		idpSloSuccessUrl: "https://example",
+		confirmIdpSlo:    pointers.Bool(true),
+		idpSloSuccessUrl: pointers.String("https://example"),
 		idpErrorMsg:      idpErrMessage,
 	}
 
@@ -56,16 +55,29 @@ func TestAccIdpDefaultUrls(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
+			{
+				// Back to minimal model
+				Config: testAccIdpDefaultUrls(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedIdpDefaultUrlsAttributes(initialResourceModel),
+			},
 		},
 	})
 }
 
 func testAccIdpDefaultUrls(resourceName string, resourceModel idpDefaultUrlsResourceModel) string {
+	confirmIdpSloHcl := ""
+	idpSloSuccessfulUrlHcl := ""
+	if resourceModel.confirmIdpSlo != nil {
+		confirmIdpSloHcl = fmt.Sprintf("confirm_idp_slo = %[1]t", *resourceModel.confirmIdpSlo)
+	}
+	if resourceModel.idpSloSuccessUrl != nil {
+		idpSloSuccessfulUrlHcl = fmt.Sprintf("idp_slo_success_url = \"%[1]s\"", *resourceModel.idpSloSuccessUrl)
+	}
 	return fmt.Sprintf(`
 resource "pingfederate_idp_default_urls" "%[1]s" {
-  confirm_idp_slo     = %[2]t
-  idp_error_msg       = "%[3]s"
-  idp_slo_success_url = "%[4]s"
+  idp_error_msg = "%[2]s"
+  %[3]s
+  %[4]s
 }
 
 data "pingfederate_idp_default_urls" "%[1]s" {
@@ -73,9 +85,9 @@ data "pingfederate_idp_default_urls" "%[1]s" {
     pingfederate_idp_default_urls.%[1]s
   ]
 }`, resourceName,
-		resourceModel.confirmIdpSlo,
 		resourceModel.idpErrorMsg,
-		resourceModel.idpSloSuccessUrl,
+		confirmIdpSloHcl,
+		idpSloSuccessfulUrlHcl,
 	)
 }
 
@@ -92,16 +104,25 @@ func testAccCheckExpectedIdpDefaultUrlsAttributes(config idpDefaultUrlsResourceM
 		}
 
 		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchBool(resourceType, nil, "confirm_idp_slo",
-			config.confirmIdpSlo, *response.ConfirmIdpSlo)
+		err = acctest.TestAttributesMatchString(resourceType, nil, "idp_error_msg", config.idpErrorMsg, response.IdpErrorMsg)
 		if err != nil {
 			return err
 		}
 
-		err = acctest.TestAttributesMatchString(resourceType, nil, "idp_slo_success_url",
-			config.idpSloSuccessUrl, *response.IdpSloSuccessUrl)
-		if err != nil {
-			return err
+		if config.confirmIdpSlo != nil {
+			err = acctest.TestAttributesMatchBool(resourceType, nil, "confirm_idp_slo",
+				*config.confirmIdpSlo, *response.ConfirmIdpSlo)
+			if err != nil {
+				return err
+			}
+		}
+
+		if config.idpSloSuccessUrl != nil {
+			err = acctest.TestAttributesMatchStringPointer(resourceType, nil, "idp_slo_success_url",
+				*config.idpSloSuccessUrl, response.IdpSloSuccessUrl)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil

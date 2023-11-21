@@ -38,7 +38,7 @@ type licenseAgreementDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *licenseAgreementDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes a LicenseAgreement.",
+		Description: "Describes a license agreement link.",
 		Attributes: map[string]schema.Attribute{
 			"license_agreement_url": schema.StringAttribute{
 				Description: "URL to license agreement",
@@ -77,7 +77,7 @@ func (r *licenseAgreementDataSource) Configure(_ context.Context, req datasource
 
 // Read a DseeCompatAdministrativeAccountResponse object into the model struct
 func readLicenseAgreementResponseDataSource(ctx context.Context, r *client.LicenseAgreementInfo, state *licenseAgreementDataSourceModel) {
-	state.Id = types.StringValue("id")
+	state.Id = types.StringValue("license_agreement_id")
 	state.LicenseAgreementUrl = internaltypes.StringTypeOrNil(r.LicenseAgreementUrl, false)
 	state.Accepted = internaltypes.BoolTypeOrNil(r.Accepted)
 }
@@ -94,7 +94,7 @@ func (r *licenseAgreementDataSource) Read(ctx context.Context, req datasource.Re
 
 	apiReadLicenseAgreement, httpResp, err := r.apiClient.LicenseAPI.GetLicenseAgreement(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the License Agreement", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the license agreement", err, httpResp)
 		return
 	}
 

@@ -3,12 +3,12 @@
 page_title: "pingfederate_idp_default_urls Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes a IdpDefaultUrls.
+  Describes the IdP default URL settings.
 ---
 
 # pingfederate_idp_default_urls (Data Source)
 
-Describes a IdpDefaultUrls.
+Describes the IdP default URL settings.
 
 ## Example Usage
 

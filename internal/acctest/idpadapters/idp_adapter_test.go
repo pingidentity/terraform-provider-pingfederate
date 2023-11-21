@@ -56,6 +56,8 @@ func updatedAttributeContract() *client.IdpAdapterAttributeContract {
 		Pseudonym: pointers.Bool(false),
 		Masked:    pointers.Bool(false),
 	})
+	contract.UniqueUserKeyAttribute = pointers.String("username")
+	contract.Inherited = pointers.Bool(false)
 	return contract
 }
 
@@ -264,7 +266,7 @@ func attributeMappingHclBlock(attributeMapping *client.IdpAdapterContractMapping
 	builder.WriteString("attribute_mapping = {\n")
 	if len(attributeMapping.AttributeSources) > 0 {
 		// Only have logic for JDBC attribute sources right now, assume it is the right type
-		attributesources.JdbcHcl(attributeMapping.AttributeSources[0].JdbcAttributeSource)
+		attributesources.Hcl(attributeMapping.AttributeSources[0].JdbcAttributeSource, nil)
 	}
 	if attributeMapping.AttributeContractFulfillment != nil {
 		builder.WriteString("    attribute_contract_fulfillment = {\n")
@@ -339,46 +341,10 @@ func testAccCheckExpectedIdpAdapterAttributes(config idpAdapterResourceModel) re
 
 		// JDBC attribute sources
 		if config.attributeMapping != nil && len(config.attributeMapping.AttributeSources) > 0 {
-			configAttrSource := config.attributeMapping.AttributeSources[0].JdbcAttributeSource
-			attributeSources := resp.AttributeMapping.AttributeSources
-			for _, attributeSource := range attributeSources {
-				if attributeSource.JdbcAttributeSource != nil {
-					err = acctest.TestAttributesMatchString(resourceType, pointers.String(idpAdapterId), "id",
-						configAttrSource.DataStoreRef.Id, attributeSource.JdbcAttributeSource.DataStoreRef.Id)
-					if err != nil {
-						return err
-					}
-
-					err = acctest.TestAttributesMatchStringPointer(resourceType, pointers.String(idpAdapterId), "description",
-						*configAttrSource.Description, attributeSource.JdbcAttributeSource.Description)
-					if err != nil {
-						return err
-					}
-
-					err = acctest.TestAttributesMatchStringPointer(resourceType, pointers.String(idpAdapterId), "schema",
-						*configAttrSource.Description, attributeSource.JdbcAttributeSource.Description)
-					if err != nil {
-						return err
-					}
-
-					err = acctest.TestAttributesMatchString(resourceType, pointers.String(idpAdapterId), "table",
-						configAttrSource.Table, attributeSource.JdbcAttributeSource.Table)
-					if err != nil {
-						return err
-					}
-
-					err = acctest.TestAttributesMatchString(resourceType, pointers.String(idpAdapterId), "filter",
-						configAttrSource.Filter, attributeSource.JdbcAttributeSource.Filter)
-					if err != nil {
-						return err
-					}
-
-					err = acctest.TestAttributesMatchStringSlice(resourceType, pointers.String(idpAdapterId), "column_names",
-						configAttrSource.ColumnNames, attributeSource.JdbcAttributeSource.ColumnNames)
-					if err != nil {
-						return err
-					}
-				}
+			err = attributesources.ValidateResponseAttributes(resourceType, pointers.String(idpAdapterId),
+				config.attributeMapping.AttributeSources[0].JdbcAttributeSource, nil, resp.AttributeMapping.AttributeSources)
+			if err != nil {
+				return err
 			}
 		}
 

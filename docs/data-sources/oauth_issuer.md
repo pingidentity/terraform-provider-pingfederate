@@ -3,12 +3,12 @@
 page_title: "pingfederate_oauth_issuer Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes an OAuth Issuer.
+  Describes a virtual OAuth issuer.
 ---
 
 # pingfederate_oauth_issuer (Data Source)
 
-Describes an OAuth Issuer.
+Describes a virtual OAuth issuer.
 
 ## Example Usage
 

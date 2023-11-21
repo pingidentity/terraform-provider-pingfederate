@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
@@ -70,7 +71,7 @@ type passwordCredentialValidatorResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a Password Credential Validator",
+		Description: "Manages a password credential validator plugin instance.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Description: "The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
@@ -132,6 +133,8 @@ func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req re
 					"inherited": schema.BoolAttribute{
 						Description: "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
 						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 				},
 			},
@@ -227,10 +230,16 @@ func readPasswordCredentialValidatorResponse(ctx context.Context, r *client.Pass
 		attributeContractExtendedAttributes, respDiags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
 		diags.Append(respDiags...)
 
+		// PF can return inherited as nil when it is false
+		inherited := false
+		if attrContract.Inherited != nil {
+			inherited = *attrContract.Inherited
+		}
+
 		attributeContractValues := map[string]attr.Value{
 			"core_attributes":     attributeContractCoreAttributes,
 			"extended_attributes": attributeContractExtendedAttributes,
-			"inherited":           types.BoolPointerValue(attrContract.Inherited),
+			"inherited":           types.BoolValue(inherited),
 		}
 		state.AttributeContract, respDiags = types.ObjectValue(attributeContractTypes, attributeContractValues)
 		diags.Append(respDiags...)

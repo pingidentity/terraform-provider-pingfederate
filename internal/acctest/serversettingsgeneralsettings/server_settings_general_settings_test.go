@@ -23,13 +23,6 @@ type serverSettingsGeneralSettingsResourceModel struct {
 
 func TestAccServerSettingsGeneralSettings(t *testing.T) {
 	resourceName := "myServerSettingsGeneralSettings"
-	initialResourceModel := serverSettingsGeneralSettingsResourceModel{
-		disableAutomaticConnectionValidation:    false,
-		idpConnectionTransactionLoggingOverride: "NONE",
-		spConnectionTransactionLoggingOverride:  "FULL",
-		datastoreValidationIntervalSecs:         299,
-		requestHeaderForCorrelationId:           "example",
-	}
 	updatedResourceModel := serverSettingsGeneralSettingsResourceModel{
 		disableAutomaticConnectionValidation:    true,
 		idpConnectionTransactionLoggingOverride: "FULL",
@@ -45,44 +38,58 @@ func TestAccServerSettingsGeneralSettings(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: testAccServerSettingsGeneralSettings(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedServerSettingsGeneralSettingsAttributes(initialResourceModel),
+				Config: testAccServerSettingsGeneralSettings(resourceName, nil),
+				Check:  testAccCheckExpectedServerSettingsGeneralSettingsAttributes(nil),
 			},
 			{
 				// Test updating some fields
-				Config: testAccServerSettingsGeneralSettings(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedServerSettingsGeneralSettingsAttributes(updatedResourceModel),
+				Config: testAccServerSettingsGeneralSettings(resourceName, &updatedResourceModel),
+				Check:  testAccCheckExpectedServerSettingsGeneralSettingsAttributes(&updatedResourceModel),
 			},
 			{
 				// Test importing the resource
-				Config:            testAccServerSettingsGeneralSettings(resourceName, updatedResourceModel),
+				Config:            testAccServerSettingsGeneralSettings(resourceName, &updatedResourceModel),
 				ResourceName:      "pingfederate_server_settings_general_settings." + resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+			{
+				// Back to minimal model
+				Config: testAccServerSettingsGeneralSettings(resourceName, nil),
+				Check:  testAccCheckExpectedServerSettingsGeneralSettingsAttributes(nil),
 			},
 		},
 	})
 }
 
-func testAccServerSettingsGeneralSettings(resourceName string, resourceModel serverSettingsGeneralSettingsResourceModel) string {
+func testAccServerSettingsGeneralSettings(resourceName string, resourceModel *serverSettingsGeneralSettingsResourceModel) string {
+	optionalHcl := ""
+	if resourceModel != nil {
+		optionalHcl = fmt.Sprintf(`
+		datastore_validation_interval_secs          = %d
+		disable_automatic_connection_validation     = %t
+		idp_connection_transaction_logging_override = "%s"
+		request_header_for_correlation_id           = "%s"
+		sp_connection_transaction_logging_override  = "%s"
+		`, resourceModel.datastoreValidationIntervalSecs,
+			resourceModel.disableAutomaticConnectionValidation,
+			resourceModel.idpConnectionTransactionLoggingOverride,
+			resourceModel.requestHeaderForCorrelationId,
+			resourceModel.spConnectionTransactionLoggingOverride)
+	}
 	return fmt.Sprintf(`
-resource "pingfederate_server_settings_general_settings" "%[1]s" {
-  datastore_validation_interval_secs          = %[2]d
-  disable_automatic_connection_validation     = %[3]t
-  idp_connection_transaction_logging_override = "%[4]s"
-  request_header_for_correlation_id           = "%[5]s"
-  sp_connection_transaction_logging_override  = "%[6]s"
+resource "pingfederate_server_settings_general_settings" "%s" {
+	%s
+}
+data "pingfederate_server_settings_general_settings" "%[1]s" {
+  depends_on = [pingfederate_server_settings_general_settings.%[1]s]
 }`, resourceName,
-		resourceModel.datastoreValidationIntervalSecs,
-		resourceModel.disableAutomaticConnectionValidation,
-		resourceModel.idpConnectionTransactionLoggingOverride,
-		resourceModel.requestHeaderForCorrelationId,
-		resourceModel.spConnectionTransactionLoggingOverride,
+		optionalHcl,
 	)
 }
 
 // Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedServerSettingsGeneralSettingsAttributes(config serverSettingsGeneralSettingsResourceModel) resource.TestCheckFunc {
+func testAccCheckExpectedServerSettingsGeneralSettingsAttributes(config *serverSettingsGeneralSettingsResourceModel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		resourceType := "ServerSettingsGeneralSettings"
 		testClient := acctest.TestClient()
@@ -91,6 +98,10 @@ func testAccCheckExpectedServerSettingsGeneralSettingsAttributes(config serverSe
 
 		if err != nil {
 			return err
+		}
+
+		if config == nil {
+			return nil
 		}
 
 		// Verify that attributes have expected values

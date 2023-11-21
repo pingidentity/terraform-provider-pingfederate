@@ -50,7 +50,7 @@ type sessionAuthenticationSessionPoliciesGlobalResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *sessionAuthenticationSessionPoliciesGlobalResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a SessionAuthenticationSessionPoliciesGlobal.",
+		Description: "Manages the global settings for authentication session policies.",
 		Attributes: map[string]schema.Attribute{
 			"enable_sessions": schema.BoolAttribute{
 				Description: "Determines whether authentication sessions are enabled globally.",

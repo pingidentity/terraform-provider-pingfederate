@@ -64,7 +64,9 @@ resource "pingfederate_server_settings_system_keys" "%[1]s" {
   pending = {
     encrypted_key_data = "%[3]s"
   }
+}
 
+data "pingfederate_server_settings_system_keys" "%[1]s" {
 }`, resourceName,
 		resourceModel.currentEncryptedKeyData,
 		resourceModel.pendingEncryptedKeyData,

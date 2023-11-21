@@ -3,12 +3,12 @@
 page_title: "pingfederate_license_agreement Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes a LicenseAgreement.
+  Describes a license agreement link.
 ---
 
 # pingfederate_license_agreement (Data Source)
 
-Describes a LicenseAgreement.
+Describes a license agreement link.
 
 ## Example Usage
 

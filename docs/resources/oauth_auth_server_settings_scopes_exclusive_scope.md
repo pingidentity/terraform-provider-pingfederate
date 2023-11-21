@@ -3,12 +3,12 @@
 page_title: "pingfederate_oauth_auth_server_settings_scopes_exclusive_scope Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a OauthAuthServerSettingsScopesExclusiveScopes.
+  Manages an exclusive scope in the authorization server settings.
 ---
 
 # pingfederate_oauth_auth_server_settings_scopes_exclusive_scope (Resource)
 
-Manages a OauthAuthServerSettingsScopesExclusiveScopes.
+Manages an exclusive scope in the authorization server settings.
 
 ## Example Usage
 

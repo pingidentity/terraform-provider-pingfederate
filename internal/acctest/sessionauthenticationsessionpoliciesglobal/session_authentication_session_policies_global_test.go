@@ -9,39 +9,34 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
 // Attributes to test with. Add optional properties to test here if desired.
 type sessionAuthenticationSessionPoliciesGlobalResourceModel struct {
 	enableSessions             bool
-	persistentSessions         bool
-	hashUniqueUserKeyAttribute bool
-	idleTimeoutMins            int64
-	idleTimeoutDisplayUnit     string
-	maxTimeoutMins             int64
-	maxTimeoutDisplayUnit      string
+	persistentSessions         *bool
+	hashUniqueUserKeyAttribute *bool
+	idleTimeoutMins            *int64
+	idleTimeoutDisplayUnit     *string
+	maxTimeoutMins             *int64
+	maxTimeoutDisplayUnit      *string
 }
 
 func TestAccSessionAuthenticationSessionPoliciesGlobal(t *testing.T) {
 	resourceName := "mySessionAuthenticationSessionPoliciesGlobal"
 	initialResourceModel := sessionAuthenticationSessionPoliciesGlobalResourceModel{
-		enableSessions:             true,
-		persistentSessions:         true,
-		hashUniqueUserKeyAttribute: true,
-		idleTimeoutMins:            60,
-		idleTimeoutDisplayUnit:     "MINUTES",
-		maxTimeoutMins:             60,
-		maxTimeoutDisplayUnit:      "MINUTES",
+		enableSessions: true,
 	}
 	updatedResourceModel := sessionAuthenticationSessionPoliciesGlobalResourceModel{
 		enableSessions:             false,
-		persistentSessions:         false,
-		hashUniqueUserKeyAttribute: false,
-		idleTimeoutMins:            120,
-		idleTimeoutDisplayUnit:     "HOURS",
-		maxTimeoutMins:             120,
-		maxTimeoutDisplayUnit:      "HOURS",
+		persistentSessions:         pointers.Bool(false),
+		hashUniqueUserKeyAttribute: pointers.Bool(false),
+		idleTimeoutMins:            pointers.Int64(120),
+		idleTimeoutDisplayUnit:     pointers.String("HOURS"),
+		maxTimeoutMins:             pointers.Int64(120),
+		maxTimeoutDisplayUnit:      pointers.String("HOURS"),
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -66,28 +61,41 @@ func TestAccSessionAuthenticationSessionPoliciesGlobal(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
+			{
+				// Back to minimal model
+				Config: testAccSessionAuthenticationSessionPoliciesGlobal(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedSessionAuthenticationSessionPoliciesGlobalAttributes(initialResourceModel),
+			},
 		},
 	})
 }
 
 func testAccSessionAuthenticationSessionPoliciesGlobal(resourceName string, resourceModel sessionAuthenticationSessionPoliciesGlobalResourceModel) string {
+	optionalHcl := ""
+	// Just assuming that if the first one is set, the rest will be for this test
+	if resourceModel.persistentSessions != nil {
+		optionalHcl = fmt.Sprintf(`
+		persistent_sessions            = %t
+		hash_unique_user_key_attribute = %t
+		idle_timeout_mins              = %d
+		idle_timeout_display_unit      = "%s"
+		max_timeout_mins               = %d
+		max_timeout_display_unit       = "%s"
+		`, *resourceModel.persistentSessions,
+			*resourceModel.hashUniqueUserKeyAttribute,
+			*resourceModel.idleTimeoutMins,
+			*resourceModel.idleTimeoutDisplayUnit,
+			*resourceModel.maxTimeoutMins,
+			*resourceModel.maxTimeoutDisplayUnit)
+	}
+
 	return fmt.Sprintf(`
-resource "pingfederate_session_authentication_session_policies_global" "%[1]s" {
-  enable_sessions                = %[2]t
-  persistent_sessions            = %[3]t
-  hash_unique_user_key_attribute = %[4]t
-  idle_timeout_mins              = %[5]d
-  idle_timeout_display_unit      = "%[6]s"
-  max_timeout_mins               = %[7]d
-  max_timeout_display_unit       = "%[8]s"
+resource "pingfederate_session_authentication_session_policies_global" "%s" {
+  enable_sessions = %t
+  %s
 }`, resourceName,
 		resourceModel.enableSessions,
-		resourceModel.persistentSessions,
-		resourceModel.hashUniqueUserKeyAttribute,
-		resourceModel.idleTimeoutMins,
-		resourceModel.idleTimeoutDisplayUnit,
-		resourceModel.maxTimeoutMins,
-		resourceModel.maxTimeoutDisplayUnit,
+		optionalHcl,
 	)
 }
 
@@ -109,35 +117,47 @@ func testAccCheckExpectedSessionAuthenticationSessionPoliciesGlobalAttributes(co
 		if err != nil {
 			return err
 		}
-		err = acctest.TestAttributesMatchBool(resourceType, nil, "persistent_sessions",
-			config.persistentSessions, *response.PersistentSessions)
-		if err != nil {
-			return err
+		if config.persistentSessions != nil {
+			err = acctest.TestAttributesMatchBool(resourceType, nil, "persistent_sessions",
+				*config.persistentSessions, *response.PersistentSessions)
+			if err != nil {
+				return err
+			}
 		}
-		err = acctest.TestAttributesMatchBool(resourceType, nil, "hash_unique_user_key_attribute",
-			config.hashUniqueUserKeyAttribute, *response.HashUniqueUserKeyAttribute)
-		if err != nil {
-			return err
+		if config.hashUniqueUserKeyAttribute != nil {
+			err = acctest.TestAttributesMatchBool(resourceType, nil, "hash_unique_user_key_attribute",
+				*config.hashUniqueUserKeyAttribute, *response.HashUniqueUserKeyAttribute)
+			if err != nil {
+				return err
+			}
 		}
-		err = acctest.TestAttributesMatchInt(resourceType, nil, "idle_timeout_mins",
-			config.idleTimeoutMins, *response.IdleTimeoutMins)
-		if err != nil {
-			return err
+		if config.idleTimeoutMins != nil {
+			err = acctest.TestAttributesMatchInt(resourceType, nil, "idle_timeout_mins",
+				*config.idleTimeoutMins, *response.IdleTimeoutMins)
+			if err != nil {
+				return err
+			}
 		}
-		err = acctest.TestAttributesMatchString(resourceType, nil, "idle_timeout_display_unit",
-			config.idleTimeoutDisplayUnit, *response.IdleTimeoutDisplayUnit)
-		if err != nil {
-			return err
+		if config.idleTimeoutDisplayUnit != nil {
+			err = acctest.TestAttributesMatchStringPointer(resourceType, nil, "idle_timeout_display_unit",
+				*config.idleTimeoutDisplayUnit, response.IdleTimeoutDisplayUnit)
+			if err != nil {
+				return err
+			}
 		}
-		err = acctest.TestAttributesMatchInt(resourceType, nil, "max_timeout_mins",
-			config.maxTimeoutMins, *response.MaxTimeoutMins)
-		if err != nil {
-			return err
+		if config.maxTimeoutMins != nil {
+			err = acctest.TestAttributesMatchInt(resourceType, nil, "max_timeout_mins",
+				*config.maxTimeoutMins, *response.MaxTimeoutMins)
+			if err != nil {
+				return err
+			}
 		}
-		err = acctest.TestAttributesMatchString(resourceType, nil, "max_timeout_display_unit",
-			config.maxTimeoutDisplayUnit, *response.MaxTimeoutDisplayUnit)
-		if err != nil {
-			return err
+		if config.maxTimeoutDisplayUnit != nil {
+			err = acctest.TestAttributesMatchStringPointer(resourceType, nil, "max_timeout_display_unit",
+				*config.maxTimeoutDisplayUnit, response.MaxTimeoutDisplayUnit)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil

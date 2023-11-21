@@ -24,7 +24,8 @@ type contactInfoResourceModel struct {
 }
 
 type federationInfoResourceModel struct {
-	baseUrl string
+	baseUrl       string
+	saml2EntityId string
 }
 
 type emailServerResourceModel struct {
@@ -32,33 +33,29 @@ type emailServerResourceModel struct {
 	emailServer string
 }
 
+type captchaSettingsResourceModel struct {
+	siteKey   string
+	secretKey string
+}
+
 type serverSettingsResourceModel struct {
-	contactInfo    contactInfoResourceModel
-	federationInfo federationInfoResourceModel
-	emailServer    emailServerResourceModel
+	contactInfo     *contactInfoResourceModel
+	federationInfo  federationInfoResourceModel
+	emailServer     *emailServerResourceModel
+	captchaSettings *captchaSettingsResourceModel
 }
 
 func TestAccServerSettings(t *testing.T) {
 	resourceName := "myServerSettings"
 	initialResourceModel := serverSettingsResourceModel{
-		contactInfo: contactInfoResourceModel{
-			company:   "initial company",
-			email:     "initialAdmin@example.com",
-			firstName: "Jane",
-			lastName:  "Admin",
-			phone:     "555-555-1111",
-		},
 		federationInfo: federationInfoResourceModel{
-			baseUrl: "https://localhost:9999",
-		},
-		emailServer: emailServerResourceModel{
-			sourceAddr:  "initialEmailServerAdmin@example.com",
-			emailServer: "initialemailserver.example.com",
+			baseUrl:       "https://localhost:9999",
+			saml2EntityId: "initial.pingidentity.com",
 		},
 	}
 
 	updatedResourceModel := serverSettingsResourceModel{
-		contactInfo: contactInfoResourceModel{
+		contactInfo: &contactInfoResourceModel{
 			company:   "updated company",
 			email:     "updatedAdminemail@example.com",
 			firstName: "Jane2",
@@ -66,11 +63,16 @@ func TestAccServerSettings(t *testing.T) {
 			phone:     "555-555-2222",
 		},
 		federationInfo: federationInfoResourceModel{
-			baseUrl: "https://localhost2:9999",
+			baseUrl:       "https://localhost2:9999",
+			saml2EntityId: "updated.pingidentity.com",
 		},
-		emailServer: emailServerResourceModel{
+		emailServer: &emailServerResourceModel{
 			sourceAddr:  "updatedEmailServerAdmin@example.com",
 			emailServer: "updatedemailserver.example.com",
+		},
+		captchaSettings: &captchaSettingsResourceModel{
+			siteKey:   "exampleCaptchaProviderV2",
+			secretKey: "2FederateM0re",
 		},
 	}
 
@@ -81,26 +83,46 @@ func TestAccServerSettings(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: testAccServerSettings(resourceName, initialResourceModel),
+				Config: testAccServerSettingsMinimal(resourceName, initialResourceModel),
 				Check:  testAccCheckExpectedServerSettingsAttributes(initialResourceModel),
 			},
 			{
 				// Test updating some fields
-				Config: testAccServerSettings(resourceName, updatedResourceModel),
+				Config: testAccServerSettingsComplete(resourceName, updatedResourceModel),
 				Check:  testAccCheckExpectedServerSettingsAttributes(updatedResourceModel),
 			},
 			{
 				// Test importing the resource
-				Config:                  testAccServerSettings(resourceName, updatedResourceModel),
-				ResourceName:            "pingfederate_server_settings." + resourceName,
-				ImportState:             true,
-				ImportStateVerifyIgnore: []string{"email_server"},
+				Config:            testAccServerSettingsComplete(resourceName, updatedResourceModel),
+				ResourceName:      "pingfederate_server_settings." + resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Email server details are not returned by PF
+				ImportStateVerifyIgnore: []string{"email_server", "captcha_settings"},
+			},
+			{
+				// Back to minimal model
+				Config: testAccServerSettingsMinimal(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedServerSettingsAttributes(initialResourceModel),
 			},
 		},
 	})
 }
 
-func testAccServerSettings(resourceName string, resourceModel serverSettingsResourceModel) string {
+func testAccServerSettingsMinimal(resourceName string, resourceModel serverSettingsResourceModel) string {
+	return fmt.Sprintf(`
+resource "pingfederate_server_settings" "%s" {
+  federation_info = {
+    base_url         = "%s"
+    saml_2_entity_id = "%s"
+  }
+}`, resourceName,
+		resourceModel.federationInfo.baseUrl,
+		resourceModel.federationInfo.saml2EntityId,
+	)
+}
+
+func testAccServerSettingsComplete(resourceName string, resourceModel serverSettingsResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_server_settings" "%[1]s" {
   contact_info = {
@@ -112,15 +134,54 @@ resource "pingfederate_server_settings" "%[1]s" {
   }
 
   federation_info = {
-    base_url         = "%[7]s"
-    saml_2_entity_id = "pingidentity.com"
+    base_url          = "%[7]s"
+    saml_2_entity_id  = "%[8]s"
+    saml_1x_issuer_id = "example.com"
+    saml_1x_source_id = ""
+    wsfed_realm       = "myrealm"
   }
 
   email_server = {
-    source_addr  = "%[8]s"
-    email_server = "%[9]s"
-    username     = "EmailServerAdmin"
-    password     = "EmailServerAdminPassword"
+    source_addr                 = "%[9]s"
+    email_server                = "%[10]s"
+    use_ssl                     = true
+    verify_hostname             = true
+    enable_utf8_message_headers = true
+    use_debugging               = false
+    username                    = "EmailServerAdmin"
+    password                    = "EmailServerAdminPassword"
+  }
+
+  notifications = {
+    license_events = {
+      email_address = "license-events-email@example.com"
+      notification_publisher_ref = {
+        id = "exampleSmtpPublisher"
+      }
+    }
+    certificate_expirations = {
+      email_address          = "cert-expire-notifications@example.com"
+      initial_warning_period = 45
+      final_warning_period   = 7
+      notification_publisher_ref = {
+        id = "exampleSmtpPublisher"
+      }
+    }
+    notify_admin_user_password_changes = true
+    account_changes_notification_publisher_ref = {
+      id = "exampleSmtpPublisher"
+    }
+    metadata_notification_settings = {
+      email_address = "metadata-notification@example.com"
+      notification_publisher_ref = {
+        id = "exampleSmtpPublisher"
+      }
+    }
+  }
+
+  captcha_settings = {
+    site_key   = "%[11]s"
+    secret_key = "%[12]s"
   }
 }`, resourceName,
 		resourceModel.contactInfo.company,
@@ -129,8 +190,11 @@ resource "pingfederate_server_settings" "%[1]s" {
 		resourceModel.contactInfo.lastName,
 		resourceModel.contactInfo.phone,
 		resourceModel.federationInfo.baseUrl,
+		resourceModel.federationInfo.saml2EntityId,
 		resourceModel.emailServer.sourceAddr,
 		resourceModel.emailServer.emailServer,
+		resourceModel.captchaSettings.siteKey,
+		resourceModel.captchaSettings.secretKey,
 	)
 }
 
@@ -147,52 +211,70 @@ func testAccCheckExpectedServerSettingsAttributes(config serverSettingsResourceM
 		}
 
 		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchString(resourceType, nil, "company",
-			config.contactInfo.company, *response.ContactInfo.Company)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.TestAttributesMatchString(resourceType, nil, "email",
-			config.contactInfo.email, *response.ContactInfo.Email)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.TestAttributesMatchString(resourceType, nil, "first_name",
-			config.contactInfo.firstName, *response.ContactInfo.FirstName)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.TestAttributesMatchString(resourceType, nil, "last_name",
-			config.contactInfo.lastName, *response.ContactInfo.LastName)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.TestAttributesMatchString(resourceType, nil, "phone",
-			config.contactInfo.phone, *response.ContactInfo.Phone)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchString(resourceType, nil, "base_url",
 			config.federationInfo.baseUrl, *response.FederationInfo.BaseUrl)
 		if err != nil {
 			return err
 		}
 
-		err = acctest.TestAttributesMatchString(resourceType, nil, "source_addr",
-			config.emailServer.sourceAddr, response.EmailServer.SourceAddr)
+		err = acctest.TestAttributesMatchStringPointer(resourceType, nil, "saml_2_entity_id",
+			config.federationInfo.saml2EntityId, response.FederationInfo.Saml2EntityId)
 		if err != nil {
 			return err
 		}
 
-		err = acctest.TestAttributesMatchString(resourceType, nil, "email_server",
-			config.emailServer.emailServer, response.EmailServer.EmailServer)
-		if err != nil {
-			return err
+		if config.contactInfo != nil {
+			err = acctest.TestAttributesMatchString(resourceType, nil, "company",
+				config.contactInfo.company, *response.ContactInfo.Company)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, nil, "email",
+				config.contactInfo.email, *response.ContactInfo.Email)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, nil, "first_name",
+				config.contactInfo.firstName, *response.ContactInfo.FirstName)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, nil, "last_name",
+				config.contactInfo.lastName, *response.ContactInfo.LastName)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, nil, "phone",
+				config.contactInfo.phone, *response.ContactInfo.Phone)
+			if err != nil {
+				return err
+			}
+		}
+
+		if config.emailServer != nil {
+			err = acctest.TestAttributesMatchString(resourceType, nil, "source_addr",
+				config.emailServer.sourceAddr, response.EmailServer.SourceAddr)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, nil, "email_server",
+				config.emailServer.emailServer, response.EmailServer.EmailServer)
+			if err != nil {
+				return err
+			}
+		}
+
+		if config.captchaSettings != nil {
+			err = acctest.TestAttributesMatchString(resourceType, nil, "site_key",
+				config.captchaSettings.siteKey, *response.CaptchaSettings.SiteKey)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil

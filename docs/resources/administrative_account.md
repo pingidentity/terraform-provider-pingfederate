@@ -3,12 +3,12 @@
 page_title: "pingfederate_administrative_account Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a AdministrativeAccount.
+  Manages an administrative account.
 ---
 
 # pingfederate_administrative_account (Resource)
 
-Manages a AdministrativeAccount.
+Manages an administrative account.
 
 ## Example Usage
 
@@ -38,7 +38,7 @@ resource "pingfederate_administrative_account" "myAdministrativeAccount" {
 
 - `active` (Boolean) Indicates whether the account is active or not.
 - `auditor` (Boolean) Indicates whether the account belongs to an Auditor. An Auditor has View-only permissions for all administrative functions. An Auditor cannot have any administrative roles.
-- `department` (String) The Department name of account user.
+- `department` (String) The Department name of the account user.
 - `description` (String) Description of the account.
 - `email_address` (String) Email address associated with the account.
 - `phone_number` (String) Phone number associated with the account.

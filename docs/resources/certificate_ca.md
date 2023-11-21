@@ -3,12 +3,12 @@
 page_title: "pingfederate_certificate_ca Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a CertificateCA Import.
+  Manages a trusted Certificate CA.
 ---
 
 # pingfederate_certificate_ca (Resource)
 
-Manages a CertificateCA Import.
+Manages a trusted Certificate CA.
 
 ## Example Usage
 

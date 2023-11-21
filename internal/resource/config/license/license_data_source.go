@@ -58,7 +58,7 @@ type licenseDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *licenseDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes a License.",
+		Description: "Describes a license summary.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Description: "Name of the person the license was issued to.",
@@ -238,7 +238,7 @@ func (r *licenseDataSource) Configure(_ context.Context, req datasource.Configur
 // Read a DseeCompatAdministrativeAccountResponse object into the model struct
 func readLicenseResponseDataSource(ctx context.Context, r *client.LicenseView, state *licenseDataSourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.Id = types.StringValue("id")
+	state.Id = types.StringValue("license_id")
 	state.Name = internaltypes.StringTypeOrNil(r.Name, false)
 	state.MaxConnections = internaltypes.Int64TypeOrNil(r.MaxConnections)
 	state.UsedConnections = internaltypes.Int64TypeOrNil(r.UsedConnections)
@@ -289,7 +289,7 @@ func (r *licenseDataSource) Read(ctx context.Context, req datasource.ReadRequest
 
 	apiReadLicense, httpResp, err := r.apiClient.LicenseAPI.GetLicense(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the License", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the license summary", err, httpResp)
 		return
 	}
 

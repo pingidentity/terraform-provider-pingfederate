@@ -3,12 +3,12 @@
 page_title: "pingfederate_key_pair_signing_import Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a KeyPairsSigningImport.
+  Manages a file for importing a key pair.
 ---
 
 # pingfederate_key_pair_signing_import (Resource)
 
-Manages a KeyPairsSigningImport.
+Manages a file for importing a key pair.
 
 ## Example Usage
 

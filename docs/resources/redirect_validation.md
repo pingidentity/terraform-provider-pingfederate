@@ -3,12 +3,12 @@
 page_title: "pingfederate_redirect_validation Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a RedirectValidation.
+  Manages the settings for redirect validation.
 ---
 
 # pingfederate_redirect_validation (Resource)
 
-Manages a RedirectValidation.
+Manages the settings for redirect validation.
 
 ## Example Usage
 

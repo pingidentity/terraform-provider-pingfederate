@@ -107,7 +107,7 @@ type idpAdapterResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages an Idp Adapter",
+		Description: "Manages an IdP adapter instance.",
 		Attributes: map[string]schema.Attribute{
 			"authn_ctx_class_ref": schema.StringAttribute{
 				Description: "The fixed value that indicates how the user was authenticated.",
@@ -221,6 +221,8 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 					"inherited": schema.BoolAttribute{
 						Description: "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
 						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
 					},
 				},
 			},
@@ -339,7 +341,14 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 		respDiags.Append(diags...)
 		attributeContractValues["unique_user_key_attribute"] = types.StringPointerValue(r.AttributeContract.UniqueUserKeyAttribute)
 		attributeContractValues["mask_ognl_values"] = types.BoolPointerValue(r.AttributeContract.MaskOgnlValues)
-		attributeContractValues["inherited"] = types.BoolPointerValue(r.AttributeContract.Inherited)
+
+		// PF returns false as nil for inherited in some cases
+		inherited := false
+		if r.AttributeContract.Inherited != nil {
+			inherited = *r.AttributeContract.Inherited
+		}
+
+		attributeContractValues["inherited"] = types.BoolValue(inherited)
 
 		// Only include core_attributes specified in the plan in the response
 		if internaltypes.IsDefined(plan.AttributeContract) && internaltypes.IsDefined(plan.AttributeContract.Attributes()["core_attributes"]) {
@@ -480,7 +489,6 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	// Get the current state to see how any attributes are changing
 	updateIdpAdapter := r.apiClient.IdpAdaptersAPI.UpdateIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.AdapterId.ValueString())
 
 	var pluginDescriptorRef client.ResourceLink
@@ -523,7 +531,7 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 
 }
 
-// Delete the Idp Adapter
+// Delete the IdP Adapter
 func (r *idpAdapterResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
 	var state idpAdapterResourceModel
@@ -534,11 +542,11 @@ func (r *idpAdapterResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 	httpResp, err := r.apiClient.IdpAdaptersAPI.DeleteIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.AdapterId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the Idp Adapter", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the IdP adapter", err, httpResp)
 	}
 }
 
 func (r *idpAdapterResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
+	// Retrieve import ID and save to adapter_id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("adapter_id"), req, resp)
 }

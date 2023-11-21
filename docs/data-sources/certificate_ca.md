@@ -3,12 +3,12 @@
 page_title: "pingfederate_certificate_ca Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes CertificateCA Import.
+  Describes a trusted Certificate CA.
 ---
 
 # pingfederate_certificate_ca (Data Source)
 
-Describes CertificateCA Import.
+Describes a trusted Certificate CA.
 
 ## Example Usage
 

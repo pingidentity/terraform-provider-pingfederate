@@ -3,12 +3,12 @@
 page_title: "pingfederate_session_application_session_policy Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes a SessionApplicationSessionPolicy.
+  Describes the settings for an application session policy.
 ---
 
 # pingfederate_session_application_session_policy (Data Source)
 
-Describes a SessionApplicationSessionPolicy.
+Describes the settings for an application session policy.
 
 ## Example Usage
 

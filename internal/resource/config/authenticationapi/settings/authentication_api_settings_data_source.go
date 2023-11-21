@@ -59,7 +59,7 @@ type authenticationApiSettingsDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *authenticationApiSettingsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes a AuthenticationApiSettings.",
+		Description: "Describes the authentication API application settings.",
 		Attributes: map[string]schema.Attribute{
 			"api_enabled": schema.BoolAttribute{
 				Description: "Enable Authentication API",
@@ -100,12 +100,11 @@ func (r *authenticationApiSettingsDataSource) Schema(ctx context.Context, req da
 
 // Read a AuthenticationApiSettingsResponse object into the model struct
 func readAuthenticationApiSettingsResponseDataSource(ctx context.Context, r *client.AuthnApiSettings, state *authenticationApiSettingsDataSourceModel) diag.Diagnostics {
-	//TODO different placeholder?
-	state.Id = types.StringValue("id")
-	state.ApiEnabled = types.BoolValue(*r.ApiEnabled)
-	state.EnableApiDescriptions = types.BoolValue(*r.EnableApiDescriptions)
-	state.RestrictAccessToRedirectlessMode = types.BoolValue(*r.RestrictAccessToRedirectlessMode)
-	state.IncludeRequestContext = types.BoolValue(*r.IncludeRequestContext)
+	state.Id = types.StringValue("authentication_api_settings_id")
+	state.ApiEnabled = types.BoolPointerValue(r.ApiEnabled)
+	state.EnableApiDescriptions = types.BoolPointerValue(r.EnableApiDescriptions)
+	state.RestrictAccessToRedirectlessMode = types.BoolPointerValue(r.RestrictAccessToRedirectlessMode)
+	state.IncludeRequestContext = types.BoolPointerValue(r.IncludeRequestContext)
 	resourceLinkObjectValue, valueFromDiags := resourcelink.ToDataSourceState(ctx, r.DefaultApplicationRef)
 	state.DefaultApplicationRef = resourceLinkObjectValue
 
@@ -124,7 +123,7 @@ func (r *authenticationApiSettingsDataSource) Read(ctx context.Context, req data
 
 	apiReadAuthenticationApiSettings, httpResp, err := r.apiClient.AuthenticationApiAPI.GetAuthenticationApiSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Authentication Api Settings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the authentication API settings", err, httpResp)
 		return
 	}
 

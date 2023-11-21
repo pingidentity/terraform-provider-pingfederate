@@ -39,7 +39,7 @@ type idpDefaultUrlsDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *idpDefaultUrlsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes a IdpDefaultUrls.",
+		Description: "Describes the IdP default URL settings.",
 		Attributes: map[string]schema.Attribute{
 			"confirm_idp_slo": schema.BoolAttribute{
 				Description: "Prompt user to confirm Single Logout (SLO).",
@@ -83,7 +83,7 @@ func (r *idpDefaultUrlsDataSource) Configure(_ context.Context, req datasource.C
 
 // Read a IdpDefaultUrlsResponse object into the model struct
 func readIdpDefaultUrlsResponseDataSource(ctx context.Context, r *client.IdpDefaultUrl, state *idpDefaultUrlsDataSourceModel) {
-	state.Id = types.StringValue("id")
+	state.Id = types.StringValue("idp_default_urls_id")
 	state.ConfirmIdpSlo = types.BoolPointerValue(r.ConfirmIdpSlo)
 	state.IdpSloSuccessUrl = internaltypes.StringTypeOrNil(r.IdpSloSuccessUrl, false)
 	state.IdpErrorMsg = types.StringValue(r.IdpErrorMsg)
@@ -101,7 +101,7 @@ func (r *idpDefaultUrlsDataSource) Read(ctx context.Context, req datasource.Read
 
 	apiReadIdpDefaultUrls, httpResp, err := r.apiClient.IdpDefaultUrlsAPI.GetDefaultUrl(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Idp Default Urls", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the IdP default URLs", err, httpResp)
 		return
 	}
 

@@ -3,12 +3,12 @@
 page_title: "pingfederate_oauth_auth_server_settings_scopes_common_scope Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes a OauthAuthServerSettingsScopesCommonScope.
+  Describes a common scope in the authorization server settings.
 ---
 
 # pingfederate_oauth_auth_server_settings_scopes_common_scope (Data Source)
 
-Describes a OauthAuthServerSettingsScopesCommonScope.
+Describes a common scope in the authorization server settings.
 
 ## Example Usage
 
