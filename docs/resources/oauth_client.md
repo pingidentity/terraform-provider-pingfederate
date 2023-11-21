@@ -13,12 +13,6 @@ Manages an Oauth Client
 ## Example Usage
 
 ```terraform
-resource "pingfederate_oauth_client" "simpleOauthClient" {
-  client_id   = "simpleOauthClientId"
-  grant_types = ["DEVICE_CODE"]
-  name        = "simpleOauthClient"
-}
-
 resource "pingfederate_oauth_client" "myOauthClient" {
   client_id = "oauthClientId"
   grant_types = [
