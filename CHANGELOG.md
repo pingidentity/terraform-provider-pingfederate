@@ -1,4 +1,4 @@
-# v0.3.0 (unreleased)
+# v0.3.0 November 22, 2023
 ### FEATURES
 #### Resources
 * **New Resource:** `pingfederate_oauth_open_id_connect_policy` ([#105](https://github.com/pingidentity/terraform-provider-pingfederate/pull/105))
