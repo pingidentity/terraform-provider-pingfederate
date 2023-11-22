@@ -788,6 +788,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"connection_target_type": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString("STANDARD"),
 				Description: "The connection target type. This field is intended for bulk import/export usage. Changing its value may result in unexpected behavior.",
 				Validators: []validator.String{
 					stringvalidator.OneOf(
@@ -970,6 +972,10 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			"license_connection_group": schema.StringAttribute{
 				Optional:    true,
 				Description: "The license connection group. If your PingFederate license is based on connection groups, each connection must be assigned to a group before it can be used.",
+				// License connection group must not be empty if configured
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"logging_mode": schema.StringAttribute{
 				Optional:    true,
@@ -1988,6 +1994,8 @@ func readIdpSpconnectionResponse(ctx context.Context, r *client.SpConnection, st
 
 		state.AttributeQuery, respDiags = types.ObjectValueFrom(ctx, attributeQueryAttrTypes, r.AttributeQuery)
 		diags.Append(respDiags...)
+	} else {
+		state.AttributeQuery = types.ObjectNull(attributeQueryAttrTypes)
 	}
 
 	state.WsTrust, respDiags = types.ObjectValueFrom(ctx, wsTrustAttrTypes, r.WsTrust)
