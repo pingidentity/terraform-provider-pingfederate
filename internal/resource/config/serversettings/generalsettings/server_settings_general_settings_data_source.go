@@ -23,7 +23,7 @@ func NewServerSettingsGeneralSettingsDataSource() datasource.DataSource {
 	return &serverSettingsGeneralSettingsDataSource{}
 }
 
-// serverSettingsGeneralSettingsDataSource is the resource implementation.
+// serverSettingsGeneralSettingsDataSource is the datasource implementation.
 type serverSettingsGeneralSettingsDataSource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient

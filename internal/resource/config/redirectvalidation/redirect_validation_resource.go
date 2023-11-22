@@ -236,41 +236,10 @@ func (r *redirectValidationResource) Configure(_ context.Context, req resource.C
 func readRedirectValidationResponse(ctx context.Context, r *client.RedirectValidationSettings, state *redirectValidationResourceModel, existingId *string) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.Id = id.GenerateUUIDToState(existingId)
-	whiteListAttrs := r.GetRedirectValidationLocalSettings().WhiteList
-	var whiteListSliceAttrVal = []attr.Value{}
-	whiteListSliceType := types.ObjectType{AttrTypes: whiteListAttrTypes}
-	for i := 0; i < len(whiteListAttrs); i++ {
-		whiteListAttrValues := map[string]attr.Value{
-			"target_resource_sso":      types.BoolPointerValue(whiteListAttrs[i].TargetResourceSSO),
-			"target_resource_slo":      types.BoolPointerValue(whiteListAttrs[i].TargetResourceSLO),
-			"in_error_resource":        types.BoolPointerValue(whiteListAttrs[i].InErrorResource),
-			"idp_discovery":            types.BoolPointerValue(whiteListAttrs[i].IdpDiscovery),
-			"valid_domain":             types.StringValue(whiteListAttrs[i].ValidDomain),
-			"valid_path":               types.StringPointerValue(whiteListAttrs[i].ValidPath),
-			"allow_query_and_fragment": types.BoolPointerValue(whiteListAttrs[i].AllowQueryAndFragment),
-			"require_https":            types.BoolPointerValue(whiteListAttrs[i].RequireHttps),
-		}
-		whiteListObj, respDiags := types.ObjectValue(whiteListAttrTypes, whiteListAttrValues)
-		diags.Append(respDiags...)
-		whiteListSliceAttrVal = append(whiteListSliceAttrVal, whiteListObj)
-	}
-	whiteListSlice, respDiags := types.ListValue(whiteListSliceType, whiteListSliceAttrVal)
+	redirectValidationLocalSettingsObjVal, respDiags := types.ObjectValueFrom(ctx, redirectValidationLocalSettingsAttrTypes, r.RedirectValidationLocalSettings)
 	diags.Append(respDiags...)
-	redirectValidationLocalSettings := r.GetRedirectValidationLocalSettings()
-	redirectValidationLocalSettingsAttrVals := map[string]attr.Value{
-		"enable_target_resource_validation_for_sso":           types.BoolValue(redirectValidationLocalSettings.GetEnableTargetResourceValidationForSSO()),
-		"enable_target_resource_validation_for_slo":           types.BoolValue(redirectValidationLocalSettings.GetEnableTargetResourceValidationForSLO()),
-		"enable_target_resource_validation_for_idp_discovery": types.BoolValue(redirectValidationLocalSettings.GetEnableTargetResourceValidationForIdpDiscovery()),
-		"enable_in_error_resource_validation":                 types.BoolValue(redirectValidationLocalSettings.GetEnableInErrorResourceValidation()),
-		"white_list":                                          whiteListSlice,
-	}
-	redirectValidationLocalSettingsObjVal := internaltypes.MaptoObjValue(redirectValidationLocalSettingsAttrTypes, redirectValidationLocalSettingsAttrVals, &diags)
-	redirectValidationPartnerSettingsSlo := r.GetRedirectValidationPartnerSettings().EnableWreplyValidationSLO
-	redirectValidationPartnerSettingsAttrVals := map[string]attr.Value{
-		"enable_wreply_validation_slo": types.BoolPointerValue(redirectValidationPartnerSettingsSlo),
-	}
-
-	redirectValidationPartnerSettingsObjVal := internaltypes.MaptoObjValue(redirectValidationPartnerSettingsAttrTypes, redirectValidationPartnerSettingsAttrVals, &diags)
+	redirectValidationPartnerSettingsObjVal, respDiags := types.ObjectValueFrom(ctx, redirectValidationPartnerSettingsAttrTypes, r.RedirectValidationPartnerSettings)
+	diags.Append(respDiags...)
 	state.RedirectValidationLocalSettings = redirectValidationLocalSettingsObjVal
 	state.RedirectValidationPartnerSettings = redirectValidationPartnerSettingsObjVal
 	return diags
