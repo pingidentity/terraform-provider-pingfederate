@@ -1,10 +1,16 @@
+# v0.4.0 (unreleased)
+### FEATURES
+
+#### Data Sources
+* **New Data Source:** `pingfederate_session_policies_global` ([#117](https://github.com/pingidentity/terraform-provider-pingfederate/pull/117))
+
+
 # v0.3.0 November 22, 2023
 ### FEATURES
 #### Resources
 * **New Resource:** `pingfederate_oauth_open_id_connect_policy` ([#105](https://github.com/pingidentity/terraform-provider-pingfederate/pull/105))
 
 #### Data Sources
-* **New Data Source:** `pingfederate_session_application_session_policy` ([#94](https://github.com/pingidentity/terraform-provider-pingfederate/pull/94))
 * **New Data Source:** `pingfederate_protocol_metadata_lifetime_settings` ([#100](https://github.com/pingidentity/terraform-provider-pingfederate/pull/100))
 * **New Data Source:** `pingfederate_redirect_validation` ([#116](https://github.com/pingidentity/terraform-provider-pingfederate/pull/116))
 * **New Data Source:** `pingfederate_server_settings_general_settings` ([#101](https://github.com/pingidentity/terraform-provider-pingfederate/pull/101))
