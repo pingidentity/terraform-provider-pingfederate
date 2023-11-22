@@ -47,12 +47,12 @@ func (r *sessionSettingsDataSource) Schema(ctx context.Context, req datasource.S
 				Optional:    false,
 			},
 			"revoke_user_session_on_logout": schema.BoolAttribute{
-				Description: "Determines whether the user's session is revoked on logout. If this property is not provided on a PUT, the setting is left unchanged.",
+				Description: "Determines whether the user's session is revoked on logout.",
 				Computed:    true,
 				Optional:    false,
 			},
 			"session_revocation_lifetime": schema.Int64Attribute{
-				Description: "How long a session revocation is tracked and stored, in minutes. If this property is not provided on a PUT, the setting is left unchanged.",
+				Description: "How long a session revocation is tracked and stored, in minutes.",
 				Computed:    true,
 				Optional:    false,
 			},

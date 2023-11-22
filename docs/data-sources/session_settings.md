@@ -23,6 +23,6 @@ data "pingfederate_session_settings" "mySessionSettingsExample" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `revoke_user_session_on_logout` (Boolean) Determines whether the user's session is revoked on logout. If this property is not provided on a PUT, the setting is left unchanged.
-- `session_revocation_lifetime` (Number) How long a session revocation is tracked and stored, in minutes. If this property is not provided on a PUT, the setting is left unchanged.
+- `revoke_user_session_on_logout` (Boolean) Determines whether the user's session is revoked on logout.
+- `session_revocation_lifetime` (Number) How long a session revocation is tracked and stored, in minutes.
 - `track_adapter_sessions_for_logout` (Boolean) Determines whether adapter sessions are tracked for cleanup during single logout. The default is false.
