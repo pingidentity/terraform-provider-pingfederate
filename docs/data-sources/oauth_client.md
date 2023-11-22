@@ -25,13 +25,6 @@ data "pingfederate_oauth_client" "myOauthClientExample" {
 
 - `client_id` (String) A unique identifier the client provides to the Resource Server to identify itself. This identifier is included with every request the client makes. For PUT requests, this field is optional and it will be overridden by the 'id' parameter of the PUT request.
 
-### Optional
-
-- `ciba_require_signed_requests` (Boolean) Determines whether CIBA signed requests are required for this client.
-- `default_access_token_manager_ref` (Attributes) The default access token manager for this client. (see [below for nested schema](#nestedatt--default_access_token_manager_ref))
-- `device_polling_interval_override` (Number) The amount of time client should wait between polling requests, in seconds. This overrides the 'devicePollingInterval' value present in Authorization Server Settings.
-- `logo_url` (String) The location of the logo used on user-facing OAuth grant authorization and revocation pages.
-
 ### Read-Only
 
 - `allow_authentication_api_init` (Boolean) Set to true to allow this client to initiate the authentication API redirectless flow.
@@ -52,14 +45,17 @@ PS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256
 PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384
 PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512
 RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.
+- `ciba_require_signed_requests` (Boolean) Determines whether CIBA signed requests are required for this client.
 - `ciba_user_code_supported` (Boolean) Determines whether the CIBA user code parameter is supported by this client.
 - `client_auth` (Attributes) Client authentication settings. If this model is null, it indicates that no client authentication will be used. (see [below for nested schema](#nestedatt--client_auth))
 - `client_secret_changed_time` (String) The time at which the client secret was last changed. This property is read only and is ignored on PUT and POST requests.
 - `client_secret_retention_period` (Number) The length of time in minutes that client secrets will be retained as secondary secrets after secret change. The default value is 0, which will disable secondary client secret retention. This value will override the Client Secret Retention Period value on the Authorization Server Settings.
 - `client_secret_retention_period_type` (String) Use OVERRIDE_SERVER_DEFAULT to override the Client Secret Retention Period value on the Authorization Server Settings. SERVER_DEFAULT will default to the Client Secret Retention Period value on the Authorization Server Setting. Defaults to SERVER_DEFAULT.
 - `creation_date` (String) The time at which the client was created. This property is read only.
+- `default_access_token_manager_ref` (Attributes) The default access token manager for this client. (see [below for nested schema](#nestedatt--default_access_token_manager_ref))
 - `description` (String) A description of what the client application does. This description appears when the user is prompted for authorization.
 - `device_flow_setting_type` (String) Allows an administrator to override the Device Authorization Settings set globally for the OAuth AS. Defaults to SERVER_DEFAULT.
+- `device_polling_interval_override` (Number) The amount of time client should wait between polling requests, in seconds. This overrides the 'devicePollingInterval' value present in Authorization Server Settings.
 - `enabled` (Boolean) Specifies whether the client is enabled. The default value is true.
 - `exclusive_scopes` (Set of String) The exclusive scopes available for this client.
 - `extended_parameters` (Attributes Map) OAuth Client Metadata can be extended to use custom Client Metadata Parameters. The names of these custom parameters should be defined in /extendedProperties. (see [below for nested schema](#nestedatt--extended_parameters))
@@ -102,6 +98,7 @@ PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384
 PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512
 A null value will represent the default algorithm which is RS256.
 RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
+- `logo_url` (String) The location of the logo used on user-facing OAuth grant authorization and revocation pages.
 - `modification_date` (String) The time at which the client was last changed. This property is read only.
 - `name` (String) A descriptive name for the client instance. This name appears when the user is prompted for authorization.
 - `oidc_policy` (Attributes) Open ID Connect Policy settings. This is included in the message only when OIDC is enabled. (see [below for nested schema](#nestedatt--oidc_policy))
@@ -181,18 +178,6 @@ RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
 - `user_authorization_url_override` (String) The URL used as 'verification_url' and 'verification_url_complete' values in a Device Authorization request. This property overrides the 'userAuthorizationUrl' value present in Authorization Server Settings.
 - `validate_using_all_eligible_atms` (Boolean) Validates token using all eligible access token managers for the client. This setting is ignored if 'restrictToDefaultAccessTokenManager' is set to true.
 
-<a id="nestedatt--default_access_token_manager_ref"></a>
-### Nested Schema for `default_access_token_manager_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 <a id="nestedatt--client_auth"></a>
 ### Nested Schema for `client_auth`
 
@@ -224,6 +209,18 @@ Read-Only:
 - `encrypted_secret` (String) Secondary client secret for Basic Authentication. To update the secondary client secret, specify the plaintext value in this field. This field will not be populated for GET requests.
 - `expiry_time` (String) The expiry time of the secondary secret.
 
+
+
+<a id="nestedatt--default_access_token_manager_ref"></a>
+### Nested Schema for `default_access_token_manager_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--extended_parameters"></a>

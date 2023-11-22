@@ -8,14 +8,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -51,73 +49,6 @@ func NewOauthClientDataSource() datasource.DataSource {
 type oauthClientDataSource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type oauthClientDataSourceModel struct {
-	Id                                                            types.String `tfsdk:"id"`
-	ClientId                                                      types.String `tfsdk:"client_id"`
-	Enabled                                                       types.Bool   `tfsdk:"enabled"`
-	RedirectUris                                                  types.Set    `tfsdk:"redirect_uris"`
-	GrantTypes                                                    types.Set    `tfsdk:"grant_types"`
-	Name                                                          types.String `tfsdk:"name"`
-	Description                                                   types.String `tfsdk:"description"`
-	ModificationDate                                              types.String `tfsdk:"modification_date"`
-	CreationDate                                                  types.String `tfsdk:"creation_date"`
-	LogoUrl                                                       types.String `tfsdk:"logo_url"`
-	DefaultAccessTokenManagerRef                                  types.Object `tfsdk:"default_access_token_manager_ref"`
-	RestrictToDefaultAccessTokenManager                           types.Bool   `tfsdk:"restrict_to_default_access_token_manager"`
-	ValidateUsingAllEligibleAtms                                  types.Bool   `tfsdk:"validate_using_all_eligible_atms"`
-	PersistentGrantExpirationType                                 types.String `tfsdk:"persistent_grant_expiration_type"`
-	PersistentGrantExpirationTime                                 types.Int64  `tfsdk:"persistent_grant_expiration_time"`
-	PersistentGrantExpirationTimeUnit                             types.String `tfsdk:"persistent_grant_expiration_time_unit"`
-	PersistentGrantIdleTimeoutType                                types.String `tfsdk:"persistent_grant_idle_timeout_type"`
-	PersistentGrantIdleTimeout                                    types.Int64  `tfsdk:"persistent_grant_idle_timeout"`
-	PersistentGrantIdleTimeoutTimeUnit                            types.String `tfsdk:"persistent_grant_idle_timeout_time_unit"`
-	PersistentGrantReuseType                                      types.String `tfsdk:"persistent_grant_reuse_type"`
-	PersistentGrantReuseGrantTypes                                types.Set    `tfsdk:"persistent_grant_reuse_grant_types"`
-	AllowAuthenticationApiInit                                    types.Bool   `tfsdk:"allow_authentication_api_init"`
-	BypassApprovalPage                                            types.Bool   `tfsdk:"bypass_approval_page"`
-	RestrictScopes                                                types.Bool   `tfsdk:"restrict_scopes"`
-	RestrictedScopes                                              types.Set    `tfsdk:"restricted_scopes"`
-	ExclusiveScopes                                               types.Set    `tfsdk:"exclusive_scopes"`
-	AuthorizationDetailTypes                                      types.Set    `tfsdk:"authorization_detail_types"`
-	RestrictedResponseTypes                                       types.Set    `tfsdk:"restricted_response_types"`
-	RequirePushedAuthorizationRequests                            types.Bool   `tfsdk:"require_pushed_authorization_requests"`
-	RequireJwtSecuredAuthorizationResponseMode                    types.Bool   `tfsdk:"require_jwt_secured_authorization_response_mode"`
-	RequireSignedRequests                                         types.Bool   `tfsdk:"require_signed_requests"`
-	RequestObjectSigningAlgorithm                                 types.String `tfsdk:"request_object_signing_algorithm"`
-	OidcPolicy                                                    types.Object `tfsdk:"oidc_policy"`
-	ClientAuth                                                    types.Object `tfsdk:"client_auth"`
-	JwksSettings                                                  types.Object `tfsdk:"jwks_settings"`
-	ExtendedParameters                                            types.Map    `tfsdk:"extended_parameters"`
-	DeviceFlowSettingType                                         types.String `tfsdk:"device_flow_setting_type"`
-	UserAuthorizationUrlOverride                                  types.String `tfsdk:"user_authorization_url_override"`
-	PendingAuthorizationTimeoutOverride                           types.Int64  `tfsdk:"pending_authorization_timeout_override"`
-	DevicePollingIntervalOverride                                 types.Int64  `tfsdk:"device_polling_interval_override"`
-	BypassActivationCodeConfirmationOverride                      types.Bool   `tfsdk:"bypass_activation_code_confirmation_override"`
-	RequireProofKeyForCodeExchange                                types.Bool   `tfsdk:"require_proof_key_for_code_exchange"`
-	CibaDeliveryMode                                              types.String `tfsdk:"ciba_delivery_mode"`
-	CibaNotificationEndpoint                                      types.String `tfsdk:"ciba_notification_endpoint"`
-	CibaPollingInterval                                           types.Int64  `tfsdk:"ciba_polling_interval"`
-	CibaRequireSignedRequests                                     types.Bool   `tfsdk:"ciba_require_signed_requests"`
-	CibaRequestObjectSigningAlgorithm                             types.String `tfsdk:"ciba_request_object_signing_algorithm"`
-	CibaUserCodeSupported                                         types.Bool   `tfsdk:"ciba_user_code_supported"`
-	RequestPolicyRef                                              types.Object `tfsdk:"request_policy_ref"`
-	TokenExchangeProcessorPolicyRef                               types.Object `tfsdk:"token_exchange_processor_policy_ref"`
-	RefreshRolling                                                types.String `tfsdk:"refresh_rolling"`
-	RefreshTokenRollingIntervalType                               types.String `tfsdk:"refresh_token_rolling_interval_type"`
-	RefreshTokenRollingInterval                                   types.Int64  `tfsdk:"refresh_token_rolling_interval"`
-	RefreshTokenRollingGracePeriodType                            types.String `tfsdk:"refresh_token_rolling_grace_period_type"`
-	RefreshTokenRollingGracePeriod                                types.Int64  `tfsdk:"refresh_token_rolling_grace_period"`
-	ClientSecretRetentionPeriodType                               types.String `tfsdk:"client_secret_retention_period_type"`
-	ClientSecretRetentionPeriod                                   types.Int64  `tfsdk:"client_secret_retention_period"`
-	ClientSecretChangedTime                                       types.String `tfsdk:"client_secret_changed_time"`
-	TokenIntrospectionSigningAlgorithm                            types.String `tfsdk:"token_introspection_signing_algorithm"`
-	TokenIntrospectionEncryptionAlgorithm                         types.String `tfsdk:"token_introspection_encryption_algorithm"`
-	TokenIntrospectionContentEncryptionAlgorithm                  types.String `tfsdk:"token_introspection_content_encryption_algorithm"`
-	JwtSecuredAuthorizationResponseModeSigningAlgorithm           types.String `tfsdk:"jwt_secured_authorization_response_mode_signing_algorithm"`
-	JwtSecuredAuthorizationResponseModeEncryptionAlgorithm        types.String `tfsdk:"jwt_secured_authorization_response_mode_encryption_algorithm"`
-	JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm types.String `tfsdk:"jwt_secured_authorization_response_mode_content_encryption_algorithm"`
 }
 
 // GetSchema defines the schema for the datasource.
@@ -168,14 +99,13 @@ func (r *oauthClientDataSource) Schema(ctx context.Context, req datasource.Schem
 			},
 			"logo_url": schema.StringAttribute{
 				Description: "The location of the logo used on user-facing OAuth grant authorization and revocation pages.",
-				Optional:    true,
-				Validators: []validator.String{
-					configvalidators.ValidUrl(),
-				},
+				Optional:    false,
+				Computed:    true,
 			},
 			"default_access_token_manager_ref": schema.SingleNestedAttribute{
 				Description: "The default access token manager for this client.",
-				Optional:    true,
+				Optional:    false,
+				Computed:    true,
 				Attributes:  resourcelink.ToDataSourceSchema(),
 			},
 			"restrict_to_default_access_token_manager": schema.BoolAttribute{
@@ -472,7 +402,8 @@ func (r *oauthClientDataSource) Schema(ctx context.Context, req datasource.Schem
 			},
 			"device_polling_interval_override": schema.Int64Attribute{
 				Description: "The amount of time client should wait between polling requests, in seconds. This overrides the 'devicePollingInterval' value present in Authorization Server Settings.",
-				Optional:    true,
+				Optional:    false,
+				Computed:    true,
 			},
 			"bypass_activation_code_confirmation_override": schema.BoolAttribute{
 				Description: "Indicates if the Activation Code Confirmation page should be bypassed if 'verification_url_complete' is used by the end user to authorize a device. This overrides the 'bypassUseCodeConfirmation' value present in Authorization Server Settings.",
@@ -501,7 +432,8 @@ func (r *oauthClientDataSource) Schema(ctx context.Context, req datasource.Schem
 			},
 			"ciba_require_signed_requests": schema.BoolAttribute{
 				Description: "Determines whether CIBA signed requests are required for this client.",
-				Optional:    true,
+				Optional:    false,
+				Computed:    true,
 			},
 			"ciba_request_object_signing_algorithm": schema.StringAttribute{
 				MarkdownDescription: "The JSON Web Signature [JWS] algorithm that must be used to sign the CIBA Request Object. All signing algorithms are allowed if value is not present\nRS256 - RSA using SHA-256\nRS384 - RSA using SHA-384\nRS512 - RSA using SHA-512\nES256 - ECDSA using P256 Curve and SHA-256\nES384 - ECDSA using P384 Curve and SHA-384\nES512 - ECDSA using P521 Curve and SHA-512\nPS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\nPS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\nPS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\nRSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.",
@@ -610,7 +542,7 @@ func (r *oauthClientDataSource) Configure(_ context.Context, req datasource.Conf
 }
 
 // Read a OauthClientResponse object into the model struct
-func readOauthClientResponseDataSource(ctx context.Context, r *client.Client, state *oauthClientDataSourceModel) diag.Diagnostics {
+func readOauthClientResponseDataSource(ctx context.Context, r *client.Client, state *oauthClientModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.Id = types.StringValue(r.ClientId)
 	state.ClientId = types.StringValue(r.ClientId)
@@ -740,7 +672,7 @@ func readOauthClientResponseDataSource(ctx context.Context, r *client.Client, st
 
 // Read resource information
 func (r *oauthClientDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state oauthClientDataSourceModel
+	var state oauthClientModel
 
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)

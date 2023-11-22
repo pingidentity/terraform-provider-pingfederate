@@ -90,7 +90,7 @@ type oauthClientResource struct {
 	apiClient      *client.APIClient
 }
 
-type oauthClientResourceModel struct {
+type oauthClientModel struct {
 	Id                                                            types.String `tfsdk:"id"`
 	ClientId                                                      types.String `tfsdk:"client_id"`
 	Enabled                                                       types.Bool   `tfsdk:"enabled"`
@@ -905,7 +905,7 @@ func (r *oauthClientResource) Configure(_ context.Context, req resource.Configur
 }
 
 func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var model oauthClientResourceModel
+	var model oauthClientModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
 
 	// Persistent Grant Expiration Validation
@@ -1028,7 +1028,7 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 	}
 }
 
-func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state *oauthClientResourceModel) diag.Diagnostics {
+func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state *oauthClientModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.Id = types.StringValue(r.ClientId)
 	state.ClientId = types.StringValue(r.ClientId)
@@ -1178,7 +1178,7 @@ func grantTypes(grantTypesSet types.Set) []string {
 	return grantTypesSlice
 }
 
-func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client, plan oauthClientResourceModel) error {
+func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client, plan oauthClientModel) error {
 	addRequest.Enabled = plan.Enabled.ValueBoolPointer()
 	addRequest.Description = plan.Description.ValueStringPointer()
 	addRequest.LogoUrl = plan.LogoUrl.ValueStringPointer()
@@ -1323,7 +1323,7 @@ func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client
 }
 
 func (r *oauthClientResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan oauthClientResourceModel
+	var plan oauthClientModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -1347,7 +1347,7 @@ func (r *oauthClientResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	// Read the response into the state
-	var state oauthClientResourceModel
+	var state oauthClientModel
 
 	diags = readOauthClientResponse(ctx, oauthClientResponse, &plan, &state)
 	resp.Diagnostics.Append(diags...)
@@ -1356,7 +1356,7 @@ func (r *oauthClientResource) Create(ctx context.Context, req resource.CreateReq
 }
 
 func (r *oauthClientResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state oauthClientResourceModel
+	var state oauthClientModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -1386,7 +1386,7 @@ func (r *oauthClientResource) Read(ctx context.Context, req resource.ReadRequest
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *oauthClientResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 
-	var plan oauthClientResourceModel
+	var plan oauthClientModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -1414,7 +1414,7 @@ func (r *oauthClientResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	// Read the response
-	var state oauthClientResourceModel
+	var state oauthClientModel
 	diags = readOauthClientResponse(ctx, updateOauthClientResponse, &plan, &state)
 	resp.Diagnostics.Append(diags...)
 
@@ -1425,7 +1425,7 @@ func (r *oauthClientResource) Update(ctx context.Context, req resource.UpdateReq
 
 func (r *oauthClientResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state oauthClientResourceModel
+	var state oauthClientModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
