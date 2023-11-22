@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -1305,6 +1306,13 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				},
 				Optional:    true,
 				Description: "Outbound Provisioning allows an IdP to create and maintain user accounts at standards-based partner sites using SCIM as well as select-proprietary provisioning partner sites that are protocol-enabled.",
+				Validators: []validator.Object{
+					objectvalidator.ExactlyOneOf(
+						path.MatchRoot("outbound_provision"),
+						path.MatchRoot("sp_browser_sso"),
+						path.MatchRoot("ws_trust"),
+					),
+				},
 			},
 			"sp_browser_sso": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -1684,6 +1692,13 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				},
 				Optional:    true,
 				Description: "The SAML settings used to enable secure browser-based SSO to resources at your partner's site.",
+				Validators: []validator.Object{
+					objectvalidator.ExactlyOneOf(
+						path.MatchRoot("outbound_provision"),
+						path.MatchRoot("sp_browser_sso"),
+						path.MatchRoot("ws_trust"),
+					),
+				},
 			},
 			"type": schema.StringAttribute{
 				Optional:    false,
@@ -1780,6 +1795,13 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				},
 				Optional:    true,
 				Description: "Ws-Trust STS provides security-token validation and creation to extend SSO access to identity-enabled Web Services",
+				Validators: []validator.Object{
+					objectvalidator.ExactlyOneOf(
+						path.MatchRoot("outbound_provision"),
+						path.MatchRoot("sp_browser_sso"),
+						path.MatchRoot("ws_trust"),
+					),
+				},
 			},
 		},
 	}
