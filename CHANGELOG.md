@@ -1,3 +1,10 @@
+# v0.4.0 (unreleased)
+### FEATURES
+
+#### Data Sources
+* **New Data Source:** `pingfederate_session_policies_global` ([#117](https://github.com/pingidentity/terraform-provider-pingfederate/pull/117))
+
+
 # v0.3.0 November 22, 2023
 ### FEATURES
 #### Resources
