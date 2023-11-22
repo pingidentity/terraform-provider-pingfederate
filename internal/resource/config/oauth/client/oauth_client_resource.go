@@ -49,13 +49,6 @@ var (
 		"jwks":     basetypes.StringType{},
 	}
 
-	jwksSettingsDefaultAttrValue = map[string]attr.Value{
-		"jwks_url": types.StringNull(),
-		"jwks":     types.StringNull(),
-	}
-
-	jwksSettingsDefaultObj, _ = types.ObjectValue(jwksSettingsAttrType, jwksSettingsDefaultAttrValue)
-
 	oidcPolicyAttrType = map[string]attr.Type{
 		"id_token_signing_algorithm":                  basetypes.StringType{},
 		"id_token_encryption_algorithm":               basetypes.StringType{},
@@ -652,9 +645,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 			},
 			"jwks_settings": schema.SingleNestedAttribute{
 				Description: "JSON Web Key Set Settings of the OAuth client. Required if private key JWT client authentication or signed requests is enabled.",
-				Computed:    true,
 				Optional:    true,
-				Default:     objectdefault.StaticValue(jwksSettingsDefaultObj),
 				Attributes: map[string]schema.Attribute{
 					"jwks_url": schema.StringAttribute{
 						Description: "JSON Web Key Set (JWKS) URL of the OAuth client. Either 'jwks' or 'jwksUrl' must be provided if private key JWT client authentication or signed requests is enabled. If the client signs its JWTs using an RSASSA-PSS signing algorithm, PingFederate must either use Java 11 or be integrated with a hardware security module (HSM) to process the digital signatures.",
@@ -1108,21 +1099,41 @@ func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state 
 	state.RequireJwtSecuredAuthorizationResponseMode = types.BoolPointerValue(r.RequireJwtSecuredAuthorizationResponseMode)
 	state.RequireSignedRequests = types.BoolPointerValue(r.RequireSignedRequests)
 	state.RequestObjectSigningAlgorithm = types.StringPointerValue(r.RequestObjectSigningAlgorithm)
+	state.DeviceFlowSettingType = types.StringPointerValue(r.DeviceFlowSettingType)
+	state.UserAuthorizationUrlOverride = types.StringPointerValue(r.UserAuthorizationUrlOverride)
+	state.PendingAuthorizationTimeoutOverride = types.Int64PointerValue(r.PendingAuthorizationTimeoutOverride)
+	state.DevicePollingIntervalOverride = types.Int64PointerValue(r.DevicePollingIntervalOverride)
+	state.BypassActivationCodeConfirmationOverride = types.BoolPointerValue(r.BypassActivationCodeConfirmationOverride)
+	state.RequireProofKeyForCodeExchange = types.BoolPointerValue(r.RequireProofKeyForCodeExchange)
+	state.CibaDeliveryMode = types.StringPointerValue(r.CibaDeliveryMode)
+	state.CibaNotificationEndpoint = types.StringPointerValue(r.CibaNotificationEndpoint)
+	state.CibaPollingInterval = types.Int64PointerValue(r.CibaPollingInterval)
+	state.CibaRequireSignedRequests = types.BoolPointerValue(r.CibaRequireSignedRequests)
+	state.CibaRequestObjectSigningAlgorithm = types.StringPointerValue(r.CibaRequestObjectSigningAlgorithm)
+	state.CibaUserCodeSupported = types.BoolPointerValue(r.CibaUserCodeSupported)
+	state.RefreshTokenRollingGracePeriodType = types.StringPointerValue(r.RefreshTokenRollingGracePeriodType)
+	state.RefreshTokenRollingGracePeriod = types.Int64PointerValue(r.RefreshTokenRollingGracePeriod)
+	state.ClientSecretRetentionPeriodType = types.StringPointerValue(r.ClientSecretRetentionPeriodType)
+	state.ClientSecretRetentionPeriod = types.Int64PointerValue(r.ClientSecretRetentionPeriod)
+	state.ClientSecretChangedTime = types.StringValue(r.GetClientSecretChangedTime().Format(time.RFC3339Nano))
+	state.TokenIntrospectionSigningAlgorithm = types.StringPointerValue(r.TokenIntrospectionSigningAlgorithm)
+	state.TokenIntrospectionEncryptionAlgorithm = types.StringPointerValue(r.TokenIntrospectionEncryptionAlgorithm)
+	state.TokenIntrospectionContentEncryptionAlgorithm = types.StringPointerValue(r.TokenIntrospectionContentEncryptionAlgorithm)
+	state.JwtSecuredAuthorizationResponseModeSigningAlgorithm = types.StringPointerValue(r.JwtSecuredAuthorizationResponseModeSigningAlgorithm)
+	state.JwtSecuredAuthorizationResponseModeEncryptionAlgorithm = types.StringPointerValue(r.JwtSecuredAuthorizationResponseModeEncryptionAlgorithm)
+	state.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm = types.StringPointerValue(r.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm)
 
 	// state.OidcPolicy
-	var oidcPolicyToState types.Object
-	if r.OidcPolicy != nil {
-		oidcPolicyToState, respDiags = types.ObjectValueFrom(ctx, oidcPolicyAttrType, r.OidcPolicy)
-		diags.Append(respDiags...)
-	} else {
-		oidcPolicyToState = oidcPolicyDefaultObj
-	}
+	oidcPolicyToState, respDiags := types.ObjectValueFrom(ctx, oidcPolicyAttrType, r.OidcPolicy)
+	diags.Append(respDiags...)
 	state.OidcPolicy = oidcPolicyToState
 
 	// state.ClientAuth
 	var clientAuthToState types.Object
 	clientAuthFromPlan := plan.ClientAuth.Attributes()
 	var secretToState basetypes.StringValue
+
+	// state.ClientAuth.Secret
 	secretVal := clientAuthFromPlan["secret"]
 	if secretVal != nil && internaltypes.IsNonEmptyString(secretVal.(types.String)) {
 		secretToState = types.StringValue(secretVal.(types.String).ValueString())
@@ -1130,6 +1141,7 @@ func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state 
 		secretToState = types.StringNull()
 	}
 
+	// state.ClientAuth.Secret
 	var secondarySecretsObjToState types.Set
 	var secondarySecretsSetSlice []attr.Value
 	secondarySecretsFromPlan := clientAuthFromPlan["secondary_secrets"]
@@ -1143,6 +1155,7 @@ func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state 
 	secondarySecretsObjToState, respDiags = types.SetValue(types.ObjectType{AttrTypes: secondarySecretsAttrType}, secondarySecretsSetSlice)
 	diags.Append(respDiags...)
 
+	// state.ClientAuth to state
 	clientAuthAttrValue := map[string]attr.Value{}
 	clientAuthAttrValue["type"] = types.StringPointerValue(r.ClientAuth.Type)
 	clientAuthAttrValue["secret"] = secretToState
@@ -1151,19 +1164,13 @@ func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state 
 	clientAuthAttrValue["client_cert_subject_dn"] = types.StringPointerValue(r.ClientAuth.ClientCertSubjectDn)
 	clientAuthAttrValue["enforce_replay_prevention"] = types.BoolPointerValue(r.ClientAuth.EnforceReplayPrevention)
 	clientAuthAttrValue["token_endpoint_auth_signing_algorithm"] = types.StringPointerValue(r.ClientAuth.TokenEndpointAuthSigningAlgorithm)
-
 	clientAuthToState, respDiags = types.ObjectValue(clientAuthAttrType, clientAuthAttrValue)
 	diags.Append(respDiags...)
 	state.ClientAuth = clientAuthToState
 
 	// state.JwksSettings
-	var jwksSettingsToState types.Object
-	if r.JwksSettings != nil {
-		jwksSettingsToState, respDiags = types.ObjectValueFrom(ctx, jwksSettingsAttrType, r.JwksSettings)
-		diags.Append(respDiags...)
-	} else {
-		jwksSettingsToState = jwksSettingsDefaultObj
-	}
+	jwksSettingsToState, respDiags := types.ObjectValueFrom(ctx, jwksSettingsAttrType, r.JwksSettings)
+	diags.Append(respDiags...)
 	state.JwksSettings = jwksSettingsToState
 
 	// state.ExtendedParameters
@@ -1174,19 +1181,6 @@ func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state 
 	diags.Append(respDiags...)
 	state.ExtendedParameters = extendedParametersToState
 
-	state.DeviceFlowSettingType = types.StringPointerValue(r.DeviceFlowSettingType)
-	state.UserAuthorizationUrlOverride = types.StringPointerValue(r.UserAuthorizationUrlOverride)
-	state.PendingAuthorizationTimeoutOverride = types.Int64PointerValue(r.PendingAuthorizationTimeoutOverride)
-	state.DevicePollingIntervalOverride = types.Int64PointerValue(r.DevicePollingIntervalOverride)
-	state.BypassActivationCodeConfirmationOverride = types.BoolPointerValue(r.BypassActivationCodeConfirmationOverride)
-	state.RequireProofKeyForCodeExchange = types.BoolPointerValue(r.RequireProofKeyForCodeExchange)
-	state.CibaDeliveryMode = types.StringPointerValue(r.CibaDeliveryMode)
-	state.CibaNotificationEndpoint = types.StringPointerValue(r.CibaNotificationEndpoint)
-	state.CibaPollingInterval = types.Int64PointerValue(r.CibaPollingInterval)
-	state.CibaRequireSignedRequests = types.BoolPointerValue(r.CibaRequireSignedRequests)
-	state.CibaRequestObjectSigningAlgorithm = types.StringPointerValue(r.CibaRequestObjectSigningAlgorithm)
-	state.CibaUserCodeSupported = types.BoolPointerValue(r.CibaUserCodeSupported)
-
 	// state.RequestPolicyRef
 	requestPolicyRefToState, respDiags := resourcelink.ToState(ctx, r.RequestPolicyRef)
 	diags.Append(respDiags...)
@@ -1196,18 +1190,6 @@ func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state 
 	tokenExchangeProcessorPolicyRefToState, respDiags := resourcelink.ToState(ctx, r.TokenExchangeProcessorPolicyRef)
 	diags.Append(respDiags...)
 	state.TokenExchangeProcessorPolicyRef = tokenExchangeProcessorPolicyRefToState
-
-	state.RefreshTokenRollingGracePeriodType = types.StringPointerValue(r.RefreshTokenRollingGracePeriodType)
-	state.RefreshTokenRollingGracePeriod = types.Int64PointerValue(r.RefreshTokenRollingGracePeriod)
-	state.ClientSecretRetentionPeriodType = types.StringPointerValue(r.ClientSecretRetentionPeriodType)
-	state.ClientSecretRetentionPeriod = types.Int64PointerValue(r.ClientSecretRetentionPeriod)
-	state.ClientSecretChangedTime = types.StringValue(r.GetClientSecretChangedTime().Format(time.RFC3339Nano))
-	state.TokenIntrospectionSigningAlgorithm = types.StringPointerValue(r.TokenIntrospectionSigningAlgorithm)
-	state.TokenIntrospectionEncryptionAlgorithm = types.StringPointerValue(r.TokenIntrospectionEncryptionAlgorithm)
-	state.TokenIntrospectionContentEncryptionAlgorithm = types.StringPointerValue(r.TokenIntrospectionContentEncryptionAlgorithm)
-	state.JwtSecuredAuthorizationResponseModeSigningAlgorithm = types.StringPointerValue(r.JwtSecuredAuthorizationResponseModeSigningAlgorithm)
-	state.JwtSecuredAuthorizationResponseModeEncryptionAlgorithm = types.StringPointerValue(r.JwtSecuredAuthorizationResponseModeEncryptionAlgorithm)
-	state.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm = types.StringPointerValue(r.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm)
 
 	return diags
 }
