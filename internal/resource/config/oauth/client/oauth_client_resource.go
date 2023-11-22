@@ -66,7 +66,7 @@ var (
 		"expiry_time": basetypes.StringType{},
 	}
 
-	secondarySecretsEmptyObj, _ = types.SetValue(types.ObjectType{AttrTypes: secondarySecretsAttrType}, []attr.Value{})
+	secondarySecretsEmptySet, _ = types.SetValue(types.ObjectType{AttrTypes: secondarySecretsAttrType}, []attr.Value{})
 
 	clientAuthAttrType = map[string]attr.Type{
 		"type":                                  basetypes.StringType{},
@@ -551,7 +551,6 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						Description: "Client authentication type. The required field for type SECRET is secret.	The required fields for type CERTIFICATE are clientCertIssuerDn and clientCertSubjectDn. The required field for type PRIVATE_KEY_JWT is: either jwks or jwksUrl.",
 						Computed:    true,
 						Optional:    true,
-						Default:     stringdefault.StaticString("NONE"),
 						Validators: []validator.String{
 							stringvalidator.OneOf("NONE",
 								"CERTIFICATE",
@@ -568,7 +567,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						Description: "The list of secondary client secrets that are temporarily retained.",
 						Computed:    true,
 						Optional:    true,
-						Default:     setdefault.StaticValue(secondarySecretsEmptyObj),
+						Default:     setdefault.StaticValue(secondarySecretsEmptySet),
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"secret": schema.StringAttribute{
@@ -1028,6 +1027,33 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 	}
 }
 
+func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	var plan *oauthClientModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	var respDiags diag.Diagnostics
+
+	// If the plan is null, this must be a destroy. Just exit early
+	if plan == nil {
+		return
+	}
+
+	// Some default for fields attributes depend on the field type
+	if !internaltypes.IsDefined(plan.ClientAuth) {
+		clientAuth := plan.ClientAuth.Attributes()
+		clientAuth["type"] = types.StringValue("NONE")
+		clientAuth["secret"] = types.StringNull()
+		clientAuth["secondary_secrets"] = secondarySecretsEmptySet
+		clientAuth["client_cert_issuer_dn"] = types.StringNull()
+		clientAuth["client_cert_subject_dn"] = types.StringNull()
+		clientAuth["enforce_replay_prevention"] = types.BoolNull()
+		clientAuth["token_endpoint_auth_signing_algorithm"] = types.StringNull()
+		plan.ClientAuth, respDiags = types.ObjectValue(plan.ClientAuth.AttributeTypes(ctx), clientAuth)
+		resp.Diagnostics.Append(respDiags...)
+	}
+
+	resp.Plan.Set(ctx, plan)
+}
+
 func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state *oauthClientModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.Id = types.StringValue(r.ClientId)
@@ -1080,43 +1106,39 @@ func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state 
 
 	// state.ClientAuth
 	var clientAuthToState types.Object
-	if r.ClientAuth != nil {
-		clientAuthFromPlan := plan.ClientAuth.Attributes()
-		var secretToState basetypes.StringValue
-		secretVal := clientAuthFromPlan["secret"]
-		if secretVal != nil {
-			secretToState = types.StringValue(secretVal.(types.String).ValueString())
-		} else {
-			secretToState = types.StringNull()
-		}
-
-		var secondarySecretsSetSlice []attr.Value
-		var secondarySecretsObjToState types.Set
-		secondarySecretsFromPlan := clientAuthFromPlan["secondary_secrets"]
-		if secondarySecretsFromPlan != nil && len(secondarySecretsFromPlan.(types.Set).Elements()) > 0 {
-			for _, secondarySecretsFromPlan := range clientAuthFromPlan["secondary_secrets"].(types.Set).Elements() {
-				secondarySecretsAttrVal, respDiags := types.ObjectValueFrom(ctx, secondarySecretsAttrType, secondarySecretsFromPlan)
-				diags.Append(respDiags...)
-				secondarySecretsSetSlice = append(secondarySecretsSetSlice, secondarySecretsAttrVal)
-			}
-		}
-		secondarySecretsObjToState, respDiags = types.SetValue(types.ObjectType{AttrTypes: secondarySecretsAttrType}, secondarySecretsSetSlice)
-		diags.Append(respDiags...)
-
-		clientAuthAttrValue := map[string]attr.Value{}
-		clientAuthAttrValue["type"] = types.StringPointerValue(r.ClientAuth.Type)
-		clientAuthAttrValue["secret"] = secretToState
-		clientAuthAttrValue["secondary_secrets"] = secondarySecretsObjToState
-		clientAuthAttrValue["client_cert_issuer_dn"] = types.StringPointerValue(r.ClientAuth.ClientCertIssuerDn)
-		clientAuthAttrValue["client_cert_subject_dn"] = types.StringPointerValue(r.ClientAuth.ClientCertSubjectDn)
-		clientAuthAttrValue["enforce_replay_prevention"] = types.BoolPointerValue(r.ClientAuth.EnforceReplayPrevention)
-		clientAuthAttrValue["token_endpoint_auth_signing_algorithm"] = types.StringPointerValue(r.ClientAuth.TokenEndpointAuthSigningAlgorithm)
-
-		clientAuthToState, respDiags = types.ObjectValue(clientAuthAttrType, clientAuthAttrValue)
-		diags.Append(respDiags...)
+	clientAuthFromPlan := plan.ClientAuth.Attributes()
+	var secretToState basetypes.StringValue
+	secretVal := clientAuthFromPlan["secret"]
+	if secretVal != nil && internaltypes.IsNonEmptyString(secretVal.(types.String)) {
+		secretToState = types.StringValue(secretVal.(types.String).ValueString())
 	} else {
-		clientAuthToState = types.ObjectNull(clientAuthAttrType)
+		secretToState = types.StringNull()
 	}
+
+	var secondarySecretsObjToState types.Set
+	var secondarySecretsSetSlice []attr.Value
+	secondarySecretsFromPlan := clientAuthFromPlan["secondary_secrets"]
+	if secondarySecretsFromPlan != nil && len(secondarySecretsFromPlan.(types.Set).Elements()) > 0 {
+		for _, secondarySecretsFromPlan := range clientAuthFromPlan["secondary_secrets"].(types.Set).Elements() {
+			secondarySecretsAttrVal, respDiags := types.ObjectValueFrom(ctx, secondarySecretsAttrType, secondarySecretsFromPlan)
+			diags.Append(respDiags...)
+			secondarySecretsSetSlice = append(secondarySecretsSetSlice, secondarySecretsAttrVal)
+		}
+	}
+	secondarySecretsObjToState, respDiags = types.SetValue(types.ObjectType{AttrTypes: secondarySecretsAttrType}, secondarySecretsSetSlice)
+	diags.Append(respDiags...)
+
+	clientAuthAttrValue := map[string]attr.Value{}
+	clientAuthAttrValue["type"] = types.StringPointerValue(r.ClientAuth.Type)
+	clientAuthAttrValue["secret"] = secretToState
+	clientAuthAttrValue["secondary_secrets"] = secondarySecretsObjToState
+	clientAuthAttrValue["client_cert_issuer_dn"] = types.StringPointerValue(r.ClientAuth.ClientCertIssuerDn)
+	clientAuthAttrValue["client_cert_subject_dn"] = types.StringPointerValue(r.ClientAuth.ClientCertSubjectDn)
+	clientAuthAttrValue["enforce_replay_prevention"] = types.BoolPointerValue(r.ClientAuth.EnforceReplayPrevention)
+	clientAuthAttrValue["token_endpoint_auth_signing_algorithm"] = types.StringPointerValue(r.ClientAuth.TokenEndpointAuthSigningAlgorithm)
+
+	clientAuthToState, respDiags = types.ObjectValue(clientAuthAttrType, clientAuthAttrValue)
+	diags.Append(respDiags...)
 	state.ClientAuth = clientAuthToState
 
 	// state.JwksSettings
