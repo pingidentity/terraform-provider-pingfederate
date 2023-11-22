@@ -16,7 +16,6 @@ import (
 
 const oauthClientId = "myOauthClient"
 
-// Attributes to test with. Add optional properties to test here if desired.
 type oauthClientResourceModel struct {
 	clientId                                                      string
 	grantTypes                                                    []string
@@ -264,12 +263,17 @@ resource "pingfederate_oauth_client" "%s" {
   name        = "%s"
 	%s
 	%s
+}
+data "pingfederate_oauth_client" "%s" {
+  client_id = pingfederate_oauth_client.%s.client_id
 }`, resourceName,
 		oauthClientId,
 		acctest.StringSliceToTerraformString(resourceModel.grantTypes),
 		resourceModel.name,
 		optionalRedirectUris,
 		optionalHcl,
+		resourceName,
+		oauthClientId,
 	)
 }
 
