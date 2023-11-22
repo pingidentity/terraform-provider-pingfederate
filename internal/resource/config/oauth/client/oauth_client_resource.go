@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
@@ -48,6 +49,13 @@ var (
 		"jwks":     basetypes.StringType{},
 	}
 
+	jwksSettingsDefaultAttrValue = map[string]attr.Value{
+		"jwks_url": types.StringNull(),
+		"jwks":     types.StringNull(),
+	}
+
+	jwksSettingsDefaultObj, _ = types.ObjectValue(jwksSettingsAttrType, jwksSettingsDefaultAttrValue)
+
 	oidcPolicyAttrType = map[string]attr.Type{
 		"id_token_signing_algorithm":                  basetypes.StringType{},
 		"id_token_encryption_algorithm":               basetypes.StringType{},
@@ -60,6 +68,20 @@ var (
 		"pairwise_identifier_user_type":               basetypes.BoolType{},
 		"sector_identifier_uri":                       basetypes.StringType{},
 	}
+
+	oidcPolicyDefaultAttrValue = map[string]attr.Value{
+		"id_token_signing_algorithm":                  types.StringNull(),
+		"id_token_encryption_algorithm":               types.StringNull(),
+		"id_token_content_encryption_algorithm":       types.StringNull(),
+		"policy_group":                                types.ObjectNull(resourcelink.AttrType()),
+		"grant_access_session_revocation_api":         types.BoolValue(false),
+		"grant_access_session_session_management_api": types.BoolValue(false),
+		"ping_access_logout_capable":                  types.BoolValue(false),
+		"logout_uris":                                 types.SetNull(types.StringType),
+		"pairwise_identifier_user_type":               types.BoolValue(false),
+	}
+
+	oidcPolicyDefaultObj, _ = types.ObjectValue(oidcPolicyAttrType, oidcPolicyDefaultAttrValue)
 
 	secondarySecretsAttrType = map[string]attr.Type{
 		"secret":      basetypes.StringType{},
@@ -77,6 +99,18 @@ var (
 		"enforce_replay_prevention":             basetypes.BoolType{},
 		"token_endpoint_auth_signing_algorithm": basetypes.StringType{},
 	}
+
+	clientAuthDefaultAttrValue = map[string]attr.Value{
+		"type":                                  types.StringValue("NONE"),
+		"secret":                                types.StringNull(),
+		"secondary_secrets":                     secondarySecretsEmptySet,
+		"client_cert_issuer_dn":                 types.StringNull(),
+		"client_cert_subject_dn":                types.StringNull(),
+		"enforce_replay_prevention":             types.BoolNull(),
+		"token_endpoint_auth_signing_algorithm": types.StringNull(),
+	}
+
+	clientAuthDefaultObj, _ = types.ObjectValue(clientAuthAttrType, clientAuthDefaultAttrValue)
 )
 
 // OauthClientResource is a helper function to simplify the provider implementation.
@@ -437,6 +471,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Description: "Open ID Connect Policy settings. This is included in the message only when OIDC is enabled.",
 				Computed:    true,
 				Optional:    true,
+				Default:     objectdefault.StaticValue(oidcPolicyDefaultObj),
 				Attributes: map[string]schema.Attribute{
 					"id_token_signing_algorithm": schema.StringAttribute{
 						MarkdownDescription: "The JSON Web Signature [JWS] algorithm required for the ID Token.\nNONE - No signing algorithm\nHS256 - HMAC using SHA-256\nHS384 - HMAC using SHA-384\nHS512 - HMAC using SHA-512\nRS256 - RSA using SHA-256\nRS384 - RSA using SHA-384\nRS512 - RSA using SHA-512\nES256 - ECDSA using P256 Curve and SHA-256\nES384 - ECDSA using P384 Curve and SHA-384\nES512 - ECDSA using P521 Curve and SHA-512\nPS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\nPS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\nPS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\nA null value will represent the default algorithm which is RS256.\nRSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11",
@@ -546,10 +581,10 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Description: "Client authentication settings. If this model is null, it indicates that no client authentication will be used.",
 				Computed:    true,
 				Optional:    true,
+				Default:     objectdefault.StaticValue(clientAuthDefaultObj),
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{
 						Description: "Client authentication type. The required field for type SECRET is secret.	The required fields for type CERTIFICATE are clientCertIssuerDn and clientCertSubjectDn. The required field for type PRIVATE_KEY_JWT is: either jwks or jwksUrl.",
-						Computed:    true,
 						Optional:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOf("NONE",
@@ -617,7 +652,9 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 			},
 			"jwks_settings": schema.SingleNestedAttribute{
 				Description: "JSON Web Key Set Settings of the OAuth client. Required if private key JWT client authentication or signed requests is enabled.",
+				Computed:    true,
 				Optional:    true,
+				Default:     objectdefault.StaticValue(jwksSettingsDefaultObj),
 				Attributes: map[string]schema.Attribute{
 					"jwks_url": schema.StringAttribute{
 						Description: "JSON Web Key Set (JWKS) URL of the OAuth client. Either 'jwks' or 'jwksUrl' must be provided if private key JWT client authentication or signed requests is enabled. If the client signs its JWTs using an RSASSA-PSS signing algorithm, PingFederate must either use Java 11 or be integrated with a hardware security module (HSM) to process the digital signatures.",
@@ -1027,33 +1064,6 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 	}
 }
 
-func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	var plan *oauthClientModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	var respDiags diag.Diagnostics
-
-	// If the plan is null, this must be a destroy. Just exit early
-	if plan == nil {
-		return
-	}
-
-	// Some default for fields attributes depend on the field type
-	if !internaltypes.IsDefined(plan.ClientAuth) {
-		clientAuth := plan.ClientAuth.Attributes()
-		clientAuth["type"] = types.StringValue("NONE")
-		clientAuth["secret"] = types.StringNull()
-		clientAuth["secondary_secrets"] = secondarySecretsEmptySet
-		clientAuth["client_cert_issuer_dn"] = types.StringNull()
-		clientAuth["client_cert_subject_dn"] = types.StringNull()
-		clientAuth["enforce_replay_prevention"] = types.BoolNull()
-		clientAuth["token_endpoint_auth_signing_algorithm"] = types.StringNull()
-		plan.ClientAuth, respDiags = types.ObjectValue(plan.ClientAuth.AttributeTypes(ctx), clientAuth)
-		resp.Diagnostics.Append(respDiags...)
-	}
-
-	resp.Plan.Set(ctx, plan)
-}
-
 func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state *oauthClientModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.Id = types.StringValue(r.ClientId)
@@ -1100,8 +1110,13 @@ func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state 
 	state.RequestObjectSigningAlgorithm = types.StringPointerValue(r.RequestObjectSigningAlgorithm)
 
 	// state.OidcPolicy
-	oidcPolicyToState, respDiags := types.ObjectValueFrom(ctx, oidcPolicyAttrType, r.OidcPolicy)
-	diags.Append(respDiags...)
+	var oidcPolicyToState types.Object
+	if r.OidcPolicy != nil {
+		oidcPolicyToState, respDiags = types.ObjectValueFrom(ctx, oidcPolicyAttrType, r.OidcPolicy)
+		diags.Append(respDiags...)
+	} else {
+		oidcPolicyToState = oidcPolicyDefaultObj
+	}
 	state.OidcPolicy = oidcPolicyToState
 
 	// state.ClientAuth
@@ -1142,8 +1157,13 @@ func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state 
 	state.ClientAuth = clientAuthToState
 
 	// state.JwksSettings
-	jwksSettingsToState, respDiags := types.ObjectValueFrom(ctx, jwksSettingsAttrType, r.JwksSettings)
-	diags.Append(respDiags...)
+	var jwksSettingsToState types.Object
+	if r.JwksSettings != nil {
+		jwksSettingsToState, respDiags = types.ObjectValueFrom(ctx, jwksSettingsAttrType, r.JwksSettings)
+		diags.Append(respDiags...)
+	} else {
+		jwksSettingsToState = jwksSettingsDefaultObj
+	}
 	state.JwksSettings = jwksSettingsToState
 
 	// state.ExtendedParameters

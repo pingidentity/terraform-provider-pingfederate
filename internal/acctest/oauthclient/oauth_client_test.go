@@ -55,7 +55,7 @@ func TestAccOauthClient(t *testing.T) {
 	oidcPolicy := client.NewClientOIDCPolicyWithDefaults()
 	oidcPolicy.IdTokenSigningAlgorithm = pointers.String("HS256")
 	oidcPolicy.GrantAccessSessionRevocationApi = pointers.Bool(false)
-	oidcPolicy.GrantAccessSessionSessionManagementApi = pointers.Bool(true)
+	oidcPolicy.GrantAccessSessionSessionManagementApi = pointers.Bool(false)
 	oidcPolicy.PingAccessLogoutCapable = pointers.Bool(false)
 	oidcPolicy.PairwiseIdentifierUserType = pointers.Bool(true)
 	oidcPolicy.SectorIdentifierUri = pointers.String("https://example.com")
@@ -109,12 +109,13 @@ func TestAccOauthClient(t *testing.T) {
 		requireSignedRequests:                                         pointers.Bool(true),
 	}
 
-	//  Redirect URIs are required for the resource when going back to the minimal model from the updated model
+	//  Client Auth and Redirect URIs are required for the resource when going back to the minimal model from the updated model
 	minimalResourceModel := oauthClientResourceModel{
 		clientId:                  oauthClientId,
 		name:                      "updatedName",
 		grantTypes:                []string{"DEVICE_CODE"},
 		redirectUris:              []string{"https://example.com"},
+		clientAuth:                clientAuth,
 		includeOptionalAttributes: false,
 	}
 
@@ -195,10 +196,14 @@ func jwksSettingsHcl(jwksSettings *client.JwksSettings) string {
 func testAccOauthClient(resourceName string, resourceModel oauthClientResourceModel) string {
 	optionalHcl := ""
 	optionalRedirectUris := ""
+	optionalClientAuth := ""
 	if resourceModel.redirectUris != nil {
 		optionalRedirectUris = fmt.Sprintf(`
 		redirect_uris = %s
 		`, acctest.StringSliceToTerraformString(resourceModel.redirectUris))
+	}
+	if resourceModel.clientAuth != nil {
+		optionalClientAuth = clientAuthHcl(resourceModel.clientAuth)
 	}
 	if resourceModel.includeOptionalAttributes {
 		optionalHcl = fmt.Sprintf(`
@@ -214,7 +219,6 @@ func testAccOauthClient(resourceName string, resourceModel oauthClientResourceMo
 		restricted_response_types = %s
 		restrict_to_default_access_token_manager = %t
 		validate_using_all_eligible_atms = %t
-		%s
 		%s
 		%s
 		require_proof_key_for_code_exchange = %t
@@ -241,7 +245,6 @@ func testAccOauthClient(resourceName string, resourceModel oauthClientResourceMo
 			*resourceModel.restrictToDefaultAccessTokenManager,
 			*resourceModel.validateUsingAllEligibleAtms,
 			oidcPolicyHcl(resourceModel.oidcPolicy),
-			clientAuthHcl(resourceModel.clientAuth),
 			jwksSettingsHcl(resourceModel.jwksSettings),
 			*resourceModel.requireProofKeyForCodeExchange,
 			*resourceModel.cibaDeliveryMode,
@@ -263,6 +266,7 @@ resource "pingfederate_oauth_client" "%s" {
   name        = "%s"
 	%s
 	%s
+	%s
 }
 data "pingfederate_oauth_client" "%s" {
   client_id = pingfederate_oauth_client.%s.client_id
@@ -272,6 +276,7 @@ data "pingfederate_oauth_client" "%s" {
 		resourceModel.name,
 		optionalRedirectUris,
 		optionalHcl,
+		optionalClientAuth,
 		resourceName,
 		oauthClientId,
 	)
