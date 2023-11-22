@@ -316,9 +316,12 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		oauthclient.NewOauthClientDataSource,
 		oauthissuer.NewOauthIssuerDataSource,
 		protocolmetadatalifetimesettings.NewProtocolMetadataLifetimeSettingsDataSource,
+		redirectvalidation.NewRedirectValidationDataSource,
 		serversettingsgeneralsettings.NewServerSettingsGeneralSettingsDataSource,
 		serversettingslogsettings.NewServerSettingsLogSettingsDataSource,
+		serversettingssystemkeys.NewServerSettingsSystemKeysDataSource,
 		sessionapplicationsessionpolicy.NewSessionApplicationSessionPolicyDataSource,
+		sessionsettings.NewSessionSettingsDataSource,
 		virtualhostnames.NewVirtualHostNamesDataSource,
 	}
 }
