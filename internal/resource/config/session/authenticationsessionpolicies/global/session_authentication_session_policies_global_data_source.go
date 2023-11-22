@@ -109,9 +109,9 @@ func readSessionAuthenticationSessionPoliciesGlobalDataSource(ctx context.Contex
 	state.PersistentSessions = types.BoolPointerValue(r.PersistentSessions)
 	state.HashUniqueUserKeyAttribute = types.BoolPointerValue(r.HashUniqueUserKeyAttribute)
 	state.IdleTimeoutMins = types.Int64PointerValue(r.IdleTimeoutMins)
-	state.IdleTimeoutDisplayUnit = internaltypes.StringTypeOrNil(r.IdleTimeoutDisplayUnit, true)
+	state.IdleTimeoutDisplayUnit = types.StringPointerValue(r.IdleTimeoutDisplayUnit)
 	state.MaxTimeoutMins = types.Int64PointerValue(r.MaxTimeoutMins)
-	state.MaxTimeoutDisplayUnit = internaltypes.StringTypeOrNil(r.MaxTimeoutDisplayUnit, true)
+	state.MaxTimeoutDisplayUnit = types.StringPointerValue(r.MaxTimeoutDisplayUnit)
 }
 
 func (r *sessionAuthenticationSessionPoliciesGlobalDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
