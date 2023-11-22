@@ -249,7 +249,6 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Update(ctx context.Conte
 	resp.Diagnostics.Append(diags...)
 }
 
-// This config object is edit-only, so Terraform can't delete it.
 func (r *tokenProcessorToTokenGeneratorMappingResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
 	var state tokenProcessorToTokenGeneratorMappingResourceModel
