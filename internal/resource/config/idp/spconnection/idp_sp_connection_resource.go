@@ -14,6 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -357,7 +360,7 @@ var (
 				"user_source_location":  channelSourceLocationAttrType,
 				"group_source_location": channelSourceLocationAttrType,
 			}},
-			"attribute_mapping": types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
+			"attribute_mapping": types.SetType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
 				"field_name": types.StringType,
 				"saas_field_info": types.ObjectType{AttrTypes: map[string]attr.Type{
 					"attribute_names": types.ListType{ElemType: types.StringType},
@@ -375,6 +378,14 @@ var (
 			"timeout":     types.Int64Type,
 		}}},
 	}
+
+	emptyStringList, _ = types.ListValue(types.StringType, nil)
+
+	groupSourceLocationDefault, _ = types.ObjectValue(channelSourceLocationAttrType.AttrTypes, map[string]attr.Value{
+		"filter":        types.StringNull(),
+		"group_dn":      types.StringNull(),
+		"nested_search": types.BoolValue(false),
+	})
 )
 
 // IdpSpConnectionResource is a helper function to simplify the provider implementation.
@@ -1022,7 +1033,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Required:    true,
 									Description: "Indicates whether the channel is the active channel for this connection.",
 								},
-								"attribute_mapping": schema.ListNestedAttribute{
+								"attribute_mapping": schema.SetNestedAttribute{
 									NestedObject: schema.NestedAttributeObject{
 										Attributes: map[string]schema.Attribute{
 											"field_name": schema.StringAttribute{
@@ -1034,6 +1045,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													"attribute_names": schema.ListAttribute{
 														ElementType: types.StringType,
 														Optional:    true,
+														Computed:    true,
+														Default:     listdefault.StaticValue(emptyStringList),
 														Description: "The list of source attribute names used to generate or map to a target field",
 														Validators: []validator.List{
 															listvalidator.UniqueValues(),
@@ -1041,6 +1054,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													},
 													"character_case": schema.StringAttribute{
 														Optional:    true,
+														Computed:    true,
+														Default:     stringdefault.StaticString("NONE"),
 														Description: "The character case of the field value.",
 														Validators: []validator.String{
 															stringvalidator.OneOf(
@@ -1052,22 +1067,32 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													},
 													"create_only": schema.BoolAttribute{
 														Optional:    true,
+														Computed:    true,
+														Default:     booldefault.StaticBool(false),
 														Description: "Indicates whether this field is a create only field and cannot be updated.",
 													},
 													"default_value": schema.StringAttribute{
 														Optional:    true,
+														Computed:    true,
+														Default:     stringdefault.StaticString(""),
 														Description: "The default value for the target field",
 													},
 													"expression": schema.StringAttribute{
 														Optional:    true,
+														Computed:    true,
+														Default:     stringdefault.StaticString(""),
 														Description: "An OGNL expression to obtain a value.",
 													},
 													"masked": schema.BoolAttribute{
 														Optional:    true,
+														Computed:    true,
+														Default:     booldefault.StaticBool(false),
 														Description: "Indicates whether the attribute should be masked in server logs.",
 													},
 													"parser": schema.StringAttribute{
 														Optional:    true,
+														Computed:    true,
+														Default:     stringdefault.StaticString("NONE"),
 														Description: "Indicates how the field shall be parsed.",
 														Validators: []validator.String{
 															stringvalidator.OneOf(
@@ -1079,6 +1104,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													},
 													"trim": schema.BoolAttribute{
 														Optional:    true,
+														Computed:    true,
+														Default:     booldefault.StaticBool(false),
 														Description: "Indicates whether field should be trimmed before provisioning.",
 													},
 												},
@@ -1116,7 +1143,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													Optional:    true,
 													Description: "The flag that represents comparison status.",
 												},
-												"flag_comparison_value": schema.StringAttribute{
+												"flag_comparison_value": schema.StringAttribute{ //TODO required if using flag mode
 													Optional:    true,
 													Description: "The flag that represents comparison value.",
 												},
@@ -1161,7 +1188,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Required:    true,
 											Description: "Setting to detect changes to a user or a group.",
 										},
-										"data_source": resourcelink.ToCompleteSchema(),
+										"data_source": resourcelink.ToCompleteSchema(), //TODO required?
 										"group_membership_detection": schema.SingleNestedAttribute{
 											Attributes: map[string]schema.Attribute{
 												"group_member_attribute_name": schema.StringAttribute{
@@ -1188,10 +1215,14 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 												},
 												"nested_search": schema.BoolAttribute{
 													Optional:    true,
+													Computed:    true,
+													Default:     booldefault.StaticBool(false),
 													Description: "Indicates whether the search is nested.",
 												},
 											},
 											Optional:    true,
+											Computed:    true,
+											Default:     objectdefault.StaticValue(groupSourceLocationDefault),
 											Description: "The location settings that includes a DN and a LDAP filter.",
 										},
 										"guid_attribute_name": schema.StringAttribute{
@@ -1214,6 +1245,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 												},
 												"nested_search": schema.BoolAttribute{
 													Optional:    true,
+													Computed:    true,
+													Default:     booldefault.StaticBool(false),
 													Description: "Indicates whether the search is nested.",
 												},
 											},
@@ -1225,7 +1258,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Description: "The source data source and LDAP settings.",
 								},
 								"max_threads": schema.Int64Attribute{
-									Required:    true,
+									Optional:    true,
+									Computed:    true,
+									Default:     int64default.StaticInt64(1),
 									Description: "The number of processing threads. The default value is 1.",
 								},
 								"name": schema.StringAttribute{
@@ -1233,7 +1268,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Description: "The name of the channel.",
 								},
 								"timeout": schema.Int64Attribute{
-									Required:    true,
+									Optional:    true,
+									Computed:    true,
+									Default:     int64default.StaticInt64(60),
 									Description: "Timeout, in seconds, for individual user and group provisioning operations on the target service provider. The default value is 60.",
 								},
 							},
