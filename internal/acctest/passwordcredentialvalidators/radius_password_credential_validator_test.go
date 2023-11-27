@@ -157,6 +157,9 @@ resource "pingfederate_password_credential_validator" "%[1]s" {
     %[6]s
   }
   %[7]s
+}
+data "pingfederate_password_credential_validator" "%[1]s" {
+  validator_id = pingfederate_password_credential_validator.%[1]s.validator_id
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.name,
