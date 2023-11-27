@@ -16,8 +16,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -315,68 +317,75 @@ var (
 			"nested_search": types.BoolType,
 		},
 	}
-	outboundProvisionAttrTypes = map[string]attr.Type{
-		"type": types.StringType,
-		"target_settings": types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
-			"name":            types.StringType,
-			"value":           types.StringType,
-			"encrypted_value": types.StringType,
-			"inherited":       types.BoolType,
+	customSchemaAttrTypes = map[string]attr.Type{
+		"namespace": types.StringType,
+		"attributes": types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
+			"name":           types.StringType,
+			"multi_valued":   types.BoolType,
+			"types":          types.ListType{ElemType: types.StringType},
+			"sub_attributes": types.ListType{ElemType: types.StringType},
 		}}},
-		"custom_schema": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"namespace": types.StringType,
-			"attributes": types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
-				"name":           types.StringType,
-				"multi_valued":   types.BoolType,
-				"types":          types.ListType{ElemType: types.StringType},
-				"sub_attributes": types.ListType{ElemType: types.StringType},
-			}}},
+	}
+	targetSettingsElemAttrType = types.ObjectType{AttrTypes: map[string]attr.Type{
+		"name":      types.StringType,
+		"value":     types.StringType,
+		"inherited": types.BoolType,
+	}}
+	saasFieldInfoAttrTypes = map[string]attr.Type{
+		"attribute_names": types.ListType{ElemType: types.StringType},
+		"default_value":   types.StringType,
+		"expression":      types.StringType,
+		"create_only":     types.BoolType,
+		"trim":            types.BoolType,
+		"character_case":  types.StringType,
+		"parser":          types.StringType,
+		"masked":          types.BoolType,
+	}
+	attributeMappingElemAttrTypes = types.ObjectType{AttrTypes: map[string]attr.Type{
+		"field_name":      types.StringType,
+		"saas_field_info": types.ObjectType{AttrTypes: saasFieldInfoAttrTypes},
+	}}
+	channelSourceAttrTypes = map[string]attr.Type{
+		"data_source":         resourceLinkObjectType,
+		"guid_attribute_name": types.StringType,
+		"guid_binary":         types.BoolType,
+		"change_detection_settings": types.ObjectType{AttrTypes: map[string]attr.Type{
+			"user_object_class":         types.StringType,
+			"group_object_class":        types.StringType,
+			"changed_users_algorithm":   types.StringType,
+			"usn_attribute_name":        types.StringType,
+			"time_stamp_attribute_name": types.StringType,
 		}},
-		"channels": types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
-			"active": types.BoolType,
-			"channel_source": types.ObjectType{AttrTypes: map[string]attr.Type{
-				"data_source":         resourceLinkObjectType,
-				"guid_attribute_name": types.StringType,
-				"guid_binary":         types.BoolType,
-				"change_detection_settings": types.ObjectType{AttrTypes: map[string]attr.Type{
-					"user_object_class":         types.StringType,
-					"group_object_class":        types.StringType,
-					"changed_users_algorithm":   types.StringType,
-					"usn_attribute_name":        types.StringType,
-					"time_stamp_attribute_name": types.StringType,
-				}},
-				"group_membership_detection": types.ObjectType{AttrTypes: map[string]attr.Type{
-					"member_of_group_attribute_name": types.StringType,
-					"group_member_attribute_name":    types.StringType,
-				}},
-				"account_management_settings": types.ObjectType{AttrTypes: map[string]attr.Type{
-					"account_status_attribute_name": types.StringType,
-					"account_status_algorithm":      types.StringType,
-					"flag_comparison_value":         types.StringType,
-					"flag_comparison_status":        types.BoolType,
-					"default_status":                types.BoolType,
-				}},
-				"base_dn":               types.StringType,
-				"user_source_location":  channelSourceLocationAttrType,
-				"group_source_location": channelSourceLocationAttrType,
-			}},
-			"attribute_mapping": types.SetType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
-				"field_name": types.StringType,
-				"saas_field_info": types.ObjectType{AttrTypes: map[string]attr.Type{
-					"attribute_names": types.ListType{ElemType: types.StringType},
-					"default_value":   types.StringType,
-					"expression":      types.StringType,
-					"create_only":     types.BoolType,
-					"trim":            types.BoolType,
-					"character_case":  types.StringType,
-					"parser":          types.StringType,
-					"masked":          types.BoolType,
-				}},
-			}}},
-			"name":        types.StringType,
-			"max_threads": types.Int64Type,
-			"timeout":     types.Int64Type,
-		}}},
+		"group_membership_detection": types.ObjectType{AttrTypes: map[string]attr.Type{
+			"member_of_group_attribute_name": types.StringType,
+			"group_member_attribute_name":    types.StringType,
+		}},
+		"account_management_settings": types.ObjectType{AttrTypes: map[string]attr.Type{
+			"account_status_attribute_name": types.StringType,
+			"account_status_algorithm":      types.StringType,
+			"flag_comparison_value":         types.StringType,
+			"flag_comparison_status":        types.BoolType,
+			"default_status":                types.BoolType,
+		}},
+		"base_dn":               types.StringType,
+		"user_source_location":  channelSourceLocationAttrType,
+		"group_source_location": channelSourceLocationAttrType,
+	}
+	channelsElemAttrType = types.ObjectType{AttrTypes: map[string]attr.Type{
+		"active":                types.BoolType,
+		"channel_source":        types.ObjectType{AttrTypes: channelSourceAttrTypes},
+		"attribute_mapping":     types.SetType{ElemType: attributeMappingElemAttrTypes},
+		"attribute_mapping_all": types.SetType{ElemType: attributeMappingElemAttrTypes},
+		"name":                  types.StringType,
+		"max_threads":           types.Int64Type,
+		"timeout":               types.Int64Type,
+	}}
+	outboundProvisionAttrTypes = map[string]attr.Type{
+		"type":                types.StringType,
+		"target_settings":     types.ListType{ElemType: targetSettingsElemAttrType},
+		"target_settings_all": types.ListType{ElemType: targetSettingsElemAttrType},
+		"custom_schema":       types.ObjectType{AttrTypes: customSchemaAttrTypes},
+		"channels":            types.ListType{ElemType: channelsElemAttrType},
 	}
 
 	emptyStringList, _ = types.ListValue(types.StringType, nil)
@@ -1033,6 +1042,94 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Required:    true,
 									Description: "Indicates whether the channel is the active channel for this connection.",
 								},
+								"attribute_mapping_all": schema.SetNestedAttribute{ //TODO reduce repitition
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"field_name": schema.StringAttribute{
+												Required:    true,
+												Description: "The name of target field.",
+											},
+											"saas_field_info": schema.SingleNestedAttribute{
+												Attributes: map[string]schema.Attribute{
+													"attribute_names": schema.ListAttribute{
+														ElementType: types.StringType,
+														Optional:    true,
+														Computed:    true,
+														Default:     listdefault.StaticValue(emptyStringList),
+														Description: "The list of source attribute names used to generate or map to a target field",
+														Validators: []validator.List{
+															listvalidator.UniqueValues(),
+														},
+													},
+													"character_case": schema.StringAttribute{
+														Optional:    true,
+														Computed:    true,
+														Default:     stringdefault.StaticString("NONE"),
+														Description: "The character case of the field value.",
+														Validators: []validator.String{
+															stringvalidator.OneOf(
+																"LOWER",
+																"UPPER",
+																"NONE",
+															),
+														},
+													},
+													"create_only": schema.BoolAttribute{
+														Optional:    true,
+														Computed:    true,
+														Default:     booldefault.StaticBool(false),
+														Description: "Indicates whether this field is a create only field and cannot be updated.",
+													},
+													"default_value": schema.StringAttribute{
+														Optional:    true,
+														Computed:    true,
+														Default:     stringdefault.StaticString(""),
+														Description: "The default value for the target field",
+													},
+													"expression": schema.StringAttribute{
+														Optional:    true,
+														Computed:    true,
+														Default:     stringdefault.StaticString(""),
+														Description: "An OGNL expression to obtain a value.",
+													},
+													"masked": schema.BoolAttribute{
+														Optional:    true,
+														Computed:    true,
+														Default:     booldefault.StaticBool(false),
+														Description: "Indicates whether the attribute should be masked in server logs.",
+													},
+													"parser": schema.StringAttribute{
+														Optional:    true,
+														Computed:    true,
+														Default:     stringdefault.StaticString("NONE"),
+														Description: "Indicates how the field shall be parsed.",
+														Validators: []validator.String{
+															stringvalidator.OneOf(
+																"EXTRACT_CN_FROM_DN",
+																"EXTRACT_USERNAME_FROM_EMAIL",
+																"NONE",
+															),
+														},
+													},
+													"trim": schema.BoolAttribute{
+														Optional:    true,
+														Computed:    true,
+														Default:     booldefault.StaticBool(false),
+														Description: "Indicates whether field should be trimmed before provisioning.",
+													},
+												},
+												Required:    true,
+												Description: "The settings that represent how attribute values from source data store will be mapped into Fields specified by the service provider.",
+											},
+										},
+									},
+									Optional: false,
+									Computed: true,
+									PlanModifiers: []planmodifier.Set{
+										setplanmodifier.UseStateForUnknown(),
+									},
+									Description: "The mapping of attributes from the local data store into Fields specified by the service provider. This attribute will include any values set by default by PingFederate.",
+								},
 								"attribute_mapping": schema.SetNestedAttribute{
 									NestedObject: schema.NestedAttributeObject{
 										Attributes: map[string]schema.Attribute{
@@ -1312,13 +1409,33 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Optional:    true,
 						Description: "Custom SCIM Attributes configuration.",
 					},
+					"target_settings_all": schema.ListNestedAttribute{ //TODO reduce repetition
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"inherited": schema.BoolAttribute{
+									Optional:    true,
+									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
+								},
+								"name": schema.StringAttribute{
+									Required:    true,
+									Description: "The name of the configuration field.",
+								},
+								"value": schema.StringAttribute{
+									Optional:    true,
+									Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
+								},
+							},
+						},
+						Optional: false,
+						Computed: true,
+						PlanModifiers: []planmodifier.List{
+							listplanmodifier.UseStateForUnknown(),
+						},
+						Description: "Configuration fields that includes credentials to target SaaS application. This attribute will include any values set by default by PingFederate.",
+					},
 					"target_settings": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
-								"encrypted_value": schema.StringAttribute{
-									Optional:    true,
-									Description: "For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined. If you do not want to update the stored value, this attribute should be passed back unchanged.",
-								},
 								"inherited": schema.BoolAttribute{
 									Optional:    true,
 									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
@@ -1960,6 +2077,7 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 
 	if internaltypes.IsDefined(plan.OutboundProvision) {
 		addRequest.OutboundProvision = &client.OutboundProvision{}
+		//TODO
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.OutboundProvision, true)), &addRequest.OutboundProvision)
 		if err != nil {
 			return err
@@ -1985,7 +2103,7 @@ func (r *idpSpConnectionResource) Configure(_ context.Context, req resource.Conf
 	r.apiClient = providerCfg.ApiClient
 }
 
-func readIdpSpconnectionResponse(ctx context.Context, r *client.SpConnection, state *idpSpConnectionResourceModel) diag.Diagnostics {
+func readIdpSpconnectionResponse(ctx context.Context, r *client.SpConnection, state *idpSpConnectionResourceModel, plan *idpSpConnectionResourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 
 	state.ConnectionId = types.StringPointerValue(r.Id)
@@ -2060,8 +2178,126 @@ func readIdpSpconnectionResponse(ctx context.Context, r *client.SpConnection, st
 	state.WsTrust, respDiags = types.ObjectValueFrom(ctx, wsTrustAttrTypes, r.WsTrust)
 	diags.Append(respDiags...)
 
-	state.OutboundProvision, respDiags = types.ObjectValueFrom(ctx, outboundProvisionAttrTypes, r.OutboundProvision)
-	diags.Append(respDiags...)
+	if r.OutboundProvision != nil {
+		outboundProvisionAttrs := map[string]attr.Value{
+			"type": types.StringValue(r.OutboundProvision.Type),
+		}
+
+		// PF can return extra target_settings that were not included in the request
+		plannedTargetSettingsNames := []string{}
+		if internaltypes.IsDefined(plan.OutboundProvision) {
+			targetSettings := plan.OutboundProvision.Attributes()["target_settings"].(types.List)
+			for _, plannedTargetSettings := range targetSettings.Elements() {
+				nameStrVal := plannedTargetSettings.(types.Object).Attributes()["name"].(types.String)
+				if internaltypes.IsDefined(nameStrVal) {
+					plannedTargetSettingsNames = append(plannedTargetSettingsNames, nameStrVal.ValueString())
+				}
+			}
+		}
+
+		targetSettingsSlice := []attr.Value{}
+		targetSettingsAllSlice := []attr.Value{}
+		for _, targetSettings := range r.OutboundProvision.TargetSettings {
+			targetSettingsObj, respDiags := types.ObjectValue(targetSettingsElemAttrType.AttrTypes, map[string]attr.Value{
+				"name":      types.StringValue(targetSettings.Name),
+				"value":     types.StringPointerValue(targetSettings.Value), //TODO probably need to handle encrypted where this returns as nil
+				"inherited": types.BoolPointerValue(targetSettings.Inherited),
+			})
+			diags.Append(respDiags...)
+
+			// Check if this object was in the plan
+			inPlan := false
+			for _, name := range plannedTargetSettingsNames {
+				if name == targetSettings.Name {
+					inPlan = true
+					break
+				}
+			}
+			if inPlan {
+				targetSettingsSlice = append(targetSettingsSlice, targetSettingsObj)
+			}
+			targetSettingsAllSlice = append(targetSettingsAllSlice, targetSettingsObj)
+		}
+		outboundProvisionAttrs["target_settings"], respDiags = types.ListValue(targetSettingsElemAttrType, targetSettingsSlice)
+		diags.Append(respDiags...)
+		outboundProvisionAttrs["target_settings_all"], respDiags = types.ListValue(targetSettingsElemAttrType, targetSettingsAllSlice)
+		diags.Append(respDiags...)
+
+		outboundProvisionAttrs["custom_schema"], respDiags = types.ObjectValueFrom(ctx, customSchemaAttrTypes, r.OutboundProvision.CustomSchema)
+		diags.Append(respDiags...)
+
+		channels := []types.Object{}
+		plannedChannels := plan.OutboundProvision.Attributes()["channels"].(types.List).Elements()
+		numPlannedChannels := len(plannedChannels)
+		for i, channel := range r.OutboundProvision.Channels {
+			channelAttrs := map[string]attr.Value{
+				"active":      types.BoolValue(channel.Active),
+				"name":        types.StringValue(channel.Name),
+				"max_threads": types.Int64Value(channel.MaxThreads),
+				"timeout":     types.Int64Value(channel.Timeout),
+			}
+
+			channelAttrs["channel_source"], respDiags = types.ObjectValueFrom(ctx, channelSourceAttrTypes, channel.ChannelSource)
+			diags.Append(respDiags...)
+
+			// PF can return extra attribute_mapping elements that were not included in the request
+			attributeMappingNamesInPlan := []string{}
+			if i < numPlannedChannels {
+				plannedChannel := plannedChannels[i].(types.Object)
+				plannedMapping := plannedChannel.Attributes()["attribute_mapping"].(types.Set)
+				if internaltypes.IsDefined(plannedMapping) {
+					for _, mapping := range plannedMapping.Elements() {
+						mappingObj := mapping.(types.Object)
+						if internaltypes.IsDefined(mappingObj) {
+							attributeMappingNamesInPlan = append(attributeMappingNamesInPlan, mappingObj.Attributes()["field_name"].(types.String).ValueString())
+						}
+					}
+				}
+			}
+
+			attributeMappingSlice := []attr.Value{}
+			attributeMappingAllSlice := []attr.Value{}
+			for _, attributeMapping := range channel.AttributeMapping {
+				attributeMappingAttrValues := map[string]attr.Value{
+					"field_name": types.StringValue(attributeMapping.FieldName),
+				}
+
+				attributeMappingAttrValues["saas_field_info"], respDiags = types.ObjectValueFrom(ctx, saasFieldInfoAttrTypes, attributeMapping.SaasFieldInfo)
+				diags.Append(respDiags...)
+
+				attributeMappingObj, respDiags := types.ObjectValue(attributeMappingElemAttrTypes.AttrTypes, attributeMappingAttrValues)
+				diags.Append(respDiags...)
+
+				// Check if this object was in the plan
+				inPlan := false
+				for _, attributeMappingNameInPlan := range attributeMappingNamesInPlan {
+					if attributeMappingNameInPlan == attributeMapping.FieldName {
+						inPlan = true
+						break
+					}
+				}
+				if inPlan {
+					attributeMappingSlice = append(attributeMappingSlice, attributeMappingObj)
+				}
+				attributeMappingAllSlice = append(attributeMappingAllSlice, attributeMappingObj)
+			}
+			channelAttrs["attribute_mapping"], respDiags = types.SetValue(attributeMappingElemAttrTypes, attributeMappingSlice)
+			diags.Append(respDiags...)
+			channelAttrs["attribute_mapping_all"], respDiags = types.SetValue(attributeMappingElemAttrTypes, attributeMappingAllSlice)
+			diags.Append(respDiags...)
+
+			channelObj, respDiags := types.ObjectValue(channelsElemAttrType.AttrTypes, channelAttrs)
+			diags.Append(respDiags...)
+			channels = append(channels, channelObj)
+		}
+		outboundProvisionAttrs["channels"], respDiags = types.ListValueFrom(ctx, channelsElemAttrType, channels)
+		diags.Append(respDiags...)
+
+		state.OutboundProvision, respDiags = types.ObjectValue(outboundProvisionAttrTypes, outboundProvisionAttrs)
+		diags.Append(respDiags...)
+	} else {
+		state.OutboundProvision = types.ObjectNull(outboundProvisionAttrTypes)
+	}
 
 	return diags
 }
@@ -2093,7 +2329,7 @@ func (r *idpSpConnectionResource) Create(ctx context.Context, req resource.Creat
 	// Read the response into the state
 	var state idpSpConnectionResourceModel
 
-	diags = readIdpSpconnectionResponse(ctx, idpSpconnectionResponse, &state)
+	diags = readIdpSpconnectionResponse(ctx, idpSpconnectionResponse, &state, &plan)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -2120,7 +2356,7 @@ func (r *idpSpConnectionResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	// Read the response into the state
-	readIdpSpconnectionResponse(ctx, apiReadIdpSpconnection, &state)
+	readIdpSpconnectionResponse(ctx, apiReadIdpSpconnection, &state, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -2153,7 +2389,7 @@ func (r *idpSpConnectionResource) Update(ctx context.Context, req resource.Updat
 
 	// Read the response
 	var state idpSpConnectionResourceModel
-	diags = readIdpSpconnectionResponse(ctx, updateIdpSpconnectionResponse, &state)
+	diags = readIdpSpconnectionResponse(ctx, updateIdpSpconnectionResponse, &state, &plan)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
