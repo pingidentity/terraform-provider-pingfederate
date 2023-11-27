@@ -31,7 +31,7 @@ type authenticationPolicyContractDataSource struct {
 // GetSchema defines the schema for the datasource.
 func (r *authenticationPolicyContractDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages an authentication policy contract.",
+		Description: "Describes an authentication policy contract.",
 		Attributes: map[string]schema.Attribute{
 			"core_attributes": schema.ListNestedAttribute{
 				Description: "A list of read-only assertion attributes (for example, subject) that are automatically populated by PingFederate.",

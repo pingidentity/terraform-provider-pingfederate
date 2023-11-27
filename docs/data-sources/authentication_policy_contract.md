@@ -3,12 +3,12 @@
 page_title: "pingfederate_authentication_policy_contract Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages an authentication policy contract.
+  Describes an authentication policy contract.
 ---
 
 # pingfederate_authentication_policy_contract (Data Source)
 
-Manages an authentication policy contract.
+Describes an authentication policy contract.
 
 ## Example Usage
 
