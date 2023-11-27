@@ -20,7 +20,7 @@ var (
 )
 
 // Create a Redirect Validation Data Source
-func NewRedirectValidationDataSource() datasource.DataSource {
+func RedirectValidationDataSource() datasource.DataSource {
 	return &redirectValidationDataSource{}
 }
 

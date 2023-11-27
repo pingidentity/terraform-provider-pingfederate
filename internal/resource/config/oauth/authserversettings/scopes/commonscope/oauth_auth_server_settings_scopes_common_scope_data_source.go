@@ -19,7 +19,7 @@ var (
 )
 
 // Create a Administrative Account data source
-func NewOauthAuthServerSettingsScopesCommonScopeDataSource() datasource.DataSource {
+func OauthAuthServerSettingsScopesCommonScopeDataSource() datasource.DataSource {
 	return &oauthAuthServerSettingsScopesCommonScopeDataSource{}
 }
 

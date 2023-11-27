@@ -20,7 +20,7 @@ var (
 )
 
 // ServerSettingsLogSettingsDataSource is a helper function to simplify the provider implementation.
-func NewServerSettingsLogSettingsDataSource() datasource.DataSource {
+func ServerSettingsLogSettingsDataSource() datasource.DataSource {
 	return &serverSettingsLogSettingsDataSource{}
 }
 

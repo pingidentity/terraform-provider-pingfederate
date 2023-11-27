@@ -22,7 +22,7 @@ var (
 )
 
 // ServerSettingsSystemKeysDataSource is a helper function to simplify the provider implementation.
-func NewServerSettingsSystemKeysDataSource() datasource.DataSource {
+func ServerSettingsSystemKeysDataSource() datasource.DataSource {
 	return &serverSettingsSystemKeysDataSource{}
 }
 

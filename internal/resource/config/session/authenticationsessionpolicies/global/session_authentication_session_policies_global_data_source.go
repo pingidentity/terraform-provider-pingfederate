@@ -19,7 +19,7 @@ var (
 )
 
 // SessionAuthenticationSessionPoliciesGlobalResource is a helper function to simplify the provider implementation.
-func NewSessionAuthenticationSessionPoliciesGlobalDataSource() datasource.DataSource {
+func SessionAuthenticationSessionPoliciesGlobalDataSource() datasource.DataSource {
 	return &sessionAuthenticationSessionPoliciesGlobalDataSource{}
 }
 
