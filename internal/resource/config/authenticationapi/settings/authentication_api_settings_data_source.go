@@ -9,7 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
+	resourcelinkdatasource "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -78,7 +79,7 @@ func (r *authenticationApiSettingsDataSource) Schema(ctx context.Context, req da
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
-				Attributes:  resourcelink.ToDataSourceSchema(),
+				Attributes:  resourcelinkdatasource.ToDataSourceSchema(),
 			},
 			"restrict_access_to_redirectless_mode": schema.BoolAttribute{
 				Description: "Enable restrict access to redirectless mode",
@@ -105,7 +106,7 @@ func readAuthenticationApiSettingsResponseDataSource(ctx context.Context, r *cli
 	state.EnableApiDescriptions = types.BoolPointerValue(r.EnableApiDescriptions)
 	state.RestrictAccessToRedirectlessMode = types.BoolPointerValue(r.RestrictAccessToRedirectlessMode)
 	state.IncludeRequestContext = types.BoolPointerValue(r.IncludeRequestContext)
-	resourceLinkObjectValue, valueFromDiags := resourcelink.ToDataSourceState(ctx, r.DefaultApplicationRef)
+	resourceLinkObjectValue, valueFromDiags := resourcelink.ToState(ctx, r.DefaultApplicationRef)
 	state.DefaultApplicationRef = resourceLinkObjectValue
 
 	return valueFromDiags

@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	pluginconfigurationdatasource "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/pluginconfiguration"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
-	pluginconfigurationresource "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 )
 
 var (
@@ -42,12 +42,12 @@ func readPasswordCredentialValidatorResponse(ctx context.Context, r *client.Pass
 	state.Id = types.StringValue(r.Id)
 	state.ValidatorId = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
-	state.PluginDescriptorRef, respDiags = resourcelink.ToDataSourceState(ctx, &r.PluginDescriptorRef)
+	state.PluginDescriptorRef, respDiags = resourcelink.ToState(ctx, &r.PluginDescriptorRef)
 	diags.Append(respDiags...)
-	state.ParentRef, respDiags = resourcelink.ToDataSourceState(ctx, r.ParentRef)
+	state.ParentRef, respDiags = resourcelink.ToState(ctx, r.ParentRef)
 	diags.Append(respDiags...)
 	if isResource {
-		state.Configuration, respDiags = pluginconfigurationresource.ToState(configurationFromPlan, &r.Configuration)
+		state.Configuration, respDiags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration)
 		diags.Append(respDiags...)
 	} else {
 		state.Configuration, respDiags = pluginconfigurationdatasource.ToDataSourceState(ctx, &r.Configuration)

@@ -3,19 +3,17 @@ package oauthauthserversettings
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
+	resourcelinkdatasource "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopeentry"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopegroupentry"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -106,9 +104,6 @@ func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req data
 							Required:    false,
 							Optional:    false,
 							Computed:    true,
-							Validators: []validator.String{
-								configvalidators.NoWhitespace(),
-							},
 						},
 						"description": schema.StringAttribute{
 							Description: "The description of the scope that appears when the user is prompted for authorization.",
@@ -137,9 +132,6 @@ func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req data
 							Required:    false,
 							Optional:    false,
 							Computed:    true,
-							Validators: []validator.String{
-								configvalidators.NoWhitespace(),
-							},
 						},
 						"description": schema.StringAttribute{
 							Description: "The description of the scope group.",
@@ -169,9 +161,6 @@ func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req data
 							Required:    false,
 							Optional:    false,
 							Computed:    true,
-							Validators: []validator.String{
-								configvalidators.NoWhitespace(),
-							},
 						},
 						"description": schema.StringAttribute{
 							Description: "The description of the scope that appears when the user is prompted for authorization.",
@@ -200,9 +189,6 @@ func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req data
 							Required:    false,
 							Optional:    false,
 							Computed:    true,
-							Validators: []validator.String{
-								configvalidators.NoWhitespace(),
-							},
 						},
 						"description": schema.StringAttribute{
 							Description: "The description of the scope group.",
@@ -267,9 +253,6 @@ func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req data
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
-				Validators: []validator.String{
-					stringvalidator.OneOf([]string{"MINUTES", "DAYS", "HOURS"}...),
-				},
 			},
 			"persistent_grant_idle_timeout": schema.Int64Attribute{
 				Description: "The persistent grant idle timeout. The default value is 30 (days). -1 indicates an indefinite amount of time.",
@@ -282,9 +265,6 @@ func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req data
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
-				Validators: []validator.String{
-					stringvalidator.OneOf([]string{"MINUTES", "DAYS", "HOURS"}...),
-				},
 			},
 			"refresh_token_length": schema.Int64Attribute{
 				Description: "The refresh token length in number of characters.",
@@ -380,7 +360,7 @@ func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req data
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
-				Attributes:  resourcelink.ToDataSourceSchema(),
+				Attributes:  resourcelinkdatasource.ToDataSourceSchema(),
 			},
 			"atm_id_for_oauth_grant_management": schema.StringAttribute{
 				Description: "The ID of the Access Token Manager used for OAuth enabled grant management.",
@@ -400,9 +380,6 @@ func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req data
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
-				Validators: []validator.List{
-					configvalidators.ValidUrls(),
-				},
 			},
 			"user_authorization_url": schema.StringAttribute{
 				Description: "The URL used to generate 'verification_url' and 'verification_url_complete' values in a Device Authorization request",
@@ -415,9 +392,6 @@ func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req data
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
-				Validators: []validator.String{
-					configvalidators.StartsWith("/"),
-				},
 			},
 			"pending_authorization_timeout": schema.Int64Attribute{
 				Description: "The 'device_code' and 'user_code' timeout, in seconds.",
@@ -436,9 +410,6 @@ func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req data
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
-				Validators: []validator.String{
-					stringvalidator.OneOf([]string{"AFTER_AUTHENTICATION", "BEFORE_AUTHENTICATION"}...),
-				},
 			},
 			"bypass_activation_code_confirmation": schema.BoolAttribute{
 				Description: "Indicates if the Activation Code Confirmation page should be bypassed if 'verification_url_complete' is used by the end user to authorize a device.",
@@ -451,9 +422,6 @@ func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req data
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
-				Validators: []validator.String{
-					stringvalidator.OneOf([]string{"INTERNAL", "ADAPTER"}...),
-				},
 			},
 			"user_authorization_consent_adapter": schema.StringAttribute{
 				Description: "Adapter ID of the external consent adapter to be used for the consent page user interface.",
@@ -490,9 +458,6 @@ func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req data
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
-				Validators: []validator.String{
-					stringvalidator.OneOf([]string{"DISABLED", "ENABLED", "REQUIRED"}...),
-				},
 			},
 			"client_secret_retention_period": schema.Int64Attribute{
 				Description: "The length of time in minutes that client secrets will be retained as secondary secrets after secret change. The default value is 0, which will disable secondary client secret retention.",
@@ -563,7 +528,7 @@ func readOauthAuthServerSettingsResponseDataSource(ctx context.Context, r *clien
 	state.BypassAuthorizationForApprovedGrants = types.BoolPointerValue(r.BypassAuthorizationForApprovedGrants)
 	state.AllowUnidentifiedClientROCreds = types.BoolPointerValue(r.AllowUnidentifiedClientROCreds)
 	state.AllowUnidentifiedClientExtensionGrants = types.BoolPointerValue(r.AllowUnidentifiedClientExtensionGrants)
-	state.AdminWebServicePcvRef, respDiags = resourcelink.ToDataSourceState(ctx, r.AdminWebServicePcvRef)
+	state.AdminWebServicePcvRef, respDiags = resourcelink.ToState(ctx, r.AdminWebServicePcvRef)
 	diags.Append(respDiags...)
 	state.AtmIdForOAuthGrantManagement = types.StringPointerValue(r.AtmIdForOAuthGrantManagement)
 	state.ScopeForOAuthGrantManagement = types.StringPointerValue(r.ScopeForOAuthGrantManagement)
