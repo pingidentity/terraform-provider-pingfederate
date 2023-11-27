@@ -323,6 +323,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		sessionapplicationsessionpolicy.NewSessionApplicationSessionPolicyDataSource,
 		sessionauthenticationsessionpoliciesglobal.NewSessionAuthenticationSessionPoliciesGlobalDataSource,
 		sessionsettings.NewSessionSettingsDataSource,
+		tokenprocessortotokengeneratormapping.TokenProcessorToTokenGeneratorMappingDataSource,
 		virtualhostnames.NewVirtualHostNamesDataSource,
 	}
 }

@@ -98,6 +98,9 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "%[1]s" {
 	%[5]s
 	%[6]s
 	%[7]s
+}
+data "pingfederate_token_processor_to_token_generator_mapping" "%[1]s" {
+  id = pingfederate_token_processor_to_token_generator_mapping.%[1]s.id
 }`, resourceName,
 		resourceModel.sourceId,
 		resourceModel.targetId,

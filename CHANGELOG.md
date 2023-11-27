@@ -6,7 +6,7 @@
 #### Data Sources
 * **New Data Source:** `pingfederate_oauth_client` ([#111](https://github.com/pingidentity/terraform-provider-pingfederate/pull/111))
 * **New Data Source:** `pingfederate_session_policies_global` ([#117](https://github.com/pingidentity/terraform-provider-pingfederate/pull/117))
-
+* **New Data Source:** `pingfederate_token_processor_to_token_generator_mapping` ([#120](https://github.com/pingidentity/terraform-provider-pingfederate/pull/120))
 
 # v0.3.0 November 22, 2023
 ### FEATURES
