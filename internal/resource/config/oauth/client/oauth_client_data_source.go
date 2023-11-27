@@ -41,7 +41,7 @@ var (
 )
 
 // Create a Administrative Account data source
-func NewOauthClientDataSource() datasource.DataSource {
+func OauthClientDataSource() datasource.DataSource {
 	return &oauthClientDataSource{}
 }
 

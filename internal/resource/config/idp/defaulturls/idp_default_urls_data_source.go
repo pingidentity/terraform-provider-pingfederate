@@ -19,7 +19,7 @@ var (
 )
 
 // Create a Administrative Account data source
-func NewIdpDefaultUrlsDataSource() datasource.DataSource {
+func IdpDefaultUrlsDataSource() datasource.DataSource {
 	return &idpDefaultUrlsDataSource{}
 }
 

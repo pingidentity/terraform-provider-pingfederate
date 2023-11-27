@@ -23,7 +23,7 @@ var (
 )
 
 // Create a Administrative Account data source
-func NewKeyPairsSigningImportDataSource() datasource.DataSource {
+func KeyPairsSigningImportDataSource() datasource.DataSource {
 	return &keyPairsSigningImportDataSource{}
 }
 

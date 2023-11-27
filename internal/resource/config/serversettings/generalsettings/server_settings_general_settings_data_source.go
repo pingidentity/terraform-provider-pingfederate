@@ -19,7 +19,7 @@ var (
 )
 
 // ServerSettingsGeneralSettingsDataSource is a helper function to simplify the provider implementation.
-func NewServerSettingsGeneralSettingsDataSource() datasource.DataSource {
+func ServerSettingsGeneralSettingsDataSource() datasource.DataSource {
 	return &serverSettingsGeneralSettingsDataSource{}
 }
 

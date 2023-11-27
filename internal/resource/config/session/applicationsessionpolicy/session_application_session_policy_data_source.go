@@ -19,7 +19,7 @@ var (
 )
 
 // SessionApplicationSessionPolicyDataSource is a helper function to simplify the provider implementation.
-func NewSessionApplicationSessionPolicyDataSource() datasource.DataSource {
+func SessionApplicationSessionPolicyDataSource() datasource.DataSource {
 	return &sessionApplicationSessionPolicyDataSource{}
 }
 

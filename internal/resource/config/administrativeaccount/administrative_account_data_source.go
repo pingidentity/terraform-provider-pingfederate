@@ -19,7 +19,7 @@ var (
 )
 
 // Create a Administrative Account data source
-func NewAdministrativeAccountDataSource() datasource.DataSource {
+func AdministrativeAccountDataSource() datasource.DataSource {
 	return &administrativeAccountDataSource{}
 }
 

@@ -21,7 +21,7 @@ var (
 )
 
 // Create a Authentication Api Settings data source
-func NewAuthenticationApiSettingsDataSource() datasource.DataSource {
+func AuthenticationApiSettingsDataSource() datasource.DataSource {
 	return &authenticationApiSettingsDataSource{}
 }
 
