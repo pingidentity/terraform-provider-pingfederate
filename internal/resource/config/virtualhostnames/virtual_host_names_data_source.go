@@ -19,7 +19,7 @@ var (
 )
 
 // VirtualHostNamesDataSource is a helper function to simplify the provider implementation.
-func NewVirtualHostNamesDataSource() datasource.DataSource {
+func VirtualHostNamesDataSource() datasource.DataSource {
 	return &virtualHostNamesDataSource{}
 }
 

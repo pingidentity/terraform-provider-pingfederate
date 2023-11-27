@@ -19,7 +19,7 @@ var (
 )
 
 // Create a Administrative Account data source
-func NewLicenseAgreementDataSource() datasource.DataSource {
+func LicenseAgreementDataSource() datasource.DataSource {
 	return &licenseAgreementDataSource{}
 }
 

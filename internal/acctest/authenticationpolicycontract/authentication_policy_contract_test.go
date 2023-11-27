@@ -84,6 +84,9 @@ resource "pingfederate_authentication_policy_contract" "%[1]s" {
   core_attributes = %[3]s
   name            = "%[4]s"
   %[5]s
+}
+data "pingfederate_authentication_policy_contract" "authenticationPolicyContractExample" {
+  contract_id = pingfederate_authentication_policy_contract.%[1]s.contract_id
 }`, resourceName,
 		resourceModel.id,
 		acctest.ObjectSliceOfKvStringsToTerraformString("name", resourceModel.coreAttributes),

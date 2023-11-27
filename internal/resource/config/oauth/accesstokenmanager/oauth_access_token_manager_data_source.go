@@ -43,7 +43,7 @@ var (
 )
 
 // Create a Administrative Account data source
-func NewOauthAccessTokenManagerDataSource() datasource.DataSource {
+func OauthAccessTokenManagerDataSource() datasource.DataSource {
 	return &oauthAccessTokenManagerDataSource{}
 }
 

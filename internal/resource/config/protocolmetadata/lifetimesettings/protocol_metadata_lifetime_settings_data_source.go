@@ -19,7 +19,7 @@ var (
 )
 
 // ProtocolMetadataLifetimeSettingsDataSource is a helper function to simplify the provider implementation.
-func NewProtocolMetadataLifetimeSettingsDataSource() datasource.DataSource {
+func ProtocolMetadataLifetimeSettingsDataSource() datasource.DataSource {
 	return &protocolMetadataLifetimeSettingsDataSource{}
 }
 

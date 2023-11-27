@@ -22,7 +22,7 @@ var (
 )
 
 // Create a Administrative Account data source
-func NewLocalIdentityIdentityProfileDataSource() datasource.DataSource {
+func LocalIdentityIdentityProfileDataSource() datasource.DataSource {
 	return &localIdentityIdentityProfileDataSource{}
 }
 
