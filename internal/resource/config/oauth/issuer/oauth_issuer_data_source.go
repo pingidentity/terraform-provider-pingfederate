@@ -19,7 +19,7 @@ var (
 )
 
 // Create a Administrative Account data source
-func NewOauthIssuerDataSource() datasource.DataSource {
+func OauthIssuerDataSource() datasource.DataSource {
 	return &oauthIssuerDataSource{}
 }
 

@@ -18,8 +18,7 @@ var (
 	_ datasource.DataSourceWithConfigure = &sessionSettingsDataSource{}
 )
 
-// NewSessionSettingsResource is a helper function to simplify the provider implementation.
-func NewSessionSettingsDataSource() datasource.DataSource {
+func SessionSettingsDataSource() datasource.DataSource {
 	return &sessionSettingsDataSource{}
 }
 

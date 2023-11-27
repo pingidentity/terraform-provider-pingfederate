@@ -23,7 +23,7 @@ var (
 )
 
 // Create a Administrative Account data source
-func NewKeyPairsSslServerImportDataSource() datasource.DataSource {
+func KeyPairsSslServerImportDataSource() datasource.DataSource {
 	return &keyPairsSslServerImportDataSource{}
 }
 

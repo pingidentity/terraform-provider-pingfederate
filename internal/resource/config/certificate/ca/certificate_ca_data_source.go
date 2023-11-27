@@ -21,7 +21,7 @@ var (
 )
 
 // Create a Administrative Account data source
-func NewCertificateDataSource() datasource.DataSource {
+func CertificateDataSource() datasource.DataSource {
 	return &certificatesDataSource{}
 }
 
