@@ -6,6 +6,7 @@
 #### Data Sources
 * **New Data Source:** `pingfederate_authentication_policy_contract` ([#118](https://github.com/pingidentity/terraform-provider-pingfederate/pull/118))
 * **New Data Source:** `pingfederate_oauth_client` ([#111](https://github.com/pingidentity/terraform-provider-pingfederate/pull/111))
+* **New Data Source:** `pingfederate_password_credential_validator` ([#119](https://github.com/pingidentity/terraform-provider-pingfederate/pull/119))
 * **New Data Source:** `pingfederate_session_policies_global` ([#117](https://github.com/pingidentity/terraform-provider-pingfederate/pull/117))
 
 
