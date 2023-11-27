@@ -75,7 +75,7 @@ func (r *sessionApplicationSessionPolicyDataSource) Configure(_ context.Context,
 }
 
 func readSessionApplicationSessionPolicyResponseDataSource(ctx context.Context, r *client.ApplicationSessionPolicy, state *sessionApplicationSessionPolicyDataSourceModel) {
-	state.Id = types.StringValue("sessionApplicationSessionPolicyId")
+	state.Id = types.StringValue("session_application_session_policy_id")
 	state.IdleTimeoutMins = types.Int64Value(r.GetIdleTimeoutMins())
 	state.MaxTimeoutMins = types.Int64Value(r.GetMaxTimeoutMins())
 }

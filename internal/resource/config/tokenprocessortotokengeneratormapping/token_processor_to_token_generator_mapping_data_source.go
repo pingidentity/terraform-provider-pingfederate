@@ -92,12 +92,7 @@ func (r *tokenProcessorToTokenGeneratorMappingDataSource) Read(ctx context.Conte
 	apiReadTokenProcessorToTokenGeneratorMapping, httpResp, err := r.apiClient.TokenProcessorToTokenGeneratorMappingsAPI.GetTokenToTokenMappingById(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 
 	if err != nil {
-		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the TokenProcessorToTokenGeneratorMapping", err, httpResp)
-			resp.State.RemoveResource(ctx)
-		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  TokenProcessorToTokenGeneratorMapping", err, httpResp)
-		}
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Token Processor To Token Generator Mapping", err, httpResp)
 	}
 
 	// Read the response into the state
