@@ -35,4 +35,5 @@ terraform
 
 *.DS_Store*
 scripts/*
+scratch/*
 *__debug_bin*

@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -394,6 +395,8 @@ var (
 		"group_dn":      types.StringNull(),
 		"nested_search": types.BoolValue(false),
 	})
+
+	certsDefault, _ = types.ListValue(certsListType.ElemType, nil)
 )
 
 // IdpSpConnectionResource is a helper function to simplify the provider implementation.
@@ -629,6 +632,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			},
 		},
 		Optional:    true,
+		Computed:    true,
+		Default:     listdefault.StaticValue(certsDefault),
 		Description: "The certificates used for signature verification and XML encryption.",
 	}
 
@@ -998,6 +1003,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"logging_mode": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString("STANDARD"),
 				Description: "The level of transaction logging applicable for this connection. Default is STANDARD.",
 				Validators: []validator.String{
 					stringvalidator.OneOf(
@@ -1855,6 +1862,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			"virtual_entity_ids": schema.ListAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
+				Computed:    true,
+				Default:     listdefault.StaticValue(emptyStringList),
 				Description: "List of alternate entity IDs that identifies the local server to this partner.",
 			},
 			"ws_trust": schema.SingleNestedAttribute{
