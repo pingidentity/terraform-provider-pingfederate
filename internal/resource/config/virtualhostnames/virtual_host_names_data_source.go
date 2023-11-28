@@ -69,8 +69,8 @@ func (r *virtualHostNamesDataSource) Configure(_ context.Context, req datasource
 }
 
 // Read a VirtualHostNamesResponse object into the model struct
-func readVirtualHostNamesResponseDataSource(ctx context.Context, r *client.VirtualHostNameSettings, state *virtualHostNamesDataSourceModel, existingId *string) {
-	state.Id = id.GenerateUUIDToState(existingId)
+func readVirtualHostNamesResponseDataSource(ctx context.Context, r *client.VirtualHostNameSettings, state *virtualHostNamesDataSourceModel) {
+	state.Id = types.StringValue("virtual_host_names_id")
 	state.VirtualHostNames = internaltypes.GetStringList(r.VirtualHostNames)
 }
 
@@ -91,8 +91,7 @@ func (r *virtualHostNamesDataSource) Read(ctx context.Context, req datasource.Re
 	}
 
 	// Read the response into the state
-	var id = "virtual_host_names_id"
-	readVirtualHostNamesResponseDataSource(ctx, apiReadVirtualHostNames, &state, &id)
+	readVirtualHostNamesResponseDataSource(ctx, apiReadVirtualHostNames, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state

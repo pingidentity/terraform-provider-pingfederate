@@ -12,7 +12,8 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/pluginconfiguration"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
+	resourcelinkdatasource "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -83,14 +84,14 @@ func (r *oauthAccessTokenManagerDataSource) Schema(ctx context.Context, req data
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
-				Attributes:  resourcelink.ToDataSourceSchema(),
+				Attributes:  resourcelinkdatasource.ToDataSourceSchema(),
 			},
 			"parent_ref": schema.SingleNestedAttribute{
 				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
-				Attributes:  resourcelink.ToDataSourceSchema(),
+				Attributes:  resourcelinkdatasource.ToDataSourceSchema(),
 			},
 			"configuration": pluginconfiguration.ToDataSourceSchema(),
 			"attribute_contract": schema.SingleNestedAttribute{
@@ -202,7 +203,7 @@ func (r *oauthAccessTokenManagerDataSource) Schema(ctx context.Context, req data
 						Optional:    false,
 						Computed:    true,
 						NestedObject: schema.NestedAttributeObject{
-							Attributes: resourcelink.ToDataSourceSchema(),
+							Attributes: resourcelinkdatasource.ToDataSourceSchema(),
 						},
 					},
 				},
@@ -285,9 +286,9 @@ func readOauthAccessTokenManagerResponseDataSource(ctx context.Context, r *clien
 	state.Id = types.StringValue(r.Id)
 	state.ManagerId = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
-	state.PluginDescriptorRef, respDiags = resourcelink.ToDataSourceState(ctx, &r.PluginDescriptorRef)
+	state.PluginDescriptorRef, respDiags = resourcelink.ToState(ctx, &r.PluginDescriptorRef)
 	diags.Append(respDiags...)
-	state.ParentRef, respDiags = resourcelink.ToDataSourceState(ctx, r.ParentRef)
+	state.ParentRef, respDiags = resourcelink.ToState(ctx, r.ParentRef)
 	diags.Append(respDiags...)
 	state.Configuration, respDiags = types.ObjectValueFrom(ctx, pluginconfiguration.AttrType(), r.Configuration)
 	diags.Append(respDiags...)
