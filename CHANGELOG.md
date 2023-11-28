@@ -9,6 +9,7 @@
 * **New Data Source:** `pingfederate_password_credential_validator` ([#119](https://github.com/pingidentity/terraform-provider-pingfederate/pull/119))
 * **New Data Source:** `pingfederate_session_policies_global` ([#117](https://github.com/pingidentity/terraform-provider-pingfederate/pull/117))
 * **New Data Source:** `pingfederate_token_processor_to_token_generator_mapping` ([#120](https://github.com/pingidentity/terraform-provider-pingfederate/pull/120))
+* **New Data Source:** `pingfederate_oauth_open_id_connect_policy` ([#121](https://github.com/pingidentity/terraform-provider-pingfederate/pull/121))
 
 # v0.3.0 November 22, 2023
 ### FEATURES
