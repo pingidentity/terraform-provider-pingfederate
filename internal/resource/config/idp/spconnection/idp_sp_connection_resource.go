@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -415,7 +414,6 @@ type idpSpConnectionResourceModel struct {
 	Id                                     types.String `tfsdk:"id"`
 	EntityId                               types.String `tfsdk:"entity_id"`
 	Name                                   types.String `tfsdk:"name"`
-	ModificationDate                       types.String `tfsdk:"modification_date"`
 	CreationDate                           types.String `tfsdk:"creation_date"`
 	Active                                 types.Bool   `tfsdk:"active"`
 	BaseUrl                                types.String `tfsdk:"base_url"`
@@ -1021,14 +1019,6 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Optional:    true,
 				Description: "Configuration settings to enable automatic reload of partner's metadata.",
 			},
-			"modification_date": schema.StringAttribute{
-				Optional: false,
-				Computed: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-				Description: "The time at which the connection was last changed. This property is read only and is ignored on PUT and POST requests.",
-			},
 			"name": schema.StringAttribute{
 				Required:    true,
 				Description: "The connection name.",
@@ -1055,16 +1045,16 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 														ElementType: types.StringType,
 														Optional:    true,
 														Computed:    true,
-														Default:     listdefault.StaticValue(emptyStringList),
+														//Default:     listdefault.StaticValue(emptyStringList),
 														Description: "The list of source attribute names used to generate or map to a target field",
 														Validators: []validator.List{
 															listvalidator.UniqueValues(),
 														},
 													},
 													"character_case": schema.StringAttribute{
-														Optional:    true,
-														Computed:    true,
-														Default:     stringdefault.StaticString("NONE"),
+														Optional: true,
+														Computed: true,
+														//Default:     stringdefault.StaticString("NONE"),
 														Description: "The character case of the field value.",
 														Validators: []validator.String{
 															stringvalidator.OneOf(
@@ -1075,33 +1065,33 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 														},
 													},
 													"create_only": schema.BoolAttribute{
-														Optional:    true,
-														Computed:    true,
-														Default:     booldefault.StaticBool(false),
+														Optional: true,
+														Computed: true,
+														//Default:     booldefault.StaticBool(false),
 														Description: "Indicates whether this field is a create only field and cannot be updated.",
 													},
 													"default_value": schema.StringAttribute{
-														Optional:    true,
-														Computed:    true,
-														Default:     stringdefault.StaticString(""),
+														Optional: true,
+														Computed: true,
+														//Default:     stringdefault.StaticString(""),
 														Description: "The default value for the target field",
 													},
 													"expression": schema.StringAttribute{
-														Optional:    true,
-														Computed:    true,
-														Default:     stringdefault.StaticString(""),
+														Optional: true,
+														Computed: true,
+														//Default:     stringdefault.StaticString(""),
 														Description: "An OGNL expression to obtain a value.",
 													},
 													"masked": schema.BoolAttribute{
-														Optional:    true,
-														Computed:    true,
-														Default:     booldefault.StaticBool(false),
+														Optional: true,
+														Computed: true,
+														//Default:     booldefault.StaticBool(false),
 														Description: "Indicates whether the attribute should be masked in server logs.",
 													},
 													"parser": schema.StringAttribute{
-														Optional:    true,
-														Computed:    true,
-														Default:     stringdefault.StaticString("NONE"),
+														Optional: true,
+														Computed: true,
+														//Default:     stringdefault.StaticString("NONE"),
 														Description: "Indicates how the field shall be parsed.",
 														Validators: []validator.String{
 															stringvalidator.OneOf(
@@ -1112,9 +1102,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 														},
 													},
 													"trim": schema.BoolAttribute{
-														Optional:    true,
-														Computed:    true,
-														Default:     booldefault.StaticBool(false),
+														Optional: true,
+														Computed: true,
+														//Default:     booldefault.StaticBool(false),
 														Description: "Indicates whether field should be trimmed before provisioning.",
 													},
 												},
@@ -1137,22 +1127,24 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 												Required:    true,
 												Description: "The name of target field.",
 											},
+											// Can't set defaults in this nested attribute due to plugin-framework problems with
+											// unnecessary plans in sets. See https://github.com/hashicorp/terraform-plugin-framework/issues/867 and linked issues
 											"saas_field_info": schema.SingleNestedAttribute{
 												Attributes: map[string]schema.Attribute{
 													"attribute_names": schema.ListAttribute{
 														ElementType: types.StringType,
 														Optional:    true,
 														Computed:    true,
-														Default:     listdefault.StaticValue(emptyStringList),
+														//Default:     listdefault.StaticValue(emptyStringList),
 														Description: "The list of source attribute names used to generate or map to a target field",
 														Validators: []validator.List{
 															listvalidator.UniqueValues(),
 														},
 													},
 													"character_case": schema.StringAttribute{
-														Optional:    true,
-														Computed:    true,
-														Default:     stringdefault.StaticString("NONE"),
+														Optional: true,
+														Computed: true,
+														//Default:     stringdefault.StaticString("NONE"),
 														Description: "The character case of the field value.",
 														Validators: []validator.String{
 															stringvalidator.OneOf(
@@ -1163,33 +1155,33 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 														},
 													},
 													"create_only": schema.BoolAttribute{
-														Optional:    true,
-														Computed:    true,
-														Default:     booldefault.StaticBool(false),
+														Optional: true,
+														Computed: true,
+														//Default:     booldefault.StaticBool(false),
 														Description: "Indicates whether this field is a create only field and cannot be updated.",
 													},
 													"default_value": schema.StringAttribute{
-														Optional:    true,
-														Computed:    true,
-														Default:     stringdefault.StaticString(""),
+														Optional: true,
+														Computed: true,
+														//Default:     stringdefault.StaticString(""),
 														Description: "The default value for the target field",
 													},
 													"expression": schema.StringAttribute{
-														Optional:    true,
-														Computed:    true,
-														Default:     stringdefault.StaticString(""),
+														Optional: true,
+														Computed: true,
+														//Default:     stringdefault.StaticString(""),
 														Description: "An OGNL expression to obtain a value.",
 													},
 													"masked": schema.BoolAttribute{
-														Optional:    true,
-														Computed:    true,
-														Default:     booldefault.StaticBool(false),
+														Optional: true,
+														Computed: true,
+														//Default:     booldefault.StaticBool(false),
 														Description: "Indicates whether the attribute should be masked in server logs.",
 													},
 													"parser": schema.StringAttribute{
-														Optional:    true,
-														Computed:    true,
-														Default:     stringdefault.StaticString("NONE"),
+														Optional: true,
+														Computed: true,
+														//Default:     stringdefault.StaticString("NONE"),
 														Description: "Indicates how the field shall be parsed.",
 														Validators: []validator.String{
 															stringvalidator.OneOf(
@@ -1200,9 +1192,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 														},
 													},
 													"trim": schema.BoolAttribute{
-														Optional:    true,
-														Computed:    true,
-														Default:     booldefault.StaticBool(false),
+														Optional: true,
+														Computed: true,
+														//Default:     booldefault.StaticBool(false),
 														Description: "Indicates whether field should be trimmed before provisioning.",
 													},
 												},
@@ -1968,6 +1960,48 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 	resp.Schema = schema
 }
 
+func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	var plan, state *idpSpConnectionResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	var respDiags diag.Diagnostics
+
+	if plan == nil || state == nil || !internaltypes.IsDefined(plan.OutboundProvision) {
+		return
+	}
+
+	// If the plan for target_settings has changed, then set target_settings_all to Unknown.
+	planAttrs := plan.OutboundProvision.Attributes()
+	stateAttrs := state.OutboundProvision.Attributes()
+	planTargetSettings := planAttrs["target_settings"].(types.List)
+	stateTargetSettings := stateAttrs["target_settings"].(types.List)
+	if !planTargetSettings.Equal(stateTargetSettings) {
+		planAttrs["target_settings_all"] = types.ListUnknown(targetSettingsElemAttrType)
+	}
+
+	// If the plan for channels has changed, then set attribute_mapping_all to Unknown.
+	planChannels := planAttrs["channels"].(types.List)
+	stateChannels := stateAttrs["channels"].(types.List)
+	if !planChannels.Equal(stateChannels) {
+		newPlanChannels := []attr.Value{}
+		for _, channel := range planChannels.Elements() {
+			channelAttrs := channel.(types.Object).Attributes()
+			channelAttrs["attribute_mapping_all"] = types.SetUnknown(attributeMappingElemAttrTypes)
+			newChannel, respDiags := types.ObjectValue(channelsElemAttrType.AttrTypes, channelAttrs)
+			resp.Diagnostics.Append(respDiags...)
+			newPlanChannels = append(newPlanChannels, newChannel)
+		}
+		planAttrs["channels"], respDiags = types.ListValue(channelsElemAttrType, newPlanChannels)
+		resp.Diagnostics.Append(respDiags...)
+	}
+
+	plan.OutboundProvision, respDiags = types.ObjectValue(outboundProvisionAttrTypes, planAttrs)
+	resp.Diagnostics.Append(respDiags...)
+
+	// Update plan
+	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
+}
+
 func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.SpConnection, plan idpSpConnectionResourceModel) error {
 	addRequest.Id = plan.ConnectionId.ValueStringPointer()
 	addRequest.Type = plan.Type.ValueStringPointer()
@@ -2120,11 +2154,6 @@ func readIdpSpconnectionResponse(ctx context.Context, r *client.SpConnection, st
 	state.ApplicationIconUrl = types.StringPointerValue(r.ApplicationIconUrl)
 	state.ConnectionTargetType = types.StringPointerValue(r.ConnectionTargetType)
 
-	if r.ModificationDate != nil {
-		state.ModificationDate = types.StringValue(r.ModificationDate.Format(time.RFC3339))
-	} else {
-		state.ModificationDate = types.StringNull()
-	}
 	if r.CreationDate != nil {
 		state.CreationDate = types.StringValue(r.CreationDate.Format(time.RFC3339))
 	} else {
@@ -2393,7 +2422,7 @@ func (r *idpSpConnectionResource) Update(ctx context.Context, req resource.Updat
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
-	diags = resp.State.Set(ctx, plan)
+	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 }
 
