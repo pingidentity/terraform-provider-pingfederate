@@ -169,7 +169,7 @@ func TestAccTokenExchangeProcessorPolicyToTokenGeneratorMapping(t *testing.T) {
 			{
 				// Test importing the resource
 				Config:            testAccTokenExchangeProcessorPolicyToTokenGeneratorMapping(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_oauth_token_exchange_processor_policy_token_generator_mapping." + resourceName,
+				ResourceName:      "pingfederate_oauth_token_exchange_token_generator_mapping." + resourceName,
 				ImportStateId:     tokenExchangeProcessorPolicyToTokenGeneratorMappingId,
 				ImportState:       true,
 				ImportStateVerify: true,
@@ -185,7 +185,7 @@ func TestAccTokenExchangeProcessorPolicyToTokenGeneratorMapping(t *testing.T) {
 
 func testAccTokenExchangeProcessorPolicyToTokenGeneratorMapping(resourceName string, resourceModel tokenExchangeProcessorPolicyToTokenGeneratorMappingResourceModel) string {
 	return fmt.Sprintf(`
-resource "pingfederate_oauth_token_exchange_processor_policy_token_generator_mapping" "%[1]s" {
+resource "pingfederate_oauth_token_exchange_token_generator_mapping" "%[1]s" {
   source_id = "%[2]s"
   target_id = "%[3]s"
   attribute_contract_fulfillment = {
@@ -195,6 +195,9 @@ resource "pingfederate_oauth_token_exchange_processor_policy_token_generator_map
   }
 	%[5]s
 	%[6]s
+}
+data "pingfederate_oauth_token_exchange_token_generator_mapping" "%[1]s" {
+  id = pingfederate_oauth_token_exchange_token_generator_mapping.%[1]s.id
 }`, resourceName,
 		resourceModel.sourceId,
 		resourceModel.targetId,

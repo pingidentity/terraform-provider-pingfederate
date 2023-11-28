@@ -1,4 +1,4 @@
-resource "pingfederate_oauth_token_exchange_processor_policy_token_generator_mapping" "oauthTokenExchangeTokenGeneratorMappingsExample" {
+resource "pingfederate_oauth_token_exchange_token_generator_mapping" "oauthTokenExchangeTokenGeneratorMappingsExample" {
   attribute_sources = [
     {
       jdbc_attribute_source = {
