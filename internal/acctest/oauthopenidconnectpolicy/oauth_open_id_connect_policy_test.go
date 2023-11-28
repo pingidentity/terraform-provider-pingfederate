@@ -208,7 +208,7 @@ resource "pingfederate_oauth_open_id_connect_policy" "%s" {
 }
 
 data "pingfederate_oauth_open_id_connect_policy" "%[2]s" {
-	policy_id = pingfederate_oauth_open_id_connect_policy.%[2]s.policy_id
+  policy_id = pingfederate_oauth_open_id_connect_policy.%[2]s.policy_id
 }`, accessTokenManagerHcl(),
 		resourceName,
 		oauthOpenIdConnectPoliciesId,
