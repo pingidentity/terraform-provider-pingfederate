@@ -7,10 +7,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributecontractfulfillment"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/issuancecriteria"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -46,7 +47,7 @@ func (r *oauthOpenIdConnectPolicyDataSource) Schema(ctx context.Context, req dat
 				Description: "The access token manager associated with this Open ID Connect policy.",
 				Computed:    true,
 				Optional:    false,
-				//Attributes:  resourcelink.ToSchema(),
+				Attributes:  resourcelink.ToDataSourceSchema(),
 			},
 			"id_token_lifetime": schema.Int64Attribute{
 				Description: "The ID Token Lifetime, in minutes. The default value is 5.",
@@ -80,7 +81,8 @@ func (r *oauthOpenIdConnectPolicyDataSource) Schema(ctx context.Context, req dat
 			},
 			"attribute_contract": schema.SingleNestedAttribute{
 				Description: "The list of attributes that will be returned to OAuth clients in response to requests received at the PingFederate UserInfo endpoint.",
-				Required:    true,
+				Computed:    true,
+				Optional:    false,
 				Attributes: map[string]schema.Attribute{
 					"core_attributes": schema.ListNestedAttribute{
 						Description: "A list of read-only attributes (for example, sub) that are automatically populated by PingFederate.",
@@ -146,9 +148,9 @@ func (r *oauthOpenIdConnectPolicyDataSource) Schema(ctx context.Context, req dat
 				Computed:    true,
 				Optional:    false,
 				Attributes: map[string]schema.Attribute{
-					"attribute_sources":              attributesources.ToSchema(),
-					"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
-					"issuance_criteria":              issuancecriteria.ToSchema(),
+					"attribute_sources":              attributesources.ToDataSourceSchema(),
+					"attribute_contract_fulfillment": attributecontractfulfillment.ToDataSourceSchema(),
+					"issuance_criteria":              issuancecriteria.ToDataSourceSchema(),
 				},
 			},
 			"scope_attribute_mappings": schema.MapNestedAttribute{
@@ -159,7 +161,8 @@ func (r *oauthOpenIdConnectPolicyDataSource) Schema(ctx context.Context, req dat
 					Attributes: map[string]schema.Attribute{
 						"values": schema.ListAttribute{
 							Description: "A List of values.",
-							Optional:    true,
+							Computed:    true,
+							Optional:    false,
 							ElementType: types.StringType,
 						},
 					},
@@ -168,7 +171,7 @@ func (r *oauthOpenIdConnectPolicyDataSource) Schema(ctx context.Context, req dat
 		},
 	}
 	id.ToSchema(&schema)
-	id.ToDataSourceSchemaCustomId(&schema, "policy_id", false, false, "The policy ID used internally.")
+	id.ToDataSourceSchemaCustomId(&schema, "policy_id", true, false, "The policy ID used internally.")
 	resp.Schema = schema
 }
 
