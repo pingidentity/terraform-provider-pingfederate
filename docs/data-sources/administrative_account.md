@@ -33,6 +33,7 @@ data "pingfederate_administrative_account" "myAdministrativeAccount" {
 - `description` (String) Description of the account.
 - `email_address` (String) Email address associated with the account.
 - `encrypted_password` (String) For GET requests, this field contains the encrypted account password. For POST and PUT requests, if you wish to re-use the password from an API response to this endpoint, this field should be passed back unchanged.
+- `id` (String) ID of this resource.
 - `password` (String) Password for the Account. This field is only applicable during a POST operation.
 - `phone_number` (String) Phone number associated with the account.
 - `roles` (Set of String) Roles available for an administrator. USER_ADMINISTRATOR - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. CRYPTO_ADMINISTRATOR - Can manage local keys and certificates. ADMINISTRATOR - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. EXPRESSION_ADMINISTRATOR - Can add and update OGNL expressions.

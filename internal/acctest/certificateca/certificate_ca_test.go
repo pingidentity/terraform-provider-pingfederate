@@ -69,7 +69,7 @@ resource "pingfederate_certificate_ca" "%[1]s" {
 }
 
 data "pingfederate_certificate_ca" "%[1]s" {
-  id = pingfederate_certificate_ca.%[1]s.ca_id
+  ca_id = pingfederate_certificate_ca.%[1]s.ca_id
 }`, resourceName,
 		resourceModel.id,
 		fileData,

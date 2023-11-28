@@ -61,6 +61,7 @@ func (r *tokenProcessorToTokenGeneratorMappingDataSource) Schema(ctx context.Con
 			"issuance_criteria": issuancecriteria.ToDataSourceSchema(),
 		},
 	}
+	id.ToDataSourceSchema(&schema)
 	id.ToDataSourceSchemaCustomId(&schema, "mapping_id", true, "ID of Token Processor to Token Generator Mapping.")
 	resp.Schema = schema
 }

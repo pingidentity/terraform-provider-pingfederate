@@ -106,7 +106,7 @@ resource "pingfederate_administrative_account" "%[1]s" {
 }
 
 data "pingfederate_administrative_account" "%[1]s" {
-  id = pingfederate_administrative_account.%[1]s.username
+  username = pingfederate_administrative_account.%[1]s.username
 }`,
 		resourceName,
 		hcl(resourceModel.administrativeAccount),

@@ -142,7 +142,8 @@ func (r *certificatesDataSource) Schema(ctx context.Context, req datasource.Sche
 			},
 		},
 	}
-	id.ToDataSourceSchemaCustomId(&schemaDef, "ca_id", true, "The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-].")
+	id.ToDataSourceSchema(&schemaDef)
+	id.ToDataSourceSchemaCustomId(&schemaDef, "ca_id", true, "Unique ID for the certificate.")
 	resp.Schema = schemaDef
 }
 

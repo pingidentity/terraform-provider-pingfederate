@@ -14,7 +14,7 @@ Describes the mapping from token processor to a token generator.
 
 ```terraform
 data "pingfederate_token_processor_to_token_generator_mapping" "tokenProcessorToTokenGeneratorMappingExample" {
-  id = "example"
+  mapping_id = "example"
 }
 ```
 
@@ -30,6 +30,7 @@ data "pingfederate_token_processor_to_token_generator_mapping" "tokenProcessorTo
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--attribute_contract_fulfillment))
 - `attribute_sources` (Attributes List) (see [below for nested schema](#nestedatt--attribute_sources))
 - `default_target_resource` (String) Default target URL for this Token Processor to Token Generator mapping configuration.
+- `id` (String) ID of this resource.
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--issuance_criteria))
 - `license_connection_group_assignment` (String) The license connection group.
 - `source_id` (String) The id of the Token Processor.
