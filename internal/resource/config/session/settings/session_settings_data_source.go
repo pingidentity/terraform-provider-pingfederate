@@ -57,7 +57,7 @@ func (r *sessionSettingsDataSource) Schema(ctx context.Context, req datasource.S
 			},
 		},
 	}
-	id.ToSchema(&schema)
+	id.ToDataSourceSchema(&schema)
 	resp.Schema = schema
 }
 

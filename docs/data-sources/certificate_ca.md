@@ -23,7 +23,7 @@ data "pingfederate_certificate_ca" "myCertificateCa" {
 
 ### Required
 
-- `id` (String) The persistent, unique ID for the certificate
+- `ca_id` (String) The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-].
 
 ### Read-Only
 

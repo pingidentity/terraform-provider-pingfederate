@@ -131,7 +131,7 @@ func (r *redirectValidationDataSource) Schema(ctx context.Context, req datasourc
 			},
 		},
 	}
-	id.ToDataSourceSchema(&schemaDef, false, "The ID of this resource.")
+	id.ToDataSourceSchema(&schemaDef)
 	resp.Schema = schemaDef
 }
 

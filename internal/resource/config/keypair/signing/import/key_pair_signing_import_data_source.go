@@ -194,7 +194,7 @@ func (r *keyPairsSigningImportDataSource) Schema(ctx context.Context, req dataso
 			},
 		},
 	}
-	id.ToDataSourceSchema(&schemaDef, true, "The persistent, unique ID for the certificate.")
+	id.ToDataSourceSchema(&schemaDef)
 	resp.Schema = schemaDef
 }
 

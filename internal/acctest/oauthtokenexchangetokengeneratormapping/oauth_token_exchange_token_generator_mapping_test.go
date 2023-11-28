@@ -197,7 +197,7 @@ resource "pingfederate_oauth_token_exchange_token_generator_mapping" "%[1]s" {
 	%[6]s
 }
 data "pingfederate_oauth_token_exchange_token_generator_mapping" "%[1]s" {
-  id = pingfederate_oauth_token_exchange_token_generator_mapping.%[1]s.id
+  mapping_id = "${pingfederate_oauth_token_exchange_token_generator_mapping.%[1]s.source_id}|${pingfederate_oauth_token_exchange_token_generator_mapping.%[1]s.target_id}"
 }`, resourceName,
 		resourceModel.sourceId,
 		resourceModel.targetId,

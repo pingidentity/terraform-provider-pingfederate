@@ -61,7 +61,7 @@ func (r *idpDefaultUrlsDataSource) Schema(ctx context.Context, req datasource.Sc
 			},
 		},
 	}
-	id.ToDataSourceSchema(&schemaDef, false, "The ID of this resource.")
+	id.ToDataSourceSchema(&schemaDef)
 	resp.Schema = schemaDef
 }
 

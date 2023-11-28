@@ -60,7 +60,6 @@ func (r *oauthTokenExchangeTokenGeneratorMappingDataSource) Schema(ctx context.C
 		&schema,
 		"id",
 		true,
-		false,
 		"The id of the Token Exchange Processor policy to Token Generator mapping.",
 	)
 	resp.Schema = schema

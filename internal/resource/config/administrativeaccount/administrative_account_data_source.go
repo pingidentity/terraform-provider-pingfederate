@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -45,7 +44,7 @@ type administrativeAccountDataSourceModel struct {
 
 // GetSchema defines the schema for the datasource.
 func (r *administrativeAccountDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	schemaDef := schema.Schema{
+	schema := schema.Schema{
 		Description: "Describes an administrative account.",
 		Attributes: map[string]schema.Attribute{
 			"active": schema.BoolAttribute{
@@ -105,14 +104,11 @@ func (r *administrativeAccountDataSource) Schema(ctx context.Context, req dataso
 			},
 			"username": schema.StringAttribute{
 				Description: "Username for the Administrative Account.",
-				Required:    false,
-				Optional:    false,
-				Computed:    true,
+				Required:    true,
 			},
 		},
 	}
-	id.ToDataSourceSchema(&schemaDef, true, "Computed attribute tied to the username property of this resource")
-	resp.Schema = schemaDef
+	resp.Schema = schema
 }
 
 // Metadata returns the data source type name.

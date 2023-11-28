@@ -23,7 +23,7 @@ data "pingfederate_token_processor_to_token_generator_mapping" "tokenProcessorTo
 
 ### Required
 
-- `id` (String) ID of Token Processor to Token Generator Mapping.
+- `mapping_id` (String) ID of Token Processor to Token Generator Mapping.
 
 ### Read-Only
 

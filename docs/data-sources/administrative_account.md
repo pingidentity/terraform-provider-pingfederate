@@ -23,7 +23,7 @@ data "pingfederate_administrative_account" "myAdministrativeAccount" {
 
 ### Required
 
-- `id` (String) Computed attribute tied to the username property of this resource
+- `username` (String) Username for the Administrative Account.
 
 ### Read-Only
 
@@ -36,4 +36,3 @@ data "pingfederate_administrative_account" "myAdministrativeAccount" {
 - `password` (String) Password for the Account. This field is only applicable during a POST operation.
 - `phone_number` (String) Phone number associated with the account.
 - `roles` (Set of String) Roles available for an administrator. USER_ADMINISTRATOR - Can create, deactivate or delete accounts and reset passwords. Additionally, install replacement license keys. CRYPTO_ADMINISTRATOR - Can manage local keys and certificates. ADMINISTRATOR - Can configure partner connections and most system settings (except the management of native accounts and the handling of local keys and certificates. EXPRESSION_ADMINISTRATOR - Can add and update OGNL expressions.
-- `username` (String) Username for the Administrative Account.

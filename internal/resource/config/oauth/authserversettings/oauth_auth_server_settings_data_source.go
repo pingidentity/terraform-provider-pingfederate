@@ -473,7 +473,7 @@ func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req data
 			},
 		},
 	}
-	id.ToSchema(&schemaDef)
+	id.ToDataSourceSchema(&schemaDef)
 	resp.Schema = schemaDef
 }
 

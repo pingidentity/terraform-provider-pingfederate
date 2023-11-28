@@ -53,7 +53,7 @@ func (r *protocolMetadataLifetimeSettingsDataSource) Schema(ctx context.Context,
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToDataSourceSchema(&schema)
 	resp.Schema = schema
 }
 

@@ -25,8 +25,11 @@ data "pingfederate_oauth_auth_server_settings_scopes_exclusive_scope" "myOauthAu
 
 - `name` (String) The name of the scope.
 
+### Optional
+
+- `id` (String) ID of this resource.
+
 ### Read-Only
 
 - `description` (String) The description of the scope that appears when the user is prompted for authorization.
 - `dynamic` (Boolean) True if the scope is dynamic. (Defaults to false)
-- `id` (String) The ID of this resource.

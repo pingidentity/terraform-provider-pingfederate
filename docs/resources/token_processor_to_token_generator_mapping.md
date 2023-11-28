@@ -74,6 +74,7 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "tokenProcess
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `mapping_id` (String) The id of the Token Processor to Token Generator Mapping.
 
 <a id="nestedatt--attribute_contract_fulfillment"></a>
 ### Nested Schema for `attribute_contract_fulfillment`

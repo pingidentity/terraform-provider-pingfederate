@@ -83,7 +83,7 @@ func (r *sessionAuthenticationSessionPoliciesGlobalDataSource) Schema(ctx contex
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToDataSourceSchema(&schema)
 	resp.Schema = schema
 }
 

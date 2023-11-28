@@ -524,7 +524,7 @@ func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req
 		},
 	}
 
-	id.ToDataSourceSchema(&schemaDef, true, "The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.")
+	id.ToDataSourceSchema(&schemaDef)
 	resp.Schema = schemaDef
 }
 

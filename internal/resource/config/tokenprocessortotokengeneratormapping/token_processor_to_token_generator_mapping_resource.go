@@ -59,6 +59,11 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Schema(ctx context.Conte
 				Required:    true,
 			},
 			"issuance_criteria": issuancecriteria.ToSchema(),
+			"mapping_id": schema.StringAttribute{
+				Description: "The id of the Token Processor to Token Generator Mapping.",
+				Computed:    true,
+				Optional:    false,
+			},
 		},
 	}
 	id.ToSchema(&schema)

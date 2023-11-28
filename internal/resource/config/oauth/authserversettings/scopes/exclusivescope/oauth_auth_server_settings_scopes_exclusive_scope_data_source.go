@@ -59,7 +59,7 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopeDataSource) Schema(ctx conte
 			},
 		},
 	}
-	id.ToDataSourceSchema(&schemaDef, false, "The ID of this resource.")
+	id.ToDataSourceSchema(&schemaDef)
 	resp.Schema = schemaDef
 }
 
