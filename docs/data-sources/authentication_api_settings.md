@@ -32,10 +32,7 @@ data "pingfederate_authentication_api_settings" "myAuthenticationApiSettings" {
 <a id="nestedatt--default_application_ref"></a>
 ### Nested Schema for `default_application_ref`
 
-Required:
-
-- `id` (String) The ID of the resource.
-
 Read-Only:
 
+- `id` (String) The ID of the resource.
 - `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.

@@ -12,7 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
+	resourcelinkdatasource "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -106,7 +107,7 @@ func (r *oauthClientDataSource) Schema(ctx context.Context, req datasource.Schem
 				Description: "The default access token manager for this client.",
 				Optional:    false,
 				Computed:    true,
-				Attributes:  resourcelink.ToDataSourceSchema(),
+				Attributes:  resourcelinkdatasource.ToDataSourceSchema(),
 			},
 			"restrict_to_default_access_token_manager": schema.BoolAttribute{
 				Description: "Determines whether the client is restricted to using only its default access token manager. The default is false.",
@@ -261,7 +262,7 @@ func (r *oauthClientDataSource) Schema(ctx context.Context, req datasource.Schem
 						Description: "The Open ID Connect policy. A null value will represent the default policy group.",
 						Optional:    false,
 						Computed:    true,
-						Attributes:  resourcelink.ToDataSourceSchema(),
+						Attributes:  resourcelinkdatasource.ToDataSourceSchema(),
 					},
 					"grant_access_session_revocation_api": schema.BoolAttribute{
 						Description: "Determines whether this client is allowed to access the Session Revocation API.",
@@ -450,13 +451,13 @@ func (r *oauthClientDataSource) Schema(ctx context.Context, req datasource.Schem
 				Description: "The CIBA request policy.",
 				Optional:    false,
 				Computed:    true,
-				Attributes:  resourcelink.ToDataSourceSchema(),
+				Attributes:  resourcelinkdatasource.ToDataSourceSchema(),
 			},
 			"token_exchange_processor_policy_ref": schema.SingleNestedAttribute{
 				Description: "The Token Exchange Processor policy.",
 				Optional:    false,
 				Computed:    true,
-				Attributes:  resourcelink.ToDataSourceSchema(),
+				Attributes:  resourcelinkdatasource.ToDataSourceSchema(),
 			},
 			"refresh_token_rolling_grace_period_type": schema.StringAttribute{
 				Description: "When specified, it overrides the global Refresh Token Grace Period defined in the Authorization Server Settings. The default value is SERVER_DEFAULT",
@@ -554,7 +555,7 @@ func readOauthClientResponseDataSource(ctx context.Context, r *client.Client, st
 	state.ModificationDate = types.StringValue(r.ModificationDate.Format(time.RFC3339Nano))
 	state.CreationDate = types.StringValue(r.CreationDate.Format(time.RFC3339Nano))
 	state.LogoUrl = types.StringPointerValue(r.LogoUrl)
-	state.DefaultAccessTokenManagerRef, respDiags = resourcelink.ToDataSourceState(ctx, r.DefaultAccessTokenManagerRef)
+	state.DefaultAccessTokenManagerRef, respDiags = resourcelink.ToState(ctx, r.DefaultAccessTokenManagerRef)
 	diags.Append(respDiags...)
 	state.RestrictToDefaultAccessTokenManager = types.BoolPointerValue(r.RestrictToDefaultAccessTokenManager)
 	state.ValidateUsingAllEligibleAtms = types.BoolPointerValue(r.ValidateUsingAllEligibleAtms)
@@ -646,12 +647,12 @@ func readOauthClientResponseDataSource(ctx context.Context, r *client.Client, st
 	state.CibaUserCodeSupported = types.BoolPointerValue(r.CibaUserCodeSupported)
 
 	// state.RequestPolicyRef
-	requestPolicyRefToState, respDiags := resourcelink.ToDataSourceState(ctx, r.RequestPolicyRef)
+	requestPolicyRefToState, respDiags := resourcelink.ToState(ctx, r.RequestPolicyRef)
 	diags.Append(respDiags...)
 	state.RequestPolicyRef = requestPolicyRefToState
 
 	// state.TokenExchangeProcessorPolicyRef
-	tokenExchangeProcessorPolicyRefToState, respDiags := resourcelink.ToDataSourceState(ctx, r.TokenExchangeProcessorPolicyRef)
+	tokenExchangeProcessorPolicyRefToState, respDiags := resourcelink.ToState(ctx, r.TokenExchangeProcessorPolicyRef)
 	diags.Append(respDiags...)
 	state.TokenExchangeProcessorPolicyRef = tokenExchangeProcessorPolicyRefToState
 

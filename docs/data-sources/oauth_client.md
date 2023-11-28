@@ -214,12 +214,9 @@ Read-Only:
 <a id="nestedatt--default_access_token_manager_ref"></a>
 ### Nested Schema for `default_access_token_manager_ref`
 
-Required:
-
-- `id` (String) The ID of the resource.
-
 Read-Only:
 
+- `id` (String) The ID of the resource.
 - `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
@@ -293,12 +290,9 @@ RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
 <a id="nestedatt--oidc_policy--policy_group"></a>
 ### Nested Schema for `oidc_policy.policy_group`
 
-Required:
-
-- `id` (String) The ID of the resource.
-
 Read-Only:
 
+- `id` (String) The ID of the resource.
 - `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
@@ -306,22 +300,16 @@ Read-Only:
 <a id="nestedatt--request_policy_ref"></a>
 ### Nested Schema for `request_policy_ref`
 
-Required:
-
-- `id` (String) The ID of the resource.
-
 Read-Only:
 
+- `id` (String) The ID of the resource.
 - `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--token_exchange_processor_policy_ref"></a>
 ### Nested Schema for `token_exchange_processor_policy_ref`
 
-Required:
-
-- `id` (String) The ID of the resource.
-
 Read-Only:
 
+- `id` (String) The ID of the resource.
 - `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
