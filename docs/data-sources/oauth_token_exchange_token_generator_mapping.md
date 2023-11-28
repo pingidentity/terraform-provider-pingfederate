@@ -23,12 +23,13 @@ data "pingfederate_oauth_token_exchange_token_generator_mapping" "oauthTokenExch
 
 ### Required
 
-- `id` (String) The id of the Token Exchange Processor policy to Token Generator mapping.
+- `mapping_id` (String) The id of the Token Exchange Processor policy to Token Generator mapping.
 
 ### Read-Only
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--attribute_contract_fulfillment))
 - `attribute_sources` (Attributes List) (see [below for nested schema](#nestedatt--attribute_sources))
+- `id` (String) ID of this resource.
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--issuance_criteria))
 - `license_connection_group_assignment` (String) The license connection group
 - `source_id` (String) The id of the Token Exchange Processor policy.
