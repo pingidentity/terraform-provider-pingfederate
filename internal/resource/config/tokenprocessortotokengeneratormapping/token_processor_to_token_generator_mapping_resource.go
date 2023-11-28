@@ -4,11 +4,9 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
@@ -35,17 +33,6 @@ func TokenProcessorToTokenGeneratorMappingResource() resource.Resource {
 type tokenProcessorToTokenGeneratorMappingResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type tokenProcessorToTokenGeneratorMappingResourceModel struct {
-	AttributeSources                 types.List   `tfsdk:"attribute_sources"`
-	AttributeContractFulfillment     types.Map    `tfsdk:"attribute_contract_fulfillment"`
-	IssuanceCriteria                 types.Object `tfsdk:"issuance_criteria"`
-	SourceId                         types.String `tfsdk:"source_id"`
-	TargetId                         types.String `tfsdk:"target_id"`
-	Id                               types.String `tfsdk:"id"`
-	DefaultTargetResource            types.String `tfsdk:"default_target_resource"`
-	LicenseConnectionGroupAssignment types.String `tfsdk:"license_connection_group_assignment"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -78,7 +65,7 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Schema(ctx context.Conte
 	resp.Schema = schema
 }
 
-func addOptionalTokenProcessorToTokenGeneratorMappingFields(ctx context.Context, addRequest *client.TokenToTokenMapping, plan tokenProcessorToTokenGeneratorMappingResourceModel) error {
+func addOptionalTokenProcessorToTokenGeneratorMappingFields(ctx context.Context, addRequest *client.TokenToTokenMapping, plan tokenProcessorToTokenGeneratorMappingModel) error {
 	if internaltypes.IsDefined(plan.AttributeSources) {
 		addRequest.AttributeSources = []client.AttributeSourceAggregation{}
 		var attributeSourcesErr error
@@ -125,24 +112,8 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Configure(_ context.Cont
 
 }
 
-func readTokenProcessorToTokenGeneratorMappingResponse(ctx context.Context, r *client.TokenToTokenMapping, state *tokenProcessorToTokenGeneratorMappingResourceModel, plan tokenProcessorToTokenGeneratorMappingResourceModel) diag.Diagnostics {
-	var diags, respDiags diag.Diagnostics
-	state.AttributeSources, respDiags = attributesources.ToState(ctx, r.AttributeSources)
-	diags.Append(respDiags...)
-	state.AttributeContractFulfillment, respDiags = attributecontractfulfillment.ToState(ctx, r.AttributeContractFulfillment)
-	diags.Append(respDiags...)
-	state.IssuanceCriteria, respDiags = issuancecriteria.ToState(ctx, r.IssuanceCriteria)
-	diags.Append(respDiags...)
-	state.SourceId = types.StringValue(r.SourceId)
-	state.TargetId = types.StringValue(r.TargetId)
-	state.Id = types.StringPointerValue(r.Id)
-	state.DefaultTargetResource = types.StringPointerValue(r.DefaultTargetResource)
-	state.LicenseConnectionGroupAssignment = types.StringPointerValue(r.LicenseConnectionGroupAssignment)
-	return diags
-}
-
 func (r *tokenProcessorToTokenGeneratorMappingResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan tokenProcessorToTokenGeneratorMappingResourceModel
+	var plan tokenProcessorToTokenGeneratorMappingModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -171,7 +142,7 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Create(ctx context.Conte
 	}
 
 	// Read the response into the state
-	var state tokenProcessorToTokenGeneratorMappingResourceModel
+	var state tokenProcessorToTokenGeneratorMappingModel
 
 	diags = readTokenProcessorToTokenGeneratorMappingResponse(ctx, tokenProcessorToTokenGeneratorMappingsResponse, &state, plan)
 	resp.Diagnostics.Append(diags...)
@@ -181,7 +152,7 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Create(ctx context.Conte
 }
 
 func (r *tokenProcessorToTokenGeneratorMappingResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state tokenProcessorToTokenGeneratorMappingResourceModel
+	var state tokenProcessorToTokenGeneratorMappingModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -211,7 +182,7 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Read(ctx context.Context
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *tokenProcessorToTokenGeneratorMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 
-	var plan tokenProcessorToTokenGeneratorMappingResourceModel
+	var plan tokenProcessorToTokenGeneratorMappingModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -240,7 +211,7 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Update(ctx context.Conte
 	}
 
 	// Read the response
-	var state tokenProcessorToTokenGeneratorMappingResourceModel
+	var state tokenProcessorToTokenGeneratorMappingModel
 	diags = readTokenProcessorToTokenGeneratorMappingResponse(ctx, updateTokenProcessorToTokenGeneratorMappingResponse, &state, plan)
 	resp.Diagnostics.Append(diags...)
 
@@ -251,7 +222,7 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Update(ctx context.Conte
 
 func (r *tokenProcessorToTokenGeneratorMappingResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state tokenProcessorToTokenGeneratorMappingResourceModel
+	var state tokenProcessorToTokenGeneratorMappingModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

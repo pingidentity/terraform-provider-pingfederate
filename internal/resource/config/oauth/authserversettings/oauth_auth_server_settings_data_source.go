@@ -494,9 +494,9 @@ func (r *oauthAuthServerSettingsDataSource) Configure(_ context.Context, req dat
 }
 
 // Read a OauthAuthServerSettingsResponse object into the model struct
-func readOauthAuthServerSettingsResponseDataSource(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsDataSourceModel, existingId *string) diag.Diagnostics {
+func readOauthAuthServerSettingsResponseDataSource(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsDataSourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.Id = id.GenerateUUIDToState(existingId)
+	state.Id = types.StringValue("oauth_auth_server_settings_id")
 	state.DefaultScopeDescription = types.StringValue(r.DefaultScopeDescription)
 	state.Scopes, respDiags = scopeentry.ToState(ctx, r.Scopes)
 	diags.Append(respDiags...)
@@ -565,8 +565,7 @@ func (r *oauthAuthServerSettingsDataSource) Read(ctx context.Context, req dataso
 	}
 
 	// Read the response into the state
-	var id = "oauth_auth_server_settings_id"
-	diags = readOauthAuthServerSettingsResponseDataSource(ctx, apiReadOauthAuthServerSettings, &state, &id)
+	diags = readOauthAuthServerSettingsResponseDataSource(ctx, apiReadOauthAuthServerSettings, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
