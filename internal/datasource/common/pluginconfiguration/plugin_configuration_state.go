@@ -11,8 +11,7 @@ import (
 )
 
 func ToDataSourceState(con context.Context, configuration *client.PluginConfiguration) (basetypes.ObjectValue, diag.Diagnostics) {
-	var diags, respDiags diag.Diagnostics
-
+	var diags diag.Diagnostics
 	fieldsAttrValue, respDiags := types.ListValueFrom(con, types.ObjectType{AttrTypes: fieldAttrTypes}, configuration.Fields)
 	diags.Append(respDiags...)
 	tablesAttrValue, respDiags := types.ListValueFrom(con, types.ObjectType{AttrTypes: tableAttrTypes}, configuration.Tables)
