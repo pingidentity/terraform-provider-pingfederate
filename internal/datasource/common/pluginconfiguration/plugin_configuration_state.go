@@ -24,6 +24,7 @@ func ToFieldsListValue(fields []client.ConfigField, planFields *types.List, diag
 		}
 	}
 
+	// Build the list of fields
 	for _, field := range fields {
 		attrValues := map[string]attr.Value{}
 		attrValues["name"] = types.StringValue(field.Name)
