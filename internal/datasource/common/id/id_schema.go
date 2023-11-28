@@ -12,7 +12,7 @@ func ToDataSourceSchemaCustomId(s *datasourceschema.Schema, idName string, requi
 	idAttr := datasourceschema.StringAttribute{
 		Description: description,
 		Computed:    !required,
-		Optional:    !required,
+		Optional:    false,
 		Required:    required,
 	}
 	s.Attributes[idName] = idAttr

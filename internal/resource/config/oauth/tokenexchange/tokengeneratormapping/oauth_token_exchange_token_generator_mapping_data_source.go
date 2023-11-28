@@ -56,9 +56,10 @@ func (r *oauthTokenExchangeTokenGeneratorMappingDataSource) Schema(ctx context.C
 			},
 		},
 	}
+	id.ToDataSourceSchema(&schema)
 	id.ToDataSourceSchemaCustomId(
 		&schema,
-		"id",
+		"mapping_id",
 		true,
 		"The id of the Token Exchange Processor policy to Token Generator mapping.",
 	)

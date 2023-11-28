@@ -25,13 +25,10 @@ data "pingfederate_oauth_issuer" "myOauthIssuer" {
 
 - `issuer_id` (String) The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-].
 
-### Optional
-
-- `id` (String) ID of this resource.
-
 ### Read-Only
 
 - `description` (String)
 - `host` (String)
+- `id` (String) ID of this resource.
 - `name` (String)
 - `path` (String)

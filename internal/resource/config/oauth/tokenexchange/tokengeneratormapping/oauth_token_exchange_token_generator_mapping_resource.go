@@ -55,6 +55,11 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Schema(ctx context.Con
 				Description: "The license connection group",
 				Optional:    true,
 			},
+			"mapping_id": schema.StringAttribute{
+				Description: "The id of the Token Exchange Processor policy to Token Generator mapping.",
+				Computed:    true,
+				Optional:    false,
+			},
 		},
 	}
 	id.ToSchema(&schema)

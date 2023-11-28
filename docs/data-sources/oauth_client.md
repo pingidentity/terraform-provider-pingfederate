@@ -25,10 +25,6 @@ data "pingfederate_oauth_client" "myOauthClientExample" {
 
 - `client_id` (String) A unique identifier the client provides to the Resource Server to identify itself. This identifier is included with every request the client makes. For PUT requests, this field is optional and it will be overridden by the 'id' parameter of the PUT request.
 
-### Optional
-
-- `id` (String) ID of this resource.
-
 ### Read-Only
 
 - `allow_authentication_api_init` (Boolean) Set to true to allow this client to initiate the authentication API redirectless flow.
@@ -64,6 +60,7 @@ RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.
 - `exclusive_scopes` (Set of String) The exclusive scopes available for this client.
 - `extended_parameters` (Attributes Map) OAuth Client Metadata can be extended to use custom Client Metadata Parameters. The names of these custom parameters should be defined in /extendedProperties. (see [below for nested schema](#nestedatt--extended_parameters))
 - `grant_types` (Set of String) The grant types allowed for this client. The EXTENSION grant type applies to SAML/JWT assertion grants.
+- `id` (String) ID of this resource.
 - `jwks_settings` (Attributes) JSON Web Key Set Settings of the OAuth client. Required if private key JWT client authentication or signed requests is enabled. (see [below for nested schema](#nestedatt--jwks_settings))
 - `jwt_secured_authorization_response_mode_content_encryption_algorithm` (String) The JSON Web Encryption [JWE] content-encryption algorithm for the JWT Secured Authorization Response.
 AES_128_CBC_HMAC_SHA_256 - Composite AES-CBC-128 HMAC-SHA-256
