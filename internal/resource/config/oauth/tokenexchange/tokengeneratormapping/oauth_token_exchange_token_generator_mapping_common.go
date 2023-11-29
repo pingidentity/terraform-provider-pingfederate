@@ -33,6 +33,7 @@ func readOauthTokenExchangeTokenGeneratorMappingResponse(ctx context.Context, r 
 	state.SourceId = types.StringValue(r.SourceId)
 	state.TargetId = types.StringValue(r.TargetId)
 	state.Id = types.StringPointerValue(r.Id)
+	state.MappingId = types.StringPointerValue(r.Id)
 	state.LicenseConnectionGroupAssignment = types.StringPointerValue(r.LicenseConnectionGroupAssignment)
 	return diags
 }
