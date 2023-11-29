@@ -317,6 +317,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		oauthclient.OauthClientDataSource,
 		oauthissuer.OauthIssuerDataSource,
 		oauthopenidconnectpolicy.OauthOpenIdConnectPolicyDataSource,
+		passwordcredentialvalidator.PasswordCredentialValidatorDataSource,
 		protocolmetadatalifetimesettings.ProtocolMetadataLifetimeSettingsDataSource,
 		redirectvalidation.RedirectValidationDataSource,
 		serversettingsgeneralsettings.ServerSettingsGeneralSettingsDataSource,
