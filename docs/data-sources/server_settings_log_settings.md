@@ -22,7 +22,7 @@ data "pingfederate_server_settings_log_settings" "myServerSettingsLogSettingsExa
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) ID of this resource.
 - `log_categories` (Attributes Set) The log categories defined for the system and whether they are enabled. (see [below for nested schema](#nestedatt--log_categories))
 
 <a id="nestedatt--log_categories"></a>

@@ -37,7 +37,7 @@ import (
 	oauthclient "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/client"
 	oauthissuer "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/issuer"
 	oauthopenidconnectpolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/openidconnect/policy"
-	oauthtokenexchangetokengeneratormappings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/tokengeneratormappings"
+	oauthtokenexchangetokengeneratormapping "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/tokengeneratormapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/passwordcredentialvalidator"
 	protocolmetadatalifetimesettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/protocolmetadata/lifetimesettings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/redirectvalidation"
@@ -316,6 +316,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		oauthauthserversettingsscopesexclusivescope.OauthAuthServerSettingsScopesExclusiveScopeDataSource,
 		oauthclient.OauthClientDataSource,
 		oauthissuer.OauthIssuerDataSource,
+		oauthtokenexchangetokengeneratormapping.OauthTokenExchangeTokenGeneratorMappingDataSource,
 		oauthopenidconnectpolicy.OauthOpenIdConnectPolicyDataSource,
 		passwordcredentialvalidator.PasswordCredentialValidatorDataSource,
 		protocolmetadatalifetimesettings.ProtocolMetadataLifetimeSettingsDataSource,
@@ -353,7 +354,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		oauthclient.OauthClientResource,
 		oauthissuer.OauthIssuerResource,
 		oauthopenidconnectpolicy.OauthOpenIdConnectPolicyResource,
-		oauthtokenexchangetokengeneratormappings.OauthTokenExchangeTokenGeneratorMappingResource,
+		oauthtokenexchangetokengeneratormapping.OauthTokenExchangeTokenGeneratorMappingResource,
 		passwordcredentialvalidator.PasswordCredentialValidatorResource,
 		protocolmetadatalifetimesettings.ProtocolMetadataLifetimeSettingsResource,
 		redirectvalidation.RedirectValidationResource,

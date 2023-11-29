@@ -31,8 +31,9 @@ type certificatesDataSource struct {
 	apiClient      *client.APIClient
 }
 
-type certificatesDataSourceModel struct {
+type certificateCaModel struct {
 	Id                      types.String `tfsdk:"id"`
+	CaId                    types.String `tfsdk:"ca_id"`
 	SerialNumber            types.String `tfsdk:"serial_number"`
 	SubjectDN               types.String `tfsdk:"subject_dn"`
 	SubjectAlternativeNames types.Set    `tfsdk:"subject_alternative_names"`
@@ -141,7 +142,8 @@ func (r *certificatesDataSource) Schema(ctx context.Context, req datasource.Sche
 			},
 		},
 	}
-	id.ToDataSourceSchema(&schemaDef, true, "The persistent, unique ID for the certificate")
+	id.ToDataSourceSchema(&schemaDef)
+	id.ToDataSourceSchemaCustomId(&schemaDef, "ca_id", true, "Unique ID for the certificate.")
 	resp.Schema = schemaDef
 }
 
@@ -162,8 +164,9 @@ func (r *certificatesDataSource) Configure(_ context.Context, req datasource.Con
 }
 
 // Read a CertificateResponse object into the model struct
-func readCertificateResponseDataSource(ctx context.Context, r *client.CertView, state *certificatesDataSourceModel, diagnostics *diag.Diagnostics) {
+func readCertificateResponseDataSource(ctx context.Context, r *client.CertView, state *certificateCaModel, diagnostics *diag.Diagnostics) {
 	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
+	state.CaId = internaltypes.StringTypeOrNil(r.Id, false)
 	state.SerialNumber = internaltypes.StringTypeOrNil(r.SerialNumber, false)
 	state.SubjectDN = internaltypes.StringTypeOrNil(r.SubjectDN, false)
 	state.SubjectAlternativeNames = internaltypes.GetStringSet(r.SubjectAlternativeNames)
@@ -182,7 +185,7 @@ func readCertificateResponseDataSource(ctx context.Context, r *client.CertView, 
 
 // Read resource information
 func (r *certificatesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state certificatesDataSourceModel
+	var state certificateCaModel
 
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -190,7 +193,7 @@ func (r *certificatesDataSource) Read(ctx context.Context, req datasource.ReadRe
 		return
 	}
 
-	apiReadCertificate, httpResp, err := r.apiClient.CertificatesCaAPI.GetTrustedCert(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadCertificate, httpResp, err := r.apiClient.CertificatesCaAPI.GetTrustedCert(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CaId.ValueString()).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a trusted certificate CA", err, httpResp)
 		return

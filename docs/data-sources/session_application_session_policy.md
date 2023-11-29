@@ -22,6 +22,6 @@ data "pingfederate_session_application_session_policy" "mySessionApplicationSess
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) ID of this resource.
 - `idle_timeout_mins` (Number) The idle timeout period, in minutes. If set to -1, the idle timeout will be set to the maximum timeout. The default is 60.
 - `max_timeout_mins` (Number) The maximum timeout period, in minutes. If set to -1, sessions do not expire. The default is 480.

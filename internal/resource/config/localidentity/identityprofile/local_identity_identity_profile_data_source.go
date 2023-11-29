@@ -34,6 +34,7 @@ type localIdentityIdentityProfileDataSource struct {
 
 type localIdentityIdentityProfileDataSourceModel struct {
 	Id                      types.String `tfsdk:"id"`
+	ProfileId               types.String `tfsdk:"profile_id"`
 	Name                    types.String `tfsdk:"name"`
 	ApcId                   types.Object `tfsdk:"apc_id"`
 	AuthSources             types.List   `tfsdk:"auth_sources"`
@@ -523,8 +524,12 @@ func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req
 			},
 		},
 	}
-
-	id.ToDataSourceSchema(&schemaDef, true, "The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.")
+	id.ToDataSourceSchema(&schemaDef)
+	id.ToDataSourceSchemaCustomId(&schemaDef,
+		"profile_id",
+		true,
+		"Unique ID for the local identity profile",
+	)
 	resp.Schema = schemaDef
 }
 
@@ -547,7 +552,8 @@ func (r *localIdentityIdentityProfileDataSource) Configure(_ context.Context, re
 // Read a DseeCompatAdministrativeAccountResponse object into the model struct
 func readLocalIdentityIdentityProfileResponseDataSource(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfileDataSourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
+	state.Id = types.StringPointerValue(r.Id)
+	state.ProfileId = types.StringPointerValue(r.Id)
 	state.Name = types.StringValue(r.Name)
 	state.ApcId, respDiags = resourcelink.ToState(ctx, &r.ApcId)
 	diags.Append(respDiags...)

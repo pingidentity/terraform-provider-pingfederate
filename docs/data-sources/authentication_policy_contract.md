@@ -29,7 +29,7 @@ data "pingfederate_authentication_policy_contract" "authenticationPolicyContract
 
 - `core_attributes` (Attributes List) A list of read-only assertion attributes (for example, subject) that are automatically populated by PingFederate. (see [below for nested schema](#nestedatt--core_attributes))
 - `extended_attributes` (Attributes Set) A list of additional attributes as needed. (see [below for nested schema](#nestedatt--extended_attributes))
-- `id` (String) The ID of this resource.
+- `id` (String) ID of this resource.
 - `name` (String) The Authentication Policy contract name. Name is unique.
 
 <a id="nestedatt--core_attributes"></a>

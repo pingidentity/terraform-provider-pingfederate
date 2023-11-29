@@ -170,8 +170,9 @@ func (r *oauthOpenIdConnectPolicyDataSource) Schema(ctx context.Context, req dat
 			},
 		},
 	}
-	id.ToSchema(&schema)
-	id.ToDataSourceSchemaCustomId(&schema, "policy_id", true, false, "The policy ID used internally.")
+	id.ToDataSourceSchema(&schema)
+	id.ToDataSourceSchemaCustomId(&schema,
+		"policy_id", true, "The policy ID used internally.")
 	resp.Schema = schema
 }
 

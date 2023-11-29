@@ -30,7 +30,7 @@ data "pingfederate_oauth_access_token_manager" "myOauthAccessTokenManager" {
 - `access_control_settings` (Attributes) Settings which determine which clients may access this token manager. (see [below for nested schema](#nestedatt--access_control_settings))
 - `attribute_contract` (Attributes) The list of attributes that will be added to an access token. (see [below for nested schema](#nestedatt--attribute_contract))
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--configuration))
-- `id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
+- `id` (String) ID of this resource.
 - `name` (String) The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
 - `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides) (see [below for nested schema](#nestedatt--parent_ref))
 - `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
