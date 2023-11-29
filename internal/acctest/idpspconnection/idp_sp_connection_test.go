@@ -76,8 +76,8 @@ func TestAccIdpSpConnection(t *testing.T) {
 				},
 			},
 			{
-				// Back to WS Trust connection, minimal
-				Config: testAccSpConnectionWsTrust(spConnectionId, initialResourceModel),
+				// Back to Outbound Provision connection, minimal
+				Config: testAccSpConnectionOutboundProvision(spConnectionId, initialResourceModel),
 				Check:  testAccCheckExpectedSpConnectionAttributes(initialResourceModel),
 			},
 		},
