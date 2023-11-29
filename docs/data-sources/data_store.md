@@ -23,7 +23,7 @@ data "pingfederate_data_store" "myDataStore" {
 
 ### Required
 
-- `data_store_id` (String) The persistent, unique ID for the data store. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
+- `data_store_id` (String) Unique ID for the data store.
 
 ### Read-Only
 
