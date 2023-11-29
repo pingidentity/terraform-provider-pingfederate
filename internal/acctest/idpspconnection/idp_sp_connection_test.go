@@ -8,33 +8,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const spConnectionId = "spConnId"
-
-//TODO use enums to indicate which type so the check method will have access
-
-type spConnectionResourceModel struct {
-	name     string
-	entityId string
-	update   bool //TODO
-}
+const (
+	spConnectionId = "spConnId"
+	resourceType   = "IdP SP Connection"
+)
 
 func TestAccIdpSpConnection(t *testing.T) {
-	initialResourceModel := spConnectionResourceModel{
-		name:     "spConnName",
-		entityId: "myEntity",
-		update:   false,
-	}
-
-	updatedResourceModel := spConnectionResourceModel{
-		name:     "spConnNameUpdated",
-		entityId: "myEntityUpdated",
-		update:   true,
-	}
-
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
@@ -44,27 +28,27 @@ func TestAccIdpSpConnection(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Outbound provision connection, minimal
-				Config: testAccSpConnectionOutboundProvision(spConnectionId, initialResourceModel),
-				Check:  testAccCheckExpectedSpConnectionAttributes(initialResourceModel),
+				Config: testAccSpConnectionOutboundProvision(spConnectionId),
+				Check:  testAccCheckExpectedSpConnectionAttributesOutboundProvision(),
 			},
 			{
 				// Browser SSO connection minimal
-				Config: testAccSpConnectionBrowserSso(spConnectionId, updatedResourceModel),
-				Check:  testAccCheckExpectedSpConnectionAttributes(updatedResourceModel),
+				Config: testAccSpConnectionBrowserSso(spConnectionId),
+				Check:  testAccCheckExpectedSpConnectionAttributesBrowserSSO(),
 			},
 			{
 				// WS Trust connection, minimal
-				Config: testAccSpConnectionWsTrust(spConnectionId, updatedResourceModel),
-				Check:  testAccCheckExpectedSpConnectionAttributes(updatedResourceModel),
+				Config: testAccSpConnectionWsTrust(spConnectionId),
+				Check:  testAccCheckExpectedSpConnectionAttributesWsTrust(),
 			},
 			{
 				// Complete connection with all three types
-				Config: testAccSpConnectionComplete(spConnectionId, updatedResourceModel),
-				Check:  testAccCheckExpectedSpConnectionAttributes(updatedResourceModel),
+				Config: testAccSpConnectionComplete(spConnectionId),
+				Check:  testAccCheckExpectedSpConnectionAttributesAll(),
 			},
 			{
 				// Test importing the resource
-				Config:            testAccSpConnectionComplete(spConnectionId, updatedResourceModel),
+				Config:            testAccSpConnectionComplete(spConnectionId),
 				ResourceName:      "pingfederate_idp_sp_connection." + spConnectionId,
 				ImportStateId:     spConnectionId,
 				ImportState:       true,
@@ -77,18 +61,18 @@ func TestAccIdpSpConnection(t *testing.T) {
 			},
 			{
 				// Back to Outbound Provision connection, minimal
-				Config: testAccSpConnectionOutboundProvision(spConnectionId, initialResourceModel),
-				Check:  testAccCheckExpectedSpConnectionAttributes(initialResourceModel),
+				Config: testAccSpConnectionOutboundProvision(spConnectionId),
+				Check:  testAccCheckExpectedSpConnectionAttributesOutboundProvision(),
 			},
 		},
 	})
 }
 
-func baseHcl(resourceName string, resourceModel spConnectionResourceModel) string {
+func baseHcl(resourceName string) string {
 	return fmt.Sprintf(`
 	connection_id = "%s"
-	entity_id     = "%s"
-	name          = "%s"
+	entity_id     = "myEntity"
+	name          = "mySpConn"
 	credentials = {
 		certs = []
 		signing_settings = {
@@ -118,8 +102,6 @@ func baseHcl(resourceName string, resourceModel spConnectionResourceModel) strin
 	application_name = "MyApp"
 	application_icon_url = "https://example.com/icon.png"
 	`, resourceName,
-		resourceModel.entityId,
-		resourceModel.name,
 	)
 }
 
@@ -306,7 +288,7 @@ sp_browser_sso = {
 `, authenticationPolicyContractName)
 }
 
-func testAccSpConnectionOutboundProvision(resourceName string, resourceModel spConnectionResourceModel) string {
+func testAccSpConnectionOutboundProvision(resourceName string) string {
 	return fmt.Sprintf(`
 	resource "pingfederate_authentication_policy_contract" "%[1]s" {
 	  contract_id         = "%[1]s"
@@ -318,12 +300,12 @@ resource "pingfederate_idp_sp_connection" "%[1]s" {
 	%s
   %s
 }`, resourceName,
-		baseHcl(resourceName, resourceModel),
+		baseHcl(resourceName),
 		outboundProvisionHcl(),
 	)
 }
 
-func testAccSpConnectionBrowserSso(resourceName string, resourceModel spConnectionResourceModel) string {
+func testAccSpConnectionBrowserSso(resourceName string) string {
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_policy_contract" "%[1]s" {
   contract_id         = "%[1]s"
@@ -336,12 +318,12 @@ resource "pingfederate_idp_sp_connection" "%[1]s" {
   %s
   %s
 }`, resourceName,
-		baseHcl(resourceName, resourceModel),
+		baseHcl(resourceName),
 		spBrowserSSOHcl(resourceName),
 	)
 }
 
-func testAccSpConnectionWsTrust(resourceName string, resourceModel spConnectionResourceModel) string { //TODO how to remove the policy contract from everything. Add to profile? Is there an issue with the provider?
+func testAccSpConnectionWsTrust(resourceName string) string { //TODO how to remove the policy contract from everything. Add to profile? Is there an issue with the provider?
 	return fmt.Sprintf(`
 	resource "pingfederate_authentication_policy_contract" "%[1]s" {
 	  contract_id         = "%[1]s"
@@ -353,12 +335,12 @@ resource "pingfederate_idp_sp_connection" "%[1]s" {
   %s
   %s
 }`, resourceName,
-		baseHcl(resourceName, resourceModel),
+		baseHcl(resourceName),
 		wsTrustHcl(),
 	)
 }
 
-func testAccSpConnectionComplete(resourceName string, resourceModel spConnectionResourceModel) string {
+func testAccSpConnectionComplete(resourceName string) string {
 	return fmt.Sprintf(`
 	resource "pingfederate_authentication_policy_contract" "%[1]s" {
 		contract_id         = "%[1]s"
@@ -373,26 +355,102 @@ func testAccSpConnectionComplete(resourceName string, resourceModel spConnection
 		%s
 		%s
 	  }`, resourceName,
-		baseHcl(resourceName, resourceModel),
+		baseHcl(resourceName),
 		outboundProvisionHcl(),
 		spBrowserSSOHcl(resourceName),
 		wsTrustHcl(),
 	)
 }
 
-// Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedSpConnectionAttributes(config spConnectionResourceModel) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		//resourceType := "IdP SP Connection"
-		testClient := acctest.TestClient()
-		ctx := acctest.TestBasicAuthContext()
-		_, _, err := testClient.IdpSpConnectionsAPI.GetSpConnection(ctx, spConnectionId).Execute()
+func testCommonExpectedSpConnectionAttributes() (*configurationapi.SpConnection, error) {
+	testClient := acctest.TestClient()
+	ctx := acctest.TestBasicAuthContext()
+	spConn, _, err := testClient.IdpSpConnectionsAPI.GetSpConnection(ctx, spConnectionId).Execute()
 
+	if err != nil {
+		return nil, err
+	}
+
+	//TODO testing common attrs
+
+	// Entity id
+
+	// Name
+
+	// Contact info
+
+	// Virtual entity ids
+
+	return spConn, nil
+}
+
+func testExpectedSpConnectionOutboundProvisionAttributes(response *configurationapi.SpConnection) error {
+	return nil
+}
+
+// Test that the expected attributes are set on the PingFederate server
+func testAccCheckExpectedSpConnectionAttributesOutboundProvision() resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		response, err := testCommonExpectedSpConnectionAttributes()
 		if err != nil {
 			return err
 		}
 
-		return nil
+		return testExpectedSpConnectionOutboundProvisionAttributes(response)
+	}
+}
+
+func testExpectedSpConnectionBrowserSSOAttributes(response *configurationapi.SpConnection) error {
+	return nil
+}
+
+// Test that the expected attributes are set on the PingFederate server
+func testAccCheckExpectedSpConnectionAttributesBrowserSSO() resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		response, err := testCommonExpectedSpConnectionAttributes()
+		if err != nil {
+			return err
+		}
+
+		return testExpectedSpConnectionWsTrustAttributes(response)
+	}
+}
+
+func testExpectedSpConnectionWsTrustAttributes(response *configurationapi.SpConnection) error {
+	return nil
+}
+
+// Test that the expected attributes are set on the PingFederate server
+func testAccCheckExpectedSpConnectionAttributesWsTrust() resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		response, err := testCommonExpectedSpConnectionAttributes()
+		if err != nil {
+			return err
+		}
+
+		return testExpectedSpConnectionWsTrustAttributes(response)
+	}
+}
+
+// Test that the expected attributes are set on the PingFederate server
+func testAccCheckExpectedSpConnectionAttributesAll() resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		response, err := testCommonExpectedSpConnectionAttributes()
+		if err != nil {
+			return err
+		}
+
+		err = testExpectedSpConnectionOutboundProvisionAttributes(response)
+		if err != nil {
+			return err
+		}
+
+		err = testExpectedSpConnectionBrowserSSOAttributes(response)
+		if err != nil {
+			return err
+		}
+
+		return testExpectedSpConnectionWsTrustAttributes(response)
 	}
 }
 
