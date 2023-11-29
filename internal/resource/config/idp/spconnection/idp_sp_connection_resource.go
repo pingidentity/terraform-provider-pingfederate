@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -19,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -388,7 +388,7 @@ var (
 		"channels":            types.ListType{ElemType: channelsElemAttrType},
 	}
 
-	emptyStringList, _ = types.ListValue(types.StringType, nil)
+	emptyStringSet, _ = types.SetValue(types.StringType, nil)
 
 	groupSourceLocationDefault, _ = types.ObjectValue(channelSourceLocationAttrType.AttrTypes, map[string]attr.Value{
 		"filter":        types.StringNull(),
@@ -421,7 +421,7 @@ type idpSpConnectionResourceModel struct {
 	Active                                 types.Bool   `tfsdk:"active"`
 	BaseUrl                                types.String `tfsdk:"base_url"`
 	DefaultVirtualEntityId                 types.String `tfsdk:"default_virtual_entity_id"`
-	VirtualEntityIds                       types.List   `tfsdk:"virtual_entity_ids"`
+	VirtualEntityIds                       types.Set    `tfsdk:"virtual_entity_ids"`
 	MetadataReloadSettings                 types.Object `tfsdk:"metadata_reload_settings"`
 	Credentials                            types.Object `tfsdk:"credentials"`
 	ContactInfo                            types.Object `tfsdk:"contact_info"`
@@ -1019,6 +1019,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Attributes: map[string]schema.Attribute{
 					"enable_auto_metadata_update": schema.BoolAttribute{
 						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(true),
 						Description: "Specifies whether the metadata of the connection will be automatically reloaded. The default value is true.",
 					},
 					"metadata_url_ref": resourcelink.ToCompleteSchema(),
@@ -1459,13 +1461,6 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				},
 				Optional:    true,
 				Description: "Outbound Provisioning allows an IdP to create and maintain user accounts at standards-based partner sites using SCIM as well as select-proprietary provisioning partner sites that are protocol-enabled.",
-				Validators: []validator.Object{
-					objectvalidator.ExactlyOneOf(
-						path.MatchRoot("outbound_provision"),
-						path.MatchRoot("sp_browser_sso"),
-						path.MatchRoot("ws_trust"),
-					),
-				},
 			},
 			"sp_browser_sso": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -1845,13 +1840,6 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				},
 				Optional:    true,
 				Description: "The SAML settings used to enable secure browser-based SSO to resources at your partner's site.",
-				Validators: []validator.Object{
-					objectvalidator.ExactlyOneOf(
-						path.MatchRoot("outbound_provision"),
-						path.MatchRoot("sp_browser_sso"),
-						path.MatchRoot("ws_trust"),
-					),
-				},
 			},
 			"type": schema.StringAttribute{
 				Optional:    false,
@@ -1859,11 +1847,11 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Default:     stringdefault.StaticString("SP"),
 				Description: "The type of this connection.",
 			},
-			"virtual_entity_ids": schema.ListAttribute{
+			"virtual_entity_ids": schema.SetAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
 				Computed:    true,
-				Default:     listdefault.StaticValue(emptyStringList),
+				Default:     setdefault.StaticValue(emptyStringSet),
 				Description: "List of alternate entity IDs that identifies the local server to this partner.",
 			},
 			"ws_trust": schema.SingleNestedAttribute{
@@ -1950,13 +1938,6 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				},
 				Optional:    true,
 				Description: "Ws-Trust STS provides security-token validation and creation to extend SSO access to identity-enabled Web Services",
-				Validators: []validator.Object{
-					objectvalidator.ExactlyOneOf(
-						path.MatchRoot("outbound_provision"),
-						path.MatchRoot("sp_browser_sso"),
-						path.MatchRoot("ws_trust"),
-					),
-				},
 			},
 		},
 	}
@@ -1975,40 +1956,49 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	var respDiags diag.Diagnostics
 
-	if plan == nil || state == nil || !internaltypes.IsDefined(plan.OutboundProvision) {
+	if plan == nil || state == nil {
 		return
 	}
 
-	// If the plan for target_settings has changed, then set target_settings_all to Unknown.
-	planAttrs := plan.OutboundProvision.Attributes()
-	stateAttrs := state.OutboundProvision.Attributes()
-	planTargetSettings := planAttrs["target_settings"].(types.List)
-	stateTargetSettings := stateAttrs["target_settings"].(types.List)
-	if !planTargetSettings.Equal(stateTargetSettings) {
-		planAttrs["target_settings_all"] = types.ListUnknown(targetSettingsElemAttrType)
-	}
-
-	// If the plan for channels has changed, then set attribute_mapping_all to Unknown.
-	planChannels := planAttrs["channels"].(types.List)
-	stateChannels := stateAttrs["channels"].(types.List)
-	if !planChannels.Equal(stateChannels) {
-		newPlanChannels := []attr.Value{}
-		for _, channel := range planChannels.Elements() {
-			channelAttrs := channel.(types.Object).Attributes()
-			channelAttrs["attribute_mapping_all"] = types.SetUnknown(attributeMappingElemAttrTypes)
-			newChannel, respDiags := types.ObjectValue(channelsElemAttrType.AttrTypes, channelAttrs)
-			resp.Diagnostics.Append(respDiags...)
-			newPlanChannels = append(newPlanChannels, newChannel)
+	if internaltypes.IsDefined(plan.OutboundProvision) && internaltypes.IsDefined(state.OutboundProvision) {
+		// If the plan for target_settings has changed, then set target_settings_all to Unknown.
+		planAttrs := plan.OutboundProvision.Attributes()
+		stateAttrs := state.OutboundProvision.Attributes()
+		planTargetSettings := planAttrs["target_settings"].(types.List)
+		stateTargetSettings := stateAttrs["target_settings"].(types.List)
+		if !planTargetSettings.Equal(stateTargetSettings) {
+			planAttrs["target_settings_all"] = types.ListUnknown(targetSettingsElemAttrType)
 		}
-		planAttrs["channels"], respDiags = types.ListValue(channelsElemAttrType, newPlanChannels)
+
+		// If the plan for channels has changed, then set attribute_mapping_all to Unknown.
+		planChannels := planAttrs["channels"].(types.List)
+		stateChannels := stateAttrs["channels"].(types.List)
+		if !planChannels.Equal(stateChannels) {
+			newPlanChannels := []attr.Value{}
+			for _, channel := range planChannels.Elements() {
+				channelAttrs := channel.(types.Object).Attributes()
+				channelAttrs["attribute_mapping_all"] = types.SetUnknown(attributeMappingElemAttrTypes)
+				newChannel, respDiags := types.ObjectValue(channelsElemAttrType.AttrTypes, channelAttrs)
+				resp.Diagnostics.Append(respDiags...)
+				newPlanChannels = append(newPlanChannels, newChannel)
+			}
+			planAttrs["channels"], respDiags = types.ListValue(channelsElemAttrType, newPlanChannels)
+			resp.Diagnostics.Append(respDiags...)
+		}
+
+		plan.OutboundProvision, respDiags = types.ObjectValue(outboundProvisionAttrTypes, planAttrs)
 		resp.Diagnostics.Append(respDiags...)
+
+		// Update plan
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 	}
 
-	plan.OutboundProvision, respDiags = types.ObjectValue(outboundProvisionAttrTypes, planAttrs)
-	resp.Diagnostics.Append(respDiags...)
-
-	// Update plan
-	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
+	if internaltypes.IsDefined(state.OutboundProvision) != internaltypes.IsDefined(plan.OutboundProvision) {
+		// PF can't add or remove outbound_provision from a sp connection
+		resp.RequiresReplace = []path.Path{
+			path.Root("outbound_provision"),
+		}
+	}
 }
 
 func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.SpConnection, plan idpSpConnectionResourceModel) error {
@@ -2118,9 +2108,8 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 		}
 	}
 
-	if internaltypes.IsDefined(plan.OutboundProvision) {
+	if internaltypes.IsDefined(plan.OutboundProvision) { //TODO force to zero if not set
 		addRequest.OutboundProvision = &client.OutboundProvision{}
-		//TODO
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.OutboundProvision, true)), &addRequest.OutboundProvision)
 		if err != nil {
 			return err
@@ -2169,7 +2158,7 @@ func readIdpSpconnectionResponse(ctx context.Context, r *client.SpConnection, st
 		state.CreationDate = types.StringNull()
 	}
 
-	state.VirtualEntityIds, respDiags = types.ListValueFrom(ctx, types.StringType, r.VirtualEntityIds)
+	state.VirtualEntityIds, respDiags = types.SetValueFrom(ctx, types.StringType, r.VirtualEntityIds)
 	diags.Append(respDiags...)
 
 	state.MetadataReloadSettings, respDiags = types.ObjectValueFrom(ctx, metadataReloadSettingsAttrTypes, r.MetadataReloadSettings)
@@ -2265,7 +2254,11 @@ func readIdpSpconnectionResponse(ctx context.Context, r *client.SpConnection, st
 		diags.Append(respDiags...)
 
 		channels := []types.Object{}
-		plannedChannels := plan.OutboundProvision.Attributes()["channels"].(types.List).Elements()
+		plannedChannels := []attr.Value{}
+		plannedChannelsAttr := plan.OutboundProvision.Attributes()["channels"]
+		if plannedChannelsAttr != nil {
+			plannedChannels = plannedChannelsAttr.(types.List).Elements()
+		}
 		numPlannedChannels := len(plannedChannels)
 		for i, channel := range r.OutboundProvision.Channels {
 			channelAttrs := map[string]attr.Value{

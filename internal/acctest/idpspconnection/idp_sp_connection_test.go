@@ -14,20 +14,25 @@ import (
 
 const spConnectionId = "spConnId"
 
+//TODO use enums to indicate which type so the check method will have access
+
 type spConnectionResourceModel struct {
 	name     string
 	entityId string
+	update   bool //TODO
 }
 
 func TestAccIdpSpConnection(t *testing.T) {
 	initialResourceModel := spConnectionResourceModel{
 		name:     "spConnName",
 		entityId: "myEntity",
+		update:   false,
 	}
 
 	updatedResourceModel := spConnectionResourceModel{
 		name:     "spConnNameUpdated",
 		entityId: "myEntityUpdated",
+		update:   true,
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -38,41 +43,88 @@ func TestAccIdpSpConnection(t *testing.T) {
 		CheckDestroy: testAccCheckSpConnectionDestroy,
 		Steps: []resource.TestStep{
 			{
-				// Minimal model
+				// Outbound provision connection, minimal
 				Config: testAccSpConnectionOutboundProvision(spConnectionId, initialResourceModel),
 				Check:  testAccCheckExpectedSpConnectionAttributes(initialResourceModel),
 			},
 			{
-				// Test updating some fields
+				// Browser SSO connection minimal
+				Config: testAccSpConnectionBrowserSso(spConnectionId, updatedResourceModel),
+				Check:  testAccCheckExpectedSpConnectionAttributes(updatedResourceModel),
+			},
+			{
+				// WS Trust connection, minimal
 				Config: testAccSpConnectionWsTrust(spConnectionId, updatedResourceModel),
 				Check:  testAccCheckExpectedSpConnectionAttributes(updatedResourceModel),
 			},
 			{
+				// Complete connection with all three types
+				Config: testAccSpConnectionComplete(spConnectionId, updatedResourceModel),
+				Check:  testAccCheckExpectedSpConnectionAttributes(updatedResourceModel),
+			},
+			{
 				// Test importing the resource
-				Config:            testAccSpConnectionWsTrust(spConnectionId, updatedResourceModel),
+				Config:            testAccSpConnectionComplete(spConnectionId, updatedResourceModel),
 				ResourceName:      "pingfederate_idp_sp_connection." + spConnectionId,
 				ImportStateId:     spConnectionId,
 				ImportState:       true,
 				ImportStateVerify: true,
+				// These attributes have "_all" versions where values will be imported instead
+				ImportStateVerifyIgnore: []string{
+					"outbound_provision.channels.0.attribute_mapping",
+					"outbound_provision.target_settings",
+				},
 			},
 			{
-				// Back to the initial minimal model
-				Config: testAccSpConnectionBrowserSso(spConnectionId, initialResourceModel),
+				// Back to WS Trust connection, minimal
+				Config: testAccSpConnectionWsTrust(spConnectionId, initialResourceModel),
 				Check:  testAccCheckExpectedSpConnectionAttributes(initialResourceModel),
 			},
 		},
 	})
 }
 
-func testAccSpConnectionOutboundProvision(resourceName string, resourceModel spConnectionResourceModel) string {
+func baseHcl(resourceName string, resourceModel spConnectionResourceModel) string {
 	return fmt.Sprintf(`
-resource "pingfederate_idp_sp_connection" "%[1]s" {
-  connection_id = "%[1]s"
-  entity_id     = "%s"
-  name          = "%s"
-  credentials = {
-    certs = []
-  }
+	connection_id = "%s"
+	entity_id     = "%s"
+	name          = "%s"
+	credentials = {
+		certs = []
+		signing_settings = {
+		  signing_key_pair_ref = {
+			id = "419x9yg43rlawqwq9v6az997k"
+		  }
+		  include_raw_key_in_signature = false
+		  include_cert_in_signature    = false
+		  algorithm                    = "SHA256withRSA"
+		}
+	  }
+	active                 = false
+	contact_info           = {
+	  company = "Example Corp"
+	  first_name = "Bugs"
+	  phone = "5555555"
+	  email = "bugsbunny@example.com"
+	}
+	base_url               = "https://api.pingone.com/v5"
+	logging_mode           = "STANDARD"
+	virtual_entity_ids     = [
+	  "example1",
+	  "example2"
+	]
+	default_virtual_entity_id = "example2"
+	connection_target_type = "STANDARD"
+	application_name = "MyApp"
+	application_icon_url = "https://example.com/icon.png"
+	`, resourceName,
+		resourceModel.entityId,
+		resourceModel.name,
+	)
+}
+
+func outboundProvisionHcl() string {
+	return `
   outbound_provision = {
     type = "PingOne"
     target_settings = [
@@ -142,48 +194,56 @@ resource "pingfederate_idp_sp_connection" "%[1]s" {
       }
     ]
   }
-}`, resourceName,
-		resourceModel.entityId,
-		resourceModel.name,
-	)
+  `
 }
 
-func testAccSpConnectionBrowserSso(resourceName string, resourceModel spConnectionResourceModel) string {
+func wsTrustHcl() string {
+	return `
+	ws_trust = {
+		partner_service_ids = [
+		  "myid"
+		]
+		oauth_assertion_profiles = true
+		default_token_type       = "SAML20"
+		generate_key             = false
+		encrypt_saml2_assertion  = false
+		minutes_before           = 5
+		minutes_after            = 30
+		attribute_contract = {
+		  core_attributes = [
+			{
+			  name = "TOKEN_SUBJECT"
+			}
+		  ]
+		  extended_attributes = []
+		}
+		token_processor_mappings = [
+		  {
+			attribute_sources = []
+			attribute_contract_fulfillment = {
+			  "TOKEN_SUBJECT" : {
+				source = {
+				  type = "TOKEN"
+				}
+				value = "username"
+			  }
+			}
+			issuance_criteria = {
+			  conditional_criteria = []
+			}
+			idp_token_processor_ref = {
+			  id = "UsernameTokenProcessor"
+			}
+			restricted_virtual_entity_ids = []
+		  }
+		]
+	  }
+	`
+}
+
+func spBrowserSSOHcl(authenticationPolicyContractName string) string {
 	return fmt.Sprintf(`
-resource "pingfederate_authentication_policy_contract" "%[1]s" {
-  contract_id         = "%[1]s"
-  core_attributes     = [{ name = "subject" }]
-  extended_attributes = [{ name = "extended_attribute" }, { name = "extended_attribute2" }]
-  name                = "%[1]s"
-}
-
-resource "pingfederate_idp_sp_connection" "%[1]s" {
-  connection_id = "%[1]s"
-  entity_id     = "%s"
-  name          = "%s"
-  active        = false
-  contact_info = {
-    company    = "ping-identity"
-    email      = "ping2@example.com"
-    first_name = "Scary"
-    last_name  = "CrewsJr"
-    phone      = "5555555555"
-  }
-  base_url           = "https://localhost:9032"
-  logging_mode       = "STANDARD"
-  virtual_entity_ids = []
-  credentials = {
-    certs = []
-    signing_settings = {
-      signing_key_pair_ref = {
-        id = "419x9yg43rlawqwq9v6az997k"
-      }
-      include_raw_key_in_signature = false
-      include_cert_in_signature    = false
-      algorithm                    = "SHA256withRSA"
-    }
-  }
-  sp_browser_sso = {
+sp_browser_sso = {
     protocol                      = "SAML20"
     require_signed_authn_requests = false
     sp_saml_identity_mapping      = "STANDARD"
@@ -243,13 +303,27 @@ resource "pingfederate_idp_sp_connection" "%[1]s" {
       extended_attributes = []
     }
   }
+`, authenticationPolicyContractName)
+}
+
+func testAccSpConnectionOutboundProvision(resourceName string, resourceModel spConnectionResourceModel) string {
+	return fmt.Sprintf(`
+	resource "pingfederate_authentication_policy_contract" "%[1]s" {
+	  contract_id         = "%[1]s"
+	  core_attributes     = [{ name = "subject" }]
+	  extended_attributes = [{ name = "extended_attribute" }, { name = "extended_attribute2" }]
+	  name                = "%[1]s"
+	}
+resource "pingfederate_idp_sp_connection" "%[1]s" {
+	%s
+  %s
 }`, resourceName,
-		resourceModel.entityId,
-		resourceModel.name,
+		baseHcl(resourceName, resourceModel),
+		outboundProvisionHcl(),
 	)
 }
 
-func testAccSpConnectionWsTrust(resourceName string, resourceModel spConnectionResourceModel) string {
+func testAccSpConnectionBrowserSso(resourceName string, resourceModel spConnectionResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_policy_contract" "%[1]s" {
   contract_id         = "%[1]s"
@@ -257,74 +331,52 @@ resource "pingfederate_authentication_policy_contract" "%[1]s" {
   extended_attributes = [{ name = "extended_attribute" }, { name = "extended_attribute2" }]
   name                = "%[1]s"
 }
+
 resource "pingfederate_idp_sp_connection" "%[1]s" {
-  connection_id = "%[1]s"
-  entity_id     = "%s"
-  name          = "%s"
-  active        = false
-  contact_info = {
-    company    = "pingidentity"
-    email      = "ping@example.com"
-    first_name = "Terry"
-    last_name  = "Crews"
-    phone      = "5555555"
-  }
-  base_url           = "https://localhost:9031"
-  logging_mode       = "STANDARD"
-  virtual_entity_ids = []
-  credentials = {
-    certs = []
-    signing_settings = {
-      signing_key_pair_ref = {
-        id = "419x9yg43rlawqwq9v6az997k"
-      }
-      include_raw_key_in_signature = false
-      include_cert_in_signature    = false
-      algorithm                    = "SHA256withRSA"
-    }
-  }
-  ws_trust = {
-    partner_service_ids = [
-      "myid"
-    ]
-    oauth_assertion_profiles = true
-    default_token_type       = "SAML20"
-    generate_key             = false
-    encrypt_saml2_assertion  = false
-    minutes_before           = 5
-    minutes_after            = 30
-    attribute_contract = {
-      core_attributes = [
-        {
-          name = "TOKEN_SUBJECT"
-        }
-      ]
-      extended_attributes = []
-    }
-    token_processor_mappings = [
-      {
-        attribute_sources = []
-        attribute_contract_fulfillment = {
-          "TOKEN_SUBJECT" : {
-            source = {
-              type = "TOKEN"
-            }
-            value = "username"
-          }
-        }
-        issuance_criteria = {
-          conditional_criteria = []
-        }
-        idp_token_processor_ref = {
-          id = "UsernameTokenProcessor"
-        }
-        restricted_virtual_entity_ids = []
-      }
-    ]
-  }
+  %s
+  %s
 }`, resourceName,
-		resourceModel.entityId,
-		resourceModel.name,
+		baseHcl(resourceName, resourceModel),
+		spBrowserSSOHcl(resourceName),
+	)
+}
+
+func testAccSpConnectionWsTrust(resourceName string, resourceModel spConnectionResourceModel) string { //TODO how to remove the policy contract from everything. Add to profile? Is there an issue with the provider?
+	return fmt.Sprintf(`
+	resource "pingfederate_authentication_policy_contract" "%[1]s" {
+	  contract_id         = "%[1]s"
+	  core_attributes     = [{ name = "subject" }]
+	  extended_attributes = [{ name = "extended_attribute" }, { name = "extended_attribute2" }]
+	  name                = "%[1]s"
+	}
+resource "pingfederate_idp_sp_connection" "%[1]s" {
+  %s
+  %s
+}`, resourceName,
+		baseHcl(resourceName, resourceModel),
+		wsTrustHcl(),
+	)
+}
+
+func testAccSpConnectionComplete(resourceName string, resourceModel spConnectionResourceModel) string {
+	return fmt.Sprintf(`
+	resource "pingfederate_authentication_policy_contract" "%[1]s" {
+		contract_id         = "%[1]s"
+		core_attributes     = [{ name = "subject" }]
+		extended_attributes = [{ name = "extended_attribute" }, { name = "extended_attribute2" }]
+		name                = "%[1]s"
+	  }
+	  
+	  resource "pingfederate_idp_sp_connection" "%[1]s" {
+		%s
+		%s
+		%s
+		%s
+	  }`, resourceName,
+		baseHcl(resourceName, resourceModel),
+		outboundProvisionHcl(),
+		spBrowserSSOHcl(resourceName),
+		wsTrustHcl(),
 	)
 }
 
