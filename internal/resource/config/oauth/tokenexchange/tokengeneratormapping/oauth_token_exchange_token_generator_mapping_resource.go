@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
@@ -35,6 +37,16 @@ type oauthTokenExchangeTokenGeneratorMappingResource struct {
 	apiClient      *client.APIClient
 }
 
+type oauthTokenExchangeTokenGeneratorMappingResourceModel struct {
+	AttributeSources                 types.List   `tfsdk:"attribute_sources"`
+	AttributeContractFulfillment     types.Map    `tfsdk:"attribute_contract_fulfillment"`
+	IssuanceCriteria                 types.Object `tfsdk:"issuance_criteria"`
+	Id                               types.String `tfsdk:"id"`
+	SourceId                         types.String `tfsdk:"source_id"`
+	TargetId                         types.String `tfsdk:"target_id"`
+	LicenseConnectionGroupAssignment types.String `tfsdk:"license_connection_group_assignment"`
+}
+
 // GetSchema defines the schema for the resource.
 func (r *oauthTokenExchangeTokenGeneratorMappingResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
@@ -55,18 +67,13 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Schema(ctx context.Con
 				Description: "The license connection group",
 				Optional:    true,
 			},
-			"mapping_id": schema.StringAttribute{
-				Description: "The id of the Token Exchange Processor policy to Token Generator mapping.",
-				Computed:    true,
-				Optional:    false,
-			},
 		},
 	}
 	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 
-func addOptionalOauthTokenExchangeTokenGeneratorMappingFields(ctx context.Context, addRequest *client.ProcessorPolicyToGeneratorMapping, plan oauthTokenExchangeTokenGeneratorMappingModel) error {
+func addOptionalOauthTokenExchangeTokenGeneratorMappingFields(ctx context.Context, addRequest *client.ProcessorPolicyToGeneratorMapping, plan oauthTokenExchangeTokenGeneratorMappingResourceModel) error {
 	if internaltypes.IsDefined(plan.AttributeSources) {
 		addRequest.AttributeSources = []client.AttributeSourceAggregation{}
 		var attributeSourcesErr error
@@ -106,8 +113,23 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Configure(_ context.Co
 	r.apiClient = providerCfg.ApiClient
 }
 
+func readOauthTokenExchangeTokenGeneratorMappingResourceResponse(ctx context.Context, r *client.ProcessorPolicyToGeneratorMapping, state *oauthTokenExchangeTokenGeneratorMappingResourceModel) diag.Diagnostics {
+	var diags, respDiags diag.Diagnostics
+	state.AttributeSources, respDiags = attributesources.ToState(ctx, r.AttributeSources)
+	diags.Append(respDiags...)
+	state.AttributeContractFulfillment, respDiags = attributecontractfulfillment.ToState(ctx, r.AttributeContractFulfillment)
+	diags.Append(respDiags...)
+	state.IssuanceCriteria, respDiags = issuancecriteria.ToState(ctx, r.IssuanceCriteria)
+	diags.Append(respDiags...)
+	state.SourceId = types.StringValue(r.SourceId)
+	state.TargetId = types.StringValue(r.TargetId)
+	state.Id = types.StringPointerValue(r.Id)
+	state.LicenseConnectionGroupAssignment = types.StringPointerValue(r.LicenseConnectionGroupAssignment)
+	return diags
+}
+
 func (r *oauthTokenExchangeTokenGeneratorMappingResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan oauthTokenExchangeTokenGeneratorMappingModel
+	var plan oauthTokenExchangeTokenGeneratorMappingResourceModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -136,9 +158,9 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Create(ctx context.Con
 	}
 
 	// Read the response into the state
-	var state oauthTokenExchangeTokenGeneratorMappingModel
+	var state oauthTokenExchangeTokenGeneratorMappingResourceModel
 
-	diags = readOauthTokenExchangeTokenGeneratorMappingResponse(ctx, oauthTokenExchangeTokenGeneratorMappingResponse, &state, plan)
+	diags = readOauthTokenExchangeTokenGeneratorMappingResourceResponse(ctx, oauthTokenExchangeTokenGeneratorMappingResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
 	diags = resp.State.Set(ctx, state)
@@ -146,7 +168,7 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Create(ctx context.Con
 }
 
 func (r *oauthTokenExchangeTokenGeneratorMappingResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state oauthTokenExchangeTokenGeneratorMappingModel
+	var state oauthTokenExchangeTokenGeneratorMappingResourceModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -165,7 +187,7 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Read(ctx context.Conte
 	}
 
 	// Read the response into the state
-	diags = readOauthTokenExchangeTokenGeneratorMappingResponse(ctx, apiReadOauthTokenExchangeTokenGeneratorMapping, &state, state)
+	diags = readOauthTokenExchangeTokenGeneratorMappingResourceResponse(ctx, apiReadOauthTokenExchangeTokenGeneratorMapping, &state)
 	resp.Diagnostics.Append(diags...)
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -175,7 +197,7 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Read(ctx context.Conte
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *oauthTokenExchangeTokenGeneratorMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 
-	var plan oauthTokenExchangeTokenGeneratorMappingModel
+	var plan oauthTokenExchangeTokenGeneratorMappingResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -203,8 +225,8 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Update(ctx context.Con
 	}
 
 	// Read the response
-	var state oauthTokenExchangeTokenGeneratorMappingModel
-	diags = readOauthTokenExchangeTokenGeneratorMappingResponse(ctx, updateOauthTokenExchangeTokenGeneratorMappingResponse, &state, plan)
+	var state oauthTokenExchangeTokenGeneratorMappingResourceModel
+	diags = readOauthTokenExchangeTokenGeneratorMappingResourceResponse(ctx, updateOauthTokenExchangeTokenGeneratorMappingResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -214,7 +236,7 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Update(ctx context.Con
 
 func (r *oauthTokenExchangeTokenGeneratorMappingResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state oauthTokenExchangeTokenGeneratorMappingModel
+	var state oauthTokenExchangeTokenGeneratorMappingResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

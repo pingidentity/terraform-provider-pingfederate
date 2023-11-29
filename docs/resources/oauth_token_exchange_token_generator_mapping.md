@@ -73,7 +73,6 @@ resource "pingfederate_oauth_token_exchange_token_generator_mapping" "oauthToken
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `mapping_id` (String) The id of the Token Exchange Processor policy to Token Generator mapping.
 
 <a id="nestedatt--attribute_contract_fulfillment"></a>
 ### Nested Schema for `attribute_contract_fulfillment`
