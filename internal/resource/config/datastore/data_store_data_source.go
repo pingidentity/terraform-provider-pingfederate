@@ -28,7 +28,7 @@ type dataStoreDataSource struct {
 // GetSchema defines the schema for the datasource.
 func (r *dataStoreDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Describes a data store datasource",
+		Description: "Describes a data store.",
 		Attributes: map[string]schema.Attribute{
 			"mask_attribute_values": schema.BoolAttribute{
 				Description: "Whether attribute values should be masked in the log.",

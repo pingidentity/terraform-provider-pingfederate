@@ -3,18 +3,18 @@
 page_title: "pingfederate_data_store Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes a data store datasource
+  Describes a data store.
 ---
 
 # pingfederate_data_store (Data Source)
 
-Describes a data store datasource
+Describes a data store.
 
 ## Example Usage
 
 ```terraform
 data "pingfederate_data_store" "myDataStore" {
-  data_store_id = pingfederate_data_store.myDataStore.data_store_id
+  data_store_id = "example"
 }
 ```
 

@@ -38,7 +38,7 @@ var (
 		},
 	}
 
-	jdbcDataStoreAttrType = map[string]attr.Type{
+	jdbcDataStoreCommonAttrType = map[string]attr.Type{
 		"max_pool_size":                basetypes.Int64Type{},
 		"connection_url_tags":          basetypes.SetType{ElemType: jdbcTagConfigAttrType},
 		"type":                         basetypes.StringType{},
@@ -51,33 +51,18 @@ var (
 		"user_name":                    basetypes.StringType{},
 		"allow_multi_value_attributes": basetypes.BoolType{},
 		"validate_connection_sql":      basetypes.StringType{},
-		"password":                     basetypes.StringType{},
 	}
 
-	jdbcDataStoreDataSourceAttrType = map[string]attr.Type{
-		"max_pool_size":                basetypes.Int64Type{},
-		"connection_url_tags":          basetypes.SetType{ElemType: jdbcTagConfigAttrType},
-		"type":                         basetypes.StringType{},
-		"name":                         basetypes.StringType{},
-		"blocking_timeout":             basetypes.Int64Type{},
-		"idle_timeout":                 basetypes.Int64Type{},
-		"min_pool_size":                basetypes.Int64Type{},
-		"driver_class":                 basetypes.StringType{},
-		"connection_url":               basetypes.StringType{},
-		"user_name":                    basetypes.StringType{},
-		"allow_multi_value_attributes": basetypes.BoolType{},
-		"validate_connection_sql":      basetypes.StringType{},
-		"encrypted_password":           basetypes.StringType{},
-	}
-
+	jdbcDataStoreAttrType                = internaltypes.AddPasswordToMapStringAttrType(jdbcDataStoreCommonAttrType)
 	jdbcDataStoreEmptyStateObj           = types.ObjectNull(jdbcDataStoreAttrType)
+	jdbcDataStoreDataSourceAttrType      = internaltypes.AddEncryptedPasswordToMapStringAttrType(jdbcDataStoreCommonAttrType)
 	jdbcDataStoreEmptyDataSourceStateObj = types.ObjectNull(jdbcDataStoreDataSourceAttrType)
 )
 
 func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 	jdbcDataStoreSchema := schema.SingleNestedAttribute{}
 	jdbcDataStoreSchema.Description = "A JDBC data store."
-	jdbcDataStoreSchema.Default = objectdefault.StaticValue(types.ObjectNull(jdbcDataStoreAttrType))
+	jdbcDataStoreSchema.Default = objectdefault.StaticValue(jdbcDataStoreEmptyStateObj)
 	jdbcDataStoreSchema.Computed = true
 	jdbcDataStoreSchema.Optional = true
 	jdbcDataStoreSchema.Attributes = map[string]schema.Attribute{
@@ -347,7 +332,7 @@ func toDataSourceStateJdbcDataStore(con context.Context, jdbcDataStore *client.J
 
 	if jdbcDataStore == nil {
 		diags.AddError("Failed to read JDBC data store from PingFederate.", "The response from PingFederate was nil.")
-		return types.ObjectNull(jdbcDataStoreAttrType), diags
+		return types.ObjectNull(jdbcDataStoreDataSourceAttrType), diags
 	}
 
 	connectionUrlSetVal, diags := types.SetValueFrom(con, jdbcTagConfigAttrType, jdbcDataStore.ConnectionUrlTags)

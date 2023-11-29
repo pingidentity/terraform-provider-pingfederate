@@ -50,7 +50,7 @@ var (
 func toSchemaCustomDataStore() schema.SingleNestedAttribute {
 	customDataStoreSchema := schema.SingleNestedAttribute{}
 	customDataStoreSchema.Description = "A custom data store."
-	customDataStoreSchema.Default = objectdefault.StaticValue(types.ObjectNull(customDataStoreAttrType))
+	customDataStoreSchema.Default = objectdefault.StaticValue(customDataStoreEmptyStateObj)
 	customDataStoreSchema.Computed = true
 	customDataStoreSchema.Optional = true
 	customDataStoreSchema.Attributes = map[string]schema.Attribute{

@@ -39,7 +39,7 @@ var (
 		},
 	}
 
-	ldapDataStoreAttrType = map[string]attr.Type{
+	ldapDataStoreCommonAttrType = map[string]attr.Type{
 		"hostnames":              basetypes.SetType{ElemType: basetypes.StringType{}},
 		"verify_host":            basetypes.BoolType{},
 		"test_on_return":         basetypes.BoolType{},
@@ -61,46 +61,20 @@ var (
 		"hostnames_tags":         basetypes.SetType{ElemType: ldapTagConfigAttrType},
 		"time_between_evictions": basetypes.Int64Type{},
 		"type":                   basetypes.StringType{},
-		"password":               basetypes.StringType{},
 		"bind_anonymously":       basetypes.BoolType{},
 		"follow_ldap_referrals":  basetypes.BoolType{},
 	}
 
-	ldapDataStoreDataSourceAttrType = map[string]attr.Type{
-		"hostnames":              basetypes.SetType{ElemType: basetypes.StringType{}},
-		"verify_host":            basetypes.BoolType{},
-		"test_on_return":         basetypes.BoolType{},
-		"ldap_type":              basetypes.StringType{},
-		"dns_ttl":                basetypes.Int64Type{},
-		"connection_timeout":     basetypes.Int64Type{},
-		"min_connections":        basetypes.Int64Type{},
-		"use_ssl":                basetypes.BoolType{},
-		"test_on_borrow":         basetypes.BoolType{},
-		"ldap_dns_srv_prefix":    basetypes.StringType{},
-		"name":                   basetypes.StringType{},
-		"read_timeout":           basetypes.Int64Type{},
-		"use_dns_srv_records":    basetypes.BoolType{},
-		"max_connections":        basetypes.Int64Type{},
-		"user_dn":                basetypes.StringType{},
-		"create_if_necessary":    basetypes.BoolType{},
-		"binary_attributes":      basetypes.SetType{ElemType: basetypes.StringType{}},
-		"max_wait":               basetypes.Int64Type{},
-		"hostnames_tags":         basetypes.SetType{ElemType: ldapTagConfigAttrType},
-		"time_between_evictions": basetypes.Int64Type{},
-		"type":                   basetypes.StringType{},
-		"encrypted_password":     basetypes.StringType{},
-		"bind_anonymously":       basetypes.BoolType{},
-		"follow_ldap_referrals":  basetypes.BoolType{},
-	}
-
+	ldapDataStoreAttrType                = internaltypes.AddPasswordToMapStringAttrType(ldapDataStoreCommonAttrType)
 	ldapDataStoreEmptyStateObj           = types.ObjectNull(ldapDataStoreAttrType)
-	ldapDataStoreEmptyDataSourceStateObj = types.ObjectNull(ldapDataStoreDataSourceAttrType)
+	ldapDataStoreEncryptedPassAttrType   = internaltypes.AddEncryptedPasswordToMapStringAttrType(ldapDataStoreCommonAttrType)
+	ldapDataStoreEmptyDataSourceStateObj = types.ObjectNull(ldapDataStoreEncryptedPassAttrType)
 )
 
 func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 	ldapDataStoreSchema := schema.SingleNestedAttribute{}
 	ldapDataStoreSchema.Description = "An LDAP Data Store"
-	ldapDataStoreSchema.Default = objectdefault.StaticValue(types.ObjectNull(ldapDataStoreAttrType))
+	ldapDataStoreSchema.Default = objectdefault.StaticValue(ldapDataStoreEmptyStateObj)
 	ldapDataStoreSchema.Computed = true
 	ldapDataStoreSchema.Optional = true
 	ldapDataStoreSchema.Attributes = map[string]schema.Attribute{
@@ -581,7 +555,7 @@ func toDataSourceStateLdapDataStore(con context.Context, ldapDataStore *client.L
 		"follow_ldap_referrals":  followLdapReferrals,
 	}
 
-	ldapDataStoreObj, diags := types.ObjectValue(ldapDataStoreDataSourceAttrType, ldapDataStoreAttrVal)
+	ldapDataStoreObj, diags := types.ObjectValue(ldapDataStoreEncryptedPassAttrType, ldapDataStoreAttrVal)
 	allDiags = append(allDiags, diags...)
 	return ldapDataStoreObj, allDiags
 }
