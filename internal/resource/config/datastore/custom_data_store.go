@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	datasourceschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -16,6 +17,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	datasourcepluginconfiguration "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/pluginconfiguration"
+	datasourceresourcelink "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -31,7 +34,17 @@ var (
 		"parent_ref":            basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
 		"configuration":         basetypes.ObjectType{AttrTypes: pluginconfiguration.AttrType()},
 	}
-	customDataStoreEmptyStateObj = types.ObjectNull(customDataStoreAttrType)
+
+	customDataStoreDataSourceAttrType = map[string]attr.Type{
+		"type":                  basetypes.StringType{},
+		"name":                  basetypes.StringType{},
+		"plugin_descriptor_ref": basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"parent_ref":            basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"configuration":         basetypes.ObjectType{AttrTypes: datasourcepluginconfiguration.AttrType()},
+	}
+
+	customDataStoreEmptyStateObj           = types.ObjectNull(customDataStoreAttrType)
+	customDataStoreEmptyDataSourceStateObj = types.ObjectNull(customDataStoreDataSourceAttrType)
 )
 
 func toSchemaCustomDataStore() schema.SingleNestedAttribute {
@@ -76,6 +89,40 @@ func toSchemaCustomDataStore() schema.SingleNestedAttribute {
 	return customDataStoreSchema
 }
 
+func toDataSourceSchemaCustomDataStore() datasourceschema.SingleNestedAttribute {
+	customDataStoreSchema := datasourceschema.SingleNestedAttribute{}
+	customDataStoreSchema.Description = "A custom data store."
+	customDataStoreSchema.Computed = true
+	customDataStoreSchema.Optional = false
+	customDataStoreSchema.Attributes = map[string]datasourceschema.Attribute{
+		"type": datasourceschema.StringAttribute{
+			Description: "The data store type.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"name": datasourceschema.StringAttribute{
+			Description: "The plugin instance name.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"plugin_descriptor_ref": datasourceschema.SingleNestedAttribute{
+			Computed:    true,
+			Optional:    false,
+			Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created..)",
+			Attributes:  datasourceresourcelink.ToDataSourceSchema(),
+		},
+		"parent_ref": datasourceschema.SingleNestedAttribute{
+			Computed:    true,
+			Optional:    false,
+			Description: "The reference to this plugin's parent instance..)",
+			Attributes:  datasourceresourcelink.ToDataSourceSchema(),
+		},
+		"configuration": datasourcepluginconfiguration.ToDataSourceSchema(),
+	}
+
+	return customDataStoreSchema
+}
+
 func toStateCustomDataStore(con context.Context, clientValue *client.DataStoreAggregation, plan basetypes.ObjectValue) (types.Object, diag.Diagnostics) {
 	var diags, allDiags diag.Diagnostics
 
@@ -112,19 +159,53 @@ func toStateCustomDataStore(con context.Context, clientValue *client.DataStoreAg
 	return customDataStoreObj, allDiags
 }
 
-func readCustomDataStoreResponse(ctx context.Context, r *client.DataStoreAggregation, state *dataStoreResourceModel, plan *types.Object) diag.Diagnostics {
+func toDataSourceStateCustomDataStore(con context.Context, clientValue *client.DataStoreAggregation) (types.Object, diag.Diagnostics) {
+	var diags, allDiags diag.Diagnostics
+
+	if clientValue.CustomDataStore == nil {
+		diags.AddError("Failed to read custom data store from API", "The custom data store was nil")
+		return types.ObjectNull(customDataStoreAttrType), diags
+	}
+
+	customDataStore := clientValue.CustomDataStore
+
+	pluginDescriptorRef, diags := resourcelink.ToState(con, &customDataStore.PluginDescriptorRef)
+	allDiags = append(allDiags, diags...)
+	parentRef, diags := resourcelink.ToState(con, customDataStore.ParentRef)
+	allDiags = append(allDiags, diags...)
+	configurationToState, diags := types.ObjectValueFrom(con, datasourcepluginconfiguration.AttrType(), &customDataStore.Configuration)
+	allDiags = append(allDiags, diags...)
+	customDataStoreVal := map[string]attr.Value{
+		"type":                  types.StringValue(customDataStore.Type),
+		"name":                  types.StringValue(customDataStore.Name),
+		"plugin_descriptor_ref": pluginDescriptorRef,
+		"parent_ref":            parentRef,
+		"configuration":         configurationToState,
+	}
+	customDataStoreObj, diags := types.ObjectValue(customDataStoreDataSourceAttrType, customDataStoreVal)
+	allDiags = append(allDiags, diags...)
+	return customDataStoreObj, allDiags
+}
+
+func readCustomDataStoreResponse(ctx context.Context, r *client.DataStoreAggregation, state *dataStoreModel, plan *types.Object, isResource bool) diag.Diagnostics {
 	var diags diag.Diagnostics
 	state.Id = types.StringPointerValue(r.CustomDataStore.Id)
 	state.DataStoreId = types.StringPointerValue(r.CustomDataStore.Id)
 	state.MaskAttributeValues = types.BoolPointerValue(r.CustomDataStore.MaskAttributeValues)
-	state.JdbcDataStore = jdbcDataStoreEmptyStateObj
-	state.CustomDataStore, diags = toStateCustomDataStore(ctx, r, *plan)
-	state.LdapDataStore = ldapDataStoreEmptyStateObj
 	state.PingOneLdapGatewayDataStore = pingOneLdapGatewayDataStoreEmptyStateObj
+	if isResource {
+		state.JdbcDataStore = jdbcDataStoreEmptyStateObj
+		state.CustomDataStore, diags = toStateCustomDataStore(ctx, r, *plan)
+		state.LdapDataStore = ldapDataStoreEmptyStateObj
+	} else {
+		state.JdbcDataStore = jdbcDataStoreEmptyDataSourceStateObj
+		state.CustomDataStore, diags = toDataSourceStateCustomDataStore(ctx, r)
+		state.LdapDataStore = ldapDataStoreEmptyDataSourceStateObj
+	}
 	return diags
 }
 
-func addOptionalCustomDataStoreFields(addRequest client.DataStoreAggregation, con context.Context, createCustomDataStore client.CustomDataStore, plan dataStoreResourceModel) error {
+func addOptionalCustomDataStoreFields(addRequest client.DataStoreAggregation, con context.Context, createCustomDataStore client.CustomDataStore, plan dataStoreModel) error {
 	customDataStorePlan := plan.CustomDataStore.Attributes()
 
 	if internaltypes.IsDefined(plan.DataStoreId) {
@@ -142,7 +223,7 @@ func addOptionalCustomDataStoreFields(addRequest client.DataStoreAggregation, co
 	return nil
 }
 
-func createCustomDataStore(plan dataStoreResourceModel, con context.Context, req resource.CreateRequest, resp *resource.CreateResponse, dsr *dataStoreResource) {
+func createCustomDataStore(plan dataStoreModel, con context.Context, req resource.CreateRequest, resp *resource.CreateResponse, dsr *dataStoreResource) {
 	var diags diag.Diagnostics
 	var err error
 
@@ -174,14 +255,14 @@ func createCustomDataStore(plan dataStoreResourceModel, con context.Context, req
 		return
 	}
 	// Read the response into the state
-	var state dataStoreResourceModel
-	diags = readCustomDataStoreResponse(con, response, &state, &plan.CustomDataStore)
+	var state dataStoreModel
+	diags = readCustomDataStoreResponse(con, response, &state, &plan.CustomDataStore, true)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(con, state)
 	resp.Diagnostics.Append(diags...)
 }
 
-func updateCustomDataStore(plan dataStoreResourceModel, con context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, dsr *dataStoreResource) {
+func updateCustomDataStore(plan dataStoreModel, con context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, dsr *dataStoreResource) {
 	var diags diag.Diagnostics
 	var err error
 
@@ -213,8 +294,8 @@ func updateCustomDataStore(plan dataStoreResourceModel, con context.Context, req
 		return
 	}
 	// Read the response
-	var state dataStoreResourceModel
-	diags = readCustomDataStoreResponse(con, response, &state, &plan.CustomDataStore)
+	var state dataStoreModel
+	diags = readCustomDataStoreResponse(con, response, &state, &plan.CustomDataStore, true)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values

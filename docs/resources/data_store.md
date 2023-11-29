@@ -218,7 +218,6 @@ resource "pingfederate_data_store" "myPingDirectoryLdapDataStore" {
     time_between_evictions = 6000
     read_timeout           = 300
     connection_timeout     = 300
-    binary_attributes      = []
     dns_ttl                = 6000
   }
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	datasourceschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -65,7 +66,35 @@ var (
 		"follow_ldap_referrals":  basetypes.BoolType{},
 	}
 
-	ldapDataStoreEmptyStateObj = types.ObjectNull(ldapDataStoreAttrType)
+	ldapDataStoreDataSourceAttrType = map[string]attr.Type{
+		"hostnames":              basetypes.SetType{ElemType: basetypes.StringType{}},
+		"verify_host":            basetypes.BoolType{},
+		"test_on_return":         basetypes.BoolType{},
+		"ldap_type":              basetypes.StringType{},
+		"dns_ttl":                basetypes.Int64Type{},
+		"connection_timeout":     basetypes.Int64Type{},
+		"min_connections":        basetypes.Int64Type{},
+		"use_ssl":                basetypes.BoolType{},
+		"test_on_borrow":         basetypes.BoolType{},
+		"ldap_dns_srv_prefix":    basetypes.StringType{},
+		"name":                   basetypes.StringType{},
+		"read_timeout":           basetypes.Int64Type{},
+		"use_dns_srv_records":    basetypes.BoolType{},
+		"max_connections":        basetypes.Int64Type{},
+		"user_dn":                basetypes.StringType{},
+		"create_if_necessary":    basetypes.BoolType{},
+		"binary_attributes":      basetypes.SetType{ElemType: basetypes.StringType{}},
+		"max_wait":               basetypes.Int64Type{},
+		"hostnames_tags":         basetypes.SetType{ElemType: ldapTagConfigAttrType},
+		"time_between_evictions": basetypes.Int64Type{},
+		"type":                   basetypes.StringType{},
+		"encrypted_password":     basetypes.StringType{},
+		"bind_anonymously":       basetypes.BoolType{},
+		"follow_ldap_referrals":  basetypes.BoolType{},
+	}
+
+	ldapDataStoreEmptyStateObj           = types.ObjectNull(ldapDataStoreAttrType)
+	ldapDataStoreEmptyDataSourceStateObj = types.ObjectNull(ldapDataStoreDataSourceAttrType)
 )
 
 func toSchemaLdapDataStore() schema.SingleNestedAttribute {
@@ -267,6 +296,159 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 	return ldapDataStoreSchema
 }
 
+func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
+	ldapDataStoreSchema := datasourceschema.SingleNestedAttribute{}
+	ldapDataStoreSchema.Description = "An LDAP Data Store"
+	ldapDataStoreSchema.Computed = true
+	ldapDataStoreSchema.Optional = false
+	ldapDataStoreSchema.Attributes = map[string]datasourceschema.Attribute{
+		"type": datasourceschema.StringAttribute{
+			Description: "The data store type.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"name": datasourceschema.StringAttribute{
+			Description: "The data store name with a unique value across all data sources.",
+			Computed:    true,
+			Optional:    true,
+		},
+		"read_timeout": datasourceschema.Int64Attribute{
+			Description: "The maximum number of milliseconds a connection waits for a response to be returned before producing an error.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"hostnames": datasourceschema.SetAttribute{
+			Description: "The default LDAP host names.",
+			Computed:    true,
+			Optional:    false,
+			ElementType: types.StringType,
+		},
+		"verify_host": datasourceschema.BoolAttribute{
+			Description: "Verifies that the presented server certificate includes the address to which the client intended to establish a connection.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"test_on_return": datasourceschema.BoolAttribute{
+			Description: "Indicates whether objects are validated before being returned to the pool.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"ldap_type": datasourceschema.StringAttribute{
+			Description: "A type that allows PingFederate to configure many provisioning settings automatically.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"dns_ttl": datasourceschema.Int64Attribute{
+			Description: "The maximum time in milliseconds that DNS information are cached.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"connection_timeout": datasourceschema.Int64Attribute{
+			Description: "The maximum number of milliseconds that a connection attempt should be allowed to continue before returning an error.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"min_connections": datasourceschema.Int64Attribute{
+			Description: "The smallest number of connections that can remain in each pool, without creating extra ones.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"max_connections": datasourceschema.Int64Attribute{
+			Description: "The largest number of active connections that can remain in each pool without releasing extra ones.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"use_ssl": datasourceschema.BoolAttribute{
+			Description: "Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS).",
+			Computed:    true,
+			Optional:    false,
+		},
+		"test_on_borrow": datasourceschema.BoolAttribute{
+			Description: "Indicates whether objects are validated before being borrowed from the pool.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"ldap_dns_srv_prefix": datasourceschema.StringAttribute{
+			Description: "The prefix value used to discover LDAP DNS SRV record.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"use_dns_srv_records": datasourceschema.BoolAttribute{
+			Description: "Use DNS SRV Records to discover LDAP server information.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"create_if_necessary": datasourceschema.BoolAttribute{
+			Description: "Indicates whether temporary connections can be created when the Maximum Connections threshold is reached.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"binary_attributes": datasourceschema.SetAttribute{
+			ElementType: types.StringType,
+			Description: "A list of LDAP attributes to be handled as binary data.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"max_wait": datasourceschema.Int64Attribute{
+			Description: "The maximum number of milliseconds the pool waits for a connection to become available when trying to obtain a connection from the pool.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"hostnames_tags": datasourceschema.SetNestedAttribute{
+			Description: "A LDAP data store's host names and tags configuration.",
+			Computed:    true,
+			Optional:    false,
+			NestedObject: datasourceschema.NestedAttributeObject{
+				Attributes: map[string]datasourceschema.Attribute{
+					"hostnames": datasourceschema.SetAttribute{
+						Description: "The LDAP host names.",
+						Computed:    true,
+						Optional:    false,
+						ElementType: types.StringType,
+					},
+					"tags": datasourceschema.StringAttribute{
+						Description: "Tags associated with this data source.",
+						Computed:    true,
+						Optional:    false,
+					},
+					"default_source": datasourceschema.BoolAttribute{
+						Description: "Whether this is the default connection.",
+						Computed:    true,
+						Optional:    false,
+					},
+				},
+			},
+		},
+		"time_between_evictions": datasourceschema.Int64Attribute{
+			Description: "The frequency, in milliseconds, that the evictor cleans up the connections in the pool.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"user_dn": datasourceschema.StringAttribute{
+			Description: "The username credential required to access the data store.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"encrypted_password": datasourceschema.StringAttribute{
+			Description: "The encrypted password credential required to access the data store.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"bind_anonymously": datasourceschema.BoolAttribute{
+			Description: "Whether username and password are required.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"follow_ldap_referrals": datasourceschema.BoolAttribute{
+			Description: "Follow LDAP Referrals in the domain tree.",
+			Computed:    true,
+			Optional:    false,
+		},
+	}
+
+	return ldapDataStoreSchema
+}
+
 func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataStore, plan basetypes.ObjectValue) (types.Object, diag.Diagnostics) {
 	var diags, allDiags diag.Diagnostics
 
@@ -353,19 +535,76 @@ func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataSto
 	return ldapDataStoreObj, allDiags
 }
 
-func readLdapDataStoreResponse(ctx context.Context, r *client.DataStoreAggregation, state *dataStoreResourceModel, plan *types.Object) diag.Diagnostics {
+func toDataSourceStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataStore) (types.Object, diag.Diagnostics) {
+	var diags, allDiags diag.Diagnostics
+
+	if ldapDataStore == nil {
+		diags.AddError("Failed to read Ldap data store from PingFederate.", "The response from PingFederate was nil.")
+		return ldapDataStoreEmptyStateObj, diags
+	}
+
+	hostnamesTagsVal, diags := types.SetValueFrom(con, ldapTagConfigAttrType, ldapDataStore.HostnamesTags)
+	allDiags = append(allDiags, diags...)
+
+	var followLdapReferrals types.Bool
+	if ldapDataStore.LdapType == "PING_DIRECTORY" {
+		followLdapReferrals = types.BoolValue(false)
+	} else {
+		followLdapReferrals = types.BoolPointerValue(ldapDataStore.FollowLDAPReferrals)
+	}
+
+	//  final obj value
+	ldapDataStoreAttrVal := map[string]attr.Value{
+		"hostnames":              internaltypes.GetStringSet(ldapDataStore.Hostnames),
+		"verify_host":            types.BoolPointerValue(ldapDataStore.VerifyHost),
+		"test_on_return":         types.BoolPointerValue(ldapDataStore.TestOnReturn),
+		"ldap_type":              types.StringValue(ldapDataStore.LdapType),
+		"dns_ttl":                types.Int64PointerValue(ldapDataStore.DnsTtl),
+		"connection_timeout":     types.Int64PointerValue(ldapDataStore.ConnectionTimeout),
+		"min_connections":        types.Int64PointerValue(ldapDataStore.MinConnections),
+		"use_ssl":                types.BoolPointerValue(ldapDataStore.UseSsl),
+		"test_on_borrow":         types.BoolPointerValue(ldapDataStore.TestOnBorrow),
+		"ldap_dns_srv_prefix":    types.StringPointerValue(ldapDataStore.LdapDnsSrvPrefix),
+		"name":                   types.StringPointerValue(ldapDataStore.Name),
+		"read_timeout":           types.Int64PointerValue(ldapDataStore.ReadTimeout),
+		"use_dns_srv_records":    types.BoolPointerValue(ldapDataStore.UseDnsSrvRecords),
+		"max_connections":        types.Int64PointerValue(ldapDataStore.MaxConnections),
+		"user_dn":                types.StringPointerValue(ldapDataStore.UserDN),
+		"create_if_necessary":    types.BoolPointerValue(ldapDataStore.CreateIfNecessary),
+		"binary_attributes":      internaltypes.GetStringSet(ldapDataStore.BinaryAttributes),
+		"max_wait":               types.Int64PointerValue(ldapDataStore.MaxWait),
+		"hostnames_tags":         hostnamesTagsVal,
+		"time_between_evictions": types.Int64PointerValue(ldapDataStore.TimeBetweenEvictions),
+		"type":                   types.StringValue("LDAP"),
+		"encrypted_password":     types.StringPointerValue(ldapDataStore.EncryptedPassword),
+		"bind_anonymously":       types.BoolPointerValue(ldapDataStore.BindAnonymously),
+		"follow_ldap_referrals":  followLdapReferrals,
+	}
+
+	ldapDataStoreObj, diags := types.ObjectValue(ldapDataStoreDataSourceAttrType, ldapDataStoreAttrVal)
+	allDiags = append(allDiags, diags...)
+	return ldapDataStoreObj, allDiags
+}
+
+func readLdapDataStoreResponse(ctx context.Context, r *client.DataStoreAggregation, state *dataStoreModel, plan *types.Object, isResource bool) diag.Diagnostics {
 	var diags diag.Diagnostics
 	state.Id = types.StringPointerValue(r.LdapDataStore.Id)
 	state.DataStoreId = types.StringPointerValue(r.LdapDataStore.Id)
 	state.MaskAttributeValues = types.BoolPointerValue(r.LdapDataStore.MaskAttributeValues)
-	state.CustomDataStore = customDataStoreEmptyStateObj
-	state.JdbcDataStore = jdbcDataStoreEmptyStateObj
-	state.LdapDataStore, diags = toStateLdapDataStore(ctx, r.LdapDataStore, *plan)
+	if isResource {
+		state.CustomDataStore = customDataStoreEmptyStateObj
+		state.JdbcDataStore = jdbcDataStoreEmptyStateObj
+		state.LdapDataStore, diags = toStateLdapDataStore(ctx, r.LdapDataStore, *plan)
+	} else {
+		state.CustomDataStore = customDataStoreEmptyDataSourceStateObj
+		state.LdapDataStore, diags = toDataSourceStateLdapDataStore(ctx, r.LdapDataStore)
+		state.JdbcDataStore = jdbcDataStoreEmptyDataSourceStateObj
+	}
 	state.PingOneLdapGatewayDataStore = pingOneLdapGatewayDataStoreEmptyStateObj
 	return diags
 }
 
-func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con context.Context, createJdbcDataStore client.LdapDataStore, plan dataStoreResourceModel) error {
+func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con context.Context, createJdbcDataStore client.LdapDataStore, plan dataStoreModel) error {
 	ldapDataStorePlan := plan.LdapDataStore.Attributes()
 
 	if internaltypes.IsDefined(plan.MaskAttributeValues) {
@@ -490,7 +729,7 @@ func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con 
 	return nil
 }
 
-func createLdapDataStore(plan dataStoreResourceModel, con context.Context, req resource.CreateRequest, resp *resource.CreateResponse, dsr *dataStoreResource) {
+func createLdapDataStore(plan dataStoreModel, con context.Context, req resource.CreateRequest, resp *resource.CreateResponse, dsr *dataStoreResource) {
 	var diags diag.Diagnostics
 	var err error
 
@@ -510,14 +749,14 @@ func createLdapDataStore(plan dataStoreResourceModel, con context.Context, req r
 	}
 
 	// Read the response into the state
-	var state dataStoreResourceModel
-	diags = readLdapDataStoreResponse(con, response, &state, &plan.LdapDataStore)
+	var state dataStoreModel
+	diags = readLdapDataStoreResponse(con, response, &state, &plan.LdapDataStore, true)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(con, state)
 	resp.Diagnostics.Append(diags...)
 }
 
-func updateLdapDataStore(plan dataStoreResourceModel, con context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, dsr *dataStoreResource) {
+func updateLdapDataStore(plan dataStoreModel, con context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, dsr *dataStoreResource) {
 	var diags diag.Diagnostics
 	var err error
 
@@ -537,8 +776,8 @@ func updateLdapDataStore(plan dataStoreResourceModel, con context.Context, req r
 	}
 
 	// Read the response
-	var state dataStoreResourceModel
-	diags = readLdapDataStoreResponse(con, response, &state, &plan.LdapDataStore)
+	var state dataStoreModel
+	diags = readLdapDataStoreResponse(con, response, &state, &plan.LdapDataStore, true)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
