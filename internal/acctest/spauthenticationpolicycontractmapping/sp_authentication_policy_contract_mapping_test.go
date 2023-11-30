@@ -96,6 +96,9 @@ resource "pingfederate_sp_authentication_policy_contract_mapping" "%[1]s" {
   }
 	%[5]s
 	%[6]s
+}
+data "pingfederate_sp_authentication_policy_contract_mapping" "%[1]s" {
+  mapping_id = pingfederate_sp_authentication_policy_contract_mapping.%[1]s.id
 }`, resourceName,
 		resourceModel.sourceId,
 		resourceModel.targetId,
