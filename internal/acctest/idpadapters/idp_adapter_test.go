@@ -305,6 +305,9 @@ resource "pingfederate_idp_adapter" "%[1]s" {
 	%[5]s
 	%[6]s
 	%[7]s
+}
+data "pingfederate_idp_adapter" "%[1]s" {
+  adapter_id = pingfederate_idp_adapter.%[1]s.id
 }`, resourceName,
 		idpAdapterId,
 		resourceModel.name,
