@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
@@ -224,7 +225,7 @@ func wsTrustHcl() string {
 }
 
 func spBrowserSSOHcl(authenticationPolicyContractName string) string {
-	return fmt.Sprintf(`
+	return `
 sp_browser_sso = {
     protocol                      = "SAML20"
     require_signed_authn_requests = false
@@ -234,7 +235,7 @@ sp_browser_sso = {
       {
         abort_sso_transaction_as_fail_safe = false
         authentication_policy_contract_ref = {
-          id = pingfederate_authentication_policy_contract.%[1]s.contract_id
+          id = "QGxlec5CX693lBQL"
         }
         restricted_virtual_entity_ids = []
         attribute_contract_fulfillment = {
@@ -285,17 +286,11 @@ sp_browser_sso = {
       extended_attributes = []
     }
   }
-`, authenticationPolicyContractName)
+`
 }
 
 func testAccSpConnectionOutboundProvision(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "pingfederate_authentication_policy_contract" "%[1]s" {
-	  contract_id         = "%[1]s"
-	  core_attributes     = [{ name = "subject" }]
-	  extended_attributes = [{ name = "extended_attribute" }, { name = "extended_attribute2" }]
-	  name                = "%[1]s"
-	}
 resource "pingfederate_idp_sp_connection" "%[1]s" {
 	%s
   %s
@@ -307,13 +302,6 @@ resource "pingfederate_idp_sp_connection" "%[1]s" {
 
 func testAccSpConnectionBrowserSso(resourceName string) string {
 	return fmt.Sprintf(`
-resource "pingfederate_authentication_policy_contract" "%[1]s" {
-  contract_id         = "%[1]s"
-  core_attributes     = [{ name = "subject" }]
-  extended_attributes = [{ name = "extended_attribute" }, { name = "extended_attribute2" }]
-  name                = "%[1]s"
-}
-
 resource "pingfederate_idp_sp_connection" "%[1]s" {
   %s
   %s
@@ -323,14 +311,8 @@ resource "pingfederate_idp_sp_connection" "%[1]s" {
 	)
 }
 
-func testAccSpConnectionWsTrust(resourceName string) string { //TODO how to remove the policy contract from everything. Add to profile? Is there an issue with the provider?
+func testAccSpConnectionWsTrust(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "pingfederate_authentication_policy_contract" "%[1]s" {
-	  contract_id         = "%[1]s"
-	  core_attributes     = [{ name = "subject" }]
-	  extended_attributes = [{ name = "extended_attribute" }, { name = "extended_attribute2" }]
-	  name                = "%[1]s"
-	}
 resource "pingfederate_idp_sp_connection" "%[1]s" {
   %s
   %s
@@ -342,19 +324,12 @@ resource "pingfederate_idp_sp_connection" "%[1]s" {
 
 func testAccSpConnectionComplete(resourceName string) string {
 	return fmt.Sprintf(`
-	resource "pingfederate_authentication_policy_contract" "%[1]s" {
-		contract_id         = "%[1]s"
-		core_attributes     = [{ name = "subject" }]
-		extended_attributes = [{ name = "extended_attribute" }, { name = "extended_attribute2" }]
-		name                = "%[1]s"
-	  }
-	  
-	  resource "pingfederate_idp_sp_connection" "%[1]s" {
+resource "pingfederate_idp_sp_connection" "%[1]s" {
 		%s
 		%s
 		%s
 		%s
-	  }`, resourceName,
+}`, resourceName,
 		baseHcl(resourceName),
 		outboundProvisionHcl(),
 		spBrowserSSOHcl(resourceName),
@@ -371,20 +346,67 @@ func testCommonExpectedSpConnectionAttributes() (*configurationapi.SpConnection,
 		return nil, err
 	}
 
-	//TODO testing common attrs
-
 	// Entity id
+	err = acctest.TestAttributesMatchString(resourceType, pointers.String(spConnectionId), "entity_id", "myEntity", spConn.EntityId)
+	if err != nil {
+		return spConn, err
+	}
 
 	// Name
+	err = acctest.TestAttributesMatchString(resourceType, pointers.String(spConnectionId), "name", "mySpConn", spConn.Name)
+	if err != nil {
+		return spConn, err
+	}
 
 	// Contact info
+	err = acctest.TestAttributesMatchString(resourceType, pointers.String(spConnectionId), "contact_info.company_name", "Example Corp", *spConn.ContactInfo.Company)
+	if err != nil {
+		return spConn, err
+	}
+
+	err = acctest.TestAttributesMatchString(resourceType, pointers.String(spConnectionId), "contact_info.email", "bugsbunny@example.com", *spConn.ContactInfo.Email)
+	if err != nil {
+		return spConn, err
+	}
 
 	// Virtual entity ids
+	err = acctest.TestAttributesMatchStringSlice(resourceType, pointers.String(spConnectionId), "virtual_entity_ids",
+		[]string{"example1", "example2"}, spConn.VirtualEntityIds)
+	if err != nil {
+		return spConn, err
+	}
 
 	return spConn, nil
 }
 
 func testExpectedSpConnectionOutboundProvisionAttributes(response *configurationapi.SpConnection) error {
+	// Type
+	err := acctest.TestAttributesMatchString(resourceType, pointers.String(spConnectionId), "outbound_provision.type", "PingOne", response.OutboundProvision.Type)
+	if err != nil {
+		return err
+	}
+
+	// Target settings
+	err = acctest.TestAttributesMatchString(resourceType, pointers.String(spConnectionId), "outbound_provision.target_settings[0].name",
+		"PINGONE_ENVIRONMENT", response.OutboundProvision.TargetSettings[0].Name)
+	if err != nil {
+		return err
+	}
+
+	// Channels
+	err = acctest.TestAttributesMatchString(resourceType, pointers.String(spConnectionId), "outbound_provision.channels[0].name",
+		"Channel1", response.OutboundProvision.Channels[0].Name)
+	if err != nil {
+		return err
+	}
+
+	// base dn of channel source
+	err = acctest.TestAttributesMatchString(resourceType, pointers.String(spConnectionId), "outbound_provision.channels[0].channel_source.base_dn",
+		"dc=example,dc=com", response.OutboundProvision.Channels[0].ChannelSource.BaseDn)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -401,6 +423,27 @@ func testAccCheckExpectedSpConnectionAttributesOutboundProvision() resource.Test
 }
 
 func testExpectedSpConnectionBrowserSSOAttributes(response *configurationapi.SpConnection) error {
+	// protocol
+	err := acctest.TestAttributesMatchString(resourceType, pointers.String(spConnectionId), "sp_browser_sso.protocol",
+		"SAML20", response.SpBrowserSso.Protocol)
+	if err != nil {
+		return err
+	}
+
+	// enabled profiles
+	err = acctest.TestAttributesMatchStringSlice(resourceType, pointers.String(spConnectionId), "sp_browser_sso.enabled_profiles",
+		[]string{"IDP_INITIATED_SSO"}, response.SpBrowserSso.EnabledProfiles)
+	if err != nil {
+		return err
+	}
+
+	// attribute contract
+	err = acctest.TestAttributesMatchString(resourceType, pointers.String(spConnectionId), "sp_browser_sso.attribute_contract.core_attributes[0].name",
+		"SAML_SUBJECT", response.SpBrowserSso.AttributeContract.CoreAttributes[0].Name)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -412,11 +455,32 @@ func testAccCheckExpectedSpConnectionAttributesBrowserSSO() resource.TestCheckFu
 			return err
 		}
 
-		return testExpectedSpConnectionWsTrustAttributes(response)
+		return testExpectedSpConnectionBrowserSSOAttributes(response)
 	}
 }
 
 func testExpectedSpConnectionWsTrustAttributes(response *configurationapi.SpConnection) error {
+	// minutes_before
+	err := acctest.TestAttributesMatchInt(resourceType, pointers.String(spConnectionId), "ws_trust.minutes_before",
+		5, *response.WsTrust.MinutesBefore)
+	if err != nil {
+		return err
+	}
+
+	// core attributes
+	err = acctest.TestAttributesMatchString(resourceType, pointers.String(spConnectionId), "ws_trust.attribute_contract.core_attributes[0].name",
+		"TOKEN_SUBJECT", response.WsTrust.AttributeContract.CoreAttributes[0].Name)
+	if err != nil {
+		return err
+	}
+
+	// attribute contract fulfillment
+	err = acctest.TestAttributesMatchString(resourceType, pointers.String(spConnectionId), "ws_trust.token_processor_mappings.attribute_contract_fulfillment[\"TOKEN_SUBJECT\"].value",
+		"username", response.WsTrust.TokenProcessorMappings[0].AttributeContractFulfillment["TOKEN_SUBJECT"].Value)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
