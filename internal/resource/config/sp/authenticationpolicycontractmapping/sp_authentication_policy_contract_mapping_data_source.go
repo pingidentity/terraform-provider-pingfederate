@@ -129,7 +129,7 @@ func (r *spAuthenticationPolicyContractMappingDataSource) Read(ctx context.Conte
 	apiReadSpAuthenticationPolicyContractMappingResource, httpResp, err := r.apiClient.SpAuthenticationPolicyContractMappingsAPI.GetApcToSpAdapterMappingById(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.MappingId.ValueString()).Execute()
 
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  SpAuthenticationPolicyContractMappingResource", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the SP Authentication Policy Contract Mapping Resource", err, httpResp)
 	}
 
 	// Read the response into the state
