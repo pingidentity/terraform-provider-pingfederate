@@ -14,7 +14,7 @@ Describes a configured local identity profile.
 
 ```terraform
 data "pingfederate_local_identity_identity_profile" "myLocalIdentityIdentityProfile" {
-  id = "example"
+  profile_id = "example"
 }
 ```
 
@@ -23,7 +23,7 @@ data "pingfederate_local_identity_identity_profile" "myLocalIdentityIdentityProf
 
 ### Required
 
-- `id` (String) The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
+- `profile_id` (String) Unique ID for the local identity profile
 
 ### Read-Only
 
@@ -33,6 +33,7 @@ data "pingfederate_local_identity_identity_profile" "myLocalIdentityIdentityProf
 - `data_store_config` (Attributes) The local identity profile data store configuration. (see [below for nested schema](#nestedatt--data_store_config))
 - `email_verification_config` (Attributes) The local identity email verification configuration. (see [below for nested schema](#nestedatt--email_verification_config))
 - `field_config` (Attributes) The local identity profile field configuration. (see [below for nested schema](#nestedatt--field_config))
+- `id` (String) ID of this resource.
 - `name` (String) The local identity profile name. Name is unique.
 - `profile_config` (Attributes) The local identity profile management configuration. (see [below for nested schema](#nestedatt--profile_config))
 - `profile_enabled` (Boolean) Whether the profile configuration is enabled or not.

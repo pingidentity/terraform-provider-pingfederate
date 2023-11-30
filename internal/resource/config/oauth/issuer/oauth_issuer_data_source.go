@@ -65,10 +65,9 @@ func (r *oauthIssuerDataSource) Schema(ctx context.Context, req datasource.Schem
 			},
 		},
 	}
-	id.ToDataSourceSchema(&schemaDef, false, "The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-].")
+	id.ToDataSourceSchema(&schemaDef)
 	id.ToDataSourceSchemaCustomId(&schemaDef,
 		"issuer_id",
-		true,
 		true,
 		"The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-].")
 	resp.Schema = schemaDef

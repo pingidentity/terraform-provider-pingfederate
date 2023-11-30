@@ -72,7 +72,7 @@ func (r *serverSettingsLogSettingsDataSource) Schema(ctx context.Context, req da
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToDataSourceSchema(&schema)
 	resp.Schema = schema
 }
 

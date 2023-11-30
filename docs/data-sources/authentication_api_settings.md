@@ -25,7 +25,7 @@ data "pingfederate_authentication_api_settings" "myAuthenticationApiSettings" {
 - `api_enabled` (Boolean) Enable Authentication API
 - `default_application_ref` (Attributes) Enable API descriptions (see [below for nested schema](#nestedatt--default_application_ref))
 - `enable_api_descriptions` (Boolean) Enable API descriptions
-- `id` (String) The ID of this resource.
+- `id` (String) ID of this resource.
 - `include_request_context` (Boolean) Includes request context in API responses
 - `restrict_access_to_redirectless_mode` (Boolean) Enable restrict access to redirectless mode
 

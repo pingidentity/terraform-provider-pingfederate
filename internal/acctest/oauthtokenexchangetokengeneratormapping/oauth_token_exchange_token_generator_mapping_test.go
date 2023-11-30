@@ -135,8 +135,8 @@ func issuanceCriteriaHclBlock(conditionalIssuanceCriteriaEntry *client.Condition
 	return builder.String()
 }
 
-func TestAccTokenExchangeProcessorPolicyToTokenGeneratorMapping(t *testing.T) {
-	resourceName := "myTokenExchangeProcessorPolicyToTokenGeneratorMapping"
+func TestAccOauthTokenExchangeProcessorTokenGeneratorMapping(t *testing.T) {
+	resourceName := "myOauthTokenExchangeProcessorTokenGeneratorMapping"
 	initialResourceModel := tokenExchangeProcessorPolicyToTokenGeneratorMappingResourceModel{
 		attributeContractFulfillment: initialAttributeContractFulfillment(),
 		sourceId:                     tokenExchangeProccessorSourceId,
@@ -155,37 +155,37 @@ func TestAccTokenExchangeProcessorPolicyToTokenGeneratorMapping(t *testing.T) {
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
-		CheckDestroy: testAccCheckTokenExchangeProcessorPolicyToTokenGeneratorMappingDestroy,
+		CheckDestroy: testAccCheckOauthTokenExchangeProcessorTokenGeneratorMappingDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccTokenExchangeProcessorPolicyToTokenGeneratorMapping(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedTokenExchangeProcessorPolicyToTokenGeneratorMappingAttributes(initialResourceModel),
+				Config: testAccOauthTokenExchangeProcessorTokenGeneratorMapping(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedOauthTokenExchangeProcessorTokenGeneratorMappingAttributes(initialResourceModel),
 			},
 			{
 				// Test updating some fields
-				Config: testAccTokenExchangeProcessorPolicyToTokenGeneratorMapping(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedTokenExchangeProcessorPolicyToTokenGeneratorMappingAttributes(updatedResourceModel),
+				Config: testAccOauthTokenExchangeProcessorTokenGeneratorMapping(resourceName, updatedResourceModel),
+				Check:  testAccCheckExpectedOauthTokenExchangeProcessorTokenGeneratorMappingAttributes(updatedResourceModel),
 			},
 			{
 				// Test importing the resource
-				Config:            testAccTokenExchangeProcessorPolicyToTokenGeneratorMapping(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_oauth_token_exchange_processor_policy_token_generator_mapping." + resourceName,
+				Config:            testAccOauthTokenExchangeProcessorTokenGeneratorMapping(resourceName, updatedResourceModel),
+				ResourceName:      "pingfederate_oauth_token_exchange_token_generator_mapping." + resourceName,
 				ImportStateId:     tokenExchangeProcessorPolicyToTokenGeneratorMappingId,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
 			{
 				// Back to minimal model
-				Config: testAccTokenExchangeProcessorPolicyToTokenGeneratorMapping(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedTokenExchangeProcessorPolicyToTokenGeneratorMappingAttributes(initialResourceModel),
+				Config: testAccOauthTokenExchangeProcessorTokenGeneratorMapping(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedOauthTokenExchangeProcessorTokenGeneratorMappingAttributes(initialResourceModel),
 			},
 		},
 	})
 }
 
-func testAccTokenExchangeProcessorPolicyToTokenGeneratorMapping(resourceName string, resourceModel tokenExchangeProcessorPolicyToTokenGeneratorMappingResourceModel) string {
+func testAccOauthTokenExchangeProcessorTokenGeneratorMapping(resourceName string, resourceModel tokenExchangeProcessorPolicyToTokenGeneratorMappingResourceModel) string {
 	return fmt.Sprintf(`
-resource "pingfederate_oauth_token_exchange_processor_policy_token_generator_mapping" "%[1]s" {
+resource "pingfederate_oauth_token_exchange_token_generator_mapping" "%[1]s" {
   source_id = "%[2]s"
   target_id = "%[3]s"
   attribute_contract_fulfillment = {
@@ -195,6 +195,9 @@ resource "pingfederate_oauth_token_exchange_processor_policy_token_generator_map
   }
 	%[5]s
 	%[6]s
+}
+data "pingfederate_oauth_token_exchange_token_generator_mapping" "%[1]s" {
+  mapping_id = "${pingfederate_oauth_token_exchange_token_generator_mapping.%[1]s.source_id}|${pingfederate_oauth_token_exchange_token_generator_mapping.%[1]s.target_id}"
 }`, resourceName,
 		resourceModel.sourceId,
 		resourceModel.targetId,
@@ -205,9 +208,9 @@ resource "pingfederate_oauth_token_exchange_processor_policy_token_generator_map
 }
 
 // Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedTokenExchangeProcessorPolicyToTokenGeneratorMappingAttributes(config tokenExchangeProcessorPolicyToTokenGeneratorMappingResourceModel) resource.TestCheckFunc {
+func testAccCheckExpectedOauthTokenExchangeProcessorTokenGeneratorMappingAttributes(config tokenExchangeProcessorPolicyToTokenGeneratorMappingResourceModel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resourceType := "TokenExchangeProcessorPolicyToTokenGeneratorMapping"
+		resourceType := "OauthTokenExchangeProcessorTokenGeneratorMapping"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
 		response, _, err := testClient.OauthTokenExchangeTokenGeneratorMappingsAPI.GetTokenGeneratorMappingById(ctx, tokenExchangeProcessorPolicyToTokenGeneratorMappingId).Execute()
@@ -268,12 +271,12 @@ func testAccCheckExpectedTokenExchangeProcessorPolicyToTokenGeneratorMappingAttr
 }
 
 // Test that any objects created by the test are destroyed
-func testAccCheckTokenExchangeProcessorPolicyToTokenGeneratorMappingDestroy(s *terraform.State) error {
+func testAccCheckOauthTokenExchangeProcessorTokenGeneratorMappingDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
 	_, err := testClient.OauthTokenExchangeTokenGeneratorMappingsAPI.DeleteTokenGeneratorMappingById(ctx, tokenExchangeProcessorPolicyToTokenGeneratorMappingId).Execute()
 	if err == nil {
-		return acctest.ExpectedDestroyError("TokenExchangeProcessorPolicyToTokenGeneratorMapping", tokenExchangeProcessorPolicyToTokenGeneratorMappingId)
+		return acctest.ExpectedDestroyError("OauthTokenExchangeProcessorTokenGeneratorMapping", tokenExchangeProcessorPolicyToTokenGeneratorMappingId)
 	}
 	return nil
 }

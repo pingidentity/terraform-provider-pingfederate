@@ -29,4 +29,4 @@ data "pingfederate_oauth_auth_server_settings_scopes_exclusive_scope" "myOauthAu
 
 - `description` (String) The description of the scope that appears when the user is prompted for authorization.
 - `dynamic` (Boolean) True if the scope is dynamic. (Defaults to false)
-- `id` (String) The ID of this resource.
+- `id` (String) ID of this resource.

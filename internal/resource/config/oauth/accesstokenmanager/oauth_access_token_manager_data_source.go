@@ -254,10 +254,9 @@ func (r *oauthAccessTokenManagerDataSource) Schema(ctx context.Context, req data
 			},
 		},
 	}
-	id.ToDataSourceSchema(&schemaDef, false, "The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.")
+	id.ToDataSourceSchema(&schemaDef)
 	id.ToDataSourceSchemaCustomId(&schemaDef,
 		"manager_id",
-		true,
 		true,
 		"The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.")
 	resp.Schema = schemaDef

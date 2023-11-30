@@ -24,7 +24,7 @@ data "pingfederate_session_authentication_session_policies_global" "mySessionAut
 
 - `enable_sessions` (Boolean) Determines whether authentication sessions are enabled globally.
 - `hash_unique_user_key_attribute` (Boolean) Determines whether to hash the value of the unique user key attribute.
-- `id` (String) The ID of this resource.
+- `id` (String) ID of this resource.
 - `idle_timeout_display_unit` (String) The display unit for the idle timeout period in the PingFederate administrative console. When the display unit is HOURS or DAYS, the timeout value in minutes must correspond to a whole number value for the specified unit. [ MINUTES, HOURS, DAYS ]
 - `idle_timeout_mins` (Number) The idle timeout period, in minutes. If set to -1, the idle timeout will be set to the maximum timeout. The default is 60.
 - `max_timeout_display_unit` (String) The display unit for the maximum timeout period in the PingFederate administrative console. When the display unit is HOURS or DAYS, the timeout value in minutes must correspond to a whole number value for the specified unit.

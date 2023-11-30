@@ -113,7 +113,7 @@ func (r *serverSettingsSystemKeysDataSource) Schema(ctx context.Context, req dat
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToDataSourceSchema(&schema)
 	resp.Schema = schema
 }
 

@@ -67,11 +67,10 @@ func (r *authenticationPolicyContractDataSource) Schema(ctx context.Context, req
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToDataSourceSchema(&schema)
 	id.ToDataSourceSchemaCustomId(&schema,
 		"contract_id",
 		true,
-		false,
 		"The persistent, unique ID for the authentication policy contract.")
 	resp.Schema = schema
 }

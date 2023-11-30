@@ -23,5 +23,5 @@ data "pingfederate_license_agreement" "myLicenseAgreement" {
 ### Read-Only
 
 - `accepted` (Boolean) Indicates whether license agreement has been accepted. The default value is false.
-- `id` (String) The ID of this resource.
+- `id` (String) ID of this resource.
 - `license_agreement_url` (String) URL to license agreement

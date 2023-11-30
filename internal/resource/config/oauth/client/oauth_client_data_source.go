@@ -522,7 +522,7 @@ func (r *oauthClientDataSource) Schema(ctx context.Context, req datasource.Schem
 			},
 		},
 	}
-	id.ToDataSourceSchema(&schemaDef, false, "Computed attribute tied to the client_id property of this resource")
+	id.ToDataSourceSchema(&schemaDef)
 	resp.Schema = schemaDef
 }
 

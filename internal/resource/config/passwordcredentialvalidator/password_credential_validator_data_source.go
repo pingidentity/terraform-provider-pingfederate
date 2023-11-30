@@ -96,11 +96,10 @@ func (r *passwordCredentialValidatorDataSource) Schema(ctx context.Context, req 
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToDataSourceSchema(&schema)
 	id.ToDataSourceSchemaCustomId(&schema,
 		"validator_id",
 		true,
-		false,
 		"The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.")
 	resp.Schema = schema
 }

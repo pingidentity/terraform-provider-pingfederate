@@ -2,10 +2,12 @@
 ### FEATURES
 #### Resources
 * **New Resource:** `pingfederate_oauth_client` ([#111](https://github.com/pingidentity/terraform-provider-pingfederate/pull/111))
+* **Resource Update:** `pingfederate_oauth_token_exchange_processor_policy_token_generator_mapping` corrected to `pingfederate_oauth_token_exchange_token_generator_mapping`
 
 #### Data Sources
 * **New Data Source:** `pingfederate_authentication_policy_contract` ([#118](https://github.com/pingidentity/terraform-provider-pingfederate/pull/118))
 * **New Data Source:** `pingfederate_oauth_client` ([#111](https://github.com/pingidentity/terraform-provider-pingfederate/pull/111))
+* **New Data Source:** `pingfederate_oauth_token_exchange_token_generator_mapping` ([#122](https://github.com/pingidentity/terraform-provider-pingfederate/pull/122))
 * **New Data Source:** `pingfederate_password_credential_validator` ([#119](https://github.com/pingidentity/terraform-provider-pingfederate/pull/119))
 * **New Data Source:** `pingfederate_session_policies_global` ([#117](https://github.com/pingidentity/terraform-provider-pingfederate/pull/117))
 * **New Data Source:** `pingfederate_token_processor_to_token_generator_mapping` ([#120](https://github.com/pingidentity/terraform-provider-pingfederate/pull/120))

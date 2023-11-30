@@ -71,7 +71,7 @@ func (r *serverSettingsGeneralSettingsDataSource) Schema(ctx context.Context, re
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToDataSourceSchema(&schema)
 	resp.Schema = schema
 }
 

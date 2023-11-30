@@ -23,7 +23,7 @@ data "pingfederate_server_settings_system_keys" "myServerSettingsSystemKeysExamp
 ### Read-Only
 
 - `current` (Attributes) Current SystemKeys Secrets that are used in cryptographic operations to generate and consume internal tokens. (see [below for nested schema](#nestedatt--current))
-- `id` (String) The ID of this resource.
+- `id` (String) ID of this resource.
 - `pending` (Attributes) Pending SystemKeys Secrets that are used in cryptographic operations to generate and consume internal tokens. (see [below for nested schema](#nestedatt--pending))
 - `previous` (Attributes) Previous SystemKeys Secrets that are used in cryptographic operations to generate and consume internal tokens. (see [below for nested schema](#nestedatt--previous))
 
