@@ -326,21 +326,25 @@ func CheckListKeyMatch(k string, list []string) bool {
 	return false
 }
 
-// Add the password and encrypted_password to existing map[string]attr.Type
-func AddPasswordToMapStringAttrType(mapStringAttrType map[string]attr.Type) map[string]attr.Type {
+// Add a key to existing map[string]attr.Type
+func AddKeyStringTypeToMapStringAttrType(mapStringAttrType map[string]attr.Type, key string) map[string]attr.Type {
 	outValue := make(map[string]attr.Type)
 	for k, v := range mapStringAttrType {
 		outValue[k] = v
 	}
-	outValue["password"] = basetypes.StringType{}
+	outValue[key] = basetypes.StringType{}
 	return outValue
 }
 
-func AddEncryptedPasswordToMapStringAttrType(mapStringAttrType map[string]attr.Type) map[string]attr.Type {
+func AddKeyObjectTypeToMapStringAttrType(mapStringAttrType map[string]attr.Type, key string, objectType map[string]attr.Type) map[string]attr.Type {
+	outObjectAttrType := make(map[string]attr.Type)
+	for k, v := range objectType {
+		outObjectAttrType[k] = v
+	}
 	outValue := make(map[string]attr.Type)
 	for k, v := range mapStringAttrType {
 		outValue[k] = v
 	}
-	outValue["encrypted_password"] = basetypes.StringType{}
+	outValue[key] = basetypes.ObjectType{AttrTypes: outObjectAttrType}
 	return outValue
 }

@@ -53,9 +53,9 @@ var (
 		"validate_connection_sql":      basetypes.StringType{},
 	}
 
-	jdbcDataStoreAttrType                = internaltypes.AddPasswordToMapStringAttrType(jdbcDataStoreCommonAttrType)
+	jdbcDataStoreAttrType                = internaltypes.AddKeyStringTypeToMapStringAttrType(jdbcDataStoreCommonAttrType, "password")
 	jdbcDataStoreEmptyStateObj           = types.ObjectNull(jdbcDataStoreAttrType)
-	jdbcDataStoreDataSourceAttrType      = internaltypes.AddEncryptedPasswordToMapStringAttrType(jdbcDataStoreCommonAttrType)
+	jdbcDataStoreDataSourceAttrType      = internaltypes.AddKeyStringTypeToMapStringAttrType(jdbcDataStoreCommonAttrType, "encrypted_password")
 	jdbcDataStoreEmptyDataSourceStateObj = types.ObjectNull(jdbcDataStoreDataSourceAttrType)
 )
 
@@ -278,7 +278,7 @@ func toDataSourceSchemaJdbcDataStore() datasourceschema.SingleNestedAttribute {
 	return jdbcDataStoreSchema
 }
 
-func toStateJdbcDataStore(con context.Context, jdbcDataStore *client.JdbcDataStore, plan dataStoreModel) (types.Object, diag.Diagnostics) {
+func toStateJdbcDataStore(con context.Context, jdbcDataStore *client.JdbcDataStore, plan dataStoreModel, isResource bool) (types.Object, diag.Diagnostics) {
 	var allDiags, diags diag.Diagnostics
 
 	if jdbcDataStore == nil {
@@ -298,13 +298,12 @@ func toStateJdbcDataStore(con context.Context, jdbcDataStore *client.JdbcDataSto
 	connectionUrlSetVal, diags := connectionUrlTags()
 	allDiags = append(allDiags, diags...)
 
-	password := func() basetypes.StringValue {
-		passwordVal, ok := plan.JdbcDataStore.Attributes()["password"].(types.String)
-		if ok {
-			return passwordVal
-		} else {
-			return types.StringPointerValue(pointers.String(""))
-		}
+	var password basetypes.StringValue
+	passwordVal, ok := plan.JdbcDataStore.Attributes()["password"].(types.String)
+	if ok {
+		password = passwordVal
+	} else {
+		password = types.StringPointerValue(pointers.String(""))
 	}
 
 	jdbcAttrValue := map[string]attr.Value{
@@ -317,44 +316,21 @@ func toStateJdbcDataStore(con context.Context, jdbcDataStore *client.JdbcDataSto
 		"max_pool_size":                types.Int64PointerValue(jdbcDataStore.MaxPoolSize),
 		"min_pool_size":                types.Int64PointerValue(jdbcDataStore.MinPoolSize),
 		"name":                         types.StringPointerValue(jdbcDataStore.Name),
-		"password":                     password(),
 		"user_name":                    types.StringValue(jdbcDataStore.UserName),
 		"allow_multi_value_attributes": types.BoolPointerValue(jdbcDataStore.AllowMultiValueAttributes),
 		"validate_connection_sql":      internaltypes.StringTypeOrNil(jdbcDataStore.ValidateConnectionSql, true),
 	}
-	toStateObjVal, diags := types.ObjectValue(jdbcDataStoreAttrType, jdbcAttrValue)
-	allDiags = append(allDiags, diags...)
-	return toStateObjVal, allDiags
-}
 
-func toDataSourceStateJdbcDataStore(con context.Context, jdbcDataStore *client.JdbcDataStore) (types.Object, diag.Diagnostics) {
-	var allDiags, diags diag.Diagnostics
-
-	if jdbcDataStore == nil {
-		diags.AddError("Failed to read JDBC data store from PingFederate.", "The response from PingFederate was nil.")
-		return types.ObjectNull(jdbcDataStoreDataSourceAttrType), diags
+	var toStateObjVal types.Object
+	if isResource {
+		jdbcAttrValue["password"] = password
+		toStateObjVal, diags = types.ObjectValue(jdbcDataStoreAttrType, jdbcAttrValue)
+		allDiags = append(allDiags, diags...)
+	} else {
+		jdbcAttrValue["encrypted_password"] = types.StringPointerValue(jdbcDataStore.EncryptedPassword)
+		toStateObjVal, diags = types.ObjectValue(jdbcDataStoreDataSourceAttrType, jdbcAttrValue)
+		allDiags = append(allDiags, diags...)
 	}
-
-	connectionUrlSetVal, diags := types.SetValueFrom(con, jdbcTagConfigAttrType, jdbcDataStore.ConnectionUrlTags)
-	allDiags = append(allDiags, diags...)
-
-	jdbcAttrValue := map[string]attr.Value{
-		"type":                         types.StringValue("JDBC"),
-		"blocking_timeout":             types.Int64PointerValue(jdbcDataStore.BlockingTimeout),
-		"connection_url":               types.StringPointerValue(jdbcDataStore.ConnectionUrl),
-		"driver_class":                 types.StringValue(jdbcDataStore.DriverClass),
-		"connection_url_tags":          connectionUrlSetVal,
-		"idle_timeout":                 types.Int64PointerValue(jdbcDataStore.IdleTimeout),
-		"max_pool_size":                types.Int64PointerValue(jdbcDataStore.MaxPoolSize),
-		"min_pool_size":                types.Int64PointerValue(jdbcDataStore.MinPoolSize),
-		"name":                         types.StringPointerValue(jdbcDataStore.Name),
-		"encrypted_password":           types.StringPointerValue(jdbcDataStore.EncryptedPassword),
-		"user_name":                    types.StringValue(jdbcDataStore.UserName),
-		"allow_multi_value_attributes": types.BoolPointerValue(jdbcDataStore.AllowMultiValueAttributes),
-		"validate_connection_sql":      types.StringPointerValue(jdbcDataStore.ValidateConnectionSql),
-	}
-	toStateObjVal, diags := types.ObjectValue(jdbcDataStoreDataSourceAttrType, jdbcAttrValue)
-	allDiags = append(allDiags, diags...)
 	return toStateObjVal, allDiags
 }
 
@@ -365,11 +341,11 @@ func readJdbcDataStoreResponse(ctx context.Context, r *client.DataStoreAggregati
 	state.MaskAttributeValues = types.BoolPointerValue(r.JdbcDataStore.MaskAttributeValues)
 	state.PingOneLdapGatewayDataStore = pingOneLdapGatewayDataStoreEmptyStateObj
 	if isResource {
-		state.JdbcDataStore, diags = toStateJdbcDataStore(ctx, r.JdbcDataStore, *plan)
+		state.JdbcDataStore, diags = toStateJdbcDataStore(ctx, r.JdbcDataStore, *plan, true)
 		state.CustomDataStore = customDataStoreEmptyStateObj
 		state.LdapDataStore = ldapDataStoreEmptyStateObj
 	} else {
-		state.JdbcDataStore, diags = toDataSourceStateJdbcDataStore(ctx, r.JdbcDataStore)
+		state.JdbcDataStore, diags = toStateJdbcDataStore(ctx, r.JdbcDataStore, *plan, false)
 		state.CustomDataStore = customDataStoreEmptyDataSourceStateObj
 		state.LdapDataStore = ldapDataStoreEmptyDataSourceStateObj
 	}

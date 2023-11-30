@@ -65,9 +65,9 @@ var (
 		"follow_ldap_referrals":  basetypes.BoolType{},
 	}
 
-	ldapDataStoreAttrType                = internaltypes.AddPasswordToMapStringAttrType(ldapDataStoreCommonAttrType)
+	ldapDataStoreAttrType                = internaltypes.AddKeyStringTypeToMapStringAttrType(ldapDataStoreCommonAttrType, "password")
 	ldapDataStoreEmptyStateObj           = types.ObjectNull(ldapDataStoreAttrType)
-	ldapDataStoreEncryptedPassAttrType   = internaltypes.AddEncryptedPasswordToMapStringAttrType(ldapDataStoreCommonAttrType)
+	ldapDataStoreEncryptedPassAttrType   = internaltypes.AddKeyStringTypeToMapStringAttrType(ldapDataStoreCommonAttrType, "encrypted_password")
 	ldapDataStoreEmptyDataSourceStateObj = types.ObjectNull(ldapDataStoreEncryptedPassAttrType)
 )
 
