@@ -157,6 +157,9 @@ func testAccPingOneLdapGatewayDataStore(resourceName string, pingOneLdapGatewayD
 	return fmt.Sprintf(`
 resource "pingfederate_data_store" "%[1]s" {
 	%[2]s
+}
+data "pingfederate_data_store" "%[1]s" {
+  data_store_id = pingfederate_data_store.%[1]s.id
 }`, resourceName,
 		pingOneLdapGDShcl(pingOneLdapGatewayDataStore.dataStore),
 	)

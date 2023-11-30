@@ -144,6 +144,9 @@ resource "pingfederate_data_store" "%[1]s" {
   data_store_id         = "%[2]s"
   mask_attribute_values = %[3]t
 	%[4]s
+}
+data "pingfederate_data_store" "%[1]s" {
+  data_store_id = pingfederate_data_store.%[1]s.id
 }`, resourceName,
 		jdbcDataStoreId,
 		resourceModel.maskAttributeValues,

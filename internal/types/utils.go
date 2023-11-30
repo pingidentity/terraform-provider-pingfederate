@@ -325,3 +325,26 @@ func CheckListKeyMatch(k string, list []string) bool {
 	}
 	return false
 }
+
+// Add a key to existing map[string]attr.Type
+func AddKeyStringTypeToMapStringAttrType(mapStringAttrType map[string]attr.Type, key string) map[string]attr.Type {
+	outValue := make(map[string]attr.Type)
+	for k, v := range mapStringAttrType {
+		outValue[k] = v
+	}
+	outValue[key] = basetypes.StringType{}
+	return outValue
+}
+
+func AddKeyObjectTypeToMapStringAttrType(mapStringAttrType map[string]attr.Type, key string, objectType map[string]attr.Type) map[string]attr.Type {
+	outObjectAttrType := make(map[string]attr.Type)
+	for k, v := range objectType {
+		outObjectAttrType[k] = v
+	}
+	outValue := make(map[string]attr.Type)
+	for k, v := range mapStringAttrType {
+		outValue[k] = v
+	}
+	outValue[key] = basetypes.ObjectType{AttrTypes: outObjectAttrType}
+	return outValue
+}

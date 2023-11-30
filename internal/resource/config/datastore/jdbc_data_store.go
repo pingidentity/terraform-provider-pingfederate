@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	datasourceschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -37,7 +38,7 @@ var (
 		},
 	}
 
-	jdbcDataStoreAttrType = map[string]attr.Type{
+	jdbcDataStoreCommonAttrType = map[string]attr.Type{
 		"max_pool_size":                basetypes.Int64Type{},
 		"connection_url_tags":          basetypes.SetType{ElemType: jdbcTagConfigAttrType},
 		"type":                         basetypes.StringType{},
@@ -50,16 +51,18 @@ var (
 		"user_name":                    basetypes.StringType{},
 		"allow_multi_value_attributes": basetypes.BoolType{},
 		"validate_connection_sql":      basetypes.StringType{},
-		"password":                     basetypes.StringType{},
 	}
 
-	jdbcDataStoreEmptyStateObj = types.ObjectNull(jdbcDataStoreAttrType)
+	jdbcDataStoreAttrType                = internaltypes.AddKeyStringTypeToMapStringAttrType(jdbcDataStoreCommonAttrType, "password")
+	jdbcDataStoreEmptyStateObj           = types.ObjectNull(jdbcDataStoreAttrType)
+	jdbcDataStoreDataSourceAttrType      = internaltypes.AddKeyStringTypeToMapStringAttrType(jdbcDataStoreCommonAttrType, "encrypted_password")
+	jdbcDataStoreEmptyDataSourceStateObj = types.ObjectNull(jdbcDataStoreDataSourceAttrType)
 )
 
 func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 	jdbcDataStoreSchema := schema.SingleNestedAttribute{}
 	jdbcDataStoreSchema.Description = "A JDBC data store."
-	jdbcDataStoreSchema.Default = objectdefault.StaticValue(types.ObjectNull(jdbcDataStoreAttrType))
+	jdbcDataStoreSchema.Default = objectdefault.StaticValue(jdbcDataStoreEmptyStateObj)
 	jdbcDataStoreSchema.Computed = true
 	jdbcDataStoreSchema.Optional = true
 	jdbcDataStoreSchema.Attributes = map[string]schema.Attribute{
@@ -180,7 +183,102 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 	return jdbcDataStoreSchema
 }
 
-func toStateJdbcDataStore(con context.Context, jdbcDataStore *client.JdbcDataStore, plan dataStoreResourceModel) (types.Object, diag.Diagnostics) {
+func toDataSourceSchemaJdbcDataStore() datasourceschema.SingleNestedAttribute {
+	jdbcDataStoreSchema := datasourceschema.SingleNestedAttribute{}
+	jdbcDataStoreSchema.Description = "A JDBC data store."
+	jdbcDataStoreSchema.Computed = true
+	jdbcDataStoreSchema.Optional = false
+	jdbcDataStoreSchema.Attributes = map[string]datasourceschema.Attribute{
+		"type": datasourceschema.StringAttribute{
+			Description: "The data store type.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"encrypted_password": datasourceschema.StringAttribute{
+			Description: "The encrypted password needed to access the database.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"name": datasourceschema.StringAttribute{
+			Description: "The data store name with a unique value across all data sources.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"min_pool_size": datasourceschema.Int64Attribute{
+			Description: "The smallest number of database connections in the connection pool for the given data store.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"max_pool_size": datasourceschema.Int64Attribute{
+			Description: "The largest number of database connections in the connection pool for the given data store.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"connection_url_tags": datasourceschema.SetNestedAttribute{
+			Description: "A JDBC data store's connection URLs and tags configuration.",
+			Computed:    true,
+			Optional:    false,
+			NestedObject: datasourceschema.NestedAttributeObject{
+				Attributes: map[string]datasourceschema.Attribute{
+					"connection_url": datasourceschema.StringAttribute{
+						Description: "The location of the JDBC database.",
+						Computed:    true,
+						Optional:    false,
+					},
+					"tags": datasourceschema.StringAttribute{
+						Description: "Tags associated with this data source.",
+						Computed:    true,
+						Optional:    false,
+					},
+					"default_source": datasourceschema.BoolAttribute{
+						Description: "Whether this is the default connection.",
+						Computed:    true,
+						Optional:    false,
+					},
+				},
+			},
+		},
+		"blocking_timeout": datasourceschema.Int64Attribute{
+			Description: "The amount of time in milliseconds a request waits to get a connection from the connection pool before it fails.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"idle_timeout": datasourceschema.Int64Attribute{
+			Description: "The length of time in minutes the connection can be idle in the pool before it is closed.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"driver_class": datasourceschema.StringAttribute{
+			Description: "The name of the driver class used to communicate with the source database.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"connection_url": datasourceschema.StringAttribute{
+			Description: "The default location of the JDBC database.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"user_name": datasourceschema.StringAttribute{
+			Description: "The name that identifies the user when connecting to the database.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"allow_multi_value_attributes": datasourceschema.BoolAttribute{
+			Description: "Indicates that this data store can select more than one record from a column and return the results as a multi-value attribute.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"validate_connection_sql": datasourceschema.StringAttribute{
+			Description: "A simple SQL statement used by PingFederate at runtime to verify that the database connection is still active and to reconnect if needed.",
+			Computed:    true,
+			Optional:    false,
+		},
+	}
+
+	return jdbcDataStoreSchema
+}
+
+func toStateJdbcDataStore(con context.Context, jdbcDataStore *client.JdbcDataStore, plan dataStoreModel, isResource bool) (types.Object, diag.Diagnostics) {
 	var allDiags, diags diag.Diagnostics
 
 	if jdbcDataStore == nil {
@@ -200,13 +298,12 @@ func toStateJdbcDataStore(con context.Context, jdbcDataStore *client.JdbcDataSto
 	connectionUrlSetVal, diags := connectionUrlTags()
 	allDiags = append(allDiags, diags...)
 
-	password := func() basetypes.StringValue {
-		passwordVal, ok := plan.JdbcDataStore.Attributes()["password"].(types.String)
-		if ok {
-			return passwordVal
-		} else {
-			return types.StringPointerValue(pointers.String(""))
-		}
+	var password basetypes.StringValue
+	passwordVal, ok := plan.JdbcDataStore.Attributes()["password"].(types.String)
+	if ok {
+		password = passwordVal
+	} else {
+		password = types.StringPointerValue(pointers.String(""))
 	}
 
 	jdbcAttrValue := map[string]attr.Value{
@@ -219,29 +316,43 @@ func toStateJdbcDataStore(con context.Context, jdbcDataStore *client.JdbcDataSto
 		"max_pool_size":                types.Int64PointerValue(jdbcDataStore.MaxPoolSize),
 		"min_pool_size":                types.Int64PointerValue(jdbcDataStore.MinPoolSize),
 		"name":                         types.StringPointerValue(jdbcDataStore.Name),
-		"password":                     password(),
 		"user_name":                    types.StringValue(jdbcDataStore.UserName),
 		"allow_multi_value_attributes": types.BoolPointerValue(jdbcDataStore.AllowMultiValueAttributes),
 		"validate_connection_sql":      internaltypes.StringTypeOrNil(jdbcDataStore.ValidateConnectionSql, true),
 	}
-	toStateObjVal, diags := types.ObjectValue(jdbcDataStoreAttrType, jdbcAttrValue)
-	allDiags = append(allDiags, diags...)
+
+	var toStateObjVal types.Object
+	if isResource {
+		jdbcAttrValue["password"] = password
+		toStateObjVal, diags = types.ObjectValue(jdbcDataStoreAttrType, jdbcAttrValue)
+		allDiags = append(allDiags, diags...)
+	} else {
+		jdbcAttrValue["encrypted_password"] = types.StringPointerValue(jdbcDataStore.EncryptedPassword)
+		toStateObjVal, diags = types.ObjectValue(jdbcDataStoreDataSourceAttrType, jdbcAttrValue)
+		allDiags = append(allDiags, diags...)
+	}
 	return toStateObjVal, allDiags
 }
 
-func readJdbcDataStoreResponse(ctx context.Context, r *client.DataStoreAggregation, state *dataStoreResourceModel, plan *dataStoreResourceModel) diag.Diagnostics {
+func readJdbcDataStoreResponse(ctx context.Context, r *client.DataStoreAggregation, state *dataStoreModel, plan *dataStoreModel, isResource bool) diag.Diagnostics {
 	var diags diag.Diagnostics
 	state.Id = types.StringPointerValue(r.JdbcDataStore.Id)
 	state.DataStoreId = types.StringPointerValue(r.JdbcDataStore.Id)
 	state.MaskAttributeValues = types.BoolPointerValue(r.JdbcDataStore.MaskAttributeValues)
-	state.JdbcDataStore, diags = toStateJdbcDataStore(ctx, r.JdbcDataStore, *plan)
-	state.CustomDataStore = customDataStoreEmptyStateObj
-	state.LdapDataStore = ldapDataStoreEmptyStateObj
 	state.PingOneLdapGatewayDataStore = pingOneLdapGatewayDataStoreEmptyStateObj
+	if isResource {
+		state.JdbcDataStore, diags = toStateJdbcDataStore(ctx, r.JdbcDataStore, *plan, true)
+		state.CustomDataStore = customDataStoreEmptyStateObj
+		state.LdapDataStore = ldapDataStoreEmptyStateObj
+	} else {
+		state.JdbcDataStore, diags = toStateJdbcDataStore(ctx, r.JdbcDataStore, *plan, false)
+		state.CustomDataStore = customDataStoreEmptyDataSourceStateObj
+		state.LdapDataStore = ldapDataStoreEmptyDataSourceStateObj
+	}
 	return diags
 }
 
-func addOptionalJdbcDataStoreFields(addRequest client.DataStoreAggregation, con context.Context, createJdbcDataStore client.JdbcDataStore, plan dataStoreResourceModel) error {
+func addOptionalJdbcDataStoreFields(addRequest client.DataStoreAggregation, con context.Context, createJdbcDataStore client.JdbcDataStore, plan dataStoreModel) error {
 
 	if internaltypes.IsDefined(plan.MaskAttributeValues) {
 		addRequest.JdbcDataStore.MaskAttributeValues = plan.MaskAttributeValues.ValueBoolPointer()
@@ -308,7 +419,7 @@ func addOptionalJdbcDataStoreFields(addRequest client.DataStoreAggregation, con 
 	return nil
 }
 
-func createJdbcDataStore(plan dataStoreResourceModel, con context.Context, req resource.CreateRequest, resp *resource.CreateResponse, dsr *dataStoreResource) {
+func createJdbcDataStore(plan dataStoreModel, con context.Context, req resource.CreateRequest, resp *resource.CreateResponse, dsr *dataStoreResource) {
 	var diags diag.Diagnostics
 	var err error
 
@@ -330,14 +441,14 @@ func createJdbcDataStore(plan dataStoreResourceModel, con context.Context, req r
 	}
 
 	// Read the response into the state
-	var state dataStoreResourceModel
-	diags = readJdbcDataStoreResponse(con, response, &state, &plan)
+	var state dataStoreModel
+	diags = readJdbcDataStoreResponse(con, response, &state, &plan, true)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(con, state)
 	resp.Diagnostics.Append(diags...)
 }
 
-func updateJdbcDataStore(plan dataStoreResourceModel, con context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, dsr *dataStoreResource) {
+func updateJdbcDataStore(plan dataStoreModel, con context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, dsr *dataStoreResource) {
 	var diags diag.Diagnostics
 	var err error
 
@@ -359,8 +470,8 @@ func updateJdbcDataStore(plan dataStoreResourceModel, con context.Context, req r
 	}
 
 	// Read the response
-	var state dataStoreResourceModel
-	diags = readJdbcDataStoreResponse(con, response, &state, &plan)
+	var state dataStoreModel
+	diags = readJdbcDataStoreResponse(con, response, &state, &plan, true)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values

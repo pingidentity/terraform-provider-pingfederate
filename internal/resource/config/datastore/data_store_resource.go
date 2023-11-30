@@ -34,16 +34,6 @@ type dataStoreResource struct {
 	apiClient      *client.APIClient
 }
 
-type dataStoreResourceModel struct {
-	Id                          types.String `tfsdk:"id"`
-	DataStoreId                 types.String `tfsdk:"data_store_id"`
-	MaskAttributeValues         types.Bool   `tfsdk:"mask_attribute_values"`
-	CustomDataStore             types.Object `tfsdk:"custom_data_store"`
-	JdbcDataStore               types.Object `tfsdk:"jdbc_data_store"`
-	LdapDataStore               types.Object `tfsdk:"ldap_data_store"`
-	PingOneLdapGatewayDataStore types.Object `tfsdk:"ping_one_ldap_gateway_data_store"`
-}
-
 // GetSchema defines the schema for the resource.
 func (r *dataStoreResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
@@ -86,7 +76,7 @@ func (r *dataStoreResource) Configure(_ context.Context, req resource.ConfigureR
 }
 
 func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	var plan *dataStoreResourceModel
+	var plan *dataStoreModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	var respDiags diag.Diagnostics
 
@@ -307,7 +297,7 @@ func createDataStore(dataStore configurationapi.DataStoreAggregation, dsr *dataS
 }
 
 func (r *dataStoreResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan dataStoreResourceModel
+	var plan dataStoreModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -334,7 +324,7 @@ func (r *dataStoreResource) Create(ctx context.Context, req resource.CreateReque
 }
 
 func (r *dataStoreResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state dataStoreResourceModel
+	var state dataStoreModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -352,22 +342,22 @@ func (r *dataStoreResource) Read(ctx context.Context, req resource.ReadRequest, 
 	}
 
 	if dataStoreGetReq.CustomDataStore != nil {
-		diags = readCustomDataStoreResponse(ctx, dataStoreGetReq, &state, &state.CustomDataStore)
+		diags = readCustomDataStoreResponse(ctx, dataStoreGetReq, &state, &state.CustomDataStore, true)
 		resp.Diagnostics.Append(diags...)
 	}
 
 	if dataStoreGetReq.JdbcDataStore != nil {
-		diags = readJdbcDataStoreResponse(ctx, dataStoreGetReq, &state, &state)
+		diags = readJdbcDataStoreResponse(ctx, dataStoreGetReq, &state, &state, true)
 		resp.Diagnostics.Append(diags...)
 	}
 
 	if dataStoreGetReq.LdapDataStore != nil {
-		diags = readLdapDataStoreResponse(ctx, dataStoreGetReq, &state, &state.LdapDataStore)
+		diags = readLdapDataStoreResponse(ctx, dataStoreGetReq, &state, &state.LdapDataStore, true)
 		resp.Diagnostics.Append(diags...)
 	}
 
 	if dataStoreGetReq.PingOneLdapGatewayDataStore != nil {
-		diags = readPingOneLdapGatewayDataStoreResponse(ctx, dataStoreGetReq, &state, &state.PingOneLdapGatewayDataStore)
+		diags = readPingOneLdapGatewayDataStoreResponse(ctx, dataStoreGetReq, &state, &state.PingOneLdapGatewayDataStore, true)
 		resp.Diagnostics.Append(diags...)
 	}
 
@@ -385,7 +375,7 @@ func updateDataStore(dataStore configurationapi.DataStoreAggregation, dsr *dataS
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *dataStoreResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 
-	var plan dataStoreResourceModel
+	var plan dataStoreModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -413,7 +403,7 @@ func (r *dataStoreResource) Update(ctx context.Context, req resource.UpdateReque
 
 func (r *dataStoreResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state dataStoreResourceModel
+	var state dataStoreModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
