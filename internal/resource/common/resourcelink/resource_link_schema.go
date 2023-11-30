@@ -23,10 +23,19 @@ func ToSchema() map[string]schema.Attribute {
 	}
 }
 
-// TODO pass in description, optional/computed/required
-func ToCompleteSchema() schema.SingleNestedAttribute {
+func SingleNestedAttribute() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Optional:   true,
 		Attributes: ToSchema(),
+	}
+}
+
+func CompleteSingleNestedAttribute(optional, computed, required bool, description string) schema.SingleNestedAttribute {
+	return schema.SingleNestedAttribute{
+		Optional:    optional,
+		Computed:    computed,
+		Required:    required,
+		Description: description,
+		Attributes:  ToSchema(),
 	}
 }

@@ -26,6 +26,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
@@ -42,7 +43,6 @@ var (
 	_ resource.ResourceWithConfigure   = &idpSpConnectionResource{}
 	_ resource.ResourceWithImportState = &idpSpConnectionResource{}
 
-	//TODO common
 	resourceLinkObjectType = types.ObjectType{AttrTypes: resourcelink.AttrType()}
 
 	metadataReloadSettingsAttrTypes = map[string]attr.Type{
@@ -439,72 +439,6 @@ type idpSpConnectionResourceModel struct {
 
 // GetSchema defines the schema for the resource.
 func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	//TODO is this different from the common one?
-	//TODO maybe move all these into common? Or into a separate file in this package?
-	attributeContractFulfillmentSchema := schema.MapNestedAttribute{
-		NestedObject: schema.NestedAttributeObject{
-			Attributes: map[string]schema.Attribute{
-				"source": schema.SingleNestedAttribute{
-					Attributes: map[string]schema.Attribute{
-						"id": schema.StringAttribute{
-							Optional:    true,
-							Description: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-						},
-						"type": schema.StringAttribute{
-							Required:    true,
-							Description: "The source type of this key.",
-							Validators: []validator.String{
-								stringvalidator.OneOf(
-									"TOKEN_EXCHANGE_PROCESSOR_POLICY",
-									"ACCOUNT_LINK",
-									"ADAPTER",
-									"ASSERTION",
-									"CONTEXT",
-									"CUSTOM_DATA_STORE",
-									"EXPRESSION",
-									"JDBC_DATA_STORE",
-									"LDAP_DATA_STORE",
-									"PING_ONE_LDAP_GATEWAY_DATA_STORE",
-									"MAPPED_ATTRIBUTES",
-									"NO_MAPPING",
-									"TEXT",
-									"TOKEN",
-									"REQUEST",
-									"OAUTH_PERSISTENT_GRANT",
-									"SUBJECT_TOKEN",
-									"ACTOR_TOKEN",
-									"PASSWORD_CREDENTIAL_VALIDATOR",
-									"IDP_CONNECTION",
-									"AUTHENTICATION_POLICY_CONTRACT",
-									"CLAIMS",
-									"LOCAL_IDENTITY_PROFILE",
-									"EXTENDED_CLIENT_METADATA",
-									"EXTENDED_PROPERTIES",
-									"TRACKED_HTTP_PARAMS",
-									"FRAGMENT",
-									"INPUTS",
-									"ATTRIBUTE_QUERY",
-									"IDENTITY_STORE_USER",
-									"IDENTITY_STORE_GROUP",
-									"SCIM_USER",
-									"SCIM_GROUP",
-								),
-							},
-						},
-					},
-					Required:    true,
-					Description: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
-				},
-				"value": schema.StringAttribute{
-					Required:    true,
-					Description: "The value for this attribute.",
-				},
-			},
-		},
-		Required:    true,
-		Description: "A list of mappings from attribute names to their fulfillment values.",
-	}
-
 	certsSchema := schema.ListNestedAttribute{
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
@@ -714,7 +648,104 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 		},
 	}
 
-	//TODO descriptions for resource links
+	channelsAttributeMappingNestedObject := schema.NestedAttributeObject{
+		Attributes: map[string]schema.Attribute{
+			"field_name": schema.StringAttribute{
+				Required:    true,
+				Description: "The name of target field.",
+			},
+			"saas_field_info": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"attribute_names": schema.ListAttribute{
+						ElementType: types.StringType,
+						Optional:    true,
+						Computed:    true,
+						//Default:     listdefault.StaticValue(emptyStringList),
+						Description: "The list of source attribute names used to generate or map to a target field",
+						Validators: []validator.List{
+							listvalidator.UniqueValues(),
+						},
+					},
+					"character_case": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+						//Default:     stringdefault.StaticString("NONE"),
+						Description: "The character case of the field value.",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"LOWER",
+								"UPPER",
+								"NONE",
+							),
+						},
+					},
+					"create_only": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+						//Default:     booldefault.StaticBool(false),
+						Description: "Indicates whether this field is a create only field and cannot be updated.",
+					},
+					"default_value": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+						//Default:     stringdefault.StaticString(""),
+						Description: "The default value for the target field",
+					},
+					"expression": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+						//Default:     stringdefault.StaticString(""),
+						Description: "An OGNL expression to obtain a value.",
+					},
+					"masked": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+						//Default:     booldefault.StaticBool(false),
+						Description: "Indicates whether the attribute should be masked in server logs.",
+					},
+					"parser": schema.StringAttribute{
+						Optional: true,
+						Computed: true,
+						//Default:     stringdefault.StaticString("NONE"),
+						Description: "Indicates how the field shall be parsed.",
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"EXTRACT_CN_FROM_DN",
+								"EXTRACT_USERNAME_FROM_EMAIL",
+								"NONE",
+							),
+						},
+					},
+					"trim": schema.BoolAttribute{
+						Optional: true,
+						Computed: true,
+						//Default:     booldefault.StaticBool(false),
+						Description: "Indicates whether field should be trimmed before provisioning.",
+					},
+				},
+				Required:    true,
+				Description: "The settings that represent how attribute values from source data store will be mapped into Fields specified by the service provider.",
+			},
+		},
+	}
+
+	outboundProvisionTargetSettingsNestedObject := schema.NestedAttributeObject{
+		Attributes: map[string]schema.Attribute{
+			"inherited": schema.BoolAttribute{
+				Optional:    true,
+				Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
+			},
+			"name": schema.StringAttribute{
+				Required:    true,
+				Description: "The name of the configuration field.",
+			},
+			"value": schema.StringAttribute{
+				Optional:    true,
+				Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
+			},
+		},
+	}
+
 	schema := schema.Schema{
 		Description: "Manages an IdP SP Connection",
 		Attributes: map[string]schema.Attribute{
@@ -764,7 +795,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"attribute_query": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"attribute_contract_fulfillment": attributeContractFulfillmentSchema,
+					"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
 					"attribute_sources":              attributesources.ToSchema(1),
 					"attributes": schema.ListAttribute{
 						ElementType: types.StringType,
@@ -866,8 +897,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Description: "The algorithm used to encrypt assertions sent to this partner. AES_128, AES_256, AES_128_GCM, AES_192_GCM, AES_256_GCM and Triple_DES are supported.",
 					},
 					"certs":                   certsSchema,
-					"decryption_key_pair_ref": resourcelink.ToCompleteSchema(),
-					"inbound_back_channel_auth": schema.SingleNestedAttribute{ //TODO required? conditionally required?
+					"decryption_key_pair_ref": resourcelink.SingleNestedAttribute(),
+					"inbound_back_channel_auth": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
 							"certs": certsSchema,
 							"digital_signature": schema.BoolAttribute{
@@ -911,7 +942,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Description: "If incoming or outgoing messages must be signed.",
 							},
 							"http_basic_credentials": httpBasicCredentialsSchema,
-							"ssl_auth_key_pair_ref":  resourcelink.ToCompleteSchema(),
+							"ssl_auth_key_pair_ref":  resourcelink.SingleNestedAttribute(),
 							"type": schema.StringAttribute{
 								Required:    true,
 								Description: "The back channel authentication type.",
@@ -929,7 +960,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						},
 						Optional: true,
 					},
-					"secondary_decryption_key_pair_ref": resourcelink.ToCompleteSchema(),
+					"secondary_decryption_key_pair_ref": resourcelink.SingleNestedAttribute(),
 					"signing_settings": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
 							"algorithm": schema.StringAttribute{
@@ -951,7 +982,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Optional:    true,
 								Description: "Determines whether the <KeyValue> element with the raw public key is included in the signature <KeyInfo> element.",
 							},
-							"signing_key_pair_ref": resourcelink.ToCompleteSchema(),
+							"signing_key_pair_ref": resourcelink.SingleNestedAttribute(),
 						},
 						Optional:    true,
 						Description: "Settings related to signing messages sent to this partner.",
@@ -1023,7 +1054,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Default:     booldefault.StaticBool(true),
 						Description: "Specifies whether the metadata of the connection will be automatically reloaded. The default value is true.",
 					},
-					"metadata_url_ref": resourcelink.ToCompleteSchema(),
+					"metadata_url_ref": resourcelink.SingleNestedAttribute(),
 				},
 				Optional:    true,
 				Description: "Configuration settings to enable automatic reload of partner's metadata.",
@@ -1041,179 +1072,19 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Required:    true,
 									Description: "Indicates whether the channel is the active channel for this connection.",
 								},
-								"attribute_mapping_all": schema.SetNestedAttribute{ //TODO reduce repitition
-									NestedObject: schema.NestedAttributeObject{
-										Attributes: map[string]schema.Attribute{
-											"field_name": schema.StringAttribute{
-												Required:    true,
-												Description: "The name of target field.",
-											},
-											"saas_field_info": schema.SingleNestedAttribute{
-												Attributes: map[string]schema.Attribute{
-													"attribute_names": schema.ListAttribute{
-														ElementType: types.StringType,
-														Optional:    true,
-														Computed:    true,
-														//Default:     listdefault.StaticValue(emptyStringList),
-														Description: "The list of source attribute names used to generate or map to a target field",
-														Validators: []validator.List{
-															listvalidator.UniqueValues(),
-														},
-													},
-													"character_case": schema.StringAttribute{
-														Optional: true,
-														Computed: true,
-														//Default:     stringdefault.StaticString("NONE"),
-														Description: "The character case of the field value.",
-														Validators: []validator.String{
-															stringvalidator.OneOf(
-																"LOWER",
-																"UPPER",
-																"NONE",
-															),
-														},
-													},
-													"create_only": schema.BoolAttribute{
-														Optional: true,
-														Computed: true,
-														//Default:     booldefault.StaticBool(false),
-														Description: "Indicates whether this field is a create only field and cannot be updated.",
-													},
-													"default_value": schema.StringAttribute{
-														Optional: true,
-														Computed: true,
-														//Default:     stringdefault.StaticString(""),
-														Description: "The default value for the target field",
-													},
-													"expression": schema.StringAttribute{
-														Optional: true,
-														Computed: true,
-														//Default:     stringdefault.StaticString(""),
-														Description: "An OGNL expression to obtain a value.",
-													},
-													"masked": schema.BoolAttribute{
-														Optional: true,
-														Computed: true,
-														//Default:     booldefault.StaticBool(false),
-														Description: "Indicates whether the attribute should be masked in server logs.",
-													},
-													"parser": schema.StringAttribute{
-														Optional: true,
-														Computed: true,
-														//Default:     stringdefault.StaticString("NONE"),
-														Description: "Indicates how the field shall be parsed.",
-														Validators: []validator.String{
-															stringvalidator.OneOf(
-																"EXTRACT_CN_FROM_DN",
-																"EXTRACT_USERNAME_FROM_EMAIL",
-																"NONE",
-															),
-														},
-													},
-													"trim": schema.BoolAttribute{
-														Optional: true,
-														Computed: true,
-														//Default:     booldefault.StaticBool(false),
-														Description: "Indicates whether field should be trimmed before provisioning.",
-													},
-												},
-												Required:    true,
-												Description: "The settings that represent how attribute values from source data store will be mapped into Fields specified by the service provider.",
-											},
-										},
-									},
-									Optional: false,
-									Computed: true,
+								"attribute_mapping_all": schema.SetNestedAttribute{
+									NestedObject: channelsAttributeMappingNestedObject,
+									Optional:     false,
+									Computed:     true,
 									PlanModifiers: []planmodifier.Set{
 										setplanmodifier.UseStateForUnknown(),
 									},
 									Description: "The mapping of attributes from the local data store into Fields specified by the service provider. This attribute will include any values set by default by PingFederate.",
 								},
 								"attribute_mapping": schema.SetNestedAttribute{
-									NestedObject: schema.NestedAttributeObject{
-										Attributes: map[string]schema.Attribute{
-											"field_name": schema.StringAttribute{
-												Required:    true,
-												Description: "The name of target field.",
-											},
-											// Can't set defaults in this nested attribute due to plugin-framework problems with
-											// unnecessary plans in sets. See https://github.com/hashicorp/terraform-plugin-framework/issues/867 and linked issues
-											"saas_field_info": schema.SingleNestedAttribute{
-												Attributes: map[string]schema.Attribute{
-													"attribute_names": schema.ListAttribute{
-														ElementType: types.StringType,
-														Optional:    true,
-														Computed:    true,
-														//Default:     listdefault.StaticValue(emptyStringList),
-														Description: "The list of source attribute names used to generate or map to a target field",
-														Validators: []validator.List{
-															listvalidator.UniqueValues(),
-														},
-													},
-													"character_case": schema.StringAttribute{
-														Optional: true,
-														Computed: true,
-														//Default:     stringdefault.StaticString("NONE"),
-														Description: "The character case of the field value.",
-														Validators: []validator.String{
-															stringvalidator.OneOf(
-																"LOWER",
-																"UPPER",
-																"NONE",
-															),
-														},
-													},
-													"create_only": schema.BoolAttribute{
-														Optional: true,
-														Computed: true,
-														//Default:     booldefault.StaticBool(false),
-														Description: "Indicates whether this field is a create only field and cannot be updated.",
-													},
-													"default_value": schema.StringAttribute{
-														Optional: true,
-														Computed: true,
-														//Default:     stringdefault.StaticString(""),
-														Description: "The default value for the target field",
-													},
-													"expression": schema.StringAttribute{
-														Optional: true,
-														Computed: true,
-														//Default:     stringdefault.StaticString(""),
-														Description: "An OGNL expression to obtain a value.",
-													},
-													"masked": schema.BoolAttribute{
-														Optional: true,
-														Computed: true,
-														//Default:     booldefault.StaticBool(false),
-														Description: "Indicates whether the attribute should be masked in server logs.",
-													},
-													"parser": schema.StringAttribute{
-														Optional: true,
-														Computed: true,
-														//Default:     stringdefault.StaticString("NONE"),
-														Description: "Indicates how the field shall be parsed.",
-														Validators: []validator.String{
-															stringvalidator.OneOf(
-																"EXTRACT_CN_FROM_DN",
-																"EXTRACT_USERNAME_FROM_EMAIL",
-																"NONE",
-															),
-														},
-													},
-													"trim": schema.BoolAttribute{
-														Optional: true,
-														Computed: true,
-														//Default:     booldefault.StaticBool(false),
-														Description: "Indicates whether field should be trimmed before provisioning.",
-													},
-												},
-												Required:    true,
-												Description: "The settings that represent how attribute values from source data store will be mapped into Fields specified by the service provider.",
-											},
-										},
-									},
-									Required:    true,
-									Description: "The mapping of attributes from the local data store into Fields specified by the service provider.",
+									NestedObject: channelsAttributeMappingNestedObject,
+									Required:     true,
+									Description:  "The mapping of attributes from the local data store into Fields specified by the service provider.",
 								},
 								"channel_source": schema.SingleNestedAttribute{
 									Attributes: map[string]schema.Attribute{
@@ -1241,7 +1112,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													Optional:    true,
 													Description: "The flag that represents comparison status.",
 												},
-												"flag_comparison_value": schema.StringAttribute{ //TODO required if using flag mode
+												"flag_comparison_value": schema.StringAttribute{
 													Optional:    true,
 													Description: "The flag that represents comparison value.",
 												},
@@ -1286,7 +1157,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Required:    true,
 											Description: "Setting to detect changes to a user or a group.",
 										},
-										"data_source": resourcelink.ToCompleteSchema(), //TODO required?
+										"data_source": resourcelink.CompleteSingleNestedAttribute(false, false, true),
 										"group_membership_detection": schema.SingleNestedAttribute{
 											Attributes: map[string]schema.Attribute{
 												"group_member_attribute_name": schema.StringAttribute{
@@ -1410,49 +1281,19 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Optional:    true,
 						Description: "Custom SCIM Attributes configuration.",
 					},
-					"target_settings_all": schema.ListNestedAttribute{ //TODO reduce repetition
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"inherited": schema.BoolAttribute{
-									Optional:    true,
-									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-								},
-								"name": schema.StringAttribute{
-									Required:    true,
-									Description: "The name of the configuration field.",
-								},
-								"value": schema.StringAttribute{
-									Optional:    true,
-									Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
-								},
-							},
-						},
-						Optional: false,
-						Computed: true,
+					"target_settings_all": schema.ListNestedAttribute{
+						NestedObject: outboundProvisionTargetSettingsNestedObject,
+						Optional:     false,
+						Computed:     true,
 						PlanModifiers: []planmodifier.List{
 							listplanmodifier.UseStateForUnknown(),
 						},
 						Description: "Configuration fields that includes credentials to target SaaS application. This attribute will include any values set by default by PingFederate.",
 					},
 					"target_settings": schema.ListNestedAttribute{
-						NestedObject: schema.NestedAttributeObject{
-							Attributes: map[string]schema.Attribute{
-								"inherited": schema.BoolAttribute{
-									Optional:    true,
-									Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-								},
-								"name": schema.StringAttribute{
-									Required:    true,
-									Description: "The name of the configuration field.",
-								},
-								"value": schema.StringAttribute{
-									Optional:    true,
-									Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
-								},
-							},
-						},
-						Required:    true,
-						Description: "Configuration fields that includes credentials to target SaaS application.",
+						NestedObject: outboundProvisionTargetSettingsNestedObject,
+						Required:     true,
+						Description:  "Configuration fields that includes credentials to target SaaS application.",
 					},
 					"type": schema.StringAttribute{
 						Required:    true,
@@ -1503,7 +1344,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										},
 										"attribute_mapping": schema.SingleNestedAttribute{
 											Attributes: map[string]schema.Attribute{
-												"attribute_contract_fulfillment": attributeContractFulfillmentSchema,
+												"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
 												"attribute_sources":              attributesources.ToSchema(0),
 												"inherited": schema.BoolAttribute{
 													Optional:    true,
@@ -1527,14 +1368,14 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Required:    true,
 											Description: "The plugin instance name. The name can be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.",
 										},
-										"parent_ref":            resourcelink.ToCompleteSchema(),
-										"plugin_descriptor_ref": resourcelink.ToCompleteSchema(),
+										"parent_ref":            resourcelink.CompleteSingleNestedAttribute(true, false, false, "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)"),
+										"plugin_descriptor_ref": resourcelink.CompleteSingleNestedAttribute(false, false, true, "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override."),
 									},
 									Optional: true,
 								},
-								"attribute_contract_fulfillment": attributeContractFulfillmentSchema,
+								"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
 								"attribute_sources":              attributesources.ToSchema(0),
-								"idp_adapter_ref":                resourcelink.ToCompleteSchema(),
+								"idp_adapter_ref":                resourcelink.CompleteSingleNestedAttribute(false, false, true, "Reference to the associated IdP adapter. Note: This is ignored if adapter overrides for this mapping exists. In this case, the override's parent adapter reference is used."),
 								"issuance_criteria":              issuancecriteria.ToSchema(),
 								"restrict_virtual_entity_ids": schema.BoolAttribute{
 									Optional:    true,
@@ -1621,9 +1462,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Optional:    true,
 									Description: "If set to true, SSO transaction will be aborted as a fail-safe when the data-store's attribute mappings fail to complete the attribute contract. Otherwise, the attribute contract with default values is used. By default, this value is false.",
 								},
-								"attribute_contract_fulfillment":     attributeContractFulfillmentSchema,
+								"attribute_contract_fulfillment":     attributecontractfulfillment.ToSchema(true, false),
 								"attribute_sources":                  attributesources.ToSchema(0),
-								"authentication_policy_contract_ref": resourcelink.ToCompleteSchema(),
+								"authentication_policy_contract_ref": resourcelink.CompleteSingleNestedAttribute(false, false, true, "Reference to the associated Authentication Policy Contract."),
 								"issuance_criteria":                  issuancecriteria.ToSchema(),
 								"restrict_virtual_entity_ids": schema.BoolAttribute{
 									Optional:    true,
@@ -1917,13 +1758,13 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Required:    true,
 						Description: "The partner service identifiers.",
 					},
-					"request_contract_ref": resourcelink.ToCompleteSchema(),
+					"request_contract_ref": resourcelink.CompleteSingleNestedAttribute(true, false, false, "Request Contract to be used to map attribute values into the security token."),
 					"token_processor_mappings": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
-								"attribute_contract_fulfillment": attributeContractFulfillmentSchema,
+								"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
 								"attribute_sources":              attributesources.ToSchema(0),
-								"idp_token_processor_ref":        resourcelink.ToCompleteSchema(),
+								"idp_token_processor_ref":        resourcelink.CompleteSingleNestedAttribute(false, false, true, "Reference to the associated token processor."),
 								"issuance_criteria":              issuancecriteria.ToSchema(),
 								"restricted_virtual_entity_ids": schema.ListAttribute{
 									ElementType: types.StringType,
@@ -2108,7 +1949,7 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 		}
 	}
 
-	if internaltypes.IsDefined(plan.OutboundProvision) { //TODO force to zero if not set
+	if internaltypes.IsDefined(plan.OutboundProvision) {
 		addRequest.OutboundProvision = &client.OutboundProvision{}
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.OutboundProvision, true)), &addRequest.OutboundProvision)
 		if err != nil {
@@ -2212,12 +2053,16 @@ func readIdpSpconnectionResponse(ctx context.Context, r *client.SpConnection, st
 
 		// PF can return extra target_settings that were not included in the request
 		plannedTargetSettingsNames := []string{}
+		plannedTargetSettingsValues := map[string]string{}
 		if internaltypes.IsDefined(plan.OutboundProvision) {
 			targetSettings := plan.OutboundProvision.Attributes()["target_settings"].(types.List)
 			for _, plannedTargetSettings := range targetSettings.Elements() {
 				nameStrVal := plannedTargetSettings.(types.Object).Attributes()["name"].(types.String)
 				if internaltypes.IsDefined(nameStrVal) {
 					plannedTargetSettingsNames = append(plannedTargetSettingsNames, nameStrVal.ValueString())
+
+					valueStrVal := plannedTargetSettings.(types.Object).Attributes()["value"].(types.String)
+					plannedTargetSettingsValues[nameStrVal.ValueString()] = valueStrVal.ValueString()
 				}
 			}
 		}
@@ -2225,21 +2070,27 @@ func readIdpSpconnectionResponse(ctx context.Context, r *client.SpConnection, st
 		targetSettingsSlice := []attr.Value{}
 		targetSettingsAllSlice := []attr.Value{}
 		for _, targetSettings := range r.OutboundProvision.TargetSettings {
-			targetSettingsObj, respDiags := types.ObjectValue(targetSettingsElemAttrType.AttrTypes, map[string]attr.Value{
-				"name":      types.StringValue(targetSettings.Name),
-				"value":     types.StringPointerValue(targetSettings.Value), //TODO probably need to handle encrypted where this returns as nil
-				"inherited": types.BoolPointerValue(targetSettings.Inherited),
-			})
-			diags.Append(respDiags...)
+			value := types.StringPointerValue(targetSettings.Value)
 
 			// Check if this object was in the plan
 			inPlan := false
 			for _, name := range plannedTargetSettingsNames {
 				if name == targetSettings.Name {
 					inPlan = true
+
+					// If PF returns nil for the value, then it must be encrypted. Just use the value from the plan in that case
+					if targetSettings.Value == nil {
+						value = types.StringValue(plannedTargetSettingsValues[targetSettings.Name])
+					}
 					break
 				}
 			}
+			targetSettingsObj, respDiags := types.ObjectValue(targetSettingsElemAttrType.AttrTypes, map[string]attr.Value{
+				"name":      types.StringValue(targetSettings.Name),
+				"value":     value,
+				"inherited": types.BoolPointerValue(targetSettings.Inherited),
+			})
+			diags.Append(respDiags...)
 			if inPlan {
 				targetSettingsSlice = append(targetSettingsSlice, targetSettingsObj)
 			}
