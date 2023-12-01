@@ -122,6 +122,119 @@ func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req re
 	resp.Schema = schema
 }
 
+// Metadata returns the resource type name.
+func (r *passwordCredentialValidatorResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_password_credential_validator"
+}
+
+func (r *passwordCredentialValidatorResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+
+	providerCfg := req.ProviderData.(internaltypes.ResourceConfiguration)
+	r.providerConfig = providerCfg.ProviderConfig
+	r.apiClient = providerCfg.ApiClient
+
+}
+
+func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var model passwordCredentialValidatorModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
+
+	pluginDescriptorRefId := model.PluginDescriptorRef.Attributes()["id"].(types.String).ValueString()
+	tableNames := []string{}
+	nestedTableFieldNameValues := []string{}
+	var rowCount int
+	configuration := model.Configuration.Attributes()
+	tables := configuration["tables"].(types.List).Elements()
+	for _, table := range tables {
+		tableAttrs := table.(types.Object).Attributes()
+		tableName := tableAttrs["name"].(types.String).ValueString()
+		tableNames = append(tableNames, tableName)
+		if tableName == "Users" {
+			tableRow := tableAttrs["rows"].(types.List).Elements()
+			rowCount = len(tableRow)
+			for _, row := range tableRow {
+				rowAttrs := row.(types.Object).Attributes()
+				fields := rowAttrs["fields"].(types.List).Elements()
+				for _, field := range fields {
+					fieldRow := field.(types.Object).Attributes()
+					nestedTableFieldName := fieldRow["name"].(types.String).ValueString()
+					nestedTableFieldNameValues = append(nestedTableFieldNameValues, nestedTableFieldName)
+				}
+			}
+		}
+	}
+
+	fieldNameValues := []string{}
+	fields := configuration["fields"].(types.List).Elements()
+	for _, field := range fields {
+		field := field.(types.Object).Attributes()
+		fieldName := field["name"].(types.String).ValueString()
+		fieldNameValues = append(fieldNameValues, fieldName)
+	}
+
+	switch pluginDescriptorRefId {
+	case "com.pingconnect.alexandria.pingfed.pcv.PingOnePasswordValidator":
+		hasClientId, clientIdCount := internaltypes.ValidateStringCountInSlice(fieldNameValues, "Client Id", 1)
+		if !hasClientId || clientIdCount == 0 {
+			resp.Diagnostics.AddError("The \"Client Id\" field is required for the PingOne for Enterprise Directory Password Credential Validator", "")
+		}
+		hasClientSecret, clientSecretCount := internaltypes.ValidateStringCountInSlice(fieldNameValues, "Client Secret", 1)
+		if !hasClientSecret || clientSecretCount == 0 {
+			resp.Diagnostics.AddError("The \"Client Secret\" field is required for the PingOne for Enterprise Directory Password Credential Validator", "")
+		}
+
+	case "com.pingidentity.plugins.pcvs.p14c.PingOneForCustomersPCV":
+		hasPingOneForCustomersDs, pingOneForCustomersDsCount := internaltypes.ValidateStringCountInSlice(fieldNameValues, "PingOne for Customers Datastore", 1)
+		if !hasPingOneForCustomersDs || pingOneForCustomersDsCount == 0 {
+			resp.Diagnostics.AddError("The \"PingOne for Customers Datastore\" field is required for the PingOne Password Credential Validator", "")
+		}
+
+	case "com.pingidentity.plugins.pcvs.pingid.PingIdPCV":
+		hasAuthenticationDuringErrors, authenticationDuringErrorsCount := internaltypes.ValidateStringCountInSlice(fieldNameValues, "Authentication During Errors", 1)
+		if !hasAuthenticationDuringErrors || authenticationDuringErrorsCount == 0 {
+			resp.Diagnostics.AddError("The \"Authentication During Errors\" field is required for the PingID Password Credential Validator", "")
+		}
+
+	case "org.sourceid.saml20.domain.LDAPUsernamePasswordCredentialValidator":
+		hasLdapDs, ldapDsCount := internaltypes.ValidateStringCountInSlice(fieldNameValues, "LDAP Datastore", 1)
+		if !hasLdapDs || ldapDsCount == 0 {
+			resp.Diagnostics.AddError("The \"LDAP Datastore\" field is required for the LDAP Username Password Credential Validator", "")
+		}
+		hasSearchBase, searchBaseCount := internaltypes.ValidateStringCountInSlice(fieldNameValues, "Search Base", 1)
+		if !hasSearchBase || searchBaseCount == 0 {
+			resp.Diagnostics.AddError("The \"Search Base\" field is required for the LDAP Username Password Credential Validator", "")
+		}
+		hasSearchFilter, searchFilterCount := internaltypes.ValidateStringCountInSlice(fieldNameValues, "Search Filter", 1)
+		if !hasSearchFilter || searchFilterCount == 0 {
+			resp.Diagnostics.AddError("The \"Search Filter\" field is required for the LDAP Username Password Credential Validator", "")
+		}
+
+	case "org.sourceid.saml20.domain.RadiusUsernamePasswordCredentialValidator":
+		hasRadiusDs, radiusDsCount := internaltypes.ValidateStringCountInSlice(tableNames, "RADIUS Servers", 1)
+		if !hasRadiusDs || radiusDsCount == 0 {
+			resp.Diagnostics.AddError("At least one \"RADIUS Servers\" table is required for the RADIUS Username Password Credential Validator", "")
+		}
+
+	case "org.sourceid.saml20.domain.SimpleUsernamePasswordCredentialValidator":
+		hasCorrectUsernameCount, usernameCount := internaltypes.ValidateStringCountInSlice(nestedTableFieldNameValues, "Username", rowCount)
+		if !hasCorrectUsernameCount || usernameCount == 0 {
+			resp.Diagnostics.AddError("The \"Username\" field is required for the Simple Username Password Credential Validator", "")
+		}
+		hasCorrectPasswordCount, passwordCount := internaltypes.ValidateStringCountInSlice(nestedTableFieldNameValues, "Password", rowCount)
+		if !hasCorrectPasswordCount || passwordCount == 0 {
+			resp.Diagnostics.AddError("The \"Password\" field is required for the Simple Username Password Credential Validator", "")
+		}
+		hasCorrectConfirmPasswordCount, confirmPasswordCount := internaltypes.ValidateStringCountInSlice(nestedTableFieldNameValues, "Confirm Password", rowCount)
+		if !hasCorrectConfirmPasswordCount || confirmPasswordCount == 0 {
+			resp.Diagnostics.AddError("The \"Confirm Password\" field is required for the Simple Username Password Credential Validator", "")
+		}
+		return
+	}
+}
+
 func addOptionalPasswordCredentialValidatorFields(ctx context.Context, addRequest *client.PasswordCredentialValidator, plan passwordCredentialValidatorModel) error {
 	if internaltypes.IsDefined(plan.ParentRef) {
 		if plan.ParentRef.Attributes()["id"].(types.String).ValueString() != "" {
@@ -146,22 +259,6 @@ func addOptionalPasswordCredentialValidatorFields(ctx context.Context, addReques
 		}
 	}
 	return nil
-}
-
-// Metadata returns the resource type name.
-func (r *passwordCredentialValidatorResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_password_credential_validator"
-}
-
-func (r *passwordCredentialValidatorResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-
-	providerCfg := req.ProviderData.(internaltypes.ResourceConfiguration)
-	r.providerConfig = providerCfg.ProviderConfig
-	r.apiClient = providerCfg.ApiClient
-
 }
 
 func (r *passwordCredentialValidatorResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
