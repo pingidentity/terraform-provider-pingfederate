@@ -3,6 +3,7 @@ package passwordcredentialvalidator
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -142,96 +143,105 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 	var model passwordCredentialValidatorModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
 
-	tableNames := []string{}
-	nestedTableFieldNameValues := []string{}
-	var rowCount int
 	configuration := model.Configuration.Attributes()
-	tables := configuration["tables"].(types.List).Elements()
-	for _, table := range tables {
-		tableAttrs := table.(types.Object).Attributes()
-		tableName := tableAttrs["name"].(types.String).ValueString()
-		tableNames = append(tableNames, tableName)
-		if tableName == "Users" {
-			tableRow := tableAttrs["rows"].(types.List).Elements()
-			rowCount = len(tableRow)
-			for _, row := range tableRow {
-				rowAttrs := row.(types.Object).Attributes()
-				fields := rowAttrs["fields"].(types.List).Elements()
-				for _, field := range fields {
-					fieldRow := field.(types.Object).Attributes()
-					nestedTableFieldName := fieldRow["name"].(types.String).ValueString()
-					nestedTableFieldNameValues = append(nestedTableFieldNameValues, nestedTableFieldName)
+
+	pluginDescriptorRefId := model.PluginDescriptorRef.Attributes()["id"].(types.String).ValueString()
+	var isRadiusServerTableFound bool
+	if pluginDescriptorRefId == "org.sourceid.saml20.domain.RadiusUsernamePasswordCredentialValidator" || pluginDescriptorRefId == "org.sourceid.saml20.domain.SimpleUsernamePasswordCredentialValidator" {
+		if configuration["tables"] != nil {
+			tables := configuration["tables"].(types.List).Elements()
+			for _, table := range tables {
+				tableAttrs := table.(types.Object).Attributes()
+				tableName := tableAttrs["name"].(types.String).ValueString()
+				isRadiusServerTableFound = tableName == "RADIUS Servers" || isRadiusServerTableFound
+				if tableName == "Users" && pluginDescriptorRefId == "org.sourceid.saml20.domain.SimpleUsernamePasswordCredentialValidator" {
+					tableRow := tableAttrs["rows"].(types.List).Elements()
+					for tableRowIndex, row := range tableRow {
+						rowAttrs := row.(types.Object).Attributes()
+						fields := rowAttrs["fields"].(types.List).Elements()
+						usernameFound := false
+						passwordFound := false
+						confirmPasswordFound := false
+						for _, field := range fields {
+							fieldRow := field.(types.Object).Attributes()
+							nestedTableFieldName := fieldRow["name"].(types.String).ValueString()
+							if nestedTableFieldName == "Username" {
+								usernameFound = true
+							}
+							if nestedTableFieldName == "Password" {
+								passwordFound = true
+							}
+							if nestedTableFieldName == "Confirm Password" {
+								confirmPasswordFound = true
+							}
+						}
+						if !usernameFound {
+							resp.Diagnostics.AddError("The \"Username\" field is required for the Simple Username Password Credential Validator", fmt.Sprintf("Missing from row index %d in Users table", tableRowIndex))
+						}
+						if !passwordFound {
+							resp.Diagnostics.AddError("The \"Password\" field is required for the Simple Username Password Credential Validator", fmt.Sprintf("Missing from row index %d in Users table", tableRowIndex))
+						}
+						if !confirmPasswordFound {
+							resp.Diagnostics.AddError("The \"Confirm Password\" field is required for the Simple Username Password Credential Validator", fmt.Sprintf("Missing from row index %d in Users table", tableRowIndex))
+						}
+					}
 				}
 			}
 		}
 	}
 
-	fieldNameValues := []string{}
-	fields := configuration["fields"].(types.List).Elements()
-	for _, field := range fields {
-		field := field.(types.Object).Attributes()
-		fieldName := field["name"].(types.String).ValueString()
-		fieldNameValues = append(fieldNameValues, fieldName)
-	}
-
-	pluginDescriptorRefId := model.PluginDescriptorRef.Attributes()["id"].(types.String).ValueString()
-	switch pluginDescriptorRefId {
-	case "com.pingconnect.alexandria.pingfed.pcv.PingOnePasswordValidator":
-		hasClientId, clientIdCount := internaltypes.ValidateStringCountInSlice(fieldNameValues, "Client Id", 1)
-		if !hasClientId || clientIdCount == 0 {
-			resp.Diagnostics.AddError("The \"Client Id\" field is required for the PingOne for Enterprise Directory Password Credential Validator", "")
-		}
-		hasClientSecret, clientSecretCount := internaltypes.ValidateStringCountInSlice(fieldNameValues, "Client Secret", 1)
-		if !hasClientSecret || clientSecretCount == 0 {
-			resp.Diagnostics.AddError("The \"Client Secret\" field is required for the PingOne for Enterprise Directory Password Credential Validator", "")
-		}
-
-	case "com.pingidentity.plugins.pcvs.p14c.PingOneForCustomersPCV":
-		hasPingOneForCustomersDs, pingOneForCustomersDsCount := internaltypes.ValidateStringCountInSlice(fieldNameValues, "PingOne for Customers Datastore", 1)
-		if !hasPingOneForCustomersDs || pingOneForCustomersDsCount == 0 {
-			resp.Diagnostics.AddError("The \"PingOne for Customers Datastore\" field is required for the PingOne Password Credential Validator", "")
-		}
-
-	case "com.pingidentity.plugins.pcvs.pingid.PingIdPCV":
-		hasAuthenticationDuringErrors, authenticationDuringErrorsCount := internaltypes.ValidateStringCountInSlice(fieldNameValues, "Authentication During Errors", 1)
-		if !hasAuthenticationDuringErrors || authenticationDuringErrorsCount == 0 {
-			resp.Diagnostics.AddError("The \"Authentication During Errors\" field is required for the PingID Password Credential Validator", "")
-		}
-
-	case "org.sourceid.saml20.domain.LDAPUsernamePasswordCredentialValidator":
-		hasLdapDs, ldapDsCount := internaltypes.ValidateStringCountInSlice(fieldNameValues, "LDAP Datastore", 1)
-		if !hasLdapDs || ldapDsCount == 0 {
-			resp.Diagnostics.AddError("The \"LDAP Datastore\" field is required for the LDAP Username Password Credential Validator", "")
-		}
-		hasSearchBase, searchBaseCount := internaltypes.ValidateStringCountInSlice(fieldNameValues, "Search Base", 1)
-		if !hasSearchBase || searchBaseCount == 0 {
-			resp.Diagnostics.AddError("The \"Search Base\" field is required for the LDAP Username Password Credential Validator", "")
-		}
-		hasSearchFilter, searchFilterCount := internaltypes.ValidateStringCountInSlice(fieldNameValues, "Search Filter", 1)
-		if !hasSearchFilter || searchFilterCount == 0 {
-			resp.Diagnostics.AddError("The \"Search Filter\" field is required for the LDAP Username Password Credential Validator", "")
-		}
-
-	case "org.sourceid.saml20.domain.RadiusUsernamePasswordCredentialValidator":
-		hasRadiusDs, radiusDsCount := internaltypes.ValidateStringCountInSlice(tableNames, "RADIUS Servers", 1)
-		if !hasRadiusDs || radiusDsCount == 0 {
+	if pluginDescriptorRefId == "org.sourceid.saml20.domain.RadiusUsernamePasswordCredentialValidator" {
+		if !isRadiusServerTableFound {
 			resp.Diagnostics.AddError("At least one \"RADIUS Servers\" table is required for the RADIUS Username Password Credential Validator", "")
 		}
+	}
 
-	case "org.sourceid.saml20.domain.SimpleUsernamePasswordCredentialValidator":
-		hasCorrectUsernameCount, usernameCount := internaltypes.ValidateStringCountInSlice(nestedTableFieldNameValues, "Username", rowCount)
-		if !hasCorrectUsernameCount || usernameCount == 0 {
-			resp.Diagnostics.AddError("The \"Username\" field is required for the Simple Username Password Credential Validator", "")
+	fieldNameMap := map[string]bool{}
+	if configuration["fields"] != nil {
+		fields := configuration["fields"].(types.List).Elements()
+		for _, field := range fields {
+			field := field.(types.Object).Attributes()
+			fieldName := field["name"].(types.String).ValueString()
+			fieldNameMap[fieldName] = true
 		}
-		hasCorrectPasswordCount, passwordCount := internaltypes.ValidateStringCountInSlice(nestedTableFieldNameValues, "Password", rowCount)
-		if !hasCorrectPasswordCount || passwordCount == 0 {
-			resp.Diagnostics.AddError("The \"Password\" field is required for the Simple Username Password Credential Validator", "")
+
+		switch pluginDescriptorRefId {
+		case "com.pingconnect.alexandria.pingfed.pcv.PingOnePasswordValidator":
+			_, hasClientId := fieldNameMap["Client Id"]
+			if !hasClientId {
+				resp.Diagnostics.AddError("The \"Client Id\" field is required for the PingOne for Enterprise Directory Password Credential Validator", "")
+			}
+			_, hasClientSecret := fieldNameMap["Client Secret"]
+			if !hasClientSecret {
+				resp.Diagnostics.AddError("The \"Client Secret\" field is required for the PingOne for Enterprise Directory Password Credential Validator", "")
+			}
+
+		case "com.pingidentity.plugins.pcvs.p14c.PingOneForCustomersPCV":
+			_, hasPingOneForCustomersDs := fieldNameMap["PingOne For Customers Datastore"]
+			if !hasPingOneForCustomersDs {
+				resp.Diagnostics.AddError("The \"PingOne For Customers Datastore\" field is required for the PingOne Password Credential Validator", "")
+			}
+
+		case "com.pingidentity.plugins.pcvs.pingid.PingIdPCV":
+			_, hasAuthenticationDuringErrors := fieldNameMap["Authentication During Errors"]
+			if !hasAuthenticationDuringErrors {
+				resp.Diagnostics.AddError("The \"Authentication During Errors\" field is required for the PingID Password Credential Validator", "")
+			}
+
+		case "org.sourceid.saml20.domain.LDAPUsernamePasswordCredentialValidator":
+			_, hasLdapDs := fieldNameMap["LDAP Datastore"]
+			if !hasLdapDs {
+				resp.Diagnostics.AddError("The \"LDAP Datastore\" field is required for the LDAP Username Password Credential Validator", "")
+			}
+			_, hasSearchBase := fieldNameMap["Search Base"]
+			if !hasSearchBase {
+				resp.Diagnostics.AddError("The \"Search Base\" field is required for the LDAP Username Password Credential Validator", "")
+			}
+			_, hasSearchFilter := fieldNameMap["Search Filter"]
+			if !hasSearchFilter {
+				resp.Diagnostics.AddError("The \"Search Filter\" field is required for the LDAP Username Password Credential Validator", "")
+			}
 		}
-		hasCorrectConfirmPasswordCount, confirmPasswordCount := internaltypes.ValidateStringCountInSlice(nestedTableFieldNameValues, "Confirm Password", rowCount)
-		if !hasCorrectConfirmPasswordCount || confirmPasswordCount == 0 {
-			resp.Diagnostics.AddError("The \"Confirm Password\" field is required for the Simple Username Password Credential Validator", "")
-		}
-		return
 	}
 }
 

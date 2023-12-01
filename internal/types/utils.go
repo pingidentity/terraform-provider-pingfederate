@@ -67,17 +67,6 @@ func StringSliceContains(slice []string, value string) bool {
 	return false
 }
 
-// Checks value occurs the expected number of times in the slice
-func ValidateStringCountInSlice(slice []string, value string, expectedCount int) (bool, int) {
-	occurrences := 0
-	for _, element := range slice {
-		if element == value {
-			occurrences++
-		}
-	}
-	return occurrences == expectedCount, occurrences
-}
-
 // Check if two slices representing sets are equal
 func SetsEqual(a, b []string) bool {
 	if len(a) != len(b) {
