@@ -1157,7 +1157,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Required:    true,
 											Description: "Setting to detect changes to a user or a group.",
 										},
-										"data_source": resourcelink.CompleteSingleNestedAttribute(false, false, true),
+										"data_source": resourcelink.CompleteSingleNestedAttribute(false, false, true, "Reference to an LDAP datastore."),
 										"group_membership_detection": schema.SingleNestedAttribute{
 											Attributes: map[string]schema.Attribute{
 												"group_member_attribute_name": schema.StringAttribute{
