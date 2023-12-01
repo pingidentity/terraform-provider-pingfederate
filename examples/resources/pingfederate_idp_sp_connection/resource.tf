@@ -4,12 +4,12 @@ resource "pingfederate_idp_sp_connection" "wsFedSpBrowserSSOExample" {
   entity_id     = "wsfed1"
   active        = false
   contact_info = {
-    company    = "Example Corp"
+    company = "Example Corp"
   }
-  base_url     = "https://localhost:9031"
-  logging_mode = "STANDARD"
-  virtual_entity_ids = []
-  connection_target_type    = "STANDARD"
+  base_url               = "https://localhost:9031"
+  logging_mode           = "STANDARD"
+  virtual_entity_ids     = []
+  connection_target_type = "STANDARD"
   credentials = {
     certs = []
     signing_settings = {
@@ -32,7 +32,7 @@ resource "pingfederate_idp_sp_connection" "wsFedSpBrowserSSOExample" {
     sp_ws_fed_identity_mapping = "EMAIL_ADDRESS"
     assertion_lifetime = {
       minutes_before = 5
-      minutes_after = 5
+      minutes_after  = 5
     }
     attribute_contract = {
       core_attributes = [
@@ -56,7 +56,7 @@ resource "pingfederate_idp_sp_connection" "wsFedSpBrowserSSOExample" {
         issuance_criteria = {
           conditional_criteria = []
         }
-        restrict_virtual_entity_ids = false
+        restrict_virtual_entity_ids   = false
         restricted_virtual_entity_ids = []
         idp_adapter_ref = {
           id = "OTIdPJava"
@@ -65,8 +65,8 @@ resource "pingfederate_idp_sp_connection" "wsFedSpBrowserSSOExample" {
       }
     ]
     authentication_policy_contract_assertion_mappings = []
-    ws_fed_token_type = "SAML11"
-    ws_trust_version = "WSTRUST12"
+    ws_fed_token_type                                 = "SAML11"
+    ws_trust_version                                  = "WSTRUST12"
   }
 }
 
@@ -76,11 +76,11 @@ resource "pingfederate_idp_sp_connection" "outboundProvisionExample" {
   entity_id     = "myEntity"
   active        = false
   contact_info = {
-    company    = "Example Corp"
+    company = "Example Corp"
   }
-  base_url     = "https://api.pingone.com/v5"
-  logging_mode = "STANDARD"
-  connection_target_type    = "STANDARD"
+  base_url               = "https://api.pingone.com/v5"
+  logging_mode           = "STANDARD"
+  connection_target_type = "STANDARD"
   credentials = {
     certs = []
     signing_settings = {

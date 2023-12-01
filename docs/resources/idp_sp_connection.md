@@ -13,19 +13,99 @@ Manages an IdP SP Connection
 ## Example Usage
 
 ```terraform
-// PingOne outbound provision example
-resource "pingfederate_idp_sp_connection" "outboundProvisionExample" {
-  connection_id          = "myConnectionId"
-  name                   = "PingOne Connector"
-  entity_id              = "myEntity"
-  active                 = false
-  contact_info           = {}
-  base_url               = "https://api.pingone.com/v5"
+resource "pingfederate_idp_sp_connection" "wsFedSpBrowserSSOExample" {
+  connection_id = "myConnectionId"
+  name          = "wsfedspconn1"
+  entity_id     = "wsfed1"
+  active        = false
+  contact_info = {
+    company = "Example Corp"
+  }
+  base_url               = "https://localhost:9031"
   logging_mode           = "STANDARD"
   virtual_entity_ids     = []
   connection_target_type = "STANDARD"
   credentials = {
     certs = []
+    signing_settings = {
+      signing_key_pair_ref = {
+        id = "exampleKeyId"
+      }
+      include_raw_key_in_signature = false
+      include_cert_in_signature    = false
+      algorithm                    = "SHA256withRSA"
+    }
+  }
+  sp_browser_sso = {
+    protocol                      = "WSFED"
+    always_sign_artifact_response = false
+    sso_service_endpoints = [
+      {
+        url = "/sp/prpwrong.wsf"
+      }
+    ]
+    sp_ws_fed_identity_mapping = "EMAIL_ADDRESS"
+    assertion_lifetime = {
+      minutes_before = 5
+      minutes_after  = 5
+    }
+    attribute_contract = {
+      core_attributes = [
+        {
+          name = "SAML_SUBJECT"
+        }
+      ]
+      extended_attributes = []
+    }
+    adapter_mappings = [
+      {
+        attribute_sources = []
+        attribute_contract_fulfillment = {
+          "SAML_SUBJECT" = {
+            source = {
+              type = "ADAPTER"
+            }
+            value = "subject"
+          }
+        }
+        issuance_criteria = {
+          conditional_criteria = []
+        }
+        restrict_virtual_entity_ids   = false
+        restricted_virtual_entity_ids = []
+        idp_adapter_ref = {
+          id = "OTIdPJava"
+        }
+        abort_sso_transaction_as_fail_safe = false
+      }
+    ]
+    authentication_policy_contract_assertion_mappings = []
+    ws_fed_token_type                                 = "SAML11"
+    ws_trust_version                                  = "WSTRUST12"
+  }
+}
+
+resource "pingfederate_idp_sp_connection" "outboundProvisionExample" {
+  connection_id = "myConnectionId"
+  name          = "PingOne Connector"
+  entity_id     = "myEntity"
+  active        = false
+  contact_info = {
+    company = "Example Corp"
+  }
+  base_url               = "https://api.pingone.com/v5"
+  logging_mode           = "STANDARD"
+  connection_target_type = "STANDARD"
+  credentials = {
+    certs = []
+    signing_settings = {
+      signing_key_pair_ref = {
+        id = "419x9yg43rlawqwq9v6az997k"
+      }
+      include_raw_key_in_signature = false
+      include_cert_in_signature    = false
+      algorithm                    = "SHA256withRSA"
+    }
   }
   outbound_provision = {
     type = "PingOne"
@@ -98,8 +178,7 @@ resource "pingfederate_idp_sp_connection" "outboundProvisionExample" {
   }
 }
 
-// WS Trust connection
-resource "pingfederate_idp_sp_connection" "idpSpConnectionExample" {
+resource "pingfederate_idp_sp_connection" "wsTrustExample" {
   connection_id      = "myConnection"
   name               = "myConnection"
   entity_id          = "myEntity"
@@ -161,8 +240,7 @@ resource "pingfederate_idp_sp_connection" "idpSpConnectionExample" {
   connection_target_type = "STANDARD"
 }
 
-// SP Browser SSO example
-resource "pingfederate_idp_sp_connection" "idpSpConnectionExample" {
+resource "pingfederate_idp_sp_connection" "samlSpBrowserSSOExample" {
   connection_id      = "myConnection"
   name               = "myConnection"
   entity_id          = "myEntity"
@@ -272,7 +350,7 @@ resource "pingfederate_idp_sp_connection" "idpSpConnectionExample" {
 - `metadata_reload_settings` (Attributes) Configuration settings to enable automatic reload of partner's metadata. (see [below for nested schema](#nestedatt--metadata_reload_settings))
 - `outbound_provision` (Attributes) Outbound Provisioning allows an IdP to create and maintain user accounts at standards-based partner sites using SCIM as well as select-proprietary provisioning partner sites that are protocol-enabled. (see [below for nested schema](#nestedatt--outbound_provision))
 - `sp_browser_sso` (Attributes) The SAML settings used to enable secure browser-based SSO to resources at your partner's site. (see [below for nested schema](#nestedatt--sp_browser_sso))
-- `virtual_entity_ids` (List of String) List of alternate entity IDs that identifies the local server to this partner.
+- `virtual_entity_ids` (Set of String) List of alternate entity IDs that identifies the local server to this partner.
 - `ws_trust` (Attributes) Ws-Trust STS provides security-token validation and creation to extend SSO access to identity-enabled Web Services (see [below for nested schema](#nestedatt--ws_trust))
 
 ### Read-Only
@@ -305,7 +383,7 @@ Optional:
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) A list of mappings from attribute names to their fulfillment values. (see [below for nested schema](#nestedatt--attribute_query--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--attribute_query--attribute_contract_fulfillment))
 - `attributes` (List of String) The list of attributes that may be returned to the SP in the response to an attribute request.
 
 Optional:
@@ -319,7 +397,10 @@ Optional:
 
 Required:
 
-- `source` (Attributes) A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br> (see [below for nested schema](#nestedatt--attribute_query--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--attribute_query--attribute_contract_fulfillment--source))
+
+Optional:
+
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--attribute_query--attribute_contract_fulfillment--source"></a>
@@ -948,6 +1029,7 @@ Required:
 - `account_management_settings` (Attributes) Account management settings. (see [below for nested schema](#nestedatt--outbound_provision--channels--channel_source--account_management_settings))
 - `base_dn` (String) The base DN where the user records are located.
 - `change_detection_settings` (Attributes) Setting to detect changes to a user or a group. (see [below for nested schema](#nestedatt--outbound_provision--channels--channel_source--change_detection_settings))
+- `data_source` (Attributes) Reference to an LDAP datastore. (see [below for nested schema](#nestedatt--outbound_provision--channels--channel_source--data_source))
 - `group_membership_detection` (Attributes) Settings to detect group memberships. (see [below for nested schema](#nestedatt--outbound_provision--channels--channel_source--group_membership_detection))
 - `guid_attribute_name` (String) the GUID attribute name.
 - `guid_binary` (Boolean) Indicates whether the GUID is stored in binary format.
@@ -955,7 +1037,6 @@ Required:
 
 Optional:
 
-- `data_source` (Attributes) (see [below for nested schema](#nestedatt--outbound_provision--channels--channel_source--data_source))
 - `group_source_location` (Attributes) The location settings that includes a DN and a LDAP filter. (see [below for nested schema](#nestedatt--outbound_provision--channels--channel_source--group_source_location))
 
 <a id="nestedatt--outbound_provision--channels--channel_source--account_management_settings"></a>
@@ -993,6 +1074,18 @@ Optional:
 - `usn_attribute_name` (String) The USN attribute name.
 
 
+<a id="nestedatt--outbound_provision--channels--channel_source--data_source"></a>
+### Nested Schema for `outbound_provision.channels.channel_source.group_source_location`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+
+
 <a id="nestedatt--outbound_provision--channels--channel_source--group_membership_detection"></a>
 ### Nested Schema for `outbound_provision.channels.channel_source.group_source_location`
 
@@ -1013,18 +1106,6 @@ Optional:
 - `filter` (String) An LDAP filter.
 - `group_dn` (String) The group DN for users or groups.
 - `nested_search` (Boolean) Indicates whether the search is nested.
-
-
-<a id="nestedatt--outbound_provision--channels--channel_source--data_source"></a>
-### Nested Schema for `outbound_provision.channels.channel_source.group_source_location`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--outbound_provision--channels--channel_source--group_source_location"></a>
@@ -1118,7 +1199,6 @@ Required:
 - `adapter_mappings` (Attributes List) A list of adapters that map to outgoing assertions. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings))
 - `assertion_lifetime` (Attributes) The timeframe of validity before and after the issuance of the assertion. (see [below for nested schema](#nestedatt--sp_browser_sso--assertion_lifetime))
 - `attribute_contract` (Attributes) A set of user attributes that the IdP sends in the SAML assertion. (see [below for nested schema](#nestedatt--sp_browser_sso--attribute_contract))
-- `encryption_policy` (Attributes) Defines what to encrypt in the browser-based SSO profile. (see [below for nested schema](#nestedatt--sp_browser_sso--encryption_policy))
 - `protocol` (String) The browser-based SSO protocol to use.
 - `sso_service_endpoints` (Attributes List) A list of possible endpoints to send assertions to. (see [below for nested schema](#nestedatt--sp_browser_sso--sso_service_endpoints))
 
@@ -1129,6 +1209,7 @@ Optional:
 - `authentication_policy_contract_assertion_mappings` (Attributes List) A list of authentication policy contracts that map to outgoing assertions. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings))
 - `default_target_url` (String) Default Target URL for SAML1.x connections. For SP connections, this default URL represents the destination on the SP where the user will be directed. For IdP connections, entering a URL in the Default Target URL field overrides the SP Default URL SSO setting.
 - `enabled_profiles` (List of String) The profiles that are enabled for browser-based SSO. SAML 2.0 supports all profiles whereas SAML 1.x IdP connections support both IdP and SP (non-standard) initiated SSO. This is required for SAMLx.x Connections.
+- `encryption_policy` (Attributes) Defines what to encrypt in the browser-based SSO profile. (see [below for nested schema](#nestedatt--sp_browser_sso--encryption_policy))
 - `incoming_bindings` (List of String) The SAML bindings that are enabled for browser-based SSO. This is required for SAML 2.0 connections when the enabled profiles contain the SP-initiated SSO profile or either SLO profile. For SAML 1.x based connections, it is not used for SP Connections and it is optional for IdP Connections.
 - `message_customizations` (Attributes List) The message customizations for browser-based SSO. Depending on server settings, connection type, and protocol this may or may not be supported. (see [below for nested schema](#nestedatt--sp_browser_sso--message_customizations))
 - `require_signed_authn_requests` (Boolean) Require AuthN requests to be signed when received via the POST or Redirect bindings.
@@ -1146,14 +1227,14 @@ Optional:
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) A list of mappings from attribute names to their fulfillment values. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_contract_fulfillment))
+- `idp_adapter_ref` (Attributes) Reference to the associated IdP adapter. Note: This is ignored if adapter overrides for this mapping exists. In this case, the override's parent adapter reference is used. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--idp_adapter_ref))
 
 Optional:
 
 - `abort_sso_transaction_as_fail_safe` (Boolean) If set to true, SSO transaction will be aborted as a fail-safe when the data-store's attribute mappings fail to complete the attribute contract. Otherwise, the attribute contract with default values is used. By default, this value is false.
 - `adapter_override_settings` (Attributes) (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings))
 - `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources))
-- `idp_adapter_ref` (Attributes) (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--idp_adapter_ref))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--issuance_criteria))
 - `restrict_virtual_entity_ids` (Boolean) Restricts this mapping to specific virtual entity IDs.
 - `restricted_virtual_entity_ids` (List of String) The list of virtual server IDs that this mapping is restricted to.
@@ -1163,7 +1244,10 @@ Optional:
 
 Required:
 
-- `source` (Attributes) A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br> (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_contract_fulfillment--source))
+
+Optional:
+
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_contract_fulfillment--source"></a>
@@ -1179,6 +1263,18 @@ Optional:
 
 
 
+<a id="nestedatt--sp_browser_sso--adapter_mappings--idp_adapter_ref"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.idp_adapter_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+
+
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings"></a>
 ### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings`
 
@@ -1187,29 +1283,29 @@ Required:
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration))
 - `id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.
 - `name` (String) The plugin instance name. The name can be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.
+- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref))
 
 Optional:
 
 - `attribute_contract` (Attributes) A set of attributes exposed by an IdP adapter. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_contract))
 - `attribute_mapping` (Attributes) An IdP Adapter Contract Mapping. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping))
 - `authn_ctx_class_ref` (String) The fixed value that indicates how the user was authenticated.
-- `parent_ref` (Attributes) (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref))
-- `plugin_descriptor_ref` (Attributes) (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref))
+- `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides) (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref))
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref`
 
 Optional:
 
-- `fields` (Attributes List) List of configuration fields. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--fields))
-- `tables` (Attributes List) List of configuration tables. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables))
+- `fields` (Attributes List) List of configuration fields. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--fields))
+- `tables` (Attributes List) List of configuration tables. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--tables))
 
 Read-Only:
 
-- `fields_all` (Attributes List) List of configuration fields. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--fields_all))
+- `fields_all` (Attributes List) List of configuration fields. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--fields_all))
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--fields"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.fields`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--fields"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.fields`
 
 Required:
 
@@ -1221,8 +1317,8 @@ Optional:
 - `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.tables`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--tables"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.tables`
 
 Required:
 
@@ -1231,18 +1327,18 @@ Required:
 Optional:
 
 - `inherited` (Boolean) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
-- `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables--rows))
+- `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--tables--rows))
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables--rows"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.tables.rows`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--tables--rows"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.tables.rows`
 
 Optional:
 
 - `default_row` (Boolean) Whether this row is the default.
-- `fields` (Attributes List) The configuration fields in the row. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables--rows--fields))
+- `fields` (Attributes List) The configuration fields in the row. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--tables--rows--fields))
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables--rows--fields"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.tables.rows.fields`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--tables--rows--fields"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.tables.rows.fields`
 
 Required:
 
@@ -1256,8 +1352,8 @@ Optional:
 
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--fields_all"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.fields_all`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--fields_all"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.fields_all`
 
 Required:
 
@@ -1265,24 +1361,36 @@ Required:
 - `name` (String) The name of the configuration field.
 - `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
 
+
+
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_contract"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref`
 
 Required:
 
-- `core_attributes` (Attributes List) A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--core_attributes))
+- `core_attributes` (Attributes List) A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--core_attributes))
 
 Optional:
 
-- `extended_attributes` (Attributes List) A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--extended_attributes))
+- `extended_attributes` (Attributes List) A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--extended_attributes))
 - `inherited` (Boolean) Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.
 - `mask_ognl_values` (Boolean) Whether or not all OGNL expressions used to fulfill an outgoing assertion contract should be masked in the logs. Defaults to false.
 - `unique_user_key_attribute` (String) The attribute to use for uniquely identify a user's authentication sessions.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--core_attributes"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.core_attributes`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--core_attributes"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.core_attributes`
 
 Required:
 
@@ -1294,8 +1402,8 @@ Optional:
 - `pseudonym` (Boolean) Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to false.
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--extended_attributes"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.extended_attributes`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--extended_attributes"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.extended_attributes`
 
 Required:
 
@@ -1309,28 +1417,31 @@ Optional:
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref`
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) A list of mappings from attribute names to their fulfillment values. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_contract_fulfillment))
 
 Optional:
 
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources))
 - `inherited` (Boolean) Whether this attribute mapping is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.
-- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--issuance_criteria))
+- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--issuance_criteria))
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_contract_fulfillment"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_contract_fulfillment`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_contract_fulfillment"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.attribute_contract_fulfillment`
 
 Required:
 
-- `source` (Attributes) A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br> (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_contract_fulfillment--source))
+
+Optional:
+
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_contract_fulfillment.value`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.attribute_contract_fulfillment.value`
 
 Required:
 
@@ -1342,35 +1453,35 @@ Optional:
 
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.attribute_sources`
 
 Optional:
 
-- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--custom_attribute_source))
-- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--jdbc_attribute_source))
-- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source))
+- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--custom_attribute_source))
+- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--jdbc_attribute_source))
+- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source))
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--custom_attribute_source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--custom_attribute_source"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.attribute_sources.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--data_store_ref))
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
@@ -1381,19 +1492,19 @@ Read-Only:
 - `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--type--source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type.value`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--type--source"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.attribute_sources.ldap_attribute_source.type.value`
 
 Required:
 
@@ -1405,8 +1516,8 @@ Optional:
 
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--filter_fields"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
@@ -1418,18 +1529,18 @@ Optional:
 
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--jdbc_attribute_source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--jdbc_attribute_source"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.attribute_sources.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--data_store_ref))
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -1439,8 +1550,8 @@ Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
@@ -1451,19 +1562,19 @@ Read-Only:
 - `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--type--source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type.value`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--type--source"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.attribute_sources.ldap_attribute_source.type.value`
 
 Required:
 
@@ -1476,28 +1587,28 @@ Optional:
 
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.attribute_sources.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--data_store_ref))
 - `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
 - `search_scope` (String) Determines the node depth of the query.
 - `type` (String) The data store type of this attribute source.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--binary_attribute_settings))
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--binary_attribute_settings))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
 - `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.search_attributes`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.attribute_sources.ldap_attribute_source.search_attributes`
 
 Required:
 
@@ -1508,19 +1619,19 @@ Read-Only:
 - `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.search_attributes`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.attribute_sources.ldap_attribute_source.search_attributes`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--search_attributes--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--search_attributes--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--search_attributes--source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.search_attributes.value`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--search_attributes--source"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.attribute_sources.ldap_attribute_source.search_attributes.value`
 
 Required:
 
@@ -1532,8 +1643,8 @@ Optional:
 
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.search_attributes`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--binary_attribute_settings"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.attribute_sources.ldap_attribute_source.search_attributes`
 
 Optional:
 
@@ -1542,30 +1653,30 @@ Optional:
 
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--issuance_criteria"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.issuance_criteria`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--issuance_criteria"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.issuance_criteria`
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--issuance_criteria--expression_criteria))
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.issuance_criteria.expression_criteria`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--issuance_criteria--conditional_criteria"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.issuance_criteria.expression_criteria`
 
 Required:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The name of the attribute to use in this issuance criterion.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--issuance_criteria--expression_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--issuance_criteria--expression_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
 Optional:
 
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.issuance_criteria.expression_criteria.error_result`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--issuance_criteria--expression_criteria--source"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.issuance_criteria.expression_criteria.error_result`
 
 Required:
 
@@ -1577,8 +1688,8 @@ Optional:
 
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--issuance_criteria--expression_criteria"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.issuance_criteria.expression_criteria`
+<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--issuance_criteria--expression_criteria"></a>
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.issuance_criteria.expression_criteria`
 
 Required:
 
@@ -1592,19 +1703,7 @@ Optional:
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
-<a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref`
 
 Required:
 
@@ -1816,18 +1915,6 @@ Optional:
 
 
 
-<a id="nestedatt--sp_browser_sso--adapter_mappings--idp_adapter_ref"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.idp_adapter_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 <a id="nestedatt--sp_browser_sso--adapter_mappings--issuance_criteria"></a>
 ### Nested Schema for `sp_browser_sso.adapter_mappings.issuance_criteria`
 
@@ -1900,6 +1987,9 @@ Optional:
 Required:
 
 - `name` (String) The name of this attribute.
+
+Optional:
+
 - `name_format` (String) The SAML Name Format for the attribute.
 
 
@@ -1909,19 +1999,11 @@ Required:
 Required:
 
 - `name` (String) The name of this attribute.
-- `name_format` (String) The SAML Name Format for the attribute.
-
-
-
-<a id="nestedatt--sp_browser_sso--encryption_policy"></a>
-### Nested Schema for `sp_browser_sso.encryption_policy`
 
 Optional:
 
-- `encrypt_assertion` (Boolean) Whether the outgoing SAML assertion will be encrypted.
-- `encrypt_slo_subject_name_id` (Boolean) Encrypt the name-identifier attribute in outbound SLO messages.  This can be set if the name id is encrypted.
-- `encrypted_attributes` (List of String) The list of outgoing SAML assertion attributes that will be encrypted. The 'encryptAssertion' property takes precedence over this.
-- `slo_subject_name_id_encrypted` (Boolean) Allow the encryption of the name-identifier attribute for inbound SLO messages. This can be set if SP initiated SLO is enabled.
+- `name_format` (String) The SAML Name Format for the attribute.
+
 
 
 <a id="nestedatt--sp_browser_sso--sso_service_endpoints"></a>
@@ -1929,12 +2011,12 @@ Optional:
 
 Required:
 
-- `binding` (String) The binding of this endpoint, if applicable - usually only required for SAML 2.0 endpoints.  Supported bindings are Artifact and POST.
-- `index` (Number) The priority of the endpoint.
 - `url` (String) The absolute or relative URL of the endpoint. A relative URL can be specified if a base URL for the connection has been defined.
 
 Optional:
 
+- `binding` (String) The binding of this endpoint, if applicable - usually only required for SAML 2.0 endpoints.  Supported bindings are Artifact and POST.
+- `index` (Number) The priority of the endpoint.
 - `is_default` (Boolean) Whether or not this endpoint is the default endpoint. Defaults to false.
 
 
@@ -1965,13 +2047,13 @@ Required:
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) A list of mappings from attribute names to their fulfillment values. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_contract_fulfillment))
+- `authentication_policy_contract_ref` (Attributes) Reference to the associated Authentication Policy Contract. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--authentication_policy_contract_ref))
 
 Optional:
 
 - `abort_sso_transaction_as_fail_safe` (Boolean) If set to true, SSO transaction will be aborted as a fail-safe when the data-store's attribute mappings fail to complete the attribute contract. Otherwise, the attribute contract with default values is used. By default, this value is false.
 - `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources))
-- `authentication_policy_contract_ref` (Attributes) (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--authentication_policy_contract_ref))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--issuance_criteria))
 - `restrict_virtual_entity_ids` (Boolean) Restricts this mapping to specific virtual entity IDs.
 - `restricted_virtual_entity_ids` (List of String) The list of virtual server IDs that this mapping is restricted to.
@@ -1981,7 +2063,10 @@ Optional:
 
 Required:
 
-- `source` (Attributes) A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br> (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_contract_fulfillment--source))
+
+Optional:
+
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_contract_fulfillment--source"></a>
@@ -1995,6 +2080,18 @@ Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 
+
+
+<a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--authentication_policy_contract_ref"></a>
+### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.authentication_policy_contract_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources"></a>
@@ -2197,18 +2294,6 @@ Optional:
 
 
 
-<a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--authentication_policy_contract_ref"></a>
-### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.authentication_policy_contract_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 <a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--issuance_criteria"></a>
 ### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.issuance_criteria`
 
@@ -2256,6 +2341,17 @@ Optional:
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
 
+
+
+<a id="nestedatt--sp_browser_sso--encryption_policy"></a>
+### Nested Schema for `sp_browser_sso.encryption_policy`
+
+Optional:
+
+- `encrypt_assertion` (Boolean) Whether the outgoing SAML assertion will be encrypted.
+- `encrypt_slo_subject_name_id` (Boolean) Encrypt the name-identifier attribute in outbound SLO messages.  This can be set if the name id is encrypted.
+- `encrypted_attributes` (List of String) The list of outgoing SAML assertion attributes that will be encrypted. The 'encryptAssertion' property takes precedence over this.
+- `slo_subject_name_id_encrypted` (Boolean) Allow the encryption of the name-identifier attribute for inbound SLO messages. This can be set if SP initiated SLO is enabled.
 
 
 <a id="nestedatt--sp_browser_sso--message_customizations"></a>
@@ -2311,7 +2407,7 @@ Optional:
 - `minutes_after` (Number) The amount of time after the SAML token was issued during which it is to be considered valid. The default value is 30.
 - `minutes_before` (Number) The amount of time before the SAML token was issued during which it is to be considered valid. The default value is 5.
 - `oauth_assertion_profiles` (Boolean) When selected, four additional token-type requests become available.
-- `request_contract_ref` (Attributes) (see [below for nested schema](#nestedatt--ws_trust--request_contract_ref))
+- `request_contract_ref` (Attributes) Request Contract to be used to map attribute values into the security token. (see [below for nested schema](#nestedatt--ws_trust--request_contract_ref))
 
 <a id="nestedatt--ws_trust--attribute_contract"></a>
 ### Nested Schema for `ws_trust.attribute_contract`
@@ -2351,12 +2447,12 @@ Optional:
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) A list of mappings from attribute names to their fulfillment values. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_contract_fulfillment))
+- `idp_token_processor_ref` (Attributes) Reference to the associated token processor. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--idp_token_processor_ref))
 
 Optional:
 
 - `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources))
-- `idp_token_processor_ref` (Attributes) (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--idp_token_processor_ref))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--issuance_criteria))
 - `restricted_virtual_entity_ids` (List of String) The list of virtual server IDs that this mapping is restricted to.
 
@@ -2365,7 +2461,10 @@ Optional:
 
 Required:
 
-- `source` (Attributes) A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br> (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_contract_fulfillment--source))
+
+Optional:
+
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--ws_trust--token_processor_mappings--attribute_contract_fulfillment--source"></a>
@@ -2379,6 +2478,18 @@ Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 
+
+
+<a id="nestedatt--ws_trust--token_processor_mappings--idp_token_processor_ref"></a>
+### Nested Schema for `ws_trust.token_processor_mappings.idp_token_processor_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources"></a>
@@ -2579,18 +2690,6 @@ Optional:
 - `binary_encoding` (String) Get the encoding type for this attribute. If not specified, the default is BASE64.
 
 
-
-
-<a id="nestedatt--ws_trust--token_processor_mappings--idp_token_processor_ref"></a>
-### Nested Schema for `ws_trust.token_processor_mappings.idp_token_processor_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--ws_trust--token_processor_mappings--issuance_criteria"></a>
