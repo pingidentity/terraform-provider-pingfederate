@@ -80,6 +80,13 @@ var (
 			"encryption_cert":             types.BoolType,
 		}},
 	}
+	signingSettingsAttrTypes = map[string]attr.Type{
+		"signing_key_pair_ref":              resourceLinkObjectType,
+		"alternative_signing_key_pair_refs": types.ListType{ElemType: resourceLinkObjectType},
+		"algorithm":                         types.StringType,
+		"include_cert_in_signature":         types.BoolType,
+		"include_raw_key_in_signature":      types.BoolType,
+	}
 	credentialsAttrTypes = map[string]attr.Type{
 		"block_encryption_algorithm": types.StringType,
 		"certs":                      certsListType,
@@ -110,15 +117,9 @@ var (
 			"validate_partner_cert": types.BoolType,
 		}},
 		"secondary_decryption_key_pair_ref": resourceLinkObjectType,
-		"signing_settings": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"signing_key_pair_ref":              resourceLinkObjectType,
-			"alternative_signing_key_pair_refs": types.ListType{ElemType: resourceLinkObjectType},
-			"algorithm":                         types.StringType,
-			"include_cert_in_signature":         types.BoolType,
-			"include_raw_key_in_signature":      types.BoolType,
-		}},
-		"verification_issuer_dn":  types.StringType,
-		"verification_subject_dn": types.StringType,
+		"signing_settings":                  types.ObjectType{AttrTypes: signingSettingsAttrTypes},
+		"verification_issuer_dn":            types.StringType,
+		"verification_subject_dn":           types.StringType,
 	}
 
 	contactInfoAttrTypes = map[string]attr.Type{
@@ -614,7 +615,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Description: "The name of this attribute.",
 			},
 			"name_format": schema.StringAttribute{
-				Required:    true,
+				Optional:    true,
 				Description: "The SAML Name Format for the attribute.",
 			},
 		},
@@ -976,6 +977,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"include_cert_in_signature": schema.BoolAttribute{
 								Optional:    true,
+								Computed:    true,
+								Default:     booldefault.StaticBool(false),
 								Description: "Determines whether the signing certificate is included in the signature <KeyInfo> element.",
 							},
 							"include_raw_key_in_signature": schema.BoolAttribute{
@@ -1512,7 +1515,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Description: "Allow the encryption of the name-identifier attribute for inbound SLO messages. This can be set if SP initiated SLO is enabled.",
 							},
 						},
-						Required:    true,
+						Optional:    true,
 						Description: "Defines what to encrypt in the browser-based SSO profile.",
 					},
 					"incoming_bindings": schema.ListAttribute{
@@ -1607,7 +1610,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"binding": schema.StringAttribute{
-									Required:    true,
+									Optional:    true,
 									Description: "The binding of this endpoint, if applicable - usually only required for SAML 2.0 endpoints.  Supported bindings are Artifact and POST.",
 									Validators: []validator.String{
 										stringvalidator.OneOf(
@@ -1617,7 +1620,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									},
 								},
 								"index": schema.Int64Attribute{
-									Required:    true,
+									Optional:    true,
 									Description: "The priority of the endpoint.",
 								},
 								"is_default": schema.BoolAttribute{
@@ -2007,6 +2010,17 @@ func readIdpSpconnectionResponse(ctx context.Context, r *client.SpConnection, st
 
 	state.Credentials, respDiags = types.ObjectValueFrom(ctx, credentialsAttrTypes, r.Credentials)
 	diags.Append(respDiags...)
+	if r.Credentials != nil && r.Credentials.SigningSettings != nil && r.Credentials.SigningSettings.IncludeCertInSignature == nil {
+		// PF returns false for include_cert_in_signature as nil. If nil is returned, just set it to false
+		credentialsAttrs := state.Credentials.Attributes()
+		signingSettingsAttrs := credentialsAttrs["signing_settings"].(types.Object).Attributes()
+		signingSettingsAttrs["include_cert_in_signature"] = types.BoolValue(false)
+		newSigningSettings, respDiags := types.ObjectValue(signingSettingsAttrTypes, signingSettingsAttrs)
+		diags.Append(respDiags...)
+		credentialsAttrs["signing_settings"] = newSigningSettings
+		state.Credentials, respDiags = types.ObjectValue(credentialsAttrTypes, credentialsAttrs)
+		diags.Append(respDiags...)
+	}
 
 	state.ContactInfo, respDiags = types.ObjectValueFrom(ctx, contactInfoAttrTypes, r.ContactInfo)
 	diags.Append(respDiags...)
