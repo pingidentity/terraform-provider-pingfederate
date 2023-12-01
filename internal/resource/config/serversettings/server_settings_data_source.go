@@ -1,373 +1,546 @@
-package provider
+package serversettings
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
-	"fmt"
-	"net/http"
-	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/provider"
-	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/administrativeaccount"
-	authenticationapisettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi/settings"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicycontract"
-	certificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificate/ca"
-	datastore "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/datastore"
-	idpadapter "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/adapter"
-	idpdefaulturls "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/defaulturls"
-	keypairsigningimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypair/signing/import"
-	keypairsslserverimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypair/sslserver/import"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/license"
-	licenseagreement "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/license/agreement"
-	localidentity "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/localidentity/identityprofile"
-	oauthaccesstokenmanager "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/accesstokenmanager"
-	oauthauthserversettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authserversettings"
-	oauthauthserversettingsscopescommonscope "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authserversettings/scopes/commonscope"
-	oauthauthserversettingsscopesexclusivescope "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authserversettings/scopes/exclusivescope"
-	oauthclient "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/client"
-	oauthissuer "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/issuer"
-	oauthopenidconnectpolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/openidconnect/policy"
-	oauthtokenexchangetokengeneratormapping "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/tokengeneratormapping"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/passwordcredentialvalidator"
-	protocolmetadatalifetimesettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/protocolmetadata/lifetimesettings"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/redirectvalidation"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings"
-	serversettingsgeneralsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/generalsettings"
-	serversettingslogsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/logsettings"
-	serversettingssystemkeys "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/systemkeys"
-	sessionapplicationsessionpolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/applicationsessionpolicy"
-	sessionauthenticationsessionpoliciesglobal "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/authenticationsessionpolicies/global"
-	sessionsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/settings"
-	spauthenticationpolicycontractmapping "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sp/authenticationpolicycontractmapping"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/tokenprocessortotokengeneratormapping"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/virtualhostnames"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
-// Ensure the implementation satisfies the expected interfacesß
+// Ensure the implementation satisfies the expected interfaces.
 var (
-	_ provider.Provider = &pingfederateProvider{}
+	_ datasource.DataSource              = &serverSettingsDataSource{}
+	_ datasource.DataSourceWithConfigure = &serverSettingsDataSource{}
 )
 
-// New is a helper function to simplify provider server and testing implementation.
-func NewFactory(version string) func() provider.Provider {
-	return func() provider.Provider {
-		return &pingfederateProvider{
-			version: version,
-		}
-	}
+// ServerSettingsDataSource is a helper function to simplify the provider implementation.
+func ServerSettingsDataSource() datasource.DataSource {
+	return &serverSettingsDataSource{}
 }
 
-// NewTestProvider is a helper function to simplify testing implementation.
-func NewTestProvider() provider.Provider {
-	return NewFactory("test")()
+// serverSettingsDataSource is the datasource implementation.
+type serverSettingsDataSource struct {
+	providerConfig internaltypes.ProviderConfiguration
+	apiClient      *client.APIClient
 }
 
-// PingFederate ProviderModel maps provider schema data to a Go type.
-type pingfederateProviderModel struct {
-	HttpsHost                       types.String `tfsdk:"https_host"`
-	Username                        types.String `tfsdk:"username"`
-	Password                        types.String `tfsdk:"password"`
-	InsecureTrustAllTls             types.Bool   `tfsdk:"insecure_trust_all_tls"`
-	CACertificatePEMFiles           types.Set    `tfsdk:"ca_certificate_pem_files"`
-	XBypassExternalValidationHeader types.Bool   `tfsdk:"x_bypass_external_validation_header"`
-}
-
-// pingfederateProvider is the provider implementation.
-type pingfederateProvider struct {
-	version string
-}
-
-// Metadata returns the provider type name.
-func (p *pingfederateProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
-	resp.TypeName = "pingfederate"
-}
-
-// GetSchema defines the provider-level schema for configuration data.
-// Schema defines the provider-level schema for configuration data.
-func (p *pingfederateProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
-	resp.Schema = schema.Schema{
+// GetSchema defines the schema for the datasource.
+func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	schema := schema.Schema{
+		Description: "Manages the global server configuration settings",
 		Attributes: map[string]schema.Attribute{
-			"https_host": schema.StringAttribute{
-				MarkdownDescription: "URI for PingFederate HTTPS port. Default value can be set with the `PINGFEDERATE_PROVIDER_HTTPS_HOST` environment variable.",
-				Optional:            true,
-			},
-			"username": schema.StringAttribute{
-				MarkdownDescription: "Username for PingFederate Admin user. Default value can be set with the `PINGFEDERATE_PROVIDER_USERNAME` environment variable.",
-				Optional:            true,
-			},
-			"password": schema.StringAttribute{
-				MarkdownDescription: "Password for PingFederate Admin user. Default value can be set with the `PINGFEDERATE_PROVIDER_PASSWORD` environment variable.",
-				Optional:            true,
-				Sensitive:           true,
-			},
-			"insecure_trust_all_tls": schema.BoolAttribute{
-				Description: "Set to true to trust any certificate when connecting to the PingFederate server. This is insecure and should not be enabled outside of testing. Default value can be set with the `PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS` environment variable.",
+			"contact_info": schema.SingleNestedAttribute{
+				Description: "Information that identifies the server.",
+				Computed:    true,
 				Optional:    true,
+				Default:     objectdefault.StaticValue(contactInfoDefault),
+				Attributes: map[string]schema.Attribute{
+					"company": schema.StringAttribute{
+						Description: "Company name.",
+						Optional:    true,
+					},
+					"email": schema.StringAttribute{
+						Description: "Contact email address.",
+						Optional:    true,
+						Validators: []validator.String{
+							configvalidators.ValidEmail(),
+						},
+					},
+					"first_name": schema.StringAttribute{
+						Description: "Contact first name.",
+						Optional:    true,
+					},
+					"last_name": schema.StringAttribute{
+						Description: "Contact last name.",
+						Optional:    true,
+					},
+					"phone": schema.StringAttribute{
+						Description: "Contact phone number.",
+						Optional:    true,
+					},
+				},
 			},
-			"ca_certificate_pem_files": schema.SetAttribute{
-				ElementType: types.StringType,
-				Description: "Paths to files containing PEM-encoded certificates to be trusted as root CAs when connecting to the PingFederate server over HTTPS. If not set, the host's root CA set will be used. Default value can be set with the `PINGFEDERATE_PROVIDER_CA_CERTIFICATE_PEM_FILES` environment variable, using commas to delimit multiple PEM files if necessary.",
+			"notifications": schema.SingleNestedAttribute{
+				Description: "Notification settings for license and certificate expiration events.",
 				Optional:    true,
+				Computed:    true,
+				Default:     objectdefault.StaticValue(notificationsDefault),
+				Attributes: map[string]schema.Attribute{
+					"license_events": schema.SingleNestedAttribute{
+						Description: "Settings for license event notifications.",
+						Optional:    true,
+						Attributes: map[string]schema.Attribute{
+							"email_address": schema.StringAttribute{
+								Description: "The email address where notifications are sent.",
+								Required:    true,
+								Validators: []validator.String{
+									configvalidators.ValidEmail(),
+								},
+							},
+							"notification_publisher_ref": schema.SingleNestedAttribute{
+								Description: "Reference to the associated notification publisher.",
+								Optional:    true,
+								Attributes:  resourcelink.ToSchema(),
+							},
+						},
+					},
+					"certificate_expirations": schema.SingleNestedAttribute{
+						Description: "Settings for license event notifications.",
+						Optional:    true,
+						Attributes: map[string]schema.Attribute{
+							"email_address": schema.StringAttribute{
+								Description: "The email address where notifications are sent.",
+								Required:    true,
+								Validators: []validator.String{
+									configvalidators.ValidEmail(),
+								},
+							},
+							"initial_warning_period": schema.Int64Attribute{
+								Description: "Time before certificate expiration when initial warning is sent (in days).",
+								Optional:    true,
+							},
+							"final_warning_period": schema.Int64Attribute{
+								Description: "Time before certificate expiration when final warning is sent (in days).",
+								Required:    true,
+								Validators: []validator.Int64{
+									// final_warning_period must be between 1 and 99999 days, inclusive
+									int64validator.Between(1, 99999),
+								},
+							},
+							"notification_publisher_ref": schema.SingleNestedAttribute{
+								Description: "Reference to the associated notification publisher.",
+								Optional:    true,
+								Attributes:  resourcelink.ToSchema(),
+							},
+						},
+					},
+					"notify_admin_user_password_changes": schema.BoolAttribute{
+						Description: "Determines whether admin users are notified through email when their account is changed.",
+						Optional:    true,
+						Computed:    true,
+						Default:     booldefault.StaticBool(false),
+					},
+					"account_changes_notification_publisher_ref": schema.SingleNestedAttribute{
+						Description: "Reference to the associated notification publisher for admin user account changes.",
+						Optional:    true,
+						Attributes:  resourcelink.ToSchema(),
+					},
+					"metadata_notification_settings": schema.SingleNestedAttribute{
+						Description: "Settings for metadata update event notifications.",
+						Optional:    true,
+						Attributes: map[string]schema.Attribute{
+							"email_address": schema.StringAttribute{
+								Description: "The email address where notifications are sent.",
+								Required:    true,
+								Validators: []validator.String{
+									configvalidators.ValidEmail(),
+								},
+							},
+							"notification_publisher_ref": schema.SingleNestedAttribute{
+								Description: "Reference to the associated notification publisher.",
+								Optional:    true,
+								Attributes:  resourcelink.ToSchema(),
+							},
+						},
+					},
+				},
 			},
-			"x_bypass_external_validation_header": schema.BoolAttribute{
-				Description: "Header value in request for PingFederate. The connection test will be bypassed when set to true. Default value can be set with the `PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER` environment variable.",
+			"roles_and_protocols": schema.SingleNestedAttribute{
+				Description: "Configure roles and protocols.",
+				Computed:    true,
+				Optional:    false,
+				Default:     objectdefault.StaticValue(rolesAndProtocolsDefault),
+				Attributes: map[string]schema.Attribute{
+					"oauth_role": schema.SingleNestedAttribute{
+						Description: "OAuth role settings.",
+						Computed:    true,
+						Optional:    false,
+						Default:     objectdefault.StaticValue(oauthRoleDefault),
+						Attributes: map[string]schema.Attribute{
+							"enable_oauth": schema.BoolAttribute{
+								Description: "Enable OAuth 2.0 Authorization Server (AS) Role.",
+								Computed:    true,
+								Optional:    false,
+								Default:     booldefault.StaticBool(true),
+							},
+							"enable_open_id_connect": schema.BoolAttribute{
+								Description: "Enable Open ID Connect.",
+								Computed:    true,
+								Optional:    false,
+								Default:     booldefault.StaticBool(true),
+							},
+						},
+					},
+					"idp_role": schema.SingleNestedAttribute{
+						Description: "Identity Provider (IdP) settings.",
+						Computed:    true,
+						Optional:    false,
+						Default:     objectdefault.StaticValue(idpRoleDefault),
+						Attributes: map[string]schema.Attribute{
+							"enable": schema.BoolAttribute{
+								Description: "Enable Identity Provider Role.",
+								Computed:    true,
+								Optional:    false,
+								Default:     booldefault.StaticBool(true),
+							},
+							"enable_saml_1_1": schema.BoolAttribute{
+								Description: "Enable SAML 1.1.",
+								Computed:    true,
+								Optional:    false,
+								Default:     booldefault.StaticBool(true),
+							},
+							"enable_saml_1_0": schema.BoolAttribute{
+								Description: "Enable SAML 1.0.",
+								Computed:    true,
+								Optional:    false,
+								Default:     booldefault.StaticBool(true),
+							},
+							"enable_ws_fed": schema.BoolAttribute{
+								Description: "Enable WS Federation.",
+								Computed:    true,
+								Optional:    false,
+								Default:     booldefault.StaticBool(true),
+							},
+							"enable_ws_trust": schema.BoolAttribute{
+								Description: "Enable WS Trust.",
+								Computed:    true,
+								Optional:    false,
+								Default:     booldefault.StaticBool(true),
+							},
+							"saml_2_0_profile": schema.SingleNestedAttribute{
+								Description: "SAML 2.0 Profile settings.",
+								Computed:    true,
+								Optional:    false,
+								Default:     objectdefault.StaticValue(idpSamlProfileDefault),
+								Attributes: map[string]schema.Attribute{
+									"enable": schema.BoolAttribute{
+										Description: "Enable SAML2.0 profile.",
+										Computed:    true,
+										Optional:    false,
+										Default:     booldefault.StaticBool(true),
+									},
+									"enable_auto_connect": schema.BoolAttribute{
+										Description: "This property has been deprecated and no longer used.",
+										Computed:    true,
+										Optional:    false,
+										Default:     booldefault.StaticBool(true),
+									},
+								},
+							},
+							"enable_outbound_provisioning": schema.BoolAttribute{
+								Description: "Enable Outbound Provisioning.",
+								Computed:    true,
+								Optional:    false,
+								Default:     booldefault.StaticBool(true),
+							},
+						},
+					},
+					"sp_role": schema.SingleNestedAttribute{
+						Description: "Service Provider (SP) settings.",
+						Computed:    true,
+						Optional:    false,
+						Default:     objectdefault.StaticValue(spRoleDefault),
+						Attributes: map[string]schema.Attribute{
+							"enable": schema.BoolAttribute{
+								Description: "Enable Service Provider Role.",
+								Computed:    true,
+								Optional:    false,
+								Default:     booldefault.StaticBool(true),
+							},
+							"enable_saml_1_1": schema.BoolAttribute{
+								Description: "Enable SAML 1.1.",
+								Computed:    true,
+								Optional:    false,
+								Default:     booldefault.StaticBool(true),
+							},
+							"enable_saml_1_0": schema.BoolAttribute{
+								Description: "Enable SAML 1.0.",
+								Computed:    true,
+								Optional:    false,
+								Default:     booldefault.StaticBool(true),
+							},
+							"enable_ws_fed": schema.BoolAttribute{
+								Description: "Enable WS Federation.",
+								Computed:    true,
+								Optional:    false,
+								Default:     booldefault.StaticBool(true),
+							},
+							"enable_ws_trust": schema.BoolAttribute{
+								Description: "Enable WS Trust.",
+								Computed:    true,
+								Optional:    false,
+								Default:     booldefault.StaticBool(true),
+							},
+							"saml_2_0_profile": schema.SingleNestedAttribute{
+								Description: "SAML 2.0 Profile settings.",
+								Computed:    true,
+								Optional:    false,
+								Default:     objectdefault.StaticValue(spSamlProfileDefault),
+								Attributes: map[string]schema.Attribute{
+									"enable": schema.BoolAttribute{
+										Description: "Enable SAML2.0 profile.",
+										Computed:    true,
+										Optional:    false,
+										Default:     booldefault.StaticBool(true),
+									},
+									"enable_auto_connect": schema.BoolAttribute{
+										Description: "This property has been deprecated and no longer used.",
+										Computed:    true,
+										Optional:    false,
+										Default:     booldefault.StaticBool(true),
+									},
+									"enable_xasp": schema.BoolAttribute{
+										Description: "Enable Attribute Requester Mapping for X.509 Attribute Sharing Profile (XASP)",
+										Computed:    true,
+										Optional:    false,
+										Default:     booldefault.StaticBool(true),
+									},
+								},
+							},
+							"enable_open_id_connect": schema.BoolAttribute{
+								Description: "Enable OpenID Connect.",
+								Computed:    true,
+								Optional:    false,
+								Default:     booldefault.StaticBool(true),
+							},
+							"enable_inbound_provisioning": schema.BoolAttribute{
+								Description: "Enable Inbound Provisioning.",
+								Computed:    true,
+								Optional:    false,
+								Default:     booldefault.StaticBool(true),
+							},
+						},
+					},
+					"enable_idp_discovery": schema.BoolAttribute{
+						Description: "Enable IdP Discovery.",
+						Computed:    true,
+						Optional:    false,
+						Default:     booldefault.StaticBool(true),
+					},
+				},
+			},
+			"federation_info": schema.SingleNestedAttribute{
+				Description: "Federation Info.",
+				Required:    true,
+				Attributes: map[string]schema.Attribute{
+					"base_url": schema.StringAttribute{
+						Description: "The fully qualified host name, port, and path (if applicable) on which the PingFederate server runs.",
+						Required:    true,
+						Validators: []validator.String{
+							configvalidators.ValidUrl(),
+						},
+					},
+					"saml_2_entity_id": schema.StringAttribute{
+						Description: "This ID defines your organization as the entity operating the server for SAML 2.0 transactions. It is usually defined as an organization's URL or a DNS address; for example: pingidentity.com. The SAML SourceID used for artifact resolution is derived from this ID using SHA1.",
+						Required:    true,
+					},
+					"auto_connect_entity_id": schema.StringAttribute{
+						Description: "This property has been deprecated and no longer used",
+						Computed:    true,
+						Optional:    false,
+						Default:     stringdefault.StaticString(""),
+					},
+					"saml_1x_issuer_id": schema.StringAttribute{
+						Description: "This ID identifies your federation server for SAML 1.x transactions. As with SAML 2.0, it is usually defined as an organization's URL or a DNS address. The SourceID used for artifact resolution is derived from this ID using SHA1.",
+						Computed:    true,
+						Optional:    true,
+						Default:     stringdefault.StaticString(""),
+					},
+					"saml_1x_source_id": schema.StringAttribute{
+						Description: "If supplied, the Source ID value entered here is used for SAML 1.x, instead of being derived from the SAML 1.x Issuer/Audience.",
+						Computed:    true,
+						Optional:    true,
+						Default:     stringdefault.StaticString(""),
+					},
+					"wsfed_realm": schema.StringAttribute{
+						Description: "The URI of the realm associated with the PingFederate server. A realm represents a single unit of security administration or trust.",
+						Computed:    true,
+						Optional:    true,
+						Default:     stringdefault.StaticString(""),
+					},
+				},
+			},
+			"email_server": schema.SingleNestedAttribute{
+				Description: "Email Server Settings.",
+				Computed:    true,
 				Optional:    true,
+				Default:     objectdefault.StaticValue(types.ObjectNull(emailServerAttrType)),
+				Attributes: map[string]schema.Attribute{
+					"source_addr": schema.StringAttribute{
+						Description: "The email address that appears in the 'From' header line in email messages generated by PingFederate. The address must be in valid format but need not be set up on your system.",
+						Required:    true,
+						Validators: []validator.String{
+							configvalidators.ValidEmail(),
+						},
+					},
+					"email_server": schema.StringAttribute{
+						Description: "The IP address or hostname of your email server.",
+						Required:    true,
+						Validators: []validator.String{
+							configvalidators.ValidHostnameOrIp(),
+						},
+					},
+					"port": schema.Int64Attribute{
+						Description: "The SMTP port on your email server. Allowable values: 1 - 65535. The default value is 25.",
+						Computed:    true,
+						Optional:    true,
+						Default:     int64default.StaticInt64(25),
+					},
+					"ssl_port": schema.Int64Attribute{
+						Description: "The secure SMTP port on your email server. This field is not active unless Use SSL is enabled. Allowable values: 1 - 65535. The default value is 465.",
+						Computed:    true,
+						Optional:    true,
+						Default:     int64default.StaticInt64(465),
+						PlanModifiers: []planmodifier.Int64{
+							int64planmodifier.UseStateForUnknown(),
+						},
+					},
+					"timeout": schema.Int64Attribute{
+						Description: "The amount of time in seconds that PingFederate will wait before it times out connecting to the SMTP server. Allowable values: 0 - 3600. The default value is 30.",
+						Computed:    true,
+						Optional:    true,
+						Default:     int64default.StaticInt64(30),
+						PlanModifiers: []planmodifier.Int64{
+							int64planmodifier.UseStateForUnknown(),
+						},
+					},
+					"retry_attempts": schema.Int64Attribute{
+						Description: "The number of times PingFederate tries to resend an email upon unsuccessful delivery. The default value is 2.",
+						Computed:    true,
+						Optional:    true,
+						Default:     int64default.StaticInt64(2),
+						PlanModifiers: []planmodifier.Int64{
+							int64planmodifier.UseStateForUnknown(),
+						},
+					},
+					"retry_delay": schema.Int64Attribute{
+						Description: "The number of minutes PingFederate waits before the next retry attempt. The default value is 2.",
+						Computed:    true,
+						Optional:    true,
+						Default:     int64default.StaticInt64(2),
+						PlanModifiers: []planmodifier.Int64{
+							int64planmodifier.UseStateForUnknown(),
+						},
+					},
+					"use_ssl": schema.BoolAttribute{
+						Description: "Requires the use of SSL/TLS on the port specified by 'sslPort'. If this option is enabled, it overrides the 'useTLS' option.",
+						Computed:    true,
+						Optional:    true,
+						Default:     booldefault.StaticBool(false),
+					},
+					"use_tls": schema.BoolAttribute{
+						Description: "Requires the use of the STARTTLS protocol on the port specified by 'port'.",
+						Computed:    true,
+						Optional:    true,
+						Default:     booldefault.StaticBool(false),
+					},
+					"verify_hostname": schema.BoolAttribute{
+						Description: "If useSSL or useTLS is enabled, this flag determines whether the email server hostname is verified against the server's SMTPS certificate.",
+						Computed:    true,
+						Optional:    true,
+						Default:     booldefault.StaticBool(false),
+					},
+					"enable_utf8_message_headers": schema.BoolAttribute{
+						Description: "Only set this flag to true if the email server supports UTF-8 characters in message headers. Otherwise, this is defaulted to false.",
+						Computed:    true,
+						Optional:    true,
+						Default:     booldefault.StaticBool(false),
+					},
+					"use_debugging": schema.BoolAttribute{
+						Description: "Turns on detailed error messages for the PingFederate server log to help troubleshoot any problems.",
+						Computed:    true,
+						Optional:    true,
+						Default:     booldefault.StaticBool(false),
+					},
+					"username": schema.StringAttribute{
+						Description: "Authorized email username. Required if the password is provided.",
+						Optional:    true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
+					},
+					"password": schema.StringAttribute{
+						Description: "User password. To update the password, specify the plaintext value in this field. This field will not be populated for GET requests.",
+						Computed:    true,
+						Optional:    true,
+						Sensitive:   true,
+						Default:     stringdefault.StaticString(""),
+					},
+				},
+			},
+			"captcha_settings": schema.SingleNestedAttribute{
+				Description: "Captcha Settings.",
+				Computed:    true,
+				Optional:    true,
+				Default:     objectdefault.StaticValue(types.ObjectNull(captchaSettingsAttrType)),
+				Attributes: map[string]schema.Attribute{
+					"site_key": schema.StringAttribute{
+						Description: "Site key for reCAPTCHA.",
+						Required:    true,
+					},
+					"secret_key": schema.StringAttribute{
+						Description: "Secret key for reCAPTCHA. GETs will not return this attribute. To update this field, specify the new value in this attribute.",
+						Required:    true,
+					},
+				},
 			},
 		},
 	}
+	id.ToSchema(&schema)
+	resp.Schema = schema
 }
 
-func (p *pingfederateProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	// Retrieve provider data from configuration
-	var config pingfederateProviderModel
-	diags := req.Config.Get(ctx, &config)
+// Metadata returns the datasource type name.
+func (r *serverSettingsDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_server_settings"
+}
+
+func (r *serverSettingsDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, _ *datasource.ConfigureResponse) {
+	if req.ProviderData == nil {
+		return
+	}
+
+	providerCfg := req.ProviderData.(internaltypes.ResourceConfiguration)
+	r.providerConfig = providerCfg.ProviderConfig
+	r.apiClient = providerCfg.ApiClient
+
+}
+
+// Read the server settings datasource from the PingFederate API and update the state accordingly.
+func (r *serverSettingsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var state serverSettingsModel
+
+	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	// User must provide a https host to the provider
-	var httpsHost string
-	if config.HttpsHost.IsUnknown() {
-		// Cannot connect to PingFederate with an unknown value
-		resp.Diagnostics.AddError(
-			"Unable to connect to the PingFederate Server",
-			"Cannot use unknown value as https_host",
-		)
-	} else {
-		if config.HttpsHost.IsNull() {
-			httpsHost = os.Getenv("PINGFEDERATE_PROVIDER_HTTPS_HOST")
-		} else {
-			httpsHost = config.HttpsHost.ValueString()
-		}
-		if httpsHost == "" {
-			resp.Diagnostics.AddError(
-				"Unable to find https_host",
-				"https_host cannot be an empty string. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_HTTPS_HOST environment variable.",
-			)
-		}
+	apiReadServerSettings, httpResp, err := r.apiClient.ServerSettingsAPI.GetServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings", err, httpResp)
 	}
 
-	// User must provide a username to the provider
-	var username string
-	if config.Username.IsUnknown() {
-		// Cannot connect to PingFederate with an unknown value
-		resp.Diagnostics.AddError(
-			"Unable to connect to the PingFederate Server",
-			"Cannot use unknown value as username",
-		)
-	} else {
-		if config.Username.IsNull() {
-			username = os.Getenv("PINGFEDERATE_PROVIDER_USERNAME")
-		} else {
-			username = config.Username.ValueString()
-		}
-		if username == "" {
-			resp.Diagnostics.AddError(
-				"Unable to find username",
-				"username cannot be an empty string. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_USERNAME environment variable.",
-			)
-		}
-	}
+	diags = readServerSettingsResponse(ctx, apiReadServerSettings, &state, &state, "server_settings_id")
+	resp.Diagnostics.Append(diags...)
 
-	// User must provide a username to the provider
-	var password string
-	if config.Password.IsUnknown() {
-		// Cannot connect to PingFederate with an unknown value
-		resp.Diagnostics.AddError(
-			"Unable to connect to the PingFederate Server",
-			"Cannot use unknown value as password",
-		)
-	} else {
-		if config.Password.IsNull() {
-			password = os.Getenv("PINGFEDERATE_PROVIDER_PASSWORD")
-		} else {
-			password = config.Password.ValueString()
-		}
-		if password == "" {
-			resp.Diagnostics.AddError(
-				"Unable to find password",
-				"password cannot be an empty string. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_PASSWORD environment variable.",
-			)
-		}
-	}
-
-	// Optional attributes
-	var insecureTrustAllTls bool
-	var err error
-	if !config.InsecureTrustAllTls.IsUnknown() && !config.InsecureTrustAllTls.IsNull() {
-		insecureTrustAllTls = config.InsecureTrustAllTls.ValueBool()
-	} else {
-		insecureTrustAllTls, err = strconv.ParseBool(os.Getenv("PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS"))
-		if err != nil {
-			insecureTrustAllTls = false
-			tflog.Info(ctx, "Failed to parse boolean from 'PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS' environment variable, defaulting 'insecure_trust_all_tls' to false")
-		}
-	}
-
-	var caCertPemFiles []string
-	if !config.CACertificatePEMFiles.IsUnknown() && !config.CACertificatePEMFiles.IsNull() {
-		config.CACertificatePEMFiles.ElementsAs(ctx, &caCertPemFiles, false)
-	} else {
-		pemFilesEnvVar := os.Getenv("PINGFEDERATE_PROVIDER_CA_CERTIFICATE_PEM_FILES")
-		if len(pemFilesEnvVar) == 0 {
-			tflog.Info(ctx, "Did not find any certificate paths specified via the 'PINGFEDERATE_PROVIDER_CA_CERTIFICATE_PEM_FILES' environment variable, using the host's root CA set")
-		} else {
-			caCertPemFiles = strings.Split(pemFilesEnvVar, ",")
-		}
-	}
-
-	var caCertPool *x509.CertPool
-	if len(caCertPemFiles) == 0 {
-		tflog.Info(ctx, "No CA certs specified, using the host's root CA set")
-		caCertPool = nil
-	} else {
-		caCertPool = x509.NewCertPool()
-		for _, pemFilename := range caCertPemFiles {
-			// Load CA cert
-			pemFilename := filepath.Clean(pemFilename)
-			caCert, err := os.ReadFile(pemFilename)
-			if err != nil {
-				resp.Diagnostics.AddError("Failed to read CA PEM certificate file: "+pemFilename, err.Error())
-			}
-			tflog.Info(ctx, "Adding CA cert from file: "+pemFilename)
-			if !caCertPool.AppendCertsFromPEM(caCert) {
-				resp.Diagnostics.AddWarning("Failed to parse certificate", "Failed to parse CA PEM certificate from file: "+pemFilename)
-			}
-		}
-	}
-
-	var xBypassExternalValidation bool
-	var xBypassExternalValidationErr error
-	if !config.XBypassExternalValidationHeader.IsUnknown() && !config.XBypassExternalValidationHeader.IsNull() {
-		xBypassExternalValidation = config.XBypassExternalValidationHeader.ValueBool()
-	} else {
-		xBypassExternalValidation, xBypassExternalValidationErr = strconv.ParseBool(os.Getenv("PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER"))
-		if xBypassExternalValidationErr != nil {
-			xBypassExternalValidation = false
-			tflog.Info(ctx, "Failed to parse boolean from 'PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER' environment variable, defaulting 'x_bypass_external_validation_header' to false")
-		}
-	}
-
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	// Make the PingFederate config and API client info available during DataSource and Resource
-	// type Configure methods.
-	var resourceConfig internaltypes.ResourceConfiguration
-	providerConfig := internaltypes.ProviderConfiguration{
-		HttpsHost: httpsHost,
-		Username:  username,
-		Password:  password,
-	}
-	resourceConfig.ProviderConfig = providerConfig
-	clientConfig := client.NewConfiguration()
-	clientConfig.DefaultHeader["X-Xsrf-Header"] = "PingFederate"
-	clientConfig.DefaultHeader["X-BypassExternalValidation"] = strconv.FormatBool(xBypassExternalValidation)
-	clientConfig.Servers = client.ServerConfigurations{
-		{
-			URL: httpsHost + "/pf-admin-api/v1",
-		},
-	}
-	// #nosec G402
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: insecureTrustAllTls,
-			RootCAs:            caCertPool,
-		},
-	}
-	httpClient := &http.Client{Transport: tr}
-	clientConfig.HTTPClient = httpClient
-	clientConfig.UserAgent = fmt.Sprintf("pingtools terraform-provider-pingfederate/%s go", p.version)
-	resourceConfig.ApiClient = client.NewAPIClient(clientConfig)
-	resp.ResourceData = resourceConfig
-	resp.DataSourceData = resourceConfig
-
-	tflog.Info(ctx, "Configured PingFederate client", map[string]interface{}{"success": true})
-}
-
-// DataSources defines the data sources implemented in the provider.
-func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{
-		administrativeaccount.AdministrativeAccountDataSource,
-		authenticationapisettings.AuthenticationApiSettingsDataSource,
-		authenticationpolicycontract.AuthenticationPolicyContractDataSource,
-		certificate.CertificateDataSource,
-		idpdefaulturls.IdpDefaultUrlsDataSource,
-		keypairsigningimport.KeyPairsSigningImportDataSource,
-		keypairsslserverimport.KeyPairsSslServerImportDataSource,
-		license.LicenseDataSource,
-		licenseagreement.LicenseAgreementDataSource,
-		localidentity.LocalIdentityIdentityProfileDataSource,
-		oauthaccesstokenmanager.OauthAccessTokenManagerDataSource,
-		oauthauthserversettings.OauthAuthServerSettingsDataSource,
-		oauthauthserversettingsscopescommonscope.OauthAuthServerSettingsScopesCommonScopeDataSource,
-		oauthauthserversettingsscopesexclusivescope.OauthAuthServerSettingsScopesExclusiveScopeDataSource,
-		oauthclient.OauthClientDataSource,
-		oauthissuer.OauthIssuerDataSource,
-		oauthtokenexchangetokengeneratormapping.OauthTokenExchangeTokenGeneratorMappingDataSource,
-		oauthopenidconnectpolicy.OauthOpenIdConnectPolicyDataSource,
-		passwordcredentialvalidator.PasswordCredentialValidatorDataSource,
-		protocolmetadatalifetimesettings.ProtocolMetadataLifetimeSettingsDataSource,
-		redirectvalidation.RedirectValidationDataSource,
-		serversettings.ServerSettingsDataSource,
-		serversettingsgeneralsettings.ServerSettingsGeneralSettingsDataSource,
-		serversettingslogsettings.ServerSettingsLogSettingsDataSource,
-		serversettingssystemkeys.ServerSettingsSystemKeysDataSource,
-		sessionapplicationsessionpolicy.SessionApplicationSessionPolicyDataSource,
-		sessionauthenticationsessionpoliciesglobal.SessionAuthenticationSessionPoliciesGlobalDataSource,
-		sessionsettings.SessionSettingsDataSource,
-		tokenprocessortotokengeneratormapping.TokenProcessorToTokenGeneratorMappingDataSource,
-		virtualhostnames.VirtualHostNamesDataSource,
-	}
-}
-
-// Resources defines the resources implemented in the provider.
-func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Resource {
-	return []func() resource.Resource{
-		administrativeaccount.AdministrativeAccountResource,
-		authenticationapisettings.AuthenticationApiSettingsResource,
-		authenticationpolicycontract.AuthenticationPolicyContractResource,
-		certificate.CertificateCAResource,
-		idpadapter.IdpAdapterResource,
-		idpdefaulturls.IdpDefaultUrlsResource,
-		keypairsigningimport.KeyPairsSigningImportResource,
-		keypairsslserverimport.KeyPairsSslServerImportResource,
-		datastore.DataStoreResource,
-		license.LicenseResource,
-		licenseagreement.LicenseAgreementResource,
-		localidentity.LocalIdentityIdentityProfileResource,
-		oauthaccesstokenmanager.OauthAccessTokenManagerResource,
-		oauthauthserversettings.OauthAuthServerSettingsResource,
-		oauthauthserversettingsscopescommonscope.OauthAuthServerSettingsScopesCommonScopeResource,
-		oauthauthserversettingsscopesexclusivescope.OauthAuthServerSettingsScopesExclusiveScopeResource,
-		oauthclient.OauthClientResource,
-		oauthissuer.OauthIssuerResource,
-		oauthopenidconnectpolicy.OauthOpenIdConnectPolicyResource,
-		oauthtokenexchangetokengeneratormapping.OauthTokenExchangeTokenGeneratorMappingResource,
-		passwordcredentialvalidator.PasswordCredentialValidatorResource,
-		protocolmetadatalifetimesettings.ProtocolMetadataLifetimeSettingsResource,
-		redirectvalidation.RedirectValidationResource,
-		serversettings.ServerSettingsResource,
-		serversettingsgeneralsettings.ServerSettingsGeneralSettingsResource,
-		serversettingslogsettings.ServerSettingsLogSettingsResource,
-		serversettingssystemkeys.ServerSettingsSystemKeysResource,
-		sessionapplicationsessionpolicy.SessionApplicationSessionPolicyResource,
-		sessionauthenticationsessionpoliciesglobal.SessionAuthenticationSessionPoliciesGlobalResource,
-		sessionsettings.SessionSettingsResource,
-		spauthenticationpolicycontractmapping.SpAuthenticationPolicyContractMappingResource,
-		tokenprocessortotokengeneratormapping.TokenProcessorToTokenGeneratorMappingResource,
-		virtualhostnames.VirtualHostNamesResource,
-	}
+	// Set refreshed state
+	diags = resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diags...)
 }
