@@ -33,9 +33,14 @@ func TestAccIdpSpConnection(t *testing.T) {
 				Check:  testAccCheckExpectedSpConnectionAttributesOutboundProvision(),
 			},
 			{
-				// Browser SSO connection minimal
-				Config: testAccSpConnectionBrowserSso(spConnectionId),
-				Check:  testAccCheckExpectedSpConnectionAttributesBrowserSSO(),
+				// Browser SSO SAML connection minimal
+				Config: testAccSpConnectionBrowserSso(spConnectionId, false),
+				Check:  testAccCheckExpectedSpConnectionAttributesBrowserSSO(false),
+			},
+			{
+				// Browser SSO WsFed connection minimal
+				Config: testAccSpConnectionBrowserSso(spConnectionId, true),
+				Check:  testAccCheckExpectedSpConnectionAttributesBrowserSSO(true),
 			},
 			{
 				// WS Trust connection, minimal
@@ -289,6 +294,58 @@ sp_browser_sso = {
 `
 }
 
+func wsFedSpBrowserSSOHcl(authenticationPolicyContractName string) string {
+	return `
+sp_browser_sso = {
+    protocol                      = "WSFED"
+    always_sign_artifact_response = false
+    sso_service_endpoints = [
+      {
+        url = "/sp/prpwrong.wsf"
+      }
+    ]
+    sp_ws_fed_identity_mapping = "EMAIL_ADDRESS"
+    assertion_lifetime = {
+      minutes_before = 5
+      minutes_after = 5
+    }
+    attribute_contract = {
+      core_attributes = [
+        {
+          name = "SAML_SUBJECT"
+        }
+      ]
+      extended_attributes = []
+    }
+    adapter_mappings = [
+      {
+        attribute_sources = []
+        attribute_contract_fulfillment = {
+          "SAML_SUBJECT" = {
+            source = {
+              type = "ADAPTER"
+            }
+            value = "subject"
+          }
+        }
+        issuance_criteria = {
+          conditional_criteria = []
+        }
+        restrict_virtual_entity_ids = false
+        restricted_virtual_entity_ids = []
+        idp_adapter_ref = {
+          id = "OTIdPJava"
+        }
+        abort_sso_transaction_as_fail_safe = false
+      }
+    ]
+    authentication_policy_contract_assertion_mappings = []
+    ws_fed_token_type = "SAML11"
+    ws_trust_version = "WSTRUST12"
+  }
+`
+}
+
 func testAccSpConnectionOutboundProvision(resourceName string) string {
 	return fmt.Sprintf(`
 resource "pingfederate_idp_sp_connection" "%[1]s" {
@@ -300,14 +357,21 @@ resource "pingfederate_idp_sp_connection" "%[1]s" {
 	)
 }
 
-func testAccSpConnectionBrowserSso(resourceName string) string {
+func testAccSpConnectionBrowserSso(resourceName string, useWsFed bool) string {
+	var browserHcl string
+	if useWsFed {
+		browserHcl = wsFedSpBrowserSSOHcl(resourceName)
+	} else {
+		browserHcl = spBrowserSSOHcl(resourceName)
+	}
+
 	return fmt.Sprintf(`
-resource "pingfederate_idp_sp_connection" "%[1]s" {
+resource "pingfederate_idp_sp_connection" "%s" {
   %s
   %s
 }`, resourceName,
 		baseHcl(resourceName),
-		spBrowserSSOHcl(resourceName),
+		browserHcl,
 	)
 }
 
@@ -422,19 +486,34 @@ func testAccCheckExpectedSpConnectionAttributesOutboundProvision() resource.Test
 	}
 }
 
-func testExpectedSpConnectionBrowserSSOAttributes(response *configurationapi.SpConnection) error {
+func testExpectedSpConnectionBrowserSSOAttributes(response *configurationapi.SpConnection, useWsFed bool) error {
 	// protocol
+	var expected string
+	if useWsFed {
+		expected = "WSFED"
+	} else {
+		expected = "SAML20"
+	}
 	err := acctest.TestAttributesMatchString(resourceType, pointers.String(spConnectionId), "sp_browser_sso.protocol",
-		"SAML20", response.SpBrowserSso.Protocol)
+		expected, response.SpBrowserSso.Protocol)
 	if err != nil {
 		return err
 	}
 
-	// enabled profiles
-	err = acctest.TestAttributesMatchStringSlice(resourceType, pointers.String(spConnectionId), "sp_browser_sso.enabled_profiles",
-		[]string{"IDP_INITIATED_SSO"}, response.SpBrowserSso.EnabledProfiles)
-	if err != nil {
-		return err
+	if useWsFed {
+		// ws trust version
+		err := acctest.TestAttributesMatchStringPointer(resourceType, pointers.String(spConnectionId), "sp_browser_sso.ws_trust_version",
+			"WSTRUST12", response.SpBrowserSso.WsTrustVersion)
+		if err != nil {
+			return err
+		}
+	} else {
+		// enabled profiles
+		err = acctest.TestAttributesMatchStringSlice(resourceType, pointers.String(spConnectionId), "sp_browser_sso.enabled_profiles",
+			[]string{"IDP_INITIATED_SSO"}, response.SpBrowserSso.EnabledProfiles)
+		if err != nil {
+			return err
+		}
 	}
 
 	// attribute contract
@@ -448,14 +527,14 @@ func testExpectedSpConnectionBrowserSSOAttributes(response *configurationapi.SpC
 }
 
 // Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedSpConnectionAttributesBrowserSSO() resource.TestCheckFunc {
+func testAccCheckExpectedSpConnectionAttributesBrowserSSO(useWsFed bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		response, err := testCommonExpectedSpConnectionAttributes()
 		if err != nil {
 			return err
 		}
 
-		return testExpectedSpConnectionBrowserSSOAttributes(response)
+		return testExpectedSpConnectionBrowserSSOAttributes(response, useWsFed)
 	}
 }
 
@@ -509,7 +588,7 @@ func testAccCheckExpectedSpConnectionAttributesAll() resource.TestCheckFunc {
 			return err
 		}
 
-		err = testExpectedSpConnectionBrowserSSOAttributes(response)
+		err = testExpectedSpConnectionBrowserSSOAttributes(response, false)
 		if err != nil {
 			return err
 		}
