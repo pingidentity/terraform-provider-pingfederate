@@ -187,7 +187,7 @@ func (r *idpAdapterDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	}
 
 	// Read the response into the state
-	readResponseDiags := readIdpAdapterResponse(ctx, apiReadIdpAdapter, &state, state, false)
+	readResponseDiags := readIdpAdapterResponse(ctx, apiReadIdpAdapter, &state, nil)
 	resp.Diagnostics.Append(readResponseDiags...)
 
 	// Set refreshed state

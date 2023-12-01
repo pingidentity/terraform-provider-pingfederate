@@ -298,7 +298,7 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 	// Read the response into the state
 	var state idpAdapterModel
 
-	readResponseDiags := readIdpAdapterResponse(ctx, idpAdapterResponse, &state, plan, true)
+	readResponseDiags := readIdpAdapterResponse(ctx, idpAdapterResponse, &state, &plan)
 	resp.Diagnostics.Append(readResponseDiags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -324,7 +324,7 @@ func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// Read the response into the state
-	readResponseDiags := readIdpAdapterResponse(ctx, apiReadIdpAdapter, &state, state, true)
+	readResponseDiags := readIdpAdapterResponse(ctx, apiReadIdpAdapter, &state, &state)
 	resp.Diagnostics.Append(readResponseDiags...)
 
 	// Set refreshed state
@@ -376,7 +376,7 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	// Read the response
 	var state idpAdapterModel
-	readResponseDiags := readIdpAdapterResponse(ctx, updateIdpAdapterResponse, &state, plan, true)
+	readResponseDiags := readIdpAdapterResponse(ctx, updateIdpAdapterResponse, &state, &plan)
 	resp.Diagnostics.Append(readResponseDiags...)
 
 	// Update computed values

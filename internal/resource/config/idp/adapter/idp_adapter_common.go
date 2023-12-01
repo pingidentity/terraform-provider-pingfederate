@@ -92,7 +92,7 @@ type idpAdapterModel struct {
 	AttributeContract   types.Object `tfsdk:"attribute_contract"`
 }
 
-func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *idpAdapterModel, plan idpAdapterModel, isResource bool) diag.Diagnostics {
+func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *idpAdapterModel, plan *idpAdapterModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.AuthnCtxClassRef = internaltypes.StringTypeOrNil(r.AuthnCtxClassRef, false)
 	state.AdapterId = types.StringValue(r.Id)
@@ -103,7 +103,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 	state.ParentRef, diags = resourcelink.ToState(ctx, r.ParentRef)
 	respDiags.Append(diags...)
 	// Configuration
-	if isResource {
+	if plan != nil {
 		state.Configuration, diags = pluginconfiguration.ToState(plan.Configuration, &r.Configuration)
 		respDiags.Append(diags...)
 	} else {
@@ -115,7 +115,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 		attributeContractValues := map[string]attr.Value{}
 		attributeContractValues["extended_attributes"], diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attributesAttrType}, r.AttributeContract.ExtendedAttributes)
 		respDiags.Append(diags...)
-		if isResource {
+		if plan != nil {
 			attributeContractValues["core_attributes_all"], diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attributesAttrType}, r.AttributeContract.CoreAttributes)
 			respDiags.Append(diags...)
 		}
@@ -131,7 +131,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 		attributeContractValues["inherited"] = types.BoolValue(inherited)
 
 		// Only include core_attributes specified in the plan in the response
-		if isResource {
+		if plan != nil {
 			if internaltypes.IsDefined(plan.AttributeContract) && internaltypes.IsDefined(plan.AttributeContract.Attributes()["core_attributes"]) {
 				coreAttributes := []attr.Value{}
 				planCoreAttributeNames := map[string]bool{}
