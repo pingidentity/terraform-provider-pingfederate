@@ -3,18 +3,18 @@
 page_title: "pingfederate_certificate_ca Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes CertificateCA Import.
+  Describes a trusted Certificate CA.
 ---
 
 # pingfederate_certificate_ca (Data Source)
 
-Describes CertificateCA Import.
+Describes a trusted Certificate CA.
 
 ## Example Usage
 
 ```terraform
 data "pingfederate_certificate_ca" "myCertificateCa" {
-  id = "example"
+  ca_id = "example"
 }
 ```
 
@@ -23,12 +23,13 @@ data "pingfederate_certificate_ca" "myCertificateCa" {
 
 ### Required
 
-- `id` (String) The persistent, unique ID for the certificate
+- `ca_id` (String) Unique ID for the certificate.
 
 ### Read-Only
 
 - `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.
 - `expires` (String) The end date up until which the item is valid, in ISO 8601 format (UTC)
+- `id` (String) ID of this resource.
 - `issuer_dn` (String) The issuer's distinguished name
 - `key_algorithm` (String) The public key algorithm
 - `key_size` (Number) The public key size

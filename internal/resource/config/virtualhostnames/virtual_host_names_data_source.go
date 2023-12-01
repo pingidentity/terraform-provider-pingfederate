@@ -19,7 +19,7 @@ var (
 )
 
 // VirtualHostNamesDataSource is a helper function to simplify the provider implementation.
-func NewVirtualHostNamesDataSource() datasource.DataSource {
+func VirtualHostNamesDataSource() datasource.DataSource {
 	return &virtualHostNamesDataSource{}
 }
 
@@ -36,8 +36,8 @@ type virtualHostNamesDataSourceModel struct {
 
 // GetSchema defines the schema for the datasource.
 func (r *virtualHostNamesDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	schemaDef := schema.Schema{
-		Description: "Describes VirtualHostNames.",
+	schema := schema.Schema{
+		Description: "Describes settings for virtual host names.",
 		Attributes: map[string]schema.Attribute{
 			"virtual_host_names": schema.ListAttribute{
 				Description: "List of virtual host names.",
@@ -47,8 +47,8 @@ func (r *virtualHostNamesDataSource) Schema(ctx context.Context, req datasource.
 			},
 		},
 	}
-	id.ToSchema(&schemaDef)
-	resp.Schema = schemaDef
+	id.ToDataSourceSchema(&schema)
+	resp.Schema = schema
 }
 
 // Metadata returns the data source type name.
@@ -69,8 +69,8 @@ func (r *virtualHostNamesDataSource) Configure(_ context.Context, req datasource
 }
 
 // Read a VirtualHostNamesResponse object into the model struct
-func readVirtualHostNamesResponseDataSource(ctx context.Context, r *client.VirtualHostNameSettings, state *virtualHostNamesDataSourceModel, existingId *string) {
-	state.Id = id.GenerateUUIDToState(existingId)
+func readVirtualHostNamesResponseDataSource(ctx context.Context, r *client.VirtualHostNameSettings, state *virtualHostNamesDataSourceModel) {
+	state.Id = types.StringValue("virtual_host_names_id")
 	state.VirtualHostNames = internaltypes.GetStringList(r.VirtualHostNames)
 }
 
@@ -91,8 +91,7 @@ func (r *virtualHostNamesDataSource) Read(ctx context.Context, req datasource.Re
 	}
 
 	// Read the response into the state
-	var id = "virtual_host_names_id"
-	readVirtualHostNamesResponseDataSource(ctx, apiReadVirtualHostNames, &state, &id)
+	readVirtualHostNamesResponseDataSource(ctx, apiReadVirtualHostNames, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state

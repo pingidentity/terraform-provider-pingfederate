@@ -23,7 +23,7 @@ var (
 )
 
 // Create a Administrative Account data source
-func NewKeyPairsSslServerImportDataSource() datasource.DataSource {
+func KeyPairsSslServerImportDataSource() datasource.DataSource {
 	return &keyPairsSslServerImportDataSource{}
 }
 
@@ -35,6 +35,7 @@ type keyPairsSslServerImportDataSource struct {
 
 type keyPairsSslServerImportDataSourceModel struct {
 	Id                      types.String `tfsdk:"id"`
+	ImportId                types.String `tfsdk:"import_id"`
 	SerialNumber            types.String `tfsdk:"serial_number"`
 	SubjectDN               types.String `tfsdk:"subject_dn"`
 	SubjectAlternativeNames types.Set    `tfsdk:"subject_alternative_names"`
@@ -55,7 +56,7 @@ type keyPairsSslServerImportDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *keyPairsSslServerImportDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes a KeyPairsSslServerImport.",
+		Description: "Describes details of an SSL key pair.",
 		Attributes: map[string]schema.Attribute{
 			"serial_number": schema.StringAttribute{
 				Description: "The serial number assigned by the CA",
@@ -194,7 +195,11 @@ func (r *keyPairsSslServerImportDataSource) Schema(ctx context.Context, req data
 			},
 		},
 	}
-	id.ToDataSourceSchema(&schemaDef, true, "The persistent, unique ID for the certificate.")
+	id.ToDataSourceSchema(&schemaDef)
+	id.ToDataSourceSchemaCustomId(&schemaDef,
+		"import_id",
+		true,
+		"Unique ID for the certificate.")
 	resp.Schema = schemaDef
 }
 
@@ -216,21 +221,22 @@ func (r *keyPairsSslServerImportDataSource) Configure(_ context.Context, req dat
 
 // Read a DseeCompatAdministrativeAccountResponse object into the model struct
 func readKeyPairsSslServerImportResponseDataSource(ctx context.Context, r *client.KeyPairView, state *keyPairsSslServerImportDataSourceModel) diag.Diagnostics {
-	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
-	state.SerialNumber = internaltypes.StringTypeOrNil(r.SerialNumber, false)
-	state.SubjectDN = internaltypes.StringTypeOrNil(r.SubjectDN, false)
+	state.Id = types.StringPointerValue(r.Id)
+	state.ImportId = types.StringPointerValue(r.Id)
+	state.SerialNumber = types.StringPointerValue(r.SerialNumber)
+	state.SubjectDN = types.StringPointerValue(r.SubjectDN)
 	state.SubjectAlternativeNames = internaltypes.GetStringSet(r.SubjectAlternativeNames)
-	state.IssuerDN = internaltypes.StringTypeOrNil(r.IssuerDN, false)
-	state.ValidFrom = types.StringValue(r.ValidFrom.Format(time.RFC3339))
-	state.Expires = types.StringValue(r.Expires.Format(time.RFC3339))
-	state.KeyAlgorithm = internaltypes.StringTypeOrNil(r.KeyAlgorithm, false)
+	state.IssuerDN = types.StringPointerValue(r.IssuerDN)
+	state.ValidFrom = types.StringValue(r.GetValidFrom().Format(time.RFC3339))
+	state.Expires = types.StringValue(r.GetExpires().Format(time.RFC3339))
+	state.KeyAlgorithm = types.StringPointerValue(r.KeyAlgorithm)
 	state.KeySize = internaltypes.Int64TypeOrNil(r.KeySize)
-	state.SignatureAlgorithm = internaltypes.StringTypeOrNil(r.SignatureAlgorithm, false)
+	state.SignatureAlgorithm = types.StringPointerValue(r.SignatureAlgorithm)
 	state.Version = internaltypes.Int64TypeOrNil(r.Version)
-	state.Sha1Fingerprint = internaltypes.StringTypeOrNil(r.Sha1Fingerprint, false)
-	state.Sha256Fingerprint = internaltypes.StringTypeOrNil(r.Sha256Fingerprint, false)
-	state.Status = internaltypes.StringTypeOrNil(r.Status, false)
-	state.CryptoProvider = internaltypes.StringTypeOrNil(r.CryptoProvider, false)
+	state.Sha1Fingerprint = types.StringPointerValue(r.Sha1Fingerprint)
+	state.Sha256Fingerprint = types.StringPointerValue(r.Sha256Fingerprint)
+	state.Status = types.StringPointerValue(r.Status)
+	state.CryptoProvider = types.StringPointerValue(r.CryptoProvider)
 
 	rotationSettings := r.RotationSettings
 	rotationSettingsAttrTypes := map[string]attr.Type{

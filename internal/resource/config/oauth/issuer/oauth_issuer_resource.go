@@ -43,7 +43,7 @@ type oauthIssuerResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *oauthIssuerResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages an OAuth Issuer.",
+		Description: "Manages a virtual OAuth issuer.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Required: true,

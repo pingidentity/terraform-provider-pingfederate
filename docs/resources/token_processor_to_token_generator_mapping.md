@@ -3,12 +3,12 @@
 page_title: "pingfederate_token_processor_to_token_generator_mapping Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a Token Processor To Token Generator Mapping
+  Manages the mapping from token processor to a token generator.
 ---
 
 # pingfederate_token_processor_to_token_generator_mapping (Resource)
 
-Manages a Token Processor To Token Generator Mapping
+Manages the mapping from token processor to a token generator.
 
 ## Example Usage
 
@@ -74,6 +74,7 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "tokenProcess
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `mapping_id` (String) The id of the Token Processor to Token Generator Mapping.
 
 <a id="nestedatt--attribute_contract_fulfillment"></a>
 ### Nested Schema for `attribute_contract_fulfillment`

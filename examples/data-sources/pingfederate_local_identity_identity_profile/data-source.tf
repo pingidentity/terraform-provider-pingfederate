@@ -1,3 +1,3 @@
 data "pingfederate_local_identity_identity_profile" "myLocalIdentityIdentityProfile" {
-  id = "example"
+  profile_id = "example"
 }

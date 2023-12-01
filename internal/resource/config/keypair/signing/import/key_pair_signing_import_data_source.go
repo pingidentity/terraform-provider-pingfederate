@@ -23,7 +23,7 @@ var (
 )
 
 // Create a Administrative Account data source
-func NewKeyPairsSigningImportDataSource() datasource.DataSource {
+func KeyPairsSigningImportDataSource() datasource.DataSource {
 	return &keyPairsSigningImportDataSource{}
 }
 
@@ -35,6 +35,7 @@ type keyPairsSigningImportDataSource struct {
 
 type keyPairsSigningImportDataSourceModel struct {
 	Id                      types.String `tfsdk:"id"`
+	ImportId                types.String `tfsdk:"import_id"`
 	SerialNumber            types.String `tfsdk:"serial_number"`
 	SubjectDN               types.String `tfsdk:"subject_dn"`
 	SubjectAlternativeNames types.Set    `tfsdk:"subject_alternative_names"`
@@ -55,7 +56,7 @@ type keyPairsSigningImportDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *keyPairsSigningImportDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes a KeyPairsSigningImport.",
+		Description: "Describes details of a signing key pair.",
 		Attributes: map[string]schema.Attribute{
 			"serial_number": schema.StringAttribute{
 				Description: "The serial number assigned by the CA",
@@ -194,7 +195,11 @@ func (r *keyPairsSigningImportDataSource) Schema(ctx context.Context, req dataso
 			},
 		},
 	}
-	id.ToDataSourceSchema(&schemaDef, true, "The persistent, unique ID for the certificate.")
+	id.ToDataSourceSchema(&schemaDef)
+	id.ToDataSourceSchemaCustomId(&schemaDef,
+		"import_id",
+		true,
+		"Unique ID for the certificate.")
 	resp.Schema = schemaDef
 }
 
@@ -216,21 +221,22 @@ func (r *keyPairsSigningImportDataSource) Configure(_ context.Context, req datas
 
 // Read a DseeCompatAdministrativeAccountResponse object into the model struct
 func readKeyPairsSigningImportResponseDataSource(ctx context.Context, r *client.KeyPairView, state *keyPairsSigningImportDataSourceModel) diag.Diagnostics {
-	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
-	state.SerialNumber = internaltypes.StringTypeOrNil(r.SerialNumber, false)
-	state.SubjectDN = internaltypes.StringTypeOrNil(r.SubjectDN, false)
+	state.Id = types.StringPointerValue(r.Id)
+	state.ImportId = types.StringPointerValue(r.Id)
+	state.SerialNumber = types.StringPointerValue(r.SerialNumber)
+	state.SubjectDN = types.StringPointerValue(r.SubjectDN)
 	state.SubjectAlternativeNames = internaltypes.GetStringSet(r.SubjectAlternativeNames)
-	state.IssuerDN = internaltypes.StringTypeOrNil(r.IssuerDN, false)
+	state.IssuerDN = types.StringPointerValue(r.IssuerDN)
 	state.ValidFrom = types.StringValue(r.ValidFrom.Format(time.RFC3339))
 	state.Expires = types.StringValue(r.Expires.Format(time.RFC3339))
-	state.KeyAlgorithm = internaltypes.StringTypeOrNil(r.KeyAlgorithm, false)
+	state.KeyAlgorithm = types.StringPointerValue(r.KeyAlgorithm)
 	state.KeySize = internaltypes.Int64TypeOrNil(r.KeySize)
-	state.SignatureAlgorithm = internaltypes.StringTypeOrNil(r.SignatureAlgorithm, false)
+	state.SignatureAlgorithm = types.StringPointerValue(r.SignatureAlgorithm)
 	state.Version = internaltypes.Int64TypeOrNil(r.Version)
-	state.Sha1Fingerprint = internaltypes.StringTypeOrNil(r.Sha1Fingerprint, false)
-	state.Sha256Fingerprint = internaltypes.StringTypeOrNil(r.Sha256Fingerprint, false)
-	state.Status = internaltypes.StringTypeOrNil(r.Status, false)
-	state.CryptoProvider = internaltypes.StringTypeOrNil(r.CryptoProvider, false)
+	state.Sha1Fingerprint = types.StringPointerValue(r.Sha1Fingerprint)
+	state.Sha256Fingerprint = types.StringPointerValue(r.Sha256Fingerprint)
+	state.Status = types.StringPointerValue(r.Status)
+	state.CryptoProvider = types.StringPointerValue(r.CryptoProvider)
 
 	rotationSettings := r.RotationSettings
 	rotationSettingsAttrTypes := map[string]attr.Type{
@@ -257,9 +263,9 @@ func (r *keyPairsSigningImportDataSource) Read(ctx context.Context, req datasour
 		return
 	}
 
-	apiReadKeyPairsSigningImport, httpResp, err := r.apiClient.KeyPairsSigningAPI.GetSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadKeyPairsSigningImport, httpResp, err := r.apiClient.KeyPairsSigningAPI.GetSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ImportId.ValueString()).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPair Signing Import", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the key pair signing import file", err, httpResp)
 		return
 	}
 

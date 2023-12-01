@@ -1,14 +1,36 @@
-# v0.3.0 (unreleased)
+# v0.4.0 (unreleased)
+### FEATURES
+#### Resources
+* **New Resource:** `pingfederate_oauth_client` ([#111](https://github.com/pingidentity/terraform-provider-pingfederate/pull/111))
+* **Resource Update:** `pingfederate_oauth_token_exchange_processor_policy_token_generator_mapping` corrected to `pingfederate_oauth_token_exchange_token_generator_mapping`
+
+#### Data Sources
+* **New Data Source:** `pingfederate_authentication_policy_contract` ([#118](https://github.com/pingidentity/terraform-provider-pingfederate/pull/118))
+* **New Data Source:** `pingfederate_data_store` ([#123](https://github.com/pingidentity/terraform-provider-pingfederate/pull/123))
+* **New Data Source:** `pingfederate_idp_adapter` ([#125](https://github.com/pingidentity/terraform-provider-pingfederate/pull/125))
+* **New Data Source:** `pingfederate_oauth_client` ([#111](https://github.com/pingidentity/terraform-provider-pingfederate/pull/111))
+* **New Data Source:** `pingfederate_oauth_token_exchange_token_generator_mapping` ([#122](https://github.com/pingidentity/terraform-provider-pingfederate/pull/122))
+* **New Data Source:** `pingfederate_password_credential_validator` ([#119](https://github.com/pingidentity/terraform-provider-pingfederate/pull/119))
+* **New Data Source:** `pingfederate_session_policies_global` ([#117](https://github.com/pingidentity/terraform-provider-pingfederate/pull/117))
+* **New Data Source:** `pingfederate_sp_authentication_policy_contract_mapping` ([#124](https://github.com/pingidentity/terraform-provider-pingfederate/pull/124))
+* **New Data Source:** `pingfederate_token_processor_to_token_generator_mapping` ([#120](https://github.com/pingidentity/terraform-provider-pingfederate/pull/120))
+* **New Data Source:** `pingfederate_oauth_open_id_connect_policy` ([#121](https://github.com/pingidentity/terraform-provider-pingfederate/pull/121))
+
+# v0.3.0 November 22, 2023
 ### FEATURES
 #### Resources
 * **New Resource:** `pingfederate_oauth_open_id_connect_policy` ([#105](https://github.com/pingidentity/terraform-provider-pingfederate/pull/105))
 * **New Resource:** `pingfederate_idp_sp_connection` ([#128](https://github.com/pingidentity/terraform-provider-pingfederate/pull/128))
 
 #### Data Sources
-* **New Data Source:** `session_application_session_policy datasource` ([#94](https://github.com/pingidentity/terraform-provider-pingfederate/pull/94))
-* **New Data Source:** `protocol_metadata_lifetime_settings datasource` ([#100](https://github.com/pingidentity/terraform-provider-pingfederate/pull/100))
-* **New Data Source:** `server_settings_general_settings datasource` ([#101](https://github.com/pingidentity/terraform-provider-pingfederate/pull/101))
-* **New Data Source:** `server_settings_log_settings datasource` ([#104](https://github.com/pingidentity/terraform-provider-pingfederate/pull/104))
+* **New Data Source:** `pingfederate_protocol_metadata_lifetime_settings` ([#100](https://github.com/pingidentity/terraform-provider-pingfederate/pull/100))
+* **New Data Source:** `pingfederate_redirect_validation` ([#116](https://github.com/pingidentity/terraform-provider-pingfederate/pull/116))
+* **New Data Source:** `pingfederate_server_settings_general_settings` ([#101](https://github.com/pingidentity/terraform-provider-pingfederate/pull/101))
+* **New Data Source:** `pingfederate_server_settings_log_settings` ([#104](https://github.com/pingidentity/terraform-provider-pingfederate/pull/104))
+* **New Data Source:** `pingfederate_server_settings_general_settings` ([#105](https://github.com/pingidentity/terraform-provider-pingfederate/pull/105))
+* **New Data Source:** `pingfederate_server_settings_system_keys` ([#112](https://github.com/pingidentity/terraform-provider-pingfederate/pull/112))
+* **New Data Source:** `pingfederate_session_settings` ([#115](https://github.com/pingidentity/terraform-provider-pingfederate/pull/115))
+
 
 # v0.2.1 November 10, 2023
 ### BUG FIXES

@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -16,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -33,20 +30,6 @@ var (
 	_ resource.ResourceWithImportState = &passwordCredentialValidatorResource{}
 )
 
-var (
-	attrType = map[string]attr.Type{
-		"name": basetypes.StringType{},
-	}
-
-	attributeContractTypes = map[string]attr.Type{
-		"core_attributes":     basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
-		"extended_attributes": basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
-		"inherited":           basetypes.BoolType{},
-	}
-
-	emptyAttrList, _ = types.ListValue(types.ObjectType{AttrTypes: attrType}, nil)
-)
-
 // PasswordCredentialValidatorResource is a helper function to simplify the provider implementation.
 func PasswordCredentialValidatorResource() resource.Resource {
 	return &passwordCredentialValidatorResource{}
@@ -58,20 +41,10 @@ type passwordCredentialValidatorResource struct {
 	apiClient      *client.APIClient
 }
 
-type passwordCredentialValidatorResourceModel struct {
-	AttributeContract   types.Object `tfsdk:"attribute_contract"`
-	Id                  types.String `tfsdk:"id"`
-	ValidatorId         types.String `tfsdk:"validator_id"`
-	Name                types.String `tfsdk:"name"`
-	PluginDescriptorRef types.Object `tfsdk:"plugin_descriptor_ref"`
-	ParentRef           types.Object `tfsdk:"parent_ref"`
-	Configuration       types.Object `tfsdk:"configuration"`
-}
-
 // GetSchema defines the schema for the resource.
 func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a Password Credential Validator",
+		Description: "Manages a password credential validator plugin instance.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Description: "The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
@@ -149,7 +122,7 @@ func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req re
 	resp.Schema = schema
 }
 
-func addOptionalPasswordCredentialValidatorFields(ctx context.Context, addRequest *client.PasswordCredentialValidator, plan passwordCredentialValidatorResourceModel) error {
+func addOptionalPasswordCredentialValidatorFields(ctx context.Context, addRequest *client.PasswordCredentialValidator, plan passwordCredentialValidatorModel) error {
 	if internaltypes.IsDefined(plan.ParentRef) {
 		if plan.ParentRef.Attributes()["id"].(types.String).ValueString() != "" {
 			addRequest.ParentRef = client.NewResourceLinkWithDefaults()
@@ -191,65 +164,8 @@ func (r *passwordCredentialValidatorResource) Configure(_ context.Context, req r
 
 }
 
-func readPasswordCredentialValidatorResponse(ctx context.Context, r *client.PasswordCredentialValidator, state *passwordCredentialValidatorResourceModel, configurationFromPlan basetypes.ObjectValue) diag.Diagnostics {
-	var diags, respDiags diag.Diagnostics
-	state.Id = types.StringValue(r.Id)
-	state.ValidatorId = types.StringValue(r.Id)
-	state.Name = types.StringValue(r.Name)
-	state.PluginDescriptorRef, respDiags = resourcelink.ToState(ctx, &r.PluginDescriptorRef)
-	diags.Append(respDiags...)
-	state.ParentRef, respDiags = resourcelink.ToState(ctx, r.ParentRef)
-	diags.Append(respDiags...)
-	state.Configuration, respDiags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration)
-	diags.Append(respDiags...)
-
-	// state.AttributeContract
-	if r.AttributeContract == nil {
-		state.AttributeContract = types.ObjectNull(attributeContractTypes)
-	} else {
-		attrContract := r.AttributeContract
-		// state.AttributeContract core_attributes
-		attributeContractClientCoreAttributes := attrContract.CoreAttributes
-		coreAttrs := []client.PasswordCredentialValidatorAttribute{}
-		for _, ca := range attributeContractClientCoreAttributes {
-			coreAttribute := client.PasswordCredentialValidatorAttribute{}
-			coreAttribute.Name = ca.Name
-			coreAttrs = append(coreAttrs, coreAttribute)
-		}
-		attributeContractCoreAttributes, respDiags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
-		diags.Append(respDiags...)
-
-		// state.AttributeContract extended_attributes
-		attributeContractClientExtendedAttributes := attrContract.ExtendedAttributes
-		extdAttrs := []client.PasswordCredentialValidatorAttribute{}
-		for _, ea := range attributeContractClientExtendedAttributes {
-			extendedAttr := client.PasswordCredentialValidatorAttribute{}
-			extendedAttr.Name = ea.Name
-			extdAttrs = append(extdAttrs, extendedAttr)
-		}
-		attributeContractExtendedAttributes, respDiags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
-		diags.Append(respDiags...)
-
-		// PF can return inherited as nil when it is false
-		inherited := false
-		if attrContract.Inherited != nil {
-			inherited = *attrContract.Inherited
-		}
-
-		attributeContractValues := map[string]attr.Value{
-			"core_attributes":     attributeContractCoreAttributes,
-			"extended_attributes": attributeContractExtendedAttributes,
-			"inherited":           types.BoolValue(inherited),
-		}
-		state.AttributeContract, respDiags = types.ObjectValue(attributeContractTypes, attributeContractValues)
-		diags.Append(respDiags...)
-	}
-
-	return diags
-}
-
 func (r *passwordCredentialValidatorResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan passwordCredentialValidatorResourceModel
+	var plan passwordCredentialValidatorModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -288,16 +204,16 @@ func (r *passwordCredentialValidatorResource) Create(ctx context.Context, req re
 	}
 
 	// Read the response into the state
-	var state passwordCredentialValidatorResourceModel
+	var state passwordCredentialValidatorModel
 
-	diags = readPasswordCredentialValidatorResponse(ctx, passwordCredentialValidatorsResponse, &state, plan.Configuration)
+	diags = readPasswordCredentialValidatorResponse(ctx, passwordCredentialValidatorsResponse, &state, plan.Configuration, true)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
 func (r *passwordCredentialValidatorResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state passwordCredentialValidatorResourceModel
+	var state passwordCredentialValidatorModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -316,7 +232,7 @@ func (r *passwordCredentialValidatorResource) Read(ctx context.Context, req reso
 	}
 
 	// Read the response into the state
-	diags = readPasswordCredentialValidatorResponse(ctx, apiReadPasswordCredentialValidators, &state, state.Configuration)
+	diags = readPasswordCredentialValidatorResponse(ctx, apiReadPasswordCredentialValidators, &state, state.Configuration, true)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -326,7 +242,7 @@ func (r *passwordCredentialValidatorResource) Read(ctx context.Context, req reso
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *passwordCredentialValidatorResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan passwordCredentialValidatorResourceModel
+	var plan passwordCredentialValidatorModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -364,7 +280,7 @@ func (r *passwordCredentialValidatorResource) Update(ctx context.Context, req re
 	}
 
 	// Read the response
-	diags = readPasswordCredentialValidatorResponse(ctx, updatePasswordCredentialValidatorsResponse, &plan, plan.Configuration)
+	diags = readPasswordCredentialValidatorResponse(ctx, updatePasswordCredentialValidatorsResponse, &plan, plan.Configuration, true)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -374,7 +290,7 @@ func (r *passwordCredentialValidatorResource) Update(ctx context.Context, req re
 
 // // Delete deletes the resource and removes the Terraform state on success.
 func (r *passwordCredentialValidatorResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state passwordCredentialValidatorResourceModel
+	var state passwordCredentialValidatorModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

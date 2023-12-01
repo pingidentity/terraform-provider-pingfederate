@@ -96,7 +96,11 @@ resource "pingfederate_redirect_validation" "%[1]s" {
   redirect_validation_partner_settings = {
     enable_wreply_validation_slo = %[4]t
   }
-}`, resourceName,
+}
+data "pingfederate_redirect_validation" "%[1]s" {
+  depends_on = [pingfederate_redirect_validation.%[1]s]
+}
+`, resourceName,
 		resourceModel.enableTargetResourceValidationForSso,
 		resourceModel.whiteListValidDomain,
 		resourceModel.enableWreplyValidationSlo,

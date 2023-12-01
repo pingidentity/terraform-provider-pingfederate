@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -20,7 +19,7 @@ var (
 )
 
 // Create a Administrative Account data source
-func NewAdministrativeAccountDataSource() datasource.DataSource {
+func AdministrativeAccountDataSource() datasource.DataSource {
 	return &administrativeAccountDataSource{}
 }
 
@@ -46,8 +45,8 @@ type administrativeAccountDataSourceModel struct {
 
 // GetSchema defines the schema for the datasource.
 func (r *administrativeAccountDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	schemaDef := schema.Schema{
-		Description: "Describes a Administrative Account.",
+	schema := schema.Schema{
+		Description: "Describes an administrative account.",
 		Attributes: map[string]schema.Attribute{
 			"active": schema.BoolAttribute{
 				Description: "Indicates whether the account is active or not.",
@@ -62,7 +61,7 @@ func (r *administrativeAccountDataSource) Schema(ctx context.Context, req dataso
 				Computed:    true,
 			},
 			"department": schema.StringAttribute{
-				Description: "The Department name of account user.",
+				Description: "The Department name of the account user.",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
@@ -106,14 +105,12 @@ func (r *administrativeAccountDataSource) Schema(ctx context.Context, req dataso
 			},
 			"username": schema.StringAttribute{
 				Description: "Username for the Administrative Account.",
-				Required:    false,
-				Optional:    false,
-				Computed:    true,
+				Required:    true,
 			},
 		},
 	}
-	id.ToDataSourceSchema(&schemaDef, true, "Computed attribute tied to the username property of this resource")
-	resp.Schema = schemaDef
+	id.ToDataSourceSchema(&schema)
+	resp.Schema = schema
 }
 
 // Metadata returns the data source type name.
@@ -158,16 +155,8 @@ func (r *administrativeAccountDataSource) Read(ctx context.Context, req datasour
 
 	apiReadAdministrativeAccount, httpResp, err := r.apiClient.AdministrativeAccountsAPI.GetAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Username.ValueString()).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Administrative Account", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the administrative account", err, httpResp)
 		return
-	}
-
-	// Log response JSON
-	responseJson, responseErr := apiReadAdministrativeAccount.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
-	} else {
-		diags.AddError("There was an issue retrieving the response of an Administrative Account: %s", responseErr.Error())
 	}
 
 	// Read the response into the state

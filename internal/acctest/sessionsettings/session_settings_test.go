@@ -74,6 +74,10 @@ func testAccSessionSettings(resourceName string, resourceModel *sessionSettingsR
 	return fmt.Sprintf(`
 resource "pingfederate_session_settings" "%s" {
   %s
+}
+
+data "pingfederate_server_settings_general_settings" "myServerSettings" {
+  depends_on = [pingfederate_session_settings.%[1]s]
 }`, resourceName,
 		optionalHcl,
 	)

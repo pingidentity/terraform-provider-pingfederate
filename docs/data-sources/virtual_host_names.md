@@ -3,12 +3,12 @@
 page_title: "pingfederate_virtual_host_names Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes VirtualHostNames.
+  Describes settings for virtual host names.
 ---
 
 # pingfederate_virtual_host_names (Data Source)
 
-Describes VirtualHostNames.
+Describes settings for virtual host names.
 
 ## Example Usage
 
@@ -22,5 +22,5 @@ data "pingfederate_virtual_host_names" "myVirtualHostNamesExample" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) ID of this resource.
 - `virtual_host_names` (List of String) List of virtual host names.

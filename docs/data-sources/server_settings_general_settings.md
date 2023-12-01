@@ -3,12 +3,12 @@
 page_title: "pingfederate_server_settings_general_settings Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes ServerSettingsGeneralSettings.
+  Describes the general server settings.
 ---
 
 # pingfederate_server_settings_general_settings (Data Source)
 
-Describes ServerSettingsGeneralSettings.
+Describes the general server settings.
 
 ## Example Usage
 
@@ -24,7 +24,7 @@ data "pingfederate_server_settings_general_settings" "myServerSettingsGeneralSet
 
 - `datastore_validation_interval_secs` (Number) How long (in seconds) the result of testing a datastore connection is cached.
 - `disable_automatic_connection_validation` (Boolean) Boolean that disables automatic connection validation when set to true.
-- `id` (String) The ID of this resource.
+- `id` (String) ID of this resource.
 - `idp_connection_transaction_logging_override` (String) Describes the level of transaction logging for all identity provider connections. The default is DONT_OVERRIDE, in which case the logging level will be determined by each individual IdP connection [ DONT_OVERRIDE, NONE, FULL, STANDARD, ENHANCED ]
 - `request_header_for_correlation_id` (String) HTTP request header for retrieving correlation ID.
 - `sp_connection_transaction_logging_override` (String) Determines the level of transaction logging for all service provider connections. The default is DONT_OVERRIDE, in which case the logging level will be determined by each individual SP connection [ DONT_OVERRIDE, NONE, FULL, STANDARD, ENHANCED ]

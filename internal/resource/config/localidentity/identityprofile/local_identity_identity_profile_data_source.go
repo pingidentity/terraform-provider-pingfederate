@@ -22,7 +22,7 @@ var (
 )
 
 // Create a Administrative Account data source
-func NewLocalIdentityIdentityProfileDataSource() datasource.DataSource {
+func LocalIdentityIdentityProfileDataSource() datasource.DataSource {
 	return &localIdentityIdentityProfileDataSource{}
 }
 
@@ -34,6 +34,7 @@ type localIdentityIdentityProfileDataSource struct {
 
 type localIdentityIdentityProfileDataSourceModel struct {
 	Id                      types.String `tfsdk:"id"`
+	ProfileId               types.String `tfsdk:"profile_id"`
 	Name                    types.String `tfsdk:"name"`
 	ApcId                   types.Object `tfsdk:"apc_id"`
 	AuthSources             types.List   `tfsdk:"auth_sources"`
@@ -50,7 +51,7 @@ type localIdentityIdentityProfileDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes Local Identity Identity Profiles",
+		Description: "Describes a configured local identity profile.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Description: "The local identity profile name. Name is unique.",
@@ -523,8 +524,12 @@ func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req
 			},
 		},
 	}
-
-	id.ToDataSourceSchema(&schemaDef, true, "The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.")
+	id.ToDataSourceSchema(&schemaDef)
+	id.ToDataSourceSchemaCustomId(&schemaDef,
+		"profile_id",
+		true,
+		"Unique ID for the local identity profile",
+	)
 	resp.Schema = schemaDef
 }
 
@@ -547,7 +552,8 @@ func (r *localIdentityIdentityProfileDataSource) Configure(_ context.Context, re
 // Read a DseeCompatAdministrativeAccountResponse object into the model struct
 func readLocalIdentityIdentityProfileResponseDataSource(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfileDataSourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
+	state.Id = types.StringPointerValue(r.Id)
+	state.ProfileId = types.StringPointerValue(r.Id)
 	state.Name = types.StringValue(r.Name)
 	state.ApcId, respDiags = resourcelink.ToState(ctx, &r.ApcId)
 	diags.Append(respDiags...)
@@ -623,7 +629,7 @@ func (r *localIdentityIdentityProfileDataSource) Read(ctx context.Context, req d
 
 	apiReadLocalIdentityIdentityProfile, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.GetIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Local Identity Profile", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the local identity profile", err, httpResp)
 		return
 	}
 

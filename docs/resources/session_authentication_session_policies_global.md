@@ -3,12 +3,12 @@
 page_title: "pingfederate_session_authentication_session_policies_global Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a SessionAuthenticationSessionPoliciesGlobal.
+  Manages the global settings for authentication session policies.
 ---
 
 # pingfederate_session_authentication_session_policies_global (Resource)
 
-Manages a SessionAuthenticationSessionPoliciesGlobal.
+Manages the global settings for authentication session policies.
 
 ## Example Usage
 

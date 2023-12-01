@@ -74,7 +74,7 @@ type serverSettingsLogSettingsResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *serverSettingsLogSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "LogSettings Settings related to server logging.",
+		Description: "Manages the settings related to server logging.",
 		Attributes: map[string]schema.Attribute{
 			"log_categories": schema.SetNestedAttribute{
 				Description: "The log categories defined for the system and whether they are enabled. On a PUT request, if a category is not included in the list, it will be disabled.",
@@ -158,24 +158,10 @@ func (r *serverSettingsLogSettingsResource) Configure(_ context.Context, req res
 }
 
 func readServerSettingsLogSettingsResponse(ctx context.Context, r *client.LogSettings, state *serverSettingsLogSettingsResourceModel, existingId *string) diag.Diagnostics {
-	var diags, respDiags diag.Diagnostics
+	var diags diag.Diagnostics
 	state.Id = id.GenerateUUIDToState(existingId)
-	logCategorySettings := r.GetLogCategories()
-	var LogCategorySliceAttrVal = []attr.Value{}
-	LogCategorySliceType := types.ObjectType{AttrTypes: logCategoriesAttrTypes}
-	for i := 0; i < len(logCategorySettings); i++ {
-		logCategoriesAttrValues := map[string]attr.Value{
-			"id":          types.StringValue(logCategorySettings[i].Id),
-			"name":        types.StringPointerValue(logCategorySettings[i].Name),
-			"description": types.StringPointerValue(logCategorySettings[i].Description),
-			"enabled":     types.BoolPointerValue(logCategorySettings[i].Enabled),
-		}
-		LogCategoryObj, _ := types.ObjectValue(logCategoriesAttrTypes, logCategoriesAttrValues)
-		LogCategorySliceAttrVal = append(LogCategorySliceAttrVal, LogCategoryObj)
-	}
-	LogCategorySlice, respDiags := types.SetValue(LogCategorySliceType, LogCategorySliceAttrVal)
-	diags.Append(respDiags...)
-	state.LogCategories = LogCategorySlice
+
+	state.LogCategories, diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: logCategoriesAttrTypes}, r.LogCategories)
 	return diags
 }
 

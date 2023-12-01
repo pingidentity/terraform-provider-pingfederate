@@ -46,7 +46,7 @@ type serverSettingsGeneralSettingsResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *serverSettingsGeneralSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a ServerSettingsGeneralSettings.",
+		Description: "Manages the general server settings.",
 		Attributes: map[string]schema.Attribute{
 			"datastore_validation_interval_secs": schema.Int64Attribute{
 				Description: "Determines how long (in seconds) the result of testing a datastore connection is cached. The default is 300.",

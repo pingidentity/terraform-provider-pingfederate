@@ -266,6 +266,9 @@ resource "pingfederate_data_store" "%[1]s" {
       ]
     }
   }
+}
+data "pingfederate_data_store" "%[1]s" {
+  data_store_id = pingfederate_data_store.%[1]s.id
 }`, resourceName,
 		customDataStoreId,
 		resourceModel.maskAttributeValues,

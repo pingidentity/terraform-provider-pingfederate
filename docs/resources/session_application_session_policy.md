@@ -3,12 +3,12 @@
 page_title: "pingfederate_session_application_session_policy Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a SessionApplicationSessionPolicy.
+  Manages the settings for an application session policy.
 ---
 
 # pingfederate_session_application_session_policy (Resource)
 
-Manages a SessionApplicationSessionPolicy.
+Manages the settings for an application session policy.
 
 ## Example Usage
 

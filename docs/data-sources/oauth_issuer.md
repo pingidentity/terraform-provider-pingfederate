@@ -3,12 +3,12 @@
 page_title: "pingfederate_oauth_issuer Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes an OAuth Issuer.
+  Describes a virtual OAuth issuer.
 ---
 
 # pingfederate_oauth_issuer (Data Source)
 
-Describes an OAuth Issuer.
+Describes a virtual OAuth issuer.
 
 ## Example Usage
 
@@ -29,6 +29,6 @@ data "pingfederate_oauth_issuer" "myOauthIssuer" {
 
 - `description` (String)
 - `host` (String)
-- `id` (String) The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-].
+- `id` (String) ID of this resource.
 - `name` (String)
 - `path` (String)

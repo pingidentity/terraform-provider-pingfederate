@@ -9,7 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
+	resourcelinkdatasource "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -21,7 +22,7 @@ var (
 )
 
 // Create a Authentication Api Settings data source
-func NewAuthenticationApiSettingsDataSource() datasource.DataSource {
+func AuthenticationApiSettingsDataSource() datasource.DataSource {
 	return &authenticationApiSettingsDataSource{}
 }
 
@@ -59,7 +60,7 @@ type authenticationApiSettingsDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *authenticationApiSettingsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes a AuthenticationApiSettings.",
+		Description: "Describes the authentication API application settings.",
 		Attributes: map[string]schema.Attribute{
 			"api_enabled": schema.BoolAttribute{
 				Description: "Enable Authentication API",
@@ -78,7 +79,7 @@ func (r *authenticationApiSettingsDataSource) Schema(ctx context.Context, req da
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
-				Attributes:  resourcelink.ToDataSourceSchema(),
+				Attributes:  resourcelinkdatasource.ToDataSourceSchema(),
 			},
 			"restrict_access_to_redirectless_mode": schema.BoolAttribute{
 				Description: "Enable restrict access to redirectless mode",
@@ -94,7 +95,7 @@ func (r *authenticationApiSettingsDataSource) Schema(ctx context.Context, req da
 			},
 		},
 	}
-	id.ToDataSourceSchema(&schemaDef, false, "The ID of this resource.")
+	id.ToDataSourceSchema(&schemaDef)
 	resp.Schema = schemaDef
 }
 
@@ -105,7 +106,7 @@ func readAuthenticationApiSettingsResponseDataSource(ctx context.Context, r *cli
 	state.EnableApiDescriptions = types.BoolPointerValue(r.EnableApiDescriptions)
 	state.RestrictAccessToRedirectlessMode = types.BoolPointerValue(r.RestrictAccessToRedirectlessMode)
 	state.IncludeRequestContext = types.BoolPointerValue(r.IncludeRequestContext)
-	resourceLinkObjectValue, valueFromDiags := resourcelink.ToDataSourceState(ctx, r.DefaultApplicationRef)
+	resourceLinkObjectValue, valueFromDiags := resourcelink.ToState(ctx, r.DefaultApplicationRef)
 	state.DefaultApplicationRef = resourceLinkObjectValue
 
 	return valueFromDiags
@@ -123,7 +124,7 @@ func (r *authenticationApiSettingsDataSource) Read(ctx context.Context, req data
 
 	apiReadAuthenticationApiSettings, httpResp, err := r.apiClient.AuthenticationApiAPI.GetAuthenticationApiSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Authentication Api Settings", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the authentication API settings", err, httpResp)
 		return
 	}
 

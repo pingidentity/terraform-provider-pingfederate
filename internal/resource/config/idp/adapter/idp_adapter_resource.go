@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -33,54 +31,6 @@ var (
 	_ resource.ResourceWithImportState = &idpAdapterResource{}
 )
 
-// Define attribute types for object types
-var (
-	// May move some of this into common package if future resources need this
-	attributesAttrType = map[string]attr.Type{
-		"name":      types.StringType,
-		"pseudonym": types.BoolType,
-		"masked":    types.BoolType,
-	}
-
-	attributeContractAttrTypes = map[string]attr.Type{
-		"core_attributes": types.SetType{
-			ElemType: types.ObjectType{
-				AttrTypes: attributesAttrType,
-			},
-		},
-		"core_attributes_all": types.SetType{
-			ElemType: types.ObjectType{
-				AttrTypes: attributesAttrType,
-			},
-		},
-		"extended_attributes": types.SetType{
-			ElemType: types.ObjectType{
-				AttrTypes: attributesAttrType,
-			},
-		},
-		"unique_user_key_attribute": types.StringType,
-		"mask_ognl_values":          types.BoolType,
-		"inherited":                 types.BoolType,
-	}
-
-	attributeMappingAttrTypes = map[string]attr.Type{
-		"attribute_sources": types.ListType{
-			ElemType: types.ObjectType{
-				AttrTypes: attributesources.ElemAttrType(),
-			},
-		},
-		"attribute_contract_fulfillment": attributecontractfulfillment.MapType(),
-		"issuance_criteria": types.ObjectType{
-			AttrTypes: issuancecriteria.AttrType(),
-		},
-		"inherited": types.BoolType,
-	}
-
-	extendedAttributesDefault, _ = types.SetValue(types.ObjectType{
-		AttrTypes: attributesAttrType,
-	}, nil)
-)
-
 // IdpAdapterResource is a helper function to simplify the provider implementation.
 func IdpAdapterResource() resource.Resource {
 	return &idpAdapterResource{}
@@ -92,22 +42,10 @@ type idpAdapterResource struct {
 	apiClient      *client.APIClient
 }
 
-type idpAdapterResourceModel struct {
-	AuthnCtxClassRef    types.String `tfsdk:"authn_ctx_class_ref"`
-	Id                  types.String `tfsdk:"id"`
-	AdapterId           types.String `tfsdk:"adapter_id"`
-	Name                types.String `tfsdk:"name"`
-	PluginDescriptorRef types.Object `tfsdk:"plugin_descriptor_ref"`
-	ParentRef           types.Object `tfsdk:"parent_ref"`
-	Configuration       types.Object `tfsdk:"configuration"`
-	AttributeMapping    types.Object `tfsdk:"attribute_mapping"`
-	AttributeContract   types.Object `tfsdk:"attribute_contract"`
-}
-
 // GetSchema defines the schema for the resource.
 func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages an Idp Adapter",
+		Description: "Manages an IdP adapter instance.",
 		Attributes: map[string]schema.Attribute{
 			"authn_ctx_class_ref": schema.StringAttribute{
 				Description: "The fixed value that indicates how the user was authenticated.",
@@ -253,7 +191,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 	resp.Schema = schema
 }
 
-func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdapter, plan idpAdapterResourceModel) error {
+func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdapter, plan idpAdapterModel) error {
 	var err error
 	if internaltypes.IsDefined(plan.AuthnCtxClassRef) {
 		addRequest.AuthnCtxClassRef = plan.AuthnCtxClassRef.ValueStringPointer()
@@ -319,92 +257,8 @@ func (r *idpAdapterResource) Configure(_ context.Context, req resource.Configure
 
 }
 
-func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *idpAdapterResourceModel, plan idpAdapterResourceModel) diag.Diagnostics {
-	var diags, respDiags diag.Diagnostics
-	state.AuthnCtxClassRef = internaltypes.StringTypeOrNil(r.AuthnCtxClassRef, false)
-	state.AdapterId = types.StringValue(r.Id)
-	state.Id = types.StringValue(r.Id)
-	state.Name = types.StringValue(r.Name)
-	state.PluginDescriptorRef, diags = resourcelink.ToState(ctx, &r.PluginDescriptorRef)
-	respDiags.Append(diags...)
-	state.ParentRef, diags = resourcelink.ToState(ctx, r.ParentRef)
-	respDiags.Append(diags...)
-	// Configuration
-	state.Configuration, diags = pluginconfiguration.ToState(plan.Configuration, &r.Configuration)
-	respDiags.Append(diags...)
-
-	if r.AttributeContract != nil {
-		attributeContractValues := map[string]attr.Value{}
-		attributeContractValues["extended_attributes"], diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attributesAttrType}, r.AttributeContract.ExtendedAttributes)
-		respDiags.Append(diags...)
-		attributeContractValues["core_attributes_all"], diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attributesAttrType}, r.AttributeContract.CoreAttributes)
-		respDiags.Append(diags...)
-		attributeContractValues["unique_user_key_attribute"] = types.StringPointerValue(r.AttributeContract.UniqueUserKeyAttribute)
-		attributeContractValues["mask_ognl_values"] = types.BoolPointerValue(r.AttributeContract.MaskOgnlValues)
-
-		// PF returns false as nil for inherited in some cases
-		inherited := false
-		if r.AttributeContract.Inherited != nil {
-			inherited = *r.AttributeContract.Inherited
-		}
-
-		attributeContractValues["inherited"] = types.BoolValue(inherited)
-
-		// Only include core_attributes specified in the plan in the response
-		if internaltypes.IsDefined(plan.AttributeContract) && internaltypes.IsDefined(plan.AttributeContract.Attributes()["core_attributes"]) {
-			coreAttributes := []attr.Value{}
-			planCoreAttributeNames := map[string]bool{}
-			for _, planCoreAttr := range plan.AttributeContract.Attributes()["core_attributes"].(types.Set).Elements() {
-				planCoreAttributeNames[planCoreAttr.(types.Object).Attributes()["name"].(types.String).ValueString()] = true
-			}
-			for _, coreAttr := range r.AttributeContract.CoreAttributes {
-				_, attrInPlan := planCoreAttributeNames[coreAttr.Name]
-				if attrInPlan {
-					attrObjVal, diags := types.ObjectValueFrom(ctx, attributesAttrType, coreAttr)
-					respDiags.Append(diags...)
-					coreAttributes = append(coreAttributes, attrObjVal)
-				}
-			}
-			attributeContractValues["core_attributes"], diags = types.SetValue(types.ObjectType{AttrTypes: attributesAttrType}, coreAttributes)
-			respDiags.Append(diags...)
-		} else {
-			attributeContractValues["core_attributes"] = types.SetNull(types.ObjectType{AttrTypes: attributesAttrType})
-		}
-
-		state.AttributeContract, diags = types.ObjectValue(attributeContractAttrTypes, attributeContractValues)
-		respDiags.Append(diags...)
-	}
-
-	if r.AttributeMapping != nil {
-		attributeMappingValues := map[string]attr.Value{
-			"inherited": types.BoolPointerValue(r.AttributeMapping.Inherited),
-		}
-		// The PF API won't return inherited if it is false
-		if r.AttributeMapping.Inherited == nil {
-			attributeMappingValues["inherited"] = types.BoolValue(false)
-		}
-
-		// Build attribute_contract_fulfillment value
-		attributeMappingValues["attribute_contract_fulfillment"], diags = attributecontractfulfillment.ToState(ctx, r.AttributeMapping.AttributeContractFulfillment)
-		respDiags.Append(diags...)
-
-		// Build issuance_criteria value
-		attributeMappingValues["issuance_criteria"], diags = issuancecriteria.ToState(ctx, r.AttributeMapping.IssuanceCriteria)
-		respDiags.Append(diags...)
-
-		// Build attribute_sources value
-		attributeMappingValues["attribute_sources"], respDiags = attributesources.ToState(ctx, r.AttributeMapping.AttributeSources)
-		diags.Append(respDiags...)
-
-		// Build complete attribute mapping value
-		state.AttributeMapping, diags = types.ObjectValue(attributeMappingAttrTypes, attributeMappingValues)
-		respDiags.Append(diags...)
-	}
-	return respDiags
-}
-
 func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan idpAdapterResourceModel
+	var plan idpAdapterModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -442,16 +296,16 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	// Read the response into the state
-	var state idpAdapterResourceModel
+	var state idpAdapterModel
 
-	readResponseDiags := readIdpAdapterResponse(ctx, idpAdapterResponse, &state, plan)
+	readResponseDiags := readIdpAdapterResponse(ctx, idpAdapterResponse, &state, &plan)
 	resp.Diagnostics.Append(readResponseDiags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
 func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state idpAdapterResourceModel
+	var state idpAdapterModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -470,7 +324,7 @@ func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// Read the response into the state
-	readResponseDiags := readIdpAdapterResponse(ctx, apiReadIdpAdapter, &state, state)
+	readResponseDiags := readIdpAdapterResponse(ctx, apiReadIdpAdapter, &state, &state)
 	resp.Diagnostics.Append(readResponseDiags...)
 
 	// Set refreshed state
@@ -482,7 +336,7 @@ func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest,
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	var plan idpAdapterResourceModel
+	var plan idpAdapterModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -521,8 +375,8 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	// Read the response
-	var state idpAdapterResourceModel
-	readResponseDiags := readIdpAdapterResponse(ctx, updateIdpAdapterResponse, &state, plan)
+	var state idpAdapterModel
+	readResponseDiags := readIdpAdapterResponse(ctx, updateIdpAdapterResponse, &state, &plan)
 	resp.Diagnostics.Append(readResponseDiags...)
 
 	// Update computed values
@@ -531,10 +385,10 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 
 }
 
-// Delete the Idp Adapter
+// Delete the IdP Adapter
 func (r *idpAdapterResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state idpAdapterResourceModel
+	var state idpAdapterModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -542,7 +396,7 @@ func (r *idpAdapterResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 	httpResp, err := r.apiClient.IdpAdaptersAPI.DeleteIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.AdapterId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the Idp Adapter", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the IdP adapter", err, httpResp)
 	}
 }
 

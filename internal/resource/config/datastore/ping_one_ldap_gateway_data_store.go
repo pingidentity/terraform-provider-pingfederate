@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	datasourceschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -19,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	datasourceresourcelink "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -71,6 +73,9 @@ func toSchemaPingOneLdapGatewayDataStore() schema.SingleNestedAttribute {
 		"ping_one_ldap_gateway_id": schema.StringAttribute{
 			Description: "The ID of the PingOne LDAP Gateway this data store uses.",
 			Required:    true,
+			Validators: []validator.String{
+				stringvalidator.LengthAtLeast(1),
+			},
 		},
 		"use_ssl": schema.BoolAttribute{
 			Description: "Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS). The default value is false. The value is validated against the LDAP gateway configuration in PingOne unless the header 'X-BypassExternalValidation' is set to true.",
@@ -89,8 +94,11 @@ func toSchemaPingOneLdapGatewayDataStore() schema.SingleNestedAttribute {
 			},
 		},
 		"ping_one_environment_id": schema.StringAttribute{
-			Description: "The environment ID that the gateway belongs to.",
+			Description: "The environment ID to which the gateway belongs.",
 			Required:    true,
+			Validators: []validator.String{
+				stringvalidator.LengthAtLeast(1),
+			},
 		},
 	}
 
@@ -100,6 +108,59 @@ func toSchemaPingOneLdapGatewayDataStore() schema.SingleNestedAttribute {
 			path.MatchRelative().AtParent().AtName("jdbc_data_store"),
 			path.MatchRelative().AtParent().AtName("ldap_data_store"),
 		),
+	}
+
+	return pingOneLdapGatewayDataStoreSchema
+}
+
+func toDataSourceSchemaPingOneLdapGatewayDataStore() datasourceschema.SingleNestedAttribute {
+	pingOneLdapGatewayDataStoreSchema := datasourceschema.SingleNestedAttribute{}
+	pingOneLdapGatewayDataStoreSchema.Description = "A PingOne LDAP Gateway data store."
+	pingOneLdapGatewayDataStoreSchema.Computed = true
+	pingOneLdapGatewayDataStoreSchema.Optional = false
+	pingOneLdapGatewayDataStoreSchema.Attributes = map[string]datasourceschema.Attribute{
+		"type": datasourceschema.StringAttribute{
+			Description: "The data store type.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"name": datasourceschema.StringAttribute{
+			Description: "The data store name with a unique value across all data sources.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"ping_one_connection_ref": datasourceschema.SingleNestedAttribute{
+			Computed:    true,
+			Optional:    false,
+			Description: "Reference to the PingOne connection this gateway uses.",
+			Attributes:  datasourceresourcelink.ToDataSourceSchema(),
+		},
+		"ldap_type": datasourceschema.StringAttribute{
+			Description: "A type that allows PingFederate to configure many provisioning settings automatically.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"ping_one_ldap_gateway_id": datasourceschema.StringAttribute{
+			Description: "The ID of the PingOne LDAP Gateway this data store uses.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"use_ssl": datasourceschema.BoolAttribute{
+			Description: "Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS).",
+			Computed:    true,
+			Optional:    false,
+		},
+		"binary_attributes": datasourceschema.SetAttribute{
+			Description: "A list of LDAP attributes to be handled as binary data.",
+			Computed:    true,
+			Optional:    false,
+			ElementType: types.StringType,
+		},
+		"ping_one_environment_id": datasourceschema.StringAttribute{
+			Description: "The environment ID to which the gateway belongs.",
+			Computed:    true,
+			Optional:    false,
+		},
 	}
 
 	return pingOneLdapGatewayDataStoreSchema
@@ -123,7 +184,6 @@ func toStatePingOneLdapGatewayDataStore(con context.Context, pingOneLdapGDS *cli
 		"type":                     basetypes.StringType{},
 		"ping_one_environment_id":  basetypes.StringType{},
 	}
-
 	pingOneConRefFromClient := pingOneLdapGDS.GetPingOneConnectionRef()
 	pingOneConnectionRef, diags := resourcelink.ToState(con, &pingOneConRefFromClient)
 	allDiags = append(allDiags, diags...)
@@ -150,19 +210,25 @@ func toStatePingOneLdapGatewayDataStore(con context.Context, pingOneLdapGDS *cli
 	return pingOneLdapGatewayDataStoreObj, allDiags
 }
 
-func readPingOneLdapGatewayDataStoreResponse(ctx context.Context, r *client.DataStoreAggregation, state *dataStoreResourceModel, plan *types.Object) diag.Diagnostics {
+func readPingOneLdapGatewayDataStoreResponse(ctx context.Context, r *client.DataStoreAggregation, state *dataStoreModel, plan *types.Object, isResource bool) diag.Diagnostics {
 	var diags diag.Diagnostics
 	state.Id = types.StringPointerValue(r.PingOneLdapGatewayDataStore.Id)
 	state.DataStoreId = types.StringPointerValue(r.PingOneLdapGatewayDataStore.Id)
 	state.MaskAttributeValues = types.BoolPointerValue(r.PingOneLdapGatewayDataStore.MaskAttributeValues)
-	state.CustomDataStore = customDataStoreEmptyStateObj
-	state.JdbcDataStore = jdbcDataStoreEmptyStateObj
-	state.LdapDataStore = ldapDataStoreEmptyStateObj
+	if isResource {
+		state.CustomDataStore = customDataStoreEmptyStateObj
+		state.JdbcDataStore = jdbcDataStoreEmptyStateObj
+		state.LdapDataStore = ldapDataStoreEmptyStateObj
+	} else {
+		state.CustomDataStore = customDataStoreEmptyDataSourceStateObj
+		state.JdbcDataStore = jdbcDataStoreEmptyDataSourceStateObj
+		state.LdapDataStore = ldapDataStoreEmptyDataSourceStateObj
+	}
 	state.PingOneLdapGatewayDataStore, diags = toStatePingOneLdapGatewayDataStore(ctx, r.PingOneLdapGatewayDataStore, *plan)
 	return diags
 }
 
-func addOptionalPingOneLdapGatewayDataStoreFields(addRequest client.DataStoreAggregation, con context.Context, createJdbcDataStore client.PingOneLdapGatewayDataStore, plan dataStoreResourceModel) error {
+func addOptionalPingOneLdapGatewayDataStoreFields(addRequest client.DataStoreAggregation, con context.Context, createJdbcDataStore client.PingOneLdapGatewayDataStore, plan dataStoreModel) error {
 	pingOneLdapGatewayDataStorePlan := plan.PingOneLdapGatewayDataStore.Attributes()
 
 	if internaltypes.IsDefined(pingOneLdapGatewayDataStorePlan["use_ssl"]) {
@@ -188,7 +254,7 @@ func addOptionalPingOneLdapGatewayDataStoreFields(addRequest client.DataStoreAgg
 	return nil
 }
 
-func createPingOneLdapGatewayDataStore(plan dataStoreResourceModel, con context.Context, req resource.CreateRequest, resp *resource.CreateResponse, dsr *dataStoreResource) {
+func createPingOneLdapGatewayDataStore(plan dataStoreModel, con context.Context, req resource.CreateRequest, resp *resource.CreateResponse, dsr *dataStoreResource) {
 	var diags diag.Diagnostics
 	var err error
 
@@ -221,14 +287,14 @@ func createPingOneLdapGatewayDataStore(plan dataStoreResourceModel, con context.
 	}
 
 	// Read the response into the state
-	var state dataStoreResourceModel
-	diags = readPingOneLdapGatewayDataStoreResponse(con, response, &state, &plan.PingOneLdapGatewayDataStore)
+	var state dataStoreModel
+	diags = readPingOneLdapGatewayDataStoreResponse(con, response, &state, &plan.PingOneLdapGatewayDataStore, true)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(con, state)
 	resp.Diagnostics.Append(diags...)
 }
 
-func updatePingOneLdapGatewayDataStore(plan dataStoreResourceModel, con context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, dsr *dataStoreResource) {
+func updatePingOneLdapGatewayDataStore(plan dataStoreModel, con context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse, dsr *dataStoreResource) {
 	var diags diag.Diagnostics
 	var err error
 
@@ -262,8 +328,8 @@ func updatePingOneLdapGatewayDataStore(plan dataStoreResourceModel, con context.
 	}
 
 	// Read the response
-	var state dataStoreResourceModel
-	diags = readPingOneLdapGatewayDataStoreResponse(con, response, &state, &plan.PingOneLdapGatewayDataStore)
+	var state dataStoreModel
+	diags = readPingOneLdapGatewayDataStoreResponse(con, response, &state, &plan.PingOneLdapGatewayDataStore, true)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values

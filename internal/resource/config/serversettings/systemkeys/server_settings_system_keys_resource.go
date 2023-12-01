@@ -62,7 +62,7 @@ type serverSettingsSystemKeysResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *serverSettingsSystemKeysResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a Server Settings SystemKeys.",
+		Description: "Manages the system encryption keys.",
 		Attributes: map[string]schema.Attribute{
 			"current": schema.SingleNestedAttribute{
 				Description: "Current SystemKeys Secrets that are used in cryptographic operations to generate and consume internal tokens.",
@@ -220,7 +220,8 @@ func readServerSettingsSystemKeysResponse(ctx context.Context, r *client.SystemK
 		"encrypted_key_data": types.StringValue(currentAttrs.GetEncryptedKeyData()),
 		"key_data":           types.StringValue(currentAttrs.GetKeyData()),
 	}
-	currentAttrsObjVal := internaltypes.MaptoObjValue(systemKeyAttrTypes, currentAttrVals, &diags)
+	currentAttrsObjVal, respDiags := types.ObjectValue(systemKeyAttrTypes, currentAttrVals)
+	diags = append(diags, respDiags...)
 
 	previousAttrs := r.GetPrevious()
 	previousAttrVals := map[string]attr.Value{
@@ -228,7 +229,8 @@ func readServerSettingsSystemKeysResponse(ctx context.Context, r *client.SystemK
 		"encrypted_key_data": types.StringValue(previousAttrs.GetEncryptedKeyData()),
 		"key_data":           types.StringValue(previousAttrs.GetKeyData()),
 	}
-	previousAttrsObjVal := internaltypes.MaptoObjValue(systemKeyAttrTypes, previousAttrVals, &diags)
+	previousAttrsObjVal, respDiags := types.ObjectValue(systemKeyAttrTypes, previousAttrVals)
+	diags = append(diags, respDiags...)
 
 	pendingAttrs := r.GetPending()
 	pendingAttrVals := map[string]attr.Value{
@@ -236,7 +238,8 @@ func readServerSettingsSystemKeysResponse(ctx context.Context, r *client.SystemK
 		"encrypted_key_data": types.StringValue(pendingAttrs.GetEncryptedKeyData()),
 		"key_data":           types.StringValue(pendingAttrs.GetKeyData()),
 	}
-	pendingAttrsObjVal := internaltypes.MaptoObjValue(systemKeyAttrTypes, pendingAttrVals, &diags)
+	pendingAttrsObjVal, respDiags := types.ObjectValue(systemKeyAttrTypes, pendingAttrVals)
+	diags = append(diags, respDiags...)
 
 	state.Current = currentAttrsObjVal
 	state.Pending = pendingAttrsObjVal

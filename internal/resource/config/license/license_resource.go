@@ -40,7 +40,7 @@ type licenseResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *licenseResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a License.",
+		Description: "Manages a license summary object.",
 		Attributes: map[string]schema.Attribute{
 			"file_data": schema.StringAttribute{
 				Required: true,
@@ -89,7 +89,7 @@ func (r *licenseResource) Create(ctx context.Context, req resource.CreateRequest
 	apiCreateLicense = apiCreateLicense.Body(*createLicense)
 	licenseResponse, httpResp, err := r.apiClient.LicenseAPI.UpdateLicenseExecute(apiCreateLicense)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the License", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the license", err, httpResp)
 		return
 	}
 
@@ -112,10 +112,10 @@ func (r *licenseResource) Read(ctx context.Context, req resource.ReadRequest, re
 	apiReadLicense, httpResp, err := r.apiClient.LicenseAPI.GetLicense(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the License", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the license", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the License", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the license", err, httpResp)
 		}
 		return
 	}
@@ -148,7 +148,7 @@ func (r *licenseResource) Update(ctx context.Context, req resource.UpdateRequest
 	updateLicense = updateLicense.Body(*createUpdateRequest)
 	updateLicenseResponse, httpResp, err := r.apiClient.LicenseAPI.UpdateLicenseExecute(updateLicense)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the License", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the license summary", err, httpResp)
 		return
 	}
 

@@ -220,7 +220,7 @@ type serverSettingsResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *serverSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages Server Settings",
+		Description: "Manages the global server configuration settings",
 		Attributes: map[string]schema.Attribute{
 			"contact_info": schema.SingleNestedAttribute{
 				Description: "Information that identifies the server.",

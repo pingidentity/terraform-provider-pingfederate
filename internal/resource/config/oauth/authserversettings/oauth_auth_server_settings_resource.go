@@ -150,7 +150,7 @@ type oauthAuthServerSettingsResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages OAuth Auth Server Settings",
+		Description: "Manages the OAuth authorization server settings.",
 		Attributes: map[string]schema.Attribute{
 			"default_scope_description": schema.StringAttribute{
 				Description: "The default scope description.",

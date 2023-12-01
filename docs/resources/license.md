@@ -3,12 +3,12 @@
 page_title: "pingfederate_license Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a License.
+  Manages a license summary object.
 ---
 
 # pingfederate_license (Resource)
 
-Manages a License.
+Manages a license summary object.
 
 ## Example Usage
 

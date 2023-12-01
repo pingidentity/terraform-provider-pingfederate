@@ -19,11 +19,11 @@ var (
 )
 
 // ServerSettingsGeneralSettingsDataSource is a helper function to simplify the provider implementation.
-func NewServerSettingsGeneralSettingsDataSource() datasource.DataSource {
+func ServerSettingsGeneralSettingsDataSource() datasource.DataSource {
 	return &serverSettingsGeneralSettingsDataSource{}
 }
 
-// serverSettingsGeneralSettingsDataSource is the resource implementation.
+// serverSettingsGeneralSettingsDataSource is the datasource implementation.
 type serverSettingsGeneralSettingsDataSource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
@@ -41,7 +41,7 @@ type serverSettingsGeneralSettingsDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *serverSettingsGeneralSettingsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Describes ServerSettingsGeneralSettings.",
+		Description: "Describes the general server settings.",
 		Attributes: map[string]schema.Attribute{
 			"datastore_validation_interval_secs": schema.Int64Attribute{
 				Description: "How long (in seconds) the result of testing a datastore connection is cached.",
@@ -71,7 +71,7 @@ func (r *serverSettingsGeneralSettingsDataSource) Schema(ctx context.Context, re
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToDataSourceSchema(&schema)
 	resp.Schema = schema
 }
 

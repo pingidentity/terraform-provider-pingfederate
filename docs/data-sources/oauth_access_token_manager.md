@@ -3,12 +3,12 @@
 page_title: "pingfederate_oauth_access_token_manager Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes OAuth Access Token Manager
+  Describes an OAuth access token manager plugin instance.
 ---
 
 # pingfederate_oauth_access_token_manager (Data Source)
 
-Describes OAuth Access Token Manager
+Describes an OAuth access token manager plugin instance.
 
 ## Example Usage
 
@@ -30,7 +30,7 @@ data "pingfederate_oauth_access_token_manager" "myOauthAccessTokenManager" {
 - `access_control_settings` (Attributes) Settings which determine which clients may access this token manager. (see [below for nested schema](#nestedatt--access_control_settings))
 - `attribute_contract` (Attributes) The list of attributes that will be added to an access token. (see [below for nested schema](#nestedatt--attribute_contract))
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--configuration))
-- `id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
+- `id` (String) ID of this resource.
 - `name` (String) The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
 - `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides) (see [below for nested schema](#nestedatt--parent_ref))
 - `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
@@ -50,12 +50,9 @@ Read-Only:
 <a id="nestedatt--access_control_settings--allowed_clients"></a>
 ### Nested Schema for `access_control_settings.allowed_clients`
 
-Required:
-
-- `id` (String) The ID of the resource.
-
 Read-Only:
 
+- `id` (String) The ID of the resource.
 - `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
@@ -142,24 +139,18 @@ Read-Only:
 <a id="nestedatt--parent_ref"></a>
 ### Nested Schema for `parent_ref`
 
-Required:
-
-- `id` (String) The ID of the resource.
-
 Read-Only:
 
+- `id` (String) The ID of the resource.
 - `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--plugin_descriptor_ref"></a>
 ### Nested Schema for `plugin_descriptor_ref`
 
-Required:
-
-- `id` (String) The ID of the resource.
-
 Read-Only:
 
+- `id` (String) The ID of the resource.
 - `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 

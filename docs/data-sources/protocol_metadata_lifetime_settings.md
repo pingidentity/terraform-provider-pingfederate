@@ -3,12 +3,12 @@
 page_title: "pingfederate_protocol_metadata_lifetime_settings Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes a ProtocolMetadataLifetimeSettings.
+  Describes the settings for the metadata cache duration and reload delay for protocol metadata.
 ---
 
 # pingfederate_protocol_metadata_lifetime_settings (Data Source)
 
-Describes a ProtocolMetadataLifetimeSettings.
+Describes the settings for the metadata cache duration and reload delay for protocol metadata.
 
 ## Example Usage
 
@@ -23,5 +23,5 @@ data "pingfederate_protocol_metadata_lifetime_settings" "myProtocolMetadataLifet
 ### Read-Only
 
 - `cache_duration` (Number) The validity of your metadata in minutes. The default value is 1440 (1 day).
-- `id` (String) The ID of this resource.
+- `id` (String) ID of this resource.
 - `reload_delay` (Number) The frequency of automatic reloading of SAML metadata in minutes. The default value is 1440 (1 day).

@@ -3,12 +3,12 @@
 page_title: "pingfederate_oauth_auth_server_settings Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages OAuth Auth Server Settings
+  Manages the OAuth authorization server settings.
 ---
 
 # pingfederate_oauth_auth_server_settings (Resource)
 
-Manages OAuth Auth Server Settings
+Manages the OAuth authorization server settings.
 
 ## Example Usage
 

@@ -3,12 +3,12 @@
 page_title: "pingfederate_data_store Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a Data Store
+  Manages a data store resource
 ---
 
 # pingfederate_data_store (Resource)
 
-Manages a Data Store
+Manages a data store resource
 
 ## Example Usage
 
@@ -218,7 +218,6 @@ resource "pingfederate_data_store" "myPingDirectoryLdapDataStore" {
     time_between_evictions = 6000
     read_timeout           = 300
     connection_timeout     = 300
-    binary_attributes      = []
     dns_ttl                = 6000
   }
 }
@@ -317,7 +316,7 @@ resource "pingfederate_data_store" "myPingOneLdapDataStore" {
 
 - `custom_data_store` (Attributes) A custom data store. (see [below for nested schema](#nestedatt--custom_data_store))
 - `jdbc_data_store` (Attributes) A JDBC data store. (see [below for nested schema](#nestedatt--jdbc_data_store))
-- `ldap_data_store` (Attributes) A LDAP Data Store (see [below for nested schema](#nestedatt--ldap_data_store))
+- `ldap_data_store` (Attributes) An LDAP Data Store (see [below for nested schema](#nestedatt--ldap_data_store))
 - `mask_attribute_values` (Boolean) Whether attribute values should be masked in the log.
 - `ping_one_ldap_gateway_data_store` (Attributes) A PingOne LDAP Gateway data store. (see [below for nested schema](#nestedatt--ping_one_ldap_gateway_data_store))
 
@@ -511,7 +510,7 @@ Optional:
 
 Read-Only:
 
-- `type` (String) The
+- `type` (String) The data store type.
 
 <a id="nestedatt--ldap_data_store--hostnames_tags"></a>
 ### Nested Schema for `ldap_data_store.hostnames_tags`
@@ -534,7 +533,7 @@ Required:
 
 - `ldap_type` (String) A type that allows PingFederate to configure many provisioning settings automatically. The value is validated against the LDAP gateway configuration in PingOne unless the header 'X-BypassExternalValidation' is set to true.
 - `ping_one_connection_ref` (Attributes) Reference to the PingOne connection this gateway uses. (see [below for nested schema](#nestedatt--ping_one_ldap_gateway_data_store--ping_one_connection_ref))
-- `ping_one_environment_id` (String) The environment ID that the gateway belongs to.
+- `ping_one_environment_id` (String) The environment ID to which the gateway belongs.
 - `ping_one_ldap_gateway_id` (String) The ID of the PingOne LDAP Gateway this data store uses.
 
 Optional:

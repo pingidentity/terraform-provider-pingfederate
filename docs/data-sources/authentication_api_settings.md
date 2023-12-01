@@ -3,12 +3,12 @@
 page_title: "pingfederate_authentication_api_settings Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes a AuthenticationApiSettings.
+  Describes the authentication API application settings.
 ---
 
 # pingfederate_authentication_api_settings (Data Source)
 
-Describes a AuthenticationApiSettings.
+Describes the authentication API application settings.
 
 ## Example Usage
 
@@ -25,17 +25,14 @@ data "pingfederate_authentication_api_settings" "myAuthenticationApiSettings" {
 - `api_enabled` (Boolean) Enable Authentication API
 - `default_application_ref` (Attributes) Enable API descriptions (see [below for nested schema](#nestedatt--default_application_ref))
 - `enable_api_descriptions` (Boolean) Enable API descriptions
-- `id` (String) The ID of this resource.
+- `id` (String) ID of this resource.
 - `include_request_context` (Boolean) Includes request context in API responses
 - `restrict_access_to_redirectless_mode` (Boolean) Enable restrict access to redirectless mode
 
 <a id="nestedatt--default_application_ref"></a>
 ### Nested Schema for `default_application_ref`
 
-Required:
-
-- `id` (String) The ID of the resource.
-
 Read-Only:
 
+- `id` (String) The ID of the resource.
 - `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.

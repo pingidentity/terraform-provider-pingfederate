@@ -20,7 +20,7 @@ var (
 )
 
 // ServerSettingsLogSettingsDataSource is a helper function to simplify the provider implementation.
-func NewServerSettingsLogSettingsDataSource() datasource.DataSource {
+func ServerSettingsLogSettingsDataSource() datasource.DataSource {
 	return &serverSettingsLogSettingsDataSource{}
 }
 
@@ -72,7 +72,7 @@ func (r *serverSettingsLogSettingsDataSource) Schema(ctx context.Context, req da
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToDataSourceSchema(&schema)
 	resp.Schema = schema
 }
 

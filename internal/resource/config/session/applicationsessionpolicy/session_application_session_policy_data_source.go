@@ -19,7 +19,7 @@ var (
 )
 
 // SessionApplicationSessionPolicyDataSource is a helper function to simplify the provider implementation.
-func NewSessionApplicationSessionPolicyDataSource() datasource.DataSource {
+func SessionApplicationSessionPolicyDataSource() datasource.DataSource {
 	return &sessionApplicationSessionPolicyDataSource{}
 }
 
@@ -38,7 +38,7 @@ type sessionApplicationSessionPolicyDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *sessionApplicationSessionPolicyDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Describes a SessionApplicationSessionPolicy.",
+		Description: "Describes the settings for an application session policy.",
 		Attributes: map[string]schema.Attribute{
 			// Add necessary attributes here
 			"idle_timeout_mins": schema.Int64Attribute{
@@ -54,7 +54,7 @@ func (r *sessionApplicationSessionPolicyDataSource) Schema(ctx context.Context, 
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToDataSourceSchema(&schema)
 	resp.Schema = schema
 }
 
@@ -75,7 +75,7 @@ func (r *sessionApplicationSessionPolicyDataSource) Configure(_ context.Context,
 }
 
 func readSessionApplicationSessionPolicyResponseDataSource(ctx context.Context, r *client.ApplicationSessionPolicy, state *sessionApplicationSessionPolicyDataSourceModel) {
-	state.Id = types.StringValue("sessionApplicationSessionPolicyId")
+	state.Id = types.StringValue("session_application_session_policy_id")
 	state.IdleTimeoutMins = types.Int64Value(r.GetIdleTimeoutMins())
 	state.MaxTimeoutMins = types.Int64Value(r.GetMaxTimeoutMins())
 }

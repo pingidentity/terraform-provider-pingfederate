@@ -19,7 +19,7 @@ var (
 )
 
 // ProtocolMetadataLifetimeSettingsDataSource is a helper function to simplify the provider implementation.
-func NewProtocolMetadataLifetimeSettingsDataSource() datasource.DataSource {
+func ProtocolMetadataLifetimeSettingsDataSource() datasource.DataSource {
 	return &protocolMetadataLifetimeSettingsDataSource{}
 }
 
@@ -38,7 +38,7 @@ type protocolMetadataLifetimeSettingsDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *protocolMetadataLifetimeSettingsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Describes a ProtocolMetadataLifetimeSettings.",
+		Description: "Describes the settings for the metadata cache duration and reload delay for protocol metadata.",
 		Attributes: map[string]schema.Attribute{
 			"cache_duration": schema.Int64Attribute{
 				Description: "The validity of your metadata in minutes. The default value is 1440 (1 day).",
@@ -53,7 +53,7 @@ func (r *protocolMetadataLifetimeSettingsDataSource) Schema(ctx context.Context,
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToDataSourceSchema(&schema)
 	resp.Schema = schema
 }
 

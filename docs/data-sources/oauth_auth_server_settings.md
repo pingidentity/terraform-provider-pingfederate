@@ -3,12 +3,12 @@
 page_title: "pingfederate_oauth_auth_server_settings Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Describes OAuth Auth Server Settings
+  Describes the OAuth authorization server settings.
 ---
 
 # pingfederate_oauth_auth_server_settings (Data Source)
 
-Describes OAuth Auth Server Settings
+Describes the OAuth authorization server settings.
 
 ## Example Usage
 
@@ -40,7 +40,7 @@ data "pingfederate_oauth_auth_server_settings" "myOauthAuthServerSettings" {
 - `disallow_plain_pkce` (Boolean) Determines whether PKCE's 'plain' code challenge method will be disallowed. The default value is false.
 - `exclusive_scope_groups` (Attributes Set) The list of exclusive scope groups. (see [below for nested schema](#nestedatt--exclusive_scope_groups))
 - `exclusive_scopes` (Attributes Set) The list of exclusive scopes. (see [below for nested schema](#nestedatt--exclusive_scopes))
-- `id` (String) The ID of this resource.
+- `id` (String) ID of this resource.
 - `include_issuer_in_authorization_response` (Boolean) Determines whether the authorization server's issuer value is added to the authorization response or not. The default value is false.
 - `jwt_secured_authorization_response_mode_lifetime` (Number) The lifetime, in seconds, of the JWT Secured authorization response. The default value is 600.
 - `par_reference_length` (Number) The entropy of pushed authorization request references, in bytes. The default value is 24.
@@ -70,12 +70,9 @@ data "pingfederate_oauth_auth_server_settings" "myOauthAuthServerSettings" {
 <a id="nestedatt--admin_web_service_pcv_ref"></a>
 ### Nested Schema for `admin_web_service_pcv_ref`
 
-Required:
-
-- `id` (String) The ID of the resource.
-
 Read-Only:
 
+- `id` (String) The ID of the resource.
 - `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 

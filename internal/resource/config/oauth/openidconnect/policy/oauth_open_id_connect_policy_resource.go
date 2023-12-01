@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -31,39 +30,6 @@ var (
 	_ resource.Resource                = &oauthOpenIdConnectPolicyResource{}
 	_ resource.ResourceWithConfigure   = &oauthOpenIdConnectPolicyResource{}
 	_ resource.ResourceWithImportState = &oauthOpenIdConnectPolicyResource{}
-
-	attributeAttrTypes = map[string]attr.Type{
-		"name":                 types.StringType,
-		"include_in_id_token":  types.BoolType,
-		"include_in_user_info": types.BoolType,
-		"multi_valued":         types.BoolType,
-	}
-	attributesListAttrType = types.ListType{
-		ElemType: types.ObjectType{AttrTypes: attributeAttrTypes},
-	}
-
-	attributeContractAttrTypes = map[string]attr.Type{
-		"core_attributes":     attributesListAttrType,
-		"extended_attributes": attributesListAttrType,
-	}
-
-	attributeMappingAttrTypes = map[string]attr.Type{
-		"attribute_sources": types.ListType{
-			ElemType: types.ObjectType{
-				AttrTypes: attributesources.ElemAttrType(),
-			},
-		},
-		"attribute_contract_fulfillment": attributecontractfulfillment.MapType(),
-		"issuance_criteria": types.ObjectType{
-			AttrTypes: issuancecriteria.AttrType(),
-		},
-	}
-
-	scopeAttributeMappingsElemAttrTypes = map[string]attr.Type{
-		"values": types.ListType{ElemType: types.StringType},
-	}
-
-	scopeAttributeMappingsDefault, _ = types.MapValue(types.ObjectType{AttrTypes: scopeAttributeMappingsElemAttrTypes}, nil)
 )
 
 // OauthOpenIdConnectPolicyResource is a helper function to simplify the provider implementation.
@@ -75,22 +41,6 @@ func OauthOpenIdConnectPolicyResource() resource.Resource {
 type oauthOpenIdConnectPolicyResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type oauthOpenIdConnectPolicyResourceModel struct {
-	Id                          types.String `tfsdk:"id"`
-	PolicyId                    types.String `tfsdk:"policy_id"`
-	Name                        types.String `tfsdk:"name"`
-	AccessTokenManagerRef       types.Object `tfsdk:"access_token_manager_ref"`
-	IdTokenLifetime             types.Int64  `tfsdk:"id_token_lifetime"`
-	IncludeSriInIdToken         types.Bool   `tfsdk:"include_sri_in_id_token"`
-	IncludeUserInfoInIdToken    types.Bool   `tfsdk:"include_user_info_in_id_token"`
-	IncludeSHashInIdToken       types.Bool   `tfsdk:"include_s_hash_in_id_token"`
-	ReturnIdTokenOnRefreshGrant types.Bool   `tfsdk:"return_id_token_on_refresh_grant"`
-	ReissueIdTokenInHybridFlow  types.Bool   `tfsdk:"reissue_id_token_in_hybrid_flow"`
-	AttributeContract           types.Object `tfsdk:"attribute_contract"`
-	AttributeMapping            types.Object `tfsdk:"attribute_mapping"`
-	ScopeAttributeMappings      types.Map    `tfsdk:"scope_attribute_mappings"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -232,7 +182,7 @@ func (r *oauthOpenIdConnectPolicyResource) Schema(ctx context.Context, req resou
 	resp.Schema = schema
 }
 
-func addOptionalOauthOpenIdConnectPolicyFields(ctx context.Context, policy *client.OpenIdConnectPolicy, plan oauthOpenIdConnectPolicyResourceModel) error {
+func addOptionalOauthOpenIdConnectPolicyFields(ctx context.Context, policy *client.OpenIdConnectPolicy, plan oauthOpenIdConnectPolicyModel) error {
 	if internaltypes.IsDefined(plan.IdTokenLifetime) {
 		policy.IdTokenLifetime = plan.IdTokenLifetime.ValueInt64Pointer()
 	}
@@ -277,51 +227,8 @@ func (r *oauthOpenIdConnectPolicyResource) Configure(_ context.Context, req reso
 	r.apiClient = providerCfg.ApiClient
 }
 
-func readOauthOpenIdConnectPolicyResponse(ctx context.Context, response *client.OpenIdConnectPolicy, state *oauthOpenIdConnectPolicyResourceModel) diag.Diagnostics {
-	var diags, respDiags diag.Diagnostics
-	state.Id = types.StringValue(response.Id)
-	state.PolicyId = types.StringValue(response.Id)
-	state.Name = types.StringValue(response.Name)
-
-	state.AccessTokenManagerRef, diags = resourcelink.ToState(ctx, &response.AccessTokenManagerRef)
-	respDiags.Append(diags...)
-
-	state.IdTokenLifetime = types.Int64PointerValue(response.IdTokenLifetime)
-	state.IncludeSriInIdToken = types.BoolPointerValue(response.IncludeSriInIdToken)
-	state.IncludeUserInfoInIdToken = types.BoolPointerValue(response.IncludeUserInfoInIdToken)
-	state.IncludeSHashInIdToken = types.BoolPointerValue(response.IncludeSHashInIdToken)
-	state.ReturnIdTokenOnRefreshGrant = types.BoolPointerValue(response.ReturnIdTokenOnRefreshGrant)
-	state.ReissueIdTokenInHybridFlow = types.BoolPointerValue(response.ReissueIdTokenInHybridFlow)
-
-	state.AttributeContract, diags = types.ObjectValueFrom(ctx, attributeContractAttrTypes, response.AttributeContract)
-	respDiags.Append(diags...)
-
-	// Attribute mapping
-	attributeMappingValues := map[string]attr.Value{}
-
-	// Build attribute_contract_fulfillment value
-	attributeMappingValues["attribute_contract_fulfillment"], diags = attributecontractfulfillment.ToState(ctx, response.AttributeMapping.AttributeContractFulfillment)
-	respDiags.Append(diags...)
-
-	// Build issuance_criteria value
-	attributeMappingValues["issuance_criteria"], diags = issuancecriteria.ToState(ctx, response.AttributeMapping.IssuanceCriteria)
-	respDiags.Append(diags...)
-
-	// Build attribute_sources value
-	attributeMappingValues["attribute_sources"], diags = attributesources.ToState(ctx, response.AttributeMapping.AttributeSources)
-	respDiags.Append(diags...)
-
-	// Build complete attribute mapping value
-	state.AttributeMapping, diags = types.ObjectValue(attributeMappingAttrTypes, attributeMappingValues)
-	respDiags.Append(diags...)
-
-	state.ScopeAttributeMappings, diags = types.MapValueFrom(ctx, types.ObjectType{AttrTypes: scopeAttributeMappingsElemAttrTypes}, response.ScopeAttributeMappings)
-	respDiags.Append(diags...)
-	return respDiags
-}
-
 // Get fields required for client as client structs
-func getRequiredOauthOpenIDConnectPolicyFields(plan oauthOpenIdConnectPolicyResourceModel, diags *diag.Diagnostics) (*client.ResourceLink, *client.OpenIdConnectAttributeContract, *client.AttributeMapping) {
+func getRequiredOauthOpenIDConnectPolicyFields(plan oauthOpenIdConnectPolicyModel, diags *diag.Diagnostics) (*client.ResourceLink, *client.OpenIdConnectAttributeContract, *client.AttributeMapping) {
 	var accessTokenManagerRef client.ResourceLink
 	err := json.Unmarshal([]byte(internaljson.FromValue(plan.AccessTokenManagerRef, false)), &accessTokenManagerRef)
 	if err != nil {
@@ -367,7 +274,7 @@ func getRequiredOauthOpenIDConnectPolicyFields(plan oauthOpenIdConnectPolicyReso
 }
 
 func (r *oauthOpenIdConnectPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan oauthOpenIdConnectPolicyResourceModel
+	var plan oauthOpenIdConnectPolicyModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -397,7 +304,7 @@ func (r *oauthOpenIdConnectPolicyResource) Create(ctx context.Context, req resou
 	}
 
 	// Read the response into the state
-	var state oauthOpenIdConnectPolicyResourceModel
+	var state oauthOpenIdConnectPolicyModel
 	readResponseDiags := readOauthOpenIdConnectPolicyResponse(ctx, oidcPolicyResponse, &state)
 	resp.Diagnostics.Append(readResponseDiags...)
 	diags = resp.State.Set(ctx, state)
@@ -405,7 +312,7 @@ func (r *oauthOpenIdConnectPolicyResource) Create(ctx context.Context, req resou
 }
 
 func (r *oauthOpenIdConnectPolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state oauthOpenIdConnectPolicyResourceModel
+	var state oauthOpenIdConnectPolicyModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -434,7 +341,7 @@ func (r *oauthOpenIdConnectPolicyResource) Read(ctx context.Context, req resourc
 
 func (r *oauthOpenIdConnectPolicyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	var plan oauthOpenIdConnectPolicyResourceModel
+	var plan oauthOpenIdConnectPolicyModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -466,7 +373,7 @@ func (r *oauthOpenIdConnectPolicyResource) Update(ctx context.Context, req resou
 	}
 
 	// Read the response
-	var state oauthOpenIdConnectPolicyResourceModel
+	var state oauthOpenIdConnectPolicyModel
 	readResponseDiags := readOauthOpenIdConnectPolicyResponse(ctx, updateResponse, &state)
 	resp.Diagnostics.Append(readResponseDiags...)
 
@@ -478,7 +385,7 @@ func (r *oauthOpenIdConnectPolicyResource) Update(ctx context.Context, req resou
 
 func (r *oauthOpenIdConnectPolicyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state oauthOpenIdConnectPolicyResourceModel
+	var state oauthOpenIdConnectPolicyModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
