@@ -142,7 +142,6 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 	var model passwordCredentialValidatorModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
 
-	pluginDescriptorRefId := model.PluginDescriptorRef.Attributes()["id"].(types.String).ValueString()
 	tableNames := []string{}
 	nestedTableFieldNameValues := []string{}
 	var rowCount int
@@ -175,6 +174,7 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 		fieldNameValues = append(fieldNameValues, fieldName)
 	}
 
+	pluginDescriptorRefId := model.PluginDescriptorRef.Attributes()["id"].(types.String).ValueString()
 	switch pluginDescriptorRefId {
 	case "com.pingconnect.alexandria.pingfed.pcv.PingOnePasswordValidator":
 		hasClientId, clientIdCount := internaltypes.ValidateStringCountInSlice(fieldNameValues, "Client Id", 1)
