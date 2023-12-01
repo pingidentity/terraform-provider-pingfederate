@@ -183,6 +183,9 @@ resource "pingfederate_server_settings" "%[1]s" {
     site_key   = "%[11]s"
     secret_key = "%[12]s"
   }
+}
+data "pingfederate_server_settings" "%[1]s" {
+  depends_on = [pingfederate_server_settings.%[1]s]
 }`, resourceName,
 		resourceModel.contactInfo.company,
 		resourceModel.contactInfo.email,

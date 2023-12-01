@@ -6,8 +6,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -32,7 +33,7 @@ type serverSettingsDataSource struct {
 // GetSchema defines the schema for the datasource.
 func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages the global server configuration settings",
+		Description: "Describes the global server configuration settings",
 		Attributes: map[string]schema.Attribute{
 			"contact_info": schema.SingleNestedAttribute{
 				Description: "Information that identifies the server.",
@@ -85,7 +86,7 @@ func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.Sc
 								Description: "Reference to the associated notification publisher.",
 								Computed:    true,
 								Optional:    false,
-								Attributes:  resourcelink.ToSchema(),
+								Attributes:  resourcelink.ToDataSourceSchema(),
 							},
 						},
 					},
@@ -113,7 +114,7 @@ func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.Sc
 								Description: "Reference to the associated notification publisher.",
 								Computed:    true,
 								Optional:    false,
-								Attributes:  resourcelink.ToSchema(),
+								Attributes:  resourcelink.ToDataSourceSchema(),
 							},
 						},
 					},
@@ -126,7 +127,7 @@ func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.Sc
 						Description: "Reference to the associated notification publisher for admin user account changes.",
 						Computed:    true,
 						Optional:    false,
-						Attributes:  resourcelink.ToSchema(),
+						Attributes:  resourcelink.ToDataSourceSchema(),
 					},
 					"metadata_notification_settings": schema.SingleNestedAttribute{
 						Description: "Settings for metadata update event notifications.",
@@ -142,7 +143,7 @@ func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.Sc
 								Description: "Reference to the associated notification publisher.",
 								Computed:    true,
 								Optional:    false,
-								Attributes:  resourcelink.ToSchema(),
+								Attributes:  resourcelink.ToDataSourceSchema(),
 							},
 						},
 					},
@@ -464,7 +465,7 @@ func (r *serverSettingsDataSource) Read(ctx context.Context, req datasource.Read
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings", err, httpResp)
 	}
 
-	diags = readServerSettingsResponse(ctx, apiReadServerSettings, &state, &state, "server_settings_id")
+	diags = readServerSettingsResponse(ctx, apiReadServerSettings, &state, &state, pointers.String("server_settings_id"))
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
