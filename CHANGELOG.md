@@ -21,6 +21,7 @@
 ### FEATURES
 #### Resources
 * **New Resource:** `pingfederate_oauth_open_id_connect_policy` ([#105](https://github.com/pingidentity/terraform-provider-pingfederate/pull/105))
+* **New Resource:** `pingfederate_idp_sp_connection` ([#128](https://github.com/pingidentity/terraform-provider-pingfederate/pull/128))
 
 #### Data Sources
 * **New Data Source:** `pingfederate_protocol_metadata_lifetime_settings` ([#100](https://github.com/pingidentity/terraform-provider-pingfederate/pull/100))
