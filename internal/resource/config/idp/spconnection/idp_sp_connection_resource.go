@@ -2252,7 +2252,8 @@ func (r *idpSpConnectionResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	// Read the response into the state
-	readIdpSpconnectionResponse(ctx, apiReadIdpSpconnection, &state, &state)
+	diags = readIdpSpconnectionResponse(ctx, apiReadIdpSpconnection, &state, &state)
+	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
