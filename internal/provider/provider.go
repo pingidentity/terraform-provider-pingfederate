@@ -323,6 +323,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		passwordcredentialvalidator.PasswordCredentialValidatorDataSource,
 		protocolmetadatalifetimesettings.ProtocolMetadataLifetimeSettingsDataSource,
 		redirectvalidation.RedirectValidationDataSource,
+		serversettings.ServerSettingsDataSource,
 		serversettingsgeneralsettings.ServerSettingsGeneralSettingsDataSource,
 		serversettingslogsettings.ServerSettingsLogSettingsDataSource,
 		serversettingssystemkeys.ServerSettingsSystemKeysDataSource,
