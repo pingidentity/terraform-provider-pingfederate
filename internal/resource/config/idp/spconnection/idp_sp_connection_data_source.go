@@ -1453,7 +1453,7 @@ func (r *idpSpConnectionDataSource) Configure(_ context.Context, req datasource.
 	r.apiClient = providerCfg.ApiClient
 }
 
-func readIdpSpconnectionDataSourceResponse(ctx context.Context, r *client.SpConnection, state *idpSpConnectionModel, plan *idpSpConnectionModel) diag.Diagnostics {
+func readIdpSpconnectionDataSourceResponse(ctx context.Context, r *client.SpConnection, state *idpSpConnectionModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 
 	state.ConnectionId = types.StringPointerValue(r.Id)
@@ -1544,7 +1544,7 @@ func (r *idpSpConnectionDataSource) Read(ctx context.Context, req datasource.Rea
 	}
 
 	// Read the response into the state
-	diags = readIdpSpconnectionDataSourceResponse(ctx, apiReadIdpSpconnection, &state, nil)
+	diags = readIdpSpconnectionDataSourceResponse(ctx, apiReadIdpSpconnection, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
