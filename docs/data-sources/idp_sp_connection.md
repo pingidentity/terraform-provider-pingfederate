@@ -571,7 +571,6 @@ Read-Only:
 - `channels` (Attributes List) Includes settings of a source data store, managing provisioning threads and mapping of attributes. (see [below for nested schema](#nestedatt--outbound_provision--channels))
 - `custom_schema` (Attributes) Custom SCIM Attributes configuration. (see [below for nested schema](#nestedatt--outbound_provision--custom_schema))
 - `target_settings` (Attributes List) Configuration fields that includes credentials to target SaaS application. (see [below for nested schema](#nestedatt--outbound_provision--target_settings))
-- `target_settings_all` (Attributes List) Configuration fields that includes credentials to target SaaS application. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--outbound_provision--target_settings_all))
 - `type` (String) The SaaS plugin type.
 
 <a id="nestedatt--outbound_provision--channels"></a>
@@ -581,7 +580,6 @@ Read-Only:
 
 - `active` (Boolean) Indicates whether the channel is the active channel for this connection.
 - `attribute_mapping` (Attributes Set) The mapping of attributes from the local data store into Fields specified by the service provider. (see [below for nested schema](#nestedatt--outbound_provision--channels--attribute_mapping))
-- `attribute_mapping_all` (Attributes Set) The mapping of attributes from the local data store into Fields specified by the service provider. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--outbound_provision--channels--attribute_mapping_all))
 - `channel_source` (Attributes) The source data source and LDAP settings. (see [below for nested schema](#nestedatt--outbound_provision--channels--channel_source))
 - `max_threads` (Number) The number of processing threads.
 - `name` (String) The name of the channel.
@@ -597,33 +595,6 @@ Read-Only:
 
 <a id="nestedatt--outbound_provision--channels--attribute_mapping--saas_field_info"></a>
 ### Nested Schema for `outbound_provision.channels.attribute_mapping.saas_field_info`
-
-Optional:
-
-- `character_case` (String) The character case of the field value.
-- `create_only` (Boolean) Indicates whether this field is a create only field and cannot be updated.
-- `default_value` (String) The default value for the target field
-- `expression` (String) An OGNL expression to obtain a value.
-- `masked` (Boolean) Indicates whether the attribute should be masked in server logs.
-- `parser` (String) Indicates how the field shall be parsed.
-- `trim` (Boolean) Indicates whether field should be trimmed before provisioning.
-
-Read-Only:
-
-- `attribute_names` (List of String) The list of source attribute names used to generate or map to a target field
-
-
-
-<a id="nestedatt--outbound_provision--channels--attribute_mapping_all"></a>
-### Nested Schema for `outbound_provision.channels.attribute_mapping_all`
-
-Read-Only:
-
-- `field_name` (String) The name of target field.
-- `saas_field_info` (Attributes) The settings that represent how attribute values from source data store will be mapped into Fields specified by the service provider. (see [below for nested schema](#nestedatt--outbound_provision--channels--attribute_mapping_all--saas_field_info))
-
-<a id="nestedatt--outbound_provision--channels--attribute_mapping_all--saas_field_info"></a>
-### Nested Schema for `outbound_provision.channels.attribute_mapping_all.saas_field_info`
 
 Optional:
 
@@ -748,16 +719,7 @@ Read-Only:
 
 Read-Only:
 
-- `inherited` (Boolean) Whether this field is inherited from its parent instance.
-- `name` (String) The name of the configuration field.
-- `value` (String) The value for the configuration field.
-
-
-<a id="nestedatt--outbound_provision--target_settings_all"></a>
-### Nested Schema for `outbound_provision.target_settings_all`
-
-Read-Only:
-
+- `encrypted_value` (String) The encrypted value for the configuration field.
 - `inherited` (Boolean) Whether this field is inherited from its parent instance.
 - `name` (String) The name of the configuration field.
 - `value` (String) The value for the configuration field.
@@ -1753,8 +1715,8 @@ Read-Only:
 - `encrypt_saml2_assertion` (Boolean) When selected, the STS encrypts the SAML 2.0 assertion. Applicable only to SAML 2.0 security token.  This option does not apply to OAuth assertion profiles.
 - `generate_key` (Boolean) When selected, the STS generates a symmetric key to be used in conjunction with the "Holder of Key" (HoK) designation for the assertion's Subject Confirmation Method.  This option does not apply to OAuth assertion profiles.
 - `message_customizations` (Attributes List) The message customizations for WS-Trust. Depending on server settings, connection type, and protocol this may or may not be supported. (see [below for nested schema](#nestedatt--ws_trust--message_customizations))
-- `minutes_after` (Number) The amount of time after the SAML token was issued during which it is to be considered valid. The default value is 30.
-- `minutes_before` (Number) The amount of time before the SAML token was issued during which it is to be considered valid. The default value is 5.
+- `minutes_after` (Number) The amount of time after the SAML token was issued during which it is to be considered valid.
+- `minutes_before` (Number) The amount of time before the SAML token was issued during which it is to be considered valid.
 - `oauth_assertion_profiles` (Boolean) When selected, four additional token-type requests become available.
 - `partner_service_ids` (List of String) The partner service identifiers.
 - `request_contract_ref` (Attributes) Request Contract to be used to map attribute values into the security token. (see [below for nested schema](#nestedatt--ws_trust--request_contract_ref))

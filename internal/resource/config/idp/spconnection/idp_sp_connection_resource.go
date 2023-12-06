@@ -3,6 +3,7 @@ package idpspconnection
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -1587,6 +1588,225 @@ func (r *idpSpConnectionResource) Configure(_ context.Context, req resource.Conf
 	r.apiClient = providerCfg.ApiClient
 }
 
+func readIdpSpconnectionResourceResponse(ctx context.Context, r *client.SpConnection, state *idpSpConnectionModel, plan *idpSpConnectionModel) diag.Diagnostics {
+	var diags, respDiags diag.Diagnostics
+
+	state.ConnectionId = types.StringPointerValue(r.Id)
+	state.Id = types.StringPointerValue(r.Id)
+	state.Type = types.StringPointerValue(r.Type)
+	state.EntityId = types.StringValue(r.EntityId)
+	state.Name = types.StringValue(r.Name)
+	state.Active = types.BoolPointerValue(r.Active)
+	state.BaseUrl = types.StringPointerValue(r.BaseUrl)
+	state.DefaultVirtualEntityId = types.StringPointerValue(r.DefaultVirtualEntityId)
+	state.LicenseConnectionGroup = types.StringPointerValue(r.LicenseConnectionGroup)
+	state.LoggingMode = types.StringPointerValue(r.LoggingMode)
+	state.ApplicationName = types.StringPointerValue(r.ApplicationName)
+	state.ApplicationIconUrl = types.StringPointerValue(r.ApplicationIconUrl)
+	state.ConnectionTargetType = types.StringPointerValue(r.ConnectionTargetType)
+
+	if r.CreationDate != nil {
+		state.CreationDate = types.StringValue(r.CreationDate.Format(time.RFC3339))
+	} else {
+		state.CreationDate = types.StringNull()
+	}
+
+	state.VirtualEntityIds, respDiags = types.SetValueFrom(ctx, types.StringType, r.VirtualEntityIds)
+	diags.Append(respDiags...)
+
+	state.MetadataReloadSettings, respDiags = types.ObjectValueFrom(ctx, metadataReloadSettingsAttrTypes, r.MetadataReloadSettings)
+	diags.Append(respDiags...)
+
+	state.Credentials, respDiags = types.ObjectValueFrom(ctx, credentialsAttrTypes, r.Credentials)
+	diags.Append(respDiags...)
+	if r.Credentials != nil && r.Credentials.SigningSettings != nil && r.Credentials.SigningSettings.IncludeCertInSignature == nil {
+		// PF returns false for include_cert_in_signature as nil. If nil is returned, just set it to false
+		credentialsAttrs := state.Credentials.Attributes()
+		signingSettingsAttrs := credentialsAttrs["signing_settings"].(types.Object).Attributes()
+		signingSettingsAttrs["include_cert_in_signature"] = types.BoolValue(false)
+		newSigningSettings, respDiags := types.ObjectValue(signingSettingsAttrTypes, signingSettingsAttrs)
+		diags.Append(respDiags...)
+		credentialsAttrs["signing_settings"] = newSigningSettings
+		state.Credentials, respDiags = types.ObjectValue(credentialsAttrTypes, credentialsAttrs)
+		diags.Append(respDiags...)
+	}
+
+	state.ContactInfo, respDiags = types.ObjectValueFrom(ctx, contactInfoAttrTypes, r.ContactInfo)
+	diags.Append(respDiags...)
+
+	state.AdditionalAllowedEntitiesConfiguration, respDiags = types.ObjectValueFrom(ctx, additionalAllowedEntitiesConfigurationAttrTypes, r.AdditionalAllowedEntitiesConfiguration)
+	diags.Append(respDiags...)
+
+	state.ExtendedProperties, respDiags = types.MapValueFrom(ctx, types.ObjectType{AttrTypes: extendedPropertiesElemAttrTypes}, r.ExtendedProperties)
+	diags.Append(respDiags...)
+
+	state.SpBrowserSso, respDiags = types.ObjectValueFrom(ctx, spBrowserSSOAttrTypes, r.SpBrowserSso)
+	diags.Append(respDiags...)
+
+	if r.AttributeQuery != nil {
+		attributeQueryValues := map[string]attr.Value{}
+		attributeQueryValues["attributes"], respDiags = types.ListValueFrom(ctx, types.StringType, r.AttributeQuery.Attributes)
+		diags.Append(respDiags...)
+
+		attributeQueryValues["attribute_contract_fulfillment"], respDiags = types.MapValueFrom(ctx, attributeContractFulfillmentElemAttrType, r.AttributeQuery.AttributeContractFulfillment)
+		diags.Append(respDiags...)
+
+		attributeQueryValues["issuance_criteria"], respDiags = issuancecriteria.ToState(ctx, r.AttributeQuery.IssuanceCriteria)
+		diags.Append(respDiags...)
+
+		attributeQueryValues["policy"], respDiags = types.ObjectValueFrom(ctx, policyAttrTypes, r.AttributeQuery.Policy)
+		diags.Append(respDiags...)
+
+		attributeQueryValues["attribute_sources"], respDiags = attributesources.ToState(ctx, r.AttributeQuery.AttributeSources)
+		diags.Append(respDiags...)
+
+		state.AttributeQuery, respDiags = types.ObjectValueFrom(ctx, attributeQueryAttrTypes, r.AttributeQuery)
+		diags.Append(respDiags...)
+	} else {
+		state.AttributeQuery = types.ObjectNull(attributeQueryAttrTypes)
+	}
+
+	state.WsTrust, respDiags = types.ObjectValueFrom(ctx, wsTrustAttrTypes, r.WsTrust)
+	diags.Append(respDiags...)
+
+	if r.OutboundProvision != nil {
+		outboundProvisionAttrs := map[string]attr.Value{
+			"type": types.StringValue(r.OutboundProvision.Type),
+		}
+
+		// PF can return extra target_settings that were not included in the request
+		plannedTargetSettingsNames := []string{}
+		plannedTargetSettingsValues := map[string]string{}
+		if internaltypes.IsDefined(plan.OutboundProvision) {
+			targetSettings := plan.OutboundProvision.Attributes()["target_settings"].(types.List)
+			for _, plannedTargetSettings := range targetSettings.Elements() {
+				nameStrVal := plannedTargetSettings.(types.Object).Attributes()["name"].(types.String)
+				if internaltypes.IsDefined(nameStrVal) {
+					plannedTargetSettingsNames = append(plannedTargetSettingsNames, nameStrVal.ValueString())
+
+					valueStrVal := plannedTargetSettings.(types.Object).Attributes()["value"].(types.String)
+					plannedTargetSettingsValues[nameStrVal.ValueString()] = valueStrVal.ValueString()
+				}
+			}
+		}
+
+		targetSettingsSlice := []attr.Value{}
+		targetSettingsAllSlice := []attr.Value{}
+		for _, targetSettings := range r.OutboundProvision.TargetSettings {
+			value := types.StringPointerValue(targetSettings.Value)
+
+			// Check if this object was in the plan
+			inPlan := false
+			for _, name := range plannedTargetSettingsNames {
+				if name == targetSettings.Name {
+					inPlan = true
+
+					// If PF returns nil for the value, then it must be encrypted. Just use the value from the plan in that case
+					if targetSettings.Value == nil {
+						value = types.StringValue(plannedTargetSettingsValues[targetSettings.Name])
+					}
+					break
+				}
+			}
+			targetSettingsObj, respDiags := types.ObjectValue(targetSettingsElemAttrType.AttrTypes, map[string]attr.Value{
+				"name":      types.StringValue(targetSettings.Name),
+				"value":     value,
+				"inherited": types.BoolPointerValue(targetSettings.Inherited),
+			})
+			diags.Append(respDiags...)
+			if inPlan {
+				targetSettingsSlice = append(targetSettingsSlice, targetSettingsObj)
+			}
+			targetSettingsAllSlice = append(targetSettingsAllSlice, targetSettingsObj)
+		}
+		outboundProvisionAttrs["target_settings"], respDiags = types.ListValue(targetSettingsElemAttrType, targetSettingsSlice)
+		diags.Append(respDiags...)
+		outboundProvisionAttrs["target_settings_all"], respDiags = types.ListValue(targetSettingsElemAttrType, targetSettingsAllSlice)
+		diags.Append(respDiags...)
+
+		outboundProvisionAttrs["custom_schema"], respDiags = types.ObjectValueFrom(ctx, customSchemaAttrTypes, r.OutboundProvision.CustomSchema)
+		diags.Append(respDiags...)
+
+		channels := []types.Object{}
+		plannedChannels := []attr.Value{}
+		plannedChannelsAttr := plan.OutboundProvision.Attributes()["channels"]
+		if plannedChannelsAttr != nil {
+			plannedChannels = plannedChannelsAttr.(types.List).Elements()
+		}
+		numPlannedChannels := len(plannedChannels)
+		for i, channel := range r.OutboundProvision.Channels {
+			channelAttrs := map[string]attr.Value{
+				"active":      types.BoolValue(channel.Active),
+				"name":        types.StringValue(channel.Name),
+				"max_threads": types.Int64Value(channel.MaxThreads),
+				"timeout":     types.Int64Value(channel.Timeout),
+			}
+
+			channelAttrs["channel_source"], respDiags = types.ObjectValueFrom(ctx, channelSourceAttrTypes, channel.ChannelSource)
+			diags.Append(respDiags...)
+
+			// PF can return extra attribute_mapping elements that were not included in the request
+			attributeMappingNamesInPlan := []string{}
+			if i < numPlannedChannels {
+				plannedChannel := plannedChannels[i].(types.Object)
+				plannedMapping := plannedChannel.Attributes()["attribute_mapping"].(types.Set)
+				if internaltypes.IsDefined(plannedMapping) {
+					for _, mapping := range plannedMapping.Elements() {
+						mappingObj := mapping.(types.Object)
+						if internaltypes.IsDefined(mappingObj) {
+							attributeMappingNamesInPlan = append(attributeMappingNamesInPlan, mappingObj.Attributes()["field_name"].(types.String).ValueString())
+						}
+					}
+				}
+			}
+
+			attributeMappingSlice := []attr.Value{}
+			attributeMappingAllSlice := []attr.Value{}
+			for _, attributeMapping := range channel.AttributeMapping {
+				attributeMappingAttrValues := map[string]attr.Value{
+					"field_name": types.StringValue(attributeMapping.FieldName),
+				}
+
+				attributeMappingAttrValues["saas_field_info"], respDiags = types.ObjectValueFrom(ctx, saasFieldInfoAttrTypes, attributeMapping.SaasFieldInfo)
+				diags.Append(respDiags...)
+
+				attributeMappingObj, respDiags := types.ObjectValue(attributeMappingElemAttrTypes.AttrTypes, attributeMappingAttrValues)
+				diags.Append(respDiags...)
+
+				// Check if this object was in the plan
+				inPlan := false
+				for _, attributeMappingNameInPlan := range attributeMappingNamesInPlan {
+					if attributeMappingNameInPlan == attributeMapping.FieldName {
+						inPlan = true
+						break
+					}
+				}
+				if inPlan {
+					attributeMappingSlice = append(attributeMappingSlice, attributeMappingObj)
+				}
+				attributeMappingAllSlice = append(attributeMappingAllSlice, attributeMappingObj)
+			}
+			channelAttrs["attribute_mapping"], respDiags = types.SetValue(attributeMappingElemAttrTypes, attributeMappingSlice)
+			diags.Append(respDiags...)
+			channelAttrs["attribute_mapping_all"], respDiags = types.SetValue(attributeMappingElemAttrTypes, attributeMappingAllSlice)
+			diags.Append(respDiags...)
+
+			channelObj, respDiags := types.ObjectValue(channelsElemAttrType.AttrTypes, channelAttrs)
+			diags.Append(respDiags...)
+			channels = append(channels, channelObj)
+		}
+		outboundProvisionAttrs["channels"], respDiags = types.ListValueFrom(ctx, channelsElemAttrType, channels)
+		diags.Append(respDiags...)
+
+		state.OutboundProvision, respDiags = types.ObjectValue(outboundProvisionAttrTypes, outboundProvisionAttrs)
+		diags.Append(respDiags...)
+	} else {
+		state.OutboundProvision = types.ObjectNull(outboundProvisionAttrTypes)
+	}
+
+	return diags
+}
+
 func (r *idpSpConnectionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan idpSpConnectionModel
 
@@ -1614,7 +1834,7 @@ func (r *idpSpConnectionResource) Create(ctx context.Context, req resource.Creat
 	// Read the response into the state
 	var state idpSpConnectionModel
 
-	diags = readIdpSpconnectionResponse(ctx, idpSpconnectionResponse, &state, &plan)
+	diags = readIdpSpconnectionResourceResponse(ctx, idpSpconnectionResponse, &state, &plan)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -1641,7 +1861,7 @@ func (r *idpSpConnectionResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	// Read the response into the state
-	diags = readIdpSpconnectionResponse(ctx, apiReadIdpSpconnection, &state, &state)
+	diags = readIdpSpconnectionResourceResponse(ctx, apiReadIdpSpconnection, &state, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -1675,7 +1895,7 @@ func (r *idpSpConnectionResource) Update(ctx context.Context, req resource.Updat
 
 	// Read the response
 	var state idpSpConnectionModel
-	diags = readIdpSpconnectionResponse(ctx, updateIdpSpconnectionResponse, &state, &plan)
+	diags = readIdpSpconnectionResourceResponse(ctx, updateIdpSpconnectionResponse, &state, &plan)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
