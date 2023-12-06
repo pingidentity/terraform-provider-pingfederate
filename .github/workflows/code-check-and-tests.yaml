@@ -147,6 +147,13 @@ jobs:
       [fmt, vet, lint, generate, importfmt, tfproviderlint, tflint, terrafmt]
     if: ${{ github.actor != 'dependabot[bot]' }}
     runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        terraform: # We test the earliest supported (v1.1), and the latest supported (v1.6)
+          - "1.1.*"
+          - "1.6.*"
+      max-parallel: 1
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
