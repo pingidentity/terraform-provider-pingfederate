@@ -60,12 +60,9 @@ func TestAccSimpleUsernamePasswordCredentialValidators(t *testing.T) {
 				ImportStateId:     simpleUsernamePasswordPasswordCredentialValidatorsId,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// Have to ignore this since the password values can't be imported
+				// Tables get imported to tables_all, so can't verify them here
 				ImportStateVerifyIgnore: []string{
-					"configuration.tables.0.rows.0.fields.1.value",
-					"configuration.tables.0.rows.0.fields.2.value",
-					"configuration.tables.0.rows.1.fields.1.value",
-					"configuration.tables.0.rows.1.fields.2.value",
+					"configuration.tables",
 				},
 			},
 			{

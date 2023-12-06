@@ -185,9 +185,9 @@ func TestAccIdpAdapter(t *testing.T) {
 				ImportStateId:     idpAdapterId,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// Can't verify fields and core_attributes because the computed ones from the server will go into the
-				// corresponding fields_all and core_attributes_all fields
-				ImportStateVerifyIgnore: []string{"configuration.fields", "attribute_contract.core_attributes"},
+				// Can't verify tables, fields, and core_attributes because the computed ones from the server will go into the
+				// corresponding tables_all, fields_all, and core_attributes_all fields
+				ImportStateVerifyIgnore: []string{"configuration.tables", "configuration.fields", "attribute_contract.core_attributes"},
 			},
 			{
 				// Back to the initial minimal model
