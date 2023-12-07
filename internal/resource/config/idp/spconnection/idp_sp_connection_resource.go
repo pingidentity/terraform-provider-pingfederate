@@ -586,8 +586,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						},
 					},
 					"character_case": schema.StringAttribute{
-						Optional:    true,
-						Computed:    true,
+						Optional: true,
+						Computed: true,
+						//Default:     stringdefault.StaticString("NONE"),
 						Description: "The character case of the field value.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
@@ -598,28 +599,33 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						},
 					},
 					"create_only": schema.BoolAttribute{
-						Optional:    true,
-						Computed:    true,
+						Optional: true,
+						Computed: true,
+						//Default:     booldefault.StaticBool(false),
 						Description: "Indicates whether this field is a create only field and cannot be updated.",
 					},
 					"default_value": schema.StringAttribute{
-						Optional:    true,
-						Computed:    true,
+						Optional: true,
+						Computed: true,
+						//Default:     stringdefault.StaticString(""),
 						Description: "The default value for the target field",
 					},
 					"expression": schema.StringAttribute{
-						Optional:    true,
-						Computed:    true,
+						Optional: true,
+						Computed: true,
+						//Default:     stringdefault.StaticString(""),
 						Description: "An OGNL expression to obtain a value.",
 					},
 					"masked": schema.BoolAttribute{
-						Optional:    true,
-						Computed:    true,
+						Optional: true,
+						Computed: true,
+						//Default:     booldefault.StaticBool(false),
 						Description: "Indicates whether the attribute should be masked in server logs.",
 					},
 					"parser": schema.StringAttribute{
-						Optional:    true,
-						Computed:    true,
+						Optional: true,
+						Computed: true,
+						//Default:     stringdefault.StaticString("NONE"),
 						Description: "Indicates how the field shall be parsed.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
@@ -630,8 +636,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						},
 					},
 					"trim": schema.BoolAttribute{
-						Optional:    true,
-						Computed:    true,
+						Optional: true,
+						Computed: true,
+						//Default:     booldefault.StaticBool(false),
 						Description: "Indicates whether field should be trimmed before provisioning.",
 					},
 				},

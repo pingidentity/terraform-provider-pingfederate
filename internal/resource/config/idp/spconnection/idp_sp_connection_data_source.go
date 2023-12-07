@@ -1508,22 +1508,14 @@ func readIdpSpconnectionDataSourceResponse(ctx context.Context, r *client.SpConn
 	state.SpBrowserSso, respDiags = types.ObjectValueFrom(ctx, spBrowserSSOAttrTypes, r.SpBrowserSso)
 	diags.Append(respDiags...)
 
-	if r.AttributeQuery != nil {
-		state.AttributeQuery, respDiags = types.ObjectValueFrom(ctx, attributeQueryAttrTypes, r.AttributeQuery)
-		diags.Append(respDiags...)
-	} else {
-		state.AttributeQuery = types.ObjectNull(attributeQueryAttrTypes)
-	}
+	state.AttributeQuery, respDiags = types.ObjectValueFrom(ctx, attributeQueryAttrTypes, r.AttributeQuery)
+	diags.Append(respDiags...)
 
 	state.WsTrust, respDiags = types.ObjectValueFrom(ctx, wsTrustAttrTypes, r.WsTrust)
 	diags.Append(respDiags...)
 
-	if r.OutboundProvision != nil {
-		state.OutboundProvision, respDiags = types.ObjectValueFrom(ctx, outboundProvisionDataSourceAttrTypes, r.OutboundProvision)
-		diags.Append(respDiags...)
-	} else {
-		state.OutboundProvision = types.ObjectNull(outboundProvisionDataSourceAttrTypes)
-	}
+	state.OutboundProvision, respDiags = types.ObjectValueFrom(ctx, outboundProvisionDataSourceAttrTypes, r.OutboundProvision)
+	diags.Append(respDiags...)
 
 	return diags
 }
