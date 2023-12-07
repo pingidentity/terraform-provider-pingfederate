@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
 var (
@@ -36,14 +37,6 @@ var (
 
 func AttrType() map[string]attr.Type {
 	return configurationAttrTypes
-}
-
-func FieldAttrType() map[string]attr.Type {
-	return fieldAttrTypes
-}
-
-func TableAttrType() map[string]attr.Type {
-	return tableAttrTypes
 }
 
 // Creates state values for fields. Returns one value that only includes values specified in the plan, and a second value that includes all fields values
@@ -232,4 +225,25 @@ func ToState(configFromPlan basetypes.ObjectValue, configuration *client.PluginC
 	configObj, valueFromDiags := types.ObjectValue(configurationAttrTypes, configurationAttrValue)
 	diags.Append(valueFromDiags...)
 	return configObj, diags
+}
+
+// Mark fields_all and tables_all configuration as unknown if the fields and tables have changed in the plan
+func MarkComputedAttrsUnknownOnChange(planConfiguration, stateConfiguration types.Object) (types.Object, diag.Diagnostics) {
+	if !internaltypes.IsDefined(planConfiguration) || !internaltypes.IsDefined(stateConfiguration) {
+		return planConfiguration, nil
+	}
+	planConfigurationAttrs := planConfiguration.Attributes()
+	planFields := planConfiguration.Attributes()["fields"]
+	stateFields := stateConfiguration.Attributes()["fields"]
+	if !planFields.Equal(stateFields) {
+		planConfigurationAttrs["fields_all"] = types.ListUnknown(types.ObjectType{AttrTypes: fieldAttrTypes})
+	}
+
+	planTables := planConfiguration.Attributes()["tables"]
+	stateTables := stateConfiguration.Attributes()["tables"]
+	if !planTables.Equal(stateTables) {
+		planConfigurationAttrs["tables_all"] = types.ListUnknown(types.ObjectType{AttrTypes: tableAttrTypes})
+	}
+
+	return types.ObjectValue(configurationAttrTypes, planConfigurationAttrs)
 }
