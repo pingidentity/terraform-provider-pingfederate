@@ -16,7 +16,7 @@ See the [examples](examples/) directory for more examples using the provider.
 * [Ping Identity Home](https://www.pingidentity.com/en.html)
 
 Extended documentation can be found at:
-* [PingFederate Documentation](https://docs.pingidentity.com/r/en-us/pingfederate-113/pf_pingfederate_landing_page)
+* [PingFederate Documentation](https://docs.pingidentity.com/r/en-us/pingfederate-112/pf_pingfederate_landing_page)
 * [Ping Identity Developer Portal](https://developer.pingidentity.com/en.html)
 
 # Contributing
