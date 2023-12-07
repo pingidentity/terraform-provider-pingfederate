@@ -44,7 +44,7 @@ func IsNonEmptyString(str types.String) bool {
 
 // Return true if this value represents a defined (non-null and non-unknown) value
 func IsDefined(value attr.Value) bool {
-	return !value.IsNull() && !value.IsUnknown()
+	return value != nil && !value.IsNull() && !value.IsUnknown()
 }
 
 // Check if an attribute slice contains a value

@@ -38,6 +38,14 @@ func AttrType() map[string]attr.Type {
 	return configurationAttrTypes
 }
 
+func FieldAttrType() map[string]attr.Type {
+	return fieldAttrTypes
+}
+
+func TableAttrType() map[string]attr.Type {
+	return tableAttrTypes
+}
+
 // Creates state values for fields. Returns one value that only includes values specified in the plan, and a second value that includes all fields values
 func ToFieldsListValue(fields []client.ConfigField, planFields *types.List, diags *diag.Diagnostics) (types.List, types.List) {
 	plannedObjValues := []attr.Value{}

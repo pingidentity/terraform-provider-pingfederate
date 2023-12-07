@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
@@ -62,8 +61,6 @@ var (
 func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 	jdbcDataStoreSchema := schema.SingleNestedAttribute{}
 	jdbcDataStoreSchema.Description = "A JDBC data store."
-	jdbcDataStoreSchema.Default = objectdefault.StaticValue(jdbcDataStoreEmptyStateObj)
-	jdbcDataStoreSchema.Computed = true
 	jdbcDataStoreSchema.Optional = true
 	jdbcDataStoreSchema.Attributes = map[string]schema.Attribute{
 		"type": schema.StringAttribute{

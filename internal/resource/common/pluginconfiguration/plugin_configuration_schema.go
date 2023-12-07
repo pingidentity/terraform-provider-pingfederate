@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -96,6 +97,9 @@ func ToSchema() schema.SingleNestedAttribute {
 				Computed:     true,
 				Optional:     false,
 				NestedObject: tablesNestedObject,
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"fields": schema.ListNestedAttribute{
 				Description:  "List of configuration fields.",
@@ -109,6 +113,9 @@ func ToSchema() schema.SingleNestedAttribute {
 				Computed:     true,
 				Optional:     false,
 				NestedObject: fieldsNestedObject,
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
+				},
 			},
 		},
 	}

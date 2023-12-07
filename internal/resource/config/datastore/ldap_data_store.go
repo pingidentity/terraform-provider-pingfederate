@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
@@ -74,8 +73,6 @@ var (
 func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 	ldapDataStoreSchema := schema.SingleNestedAttribute{}
 	ldapDataStoreSchema.Description = "An LDAP Data Store"
-	ldapDataStoreSchema.Default = objectdefault.StaticValue(ldapDataStoreEmptyStateObj)
-	ldapDataStoreSchema.Computed = true
 	ldapDataStoreSchema.Optional = true
 	ldapDataStoreSchema.Attributes = map[string]schema.Attribute{
 		"type": schema.StringAttribute{

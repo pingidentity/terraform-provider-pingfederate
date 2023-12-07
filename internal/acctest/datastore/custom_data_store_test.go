@@ -103,12 +103,13 @@ func TestAccCustomDataStore(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:                  testAccCustomDataStore(resourceName, updatedResourceModel),
-				ResourceName:            "pingfederate_data_store." + resourceName,
-				ImportStateId:           customDataStoreId,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"custom_data_store.configuration.fields"},
+				Config:            testAccCustomDataStore(resourceName, updatedResourceModel),
+				ResourceName:      "pingfederate_data_store." + resourceName,
+				ImportStateId:     customDataStoreId,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// fields and tables attributes get imported into _all versions
+				ImportStateVerifyIgnore: []string{"custom_data_store.configuration.fields", "custom_data_store.configuration.tables"},
 			},
 			{
 				// Back to the initial minimal model

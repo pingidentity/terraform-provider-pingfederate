@@ -15,6 +15,7 @@ import (
 	"github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -75,9 +76,37 @@ func (r *dataStoreResource) Configure(_ context.Context, req resource.ConfigureR
 
 }
 
+func setConfigurationUnknownIfNecessary(ctx context.Context, planAttrValues map[string]attr.Value, stateConfiguration types.Object) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if internaltypes.IsDefined(stateConfiguration) {
+		dataStoreState := stateConfiguration.Attributes()
+		if internaltypes.IsDefined(planAttrValues["configuration"]) && internaltypes.IsDefined(dataStoreState["configuration"]) {
+			planConfiguration := planAttrValues["configuration"].(types.Object)
+			stateConfiguration := dataStoreState["configuration"].(types.Object)
+			planConfigurationAttrs := planConfiguration.Attributes()
+			if internaltypes.IsDefined(planConfiguration) && internaltypes.IsDefined(stateConfiguration) {
+				planFields := planConfiguration.Attributes()["fields"]
+				stateFields := stateConfiguration.Attributes()["fields"]
+				if !planFields.Equal(stateFields) {
+					planConfigurationAttrs["fields_all"] = types.ListUnknown(types.ObjectType{AttrTypes: pluginconfiguration.FieldAttrType()})
+				}
+
+				planTables := planConfiguration.Attributes()["tables"]
+				stateTables := stateConfiguration.Attributes()["tables"]
+				if !planTables.Equal(stateTables) {
+					planConfigurationAttrs["tables_all"] = types.ListUnknown(types.ObjectType{AttrTypes: pluginconfiguration.TableAttrType()})
+				}
+			}
+			planAttrValues["configuration"], diags = types.ObjectValue(planConfiguration.AttributeTypes(ctx), planConfigurationAttrs)
+		}
+	}
+	return diags
+}
+
 func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	var plan *dataStoreModel
+	var plan, state *dataStoreModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	var respDiags diag.Diagnostics
 
 	if plan == nil {
@@ -169,6 +198,12 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 			namePrefix = types.StringValue(prefix + " (" + userName + ")")
 		} else {
 			namePrefix = jdbcDataStore["name"].(types.String)
+		}
+
+		// Mark the _all attributes as unknown when the corresponding non-_all attribute is changed
+		if state != nil {
+			respDiags = setConfigurationUnknownIfNecessary(ctx, jdbcDataStore, state.JdbcDataStore)
+			resp.Diagnostics.Append(respDiags...)
 		}
 
 		jdbcDataStore["name"] = namePrefix
@@ -270,6 +305,12 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 			nameValue = ldapDataStore["name"].(types.String)
 		}
 
+		// Mark the _all attributes as unknown when the corresponding non-_all attribute is changed
+		if state != nil {
+			respDiags = setConfigurationUnknownIfNecessary(ctx, ldapDataStore, state.LdapDataStore)
+			resp.Diagnostics.Append(respDiags...)
+		}
+
 		ldapDataStore["name"] = nameValue
 		plan.LdapDataStore, respDiags = types.ObjectValue(ldapDataStoreAttrType, ldapDataStore)
 		resp.Diagnostics.Append(respDiags...)
@@ -282,9 +323,26 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 			pingOneEnvironmentId := pingOneLdapGatewayDataStore["ping_one_environment_id"].(types.String).ValueString()
 			pingOneLdapGatewayId := pingOneLdapGatewayDataStore["ping_one_ldap_gateway_id"].(types.String).ValueString()
 			pingOneLdapGatewayDataStore["name"] = types.StringValue(pingOneConnectionRefId + ":" + pingOneEnvironmentId + ":" + pingOneLdapGatewayId)
-			plan.PingOneLdapGatewayDataStore, respDiags = types.ObjectValue(pingOneLdapGatewayDataStoreAttrType, pingOneLdapGatewayDataStore)
+		}
+
+		// Mark the _all attributes as unknown when the corresponding non-_all attribute is changed
+		if state != nil {
+			respDiags = setConfigurationUnknownIfNecessary(ctx, pingOneLdapGatewayDataStore, state.PingOneLdapGatewayDataStore)
 			resp.Diagnostics.Append(respDiags...)
 		}
+
+		plan.PingOneLdapGatewayDataStore, respDiags = types.ObjectValue(pingOneLdapGatewayDataStoreAttrType, pingOneLdapGatewayDataStore)
+		resp.Diagnostics.Append(respDiags...)
+	}
+
+	// Mark the _all attributes as unknown when the corresponding non-_all attribute is changed
+	if internaltypes.IsDefined(plan.CustomDataStore) && state != nil {
+		customDataStore := plan.CustomDataStore.Attributes()
+		respDiags = setConfigurationUnknownIfNecessary(ctx, customDataStore, state.CustomDataStore)
+		resp.Diagnostics.Append(respDiags...)
+
+		plan.CustomDataStore, respDiags = types.ObjectValue(plan.CustomDataStore.AttributeTypes(ctx), customDataStore)
+		resp.Diagnostics.Append(respDiags...)
 	}
 
 	resp.Plan.Set(ctx, plan)
