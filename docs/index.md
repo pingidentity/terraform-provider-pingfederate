@@ -20,7 +20,7 @@ terraform {
   required_version = ">=1.1"
   required_providers {
     pingfederate = {
-      version = "~> 0.1.0"
+      version = "~> 0.4.0"
       source  = "pingidentity/pingfederate"
     }
   }
@@ -41,9 +41,7 @@ resource "pingfederate_administrative_account" "myAdministrativeAccount" {
   roles       = ["USER_ADMINISTRATOR"]
 }
 ```
-### Using resources that have a different type
-Some resources may have a different "type". For example, the `pingfederate_data_store` resource has an attribute that can be set to distinguish the type of resource for creation. 
-The example resource below allows `custom_data_store`, `jdbc_data_store`, and `ldap_data_store` types.
+### PingFederate supports Custom, LDAP, JDBC, and PingOne LDAP Gateway data stores. The `pingfederate_data_store` resource implements this via a separate attribute for each data store type.
 ```terraform
 resource "pingfederate_data_store" "myPingOneLdapDataStore" {
   data_store_id         = "myPingOneLdapDataStore"

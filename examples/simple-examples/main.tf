@@ -2,7 +2,7 @@ terraform {
   required_version = ">=1.1"
   required_providers {
     pingfederate = {
-      version = "~> 0.1.0"
+      version = "~> 0.4.0"
       source  = "pingidentity/pingfederate"
     }
   }
