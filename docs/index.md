@@ -42,7 +42,7 @@ resource "pingfederate_administrative_account" "myAdministrativeAccount" {
 }
 ```
 ### Using resources that have a different type
-Some resources may have a different "type". For example, the `pingfederate_data_store` resource has a attribute that can be set to distinguish the type of resource for creation. 
+Some resources may have a different "type". For example, the `pingfederate_data_store` resource has an attribute that can be set to distinguish the type of resource for creation. 
 The example resource below allows `custom_data_store`, `jdbc_data_store`, and `ldap_data_store` types.
 ```terraform
 resource "pingfederate_data_store" "myPingOneLdapDataStore" {
