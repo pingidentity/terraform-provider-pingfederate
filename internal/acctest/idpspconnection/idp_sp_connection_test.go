@@ -351,6 +351,9 @@ func testAccSpConnectionOutboundProvision(resourceName string) string {
 resource "pingfederate_idp_sp_connection" "%[1]s" {
 	%s
   %s
+}
+data "pingfederate_idp_sp_connection" "%[1]s" {
+  connection_id = pingfederate_idp_sp_connection.%[1]s.connection_id
 }`, resourceName,
 		baseHcl(resourceName),
 		outboundProvisionHcl(),
@@ -366,9 +369,12 @@ func testAccSpConnectionBrowserSso(resourceName string, useWsFed bool) string {
 	}
 
 	return fmt.Sprintf(`
-resource "pingfederate_idp_sp_connection" "%s" {
+resource "pingfederate_idp_sp_connection" "%[1]s" {
   %s
   %s
+}
+data "pingfederate_idp_sp_connection" "%[1]s" {
+  connection_id = pingfederate_idp_sp_connection.%[1]s.connection_id
 }`, resourceName,
 		baseHcl(resourceName),
 		browserHcl,
@@ -380,6 +386,9 @@ func testAccSpConnectionWsTrust(resourceName string) string {
 resource "pingfederate_idp_sp_connection" "%[1]s" {
   %s
   %s
+}
+data "pingfederate_idp_sp_connection" "%[1]s" {
+  connection_id = pingfederate_idp_sp_connection.%[1]s.connection_id
 }`, resourceName,
 		baseHcl(resourceName),
 		wsTrustHcl(),
@@ -393,6 +402,9 @@ resource "pingfederate_idp_sp_connection" "%[1]s" {
 		%s
 		%s
 		%s
+}
+data "pingfederate_idp_sp_connection" "%[1]s" {
+  connection_id = pingfederate_idp_sp_connection.%[1]s.connection_id
 }`, resourceName,
 		baseHcl(resourceName),
 		outboundProvisionHcl(),

@@ -25,8 +25,9 @@ func ToSchema() map[string]schema.Attribute {
 
 func SingleNestedAttribute() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
-		Optional:   true,
-		Attributes: ToSchema(),
+		Description: "A reference to a resource.",
+		Optional:    true,
+		Attributes:  ToSchema(),
 	}
 }
 

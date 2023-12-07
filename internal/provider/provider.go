@@ -308,6 +308,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		datastore.DataStoreDataSource,
 		idpadapter.IdpAdapterDataSource,
 		idpdefaulturls.IdpDefaultUrlsDataSource,
+		idpspconnection.IdpSpConnectionDataSource,
 		keypairsigningimport.KeyPairsSigningImportDataSource,
 		keypairsslserverimport.KeyPairsSslServerImportDataSource,
 		license.LicenseDataSource,

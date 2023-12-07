@@ -42,7 +42,9 @@ var (
 	_ resource.Resource                = &idpSpConnectionResource{}
 	_ resource.ResourceWithConfigure   = &idpSpConnectionResource{}
 	_ resource.ResourceWithImportState = &idpSpConnectionResource{}
+)
 
+var (
 	resourceLinkObjectType = types.ObjectType{AttrTypes: resourcelink.AttrType()}
 
 	metadataReloadSettingsAttrTypes = map[string]attr.Type{
@@ -270,13 +272,6 @@ var (
 		"require_signed_attribute_query": types.BoolType,
 		"require_encrypted_name_id":      types.BoolType,
 	}
-	attributeQueryAttrTypes = map[string]attr.Type{
-		"attributes":                     types.ListType{ElemType: types.StringType},
-		"attribute_contract_fulfillment": attributeContractFulfillmentAttrType,
-		"issuance_criteria":              issuanceCriteriaAttrType,
-		"policy":                         types.ObjectType{AttrTypes: policyAttrTypes},
-		"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
-	}
 
 	spWsTrustAttributeAttrType = types.ObjectType{
 		AttrTypes: map[string]attr.Type{
@@ -318,60 +313,12 @@ var (
 			"nested_search": types.BoolType,
 		},
 	}
-	customSchemaAttrTypes = map[string]attr.Type{
-		"namespace": types.StringType,
-		"attributes": types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
-			"name":           types.StringType,
-			"multi_valued":   types.BoolType,
-			"types":          types.ListType{ElemType: types.StringType},
-			"sub_attributes": types.ListType{ElemType: types.StringType},
-		}}},
-	}
 	targetSettingsElemAttrType = types.ObjectType{AttrTypes: map[string]attr.Type{
 		"name":      types.StringType,
 		"value":     types.StringType,
 		"inherited": types.BoolType,
 	}}
-	saasFieldInfoAttrTypes = map[string]attr.Type{
-		"attribute_names": types.ListType{ElemType: types.StringType},
-		"default_value":   types.StringType,
-		"expression":      types.StringType,
-		"create_only":     types.BoolType,
-		"trim":            types.BoolType,
-		"character_case":  types.StringType,
-		"parser":          types.StringType,
-		"masked":          types.BoolType,
-	}
-	attributeMappingElemAttrTypes = types.ObjectType{AttrTypes: map[string]attr.Type{
-		"field_name":      types.StringType,
-		"saas_field_info": types.ObjectType{AttrTypes: saasFieldInfoAttrTypes},
-	}}
-	channelSourceAttrTypes = map[string]attr.Type{
-		"data_source":         resourceLinkObjectType,
-		"guid_attribute_name": types.StringType,
-		"guid_binary":         types.BoolType,
-		"change_detection_settings": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"user_object_class":         types.StringType,
-			"group_object_class":        types.StringType,
-			"changed_users_algorithm":   types.StringType,
-			"usn_attribute_name":        types.StringType,
-			"time_stamp_attribute_name": types.StringType,
-		}},
-		"group_membership_detection": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"member_of_group_attribute_name": types.StringType,
-			"group_member_attribute_name":    types.StringType,
-		}},
-		"account_management_settings": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"account_status_attribute_name": types.StringType,
-			"account_status_algorithm":      types.StringType,
-			"flag_comparison_value":         types.StringType,
-			"flag_comparison_status":        types.BoolType,
-			"default_status":                types.BoolType,
-		}},
-		"base_dn":               types.StringType,
-		"user_source_location":  channelSourceLocationAttrType,
-		"group_source_location": channelSourceLocationAttrType,
-	}
+
 	channelsElemAttrType = types.ObjectType{AttrTypes: map[string]attr.Type{
 		"active":                types.BoolType,
 		"channel_source":        types.ObjectType{AttrTypes: channelSourceAttrTypes},
@@ -396,8 +343,6 @@ var (
 		"group_dn":      types.StringNull(),
 		"nested_search": types.BoolValue(false),
 	})
-
-	certsDefault, _ = types.ListValue(certsListType.ElemType, nil)
 )
 
 // IdpSpConnectionResource is a helper function to simplify the provider implementation.
@@ -409,33 +354,6 @@ func IdpSpConnectionResource() resource.Resource {
 type idpSpConnectionResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type idpSpConnectionResourceModel struct {
-	SpBrowserSso                           types.Object `tfsdk:"sp_browser_sso"`
-	Type                                   types.String `tfsdk:"type"`
-	ConnectionId                           types.String `tfsdk:"connection_id"`
-	Id                                     types.String `tfsdk:"id"`
-	EntityId                               types.String `tfsdk:"entity_id"`
-	Name                                   types.String `tfsdk:"name"`
-	CreationDate                           types.String `tfsdk:"creation_date"`
-	Active                                 types.Bool   `tfsdk:"active"`
-	BaseUrl                                types.String `tfsdk:"base_url"`
-	DefaultVirtualEntityId                 types.String `tfsdk:"default_virtual_entity_id"`
-	VirtualEntityIds                       types.Set    `tfsdk:"virtual_entity_ids"`
-	MetadataReloadSettings                 types.Object `tfsdk:"metadata_reload_settings"`
-	Credentials                            types.Object `tfsdk:"credentials"`
-	ContactInfo                            types.Object `tfsdk:"contact_info"`
-	LicenseConnectionGroup                 types.String `tfsdk:"license_connection_group"`
-	LoggingMode                            types.String `tfsdk:"logging_mode"`
-	AdditionalAllowedEntitiesConfiguration types.Object `tfsdk:"additional_allowed_entities_configuration"`
-	ExtendedProperties                     types.Map    `tfsdk:"extended_properties"`
-	AttributeQuery                         types.Object `tfsdk:"attribute_query"`
-	WsTrust                                types.Object `tfsdk:"ws_trust"`
-	ApplicationName                        types.String `tfsdk:"application_name"`
-	ApplicationIconUrl                     types.String `tfsdk:"application_icon_url"`
-	OutboundProvision                      types.Object `tfsdk:"outbound_provision"`
-	ConnectionTargetType                   types.String `tfsdk:"connection_target_type"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -1795,7 +1713,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 }
 
 func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	var plan, state *idpSpConnectionResourceModel
+	var plan, state *idpSpConnectionModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	var respDiags diag.Diagnostics
@@ -1845,7 +1763,7 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 	}
 }
 
-func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.SpConnection, plan idpSpConnectionResourceModel) error {
+func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.SpConnection, plan idpSpConnectionModel) error {
 	addRequest.Id = plan.ConnectionId.ValueStringPointer()
 	addRequest.Type = plan.Type.ValueStringPointer()
 	addRequest.Active = plan.Active.ValueBoolPointer()
@@ -1979,7 +1897,7 @@ func (r *idpSpConnectionResource) Configure(_ context.Context, req resource.Conf
 	r.apiClient = providerCfg.ApiClient
 }
 
-func readIdpSpconnectionResponse(ctx context.Context, r *client.SpConnection, state *idpSpConnectionResourceModel, plan *idpSpConnectionResourceModel) diag.Diagnostics {
+func readIdpSpconnectionResourceResponse(ctx context.Context, r *client.SpConnection, state *idpSpConnectionModel, plan *idpSpConnectionModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 
 	state.ConnectionId = types.StringPointerValue(r.Id)
@@ -2199,7 +2117,7 @@ func readIdpSpconnectionResponse(ctx context.Context, r *client.SpConnection, st
 }
 
 func (r *idpSpConnectionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan idpSpConnectionResourceModel
+	var plan idpSpConnectionModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -2223,16 +2141,16 @@ func (r *idpSpConnectionResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	// Read the response into the state
-	var state idpSpConnectionResourceModel
+	var state idpSpConnectionModel
 
-	diags = readIdpSpconnectionResponse(ctx, idpSpconnectionResponse, &state, &plan)
+	diags = readIdpSpconnectionResourceResponse(ctx, idpSpconnectionResponse, &state, &plan)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
 func (r *idpSpConnectionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state idpSpConnectionResourceModel
+	var state idpSpConnectionModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -2246,13 +2164,13 @@ func (r *idpSpConnectionResource) Read(ctx context.Context, req resource.ReadReq
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the IdP SP Connection", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  IdP SP Connection", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the IdP SP Connection", err, httpResp)
 		}
 		return
 	}
 
 	// Read the response into the state
-	diags = readIdpSpconnectionResponse(ctx, apiReadIdpSpconnection, &state, &state)
+	diags = readIdpSpconnectionResourceResponse(ctx, apiReadIdpSpconnection, &state, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -2262,7 +2180,7 @@ func (r *idpSpConnectionResource) Read(ctx context.Context, req resource.ReadReq
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *idpSpConnectionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan idpSpConnectionResourceModel
+	var plan idpSpConnectionModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -2285,8 +2203,8 @@ func (r *idpSpConnectionResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	// Read the response
-	var state idpSpConnectionResourceModel
-	diags = readIdpSpconnectionResponse(ctx, updateIdpSpconnectionResponse, &state, &plan)
+	var state idpSpConnectionModel
+	diags = readIdpSpconnectionResourceResponse(ctx, updateIdpSpconnectionResponse, &state, &plan)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -2296,7 +2214,7 @@ func (r *idpSpConnectionResource) Update(ctx context.Context, req resource.Updat
 
 func (r *idpSpConnectionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state idpSpConnectionResourceModel
+	var state idpSpConnectionModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
