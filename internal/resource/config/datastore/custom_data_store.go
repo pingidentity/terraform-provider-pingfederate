@@ -34,9 +34,9 @@ var (
 		"parent_ref":            basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
 	}
 
-	customDataStoreAttrType                = internaltypes.AddKeyObjectTypeToMapStringAttrType(customDataStoreCommonAttrType, "configuration", pluginconfiguration.AttrType())
+	customDataStoreAttrType                = internaltypes.AddKeyValToMapStringAttrType(customDataStoreCommonAttrType, "configuration", types.ObjectType{AttrTypes: pluginconfiguration.AttrType()})
 	customDataStoreEmptyStateObj           = types.ObjectNull(customDataStoreAttrType)
-	customDataStoreDataSourceAttrType      = internaltypes.AddKeyObjectTypeToMapStringAttrType(customDataStoreCommonAttrType, "configuration", datasourcepluginconfiguration.AttrType())
+	customDataStoreDataSourceAttrType      = internaltypes.AddKeyValToMapStringAttrType(customDataStoreCommonAttrType, "configuration", types.ObjectType{AttrTypes: datasourcepluginconfiguration.AttrType()})
 	customDataStoreEmptyDataSourceStateObj = types.ObjectNull(customDataStoreDataSourceAttrType)
 )
 

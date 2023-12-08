@@ -52,9 +52,9 @@ var (
 		"validate_connection_sql":      basetypes.StringType{},
 	}
 
-	jdbcDataStoreAttrType                = internaltypes.AddKeyStringTypeToMapStringAttrType(jdbcDataStoreCommonAttrType, "password")
+	jdbcDataStoreAttrType                = internaltypes.AddKeyValToMapStringAttrType(jdbcDataStoreCommonAttrType, "password", types.StringType)
 	jdbcDataStoreEmptyStateObj           = types.ObjectNull(jdbcDataStoreAttrType)
-	jdbcDataStoreDataSourceAttrType      = internaltypes.AddKeyStringTypeToMapStringAttrType(jdbcDataStoreCommonAttrType, "encrypted_password")
+	jdbcDataStoreDataSourceAttrType      = internaltypes.AddKeyValToMapStringAttrType(jdbcDataStoreCommonAttrType, "encrypted_password", types.StringType)
 	jdbcDataStoreEmptyDataSourceStateObj = types.ObjectNull(jdbcDataStoreDataSourceAttrType)
 )
 
