@@ -15,6 +15,7 @@ import (
 	"github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -76,8 +77,9 @@ func (r *dataStoreResource) Configure(_ context.Context, req resource.ConfigureR
 }
 
 func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	var plan *dataStoreModel
+	var plan, state *dataStoreModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	var respDiags diag.Diagnostics
 
 	if plan == nil {
@@ -282,9 +284,23 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 			pingOneEnvironmentId := pingOneLdapGatewayDataStore["ping_one_environment_id"].(types.String).ValueString()
 			pingOneLdapGatewayId := pingOneLdapGatewayDataStore["ping_one_ldap_gateway_id"].(types.String).ValueString()
 			pingOneLdapGatewayDataStore["name"] = types.StringValue(pingOneConnectionRefId + ":" + pingOneEnvironmentId + ":" + pingOneLdapGatewayId)
-			plan.PingOneLdapGatewayDataStore, respDiags = types.ObjectValue(pingOneLdapGatewayDataStoreAttrType, pingOneLdapGatewayDataStore)
+		}
+		plan.PingOneLdapGatewayDataStore, respDiags = types.ObjectValue(pingOneLdapGatewayDataStoreAttrType, pingOneLdapGatewayDataStore)
+		resp.Diagnostics.Append(respDiags...)
+	}
+
+	// Mark the _all attributes as unknown when the corresponding non-_all attribute is changed
+	if internaltypes.IsDefined(plan.CustomDataStore) && state != nil && internaltypes.IsDefined(state.CustomDataStore) {
+		customDataStore := plan.CustomDataStore.Attributes()
+		customDataStoreState := state.CustomDataStore.Attributes()
+		if internaltypes.IsDefined(customDataStore["configuration"]) && internaltypes.IsDefined(customDataStoreState["configuration"]) {
+			customDataStore["configuration"], respDiags = pluginconfiguration.MarkComputedAttrsUnknownOnChange(
+				customDataStore["configuration"].(types.Object), customDataStoreState["configuration"].(types.Object))
 			resp.Diagnostics.Append(respDiags...)
 		}
+
+		plan.CustomDataStore, respDiags = types.ObjectValue(plan.CustomDataStore.AttributeTypes(ctx), customDataStore)
+		resp.Diagnostics.Append(respDiags...)
 	}
 
 	resp.Plan.Set(ctx, plan)

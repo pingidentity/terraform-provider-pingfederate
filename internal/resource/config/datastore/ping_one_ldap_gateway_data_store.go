@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -43,8 +42,6 @@ var (
 func toSchemaPingOneLdapGatewayDataStore() schema.SingleNestedAttribute {
 	pingOneLdapGatewayDataStoreSchema := schema.SingleNestedAttribute{}
 	pingOneLdapGatewayDataStoreSchema.Description = "A PingOne LDAP Gateway data store."
-	pingOneLdapGatewayDataStoreSchema.Default = objectdefault.StaticValue(types.ObjectNull(pingOneLdapGatewayDataStoreAttrType))
-	pingOneLdapGatewayDataStoreSchema.Computed = true
 	pingOneLdapGatewayDataStoreSchema.Optional = true
 	pingOneLdapGatewayDataStoreSchema.Attributes = map[string]schema.Attribute{
 		"type": schema.StringAttribute{

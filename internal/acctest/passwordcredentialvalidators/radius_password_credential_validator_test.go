@@ -66,10 +66,10 @@ func TestAccRadiusPasswordCredentialValidators(t *testing.T) {
 				ImportStateId:     radiusPasswordCredentialValidatorsId,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// Fields get imported to fields_all, so can't check them here. Also can't check the imported shared secret
+				// Fields get imported to fields_all, and tables to tables_all, so can't check them here.
 				ImportStateVerifyIgnore: []string{
 					"configuration.fields",
-					"configuration.tables.0.rows.0.fields.3.value",
+					"configuration.tables",
 				},
 			},
 			{

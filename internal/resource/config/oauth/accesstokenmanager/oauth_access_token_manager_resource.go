@@ -391,6 +391,22 @@ func (r *oauthAccessTokenManagerResource) Configure(_ context.Context, req resou
 
 }
 
+func (r *oauthAccessTokenManagerResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	var plan, state *oauthAccessTokenManagerResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	var respDiags diag.Diagnostics
+
+	if plan == nil || state == nil {
+		return
+	}
+
+	plan.Configuration, respDiags = pluginconfiguration.MarkComputedAttrsUnknownOnChange(plan.Configuration, state.Configuration)
+	resp.Diagnostics.Append(respDiags...)
+
+	resp.Plan.Set(ctx, plan)
+}
+
 func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagerResourceModel, configurationFromPlan basetypes.ObjectValue) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 

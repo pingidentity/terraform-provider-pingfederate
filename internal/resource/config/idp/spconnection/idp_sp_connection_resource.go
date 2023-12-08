@@ -1761,6 +1761,58 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 			path.Root("outbound_provision"),
 		}
 	}
+
+	if internaltypes.IsDefined(plan.SpBrowserSso) && internaltypes.IsDefined(state.SpBrowserSso) && !plan.SpBrowserSso.Equal(state.SpBrowserSso) {
+		planSpBrowserSsoAttributes := plan.SpBrowserSso.Attributes()
+		stateSpBrowserSsoAttributes := state.SpBrowserSso.Attributes()
+		planModified := false
+		if internaltypes.IsDefined(planSpBrowserSsoAttributes["adapter_mappings"]) && internaltypes.IsDefined(stateSpBrowserSsoAttributes["adapter_mappings"]) {
+			planAdapterMappings := planSpBrowserSsoAttributes["adapter_mappings"].(types.List)
+			stateAdapterMappings := stateSpBrowserSsoAttributes["adapter_mappings"].(types.List)
+			if !planAdapterMappings.Equal(stateAdapterMappings) {
+				planAdapterMappingsElems := planAdapterMappings.Elements()
+				stateAdapterMappingsElems := stateAdapterMappings.Elements()
+				finalPlanAdapterMappingsElems := []attr.Value{}
+				for i, planElem := range planAdapterMappingsElems {
+					planElemObj := planElem.(types.Object)
+					if i < len(stateAdapterMappingsElems) {
+						stateElem := stateAdapterMappingsElems[i]
+						// If this plan element doesn't equal the state element, invalidate the fields_all and tables_all fields in the configuration
+						if !planElem.Equal(stateElem) {
+							planElemAttrs := planElemObj.Attributes()
+							if internaltypes.IsDefined(planElemAttrs["adapter_override_settings"]) {
+								planOverrideSettingsObj := planElemAttrs["adapter_override_settings"].(types.Object)
+								planOverrideSettingsAttrs := planOverrideSettingsObj.Attributes()
+								if internaltypes.IsDefined(planOverrideSettingsAttrs["configuration"]) {
+									planOverrideSettingsAttrs["configuration"], respDiags = pluginconfiguration.MarkComputedAttrsUnknown(
+										planOverrideSettingsAttrs["configuration"].(types.Object))
+									resp.Diagnostics.Append(respDiags...)
+									planElemAttrs["adapter_override_settings"], respDiags = types.ObjectValue(planOverrideSettingsObj.AttributeTypes(ctx), planOverrideSettingsAttrs)
+									resp.Diagnostics.Append(respDiags...)
+									planElemObj, respDiags = types.ObjectValue(planElemObj.AttributeTypes(ctx), planElemAttrs)
+									resp.Diagnostics.Append(respDiags...)
+									planModified = true
+									finalPlanAdapterMappingsElems = append(finalPlanAdapterMappingsElems, planElemObj)
+								}
+							}
+						}
+					}
+				}
+				if planModified {
+					planSpBrowserSsoAttributes["adapter_mappings"], respDiags = types.ListValue(planAdapterMappings.ElementType(ctx), finalPlanAdapterMappingsElems)
+					resp.Diagnostics.Append(respDiags...)
+				}
+			}
+		}
+
+		if planModified {
+			// Update the plan for sp_browser_sso
+			plan.SpBrowserSso, respDiags = types.ObjectValue(plan.SpBrowserSso.AttributeTypes(ctx), planSpBrowserSsoAttributes)
+			resp.Diagnostics.Append(respDiags...)
+			// Update plan
+			resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
+		}
+	}
 }
 
 func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.SpConnection, plan idpSpConnectionModel) error {

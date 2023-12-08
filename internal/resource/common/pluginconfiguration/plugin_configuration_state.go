@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
 var (
@@ -30,6 +31,7 @@ var (
 		"fields":     basetypes.ListType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
 		"fields_all": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
 		"tables":     basetypes.ListType{ElemType: types.ObjectType{AttrTypes: tableAttrTypes}},
+		"tables_all": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: tableAttrTypes}},
 	}
 )
 
@@ -136,15 +138,15 @@ func ToRowsListValue(rows []client.ConfigRow, planRows *types.List, diags *diag.
 	return listVal
 }
 
-func ToTablesListValue(tables []client.ConfigTable, planTables *types.List, diags *diag.Diagnostics) types.List {
-	objValues := []attr.Value{}
-	if planTables == nil || planTables.IsNull() {
-		if len(tables) == 0 {
-			// If the API returned no tables, treat it as null
-			return types.ListNull(types.ObjectType{
-				AttrTypes: tableAttrTypes,
-			})
-		}
+// Creates state values for tables. Returns one value that only includes values specified in the plan, and a second value that includes all tables values
+func ToTablesListValue(tables []client.ConfigTable, planTables *types.List, diags *diag.Diagnostics) (types.List, types.List) {
+	// List of *all* tables values to return
+	finalTablesAllObjValues := []attr.Value{}
+	// List of tables values to return that were expected based on the plan
+	finalTablesObjValues := []attr.Value{}
+	// types.Object values for tables included in the plan
+	planTableObjs := map[string]types.Object{}
+	if planTables == nil {
 		for _, table := range tables {
 			attrValues := map[string]attr.Value{}
 			attrValues["inherited"] = types.BoolPointerValue(table.Inherited)
@@ -152,35 +154,48 @@ func ToTablesListValue(tables []client.ConfigTable, planTables *types.List, diag
 			attrValues["rows"] = ToRowsListValue(table.Rows, nil, diags)
 			tableObjValue, newDiags := types.ObjectValue(tableAttrTypes, attrValues)
 			diags.Append(newDiags...)
-			objValues = append(objValues, tableObjValue)
+			finalTablesAllObjValues = append(finalTablesAllObjValues, tableObjValue)
 		}
 	} else {
-		// This is assuming there are never any tables added by the PF API. If there
-		// are ever tables added, this will cause a nil pointer exception trying to read
-		// index i of planTablesElements.
-		planTablesElements := planTables.Elements()
+		// Build up a map of all the tables included in the plan
+		for _, planTable := range planTables.Elements() {
+			planTableObj := planTable.(types.Object)
+			planTableObjs[planTableObj.Attributes()["name"].(types.String).ValueString()] = planTableObj
+		}
+
 		for i := 0; i < len(tables); i++ {
 			attrValues := map[string]attr.Value{}
 			attrValues["inherited"] = types.BoolPointerValue(tables[i].Inherited)
 			attrValues["name"] = types.StringValue(tables[i].Name)
-			planTable := planTablesElements[i].(types.Object)
+			// If this table was in the plan, pass in the planned rows when getting the 'rows' values in case there are some encrypted values
+			// that aren't returned by the PF API
 			var planTableRows *types.List
-			planTableRowsVal, ok := planTable.Attributes()["rows"]
-			if ok {
-				listValue := planTableRowsVal.(types.List)
-				planTableRows = &listValue
+			planTable, inPlan := planTableObjs[tables[i].Name]
+			if inPlan {
+				planTableRowsVal, ok := planTable.Attributes()["rows"]
+				if ok {
+					listValue := planTableRowsVal.(types.List)
+					planTableRows = &listValue
+				}
 			}
 			attrValues["rows"] = ToRowsListValue(tables[i].Rows, planTableRows, diags)
 			tableObjValue, newDiags := types.ObjectValue(tableAttrTypes, attrValues)
 			diags.Append(newDiags...)
-			objValues = append(objValues, tableObjValue)
+			finalTablesAllObjValues = append(finalTablesAllObjValues, tableObjValue)
+			if inPlan {
+				finalTablesObjValues = append(finalTablesObjValues, tableObjValue)
+			}
 		}
 	}
-	listVal, newDiags := types.ListValue(types.ObjectType{
+	plannedTables, newDiags := types.ListValue(types.ObjectType{
 		AttrTypes: tableAttrTypes,
-	}, objValues)
+	}, finalTablesObjValues)
 	diags.Append(newDiags...)
-	return listVal
+	allTables, newDiags := types.ListValue(types.ObjectType{
+		AttrTypes: tableAttrTypes,
+	}, finalTablesAllObjValues)
+	diags.Append(newDiags...)
+	return plannedTables, allTables
 }
 
 func ToState(configFromPlan basetypes.ObjectValue, configuration *client.PluginConfiguration) (basetypes.ObjectValue, diag.Diagnostics) {
@@ -199,14 +214,47 @@ func ToState(configFromPlan basetypes.ObjectValue, configuration *client.PluginC
 	}
 
 	fieldsAttrValue, fieldsAllAttrValue := ToFieldsListValue(configuration.Fields, planFields, &diags)
-	tablesAttrValue := ToTablesListValue(configuration.Tables, planTables, &diags)
+	tablesAttrValue, tablesAllAttrValue := ToTablesListValue(configuration.Tables, planTables, &diags)
 
 	configurationAttrValue := map[string]attr.Value{
 		"fields":     fieldsAttrValue,
 		"fields_all": fieldsAllAttrValue,
 		"tables":     tablesAttrValue,
+		"tables_all": tablesAllAttrValue,
 	}
 	configObj, valueFromDiags := types.ObjectValue(configurationAttrTypes, configurationAttrValue)
 	diags.Append(valueFromDiags...)
 	return configObj, diags
+}
+
+// Mark fields_all and tables_all configuration as unknown if the fields and tables have changed in the plan
+func MarkComputedAttrsUnknownOnChange(planConfiguration, stateConfiguration types.Object) (types.Object, diag.Diagnostics) {
+	if !internaltypes.IsDefined(planConfiguration) || !internaltypes.IsDefined(stateConfiguration) {
+		return planConfiguration, nil
+	}
+	planConfigurationAttrs := planConfiguration.Attributes()
+	planFields := planConfiguration.Attributes()["fields"]
+	stateFields := stateConfiguration.Attributes()["fields"]
+	if !planFields.Equal(stateFields) {
+		planConfigurationAttrs["fields_all"] = types.ListUnknown(types.ObjectType{AttrTypes: fieldAttrTypes})
+	}
+
+	planTables := planConfiguration.Attributes()["tables"]
+	stateTables := stateConfiguration.Attributes()["tables"]
+	if !planTables.Equal(stateTables) {
+		planConfigurationAttrs["tables_all"] = types.ListUnknown(types.ObjectType{AttrTypes: tableAttrTypes})
+	}
+
+	return types.ObjectValue(configurationAttrTypes, planConfigurationAttrs)
+}
+
+// Mark fields_all and tables_all configuration as unknown
+func MarkComputedAttrsUnknown(planConfiguration types.Object) (types.Object, diag.Diagnostics) {
+	if !internaltypes.IsDefined(planConfiguration) {
+		return planConfiguration, nil
+	}
+	planConfigurationAttrs := planConfiguration.Attributes()
+	planConfigurationAttrs["fields_all"] = types.ListUnknown(types.ObjectType{AttrTypes: fieldAttrTypes})
+	planConfigurationAttrs["tables_all"] = types.ListUnknown(types.ObjectType{AttrTypes: tableAttrTypes})
+	return types.ObjectValue(configurationAttrTypes, planConfigurationAttrs)
 }

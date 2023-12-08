@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
@@ -65,17 +64,15 @@ var (
 		"follow_ldap_referrals":  basetypes.BoolType{},
 	}
 
-	ldapDataStoreAttrType                = internaltypes.AddKeyStringTypeToMapStringAttrType(ldapDataStoreCommonAttrType, "password")
+	ldapDataStoreAttrType                = internaltypes.AddKeyValToMapStringAttrType(ldapDataStoreCommonAttrType, "password", types.StringType)
 	ldapDataStoreEmptyStateObj           = types.ObjectNull(ldapDataStoreAttrType)
-	ldapDataStoreEncryptedPassAttrType   = internaltypes.AddKeyStringTypeToMapStringAttrType(ldapDataStoreCommonAttrType, "encrypted_password")
+	ldapDataStoreEncryptedPassAttrType   = internaltypes.AddKeyValToMapStringAttrType(ldapDataStoreCommonAttrType, "encrypted_password", types.StringType)
 	ldapDataStoreEmptyDataSourceStateObj = types.ObjectNull(ldapDataStoreEncryptedPassAttrType)
 )
 
 func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 	ldapDataStoreSchema := schema.SingleNestedAttribute{}
 	ldapDataStoreSchema.Description = "An LDAP Data Store"
-	ldapDataStoreSchema.Default = objectdefault.StaticValue(ldapDataStoreEmptyStateObj)
-	ldapDataStoreSchema.Computed = true
 	ldapDataStoreSchema.Optional = true
 	ldapDataStoreSchema.Attributes = map[string]schema.Attribute{
 		"type": schema.StringAttribute{

@@ -352,6 +352,7 @@ Optional:
 Read-Only:
 
 - `fields_all` (Attributes List) List of configuration fields. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--custom_data_store--configuration--fields_all))
+- `tables_all` (Attributes List) List of configuration tables. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables_all))
 
 <a id="nestedatt--custom_data_store--configuration--fields"></a>
 ### Nested Schema for `custom_data_store.configuration.fields`
@@ -406,9 +407,47 @@ Optional:
 
 Required:
 
-- `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 - `name` (String) The name of the configuration field.
 - `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+
+Optional:
+
+- `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
+
+
+<a id="nestedatt--custom_data_store--configuration--tables_all"></a>
+### Nested Schema for `custom_data_store.configuration.tables_all`
+
+Required:
+
+- `name` (String) The name of the table.
+
+Optional:
+
+- `inherited` (Boolean) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
+- `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables_all--rows))
+
+<a id="nestedatt--custom_data_store--configuration--tables_all--rows"></a>
+### Nested Schema for `custom_data_store.configuration.tables_all.rows`
+
+Optional:
+
+- `default_row` (Boolean) Whether this row is the default.
+- `fields` (Attributes List) The configuration fields in the row. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables_all--rows--fields))
+
+<a id="nestedatt--custom_data_store--configuration--tables_all--rows--fields"></a>
+### Nested Schema for `custom_data_store.configuration.tables_all.rows.fields`
+
+Required:
+
+- `name` (String) The name of the configuration field.
+- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+
+Optional:
+
+- `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
+
+
 
 
 
