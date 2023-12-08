@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -243,6 +244,22 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 			}
 		}
 	}
+}
+
+func (r *passwordCredentialValidatorResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	var plan, state *passwordCredentialValidatorModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	var respDiags diag.Diagnostics
+
+	if plan == nil || state == nil {
+		return
+	}
+
+	plan.Configuration, respDiags = pluginconfiguration.MarkComputedAttrsUnknownOnChange(plan.Configuration, state.Configuration)
+	resp.Diagnostics.Append(respDiags...)
+
+	resp.Plan.Set(ctx, plan)
 }
 
 func addOptionalPasswordCredentialValidatorFields(ctx context.Context, addRequest *client.PasswordCredentialValidator, plan passwordCredentialValidatorModel) error {

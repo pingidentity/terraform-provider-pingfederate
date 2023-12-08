@@ -247,3 +247,14 @@ func MarkComputedAttrsUnknownOnChange(planConfiguration, stateConfiguration type
 
 	return types.ObjectValue(configurationAttrTypes, planConfigurationAttrs)
 }
+
+// Mark fields_all and tables_all configuration as unknown
+func MarkComputedAttrsUnknown(planConfiguration types.Object) (types.Object, diag.Diagnostics) {
+	if !internaltypes.IsDefined(planConfiguration) {
+		return planConfiguration, nil
+	}
+	planConfigurationAttrs := planConfiguration.Attributes()
+	planConfigurationAttrs["fields_all"] = types.ListUnknown(types.ObjectType{AttrTypes: fieldAttrTypes})
+	planConfigurationAttrs["tables_all"] = types.ListUnknown(types.ObjectType{AttrTypes: tableAttrTypes})
+	return types.ObjectValue(configurationAttrTypes, planConfigurationAttrs)
+}
