@@ -147,6 +147,14 @@ jobs:
       [fmt, vet, lint, generate, importfmt, tfproviderlint, tflint, terrafmt]
     if: ${{ github.actor != 'dependabot[bot]' }}
     runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        terraform:
+          - "1.4.*"
+          - "1.5.*"
+          - "1.6.*"
+      max-parallel: 1
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
@@ -155,7 +163,7 @@ jobs:
           cache: true
       - uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: "1.5.*"
+          terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
       - run: mkdir -p $HOME/.pingidentity/ && echo "$CONFIG" >> $HOME/.pingidentity/config && grep -E "[a-zA-Z]" $HOME/.pingidentity/config || exit 1 && make testacccomplete && make removetestcontainer
         env:
