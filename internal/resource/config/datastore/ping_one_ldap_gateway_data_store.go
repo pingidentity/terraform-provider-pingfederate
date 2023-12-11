@@ -241,7 +241,7 @@ func addOptionalPingOneLdapGatewayDataStoreFields(addRequest client.DataStoreAgg
 	}
 
 	if internaltypes.IsDefined(pingOneLdapGatewayDataStorePlan["binary_attributes"]) {
-		addRequest.PingOneLdapGatewayDataStore.BinaryAttributes = internaltypes.SetTypeToStringSet(pingOneLdapGatewayDataStorePlan["binary_attributes"].(types.Set))
+		addRequest.PingOneLdapGatewayDataStore.BinaryAttributes = internaltypes.SetTypeToStringSlice(pingOneLdapGatewayDataStorePlan["binary_attributes"].(types.Set))
 	}
 
 	if internaltypes.IsDefined(plan.DataStoreId) {

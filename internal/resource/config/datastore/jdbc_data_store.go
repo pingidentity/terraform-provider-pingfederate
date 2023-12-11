@@ -313,8 +313,7 @@ func toStateJdbcDataStore(con context.Context, jdbcDataStore *client.JdbcDataSto
 		"name":                         types.StringPointerValue(jdbcDataStore.Name),
 		"user_name":                    types.StringValue(jdbcDataStore.UserName),
 		"allow_multi_value_attributes": types.BoolPointerValue(jdbcDataStore.AllowMultiValueAttributes),
-		//TODO does this matter
-		"validate_connection_sql": types.StringPointerValue(jdbcDataStore.ValidateConnectionSql),
+		"validate_connection_sql":      types.StringPointerValue(jdbcDataStore.ValidateConnectionSql),
 	}
 
 	var toStateObjVal types.Object

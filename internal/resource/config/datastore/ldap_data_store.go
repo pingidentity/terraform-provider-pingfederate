@@ -598,7 +598,7 @@ func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con 
 
 	hostnames, ok := ldapDataStorePlan["hostnames"]
 	if ok {
-		addRequest.LdapDataStore.Hostnames = internaltypes.SetTypeToStringSet(hostnames.(types.Set))
+		addRequest.LdapDataStore.Hostnames = internaltypes.SetTypeToStringSlice(hostnames.(types.Set))
 	}
 
 	verifyHost, ok := ldapDataStorePlan["verify_host"]
@@ -666,7 +666,7 @@ func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con 
 
 	binaryAttributes, ok := ldapDataStorePlan["binary_attributes"]
 	if ok {
-		addRequest.LdapDataStore.BinaryAttributes = internaltypes.SetTypeToStringSet(binaryAttributes.(types.Set))
+		addRequest.LdapDataStore.BinaryAttributes = internaltypes.SetTypeToStringSlice(binaryAttributes.(types.Set))
 	}
 
 	if internaltypes.IsDefined(ldapDataStorePlan["max_wait"]) {
