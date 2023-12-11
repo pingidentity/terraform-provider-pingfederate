@@ -4,12 +4,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -239,41 +237,28 @@ func (r *licenseDataSource) Configure(_ context.Context, req datasource.Configur
 func readLicenseResponseDataSource(ctx context.Context, r *client.LicenseView, state *licenseDataSourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.Id = types.StringValue("license_id")
-	state.Name = internaltypes.StringTypeOrNil(r.Name, false)
-	state.MaxConnections = internaltypes.Int64TypeOrNil(r.MaxConnections)
-	state.UsedConnections = internaltypes.Int64TypeOrNil(r.UsedConnections)
-	state.Tier = internaltypes.StringTypeOrNil(r.Tier, false)
+	state.Name = types.StringPointerValue(r.Name)
+	state.MaxConnections = types.Int64PointerValue(r.MaxConnections)
+	state.UsedConnections = types.Int64PointerValue(r.UsedConnections)
+	state.Tier = types.StringPointerValue(r.Tier)
 	state.IssueDate = types.StringValue(r.IssueDate.Format(time.RFC3339))
 	state.ExpirationDate = types.StringValue(r.ExpirationDate.Format(time.RFC3339))
-	state.EnforcementType = internaltypes.StringTypeOrNil(r.EnforcementType, false)
-	state.Version = internaltypes.StringTypeOrNil(r.Version, false)
-	state.Product = internaltypes.StringTypeOrNil(r.Product, false)
-	state.Organization = internaltypes.StringTypeOrNil(r.Organization, false)
-	state.GracePeriod = internaltypes.Int64TypeOrNil(r.GracePeriod)
-	state.NodeLimit = internaltypes.Int64TypeOrNil(r.NodeLimit)
+	state.EnforcementType = types.StringPointerValue(r.EnforcementType)
+	state.Version = types.StringPointerValue(r.Version)
+	state.Product = types.StringPointerValue(r.Product)
+	state.Organization = types.StringPointerValue(r.Organization)
+	state.GracePeriod = types.Int64PointerValue(r.GracePeriod)
+	state.NodeLimit = types.Int64PointerValue(r.NodeLimit)
 	state.OauthEnabled = types.BoolValue(*r.OauthEnabled)
 	state.WsTrustEnabled = types.BoolValue(*r.WsTrustEnabled)
 	state.ProvisioningEnabled = types.BoolValue(*r.ProvisioningEnabled)
 	state.BridgeMode = types.BoolValue(*r.BridgeMode)
 
-	licenseGroups := r.LicenseGroups
-	licenseGroupsAttrTypes := map[string]attr.Type{
-		"name":             basetypes.StringType{},
-		"connection_count": basetypes.Int64Type{},
-		"start_date":       basetypes.StringType{},
-		"end_date":         basetypes.StringType{},
-	}
-	state.LicenseGroups, respDiags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: licenseGroupsAttrTypes}, licenseGroups)
+	state.LicenseGroups, respDiags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: licenseGroupsAttrTypes}, r.LicenseGroups)
 	diags.Append(respDiags...)
 
-	features := r.Features
-	featuresAttrTypes := map[string]attr.Type{
-		"name":  basetypes.StringType{},
-		"value": basetypes.StringType{},
-	}
-	state.Features, respDiags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: featuresAttrTypes}, features)
+	state.Features, respDiags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: featuresAttrTypes}, r.Features)
 	diags.Append(respDiags...)
-
 	return diags
 }
 
