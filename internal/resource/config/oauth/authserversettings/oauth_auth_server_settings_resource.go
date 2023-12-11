@@ -8,7 +8,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -29,7 +28,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopeentry"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopegroupentry"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -40,7 +38,9 @@ var (
 	_ resource.Resource                = &oauthAuthServerSettingsResource{}
 	_ resource.ResourceWithConfigure   = &oauthAuthServerSettingsResource{}
 	_ resource.ResourceWithImportState = &oauthAuthServerSettingsResource{}
+)
 
+var (
 	scopesDefault, _ = types.SetValue(types.ObjectType{AttrTypes: scopeentry.AttrTypes()}, nil)
 
 	scopeGroupsDefault, _ = types.SetValue(types.ObjectType{AttrTypes: map[string]attr.Type{
@@ -48,16 +48,9 @@ var (
 		"description": types.StringType,
 		"scopes":      types.SetType{ElemType: types.StringType},
 	}}, nil)
-
 	persistentGrantReuseGrantTypesDefault, _ = types.SetValue(types.StringType, nil)
 	allowedOriginsDefault, _                 = types.ListValue(types.StringType, nil)
-
-	attributeAttrTypes = map[string]attr.Type{
-		"name": types.StringType,
-	}
-	attributeSetElementType = types.ObjectType{AttrTypes: attributeAttrTypes}
-
-	defaultCoreAttribute1, _ = types.ObjectValue(attributeAttrTypes, map[string]attr.Value{
+	defaultCoreAttribute1, _                 = types.ObjectValue(attributeAttrTypes, map[string]attr.Value{
 		"name": types.StringValue("USER_KEY"),
 	})
 	defaultCoreAttribute2, _ = types.ObjectValue(attributeAttrTypes, map[string]attr.Value{
@@ -79,16 +72,6 @@ var (
 	})
 )
 
-var (
-	nameAttributeType = map[string]attr.Type{
-		"name": basetypes.StringType{},
-	}
-	persistentGrantObjContractTypes = map[string]attr.Type{
-		"core_attributes":     basetypes.SetType{ElemType: types.ObjectType{AttrTypes: nameAttributeType}},
-		"extended_attributes": basetypes.SetType{ElemType: types.ObjectType{AttrTypes: nameAttributeType}},
-	}
-)
-
 // OauthAuthServerSettingsResource is a helper function to simplify the provider implementation.
 func OauthAuthServerSettingsResource() resource.Resource {
 	return &oauthAuthServerSettingsResource{}
@@ -98,53 +81,6 @@ func OauthAuthServerSettingsResource() resource.Resource {
 type oauthAuthServerSettingsResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type oauthAuthServerSettingsResourceModel struct {
-	Id                                          types.String `tfsdk:"id"`
-	DefaultScopeDescription                     types.String `tfsdk:"default_scope_description"`
-	Scopes                                      types.Set    `tfsdk:"scopes"`
-	ScopeGroups                                 types.Set    `tfsdk:"scope_groups"`
-	ExclusiveScopes                             types.Set    `tfsdk:"exclusive_scopes"`
-	ExclusiveScopeGroups                        types.Set    `tfsdk:"exclusive_scope_groups"`
-	AuthorizationCodeTimeout                    types.Int64  `tfsdk:"authorization_code_timeout"`
-	AuthorizationCodeEntropy                    types.Int64  `tfsdk:"authorization_code_entropy"`
-	DisallowPlainPKCE                           types.Bool   `tfsdk:"disallow_plain_pkce"`
-	IncludeIssuerInAuthorizationResponse        types.Bool   `tfsdk:"include_issuer_in_authorization_response"`
-	TrackUserSessionsForLogout                  types.Bool   `tfsdk:"track_user_sessions_for_logout"`
-	TokenEndpointBaseUrl                        types.String `tfsdk:"token_endpoint_base_url"`
-	PersistentGrantLifetime                     types.Int64  `tfsdk:"persistent_grant_lifetime"`
-	PersistentGrantLifetimeUnit                 types.String `tfsdk:"persistent_grant_lifetime_unit"`
-	PersistentGrantIdleTimeout                  types.Int64  `tfsdk:"persistent_grant_idle_timeout"`
-	PersistentGrantIdleTimeoutTimeUnit          types.String `tfsdk:"persistent_grant_idle_timeout_time_unit"`
-	RefreshTokenLength                          types.Int64  `tfsdk:"refresh_token_length"`
-	RollRefreshTokenValues                      types.Bool   `tfsdk:"roll_refresh_token_values"`
-	RefreshTokenRollingGracePeriod              types.Int64  `tfsdk:"refresh_token_rolling_grace_period"`
-	RefreshRollingInterval                      types.Int64  `tfsdk:"refresh_rolling_interval"`
-	PersistentGrantReuseGrantTypes              types.Set    `tfsdk:"persistent_grant_reuse_grant_types"`
-	PersistentGrantContract                     types.Object `tfsdk:"persistent_grant_contract"`
-	BypassAuthorizationForApprovedGrants        types.Bool   `tfsdk:"bypass_authorization_for_approved_grants"`
-	AllowUnidentifiedClientROCreds              types.Bool   `tfsdk:"allow_unidentified_client_ro_creds"`
-	AllowUnidentifiedClientExtensionGrants      types.Bool   `tfsdk:"allow_unidentified_client_extension_grants"`
-	AdminWebServicePcvRef                       types.Object `tfsdk:"admin_web_service_pcv_ref"`
-	AtmIdForOAuthGrantManagement                types.String `tfsdk:"atm_id_for_oauth_grant_management"`
-	ScopeForOAuthGrantManagement                types.String `tfsdk:"scope_for_oauth_grant_management"`
-	AllowedOrigins                              types.List   `tfsdk:"allowed_origins"`
-	UserAuthorizationUrl                        types.String `tfsdk:"user_authorization_url"`
-	BypassActivationCodeConfirmation            types.Bool   `tfsdk:"bypass_activation_code_confirmation"`
-	RegisteredAuthorizationPath                 types.String `tfsdk:"registered_authorization_path"`
-	PendingAuthorizationTimeout                 types.Int64  `tfsdk:"pending_authorization_timeout"`
-	DevicePollingInterval                       types.Int64  `tfsdk:"device_polling_interval"`
-	ActivationCodeCheckMode                     types.String `tfsdk:"activation_code_check_mode"`
-	UserAuthorizationConsentPageSetting         types.String `tfsdk:"user_authorization_consent_page_setting"`
-	UserAuthorizationConsentAdapter             types.String `tfsdk:"user_authorization_consent_adapter"`
-	ApprovedScopesAttribute                     types.String `tfsdk:"approved_scopes_attribute"`
-	ApprovedAuthorizationDetailAttribute        types.String `tfsdk:"approved_authorization_detail_attribute"`
-	ParReferenceTimeout                         types.Int64  `tfsdk:"par_reference_timeout"`
-	ParReferenceLength                          types.Int64  `tfsdk:"par_reference_length"`
-	ParStatus                                   types.String `tfsdk:"par_status"`
-	ClientSecretRetentionPeriod                 types.Int64  `tfsdk:"client_secret_retention_period"`
-	JwtSecuredAuthorizationResponseModeLifetime types.Int64  `tfsdk:"jwt_secured_authorization_response_mode_lifetime"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -534,7 +470,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 
 func (r *oauthAuthServerSettingsResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 
-	var model oauthAuthServerSettingsResourceModel
+	var model oauthAuthServerSettingsModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
 
 	// Scope list for comparing values in matchNameBtwnScopes variable
@@ -579,7 +515,7 @@ func (r *oauthAuthServerSettingsResource) ValidateConfig(ctx context.Context, re
 	}
 }
 
-func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *client.AuthorizationServerSettings, plan oauthAuthServerSettingsResourceModel) error {
+func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *client.AuthorizationServerSettings, plan oauthAuthServerSettingsModel) error {
 
 	if internaltypes.IsDefined(plan.Scopes) {
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.Scopes, false)), &addRequest.Scopes)
@@ -765,65 +701,8 @@ func (r *oauthAuthServerSettingsResource) Configure(_ context.Context, req resou
 
 }
 
-func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsResourceModel, existingId *string) diag.Diagnostics {
-	var diags, respDiags diag.Diagnostics
-	state.Id = id.GenerateUUIDToState(existingId)
-	state.DefaultScopeDescription = types.StringValue(r.DefaultScopeDescription)
-	state.Scopes, respDiags = scopeentry.ToState(ctx, r.Scopes)
-	diags.Append(respDiags...)
-	state.ScopeGroups, respDiags = scopegroupentry.ToState(ctx, r.ScopeGroups)
-	diags.Append(respDiags...)
-	state.ExclusiveScopes, respDiags = scopeentry.ToState(ctx, r.ExclusiveScopes)
-	diags.Append(respDiags...)
-	state.ExclusiveScopeGroups, respDiags = scopegroupentry.ToState(ctx, r.ExclusiveScopeGroups)
-	diags.Append(respDiags...)
-	persistentGrantContract, respDiags := types.ObjectValueFrom(ctx, persistentGrantObjContractTypes, r.PersistentGrantContract)
-	diags.Append(respDiags...)
-
-	state.PersistentGrantContract = persistentGrantContract
-	state.AuthorizationCodeTimeout = types.Int64Value(r.AuthorizationCodeTimeout)
-	state.AuthorizationCodeEntropy = types.Int64Value(r.AuthorizationCodeEntropy)
-	state.DisallowPlainPKCE = types.BoolPointerValue(r.DisallowPlainPKCE)
-	state.IncludeIssuerInAuthorizationResponse = types.BoolPointerValue(r.IncludeIssuerInAuthorizationResponse)
-	state.TrackUserSessionsForLogout = types.BoolPointerValue(r.TrackUserSessionsForLogout)
-	state.TokenEndpointBaseUrl = types.StringPointerValue(r.TokenEndpointBaseUrl)
-	state.PersistentGrantLifetime = types.Int64PointerValue(r.PersistentGrantLifetime)
-	state.PersistentGrantLifetimeUnit = types.StringPointerValue(r.PersistentGrantLifetimeUnit)
-	state.PersistentGrantIdleTimeout = types.Int64PointerValue(r.PersistentGrantIdleTimeout)
-	state.PersistentGrantIdleTimeoutTimeUnit = types.StringPointerValue(r.PersistentGrantIdleTimeoutTimeUnit)
-	state.RefreshTokenLength = types.Int64Value(r.RefreshTokenLength)
-	state.RollRefreshTokenValues = types.BoolPointerValue(r.RollRefreshTokenValues)
-	state.RefreshTokenRollingGracePeriod = types.Int64PointerValue(r.RefreshTokenRollingGracePeriod)
-	state.RefreshRollingInterval = types.Int64Value(r.RefreshRollingInterval)
-	state.PersistentGrantReuseGrantTypes = internaltypes.GetStringSet(r.PersistentGrantReuseGrantTypes)
-	state.BypassAuthorizationForApprovedGrants = types.BoolPointerValue(r.BypassAuthorizationForApprovedGrants)
-	state.AllowUnidentifiedClientROCreds = types.BoolPointerValue(r.AllowUnidentifiedClientROCreds)
-	state.AllowUnidentifiedClientExtensionGrants = types.BoolPointerValue(r.AllowUnidentifiedClientExtensionGrants)
-	state.AdminWebServicePcvRef, respDiags = resourcelink.ToState(ctx, r.AdminWebServicePcvRef)
-	diags.Append(respDiags...)
-	state.AtmIdForOAuthGrantManagement = types.StringPointerValue(r.AtmIdForOAuthGrantManagement)
-	state.ScopeForOAuthGrantManagement = types.StringPointerValue(r.ScopeForOAuthGrantManagement)
-	state.AllowedOrigins = internaltypes.GetStringList(r.AllowedOrigins)
-	state.UserAuthorizationUrl = types.StringPointerValue(r.UserAuthorizationUrl)
-	state.RegisteredAuthorizationPath = types.StringValue(r.RegisteredAuthorizationPath)
-	state.PendingAuthorizationTimeout = types.Int64Value(r.PendingAuthorizationTimeout)
-	state.DevicePollingInterval = types.Int64Value(r.DevicePollingInterval)
-	state.ActivationCodeCheckMode = types.StringPointerValue(r.ActivationCodeCheckMode)
-	state.BypassActivationCodeConfirmation = types.BoolValue(r.BypassActivationCodeConfirmation)
-	state.UserAuthorizationConsentPageSetting = types.StringPointerValue(r.UserAuthorizationConsentPageSetting)
-	state.UserAuthorizationConsentAdapter = types.StringPointerValue(r.UserAuthorizationConsentAdapter)
-	state.ApprovedScopesAttribute = types.StringPointerValue(r.ApprovedScopesAttribute)
-	state.ApprovedAuthorizationDetailAttribute = types.StringPointerValue(r.ApprovedAuthorizationDetailAttribute)
-	state.ParReferenceTimeout = types.Int64PointerValue(r.ParReferenceTimeout)
-	state.ParReferenceLength = types.Int64PointerValue(r.ParReferenceLength)
-	state.ParStatus = types.StringPointerValue(r.ParStatus)
-	state.ClientSecretRetentionPeriod = types.Int64PointerValue(r.ClientSecretRetentionPeriod)
-	state.JwtSecuredAuthorizationResponseModeLifetime = types.Int64PointerValue(r.JwtSecuredAuthorizationResponseModeLifetime)
-	return diags
-}
-
 func (r *oauthAuthServerSettingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan oauthAuthServerSettingsResourceModel
+	var plan oauthAuthServerSettingsModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -847,7 +726,7 @@ func (r *oauthAuthServerSettingsResource) Create(ctx context.Context, req resour
 	}
 
 	// Read the response into the state
-	var state oauthAuthServerSettingsResourceModel
+	var state oauthAuthServerSettingsModel
 	diags = readOauthAuthServerSettingsResponse(ctx, oauthAuthServerSettingsResponse, &state, nil)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
@@ -855,7 +734,7 @@ func (r *oauthAuthServerSettingsResource) Create(ctx context.Context, req resour
 }
 
 func (r *oauthAuthServerSettingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state oauthAuthServerSettingsResourceModel
+	var state oauthAuthServerSettingsModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -891,7 +770,7 @@ func (r *oauthAuthServerSettingsResource) Read(ctx context.Context, req resource
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *oauthAuthServerSettingsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	var plan oauthAuthServerSettingsResourceModel
+	var plan oauthAuthServerSettingsModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -915,7 +794,7 @@ func (r *oauthAuthServerSettingsResource) Update(ctx context.Context, req resour
 	}
 
 	// Read the response
-	var state oauthAuthServerSettingsResourceModel
+	var state oauthAuthServerSettingsModel
 	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

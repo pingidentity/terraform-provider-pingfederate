@@ -2,14 +2,11 @@ package serversettingssystemkeys
 
 import (
 	"context"
-	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -30,13 +27,6 @@ func ServerSettingsSystemKeysDataSource() datasource.DataSource {
 type serverSettingsSystemKeysDataSource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type serverSettingsSystemKeysDataSourceModel struct {
-	Id       types.String `tfsdk:"id"`
-	Current  types.Object `tfsdk:"current"`
-	Previous types.Object `tfsdk:"previous"`
-	Pending  types.Object `tfsdk:"pending"`
 }
 
 // GetSchema defines the schema for the datasource.
@@ -133,44 +123,8 @@ func (r *serverSettingsSystemKeysDataSource) Configure(_ context.Context, req da
 
 }
 
-func readServerSettingsSystemKeysDataSource(ctx context.Context, r *client.SystemKeys, state *serverSettingsSystemKeysDataSourceModel, existingId *string) diag.Diagnostics {
-	var diags diag.Diagnostics
-	state.Id = types.StringValue("server_settings_system_keys_id")
-	currentAttrs := r.GetCurrent()
-	currentAttrVals := map[string]attr.Value{
-		"creation_date":      types.StringValue(currentAttrs.GetCreationDate().Format(time.RFC3339Nano)),
-		"encrypted_key_data": types.StringValue(currentAttrs.GetEncryptedKeyData()),
-		"key_data":           types.StringValue(currentAttrs.GetKeyData()),
-	}
-	currentAttrsObjVal, respDiags := types.ObjectValue(systemKeyAttrTypes, currentAttrVals)
-	diags = append(diags, respDiags...)
-
-	previousAttrs := r.GetPrevious()
-	previousAttrVals := map[string]attr.Value{
-		"creation_date":      types.StringValue(previousAttrs.GetCreationDate().Format(time.RFC3339Nano)),
-		"encrypted_key_data": types.StringValue(previousAttrs.GetEncryptedKeyData()),
-		"key_data":           types.StringValue(previousAttrs.GetKeyData()),
-	}
-	previousAttrsObjVal, respDiags := types.ObjectValue(systemKeyAttrTypes, previousAttrVals)
-	diags = append(diags, respDiags...)
-
-	pendingAttrs := r.GetPending()
-	pendingAttrVals := map[string]attr.Value{
-		"creation_date":      types.StringValue(pendingAttrs.GetCreationDate().Format(time.RFC3339Nano)),
-		"encrypted_key_data": types.StringValue(pendingAttrs.GetEncryptedKeyData()),
-		"key_data":           types.StringValue(pendingAttrs.GetKeyData()),
-	}
-	pendingAttrsObjVal, respDiags := types.ObjectValue(systemKeyAttrTypes, pendingAttrVals)
-	diags = append(diags, respDiags...)
-
-	state.Current = currentAttrsObjVal
-	state.Pending = pendingAttrsObjVal
-	state.Previous = previousAttrsObjVal
-	return diags
-}
-
 func (r *serverSettingsSystemKeysDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state serverSettingsSystemKeysDataSourceModel
+	var state serverSettingsSystemKeysModel
 
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -185,7 +139,7 @@ func (r *serverSettingsSystemKeysDataSource) Read(ctx context.Context, req datas
 	}
 
 	// Read the response into the state
-	diags = readServerSettingsSystemKeysDataSource(ctx, apiReadServerSettingsSystemKeys, &state, nil)
+	diags = readServerSettingsSystemKeysResponse(ctx, apiReadServerSettingsSystemKeys, &state, pointers.String("server_settings_system_keys_id"))
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state

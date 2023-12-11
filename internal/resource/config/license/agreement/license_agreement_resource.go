@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -31,12 +30,6 @@ func LicenseAgreementResource() resource.Resource {
 type licenseAgreementResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type licenseAgreementResourceModel struct {
-	Id                  types.String `tfsdk:"id"`
-	LicenseAgreementUrl types.String `tfsdk:"license_agreement_url"`
-	Accepted            types.Bool   `tfsdk:"accepted"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -65,7 +58,7 @@ func (r *licenseAgreementResource) Schema(ctx context.Context, req resource.Sche
 	resp.Schema = schema
 }
 
-func addOptionalLicenseAgreementFields(ctx context.Context, addRequest *client.LicenseAgreementInfo, plan licenseAgreementResourceModel) error {
+func addOptionalLicenseAgreementFields(ctx context.Context, addRequest *client.LicenseAgreementInfo, plan licenseAgreementModel) error {
 
 	if internaltypes.IsDefined(plan.LicenseAgreementUrl) {
 		addRequest.LicenseAgreementUrl = plan.LicenseAgreementUrl.ValueStringPointer()
@@ -93,14 +86,8 @@ func (r *licenseAgreementResource) Configure(_ context.Context, req resource.Con
 
 }
 
-func readLicenseAgreementResponse(ctx context.Context, r *client.LicenseAgreementInfo, state *licenseAgreementResourceModel, existingId *string) {
-	state.Id = id.GenerateUUIDToState(existingId)
-	state.LicenseAgreementUrl = internaltypes.StringTypeOrNil(r.LicenseAgreementUrl, false)
-	state.Accepted = internaltypes.BoolTypeOrNil(r.Accepted)
-}
-
 func (r *licenseAgreementResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan licenseAgreementResourceModel
+	var plan licenseAgreementModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -124,7 +111,7 @@ func (r *licenseAgreementResource) Create(ctx context.Context, req resource.Crea
 	}
 
 	// Read the response into the state
-	var state licenseAgreementResourceModel
+	var state licenseAgreementModel
 	readLicenseAgreementResponse(ctx, licenseAgreementResponse, &state, nil)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -134,7 +121,7 @@ func (r *licenseAgreementResource) Create(ctx context.Context, req resource.Crea
 }
 
 func (r *licenseAgreementResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state licenseAgreementResourceModel
+	var state licenseAgreementModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -167,7 +154,7 @@ func (r *licenseAgreementResource) Read(ctx context.Context, req resource.ReadRe
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *licenseAgreementResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	var plan licenseAgreementResourceModel
+	var plan licenseAgreementModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -190,7 +177,7 @@ func (r *licenseAgreementResource) Update(ctx context.Context, req resource.Upda
 	}
 
 	// Get the current state to see how any attributes are changing
-	var state licenseAgreementResourceModel
+	var state licenseAgreementModel
 	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -31,13 +30,6 @@ func SessionSettingsResource() resource.Resource {
 type sessionSettingsResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type sessionSettingsResourceModel struct {
-	Id                            types.String `tfsdk:"id"`
-	TrackAdapterSessionsForLogout types.Bool   `tfsdk:"track_adapter_sessions_for_logout"`
-	RevokeUserSessionOnLogout     types.Bool   `tfsdk:"revoke_user_session_on_logout"`
-	SessionRevocationLifetime     types.Int64  `tfsdk:"session_revocation_lifetime"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -69,7 +61,7 @@ func (r *sessionSettingsResource) Schema(ctx context.Context, req resource.Schem
 	resp.Schema = schema
 }
 
-func addOptionalSessionSettingsFields(ctx context.Context, addRequest *client.SessionSettings, plan sessionSettingsResourceModel) error {
+func addOptionalSessionSettingsFields(ctx context.Context, addRequest *client.SessionSettings, plan sessionSettingsModel) error {
 	if internaltypes.IsDefined(plan.TrackAdapterSessionsForLogout) {
 		addRequest.TrackAdapterSessionsForLogout = plan.TrackAdapterSessionsForLogout.ValueBoolPointer()
 	}
@@ -99,15 +91,8 @@ func (r *sessionSettingsResource) Configure(_ context.Context, req resource.Conf
 
 }
 
-func readSessionSettingsResponse(ctx context.Context, r *client.SessionSettings, state *sessionSettingsResourceModel, existingId *string) {
-	state.Id = id.GenerateUUIDToState(existingId)
-	state.TrackAdapterSessionsForLogout = types.BoolPointerValue(r.TrackAdapterSessionsForLogout)
-	state.RevokeUserSessionOnLogout = types.BoolPointerValue(r.RevokeUserSessionOnLogout)
-	state.SessionRevocationLifetime = types.Int64PointerValue(r.SessionRevocationLifetime)
-}
-
 func (r *sessionSettingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan sessionSettingsResourceModel
+	var plan sessionSettingsModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -131,7 +116,7 @@ func (r *sessionSettingsResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	// Read the response into the state
-	var state sessionSettingsResourceModel
+	var state sessionSettingsModel
 	readSessionSettingsResponse(ctx, sessionSettingsResponse, &state, nil)
 
 	diags = resp.State.Set(ctx, state)
@@ -139,7 +124,7 @@ func (r *sessionSettingsResource) Create(ctx context.Context, req resource.Creat
 }
 
 func (r *sessionSettingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state sessionSettingsResourceModel
+	var state sessionSettingsModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -173,7 +158,7 @@ func (r *sessionSettingsResource) Read(ctx context.Context, req resource.ReadReq
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *sessionSettingsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	var plan sessionSettingsResourceModel
+	var plan sessionSettingsModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -196,7 +181,7 @@ func (r *sessionSettingsResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	// Get the current state to see how any attributes are changing
-	var state sessionSettingsResourceModel
+	var state sessionSettingsModel
 	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

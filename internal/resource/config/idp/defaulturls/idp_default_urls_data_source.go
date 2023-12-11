@@ -5,8 +5,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -27,13 +27,6 @@ func IdpDefaultUrlsDataSource() datasource.DataSource {
 type idpDefaultUrlsDataSource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type idpDefaultUrlsDataSourceModel struct {
-	Id               types.String `tfsdk:"id"`
-	ConfirmIdpSlo    types.Bool   `tfsdk:"confirm_idp_slo"`
-	IdpSloSuccessUrl types.String `tfsdk:"idp_slo_success_url"`
-	IdpErrorMsg      types.String `tfsdk:"idp_error_msg"`
 }
 
 // GetSchema defines the schema for the datasource.
@@ -81,17 +74,9 @@ func (r *idpDefaultUrlsDataSource) Configure(_ context.Context, req datasource.C
 	r.apiClient = providerCfg.ApiClient
 }
 
-// Read a IdpDefaultUrlsResponse object into the model struct
-func readIdpDefaultUrlsResponseDataSource(ctx context.Context, r *client.IdpDefaultUrl, state *idpDefaultUrlsDataSourceModel) {
-	state.Id = types.StringValue("idp_default_urls_id")
-	state.ConfirmIdpSlo = types.BoolPointerValue(r.ConfirmIdpSlo)
-	state.IdpSloSuccessUrl = internaltypes.StringTypeOrNil(r.IdpSloSuccessUrl, false)
-	state.IdpErrorMsg = types.StringValue(r.IdpErrorMsg)
-}
-
 // Read resource information
 func (r *idpDefaultUrlsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state idpDefaultUrlsDataSourceModel
+	var state idpDefaultUrlsModel
 
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -106,7 +91,7 @@ func (r *idpDefaultUrlsDataSource) Read(ctx context.Context, req datasource.Read
 	}
 
 	// Read the response into the state
-	readIdpDefaultUrlsResponseDataSource(ctx, apiReadIdpDefaultUrls, &state)
+	readIdpDefaultUrlsResponse(ctx, apiReadIdpDefaultUrls, &state, pointers.String("idp_default_urls_id"))
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

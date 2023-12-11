@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -32,15 +31,6 @@ func ServerSettingsGeneralSettingsResource() resource.Resource {
 type serverSettingsGeneralSettingsResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type serverSettingsGeneralSettingsResourceModel struct {
-	Id                                      types.String `tfsdk:"id"`
-	DisableAutomaticConnectionValidation    types.Bool   `tfsdk:"disable_automatic_connection_validation"`
-	IdpConnectionTransactionLoggingOverride types.String `tfsdk:"idp_connection_transaction_logging_override"`
-	SpConnectionTransactionLoggingOverride  types.String `tfsdk:"sp_connection_transaction_logging_override"`
-	DatastoreValidationIntervalSecs         types.Int64  `tfsdk:"datastore_validation_interval_secs"`
-	RequestHeaderForCorrelationId           types.String `tfsdk:"request_header_for_correlation_id"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -85,7 +75,7 @@ func (r *serverSettingsGeneralSettingsResource) Schema(ctx context.Context, req 
 	resp.Schema = schema
 }
 
-func addOptionalServerSettingsGeneralSettingsFields(ctx context.Context, addRequest *client.GeneralSettings, plan serverSettingsGeneralSettingsResourceModel) error {
+func addOptionalServerSettingsGeneralSettingsFields(ctx context.Context, addRequest *client.GeneralSettings, plan serverSettingsGeneralSettingsModel) error {
 	if internaltypes.IsDefined(plan.DisableAutomaticConnectionValidation) {
 		addRequest.DisableAutomaticConnectionValidation = plan.DisableAutomaticConnectionValidation.ValueBoolPointer()
 	}
@@ -121,17 +111,8 @@ func (r *serverSettingsGeneralSettingsResource) Configure(_ context.Context, req
 
 }
 
-func readServerSettingsGeneralSettingsResponse(ctx context.Context, r *client.GeneralSettings, state *serverSettingsGeneralSettingsResourceModel, existingId *string) {
-	state.Id = id.GenerateUUIDToState(existingId)
-	state.DisableAutomaticConnectionValidation = types.BoolPointerValue(r.DisableAutomaticConnectionValidation)
-	state.IdpConnectionTransactionLoggingOverride = internaltypes.StringTypeOrNil(r.IdpConnectionTransactionLoggingOverride, true)
-	state.SpConnectionTransactionLoggingOverride = internaltypes.StringTypeOrNil(r.SpConnectionTransactionLoggingOverride, true)
-	state.DatastoreValidationIntervalSecs = types.Int64PointerValue(r.DatastoreValidationIntervalSecs)
-	state.RequestHeaderForCorrelationId = internaltypes.StringTypeOrNil(r.RequestHeaderForCorrelationId, true)
-}
-
 func (r *serverSettingsGeneralSettingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan serverSettingsGeneralSettingsResourceModel
+	var plan serverSettingsGeneralSettingsModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -155,7 +136,7 @@ func (r *serverSettingsGeneralSettingsResource) Create(ctx context.Context, req 
 	}
 
 	// Read the response into the state
-	var state serverSettingsGeneralSettingsResourceModel
+	var state serverSettingsGeneralSettingsModel
 	readServerSettingsGeneralSettingsResponse(ctx, serverSettingsGeneralSettingsResponse, &state, nil)
 
 	diags = resp.State.Set(ctx, state)
@@ -163,7 +144,7 @@ func (r *serverSettingsGeneralSettingsResource) Create(ctx context.Context, req 
 }
 
 func (r *serverSettingsGeneralSettingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state serverSettingsGeneralSettingsResourceModel
+	var state serverSettingsGeneralSettingsModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -197,7 +178,7 @@ func (r *serverSettingsGeneralSettingsResource) Read(ctx context.Context, req re
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *serverSettingsGeneralSettingsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	var plan serverSettingsGeneralSettingsResourceModel
+	var plan serverSettingsGeneralSettingsModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -220,7 +201,7 @@ func (r *serverSettingsGeneralSettingsResource) Update(ctx context.Context, req 
 	}
 
 	// Read the response
-	var state serverSettingsGeneralSettingsResourceModel
+	var state serverSettingsGeneralSettingsModel
 	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

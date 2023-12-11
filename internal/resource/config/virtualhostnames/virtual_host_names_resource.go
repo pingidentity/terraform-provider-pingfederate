@@ -34,11 +34,6 @@ type virtualHostNamesResource struct {
 	apiClient      *client.APIClient
 }
 
-type virtualHostNamesResourceModel struct {
-	Id               types.String `tfsdk:"id"`
-	VirtualHostNames types.List   `tfsdk:"virtual_host_names"`
-}
-
 // GetSchema defines the schema for the resource.
 func (r *virtualHostNamesResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
@@ -58,7 +53,7 @@ func (r *virtualHostNamesResource) Schema(ctx context.Context, req resource.Sche
 	resp.Schema = schema
 }
 
-func addOptionalVirtualHostNamesFields(ctx context.Context, addRequest *client.VirtualHostNameSettings, plan virtualHostNamesResourceModel) error {
+func addOptionalVirtualHostNamesFields(ctx context.Context, addRequest *client.VirtualHostNameSettings, plan virtualHostNamesModel) error {
 	if internaltypes.IsDefined(plan.VirtualHostNames) {
 		var slice []string
 		plan.VirtualHostNames.ElementsAs(ctx, &slice, false)
@@ -84,13 +79,8 @@ func (r *virtualHostNamesResource) Configure(_ context.Context, req resource.Con
 
 }
 
-func readVirtualHostNamesResponse(ctx context.Context, r *client.VirtualHostNameSettings, state *virtualHostNamesResourceModel, existingId *string) {
-	state.Id = id.GenerateUUIDToState(existingId)
-	state.VirtualHostNames = internaltypes.GetStringList(r.VirtualHostNames)
-}
-
 func (r *virtualHostNamesResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan virtualHostNamesResourceModel
+	var plan virtualHostNamesModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -114,7 +104,7 @@ func (r *virtualHostNamesResource) Create(ctx context.Context, req resource.Crea
 	}
 
 	// Read the response into the state
-	var state virtualHostNamesResourceModel
+	var state virtualHostNamesModel
 	readVirtualHostNamesResponse(ctx, virtualHostNamesResponse, &state, nil)
 
 	diags = resp.State.Set(ctx, state)
@@ -122,7 +112,7 @@ func (r *virtualHostNamesResource) Create(ctx context.Context, req resource.Crea
 }
 
 func (r *virtualHostNamesResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state virtualHostNamesResourceModel
+	var state virtualHostNamesModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -156,7 +146,7 @@ func (r *virtualHostNamesResource) Read(ctx context.Context, req resource.ReadRe
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *virtualHostNamesResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	var plan virtualHostNamesResourceModel
+	var plan virtualHostNamesModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -184,7 +174,7 @@ func (r *virtualHostNamesResource) Update(ctx context.Context, req resource.Upda
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	var state virtualHostNamesResourceModel
+	var state virtualHostNamesModel
 	readVirtualHostNamesResponse(ctx, updateVirtualHostNamesResponse, &state, id)
 
 	// Update computed values
