@@ -98,7 +98,7 @@ func (r *idpDefaultUrlsResource) Configure(_ context.Context, req resource.Confi
 func readIdpDefaultUrlsResponse(ctx context.Context, r *client.IdpDefaultUrl, state *idpDefaultUrlsResourceModel, expectedValues *idpDefaultUrlsResourceModel, existingId *string) {
 	state.Id = id.GenerateUUIDToState(existingId)
 	state.ConfirmIdpSlo = types.BoolPointerValue(r.ConfirmIdpSlo)
-	state.IdpSloSuccessUrl = internaltypes.StringTypeOrNil(r.IdpSloSuccessUrl, false)
+	state.IdpSloSuccessUrl = types.StringPointerValue(r.IdpSloSuccessUrl)
 	state.IdpErrorMsg = types.StringValue(r.IdpErrorMsg)
 }
 

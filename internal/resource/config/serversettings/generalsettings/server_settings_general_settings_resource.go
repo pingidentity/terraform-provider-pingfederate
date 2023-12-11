@@ -124,10 +124,13 @@ func (r *serverSettingsGeneralSettingsResource) Configure(_ context.Context, req
 func readServerSettingsGeneralSettingsResponse(ctx context.Context, r *client.GeneralSettings, state *serverSettingsGeneralSettingsResourceModel, existingId *string) {
 	state.Id = id.GenerateUUIDToState(existingId)
 	state.DisableAutomaticConnectionValidation = types.BoolPointerValue(r.DisableAutomaticConnectionValidation)
-	state.IdpConnectionTransactionLoggingOverride = internaltypes.StringTypeOrNil(r.IdpConnectionTransactionLoggingOverride, true)
-	state.SpConnectionTransactionLoggingOverride = internaltypes.StringTypeOrNil(r.SpConnectionTransactionLoggingOverride, true)
+	//TODO
+	state.IdpConnectionTransactionLoggingOverride = types.StringPointerValue(r.IdpConnectionTransactionLoggingOverride)
+	//TODO
+	state.SpConnectionTransactionLoggingOverride = types.StringPointerValue(r.SpConnectionTransactionLoggingOverride)
 	state.DatastoreValidationIntervalSecs = types.Int64PointerValue(r.DatastoreValidationIntervalSecs)
-	state.RequestHeaderForCorrelationId = internaltypes.StringTypeOrNil(r.RequestHeaderForCorrelationId, true)
+	//TODO
+	state.RequestHeaderForCorrelationId = types.StringPointerValue(r.RequestHeaderForCorrelationId)
 }
 
 func (r *serverSettingsGeneralSettingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

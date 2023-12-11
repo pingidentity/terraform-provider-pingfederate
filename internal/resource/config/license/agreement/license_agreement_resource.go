@@ -95,8 +95,8 @@ func (r *licenseAgreementResource) Configure(_ context.Context, req resource.Con
 
 func readLicenseAgreementResponse(ctx context.Context, r *client.LicenseAgreementInfo, state *licenseAgreementResourceModel, existingId *string) {
 	state.Id = id.GenerateUUIDToState(existingId)
-	state.LicenseAgreementUrl = internaltypes.StringTypeOrNil(r.LicenseAgreementUrl, false)
-	state.Accepted = internaltypes.BoolTypeOrNil(r.Accepted)
+	state.LicenseAgreementUrl = types.StringPointerValue(r.LicenseAgreementUrl)
+	state.Accepted = types.BoolPointerValue(r.Accepted)
 }
 
 func (r *licenseAgreementResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

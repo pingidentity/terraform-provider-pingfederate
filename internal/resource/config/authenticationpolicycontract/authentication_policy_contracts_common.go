@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
-	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
 var attributeElemAttrType = types.ObjectType{
@@ -26,9 +25,9 @@ type authenticationPolicyContractModel struct {
 
 func readAuthenticationPolicyContractsResponse(ctx context.Context, r *client.AuthenticationPolicyContract, state *authenticationPolicyContractModel, expectedValues *authenticationPolicyContractModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
-	state.ContractId = internaltypes.StringTypeOrNil(r.Id, false)
-	state.Name = internaltypes.StringTypeOrNil(r.Name, false)
+	state.Id = types.StringPointerValue(r.Id)
+	state.ContractId = types.StringPointerValue(r.Id)
+	state.Name = types.StringPointerValue(r.Name)
 
 	state.CoreAttributes, respDiags = types.ListValueFrom(ctx, attributeElemAttrType, r.GetCoreAttributes())
 	diags.Append(respDiags...)

@@ -135,11 +135,11 @@ func readAdministrativeAccountResponseDataSource(ctx context.Context, r *client.
 	state.Username = types.StringValue(r.Username)
 	state.EncryptedPassword = types.StringPointerValue(r.EncryptedPassword)
 	state.Active = types.BoolPointerValue(r.Active)
-	state.Description = internaltypes.StringTypeOrNil(r.Description, false)
+	state.Description = types.StringPointerValue(r.Description)
 	state.Auditor = types.BoolPointerValue(r.Auditor)
-	state.PhoneNumber = internaltypes.StringTypeOrNil(r.PhoneNumber, false)
-	state.EmailAddress = internaltypes.StringTypeOrNil(r.EmailAddress, false)
-	state.Department = internaltypes.StringTypeOrNil(r.Department, false)
+	state.PhoneNumber = types.StringPointerValue(r.PhoneNumber)
+	state.EmailAddress = types.StringPointerValue(r.EmailAddress)
+	state.Department = types.StringPointerValue(r.Department)
 	state.Roles = internaltypes.GetStringSet(r.Roles)
 }
 

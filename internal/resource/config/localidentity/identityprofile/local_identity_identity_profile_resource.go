@@ -963,8 +963,8 @@ func (r *localIdentityIdentityProfileResource) ValidateConfig(ctx context.Contex
 
 func readLocalIdentityIdentityProfileResponse(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfileResourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
-	state.ProfileId = internaltypes.StringTypeOrNil(r.Id, false)
+	state.Id = types.StringPointerValue(r.Id)
+	state.ProfileId = types.StringPointerValue(r.Id)
 	state.Name = types.StringValue(r.Name)
 	state.ApcId, respDiags = resourcelink.ToState(ctx, &r.ApcId)
 	diags.Append(respDiags...)

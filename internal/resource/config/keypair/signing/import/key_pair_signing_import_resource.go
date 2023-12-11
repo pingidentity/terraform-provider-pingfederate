@@ -117,12 +117,12 @@ func (r *keyPairsSigningImportResource) Configure(_ context.Context, req resourc
 }
 
 func readKeyPairsSigningImportResponse(ctx context.Context, r *client.KeyPairView, state *keyPairsSigningImportResourceModel, expectedValues *keyPairsSigningImportResourceModel, planFileData string, planFormat string, planPassword string) {
-	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
-	state.ImportId = internaltypes.StringTypeOrNil(r.Id, false)
-	state.FileData = internaltypes.StringTypeOrNil(&planFileData, false)
-	state.Format = internaltypes.StringTypeOrNil(&planFormat, false)
+	state.Id = types.StringPointerValue(r.Id)
+	state.ImportId = types.StringPointerValue(r.Id)
+	state.FileData = types.StringPointerValue(&planFileData)
+	state.Format = types.StringPointerValue(&planFormat)
 	state.Password = types.StringValue(planPassword)
-	state.CryptoProvider = internaltypes.StringTypeOrNil(r.CryptoProvider, false)
+	state.CryptoProvider = types.StringPointerValue(r.CryptoProvider)
 }
 
 func (r *keyPairsSigningImportResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

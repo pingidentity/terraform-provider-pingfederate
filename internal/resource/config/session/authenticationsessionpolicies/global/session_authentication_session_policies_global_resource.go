@@ -149,9 +149,11 @@ func readSessionAuthenticationSessionPoliciesGlobalResponse(ctx context.Context,
 	state.PersistentSessions = types.BoolPointerValue(r.PersistentSessions)
 	state.HashUniqueUserKeyAttribute = types.BoolPointerValue(r.HashUniqueUserKeyAttribute)
 	state.IdleTimeoutMins = types.Int64PointerValue(r.IdleTimeoutMins)
-	state.IdleTimeoutDisplayUnit = internaltypes.StringTypeOrNil(r.IdleTimeoutDisplayUnit, true)
+	//TODO
+	state.IdleTimeoutDisplayUnit = types.StringPointerValue(r.IdleTimeoutDisplayUnit)
 	state.MaxTimeoutMins = types.Int64PointerValue(r.MaxTimeoutMins)
-	state.MaxTimeoutDisplayUnit = internaltypes.StringTypeOrNil(r.MaxTimeoutDisplayUnit, true)
+	//TODO
+	state.MaxTimeoutDisplayUnit = types.StringPointerValue(r.MaxTimeoutDisplayUnit)
 }
 
 func (r *sessionAuthenticationSessionPoliciesGlobalResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

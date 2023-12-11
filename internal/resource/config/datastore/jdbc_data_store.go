@@ -163,9 +163,7 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 		},
 		"validate_connection_sql": schema.StringAttribute{
 			Description: "A simple SQL statement used by PingFederate at runtime to verify that the database connection is still active and to reconnect if needed.",
-			Computed:    true,
 			Optional:    true,
-			Default:     stringdefault.StaticString(""),
 		},
 	}
 
@@ -315,7 +313,8 @@ func toStateJdbcDataStore(con context.Context, jdbcDataStore *client.JdbcDataSto
 		"name":                         types.StringPointerValue(jdbcDataStore.Name),
 		"user_name":                    types.StringValue(jdbcDataStore.UserName),
 		"allow_multi_value_attributes": types.BoolPointerValue(jdbcDataStore.AllowMultiValueAttributes),
-		"validate_connection_sql":      internaltypes.StringTypeOrNil(jdbcDataStore.ValidateConnectionSql, true),
+		//TODO does this matter
+		"validate_connection_sql": types.StringPointerValue(jdbcDataStore.ValidateConnectionSql),
 	}
 
 	var toStateObjVal types.Object

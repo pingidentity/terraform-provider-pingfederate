@@ -85,7 +85,7 @@ func (r *idpDefaultUrlsDataSource) Configure(_ context.Context, req datasource.C
 func readIdpDefaultUrlsResponseDataSource(ctx context.Context, r *client.IdpDefaultUrl, state *idpDefaultUrlsDataSourceModel) {
 	state.Id = types.StringValue("idp_default_urls_id")
 	state.ConfirmIdpSlo = types.BoolPointerValue(r.ConfirmIdpSlo)
-	state.IdpSloSuccessUrl = internaltypes.StringTypeOrNil(r.IdpSloSuccessUrl, false)
+	state.IdpSloSuccessUrl = types.StringPointerValue(r.IdpSloSuccessUrl)
 	state.IdpErrorMsg = types.StringValue(r.IdpErrorMsg)
 }
 
