@@ -4,12 +4,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -230,26 +228,16 @@ func readKeyPairsSslServerImportResponseDataSource(ctx context.Context, r *clien
 	state.ValidFrom = types.StringValue(r.GetValidFrom().Format(time.RFC3339))
 	state.Expires = types.StringValue(r.GetExpires().Format(time.RFC3339))
 	state.KeyAlgorithm = types.StringPointerValue(r.KeyAlgorithm)
-	state.KeySize = internaltypes.Int64TypeOrNil(r.KeySize)
+	state.KeySize = types.Int64PointerValue(r.KeySize)
 	state.SignatureAlgorithm = types.StringPointerValue(r.SignatureAlgorithm)
-	state.Version = internaltypes.Int64TypeOrNil(r.Version)
+	state.Version = types.Int64PointerValue(r.Version)
 	state.Sha1Fingerprint = types.StringPointerValue(r.Sha1Fingerprint)
 	state.Sha256Fingerprint = types.StringPointerValue(r.Sha256Fingerprint)
 	state.Status = types.StringPointerValue(r.Status)
 	state.CryptoProvider = types.StringPointerValue(r.CryptoProvider)
 
-	rotationSettings := r.RotationSettings
-	rotationSettingsAttrTypes := map[string]attr.Type{
-		"id":                     basetypes.StringType{},
-		"creation_buffer_days":   basetypes.Int64Type{},
-		"activation_buffer_days": basetypes.Int64Type{},
-		"valid_days":             basetypes.Int64Type{},
-		"key_algorithm":          basetypes.StringType{},
-		"key_size":               basetypes.Int64Type{},
-		"signature_algorithm":    basetypes.StringType{},
-	}
 	var valueFromDiags diag.Diagnostics
-	state.RotationSettings, valueFromDiags = types.ObjectValueFrom(ctx, rotationSettingsAttrTypes, rotationSettings)
+	state.RotationSettings, valueFromDiags = types.ObjectValueFrom(ctx, rotationSettingsAttrTypes, r.RotationSettings)
 	return valueFromDiags
 }
 
