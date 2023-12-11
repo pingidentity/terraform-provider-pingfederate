@@ -29,7 +29,44 @@ resource "pingfederate_license" "myLicense" {
 
 ### Read-Only
 
+- `bridge_mode` (Boolean) Indicates whether this license is a bridge license or not.
+- `enforcement_type` (String) The enforcement type is a 3-bit binary value, expressed as a decimal digit. The bits from left to right are: 1: Shutdown on expire. 2: Notify on expire. 4: Enforce minor version. if all three enforcements are active, the enforcement type will be 7 (1 + 2 + 4); if only the first two are active, you have an enforcement type of 3 (1 + 2).
+- `expiration_date` (String) The expiration date value from the license file (if applicable).
+- `features` (Attributes List) Other licence features, if applicable. (see [below for nested schema](#nestedatt--features))
+- `grace_period` (Number) Number of days provided as grace period, past the expiration date (if applicable).
 - `id` (String) The ID of this resource.
+- `issue_date` (String) The issue date value from the license file.
+- `license_groups` (Attributes List) License connection groups, if applicable. (see [below for nested schema](#nestedatt--license_groups))
+- `max_connections` (Number) Maximum number of connections that can be created under this license (if applicable).
+- `name` (String) Name of the person the license was issued to.
+- `node_limit` (Number) Maximum number of clustered nodes allowed under this license (if applicable).
+- `oauth_enabled` (Boolean) Indicates whether OAuth role is enabled for this license.
+- `organization` (String) The organization value from the license file.
+- `product` (String) The Ping Identity product value from the license file.
+- `provisioning_enabled` (Boolean) Indicates whether Provisioning role is enabled for this license.
+- `tier` (String) The tier value from the license file. The possible values are FREE, PERPETUAL or SUBSCRIPTION.
+- `used_connections` (Number) Number of used connections under this license.
+- `version` (String) The Ping Identity product version from the license file.
+- `ws_trust_enabled` (Boolean) Indicates whether WS-Trust role is enabled for this license.
+
+<a id="nestedatt--features"></a>
+### Nested Schema for `features`
+
+Read-Only:
+
+- `name` (String) The name of the license feature.
+- `value` (String) The value of the license feature.
+
+
+<a id="nestedatt--license_groups"></a>
+### Nested Schema for `license_groups`
+
+Read-Only:
+
+- `connection_count` (Number) Maximum number of connections permitted under the group.
+- `end_date` (String) End date for the group.
+- `name` (String) Group name from the license file.
+- `start_date` (String) Start date for the group.
 
 ## Import
 
