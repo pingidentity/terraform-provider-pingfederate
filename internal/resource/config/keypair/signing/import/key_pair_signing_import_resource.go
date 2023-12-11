@@ -2,13 +2,17 @@ package keypairsigningimport
 
 import (
 	"context"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -20,6 +24,16 @@ var (
 	_ resource.Resource                = &keyPairsSigningImportResource{}
 	_ resource.ResourceWithConfigure   = &keyPairsSigningImportResource{}
 	_ resource.ResourceWithImportState = &keyPairsSigningImportResource{}
+
+	rotationSettingsAttrTypes = map[string]attr.Type{
+		"id":                     basetypes.StringType{},
+		"creation_buffer_days":   basetypes.Int64Type{},
+		"activation_buffer_days": basetypes.Int64Type{},
+		"valid_days":             basetypes.Int64Type{},
+		"key_algorithm":          basetypes.StringType{},
+		"key_size":               basetypes.Int64Type{},
+		"signature_algorithm":    basetypes.StringType{},
+	}
 )
 
 // KeyPairsSigningImportResource is a helper function to simplify the provider implementation.
@@ -40,6 +54,21 @@ type keyPairsSigningImportResourceModel struct {
 	Format         types.String `tfsdk:"format"`
 	Password       types.String `tfsdk:"password"`
 	CryptoProvider types.String `tfsdk:"crypto_provider"`
+	// Computed properties
+	SerialNumber            types.String `tfsdk:"serial_number"`
+	SubjectDN               types.String `tfsdk:"subject_dn"`
+	SubjectAlternativeNames types.Set    `tfsdk:"subject_alternative_names"`
+	IssuerDN                types.String `tfsdk:"issuer_dn"`
+	ValidFrom               types.String `tfsdk:"valid_from"`
+	Expires                 types.String `tfsdk:"expires"`
+	KeyAlgorithm            types.String `tfsdk:"key_algorithm"`
+	KeySize                 types.Int64  `tfsdk:"key_size"`
+	SignatureAlgorithm      types.String `tfsdk:"signature_algorithm"`
+	Version                 types.Int64  `tfsdk:"version"`
+	Sha1Fingerprint         types.String `tfsdk:"sha1_fingerprint"`
+	Sha256Fingerprint       types.String `tfsdk:"sha256_fingerprint"`
+	Status                  types.String `tfsdk:"status"`
+	RotationSettings        types.Object `tfsdk:"rotation_settings"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -74,6 +103,135 @@ func (r *keyPairsSigningImportResource) Schema(ctx context.Context, req resource
 				Optional:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"serial_number": schema.StringAttribute{
+				Description: "The serial number assigned by the CA",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"subject_dn": schema.StringAttribute{
+				Description: "The subject's distinguished name",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"subject_alternative_names": schema.SetAttribute{
+				Description: "The subject alternative names (SAN)",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+				ElementType: types.StringType,
+			},
+			"issuer_dn": schema.StringAttribute{
+				Description: "The issuer's distinguished name",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"valid_from": schema.StringAttribute{
+				Description: "The start date from which the item is valid, in ISO 8601 format (UTC)",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"expires": schema.StringAttribute{
+				Description: "The end date up until which the item is valid, in ISO 8601 format (UTC)",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"key_algorithm": schema.StringAttribute{
+				Description: "The public key algorithm",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"key_size": schema.Int64Attribute{
+				Description: "The public key size",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"signature_algorithm": schema.StringAttribute{
+				Description: "The signature algorithm",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"version": schema.Int64Attribute{
+				Description: "The X.509 version to which the item conforms",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"sha1_fingerprint": schema.StringAttribute{
+				Description: "SHA-1 fingerprint in Hex encoding",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"sha256_fingerprint": schema.StringAttribute{
+				Description: "SHA-256 fingerprint in Hex encoding",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"status": schema.StringAttribute{
+				Description: "Status of the item.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"rotation_settings": schema.SingleNestedAttribute{
+				Description: "The local identity profile data store configuration.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Description: "The base DN to search from. If not specified, the search will start at the LDAP's root.",
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
+					},
+					"creation_buffer_days": schema.Int64Attribute{
+						Description: "Buffer days before key pair expiration for creation of a new key pair.",
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
+					},
+					"activation_buffer_days": schema.Int64Attribute{
+						Description: "Buffer days before key pair expiration for activation of the new key pair.",
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
+					},
+					"valid_days": schema.Int64Attribute{
+						Description: "Valid days for the new key pair to be created. If this property is unset, the validity days of the original key pair will be used.",
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
+					},
+					"key_algorithm": schema.StringAttribute{
+						Description: "Key algorithm to be used while creating a new key pair. If this property is unset, the key algorithm of the original key pair will be used. Supported algorithms are available through the /keyPairs/keyAlgorithms endpoint.						",
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
+					},
+					"key_size": schema.Int64Attribute{
+						Description: "Key size, in bits. If this property is unset, the key size of the original key pair will be used. Supported key sizes are available through the /keyPairs/keyAlgorithms endpoint.",
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
+					},
+					"signature_algorithm": schema.StringAttribute{
+						Description: "Required if the original key pair used SHA1 algorithm. If this property is unset, the default signature algorithm of the original key pair will be used. Supported signature algorithms are available through the /keyPairs/keyAlgorithms endpoint.",
+						Required:    false,
+						Optional:    false,
+						Computed:    true,
+					},
 				},
 			},
 		},
@@ -116,13 +274,31 @@ func (r *keyPairsSigningImportResource) Configure(_ context.Context, req resourc
 
 }
 
-func readKeyPairsSigningImportResponse(ctx context.Context, r *client.KeyPairView, state *keyPairsSigningImportResourceModel, expectedValues *keyPairsSigningImportResourceModel, planFileData string, planFormat string, planPassword string) {
+func readKeyPairsSigningImportResponse(ctx context.Context, r *client.KeyPairView, state *keyPairsSigningImportResourceModel, planFileData string, planFormat string, planPassword string) diag.Diagnostics {
 	state.Id = types.StringPointerValue(r.Id)
 	state.ImportId = types.StringPointerValue(r.Id)
 	state.FileData = types.StringPointerValue(&planFileData)
 	state.Format = types.StringPointerValue(&planFormat)
 	state.Password = types.StringValue(planPassword)
 	state.CryptoProvider = types.StringPointerValue(r.CryptoProvider)
+
+	state.SerialNumber = types.StringPointerValue(r.SerialNumber)
+	state.SubjectDN = types.StringPointerValue(r.SubjectDN)
+	state.SubjectAlternativeNames = internaltypes.GetStringSet(r.SubjectAlternativeNames)
+	state.IssuerDN = types.StringPointerValue(r.IssuerDN)
+	state.ValidFrom = types.StringValue(r.ValidFrom.Format(time.RFC3339))
+	state.Expires = types.StringValue(r.Expires.Format(time.RFC3339))
+	state.KeyAlgorithm = types.StringPointerValue(r.KeyAlgorithm)
+	state.KeySize = types.Int64PointerValue(r.KeySize)
+	state.SignatureAlgorithm = types.StringPointerValue(r.SignatureAlgorithm)
+	state.Version = types.Int64PointerValue(r.Version)
+	state.Sha1Fingerprint = types.StringPointerValue(r.Sha1Fingerprint)
+	state.Sha256Fingerprint = types.StringPointerValue(r.Sha256Fingerprint)
+	state.Status = types.StringPointerValue(r.Status)
+
+	var valueFromDiags diag.Diagnostics
+	state.RotationSettings, valueFromDiags = types.ObjectValueFrom(ctx, rotationSettingsAttrTypes, r.RotationSettings)
+	return valueFromDiags
 }
 
 func (r *keyPairsSigningImportResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -151,10 +327,9 @@ func (r *keyPairsSigningImportResource) Create(ctx context.Context, req resource
 
 	// Read the response into the state
 	var state keyPairsSigningImportResourceModel
-	planFileData := plan.FileData.ValueString()
-	planFormat := plan.Format.ValueString()
-	planPassword := plan.Password.ValueString()
-	readKeyPairsSigningImportResponse(ctx, keyPairsSigningImportResponse, &state, &plan, planFileData, planFormat, planPassword)
+	diags = readKeyPairsSigningImportResponse(ctx, keyPairsSigningImportResponse, &state,
+		plan.FileData.ValueString(), plan.Format.ValueString(), plan.Password.ValueString())
+	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -179,10 +354,9 @@ func (r *keyPairsSigningImportResource) Read(ctx context.Context, req resource.R
 	}
 
 	// Read the response into the state
-	stateFileData := state.FileData.ValueString()
-	stateFormat := state.Format.ValueString()
-	statePassword := state.Password.ValueString()
-	readKeyPairsSigningImportResponse(ctx, apiReadKeyPairsSigningImport, &state, &state, stateFileData, stateFormat, statePassword)
+	diags = readKeyPairsSigningImportResponse(ctx, apiReadKeyPairsSigningImport, &state,
+		state.FileData.ValueString(), state.Format.ValueString(), state.Password.ValueString())
+	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -190,6 +364,7 @@ func (r *keyPairsSigningImportResource) Read(ctx context.Context, req resource.R
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
+// Since all non-computed attributes require replacing the resource, there is no need to implement Update for this resource.
 func (r *keyPairsSigningImportResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 }
 
