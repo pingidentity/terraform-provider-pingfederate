@@ -137,12 +137,16 @@ func TestAccOauthClient(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:                  testAccOauthClient(resourceName, updatedResourceModel),
-				ResourceName:            "pingfederate_oauth_client." + resourceName,
-				ImportStateId:           oauthClientId,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"client_auth.secret"},
+				Config:            testAccOauthClient(resourceName, updatedResourceModel),
+				ResourceName:      "pingfederate_oauth_client." + resourceName,
+				ImportStateId:     oauthClientId,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"client_auth.secret",
+					"client_secret_changed_time",
+					"modification_date",
+				},
 			},
 			{
 				// Back to minimal model
