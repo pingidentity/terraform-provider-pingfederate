@@ -5,9 +5,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -28,12 +27,6 @@ func RedirectValidationDataSource() datasource.DataSource {
 type redirectValidationDataSource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type redirectValidationDataSourceModel struct {
-	Id                                types.String `tfsdk:"id"`
-	RedirectValidationLocalSettings   types.Object `tfsdk:"redirect_validation_local_settings"`
-	RedirectValidationPartnerSettings types.Object `tfsdk:"redirect_validation_partner_settings"`
 }
 
 // GetSchema defines the schema for the datasource.
@@ -151,22 +144,9 @@ func (r *redirectValidationDataSource) Configure(_ context.Context, req datasour
 	r.apiClient = providerCfg.ApiClient
 }
 
-// Read a RedirectValidationResponse object into the model struct
-func readRedirectValidationResponseDataSource(ctx context.Context, r *client.RedirectValidationSettings, state *redirectValidationDataSourceModel) diag.Diagnostics {
-	var diags, respDiags diag.Diagnostics
-	state.Id = types.StringValue("redirect_validation_id")
-	redirectValidationLocalSettingsObjVal, respDiags := types.ObjectValueFrom(ctx, redirectValidationLocalSettingsAttrTypes, r.RedirectValidationLocalSettings)
-	diags.Append(respDiags...)
-	redirectValidationPartnerSettingsObjVal, respDiags := types.ObjectValueFrom(ctx, redirectValidationPartnerSettingsAttrTypes, r.RedirectValidationPartnerSettings)
-	diags.Append(respDiags...)
-	state.RedirectValidationLocalSettings = redirectValidationLocalSettingsObjVal
-	state.RedirectValidationPartnerSettings = redirectValidationPartnerSettingsObjVal
-	return diags
-}
-
 // Read resource information
 func (r *redirectValidationDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state redirectValidationDataSourceModel
+	var state redirectValidationModel
 
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -181,7 +161,7 @@ func (r *redirectValidationDataSource) Read(ctx context.Context, req datasource.
 	}
 
 	// Read the response into the state
-	diags = readRedirectValidationResponseDataSource(ctx, apiReadRedirectValidation, &state)
+	diags = readRedirectValidationResponse(ctx, apiReadRedirectValidation, &state, pointers.String("redirect_validation_id"))
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state

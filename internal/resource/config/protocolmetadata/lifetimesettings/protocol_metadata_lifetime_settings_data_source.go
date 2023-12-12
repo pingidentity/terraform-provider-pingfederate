@@ -5,8 +5,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -27,12 +27,6 @@ func ProtocolMetadataLifetimeSettingsDataSource() datasource.DataSource {
 type protocolMetadataLifetimeSettingsDataSource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type protocolMetadataLifetimeSettingsDataSourceModel struct {
-	Id            types.String `tfsdk:"id"`
-	CacheDuration types.Int64  `tfsdk:"cache_duration"`
-	ReloadDelay   types.Int64  `tfsdk:"reload_delay"`
 }
 
 // GetSchema defines the schema for the datasource.
@@ -73,14 +67,8 @@ func (r *protocolMetadataLifetimeSettingsDataSource) Configure(_ context.Context
 
 }
 
-func readProtocolMetadataLifetimeSettingsResponseDataSource(ctx context.Context, r *client.MetadataLifetimeSettings, state *protocolMetadataLifetimeSettingsDataSourceModel) {
-	state.Id = types.StringValue("protocolMetadataLifetimeSettingsId")
-	state.CacheDuration = types.Int64Value(r.GetCacheDuration())
-	state.ReloadDelay = types.Int64Value(r.GetReloadDelay())
-}
-
 func (r *protocolMetadataLifetimeSettingsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state protocolMetadataLifetimeSettingsDataSourceModel
+	var state protocolMetadataLifetimeSettingsModel
 
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -95,7 +83,7 @@ func (r *protocolMetadataLifetimeSettingsDataSource) Read(ctx context.Context, r
 	}
 
 	// Read the response into the state
-	readProtocolMetadataLifetimeSettingsResponseDataSource(ctx, apiReadProtocolMetadataLifetimeSettings, &state)
+	readProtocolMetadataLifetimeSettingsResponse(ctx, apiReadProtocolMetadataLifetimeSettings, &state, pointers.String("protocol_metadata_lifetime_settings_id"))
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

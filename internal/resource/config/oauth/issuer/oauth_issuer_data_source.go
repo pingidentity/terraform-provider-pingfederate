@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -27,15 +26,6 @@ func OauthIssuerDataSource() datasource.DataSource {
 type oauthIssuerDataSource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type oauthIssuerDataSourceModel struct {
-	Id          types.String `tfsdk:"id"`
-	IssuerId    types.String `tfsdk:"issuer_id"`
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-	Host        types.String `tfsdk:"host"`
-	Path        types.String `tfsdk:"path"`
 }
 
 // GetSchema defines the schema for the datasource.
@@ -89,19 +79,9 @@ func (r *oauthIssuerDataSource) Configure(_ context.Context, req datasource.Conf
 	r.apiClient = providerCfg.ApiClient
 }
 
-// Read a OauthIssuerResponse object into the model struct
-func readOauthIssuerResponseDataSource(ctx context.Context, r *client.Issuer, state *oauthIssuerDataSourceModel) {
-	state.Id = types.StringPointerValue(r.Id)
-	state.IssuerId = types.StringPointerValue(r.Id)
-	state.Name = types.StringValue(r.Name)
-	state.Description = types.StringPointerValue(r.Description)
-	state.Host = types.StringValue(r.Host)
-	state.Path = types.StringPointerValue(r.Path)
-}
-
 // Read resource information
 func (r *oauthIssuerDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state oauthIssuerDataSourceModel
+	var state oauthIssuerModel
 
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -117,7 +97,7 @@ func (r *oauthIssuerDataSource) Read(ctx context.Context, req datasource.ReadReq
 	}
 
 	// Read the response into the state
-	readOauthIssuerResponseDataSource(ctx, apiReadOauthIssuer, &state)
+	readOauthIssuerResponse(ctx, apiReadOauthIssuer, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

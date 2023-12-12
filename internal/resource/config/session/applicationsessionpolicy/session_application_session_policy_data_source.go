@@ -5,8 +5,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -27,12 +27,6 @@ func SessionApplicationSessionPolicyDataSource() datasource.DataSource {
 type sessionApplicationSessionPolicyDataSource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type sessionApplicationSessionPolicyDataSourceModel struct {
-	Id              types.String `tfsdk:"id"`
-	IdleTimeoutMins types.Int64  `tfsdk:"idle_timeout_mins"`
-	MaxTimeoutMins  types.Int64  `tfsdk:"max_timeout_mins"`
 }
 
 // GetSchema defines the schema for the datasource.
@@ -74,14 +68,8 @@ func (r *sessionApplicationSessionPolicyDataSource) Configure(_ context.Context,
 
 }
 
-func readSessionApplicationSessionPolicyResponseDataSource(ctx context.Context, r *client.ApplicationSessionPolicy, state *sessionApplicationSessionPolicyDataSourceModel) {
-	state.Id = types.StringValue("session_application_session_policy_id")
-	state.IdleTimeoutMins = types.Int64Value(r.GetIdleTimeoutMins())
-	state.MaxTimeoutMins = types.Int64Value(r.GetMaxTimeoutMins())
-}
-
 func (r *sessionApplicationSessionPolicyDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state sessionApplicationSessionPolicyDataSourceModel
+	var state sessionApplicationSessionPolicyModel
 
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -97,7 +85,7 @@ func (r *sessionApplicationSessionPolicyDataSource) Read(ctx context.Context, re
 	}
 
 	// Read the response into the state
-	readSessionApplicationSessionPolicyResponseDataSource(ctx, apiReadSessionApplicationSessionPolicy, &state)
+	readSessionApplicationSessionPolicyResponse(ctx, apiReadSessionApplicationSessionPolicy, &state, pointers.String("session_application_session_policy_id"))
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -33,13 +32,6 @@ func OauthAuthServerSettingsScopesCommonScopeResource() resource.Resource {
 type oauthAuthServerSettingsScopesCommonScopeResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type oauthAuthServerSettingsScopesCommonScopeResourceModel struct {
-	Id          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-	Dynamic     types.Bool   `tfsdk:"dynamic"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -72,7 +64,7 @@ func (r *oauthAuthServerSettingsScopesCommonScopeResource) Schema(ctx context.Co
 }
 
 func (r *oauthAuthServerSettingsScopesCommonScopeResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	var plan oauthAuthServerSettingsScopesCommonScopeResourceModel
+	var plan oauthAuthServerSettingsScopesCommonScopeModel
 	req.Plan.Get(ctx, &plan)
 	if plan.Dynamic.ValueBool() && (plan.Name.ValueString() != "" || !plan.Name.IsNull()) {
 		{
@@ -84,7 +76,7 @@ func (r *oauthAuthServerSettingsScopesCommonScopeResource) ModifyPlan(ctx contex
 	}
 }
 
-func addOptionalOauthAuthServerSettingsScopesCommonScopesFields(ctx context.Context, addRequest *client.ScopeEntry, plan oauthAuthServerSettingsScopesCommonScopeResourceModel) error {
+func addOptionalOauthAuthServerSettingsScopesCommonScopesFields(ctx context.Context, addRequest *client.ScopeEntry, plan oauthAuthServerSettingsScopesCommonScopeModel) error {
 
 	if internaltypes.IsDefined(plan.Name) {
 		addRequest.Name = plan.Name.ValueString()
@@ -115,15 +107,8 @@ func (r *oauthAuthServerSettingsScopesCommonScopeResource) Configure(_ context.C
 
 }
 
-func readOauthAuthServerSettingsScopesCommonScopesResponse(ctx context.Context, r *client.ScopeEntry, state *oauthAuthServerSettingsScopesCommonScopeResourceModel, expectedValues *oauthAuthServerSettingsScopesCommonScopeResourceModel) {
-	state.Id = types.StringValue(r.Name)
-	state.Name = types.StringValue(r.Name)
-	state.Description = types.StringValue(r.Description)
-	state.Dynamic = types.BoolPointerValue(r.Dynamic)
-}
-
 func (r *oauthAuthServerSettingsScopesCommonScopeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan oauthAuthServerSettingsScopesCommonScopeResourceModel
+	var plan oauthAuthServerSettingsScopesCommonScopeModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -147,15 +132,15 @@ func (r *oauthAuthServerSettingsScopesCommonScopeResource) Create(ctx context.Co
 	}
 
 	// Read the response into the state
-	var state oauthAuthServerSettingsScopesCommonScopeResourceModel
+	var state oauthAuthServerSettingsScopesCommonScopeModel
 
-	readOauthAuthServerSettingsScopesCommonScopesResponse(ctx, oauthAuthServerSettingsScopesCommonScopesResponse, &state, &plan)
+	readOauthAuthServerSettingsScopesCommonScopeResponse(ctx, oauthAuthServerSettingsScopesCommonScopesResponse, &state)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
 func (r *oauthAuthServerSettingsScopesCommonScopeResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state oauthAuthServerSettingsScopesCommonScopeResourceModel
+	var state oauthAuthServerSettingsScopesCommonScopeModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -174,7 +159,7 @@ func (r *oauthAuthServerSettingsScopesCommonScopeResource) Read(ctx context.Cont
 	}
 
 	// Read the response into the state
-	readOauthAuthServerSettingsScopesCommonScopesResponse(ctx, apiReadOauthAuthServerSettingsScopesCommonScopes, &state, &state)
+	readOauthAuthServerSettingsScopesCommonScopeResponse(ctx, apiReadOauthAuthServerSettingsScopesCommonScopes, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -184,7 +169,7 @@ func (r *oauthAuthServerSettingsScopesCommonScopeResource) Read(ctx context.Cont
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *oauthAuthServerSettingsScopesCommonScopeResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	var plan oauthAuthServerSettingsScopesCommonScopeResourceModel
+	var plan oauthAuthServerSettingsScopesCommonScopeModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -192,7 +177,7 @@ func (r *oauthAuthServerSettingsScopesCommonScopeResource) Update(ctx context.Co
 	}
 
 	// Get the current state to see how any attributes are changing
-	var state oauthAuthServerSettingsScopesCommonScopeResourceModel
+	var state oauthAuthServerSettingsScopesCommonScopeModel
 	req.State.Get(ctx, &state)
 	updateOauthAuthServerSettingsScopesCommonScopes := r.apiClient.OauthAuthServerSettingsAPI.UpdateCommonScope(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Name.ValueString())
 	createUpdateRequest := client.NewScopeEntry(plan.Name.ValueString(), plan.Description.ValueString())
@@ -210,7 +195,7 @@ func (r *oauthAuthServerSettingsScopesCommonScopeResource) Update(ctx context.Co
 	}
 
 	// Read the response
-	readOauthAuthServerSettingsScopesCommonScopesResponse(ctx, updateOauthAuthServerSettingsScopesCommonScopesResponse, &state, &plan)
+	readOauthAuthServerSettingsScopesCommonScopeResponse(ctx, updateOauthAuthServerSettingsScopesCommonScopesResponse, &state)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
@@ -220,7 +205,7 @@ func (r *oauthAuthServerSettingsScopesCommonScopeResource) Update(ctx context.Co
 // // Delete deletes the resource and removes the Terraform state on success.
 func (r *oauthAuthServerSettingsScopesCommonScopeResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state oauthAuthServerSettingsScopesCommonScopeResourceModel
+	var state oauthAuthServerSettingsScopesCommonScopeModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

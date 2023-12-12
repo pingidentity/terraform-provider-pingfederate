@@ -5,8 +5,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -27,15 +27,6 @@ func ServerSettingsGeneralSettingsDataSource() datasource.DataSource {
 type serverSettingsGeneralSettingsDataSource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type serverSettingsGeneralSettingsDataSourceModel struct {
-	Id                                      types.String `tfsdk:"id"`
-	DisableAutomaticConnectionValidation    types.Bool   `tfsdk:"disable_automatic_connection_validation"`
-	IdpConnectionTransactionLoggingOverride types.String `tfsdk:"idp_connection_transaction_logging_override"`
-	SpConnectionTransactionLoggingOverride  types.String `tfsdk:"sp_connection_transaction_logging_override"`
-	DatastoreValidationIntervalSecs         types.Int64  `tfsdk:"datastore_validation_interval_secs"`
-	RequestHeaderForCorrelationId           types.String `tfsdk:"request_header_for_correlation_id"`
 }
 
 // GetSchema defines the schema for the datasource.
@@ -91,17 +82,8 @@ func (r *serverSettingsGeneralSettingsDataSource) Configure(_ context.Context, r
 
 }
 
-func readServerSettingsGeneralSettingsDataSource(ctx context.Context, r *client.GeneralSettings, state *serverSettingsGeneralSettingsDataSourceModel) {
-	state.Id = types.StringValue("server_settings_general_settings_id")
-	state.DisableAutomaticConnectionValidation = types.BoolPointerValue(r.DisableAutomaticConnectionValidation)
-	state.IdpConnectionTransactionLoggingOverride = types.StringPointerValue(r.IdpConnectionTransactionLoggingOverride)
-	state.SpConnectionTransactionLoggingOverride = types.StringPointerValue(r.SpConnectionTransactionLoggingOverride)
-	state.DatastoreValidationIntervalSecs = types.Int64PointerValue(r.DatastoreValidationIntervalSecs)
-	state.RequestHeaderForCorrelationId = types.StringPointerValue(r.RequestHeaderForCorrelationId)
-}
-
 func (r *serverSettingsGeneralSettingsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state serverSettingsGeneralSettingsDataSourceModel
+	var state serverSettingsGeneralSettingsModel
 
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -116,7 +98,7 @@ func (r *serverSettingsGeneralSettingsDataSource) Read(ctx context.Context, req 
 
 	// Read the response into the state
 
-	readServerSettingsGeneralSettingsDataSource(ctx, apiReadServerSettingsGeneralSettings, &state)
+	readServerSettingsGeneralSettingsResponse(ctx, apiReadServerSettingsGeneralSettings, &state, pointers.String("server_settings_general_settings_id"))
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

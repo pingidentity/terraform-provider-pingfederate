@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -76,12 +75,6 @@ func RedirectValidationResource() resource.Resource {
 type redirectValidationResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type redirectValidationResourceModel struct {
-	Id                                types.String `tfsdk:"id"`
-	RedirectValidationLocalSettings   types.Object `tfsdk:"redirect_validation_local_settings"`
-	RedirectValidationPartnerSettings types.Object `tfsdk:"redirect_validation_partner_settings"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -198,7 +191,7 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 	resp.Schema = schema
 }
 
-func addOptionalRedirectValidationFields(ctx context.Context, addRequest *client.RedirectValidationSettings, plan redirectValidationResourceModel) error {
+func addOptionalRedirectValidationFields(ctx context.Context, addRequest *client.RedirectValidationSettings, plan redirectValidationModel) error {
 	if internaltypes.IsDefined(plan.RedirectValidationLocalSettings) {
 		addRequest.RedirectValidationLocalSettings = client.NewRedirectValidationLocalSettings()
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.RedirectValidationLocalSettings, false)), addRequest.RedirectValidationLocalSettings)
@@ -233,20 +226,8 @@ func (r *redirectValidationResource) Configure(_ context.Context, req resource.C
 
 }
 
-func readRedirectValidationResponse(ctx context.Context, r *client.RedirectValidationSettings, state *redirectValidationResourceModel, existingId *string) diag.Diagnostics {
-	var diags, respDiags diag.Diagnostics
-	state.Id = id.GenerateUUIDToState(existingId)
-	redirectValidationLocalSettingsObjVal, respDiags := types.ObjectValueFrom(ctx, redirectValidationLocalSettingsAttrTypes, r.RedirectValidationLocalSettings)
-	diags.Append(respDiags...)
-	redirectValidationPartnerSettingsObjVal, respDiags := types.ObjectValueFrom(ctx, redirectValidationPartnerSettingsAttrTypes, r.RedirectValidationPartnerSettings)
-	diags.Append(respDiags...)
-	state.RedirectValidationLocalSettings = redirectValidationLocalSettingsObjVal
-	state.RedirectValidationPartnerSettings = redirectValidationPartnerSettingsObjVal
-	return diags
-}
-
 func (r *redirectValidationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan redirectValidationResourceModel
+	var plan redirectValidationModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -270,7 +251,7 @@ func (r *redirectValidationResource) Create(ctx context.Context, req resource.Cr
 	}
 
 	// Read the response into the state
-	var state redirectValidationResourceModel
+	var state redirectValidationModel
 	diags = readRedirectValidationResponse(ctx, redirectValidationResponse, &state, nil)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
@@ -278,7 +259,7 @@ func (r *redirectValidationResource) Create(ctx context.Context, req resource.Cr
 }
 
 func (r *redirectValidationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state redirectValidationResourceModel
+	var state redirectValidationModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -313,7 +294,7 @@ func (r *redirectValidationResource) Read(ctx context.Context, req resource.Read
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *redirectValidationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	var plan redirectValidationResourceModel
+	var plan redirectValidationModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -336,7 +317,7 @@ func (r *redirectValidationResource) Update(ctx context.Context, req resource.Up
 	}
 
 	// Read the response
-	var state redirectValidationResourceModel
+	var state redirectValidationModel
 	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

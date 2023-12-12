@@ -2,11 +2,9 @@ package serversettingssystemkeys
 
 import (
 	"context"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -50,13 +48,6 @@ func ServerSettingsSystemKeysResource() resource.Resource {
 type serverSettingsSystemKeysResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type serverSettingsSystemKeysResourceModel struct {
-	Id       types.String `tfsdk:"id"`
-	Current  types.Object `tfsdk:"current"`
-	Previous types.Object `tfsdk:"previous"`
-	Pending  types.Object `tfsdk:"pending"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -164,7 +155,7 @@ func (r *serverSettingsSystemKeysResource) Schema(ctx context.Context, req resou
 	resp.Schema = schema
 }
 
-func addServerSettingsSystemKeysFields(ctx context.Context, addRequest *client.SystemKeys, plan serverSettingsSystemKeysResourceModel) {
+func addServerSettingsSystemKeysFields(ctx context.Context, addRequest *client.SystemKeys, plan serverSettingsSystemKeysModel) {
 
 	if internaltypes.IsDefined(plan.Current) {
 		currentAttrs := plan.Current.Attributes()
@@ -211,44 +202,8 @@ func (r *serverSettingsSystemKeysResource) Configure(_ context.Context, req reso
 
 }
 
-func readServerSettingsSystemKeysResponse(ctx context.Context, r *client.SystemKeys, state *serverSettingsSystemKeysResourceModel, existingId *string) diag.Diagnostics {
-	var diags diag.Diagnostics
-	state.Id = id.GenerateUUIDToState(existingId)
-	currentAttrs := r.GetCurrent()
-	currentAttrVals := map[string]attr.Value{
-		"creation_date":      types.StringValue(currentAttrs.GetCreationDate().Format(time.RFC3339Nano)),
-		"encrypted_key_data": types.StringValue(currentAttrs.GetEncryptedKeyData()),
-		"key_data":           types.StringValue(currentAttrs.GetKeyData()),
-	}
-	currentAttrsObjVal, respDiags := types.ObjectValue(systemKeyAttrTypes, currentAttrVals)
-	diags = append(diags, respDiags...)
-
-	previousAttrs := r.GetPrevious()
-	previousAttrVals := map[string]attr.Value{
-		"creation_date":      types.StringValue(previousAttrs.GetCreationDate().Format(time.RFC3339Nano)),
-		"encrypted_key_data": types.StringValue(previousAttrs.GetEncryptedKeyData()),
-		"key_data":           types.StringValue(previousAttrs.GetKeyData()),
-	}
-	previousAttrsObjVal, respDiags := types.ObjectValue(systemKeyAttrTypes, previousAttrVals)
-	diags = append(diags, respDiags...)
-
-	pendingAttrs := r.GetPending()
-	pendingAttrVals := map[string]attr.Value{
-		"creation_date":      types.StringValue(pendingAttrs.GetCreationDate().Format(time.RFC3339Nano)),
-		"encrypted_key_data": types.StringValue(pendingAttrs.GetEncryptedKeyData()),
-		"key_data":           types.StringValue(pendingAttrs.GetKeyData()),
-	}
-	pendingAttrsObjVal, respDiags := types.ObjectValue(systemKeyAttrTypes, pendingAttrVals)
-	diags = append(diags, respDiags...)
-
-	state.Current = currentAttrsObjVal
-	state.Pending = pendingAttrsObjVal
-	state.Previous = previousAttrsObjVal
-	return diags
-}
-
 func (r *serverSettingsSystemKeysResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan serverSettingsSystemKeysResourceModel
+	var plan serverSettingsSystemKeysModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -267,7 +222,7 @@ func (r *serverSettingsSystemKeysResource) Create(ctx context.Context, req resou
 	}
 
 	// Read the response into the state
-	var state serverSettingsSystemKeysResourceModel
+	var state serverSettingsSystemKeysModel
 	diags = readServerSettingsSystemKeysResponse(ctx, serverSettingsSystemKeysResponse, &state, nil)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
@@ -275,7 +230,7 @@ func (r *serverSettingsSystemKeysResource) Create(ctx context.Context, req resou
 }
 
 func (r *serverSettingsSystemKeysResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state serverSettingsSystemKeysResourceModel
+	var state serverSettingsSystemKeysModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -310,7 +265,7 @@ func (r *serverSettingsSystemKeysResource) Read(ctx context.Context, req resourc
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *serverSettingsSystemKeysResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	var plan serverSettingsSystemKeysResourceModel
+	var plan serverSettingsSystemKeysModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -329,7 +284,7 @@ func (r *serverSettingsSystemKeysResource) Update(ctx context.Context, req resou
 	}
 
 	// Read the response into the state
-	var state serverSettingsSystemKeysResourceModel
+	var state serverSettingsSystemKeysModel
 	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

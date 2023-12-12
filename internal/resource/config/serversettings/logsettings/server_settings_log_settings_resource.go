@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -66,11 +65,6 @@ type serverSettingsLogSettingsResource struct {
 	apiClient      *client.APIClient
 }
 
-type serverSettingsLogSettingsResourceModel struct {
-	Id            types.String `tfsdk:"id"`
-	LogCategories types.Set    `tfsdk:"log_categories"`
-}
-
 // GetSchema defines the schema for the resource.
 func (r *serverSettingsLogSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
@@ -125,7 +119,7 @@ func (r *serverSettingsLogSettingsResource) Schema(ctx context.Context, req reso
 	resp.Schema = schema
 }
 
-func addOptionalServerSettingsLogSettingsFields(ctx context.Context, addRequest *client.LogSettings, plan serverSettingsLogSettingsResourceModel) error {
+func addOptionalServerSettingsLogSettingsFields(ctx context.Context, addRequest *client.LogSettings, plan serverSettingsLogSettingsModel) error {
 	if internaltypes.IsDefined(plan.LogCategories) {
 		addRequest.LogCategories = []client.LogCategorySettings{}
 		for _, logCategoriesSetting := range plan.LogCategories.Elements() {
@@ -157,16 +151,8 @@ func (r *serverSettingsLogSettingsResource) Configure(_ context.Context, req res
 
 }
 
-func readServerSettingsLogSettingsResponse(ctx context.Context, r *client.LogSettings, state *serverSettingsLogSettingsResourceModel, existingId *string) diag.Diagnostics {
-	var diags diag.Diagnostics
-	state.Id = id.GenerateUUIDToState(existingId)
-
-	state.LogCategories, diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: logCategoriesAttrTypes}, r.LogCategories)
-	return diags
-}
-
 func (r *serverSettingsLogSettingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan serverSettingsLogSettingsResourceModel
+	var plan serverSettingsLogSettingsModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -190,7 +176,7 @@ func (r *serverSettingsLogSettingsResource) Create(ctx context.Context, req reso
 	}
 
 	// Read the response into the state
-	var state serverSettingsLogSettingsResourceModel
+	var state serverSettingsLogSettingsModel
 	diags = readServerSettingsLogSettingsResponse(ctx, serverSettingsLogSettingsResponse, &state, nil)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
@@ -198,7 +184,7 @@ func (r *serverSettingsLogSettingsResource) Create(ctx context.Context, req reso
 }
 
 func (r *serverSettingsLogSettingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state serverSettingsLogSettingsResourceModel
+	var state serverSettingsLogSettingsModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -233,7 +219,7 @@ func (r *serverSettingsLogSettingsResource) Read(ctx context.Context, req resour
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *serverSettingsLogSettingsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	var plan serverSettingsLogSettingsResourceModel
+	var plan serverSettingsLogSettingsModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -256,7 +242,7 @@ func (r *serverSettingsLogSettingsResource) Update(ctx context.Context, req reso
 	}
 
 	// Read the response
-	var state serverSettingsLogSettingsResourceModel
+	var state serverSettingsLogSettingsModel
 	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

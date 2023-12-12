@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -27,13 +26,6 @@ func OauthAuthServerSettingsScopesCommonScopeDataSource() datasource.DataSource 
 type oauthAuthServerSettingsScopesCommonScopeDataSource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type oauthAuthServerSettingsScopesCommonScopeDataSourceModel struct {
-	Id          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-	Dynamic     types.Bool   `tfsdk:"dynamic"`
 }
 
 // GetSchema defines the schema for the datasource.
@@ -79,17 +71,9 @@ func (r *oauthAuthServerSettingsScopesCommonScopeDataSource) Configure(_ context
 	r.apiClient = providerCfg.ApiClient
 }
 
-// Read a OauthAuthServerSettingsScopesCommonScopeResponse object into the model struct
-func readOauthAuthServerSettingsScopesCommonScopeResponseDataSource(ctx context.Context, r *client.ScopeEntry, state *oauthAuthServerSettingsScopesCommonScopeDataSourceModel) {
-	state.Id = types.StringValue(r.Name)
-	state.Name = types.StringValue(r.Name)
-	state.Description = types.StringValue(r.Description)
-	state.Dynamic = types.BoolPointerValue(r.Dynamic)
-}
-
 // Read resource information
 func (r *oauthAuthServerSettingsScopesCommonScopeDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state oauthAuthServerSettingsScopesCommonScopeDataSourceModel
+	var state oauthAuthServerSettingsScopesCommonScopeModel
 
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -105,7 +89,7 @@ func (r *oauthAuthServerSettingsScopesCommonScopeDataSource) Read(ctx context.Co
 	}
 
 	// Read the response into the state
-	readOauthAuthServerSettingsScopesCommonScopeResponseDataSource(ctx, apiReadOauthAuthServerSettingsScopesCommonScope, &state)
+	readOauthAuthServerSettingsScopesCommonScopeResponse(ctx, apiReadOauthAuthServerSettingsScopesCommonScope, &state)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

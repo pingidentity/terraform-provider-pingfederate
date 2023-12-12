@@ -3,12 +3,10 @@ package authenticationapisettings
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -32,14 +30,6 @@ func AuthenticationApiSettingsResource() resource.Resource {
 type authenticationApiSettingsResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-type authenticationApiSettingsResourceModel struct {
-	Id                               types.String `tfsdk:"id"`
-	ApiEnabled                       types.Bool   `tfsdk:"api_enabled"`
-	EnableApiDescriptions            types.Bool   `tfsdk:"enable_api_descriptions"`
-	RestrictAccessToRedirectlessMode types.Bool   `tfsdk:"restrict_access_to_redirectless_mode"`
-	IncludeRequestContext            types.Bool   `tfsdk:"include_request_context"`
-	DefaultApplicationRef            types.Object `tfsdk:"default_application_ref"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -83,7 +73,7 @@ func (r *authenticationApiSettingsResource) Schema(ctx context.Context, req reso
 	resp.Schema = schema
 }
 
-func addAuthenticationApiSettingsFields(ctx context.Context, addRequest *client.AuthnApiSettings, plan authenticationApiSettingsResourceModel) error {
+func addAuthenticationApiSettingsFields(ctx context.Context, addRequest *client.AuthnApiSettings, plan authenticationApiSettingsModel) error {
 	if internaltypes.IsDefined(plan.ApiEnabled) {
 		addRequest.ApiEnabled = plan.ApiEnabled.ValueBoolPointer()
 	}
@@ -123,22 +113,9 @@ func (r *authenticationApiSettingsResource) Configure(_ context.Context, req res
 
 }
 
-func readAuthenticationApiSettingsResponse(ctx context.Context, r *client.AuthnApiSettings, state *authenticationApiSettingsResourceModel, existingId *string) diag.Diagnostics {
-	var diags, valueFromDiags diag.Diagnostics
-	state.Id = id.GenerateUUIDToState(existingId)
-	state.ApiEnabled = types.BoolValue(*r.ApiEnabled)
-	state.EnableApiDescriptions = types.BoolValue(*r.EnableApiDescriptions)
-	state.RestrictAccessToRedirectlessMode = types.BoolValue(*r.RestrictAccessToRedirectlessMode)
-	state.IncludeRequestContext = types.BoolValue(*r.IncludeRequestContext)
-	resourceLinkObjectValue, valueFromDiags := resourcelink.ToState(ctx, r.DefaultApplicationRef)
-	diags.Append(valueFromDiags...)
-	state.DefaultApplicationRef = resourceLinkObjectValue
-	return diags
-}
-
 func (r *authenticationApiSettingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	// Retrieve values from plan
-	var plan authenticationApiSettingsResourceModel
+	var plan authenticationApiSettingsModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -161,7 +138,7 @@ func (r *authenticationApiSettingsResource) Create(ctx context.Context, req reso
 	}
 
 	// Read the response
-	var state authenticationApiSettingsResourceModel
+	var state authenticationApiSettingsModel
 	diags = readAuthenticationApiSettingsResponse(ctx, updateAuthenticationApiSettingsResponse, &state, nil)
 	resp.Diagnostics.Append(diags...)
 
@@ -171,7 +148,7 @@ func (r *authenticationApiSettingsResource) Create(ctx context.Context, req reso
 }
 
 func (r *authenticationApiSettingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state authenticationApiSettingsResourceModel
+	var state authenticationApiSettingsModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -205,7 +182,7 @@ func (r *authenticationApiSettingsResource) Read(ctx context.Context, req resour
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *authenticationApiSettingsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan authenticationApiSettingsResourceModel
+	var plan authenticationApiSettingsModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -228,7 +205,7 @@ func (r *authenticationApiSettingsResource) Update(ctx context.Context, req reso
 	}
 
 	// Read the response
-	var state authenticationApiSettingsResourceModel
+	var state authenticationApiSettingsModel
 	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
