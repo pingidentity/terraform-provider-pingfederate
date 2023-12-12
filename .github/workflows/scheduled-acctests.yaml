@@ -1,0 +1,36 @@
+name: Scheduled Acceptance Tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 7 * * *"
+
+jobs:
+  acceptance:
+    name: Acceptance Tests
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        terraform:
+          - "1.4.*"
+          - "1.5.*"
+          - "1.6.*"
+      max-parallel: 1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version-file: "go.mod"
+          cache: true
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ matrix.terraform }}
+          terraform_wrapper: false
+      - run: mkdir -p $HOME/.pingidentity/ && echo "$CONFIG" >> $HOME/.pingidentity/config && grep -E "[a-zA-Z]" $HOME/.pingidentity/config || exit 1 && make testacccomplete && make removetestcontainer
+        env:
+          TF_ACC: "1"
+          CONFIG: ${{ secrets.Config }}
+          PF_TF_P1_CONNECTION_ID: ${{ secrets.PF_TF_P1_CONNECTION_ID }}
+          PF_TF_P1_CONNECTION_ENV_ID: ${{ secrets.PF_TF_P1_CONNECTION_ENV_ID }}
+          PF_TF_P1_LDAP_GATEWAY_ID: ${{ secrets.PF_TF_P1_LDAP_GATEWAY_ID }}
