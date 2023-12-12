@@ -32,22 +32,6 @@ type localIdentityIdentityProfileDataSource struct {
 	apiClient      *client.APIClient
 }
 
-type localIdentityIdentityProfileDataSourceModel struct {
-	Id                      types.String `tfsdk:"id"`
-	ProfileId               types.String `tfsdk:"profile_id"`
-	Name                    types.String `tfsdk:"name"`
-	ApcId                   types.Object `tfsdk:"apc_id"`
-	AuthSources             types.List   `tfsdk:"auth_sources"`
-	AuthSourceUpdatePolicy  types.Object `tfsdk:"auth_source_update_policy"`
-	RegistrationEnabled     types.Bool   `tfsdk:"registration_enabled"`
-	RegistrationConfig      types.Object `tfsdk:"registration_config"`
-	ProfileConfig           types.Object `tfsdk:"profile_config"`
-	FieldConfig             types.Object `tfsdk:"field_config"`
-	EmailVerificationConfig types.Object `tfsdk:"email_verification_config"`
-	DataStoreConfig         types.Object `tfsdk:"data_store_config"`
-	ProfileEnabled          types.Bool   `tfsdk:"profile_enabled"`
-}
-
 // GetSchema defines the schema for the datasource.
 func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
@@ -549,8 +533,7 @@ func (r *localIdentityIdentityProfileDataSource) Configure(_ context.Context, re
 	r.apiClient = providerCfg.ApiClient
 }
 
-// Read a DseeCompatAdministrativeAccountResponse object into the model struct
-func readLocalIdentityIdentityProfileResponseDataSource(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfileDataSourceModel) diag.Diagnostics {
+func readLocalIdentityIdentityProfileResponseDataSource(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfileModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.Id = types.StringPointerValue(r.Id)
 	state.ProfileId = types.StringPointerValue(r.Id)
@@ -619,7 +602,7 @@ func readLocalIdentityIdentityProfileResponseDataSource(ctx context.Context, r *
 
 // Read resource information
 func (r *localIdentityIdentityProfileDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state localIdentityIdentityProfileDataSourceModel
+	var state localIdentityIdentityProfileModel
 
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)

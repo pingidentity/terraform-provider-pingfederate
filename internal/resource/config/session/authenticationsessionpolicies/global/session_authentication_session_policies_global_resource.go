@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -34,17 +33,6 @@ func SessionAuthenticationSessionPoliciesGlobalResource() resource.Resource {
 type sessionAuthenticationSessionPoliciesGlobalResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type sessionAuthenticationSessionPoliciesGlobalResourceModel struct {
-	Id                         types.String `tfsdk:"id"`
-	EnableSessions             types.Bool   `tfsdk:"enable_sessions"`
-	PersistentSessions         types.Bool   `tfsdk:"persistent_sessions"`
-	HashUniqueUserKeyAttribute types.Bool   `tfsdk:"hash_unique_user_key_attribute"`
-	IdleTimeoutMins            types.Int64  `tfsdk:"idle_timeout_mins"`
-	IdleTimeoutDisplayUnit     types.String `tfsdk:"idle_timeout_display_unit"`
-	MaxTimeoutMins             types.Int64  `tfsdk:"max_timeout_mins"`
-	MaxTimeoutDisplayUnit      types.String `tfsdk:"max_timeout_display_unit"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -101,7 +89,7 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Schema(ctx context.
 	resp.Schema = schema
 }
 
-func addOptionalSessionAuthenticationSessionPoliciesGlobalFields(ctx context.Context, addRequest *client.GlobalAuthenticationSessionPolicy, plan sessionAuthenticationSessionPoliciesGlobalResourceModel) error {
+func addOptionalSessionAuthenticationSessionPoliciesGlobalFields(ctx context.Context, addRequest *client.GlobalAuthenticationSessionPolicy, plan sessionAuthenticationSessionPoliciesGlobalModel) error {
 	if internaltypes.IsDefined(plan.EnableSessions) {
 		addRequest.EnableSessions = plan.EnableSessions.ValueBool()
 	}
@@ -143,19 +131,8 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Configure(_ context
 
 }
 
-func readSessionAuthenticationSessionPoliciesGlobalResponse(ctx context.Context, r *client.GlobalAuthenticationSessionPolicy, state *sessionAuthenticationSessionPoliciesGlobalResourceModel, existingId *string) {
-	state.Id = id.GenerateUUIDToState(existingId)
-	state.EnableSessions = types.BoolValue(r.EnableSessions)
-	state.PersistentSessions = types.BoolPointerValue(r.PersistentSessions)
-	state.HashUniqueUserKeyAttribute = types.BoolPointerValue(r.HashUniqueUserKeyAttribute)
-	state.IdleTimeoutMins = types.Int64PointerValue(r.IdleTimeoutMins)
-	state.IdleTimeoutDisplayUnit = types.StringPointerValue(r.IdleTimeoutDisplayUnit)
-	state.MaxTimeoutMins = types.Int64PointerValue(r.MaxTimeoutMins)
-	state.MaxTimeoutDisplayUnit = types.StringPointerValue(r.MaxTimeoutDisplayUnit)
-}
-
 func (r *sessionAuthenticationSessionPoliciesGlobalResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan sessionAuthenticationSessionPoliciesGlobalResourceModel
+	var plan sessionAuthenticationSessionPoliciesGlobalModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -179,7 +156,7 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Create(ctx context.
 	}
 
 	// Read the response into the state
-	var state sessionAuthenticationSessionPoliciesGlobalResourceModel
+	var state sessionAuthenticationSessionPoliciesGlobalModel
 	readSessionAuthenticationSessionPoliciesGlobalResponse(ctx, sessionAuthenticationSessionPoliciesGlobalResponse, &state, nil)
 
 	diags = resp.State.Set(ctx, state)
@@ -187,7 +164,7 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Create(ctx context.
 }
 
 func (r *sessionAuthenticationSessionPoliciesGlobalResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state sessionAuthenticationSessionPoliciesGlobalResourceModel
+	var state sessionAuthenticationSessionPoliciesGlobalModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -221,7 +198,7 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Read(ctx context.Co
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *sessionAuthenticationSessionPoliciesGlobalResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	var plan sessionAuthenticationSessionPoliciesGlobalResourceModel
+	var plan sessionAuthenticationSessionPoliciesGlobalModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -244,7 +221,7 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Update(ctx context.
 	}
 
 	// Read the response
-	var state sessionAuthenticationSessionPoliciesGlobalResourceModel
+	var state sessionAuthenticationSessionPoliciesGlobalModel
 	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

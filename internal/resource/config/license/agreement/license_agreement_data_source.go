@@ -5,8 +5,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -27,12 +27,6 @@ func LicenseAgreementDataSource() datasource.DataSource {
 type licenseAgreementDataSource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type licenseAgreementDataSourceModel struct {
-	Id                  types.String `tfsdk:"id"`
-	LicenseAgreementUrl types.String `tfsdk:"license_agreement_url"`
-	Accepted            types.Bool   `tfsdk:"accepted"`
 }
 
 // GetSchema defines the schema for the datasource.
@@ -75,16 +69,9 @@ func (r *licenseAgreementDataSource) Configure(_ context.Context, req datasource
 	r.apiClient = providerCfg.ApiClient
 }
 
-// Read a DseeCompatAdministrativeAccountResponse object into the model struct
-func readLicenseAgreementResponseDataSource(ctx context.Context, r *client.LicenseAgreementInfo, state *licenseAgreementDataSourceModel) {
-	state.Id = types.StringValue("license_agreement_id")
-	state.LicenseAgreementUrl = types.StringPointerValue(r.LicenseAgreementUrl)
-	state.Accepted = types.BoolPointerValue(r.Accepted)
-}
-
 // Read resource information
 func (r *licenseAgreementDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state licenseAgreementDataSourceModel
+	var state licenseAgreementModel
 
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -99,7 +86,7 @@ func (r *licenseAgreementDataSource) Read(ctx context.Context, req datasource.Re
 	}
 
 	// Read the response into the state
-	readLicenseAgreementResponseDataSource(ctx, apiReadLicenseAgreement, &state)
+	readLicenseAgreementResponse(ctx, apiReadLicenseAgreement, &state, pointers.String("license_agreement_id"))
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

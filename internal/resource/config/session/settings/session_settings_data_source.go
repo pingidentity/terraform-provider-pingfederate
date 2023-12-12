@@ -5,8 +5,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -26,13 +26,6 @@ func SessionSettingsDataSource() datasource.DataSource {
 type sessionSettingsDataSource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type sessionSettingsDataSourceModel struct {
-	Id                            types.String `tfsdk:"id"`
-	TrackAdapterSessionsForLogout types.Bool   `tfsdk:"track_adapter_sessions_for_logout"`
-	RevokeUserSessionOnLogout     types.Bool   `tfsdk:"revoke_user_session_on_logout"`
-	SessionRevocationLifetime     types.Int64  `tfsdk:"session_revocation_lifetime"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -77,15 +70,8 @@ func (r *sessionSettingsDataSource) Configure(_ context.Context, req datasource.
 
 }
 
-func readSessionSettingsDataSource(ctx context.Context, r *client.SessionSettings, state *sessionSettingsDataSourceModel) {
-	state.Id = types.StringValue("session_settings_id")
-	state.TrackAdapterSessionsForLogout = types.BoolPointerValue(r.TrackAdapterSessionsForLogout)
-	state.RevokeUserSessionOnLogout = types.BoolPointerValue(r.RevokeUserSessionOnLogout)
-	state.SessionRevocationLifetime = types.Int64PointerValue(r.SessionRevocationLifetime)
-}
-
 func (r *sessionSettingsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state sessionSettingsDataSourceModel
+	var state sessionSettingsModel
 
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -99,7 +85,7 @@ func (r *sessionSettingsDataSource) Read(ctx context.Context, req datasource.Rea
 	}
 
 	// Read the response into the state
-	readSessionSettingsDataSource(ctx, apiReadSessionSettings, &state)
+	readSessionSettingsResponse(ctx, apiReadSessionSettings, &state, pointers.String("session_settings_id"))
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

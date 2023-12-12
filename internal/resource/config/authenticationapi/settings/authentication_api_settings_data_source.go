@@ -5,12 +5,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	resourcelinkdatasource "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -46,15 +44,6 @@ func (r *authenticationApiSettingsDataSource) Configure(_ context.Context, req d
 	providerCfg := req.ProviderData.(internaltypes.ResourceConfiguration)
 	r.providerConfig = providerCfg.ProviderConfig
 	r.apiClient = providerCfg.ApiClient
-}
-
-type authenticationApiSettingsDataSourceModel struct {
-	Id                               types.String `tfsdk:"id"`
-	ApiEnabled                       types.Bool   `tfsdk:"api_enabled"`
-	EnableApiDescriptions            types.Bool   `tfsdk:"enable_api_descriptions"`
-	RestrictAccessToRedirectlessMode types.Bool   `tfsdk:"restrict_access_to_redirectless_mode"`
-	IncludeRequestContext            types.Bool   `tfsdk:"include_request_context"`
-	DefaultApplicationRef            types.Object `tfsdk:"default_application_ref"`
 }
 
 // GetSchema defines the schema for the datasource.
@@ -99,22 +88,9 @@ func (r *authenticationApiSettingsDataSource) Schema(ctx context.Context, req da
 	resp.Schema = schemaDef
 }
 
-// Read a AuthenticationApiSettingsResponse object into the model struct
-func readAuthenticationApiSettingsResponseDataSource(ctx context.Context, r *client.AuthnApiSettings, state *authenticationApiSettingsDataSourceModel) diag.Diagnostics {
-	state.Id = types.StringValue("authentication_api_settings_id")
-	state.ApiEnabled = types.BoolPointerValue(r.ApiEnabled)
-	state.EnableApiDescriptions = types.BoolPointerValue(r.EnableApiDescriptions)
-	state.RestrictAccessToRedirectlessMode = types.BoolPointerValue(r.RestrictAccessToRedirectlessMode)
-	state.IncludeRequestContext = types.BoolPointerValue(r.IncludeRequestContext)
-	resourceLinkObjectValue, valueFromDiags := resourcelink.ToState(ctx, r.DefaultApplicationRef)
-	state.DefaultApplicationRef = resourceLinkObjectValue
-
-	return valueFromDiags
-}
-
 // Read resource information
 func (r *authenticationApiSettingsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state authenticationApiSettingsDataSourceModel
+	var state authenticationApiSettingsModel
 
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -129,7 +105,7 @@ func (r *authenticationApiSettingsDataSource) Read(ctx context.Context, req data
 	}
 
 	// Read the response into the state
-	diags = readAuthenticationApiSettingsResponseDataSource(ctx, apiReadAuthenticationApiSettings, &state)
+	diags = readAuthenticationApiSettingsResponse(ctx, apiReadAuthenticationApiSettings, &state, pointers.String("authentication_api_settings_id"))
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state

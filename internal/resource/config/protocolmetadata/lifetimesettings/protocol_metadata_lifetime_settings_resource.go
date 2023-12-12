@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -30,12 +29,6 @@ func ProtocolMetadataLifetimeSettingsResource() resource.Resource {
 type protocolMetadataLifetimeSettingsResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type protocolMetadataLifetimeSettingsResourceModel struct {
-	Id            types.String `tfsdk:"id"`
-	CacheDuration types.Int64  `tfsdk:"cache_duration"`
-	ReloadDelay   types.Int64  `tfsdk:"reload_delay"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -62,7 +55,7 @@ func (r *protocolMetadataLifetimeSettingsResource) Schema(ctx context.Context, r
 	resp.Schema = schema
 }
 
-func addOptionalProtocolMetadataLifetimeSettingsFields(ctx context.Context, addRequest *client.MetadataLifetimeSettings, plan protocolMetadataLifetimeSettingsResourceModel) error {
+func addOptionalProtocolMetadataLifetimeSettingsFields(ctx context.Context, addRequest *client.MetadataLifetimeSettings, plan protocolMetadataLifetimeSettingsModel) error {
 
 	if internaltypes.IsDefined(plan.CacheDuration) {
 		addRequest.CacheDuration = plan.CacheDuration.ValueInt64Pointer()
@@ -90,14 +83,8 @@ func (r *protocolMetadataLifetimeSettingsResource) Configure(_ context.Context, 
 
 }
 
-func readProtocolMetadataLifetimeSettingsResponse(ctx context.Context, r *client.MetadataLifetimeSettings, state *protocolMetadataLifetimeSettingsResourceModel, existingId *string) {
-	state.Id = id.GenerateUUIDToState(existingId)
-	state.CacheDuration = types.Int64Value(*r.CacheDuration)
-	state.ReloadDelay = types.Int64Value(*r.ReloadDelay)
-}
-
 func (r *protocolMetadataLifetimeSettingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan protocolMetadataLifetimeSettingsResourceModel
+	var plan protocolMetadataLifetimeSettingsModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -121,7 +108,7 @@ func (r *protocolMetadataLifetimeSettingsResource) Create(ctx context.Context, r
 	}
 
 	// Read the response into the state
-	var state protocolMetadataLifetimeSettingsResourceModel
+	var state protocolMetadataLifetimeSettingsModel
 	readProtocolMetadataLifetimeSettingsResponse(ctx, protocolMetadataLifetimeSettingsResponse, &state, nil)
 
 	diags = resp.State.Set(ctx, state)
@@ -129,7 +116,7 @@ func (r *protocolMetadataLifetimeSettingsResource) Create(ctx context.Context, r
 }
 
 func (r *protocolMetadataLifetimeSettingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state protocolMetadataLifetimeSettingsResourceModel
+	var state protocolMetadataLifetimeSettingsModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -162,7 +149,7 @@ func (r *protocolMetadataLifetimeSettingsResource) Read(ctx context.Context, req
 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *protocolMetadataLifetimeSettingsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan protocolMetadataLifetimeSettingsResourceModel
+	var plan protocolMetadataLifetimeSettingsModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -186,7 +173,7 @@ func (r *protocolMetadataLifetimeSettingsResource) Update(ctx context.Context, r
 	}
 
 	// Read the response into the state
-	var state protocolMetadataLifetimeSettingsResourceModel
+	var state protocolMetadataLifetimeSettingsModel
 	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

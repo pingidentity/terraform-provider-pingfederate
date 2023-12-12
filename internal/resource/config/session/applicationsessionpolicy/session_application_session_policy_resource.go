@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -30,12 +29,6 @@ func SessionApplicationSessionPolicyResource() resource.Resource {
 type sessionApplicationSessionPolicyResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type sessionApplicationSessionPolicyResourceModel struct {
-	Id              types.String `tfsdk:"id"`
-	IdleTimeoutMins types.Int64  `tfsdk:"idle_timeout_mins"`
-	MaxTimeoutMins  types.Int64  `tfsdk:"max_timeout_mins"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -62,7 +55,7 @@ func (r *sessionApplicationSessionPolicyResource) Schema(ctx context.Context, re
 	resp.Schema = schema
 }
 
-func addOptionalSessionApplicationSessionPolicyFields(ctx context.Context, addRequest *client.ApplicationSessionPolicy, plan sessionApplicationSessionPolicyResourceModel) error {
+func addOptionalSessionApplicationSessionPolicyFields(ctx context.Context, addRequest *client.ApplicationSessionPolicy, plan sessionApplicationSessionPolicyModel) error {
 	if internaltypes.IsDefined(plan.IdleTimeoutMins) {
 		addRequest.IdleTimeoutMins = plan.IdleTimeoutMins.ValueInt64Pointer()
 	}
@@ -89,14 +82,8 @@ func (r *sessionApplicationSessionPolicyResource) Configure(_ context.Context, r
 
 }
 
-func readSessionApplicationSessionPolicyResponse(ctx context.Context, r *client.ApplicationSessionPolicy, state *sessionApplicationSessionPolicyResourceModel, existingId *string) {
-	state.Id = id.GenerateUUIDToState(existingId)
-	state.IdleTimeoutMins = types.Int64Value(r.GetIdleTimeoutMins())
-	state.MaxTimeoutMins = types.Int64Value(r.GetMaxTimeoutMins())
-}
-
 func (r *sessionApplicationSessionPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan sessionApplicationSessionPolicyResourceModel
+	var plan sessionApplicationSessionPolicyModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -120,7 +107,7 @@ func (r *sessionApplicationSessionPolicyResource) Create(ctx context.Context, re
 	}
 
 	// Read the response into the state
-	var state sessionApplicationSessionPolicyResourceModel
+	var state sessionApplicationSessionPolicyModel
 	readSessionApplicationSessionPolicyResponse(ctx, sessionApplicationSessionPolicyResponse, &state, nil)
 
 	diags = resp.State.Set(ctx, state)
@@ -128,7 +115,7 @@ func (r *sessionApplicationSessionPolicyResource) Create(ctx context.Context, re
 }
 
 func (r *sessionApplicationSessionPolicyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state sessionApplicationSessionPolicyResourceModel
+	var state sessionApplicationSessionPolicyModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -162,7 +149,7 @@ func (r *sessionApplicationSessionPolicyResource) Read(ctx context.Context, req 
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *sessionApplicationSessionPolicyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	var plan sessionApplicationSessionPolicyResourceModel
+	var plan sessionApplicationSessionPolicyModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -185,7 +172,7 @@ func (r *sessionApplicationSessionPolicyResource) Update(ctx context.Context, re
 	}
 
 	// Get the current state to see how any attributes are changing
-	var state sessionApplicationSessionPolicyResourceModel
+	var state sessionApplicationSessionPolicyModel
 	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

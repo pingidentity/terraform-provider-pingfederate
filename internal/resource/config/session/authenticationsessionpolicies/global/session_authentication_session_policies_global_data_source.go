@@ -5,8 +5,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -27,17 +27,6 @@ func SessionAuthenticationSessionPoliciesGlobalDataSource() datasource.DataSourc
 type sessionAuthenticationSessionPoliciesGlobalDataSource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
-}
-
-type sessionAuthenticationSessionPoliciesGlobalDataSourceModel struct {
-	Id                         types.String `tfsdk:"id"`
-	EnableSessions             types.Bool   `tfsdk:"enable_sessions"`
-	PersistentSessions         types.Bool   `tfsdk:"persistent_sessions"`
-	HashUniqueUserKeyAttribute types.Bool   `tfsdk:"hash_unique_user_key_attribute"`
-	IdleTimeoutMins            types.Int64  `tfsdk:"idle_timeout_mins"`
-	IdleTimeoutDisplayUnit     types.String `tfsdk:"idle_timeout_display_unit"`
-	MaxTimeoutMins             types.Int64  `tfsdk:"max_timeout_mins"`
-	MaxTimeoutDisplayUnit      types.String `tfsdk:"max_timeout_display_unit"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -103,19 +92,8 @@ func (r *sessionAuthenticationSessionPoliciesGlobalDataSource) Configure(_ conte
 
 }
 
-func readSessionAuthenticationSessionPoliciesGlobalDataSource(ctx context.Context, r *client.GlobalAuthenticationSessionPolicy, state *sessionAuthenticationSessionPoliciesGlobalDataSourceModel) {
-	state.Id = types.StringValue("session_authentication_session_policies_global_id")
-	state.EnableSessions = types.BoolValue(r.EnableSessions)
-	state.PersistentSessions = types.BoolPointerValue(r.PersistentSessions)
-	state.HashUniqueUserKeyAttribute = types.BoolPointerValue(r.HashUniqueUserKeyAttribute)
-	state.IdleTimeoutMins = types.Int64PointerValue(r.IdleTimeoutMins)
-	state.IdleTimeoutDisplayUnit = types.StringPointerValue(r.IdleTimeoutDisplayUnit)
-	state.MaxTimeoutMins = types.Int64PointerValue(r.MaxTimeoutMins)
-	state.MaxTimeoutDisplayUnit = types.StringPointerValue(r.MaxTimeoutDisplayUnit)
-}
-
 func (r *sessionAuthenticationSessionPoliciesGlobalDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state sessionAuthenticationSessionPoliciesGlobalDataSourceModel
+	var state sessionAuthenticationSessionPoliciesGlobalModel
 
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -129,7 +107,7 @@ func (r *sessionAuthenticationSessionPoliciesGlobalDataSource) Read(ctx context.
 	}
 
 	// Read the response into the state
-	readSessionAuthenticationSessionPoliciesGlobalDataSource(ctx, apiReadSessionAuthenticationSessionPoliciesGlobal, &state)
+	readSessionAuthenticationSessionPoliciesGlobalResponse(ctx, apiReadSessionAuthenticationSessionPoliciesGlobal, &state, pointers.String("session_authentication_session_policies_global_id"))
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
