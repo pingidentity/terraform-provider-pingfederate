@@ -36,7 +36,15 @@ func TestAccCertificate(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		PreCheck: func() {
+			acctest.ConfigurationPreCheck(t)
+			if fileData == "" {
+				t.Fatal("PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_1 must be set for acceptance tests")
+			}
+			if fileData2 == "" {
+				t.Fatal("PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_2 must be set for acceptance tests")
+			}
+		},
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
