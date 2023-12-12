@@ -6,7 +6,7 @@ The PingFederate Terraform provider is still in development, and breaking change
 
 ## Requirements
 * Terraform 1.4+
-* Go 1.20+ (for local development builds)
+* Go 1.21+ (for local development builds)
 
 # Documentation
 See the [examples](examples/) directory for more examples using the provider.
