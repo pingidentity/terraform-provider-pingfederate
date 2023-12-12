@@ -150,7 +150,7 @@ func ConvertToPrimitive(value attr.Value) interface{} {
 	}
 
 	// Handle objects
-	objvalue, ok := value.(basetypes.ObjectValue)
+	objvalue, ok := value.(types.Object)
 	if ok {
 		mapElements := objvalue.Attributes()
 		primitiveMap := map[string]interface{}{}

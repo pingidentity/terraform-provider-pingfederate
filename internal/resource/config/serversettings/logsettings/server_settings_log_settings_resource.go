@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -27,10 +26,10 @@ var (
 	_ resource.ResourceWithImportState = &serverSettingsLogSettingsResource{}
 
 	logCategoriesAttrTypes = map[string]attr.Type{
-		"id":          basetypes.StringType{},
-		"name":        basetypes.StringType{},
-		"description": basetypes.StringType{},
-		"enabled":     basetypes.BoolType{},
+		"id":          types.StringType,
+		"name":        types.StringType,
+		"description": types.StringType,
+		"enabled":     types.BoolType,
 	}
 
 	logCategoriesDefault, _ = types.SetValue(types.ObjectType{AttrTypes: logCategoriesAttrTypes}, []attr.Value{

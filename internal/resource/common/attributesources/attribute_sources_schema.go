@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 )
@@ -85,7 +84,7 @@ func JdbcAttributeSourceSchemaAttributes() map[string]schema.Attribute {
 		Required:    true,
 	}
 	jdbcAttributeSourceSchema["column_names"] = schema.ListAttribute{
-		ElementType: basetypes.StringType{},
+		ElementType: types.StringType,
 		Optional:    true,
 		Description: "A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.",
 	}
@@ -122,7 +121,7 @@ func LdapAttributeSourceSchemaAttributes() map[string]schema.Attribute {
 	ldapAttributeSourceSchema["search_attributes"] = schema.ListAttribute{
 		Description: "A list of LDAP attributes returned from search and available for mapping.",
 		Optional:    true,
-		ElementType: basetypes.StringType{},
+		ElementType: types.StringType,
 	}
 	ldapAttributeSourceSchema["member_of_nested_group"] = schema.BoolAttribute{
 		Description: "Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.",

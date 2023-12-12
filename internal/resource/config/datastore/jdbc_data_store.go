@@ -31,25 +31,25 @@ import (
 var (
 	jdbcTagConfigAttrType = types.ObjectType{
 		AttrTypes: map[string]attr.Type{
-			"connection_url": basetypes.StringType{},
-			"tags":           basetypes.StringType{},
-			"default_source": basetypes.BoolType{},
+			"connection_url": types.StringType,
+			"tags":           types.StringType,
+			"default_source": types.BoolType,
 		},
 	}
 
 	jdbcDataStoreCommonAttrType = map[string]attr.Type{
-		"max_pool_size":                basetypes.Int64Type{},
-		"connection_url_tags":          basetypes.SetType{ElemType: jdbcTagConfigAttrType},
-		"type":                         basetypes.StringType{},
-		"name":                         basetypes.StringType{},
-		"blocking_timeout":             basetypes.Int64Type{},
-		"idle_timeout":                 basetypes.Int64Type{},
-		"min_pool_size":                basetypes.Int64Type{},
-		"driver_class":                 basetypes.StringType{},
-		"connection_url":               basetypes.StringType{},
-		"user_name":                    basetypes.StringType{},
-		"allow_multi_value_attributes": basetypes.BoolType{},
-		"validate_connection_sql":      basetypes.StringType{},
+		"max_pool_size":                types.Int64Type,
+		"connection_url_tags":          types.SetType{ElemType: jdbcTagConfigAttrType},
+		"type":                         types.StringType,
+		"name":                         types.StringType,
+		"blocking_timeout":             types.Int64Type,
+		"idle_timeout":                 types.Int64Type,
+		"min_pool_size":                types.Int64Type,
+		"driver_class":                 types.StringType,
+		"connection_url":               types.StringType,
+		"user_name":                    types.StringType,
+		"allow_multi_value_attributes": types.BoolType,
+		"validate_connection_sql":      types.StringType,
 	}
 
 	jdbcDataStoreAttrType                = internaltypes.AddKeyValToMapStringAttrType(jdbcDataStoreCommonAttrType, "password", types.StringType)

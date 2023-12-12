@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	resourcelinkdatasource "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
@@ -26,18 +25,18 @@ var (
 
 var (
 	secondarySecretsDataSourceAttrType = map[string]attr.Type{
-		"encrypted_secret": basetypes.StringType{},
-		"expiry_time":      basetypes.StringType{},
+		"encrypted_secret": types.StringType,
+		"expiry_time":      types.StringType,
 	}
 
 	clientAuthDataSourceAttrType = map[string]attr.Type{
-		"type":                                  basetypes.StringType{},
-		"encrypted_secret":                      basetypes.StringType{},
-		"secondary_secrets":                     basetypes.SetType{ElemType: basetypes.ObjectType{AttrTypes: secondarySecretsDataSourceAttrType}},
-		"client_cert_issuer_dn":                 basetypes.StringType{},
-		"client_cert_subject_dn":                basetypes.StringType{},
-		"enforce_replay_prevention":             basetypes.BoolType{},
-		"token_endpoint_auth_signing_algorithm": basetypes.StringType{},
+		"type":                                  types.StringType,
+		"encrypted_secret":                      types.StringType,
+		"secondary_secrets":                     types.SetType{ElemType: types.ObjectType{AttrTypes: secondarySecretsDataSourceAttrType}},
+		"client_cert_issuer_dn":                 types.StringType,
+		"client_cert_subject_dn":                types.StringType,
+		"enforce_replay_prevention":             types.BoolType,
+		"token_endpoint_auth_signing_algorithm": types.StringType,
 	}
 )
 
@@ -627,8 +626,8 @@ func readOauthClientResponseDataSource(ctx context.Context, r *client.Client, st
 
 	// state.ExtendedParameters
 	extendedParametersAttrType := map[string]attr.Type{}
-	extendedParametersAttrType["values"] = basetypes.SetType{ElemType: basetypes.StringType{}}
-	extendedParametersObjAttrType := basetypes.ObjectType{AttrTypes: extendedParametersAttrType}
+	extendedParametersAttrType["values"] = types.SetType{ElemType: types.StringType}
+	extendedParametersObjAttrType := types.ObjectType{AttrTypes: extendedParametersAttrType}
 	extendedParametersToState, respDiags := types.MapValueFrom(ctx, extendedParametersObjAttrType, r.ExtendedParameters)
 	diags.Append(respDiags...)
 	state.ExtendedParameters = extendedParametersToState

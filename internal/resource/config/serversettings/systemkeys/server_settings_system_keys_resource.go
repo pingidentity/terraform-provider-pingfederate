@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -26,9 +25,9 @@ var (
 	_ resource.ResourceWithImportState = &serverSettingsSystemKeysResource{}
 
 	systemKeyAttrTypes = map[string]attr.Type{
-		"creation_date":      basetypes.StringType{},
-		"encrypted_key_data": basetypes.StringType{},
-		"key_data":           basetypes.StringType{},
+		"creation_date":      types.StringType,
+		"encrypted_key_data": types.StringType,
+		"key_data":           types.StringType,
 	}
 
 	creationTimeDefault   = "0001-01-01T00:00:00Z"

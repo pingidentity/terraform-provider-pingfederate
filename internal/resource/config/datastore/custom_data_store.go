@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	datasourcepluginconfiguration "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/pluginconfiguration"
 	datasourceresourcelink "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
@@ -28,10 +27,10 @@ import (
 
 var (
 	customDataStoreCommonAttrType = map[string]attr.Type{
-		"type":                  basetypes.StringType{},
-		"name":                  basetypes.StringType{},
-		"plugin_descriptor_ref": basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
-		"parent_ref":            basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"type":                  types.StringType,
+		"name":                  types.StringType,
+		"plugin_descriptor_ref": types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"parent_ref":            types.ObjectType{AttrTypes: resourcelink.AttrType()},
 	}
 
 	customDataStoreAttrType                = internaltypes.AddKeyValToMapStringAttrType(customDataStoreCommonAttrType, "configuration", types.ObjectType{AttrTypes: pluginconfiguration.AttrType()})
@@ -114,7 +113,7 @@ func toDataSourceSchemaCustomDataStore() datasourceschema.SingleNestedAttribute 
 	return customDataStoreSchema
 }
 
-func toStateCustomDataStore(con context.Context, clientValue *client.DataStoreAggregation, plan basetypes.ObjectValue, isResource bool) (types.Object, diag.Diagnostics) {
+func toStateCustomDataStore(con context.Context, clientValue *client.DataStoreAggregation, plan types.Object, isResource bool) (types.Object, diag.Diagnostics) {
 	var diags, allDiags diag.Diagnostics
 
 	if clientValue.CustomDataStore == nil {

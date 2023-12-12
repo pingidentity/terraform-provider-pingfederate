@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -26,13 +25,13 @@ var (
 	_ resource.ResourceWithImportState = &keyPairsSigningImportResource{}
 
 	rotationSettingsAttrTypes = map[string]attr.Type{
-		"id":                     basetypes.StringType{},
-		"creation_buffer_days":   basetypes.Int64Type{},
-		"activation_buffer_days": basetypes.Int64Type{},
-		"valid_days":             basetypes.Int64Type{},
-		"key_algorithm":          basetypes.StringType{},
-		"key_size":               basetypes.Int64Type{},
-		"signature_algorithm":    basetypes.StringType{},
+		"id":                     types.StringType,
+		"creation_buffer_days":   types.Int64Type,
+		"activation_buffer_days": types.Int64Type,
+		"valid_days":             types.Int64Type,
+		"key_algorithm":          types.StringType,
+		"key_size":               types.Int64Type,
+		"signature_algorithm":    types.StringType,
 	}
 )
 

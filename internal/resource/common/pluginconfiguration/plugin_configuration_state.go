@@ -4,34 +4,33 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
 var (
 	fieldAttrTypes = map[string]attr.Type{
-		"name":      basetypes.StringType{},
-		"value":     basetypes.StringType{},
-		"inherited": basetypes.BoolType{},
+		"name":      types.StringType,
+		"value":     types.StringType,
+		"inherited": types.BoolType,
 	}
 
 	rowAttrTypes = map[string]attr.Type{
-		"fields":      basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: fieldAttrTypes}},
-		"default_row": basetypes.BoolType{},
+		"fields":      types.ListType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
+		"default_row": types.BoolType,
 	}
 
 	tableAttrTypes = map[string]attr.Type{
-		"name":      basetypes.StringType{},
-		"rows":      basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: rowAttrTypes}},
-		"inherited": basetypes.BoolType{},
+		"name":      types.StringType,
+		"rows":      types.ListType{ElemType: types.ObjectType{AttrTypes: rowAttrTypes}},
+		"inherited": types.BoolType,
 	}
 
 	configurationAttrTypes = map[string]attr.Type{
-		"fields":     basetypes.ListType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
-		"fields_all": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
-		"tables":     basetypes.ListType{ElemType: types.ObjectType{AttrTypes: tableAttrTypes}},
-		"tables_all": basetypes.ListType{ElemType: types.ObjectType{AttrTypes: tableAttrTypes}},
+		"fields":     types.ListType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
+		"fields_all": types.ListType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
+		"tables":     types.ListType{ElemType: types.ObjectType{AttrTypes: tableAttrTypes}},
+		"tables_all": types.ListType{ElemType: types.ObjectType{AttrTypes: tableAttrTypes}},
 	}
 )
 
@@ -198,7 +197,7 @@ func ToTablesListValue(tables []client.ConfigTable, planTables *types.List, diag
 	return plannedTables, allTables
 }
 
-func ToState(configFromPlan basetypes.ObjectValue, configuration *client.PluginConfiguration) (basetypes.ObjectValue, diag.Diagnostics) {
+func ToState(configFromPlan types.Object, configuration *client.PluginConfiguration) (types.Object, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	var planFields, planTables *types.List
 

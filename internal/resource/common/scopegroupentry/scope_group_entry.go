@@ -11,9 +11,9 @@ import (
 )
 
 var scopeGroupAttrTypes = map[string]attr.Type{
-	"name":        basetypes.StringType{},
-	"description": basetypes.StringType{},
-	"scopes":      basetypes.SetType{ElemType: types.StringType},
+	"name":        types.StringType,
+	"description": types.StringType,
+	"scopes":      types.SetType{ElemType: types.StringType},
 }
 
 func ToState(con context.Context, scopeGroups []client.ScopeGroupEntry) (basetypes.SetValue, diag.Diagnostics) {

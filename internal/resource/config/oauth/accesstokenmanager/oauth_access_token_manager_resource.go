@@ -18,7 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -37,34 +36,34 @@ var (
 
 var (
 	attrType = map[string]attr.Type{
-		"name":         basetypes.StringType{},
-		"multi_valued": basetypes.BoolType{},
+		"name":         types.StringType,
+		"multi_valued": types.BoolType,
 	}
 
 	attributeContractTypes = map[string]attr.Type{
-		"core_attributes":           basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
-		"extended_attributes":       basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
-		"inherited":                 basetypes.BoolType{},
-		"default_subject_attribute": basetypes.StringType{},
+		"core_attributes":           types.ListType{ElemType: types.ObjectType{AttrTypes: attrType}},
+		"extended_attributes":       types.ListType{ElemType: types.ObjectType{AttrTypes: attrType}},
+		"inherited":                 types.BoolType,
+		"default_subject_attribute": types.StringType,
 	}
 
 	selectionSettingsAttrType = map[string]attr.Type{
-		"inherited":     basetypes.BoolType{},
-		"resource_uris": basetypes.ListType{ElemType: basetypes.StringType{}},
+		"inherited":     types.BoolType,
+		"resource_uris": types.ListType{ElemType: types.StringType},
 	}
 
 	accessControlSettingsAttrType = map[string]attr.Type{
-		"inherited":        basetypes.BoolType{},
-		"restrict_clients": basetypes.BoolType{},
-		"allowed_clients":  basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: resourcelink.AttrType()}},
+		"inherited":        types.BoolType,
+		"restrict_clients": types.BoolType,
+		"allowed_clients":  types.ListType{ElemType: types.ObjectType{AttrTypes: resourcelink.AttrType()}},
 	}
 
 	sessionValidationSettingsAttrType = map[string]attr.Type{
-		"inherited":                       basetypes.BoolType{},
-		"include_session_id":              basetypes.BoolType{},
-		"check_valid_authn_session":       basetypes.BoolType{},
-		"check_session_revocation_status": basetypes.BoolType{},
-		"update_authn_session_activity":   basetypes.BoolType{},
+		"inherited":                       types.BoolType,
+		"include_session_id":              types.BoolType,
+		"check_valid_authn_session":       types.BoolType,
+		"check_session_revocation_status": types.BoolType,
+		"update_authn_session_activity":   types.BoolType,
 	}
 
 	resourceUrisDefault, _      = types.ListValue(types.StringType, nil)
@@ -407,7 +406,7 @@ func (r *oauthAccessTokenManagerResource) ModifyPlan(ctx context.Context, req re
 	resp.Plan.Set(ctx, plan)
 }
 
-func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagerResourceModel, configurationFromPlan basetypes.ObjectValue) diag.Diagnostics {
+func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagerResourceModel, configurationFromPlan types.Object) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 
 	state.Id = types.StringValue(r.Id)
@@ -435,7 +434,7 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 			coreAttribute.MultiValued = ca.MultiValued
 			coreAttrs = append(coreAttrs, coreAttribute)
 		}
-		attributeContractCoreAttributes, respDiags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
+		attributeContractCoreAttributes, respDiags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: attrType}, coreAttrs)
 		diags.Append(respDiags...)
 
 		// state.AttributeContract extended_attributes
@@ -447,7 +446,7 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 			extendedAttr.MultiValued = ea.MultiValued
 			extdAttrs = append(extdAttrs, extendedAttr)
 		}
-		attributeContractExtendedAttributes, respDiags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
+		attributeContractExtendedAttributes, respDiags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: attrType}, extdAttrs)
 		diags.Append(respDiags...)
 
 		inherited := false

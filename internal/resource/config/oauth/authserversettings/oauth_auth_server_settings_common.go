@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -24,11 +23,11 @@ var (
 
 var (
 	nameAttributeType = map[string]attr.Type{
-		"name": basetypes.StringType{},
+		"name": types.StringType,
 	}
 	persistentGrantObjContractTypes = map[string]attr.Type{
-		"core_attributes":     basetypes.SetType{ElemType: types.ObjectType{AttrTypes: nameAttributeType}},
-		"extended_attributes": basetypes.SetType{ElemType: types.ObjectType{AttrTypes: nameAttributeType}},
+		"core_attributes":     types.SetType{ElemType: types.ObjectType{AttrTypes: nameAttributeType}},
+		"extended_attributes": types.SetType{ElemType: types.ObjectType{AttrTypes: nameAttributeType}},
 	}
 )
 
