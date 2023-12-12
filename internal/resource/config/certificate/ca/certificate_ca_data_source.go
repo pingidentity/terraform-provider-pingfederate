@@ -165,22 +165,22 @@ func (r *certificatesDataSource) Configure(_ context.Context, req datasource.Con
 
 // Read a CertificateResponse object into the model struct
 func readCertificateResponseDataSource(ctx context.Context, r *client.CertView, state *certificateCaModel, diagnostics *diag.Diagnostics) {
-	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
-	state.CaId = internaltypes.StringTypeOrNil(r.Id, false)
-	state.SerialNumber = internaltypes.StringTypeOrNil(r.SerialNumber, false)
-	state.SubjectDN = internaltypes.StringTypeOrNil(r.SubjectDN, false)
+	state.Id = types.StringPointerValue(r.Id)
+	state.CaId = types.StringPointerValue(r.Id)
+	state.SerialNumber = types.StringPointerValue(r.SerialNumber)
+	state.SubjectDN = types.StringPointerValue(r.SubjectDN)
 	state.SubjectAlternativeNames = internaltypes.GetStringSet(r.SubjectAlternativeNames)
-	state.IssuerDN = internaltypes.StringTypeOrNil(r.IssuerDN, false)
+	state.IssuerDN = types.StringPointerValue(r.IssuerDN)
 	state.ValidFrom = types.StringValue(r.ValidFrom.Format(time.RFC3339))
 	state.Expires = types.StringValue(r.Expires.Format(time.RFC3339))
-	state.KeyAlgorithm = internaltypes.StringTypeOrNil(r.KeyAlgorithm, false)
-	state.KeySize = internaltypes.Int64TypeOrNil(r.KeySize)
-	state.SignatureAlgorithm = internaltypes.StringTypeOrNil(r.SignatureAlgorithm, false)
-	state.Version = internaltypes.Int64TypeOrNil(r.Version)
-	state.Sha1Fingerprint = internaltypes.StringTypeOrNil(r.Sha1Fingerprint, false)
-	state.Sha256Fingerprint = internaltypes.StringTypeOrNil(r.Sha256Fingerprint, false)
-	state.Status = internaltypes.StringTypeOrNil(r.Status, false)
-	state.CryptoProvider = internaltypes.StringTypeOrNil(r.CryptoProvider, false)
+	state.KeyAlgorithm = types.StringPointerValue(r.KeyAlgorithm)
+	state.KeySize = types.Int64PointerValue(r.KeySize)
+	state.SignatureAlgorithm = types.StringPointerValue(r.SignatureAlgorithm)
+	state.Version = types.Int64PointerValue(r.Version)
+	state.Sha1Fingerprint = types.StringPointerValue(r.Sha1Fingerprint)
+	state.Sha256Fingerprint = types.StringPointerValue(r.Sha256Fingerprint)
+	state.Status = types.StringPointerValue(r.Status)
+	state.CryptoProvider = types.StringPointerValue(r.CryptoProvider)
 }
 
 // Read resource information

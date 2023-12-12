@@ -94,7 +94,7 @@ type idpAdapterModel struct {
 
 func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *idpAdapterModel, plan *idpAdapterModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.AuthnCtxClassRef = internaltypes.StringTypeOrNil(r.AuthnCtxClassRef, false)
+	state.AuthnCtxClassRef = types.StringPointerValue(r.AuthnCtxClassRef)
 	state.AdapterId = types.StringValue(r.Id)
 	state.Id = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)

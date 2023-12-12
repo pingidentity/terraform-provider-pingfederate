@@ -114,9 +114,9 @@ func (r *certificateCAResource) ValidateConfig(ctx context.Context, req resource
 
 func readCertificateResponse(ctx context.Context, r *client.CertView, state *certificatesResourceModel, expectedValues *certificatesResourceModel, diagnostics *diag.Diagnostics, createPlan types.String) {
 	X509FileData := createPlan
-	state.CaId = internaltypes.StringTypeOrNil(r.Id, false)
-	state.Id = internaltypes.StringTypeOrNil(r.Id, false)
-	state.CryptoProvider = internaltypes.StringTypeOrNil(r.CryptoProvider, false)
+	state.CaId = types.StringPointerValue(r.Id)
+	state.Id = types.StringPointerValue(r.Id)
+	state.CryptoProvider = types.StringPointerValue(r.CryptoProvider)
 	state.FileData = types.StringValue(X509FileData.ValueString())
 }
 

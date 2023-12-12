@@ -190,7 +190,7 @@ func TestAttributesMatchInt(resourceType string, resourceName *string, attribute
 
 // Test if string slice attributes match
 func TestAttributesMatchStringSlice(resourceType string, resourceName *string, attributeName string, expected, found []string) error {
-	if !types.SetsEqual(expected, found) {
+	if !types.StringSlicesEqual(expected, found) {
 		return mismatchedAttributeError(resourceType, resourceName, attributeName, StringSliceToTerraformString(expected), StringSliceToTerraformString(found))
 	}
 	return nil
@@ -198,7 +198,7 @@ func TestAttributesMatchStringSlice(resourceType string, resourceName *string, a
 
 // Test if float slice attributes match
 func TestAttributesMatchFloatSlice(resourceType string, resourceName *string, attributeName string, expected, found []float64) error {
-	if !types.FloatSetsEqual(expected, found) {
+	if !types.FloatSlicesEqual(expected, found) {
 		return mismatchedAttributeError(resourceType, resourceName, attributeName, FloatSliceToTerraformString(expected), FloatSliceToTerraformString(found))
 	}
 	return nil

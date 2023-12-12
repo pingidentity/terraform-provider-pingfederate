@@ -1,40 +1,17 @@
 package types
 
 import (
-	"context"
 	"fmt"
 	"regexp"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-// Return true if this types.String represents an empty (but non-null and non-unknown) string
-func IsEmptyString(str types.String) bool {
-	return !str.IsNull() && !str.IsUnknown() && str.ValueString() == ""
-}
-func IsNonEmptyMap(m types.Map) bool {
-	return !m.IsNull() && !m.IsUnknown() && m.Elements() != nil
-}
-
-func IsNonEmptyList(l types.List) bool {
-	return !l.IsNull() && !l.IsUnknown() && l.Elements() != nil
-}
-
 func IsNonEmptyObj(obj types.Object) bool {
 	return !obj.IsNull() && !obj.IsUnknown() && obj.Attributes() != nil
-}
-
-func ObjContainsNoEmptyVals(obj types.Object) bool {
-	for _, objVal := range obj.Attributes() {
-		if !IsDefined(objVal) {
-			return true
-		}
-	}
-	return false
 }
 
 // Return true if this types.String represents a non-empty, non-null, non-unknown string
@@ -45,16 +22,6 @@ func IsNonEmptyString(str types.String) bool {
 // Return true if this value represents a defined (non-null and non-unknown) value
 func IsDefined(value attr.Value) bool {
 	return value != nil && !value.IsNull() && !value.IsUnknown()
-}
-
-// Check if an attribute slice contains a value
-func Contains(slice []attr.Value, value attr.Value) bool {
-	for _, element := range slice {
-		if element.Equal(value) {
-			return true
-		}
-	}
-	return false
 }
 
 // Check if a string slice contains a value
@@ -68,7 +35,7 @@ func StringSliceContains(slice []string, value string) bool {
 }
 
 // Check if two slices representing sets are equal
-func SetsEqual(a, b []string) bool {
+func StringSlicesEqual(a, b []string) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -90,7 +57,7 @@ func SetsEqual(a, b []string) bool {
 }
 
 // Check if two float slices representing sets are equal
-func FloatSetsEqual(a, b []float64) bool {
+func FloatSlicesEqual(a, b []float64) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -123,99 +90,12 @@ func MatchStringInSets(a, b []string) *string {
 	return nil
 }
 
-func CamelCaseToUnderscores(s string) string {
-	re, _ := regexp.Compile(`([A-Z])`)
-	res := re.ReplaceAllStringFunc(s, func(m string) string {
-		return strings.ToLower("_" + m[0:])
-	})
-	return res
-}
-
 func UnderscoresToCamelCase(s string) string {
 	re, _ := regexp.Compile(`(_[A-Za-z])`)
 	res := re.ReplaceAllStringFunc(s, func(m string) string {
 		return strings.ToUpper(m[1:])
 	})
 	return res
-}
-
-// Converts the basetypes.MapValue to map[string]interface{} required for PingFederate Client
-func MapValuesToClientMap(mv basetypes.MapValue, con context.Context) *map[string]interface{} {
-	type StringMap map[string]string
-	var value StringMap
-	mv.ElementsAs(con, &value, false)
-	converted := map[string]interface{}{}
-	for k, v := range value {
-		converted[k] = v
-	}
-	return &converted
-}
-
-// Converts the types.Object to *map[string]interface{} required for PingFederate Client
-func ObjValuesToClientMap(obj types.Object) *map[string]interface{} {
-	attrs := obj.Attributes()
-	converted := map[string]interface{}{}
-	for key, value := range attrs {
-		strvalue, ok := value.(basetypes.StringValue)
-		if ok {
-			if strvalue.IsNull() || strvalue.IsUnknown() {
-				continue
-			} else {
-				converted[UnderscoresToCamelCase(key)] = strvalue.ValueString()
-				continue
-			}
-		}
-		boolvalue, ok := value.(basetypes.BoolValue)
-		if ok {
-			converted[UnderscoresToCamelCase(key)] = boolvalue.ValueBool()
-			continue
-		}
-		int64value, ok := value.(basetypes.Int64Value)
-		if ok {
-			converted[UnderscoresToCamelCase(key)] = int64value.ValueInt64()
-			continue
-		}
-	}
-
-	return &converted
-}
-
-// Converts the types.Object to map[string]interface{} required for PingFederate Client
-func ObjValuesToMapNoPointer(obj types.Object) map[string]interface{} {
-	attrs := obj.Attributes()
-	converted := map[string]interface{}{}
-	for key, value := range attrs {
-		strvalue, ok := value.(basetypes.StringValue)
-		if ok {
-			if strvalue.IsNull() || strvalue.IsUnknown() {
-				continue
-			} else {
-				converted[UnderscoresToCamelCase(key)] = strvalue.ValueString()
-				continue
-			}
-		}
-		boolvalue, ok := value.(basetypes.BoolValue)
-		if ok {
-			converted[UnderscoresToCamelCase(key)] = boolvalue.ValueBool()
-			continue
-		}
-		int64value, ok := value.(basetypes.Int64Value)
-		if ok {
-			converted[UnderscoresToCamelCase(key)] = int64value.ValueInt64()
-			continue
-		}
-		float64value, ok := value.(basetypes.Float64Value)
-		if ok {
-			converted[UnderscoresToCamelCase(key)] = float64value.ValueFloat64()
-			continue
-		}
-		setvalue, ok := value.(basetypes.SetValue)
-		if ok {
-			converted[UnderscoresToCamelCase(key)] = ConvertToPrimitive(setvalue)
-		}
-	}
-
-	return converted
 }
 
 func ConvertToPrimitive(value attr.Value) interface{} {
@@ -281,49 +161,6 @@ func ConvertToPrimitive(value attr.Value) interface{} {
 	}
 
 	return fmt.Errorf("unable to convert given primitive type for %s", value)
-}
-
-// Converts the map[string]attr.Type to basetypes.ObjectValue required for Terraform
-func MaptoObjValue(attributeTypes map[string]attr.Type, attributeValues map[string]attr.Value, diags *diag.Diagnostics) basetypes.ObjectValue {
-	newObj, err := types.ObjectValue(attributeTypes, attributeValues)
-	if err != nil {
-		diags.AddError("ERROR: ", "An error occured while converting ")
-	}
-	return newObj
-}
-
-func InterfaceStringValueOrNull(value interface{}) types.String {
-	if value == nil {
-		return basetypes.NewStringNull()
-	} else {
-		return types.StringValue(value.(string))
-	}
-}
-
-func InterfaceFloatSetValue(values []interface{}) []float64 {
-	newFloat := make([]float64, 0, len(values))
-	for _, v := range newFloat {
-		newFloat = append(newFloat, float64(v))
-	}
-
-	return newFloat
-}
-
-func CreateKeysFromAttrValues(attrValues map[string]attr.Value) []string {
-	attrKeys := make([]string, 0, len(attrValues))
-	for k := range attrValues {
-		attrKeys = append(attrKeys, k)
-	}
-	return attrKeys
-}
-
-func CheckListKeyMatch(k string, list []string) bool {
-	for _, key_check := range list {
-		if k == key_check {
-			return true
-		}
-	}
-	return false
 }
 
 // Add a keyval pair to existing map[string]attr.Type, making a deep copy and not modifying the original
