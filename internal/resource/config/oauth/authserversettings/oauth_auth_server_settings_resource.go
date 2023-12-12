@@ -38,9 +38,7 @@ var (
 	_ resource.Resource                = &oauthAuthServerSettingsResource{}
 	_ resource.ResourceWithConfigure   = &oauthAuthServerSettingsResource{}
 	_ resource.ResourceWithImportState = &oauthAuthServerSettingsResource{}
-)
 
-var (
 	scopesDefault, _ = types.SetValue(types.ObjectType{AttrTypes: scopeentry.AttrTypes()}, nil)
 
 	scopeGroupsDefault, _ = types.SetValue(types.ObjectType{AttrTypes: map[string]attr.Type{

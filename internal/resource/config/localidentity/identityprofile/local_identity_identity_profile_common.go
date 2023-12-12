@@ -1,13 +1,9 @@
 package localidentity
 
 import (
-	"context"
-
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 )
 
@@ -105,72 +101,4 @@ type localIdentityIdentityProfileModel struct {
 	EmailVerificationConfig types.Object `tfsdk:"email_verification_config"`
 	DataStoreConfig         types.Object `tfsdk:"data_store_config"`
 	ProfileEnabled          types.Bool   `tfsdk:"profile_enabled"`
-}
-
-// Read a DseeCompatAdministrativeAccountResponse object into the model struct
-func readLocalIdentityIdentityProfileResponseDataSource(ctx context.Context, r *client.LocalIdentityProfile, state *localIdentityIdentityProfileModel) diag.Diagnostics {
-	var diags, respDiags diag.Diagnostics
-	state.Id = types.StringPointerValue(r.Id)
-	state.ProfileId = types.StringPointerValue(r.Id)
-	state.Name = types.StringValue(r.Name)
-	state.ApcId, respDiags = resourcelink.ToState(ctx, &r.ApcId)
-	diags.Append(respDiags...)
-
-	// auth source update policy
-	authSourceUpdatePolicy := r.AuthSourceUpdatePolicy
-	state.AuthSourceUpdatePolicy, respDiags = types.ObjectValueFrom(ctx, authSourceUpdatePolicyAttrTypes, authSourceUpdatePolicy)
-	diags.Append(respDiags...)
-
-	// auth sources
-	authSources := r.GetAuthSources()
-	var authSourcesSliceAttrVal = []attr.Value{}
-	authSourcesSliceType := types.ObjectType{AttrTypes: authSourcesAttrTypes}
-	for i := 0; i < len(authSources); i++ {
-		authSourcesAttrValues := map[string]attr.Value{
-			"id":     types.StringPointerValue(authSources[i].Id),
-			"source": types.StringPointerValue(authSources[i].Source),
-		}
-		authSourcesObj, respDiags := types.ObjectValue(authSourcesAttrTypes, authSourcesAttrValues)
-		diags.Append(respDiags...)
-		authSourcesSliceAttrVal = append(authSourcesSliceAttrVal, authSourcesObj)
-	}
-	state.AuthSources, respDiags = types.ListValue(authSourcesSliceType, authSourcesSliceAttrVal)
-	diags.Append(respDiags...)
-
-	registrationConfig := r.RegistrationConfig
-	state.RegistrationConfig, respDiags = types.ObjectValueFrom(ctx, registrationConfigAttrTypes, registrationConfig)
-	diags.Append(respDiags...)
-
-	state.RegistrationEnabled = types.BoolValue(r.GetRegistrationEnabled())
-
-	profileConfig := r.ProfileConfig
-	state.ProfileConfig, respDiags = types.ObjectValueFrom(ctx, profileConfigAttrTypes, profileConfig)
-	diags.Append(respDiags...)
-
-	// field config
-	fieldConfig := r.GetFieldConfig()
-	fieldType := types.ObjectType{AttrTypes: fieldItemAttrTypes}
-	fieldAttrsStruct := fieldConfig.GetFields()
-	fieldAttrsState, respDiags := types.ListValueFrom(ctx, fieldType, fieldAttrsStruct)
-	diags.Append(respDiags...)
-
-	stripSpaceFromUniqueFieldState := types.BoolPointerValue(r.GetFieldConfig().StripSpaceFromUniqueField)
-	fieldConfigAttrValues := map[string]attr.Value{
-		"fields":                        fieldAttrsState,
-		"strip_space_from_unique_field": stripSpaceFromUniqueFieldState,
-	}
-	state.FieldConfig, respDiags = types.ObjectValue(fieldConfigAttrTypes, fieldConfigAttrValues)
-	diags.Append(respDiags...)
-
-	emailVerificationConfig := r.EmailVerificationConfig
-	state.EmailVerificationConfig, respDiags = types.ObjectValueFrom(ctx, emailVerificationConfigAttrTypes, emailVerificationConfig)
-	diags.Append(respDiags...)
-
-	//  data store config
-	dsConfig := r.DataStoreConfig
-	state.DataStoreConfig, respDiags = types.ObjectValueFrom(ctx, dsConfigAttrTypes, dsConfig)
-	diags.Append(respDiags...)
-
-	state.ProfileEnabled = types.BoolPointerValue(r.ProfileEnabled)
-	return diags
 }
