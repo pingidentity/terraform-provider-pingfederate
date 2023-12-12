@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/pluginconfiguration"
@@ -26,20 +25,20 @@ var (
 
 var (
 	coreAttributeTypes = map[string]attr.Type{
-		"name":         basetypes.StringType{},
-		"multi_valued": basetypes.BoolType{},
+		"name":         types.StringType,
+		"multi_valued": types.BoolType,
 	}
 
 	extendedAttributeTypes = map[string]attr.Type{
-		"name":         basetypes.StringType{},
-		"multi_valued": basetypes.BoolType{},
+		"name":         types.StringType,
+		"multi_valued": types.BoolType,
 	}
 
 	attributeContractAttrTypes = map[string]attr.Type{
-		"core_attributes":           basetypes.ListType{ElemType: types.ObjectType{AttrTypes: coreAttributeTypes}},
-		"extended_attributes":       basetypes.ListType{ElemType: types.ObjectType{AttrTypes: extendedAttributeTypes}},
-		"inherited":                 basetypes.BoolType{},
-		"default_subject_attribute": basetypes.StringType{},
+		"core_attributes":           types.ListType{ElemType: types.ObjectType{AttrTypes: coreAttributeTypes}},
+		"extended_attributes":       types.ListType{ElemType: types.ObjectType{AttrTypes: extendedAttributeTypes}},
+		"inherited":                 types.BoolType,
+		"default_subject_attribute": types.StringType,
 	}
 )
 
@@ -279,7 +278,7 @@ func (r *oauthAccessTokenManagerDataSource) Configure(_ context.Context, req dat
 }
 
 // Read a OauthAccessTokenManagerResponse object into the model struct
-func readOauthAccessTokenManagerResponseDataSource(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagerDataSourceModel, configurationFromPlan basetypes.ObjectValue) diag.Diagnostics {
+func readOauthAccessTokenManagerResponseDataSource(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagerDataSourceModel, configurationFromPlan types.Object) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 
 	state.Id = types.StringValue(r.Id)

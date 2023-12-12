@@ -3,87 +3,86 @@ package localidentity
 import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 )
 
 var (
 	authSourcesAttrTypes = map[string]attr.Type{
-		"id":     basetypes.StringType{},
-		"source": basetypes.StringType{},
+		"id":     types.StringType,
+		"source": types.StringType,
 	}
 
 	authSourceUpdatePolicyAttrTypes = map[string]attr.Type{
-		"store_attributes":  basetypes.BoolType{},
-		"retain_attributes": basetypes.BoolType{},
-		"update_attributes": basetypes.BoolType{},
-		"update_interval":   basetypes.Int64Type{},
+		"store_attributes":  types.BoolType,
+		"retain_attributes": types.BoolType,
+		"update_attributes": types.BoolType,
+		"update_interval":   types.Int64Type,
 	}
 
 	registrationConfigAttrTypes = map[string]attr.Type{
-		"captcha_enabled":                         basetypes.BoolType{},
-		"captcha_provider_ref":                    basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
-		"template_name":                           basetypes.StringType{},
-		"create_authn_session_after_registration": basetypes.BoolType{},
-		"username_field":                          basetypes.StringType{},
-		"this_is_my_device_enabled":               basetypes.BoolType{},
-		"registration_workflow":                   basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
-		"execute_workflow":                        basetypes.StringType{},
+		"captcha_enabled":                         types.BoolType,
+		"captcha_provider_ref":                    types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"template_name":                           types.StringType,
+		"create_authn_session_after_registration": types.BoolType,
+		"username_field":                          types.StringType,
+		"this_is_my_device_enabled":               types.BoolType,
+		"registration_workflow":                   types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"execute_workflow":                        types.StringType,
 	}
 
 	profileConfigAttrTypes = map[string]attr.Type{
-		"delete_identity_enabled": basetypes.BoolType{},
-		"template_name":           basetypes.StringType{},
+		"delete_identity_enabled": types.BoolType,
+		"template_name":           types.StringType,
 	}
 
 	fieldItemAttrTypes = map[string]attr.Type{
-		"type":                    basetypes.StringType{},
-		"id":                      basetypes.StringType{},
-		"label":                   basetypes.StringType{},
-		"registration_page_field": basetypes.BoolType{},
-		"profile_page_field":      basetypes.BoolType{},
-		"attributes":              basetypes.MapType{ElemType: basetypes.BoolType{}},
+		"type":                    types.StringType,
+		"id":                      types.StringType,
+		"label":                   types.StringType,
+		"registration_page_field": types.BoolType,
+		"profile_page_field":      types.BoolType,
+		"attributes":              types.MapType{ElemType: types.BoolType},
 	}
 
 	fieldConfigAttrTypes = map[string]attr.Type{
-		"fields":                        basetypes.ListType{ElemType: types.ObjectType{AttrTypes: fieldItemAttrTypes}},
-		"strip_space_from_unique_field": basetypes.BoolType{},
+		"fields":                        types.ListType{ElemType: types.ObjectType{AttrTypes: fieldItemAttrTypes}},
+		"strip_space_from_unique_field": types.BoolType,
 	}
 
 	emailVerificationConfigAttrTypes = map[string]attr.Type{
-		"email_verification_enabled":               basetypes.BoolType{},
-		"verify_email_template_name":               basetypes.StringType{},
-		"email_verification_sent_template_name":    basetypes.StringType{},
-		"email_verification_success_template_name": basetypes.StringType{},
-		"email_verification_error_template_name":   basetypes.StringType{},
-		"email_verification_type":                  basetypes.StringType{},
-		"otp_length":                               basetypes.Int64Type{},
-		"otp_retry_attempts":                       basetypes.Int64Type{},
-		"allowed_otp_character_set":                basetypes.StringType{},
-		"otp_time_to_live":                         basetypes.Int64Type{},
-		"email_verification_otp_template_name":     basetypes.StringType{},
-		"otl_time_to_live":                         basetypes.Int64Type{},
-		"field_for_email_to_verify":                basetypes.StringType{},
-		"field_storing_verification_status":        basetypes.StringType{},
-		"notification_publisher_ref":               basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
-		"require_verified_email":                   basetypes.BoolType{},
-		"require_verified_email_template_name":     basetypes.StringType{},
+		"email_verification_enabled":               types.BoolType,
+		"verify_email_template_name":               types.StringType,
+		"email_verification_sent_template_name":    types.StringType,
+		"email_verification_success_template_name": types.StringType,
+		"email_verification_error_template_name":   types.StringType,
+		"email_verification_type":                  types.StringType,
+		"otp_length":                               types.Int64Type,
+		"otp_retry_attempts":                       types.Int64Type,
+		"allowed_otp_character_set":                types.StringType,
+		"otp_time_to_live":                         types.Int64Type,
+		"email_verification_otp_template_name":     types.StringType,
+		"otl_time_to_live":                         types.Int64Type,
+		"field_for_email_to_verify":                types.StringType,
+		"field_storing_verification_status":        types.StringType,
+		"notification_publisher_ref":               types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"require_verified_email":                   types.BoolType,
+		"require_verified_email_template_name":     types.StringType,
 	}
 
 	dsConfigAttrTypes = map[string]attr.Type{
-		"base_dn":                  basetypes.StringType{},
-		"type":                     basetypes.StringType{},
-		"data_store_ref":           basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
-		"data_store_mapping":       basetypes.MapType{ElemType: types.ObjectType{AttrTypes: dsMappingAttrtypes}},
-		"create_pattern":           basetypes.StringType{},
-		"object_class":             basetypes.StringType{},
-		"auxiliary_object_classes": basetypes.SetType{ElemType: basetypes.StringType{}},
+		"base_dn":                  types.StringType,
+		"type":                     types.StringType,
+		"data_store_ref":           types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"data_store_mapping":       types.MapType{ElemType: types.ObjectType{AttrTypes: dsMappingAttrtypes}},
+		"create_pattern":           types.StringType,
+		"object_class":             types.StringType,
+		"auxiliary_object_classes": types.SetType{ElemType: types.StringType},
 	}
 
 	dsMappingAttrtypes = map[string]attr.Type{
-		"type":     basetypes.StringType{},
-		"name":     basetypes.StringType{},
-		"metadata": basetypes.MapType{ElemType: basetypes.StringType{}},
+		"type":     types.StringType,
+		"name":     types.StringType,
+		"metadata": types.MapType{ElemType: types.StringType},
 	}
 )
 

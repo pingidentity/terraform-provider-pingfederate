@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	pluginconfigurationdatasource "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
@@ -15,13 +14,13 @@ import (
 
 var (
 	attrType = map[string]attr.Type{
-		"name": basetypes.StringType{},
+		"name": types.StringType,
 	}
 
 	attributeContractTypes = map[string]attr.Type{
-		"core_attributes":     basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
-		"extended_attributes": basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: attrType}},
-		"inherited":           basetypes.BoolType{},
+		"core_attributes":     types.ListType{ElemType: types.ObjectType{AttrTypes: attrType}},
+		"extended_attributes": types.ListType{ElemType: types.ObjectType{AttrTypes: attrType}},
+		"inherited":           types.BoolType,
 	}
 
 	emptyAttrList, _ = types.ListValue(types.ObjectType{AttrTypes: attrType}, nil)
@@ -37,7 +36,7 @@ type passwordCredentialValidatorModel struct {
 	Configuration       types.Object `tfsdk:"configuration"`
 }
 
-func readPasswordCredentialValidatorResponse(ctx context.Context, r *client.PasswordCredentialValidator, state *passwordCredentialValidatorModel, configurationFromPlan basetypes.ObjectValue, isResource bool) diag.Diagnostics {
+func readPasswordCredentialValidatorResponse(ctx context.Context, r *client.PasswordCredentialValidator, state *passwordCredentialValidatorModel, configurationFromPlan types.Object, isResource bool) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.Id = types.StringValue(r.Id)
 	state.ValidatorId = types.StringValue(r.Id)
@@ -67,7 +66,7 @@ func readPasswordCredentialValidatorResponse(ctx context.Context, r *client.Pass
 			coreAttribute.Name = ca.Name
 			coreAttrs = append(coreAttrs, coreAttribute)
 		}
-		attributeContractCoreAttributes, respDiags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, coreAttrs)
+		attributeContractCoreAttributes, respDiags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: attrType}, coreAttrs)
 		diags.Append(respDiags...)
 
 		// state.AttributeContract extended_attributes
@@ -78,7 +77,7 @@ func readPasswordCredentialValidatorResponse(ctx context.Context, r *client.Pass
 			extendedAttr.Name = ea.Name
 			extdAttrs = append(extdAttrs, extendedAttr)
 		}
-		attributeContractExtendedAttributes, respDiags := types.ListValueFrom(ctx, basetypes.ObjectType{AttrTypes: attrType}, extdAttrs)
+		attributeContractExtendedAttributes, respDiags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: attrType}, extdAttrs)
 		diags.Append(respDiags...)
 
 		// PF can return inherited as nil when it is false

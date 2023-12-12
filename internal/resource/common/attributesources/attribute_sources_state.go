@@ -14,20 +14,20 @@ import (
 
 func CommonAttributeSourceAttrType() map[string]attr.Type {
 	commonAttrSourceAttrType := map[string]attr.Type{}
-	commonAttrSourceAttrType["type"] = basetypes.StringType{}
-	commonAttrSourceAttrType["data_store_ref"] = basetypes.ObjectType{AttrTypes: resourcelink.AttrType()}
-	commonAttrSourceAttrType["id"] = basetypes.StringType{}
-	commonAttrSourceAttrType["description"] = basetypes.StringType{}
+	commonAttrSourceAttrType["type"] = types.StringType
+	commonAttrSourceAttrType["data_store_ref"] = types.ObjectType{AttrTypes: resourcelink.AttrType()}
+	commonAttrSourceAttrType["id"] = types.StringType
+	commonAttrSourceAttrType["description"] = types.StringType
 	commonAttrSourceAttrType["attribute_contract_fulfillment"] = attributecontractfulfillment.MapType()
 	return commonAttrSourceAttrType
 }
 
 func CustomAttributeSourceAttrType() map[string]attr.Type {
 	customAttrSourceAttrType := CommonAttributeSourceAttrType()
-	customAttrSourceAttrType["filter_fields"] = basetypes.ListType{ElemType: basetypes.ObjectType{
+	customAttrSourceAttrType["filter_fields"] = types.ListType{ElemType: types.ObjectType{
 		AttrTypes: map[string]attr.Type{
-			"value": basetypes.StringType{},
-			"name":  basetypes.StringType{},
+			"value": types.StringType,
+			"name":  types.StringType,
 		},
 	}}
 	return customAttrSourceAttrType
@@ -35,27 +35,27 @@ func CustomAttributeSourceAttrType() map[string]attr.Type {
 
 func JdbcAttributeSourceAttrType() map[string]attr.Type {
 	jdbcAttributeSourceAttrType := CommonAttributeSourceAttrType()
-	jdbcAttributeSourceAttrType["schema"] = basetypes.StringType{}
-	jdbcAttributeSourceAttrType["table"] = basetypes.StringType{}
-	jdbcAttributeSourceAttrType["column_names"] = basetypes.ListType{ElemType: basetypes.StringType{}}
-	jdbcAttributeSourceAttrType["filter"] = basetypes.StringType{}
+	jdbcAttributeSourceAttrType["schema"] = types.StringType
+	jdbcAttributeSourceAttrType["table"] = types.StringType
+	jdbcAttributeSourceAttrType["column_names"] = types.ListType{ElemType: types.StringType}
+	jdbcAttributeSourceAttrType["filter"] = types.StringType
 	return jdbcAttributeSourceAttrType
 }
 
 func LdapAttributeSourceAttrType() map[string]attr.Type {
 	ldapAttrSourceAttrType := CommonAttributeSourceAttrType()
-	ldapAttrSourceAttrType["base_dn"] = basetypes.StringType{}
-	ldapAttrSourceAttrType["search_scope"] = basetypes.StringType{}
-	ldapAttrSourceAttrType["search_filter"] = basetypes.StringType{}
-	ldapAttrSourceAttrType["search_attributes"] = basetypes.ListType{ElemType: basetypes.StringType{}}
-	ldapAttrSourceAttrType["binary_attribute_settings"] = basetypes.MapType{
-		ElemType: basetypes.ObjectType{
+	ldapAttrSourceAttrType["base_dn"] = types.StringType
+	ldapAttrSourceAttrType["search_scope"] = types.StringType
+	ldapAttrSourceAttrType["search_filter"] = types.StringType
+	ldapAttrSourceAttrType["search_attributes"] = types.ListType{ElemType: types.StringType}
+	ldapAttrSourceAttrType["binary_attribute_settings"] = types.MapType{
+		ElemType: types.ObjectType{
 			AttrTypes: map[string]attr.Type{
-				"binary_encoding": basetypes.StringType{},
+				"binary_encoding": types.StringType,
 			},
 		},
 	}
-	ldapAttrSourceAttrType["member_of_nested_group"] = basetypes.BoolType{}
+	ldapAttrSourceAttrType["member_of_nested_group"] = types.BoolType
 	return ldapAttrSourceAttrType
 }
 

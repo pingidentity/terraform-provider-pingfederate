@@ -27,14 +27,14 @@ import (
 
 var (
 	pingOneLdapGatewayDataStoreAttrType = map[string]attr.Type{
-		"ping_one_connection_ref":  basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
-		"ldap_type":                basetypes.StringType{},
-		"ping_one_ldap_gateway_id": basetypes.StringType{},
-		"use_ssl":                  basetypes.BoolType{},
-		"name":                     basetypes.StringType{},
-		"binary_attributes":        basetypes.SetType{ElemType: basetypes.StringType{}},
-		"type":                     basetypes.StringType{},
-		"ping_one_environment_id":  basetypes.StringType{},
+		"ping_one_connection_ref":  types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"ldap_type":                types.StringType,
+		"ping_one_ldap_gateway_id": types.StringType,
+		"use_ssl":                  types.BoolType,
+		"name":                     types.StringType,
+		"binary_attributes":        types.SetType{ElemType: types.StringType},
+		"type":                     types.StringType,
+		"ping_one_environment_id":  types.StringType,
 	}
 	pingOneLdapGatewayDataStoreEmptyStateObj = types.ObjectNull(pingOneLdapGatewayDataStoreAttrType)
 )
@@ -163,7 +163,7 @@ func toDataSourceSchemaPingOneLdapGatewayDataStore() datasourceschema.SingleNest
 	return pingOneLdapGatewayDataStoreSchema
 }
 
-func toStatePingOneLdapGatewayDataStore(con context.Context, pingOneLdapGDS *client.PingOneLdapGatewayDataStore, plan basetypes.ObjectValue) (types.Object, diag.Diagnostics) {
+func toStatePingOneLdapGatewayDataStore(con context.Context, pingOneLdapGDS *client.PingOneLdapGatewayDataStore, plan types.Object) (types.Object, diag.Diagnostics) {
 	var diags, allDiags diag.Diagnostics
 
 	if pingOneLdapGDS == nil {
@@ -172,14 +172,14 @@ func toStatePingOneLdapGatewayDataStore(con context.Context, pingOneLdapGDS *cli
 	}
 
 	pingOneLdapGatewayDataStoreAttrType := map[string]attr.Type{
-		"ping_one_connection_ref":  basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
-		"ldap_type":                basetypes.StringType{},
-		"ping_one_ldap_gateway_id": basetypes.StringType{},
-		"use_ssl":                  basetypes.BoolType{},
-		"name":                     basetypes.StringType{},
-		"binary_attributes":        basetypes.SetType{ElemType: basetypes.StringType{}},
-		"type":                     basetypes.StringType{},
-		"ping_one_environment_id":  basetypes.StringType{},
+		"ping_one_connection_ref":  types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"ldap_type":                types.StringType,
+		"ping_one_ldap_gateway_id": types.StringType,
+		"use_ssl":                  types.BoolType,
+		"name":                     types.StringType,
+		"binary_attributes":        types.SetType{ElemType: types.StringType},
+		"type":                     types.StringType,
+		"ping_one_environment_id":  types.StringType,
 	}
 	pingOneConRefFromClient := pingOneLdapGDS.GetPingOneConnectionRef()
 	pingOneConnectionRef, diags := resourcelink.ToState(con, &pingOneConRefFromClient)

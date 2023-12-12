@@ -32,36 +32,36 @@ import (
 var (
 	ldapTagConfigAttrType = types.ObjectType{
 		AttrTypes: map[string]attr.Type{
-			"hostnames":      basetypes.SetType{ElemType: basetypes.StringType{}},
-			"tags":           basetypes.StringType{},
-			"default_source": basetypes.BoolType{},
+			"hostnames":      types.SetType{ElemType: types.StringType},
+			"tags":           types.StringType,
+			"default_source": types.BoolType,
 		},
 	}
 
 	ldapDataStoreCommonAttrType = map[string]attr.Type{
-		"hostnames":              basetypes.SetType{ElemType: basetypes.StringType{}},
-		"verify_host":            basetypes.BoolType{},
-		"test_on_return":         basetypes.BoolType{},
-		"ldap_type":              basetypes.StringType{},
-		"dns_ttl":                basetypes.Int64Type{},
-		"connection_timeout":     basetypes.Int64Type{},
-		"min_connections":        basetypes.Int64Type{},
-		"use_ssl":                basetypes.BoolType{},
-		"test_on_borrow":         basetypes.BoolType{},
-		"ldap_dns_srv_prefix":    basetypes.StringType{},
-		"name":                   basetypes.StringType{},
-		"read_timeout":           basetypes.Int64Type{},
-		"use_dns_srv_records":    basetypes.BoolType{},
-		"max_connections":        basetypes.Int64Type{},
-		"user_dn":                basetypes.StringType{},
-		"create_if_necessary":    basetypes.BoolType{},
-		"binary_attributes":      basetypes.SetType{ElemType: basetypes.StringType{}},
-		"max_wait":               basetypes.Int64Type{},
-		"hostnames_tags":         basetypes.SetType{ElemType: ldapTagConfigAttrType},
-		"time_between_evictions": basetypes.Int64Type{},
-		"type":                   basetypes.StringType{},
-		"bind_anonymously":       basetypes.BoolType{},
-		"follow_ldap_referrals":  basetypes.BoolType{},
+		"hostnames":              types.SetType{ElemType: types.StringType},
+		"verify_host":            types.BoolType,
+		"test_on_return":         types.BoolType,
+		"ldap_type":              types.StringType,
+		"dns_ttl":                types.Int64Type,
+		"connection_timeout":     types.Int64Type,
+		"min_connections":        types.Int64Type,
+		"use_ssl":                types.BoolType,
+		"test_on_borrow":         types.BoolType,
+		"ldap_dns_srv_prefix":    types.StringType,
+		"name":                   types.StringType,
+		"read_timeout":           types.Int64Type,
+		"use_dns_srv_records":    types.BoolType,
+		"max_connections":        types.Int64Type,
+		"user_dn":                types.StringType,
+		"create_if_necessary":    types.BoolType,
+		"binary_attributes":      types.SetType{ElemType: types.StringType},
+		"max_wait":               types.Int64Type,
+		"hostnames_tags":         types.SetType{ElemType: ldapTagConfigAttrType},
+		"time_between_evictions": types.Int64Type,
+		"type":                   types.StringType,
+		"bind_anonymously":       types.BoolType,
+		"follow_ldap_referrals":  types.BoolType,
 	}
 
 	ldapDataStoreAttrType                = internaltypes.AddKeyValToMapStringAttrType(ldapDataStoreCommonAttrType, "password", types.StringType)
@@ -420,7 +420,7 @@ func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
 	return ldapDataStoreSchema
 }
 
-func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataStore, plan basetypes.ObjectValue) (types.Object, diag.Diagnostics) {
+func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataStore, plan types.Object) (types.Object, diag.Diagnostics) {
 	var diags, allDiags diag.Diagnostics
 
 	if ldapDataStore == nil {

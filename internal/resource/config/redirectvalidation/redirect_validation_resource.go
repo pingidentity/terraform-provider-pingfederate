@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -30,26 +29,26 @@ var (
 
 var (
 	whiteListAttrTypes = map[string]attr.Type{
-		"target_resource_sso":      basetypes.BoolType{},
-		"target_resource_slo":      basetypes.BoolType{},
-		"in_error_resource":        basetypes.BoolType{},
-		"idp_discovery":            basetypes.BoolType{},
-		"valid_domain":             basetypes.StringType{},
-		"valid_path":               basetypes.StringType{},
-		"allow_query_and_fragment": basetypes.BoolType{},
-		"require_https":            basetypes.BoolType{},
+		"target_resource_sso":      types.BoolType,
+		"target_resource_slo":      types.BoolType,
+		"in_error_resource":        types.BoolType,
+		"idp_discovery":            types.BoolType,
+		"valid_domain":             types.StringType,
+		"valid_path":               types.StringType,
+		"allow_query_and_fragment": types.BoolType,
+		"require_https":            types.BoolType,
 	}
 
 	redirectValidationLocalSettingsAttrTypes = map[string]attr.Type{
-		"enable_target_resource_validation_for_sso":           basetypes.BoolType{},
-		"enable_target_resource_validation_for_slo":           basetypes.BoolType{},
-		"enable_target_resource_validation_for_idp_discovery": basetypes.BoolType{},
-		"enable_in_error_resource_validation":                 basetypes.BoolType{},
-		"white_list":                                          basetypes.ListType{ElemType: basetypes.ObjectType{AttrTypes: whiteListAttrTypes}},
+		"enable_target_resource_validation_for_sso":           types.BoolType,
+		"enable_target_resource_validation_for_slo":           types.BoolType,
+		"enable_target_resource_validation_for_idp_discovery": types.BoolType,
+		"enable_in_error_resource_validation":                 types.BoolType,
+		"white_list":                                          types.ListType{ElemType: types.ObjectType{AttrTypes: whiteListAttrTypes}},
 	}
 
 	redirectValidationPartnerSettingsAttrTypes = map[string]attr.Type{
-		"enable_wreply_validation_slo": basetypes.BoolType{},
+		"enable_wreply_validation_slo": types.BoolType,
 	}
 
 	whiteListDefault, _                       = types.ListValue(types.ObjectType{AttrTypes: whiteListAttrTypes}, nil)

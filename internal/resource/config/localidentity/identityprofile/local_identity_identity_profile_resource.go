@@ -814,7 +814,7 @@ func (r *localIdentityIdentityProfileResource) ValidateConfig(ctx context.Contex
 					fieldObj := model.FieldConfig.Attributes()["fields"].(basetypes.ListValue)
 					fieldElems := fieldObj.Elements()
 					for _, fieldElem := range fieldElems {
-						fieldElemAttrs := fieldElem.(basetypes.ObjectValue)
+						fieldElemAttrs := fieldElem.(types.Object)
 						profilePagefield := fieldElemAttrs.Attributes()["profile_page_field"].(basetypes.BoolValue)
 						if (internaltypes.IsDefined(profilePagefield)) && (profilePagefield.ValueBool()) {
 							resp.Diagnostics.AddError("Invalid Value for Attribute!", fmt.Sprintln("profile_page_field option for the fields attribute should not be set to 'true' when profile is disabled."))
@@ -837,7 +837,7 @@ func (r *localIdentityIdentityProfileResource) ValidateConfig(ctx context.Contex
 					fieldObj := model.FieldConfig.Attributes()["fields"].(basetypes.SetValue)
 					fieldElems := fieldObj.Elements()
 					for _, fieldElem := range fieldElems {
-						fieldElemAttrs := fieldElem.(basetypes.ObjectValue)
+						fieldElemAttrs := fieldElem.(types.Object)
 						registrationPageField := fieldElemAttrs.Attributes()["registration_page_field"].(basetypes.BoolValue)
 						if (internaltypes.IsDefined(registrationPageField)) && (registrationPageField.ValueBool()) {
 							resp.Diagnostics.AddError("Invalid Value for Attribute!", fmt.Sprintln("registration_page_field option for the fields attribute should not be set to 'true' when registration is disabled."))

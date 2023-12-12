@@ -45,21 +45,21 @@ var (
 var (
 	emptyStringSet, _    = types.SetValue(types.StringType, []attr.Value{})
 	jwksSettingsAttrType = map[string]attr.Type{
-		"jwks_url": basetypes.StringType{},
-		"jwks":     basetypes.StringType{},
+		"jwks_url": types.StringType,
+		"jwks":     types.StringType,
 	}
 
 	oidcPolicyAttrType = map[string]attr.Type{
-		"id_token_signing_algorithm":                  basetypes.StringType{},
-		"id_token_encryption_algorithm":               basetypes.StringType{},
-		"id_token_content_encryption_algorithm":       basetypes.StringType{},
-		"policy_group":                                basetypes.ObjectType{AttrTypes: resourcelink.AttrType()},
-		"grant_access_session_revocation_api":         basetypes.BoolType{},
-		"grant_access_session_session_management_api": basetypes.BoolType{},
-		"ping_access_logout_capable":                  basetypes.BoolType{},
-		"logout_uris":                                 basetypes.SetType{ElemType: basetypes.StringType{}},
-		"pairwise_identifier_user_type":               basetypes.BoolType{},
-		"sector_identifier_uri":                       basetypes.StringType{},
+		"id_token_signing_algorithm":                  types.StringType,
+		"id_token_encryption_algorithm":               types.StringType,
+		"id_token_content_encryption_algorithm":       types.StringType,
+		"policy_group":                                types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"grant_access_session_revocation_api":         types.BoolType,
+		"grant_access_session_session_management_api": types.BoolType,
+		"ping_access_logout_capable":                  types.BoolType,
+		"logout_uris":                                 types.SetType{ElemType: types.StringType},
+		"pairwise_identifier_user_type":               types.BoolType,
+		"sector_identifier_uri":                       types.StringType,
 	}
 
 	oidcPolicyDefaultAttrValue = map[string]attr.Value{
@@ -77,20 +77,20 @@ var (
 	oidcPolicyDefaultObj, _ = types.ObjectValue(oidcPolicyAttrType, oidcPolicyDefaultAttrValue)
 
 	secondarySecretsAttrType = map[string]attr.Type{
-		"secret":      basetypes.StringType{},
-		"expiry_time": basetypes.StringType{},
+		"secret":      types.StringType,
+		"expiry_time": types.StringType,
 	}
 
 	secondarySecretsEmptySet, _ = types.SetValue(types.ObjectType{AttrTypes: secondarySecretsAttrType}, []attr.Value{})
 
 	clientAuthAttrType = map[string]attr.Type{
-		"type":                                  basetypes.StringType{},
-		"secret":                                basetypes.StringType{},
-		"secondary_secrets":                     basetypes.SetType{ElemType: basetypes.ObjectType{AttrTypes: secondarySecretsAttrType}},
-		"client_cert_issuer_dn":                 basetypes.StringType{},
-		"client_cert_subject_dn":                basetypes.StringType{},
-		"enforce_replay_prevention":             basetypes.BoolType{},
-		"token_endpoint_auth_signing_algorithm": basetypes.StringType{},
+		"type":                                  types.StringType,
+		"secret":                                types.StringType,
+		"secondary_secrets":                     types.SetType{ElemType: types.ObjectType{AttrTypes: secondarySecretsAttrType}},
+		"client_cert_issuer_dn":                 types.StringType,
+		"client_cert_subject_dn":                types.StringType,
+		"enforce_replay_prevention":             types.BoolType,
+		"token_endpoint_auth_signing_algorithm": types.StringType,
 	}
 
 	clientAuthDefaultAttrValue = map[string]attr.Value{
@@ -1175,8 +1175,8 @@ func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state 
 
 	// state.ExtendedParameters
 	extendedParametersAttrType := map[string]attr.Type{}
-	extendedParametersAttrType["values"] = basetypes.SetType{ElemType: basetypes.StringType{}}
-	extendedParametersObjAttrType := basetypes.ObjectType{AttrTypes: extendedParametersAttrType}
+	extendedParametersAttrType["values"] = types.SetType{ElemType: types.StringType}
+	extendedParametersObjAttrType := types.ObjectType{AttrTypes: extendedParametersAttrType}
 	extendedParametersToState, respDiags := types.MapValueFrom(ctx, extendedParametersObjAttrType, r.ExtendedParameters)
 	diags.Append(respDiags...)
 	state.ExtendedParameters = extendedParametersToState

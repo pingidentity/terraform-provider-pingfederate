@@ -11,9 +11,9 @@ import (
 )
 
 var exclusiveScopeAttrTypes = map[string]attr.Type{
-	"name":        basetypes.StringType{},
-	"description": basetypes.StringType{},
-	"dynamic":     basetypes.BoolType{},
+	"name":        types.StringType,
+	"description": types.StringType,
+	"dynamic":     types.BoolType,
 }
 
 func ToState(con context.Context, scopes []client.ScopeEntry) (basetypes.SetValue, diag.Diagnostics) {
