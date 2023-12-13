@@ -1,4 +1,4 @@
-# v0.4.0 (unreleased)
+# v0.4.0 December 13, 2023 => MVP
 ### FEATURES
 #### Resources
 * **New Resource:** `pingfederate_oauth_client` ([#111](https://github.com/pingidentity/terraform-provider-pingfederate/pull/111))
