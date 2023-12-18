@@ -21,7 +21,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -311,7 +311,7 @@ func toStateJdbcDataStore(con context.Context, jdbcDataStore *client.JdbcDataSto
 		"max_pool_size":                types.Int64PointerValue(jdbcDataStore.MaxPoolSize),
 		"min_pool_size":                types.Int64PointerValue(jdbcDataStore.MinPoolSize),
 		"name":                         types.StringPointerValue(jdbcDataStore.Name),
-		"user_name":                    types.StringValue(jdbcDataStore.UserName),
+		"user_name":                    types.StringPointerValue(jdbcDataStore.UserName),
 		"allow_multi_value_attributes": types.BoolPointerValue(jdbcDataStore.AllowMultiValueAttributes),
 		"validate_connection_sql":      types.StringPointerValue(jdbcDataStore.ValidateConnectionSql),
 	}
@@ -382,6 +382,11 @@ func addOptionalJdbcDataStoreFields(addRequest client.DataStoreAggregation, con 
 		addRequest.JdbcDataStore.Name = name.(types.String).ValueStringPointer()
 	}
 
+	userName, ok := jdbcDataStorePlan["user_name"]
+	if ok {
+		addRequest.JdbcDataStore.UserName = userName.(types.String).ValueStringPointer()
+	}
+
 	blockingTimeout, ok := jdbcDataStorePlan["blocking_timeout"]
 	if ok {
 		addRequest.JdbcDataStore.BlockingTimeout = blockingTimeout.(types.Int64).ValueInt64Pointer()
@@ -420,9 +425,8 @@ func createJdbcDataStore(plan dataStoreModel, con context.Context, req resource.
 
 	jdbcPlan := plan.JdbcDataStore.Attributes()
 	driverClass := jdbcPlan["driver_class"].(types.String).ValueString()
-	userName := jdbcPlan["user_name"].(types.String).ValueString()
 
-	createJdbcDataStore := client.JdbcDataStoreAsDataStoreAggregation(client.NewJdbcDataStore(driverClass, userName, "JDBC"))
+	createJdbcDataStore := client.JdbcDataStoreAsDataStoreAggregation(client.NewJdbcDataStore(driverClass, "JDBC"))
 	err = addOptionalJdbcDataStoreFields(createJdbcDataStore, con, client.JdbcDataStore{}, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for DataStore", err.Error())
@@ -449,9 +453,8 @@ func updateJdbcDataStore(plan dataStoreModel, con context.Context, req resource.
 
 	jdbcPlan := plan.JdbcDataStore.Attributes()
 	driverClass := jdbcPlan["driver_class"].(types.String).ValueString()
-	userName := jdbcPlan["user_name"].(types.String).ValueString()
 
-	updateJdbcDataStore := client.JdbcDataStoreAsDataStoreAggregation(client.NewJdbcDataStore(driverClass, userName, "JDBC"))
+	updateJdbcDataStore := client.JdbcDataStoreAsDataStoreAggregation(client.NewJdbcDataStore(driverClass, "JDBC"))
 	err = addOptionalJdbcDataStoreFields(updateJdbcDataStore, con, client.JdbcDataStore{}, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for DataStore", err.Error())
