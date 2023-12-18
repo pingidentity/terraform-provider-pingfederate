@@ -289,9 +289,11 @@ func emailVerificationConfigHcl(config *client.EmailVerificationConfig) string {
 
 func updatedDataStoreConfig() *client.LdapDataStoreConfig {
 	return &client.LdapDataStoreConfig{
-		Type: "LDAP",
-		DataStoreRef: client.ResourceLink{
-			Id: "pingdirectory",
+		DataStoreConfig: client.DataStoreConfig{
+			Type: "LDAP",
+			DataStoreRef: client.ResourceLink{
+				Id: "pingdirectory",
+			},
 		},
 		BaseDn:        "ou=people,dc=example,dc=com",
 		CreatePattern: "uid=$${mail}",

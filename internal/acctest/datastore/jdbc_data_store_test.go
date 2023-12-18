@@ -30,7 +30,8 @@ type jdbcDataStoreResourceModel struct {
 }
 
 func initialJdbcDataStore() *client.JdbcDataStore {
-	jdbcDataStore := client.NewJdbcDataStore(driverClass, userName, jdbcDataStoreType)
+	jdbcDataStore := client.NewJdbcDataStore(driverClass, jdbcDataStoreType)
+	jdbcDataStore.UserName = pointers.String(userName)
 	jdbcDataStore.Password = pointers.String(password)
 	jdbcDataStore.ConnectionUrl = pointers.String(connectionUrl)
 	jdbcDataStore.Name = pointers.String("initialJdbcDataStore")
@@ -43,7 +44,8 @@ func initialJdbcDataStore() *client.JdbcDataStore {
 }
 
 func updatedJdbcDataStore() *client.JdbcDataStore {
-	jdbcDataStore := client.NewJdbcDataStore(driverClass, userName, jdbcDataStoreType)
+	jdbcDataStore := client.NewJdbcDataStore(driverClass, jdbcDataStoreType)
+	jdbcDataStore.UserName = pointers.String(userName)
 	jdbcDataStore.Password = pointers.String(password)
 	jdbcDataStore.ConnectionUrl = pointers.String(connectionUrl)
 	jdbcDataStore.Name = pointers.String("updatedJdbcDataStore")

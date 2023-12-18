@@ -27,7 +27,7 @@ starttestcontainer:
 		-e SERVER_PROFILE_URL=https://github.com/pingidentity/pingidentity-server-profiles.git \
 		-e SERVER_PROFILE_BRANCH=terraform-provider-pingfederate-1125 \
 		-e SERVER_PROFILE_PATH=terraform-provider-pingfederate/pingfederate \
-		pingidentity/pingfederate:2305-11.2.5
+		pingidentity/pingfederate:11.3.3-latest
 # Wait for the instance to become ready
 	sleep 1
 	duration=0
@@ -51,7 +51,7 @@ endef
 
 # Set ACC_TEST_NAME to name of test in cli
 testoneacc:
-	$(call test_acc_env_vars) TF_ACC=1 go test ./internal/acctest/... -timeout 10m --run ${ACC_TEST_NAME} -v -p 4 --count=1
+	$(call test_acc_env_vars) TF_ACC=1 go test ./internal/acctest/... -timeout 10m -run ${ACC_TEST_NAME} -v --count=1
 
 testoneacccomplete: spincontainer testoneacc
 

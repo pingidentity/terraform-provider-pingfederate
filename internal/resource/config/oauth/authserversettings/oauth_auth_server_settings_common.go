@@ -76,6 +76,9 @@ type oauthAuthServerSettingsModel struct {
 	ParStatus                                   types.String `tfsdk:"par_status"`
 	ClientSecretRetentionPeriod                 types.Int64  `tfsdk:"client_secret_retention_period"`
 	JwtSecuredAuthorizationResponseModeLifetime types.Int64  `tfsdk:"jwt_secured_authorization_response_mode_lifetime"`
+	DpopProofRequireNonce                       types.Bool   `tfsdk:"dpop_proof_require_nonce"`
+	DpopProofLifetimeSeconds                    types.Int64  `tfsdk:"dpop_proof_lifetime_seconds"`
+	DpopProofEnforceReplayPrevention            types.Bool   `tfsdk:"dpop_proof_enforce_replay_prevention"`
 }
 
 func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsModel, existingId *string) diag.Diagnostics {
@@ -136,5 +139,8 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 	state.ParStatus = types.StringPointerValue(r.ParStatus)
 	state.ClientSecretRetentionPeriod = types.Int64PointerValue(r.ClientSecretRetentionPeriod)
 	state.JwtSecuredAuthorizationResponseModeLifetime = types.Int64PointerValue(r.JwtSecuredAuthorizationResponseModeLifetime)
+	state.DpopProofRequireNonce = types.BoolPointerValue(r.DpopProofRequireNonce)
+	state.DpopProofLifetimeSeconds = types.Int64PointerValue(r.DpopProofLifetimeSeconds)
+	state.DpopProofEnforceReplayPrevention = types.BoolPointerValue(r.DpopProofEnforceReplayPrevention)
 	return diags
 }

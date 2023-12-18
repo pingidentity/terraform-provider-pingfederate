@@ -229,7 +229,7 @@ func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req data
 				Computed:    true,
 			},
 			"refresh_token_rolling_grace_period": schema.Int64Attribute{
-				Description: "The grace period that a rolled refresh token remains valid in seconds. The default value is 0.",
+				Description: "The grace period that a rolled refresh token remains valid in seconds. The default value is 60.",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
@@ -417,6 +417,24 @@ func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req data
 			},
 			"jwt_secured_authorization_response_mode_lifetime": schema.Int64Attribute{
 				Description: "The lifetime, in seconds, of the JWT Secured authorization response. The default value is 600.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"dpop_proof_require_nonce": schema.BoolAttribute{
+				Description: "Determines whether nonce is required in the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is false.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"dpop_proof_lifetime_seconds": schema.Int64Attribute{
+				Description: "The lifetime, in seconds, of the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is 120.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"dpop_proof_enforce_replay_prevention": schema.BoolAttribute{
+				Description: "Determines whether Demonstrating Proof-of-Possession (DPoP) proof JWT replay prevention is enforced. The default value is false.",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
