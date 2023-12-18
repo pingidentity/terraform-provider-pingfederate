@@ -12,7 +12,6 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	resourcelinkdatasource "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -519,6 +518,12 @@ func (r *oauthClientDataSource) Schema(ctx context.Context, req datasource.Schem
 				Optional:            false,
 				Computed:            true,
 			},
+			"require_dpop": schema.BoolAttribute{
+				MarkdownDescription: "Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Supported in PF version 11.3 or later.",
+				Description:         "Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Supported in PF version 11.3 or later.",
+				Optional:            false,
+				Computed:            true,
+			},
 		},
 	}
 	id.ToDataSourceSchema(&schemaDef)
@@ -544,53 +549,7 @@ func (r *oauthClientDataSource) Configure(_ context.Context, req datasource.Conf
 // Read a OauthClientResponse object into the model struct
 func readOauthClientResponseDataSource(ctx context.Context, r *client.Client, state *oauthClientModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.Id = types.StringValue(r.ClientId)
-	state.ClientId = types.StringValue(r.ClientId)
-	state.Enabled = types.BoolPointerValue(r.Enabled)
-	state.RedirectUris = internaltypes.GetStringSet(r.RedirectUris)
-	state.GrantTypes = internaltypes.GetStringSet(r.GrantTypes)
-	state.Name = types.StringValue(r.Name)
-	state.Description = types.StringPointerValue(r.Description)
-	state.ModificationDate = types.StringValue(r.ModificationDate.Format(time.RFC3339Nano))
-	state.CreationDate = types.StringValue(r.CreationDate.Format(time.RFC3339Nano))
-	state.LogoUrl = types.StringPointerValue(r.LogoUrl)
-	state.DefaultAccessTokenManagerRef, respDiags = resourcelink.ToState(ctx, r.DefaultAccessTokenManagerRef)
-	diags.Append(respDiags...)
-	state.RestrictToDefaultAccessTokenManager = types.BoolPointerValue(r.RestrictToDefaultAccessTokenManager)
-	state.ValidateUsingAllEligibleAtms = types.BoolPointerValue(r.ValidateUsingAllEligibleAtms)
-	state.RefreshRolling = types.StringPointerValue(r.RefreshRolling)
-	state.RefreshTokenRollingIntervalType = types.StringPointerValue(r.RefreshTokenRollingIntervalType)
-	state.RefreshTokenRollingInterval = types.Int64PointerValue(r.RefreshTokenRollingInterval)
-	state.PersistentGrantExpirationType = types.StringPointerValue(r.PersistentGrantExpirationType)
-	state.PersistentGrantExpirationTime = types.Int64PointerValue(r.PersistentGrantExpirationTime)
-	if r.GetPersistentGrantExpirationTimeUnit() == "" {
-		state.PersistentGrantExpirationTimeUnit = types.StringValue("DAYS")
-	} else {
-		state.PersistentGrantExpirationTimeUnit = types.StringPointerValue(r.PersistentGrantExpirationTimeUnit)
-	}
-	state.PersistentGrantIdleTimeoutType = types.StringPointerValue(r.PersistentGrantIdleTimeoutType)
-	state.PersistentGrantIdleTimeout = types.Int64PointerValue(r.PersistentGrantIdleTimeout)
-	state.PersistentGrantIdleTimeoutTimeUnit = types.StringPointerValue(r.PersistentGrantIdleTimeoutTimeUnit)
-	state.PersistentGrantReuseType = types.StringPointerValue(r.PersistentGrantReuseType)
-	state.PersistentGrantReuseGrantTypes = internaltypes.GetStringSet(r.PersistentGrantReuseGrantTypes)
-	state.AllowAuthenticationApiInit = types.BoolPointerValue(r.AllowAuthenticationApiInit)
-	state.BypassApprovalPage = types.BoolPointerValue(r.BypassApprovalPage)
-	state.RestrictScopes = types.BoolPointerValue(r.RestrictScopes)
-	restrictedScopesToSet, respDiags := types.SetValueFrom(ctx, types.StringType, r.RestrictedScopes)
-	diags.Append(respDiags...)
-	state.RestrictedScopes = restrictedScopesToSet
-	state.ExclusiveScopes = internaltypes.GetStringSet(r.ExclusiveScopes)
-	state.AuthorizationDetailTypes = internaltypes.GetStringSet(r.AuthorizationDetailTypes)
-	state.RestrictedResponseTypes = internaltypes.GetStringSet(r.RestrictedResponseTypes)
-	state.RequirePushedAuthorizationRequests = types.BoolPointerValue(r.RequirePushedAuthorizationRequests)
-	state.RequireJwtSecuredAuthorizationResponseMode = types.BoolPointerValue(r.RequireJwtSecuredAuthorizationResponseMode)
-	state.RequireSignedRequests = types.BoolPointerValue(r.RequireSignedRequests)
-	state.RequestObjectSigningAlgorithm = types.StringPointerValue(r.RequestObjectSigningAlgorithm)
-
-	// state.OidcPolicy
-	oidcPolicyToState, respDiags := types.ObjectValueFrom(ctx, oidcPolicyAttrType, r.OidcPolicy)
-	diags.Append(respDiags...)
-	state.OidcPolicy = oidcPolicyToState
+	diags = readOauthClientResponseCommon(ctx, r, state)
 
 	// state.ClientAuth
 	var secondarySecretsSetSlice []attr.Value
@@ -618,54 +577,6 @@ func readOauthClientResponseDataSource(ctx context.Context, r *client.Client, st
 	clientAuthToState, respDiags := types.ObjectValue(clientAuthDataSourceAttrType, clientAuthAttrValue)
 	diags.Append(respDiags...)
 	state.ClientAuth = clientAuthToState
-
-	// state.JwksSettings
-	jwksSettingsToState, respDiags := types.ObjectValueFrom(ctx, jwksSettingsAttrType, r.JwksSettings)
-	diags.Append(respDiags...)
-	state.JwksSettings = jwksSettingsToState
-
-	// state.ExtendedParameters
-	extendedParametersAttrType := map[string]attr.Type{}
-	extendedParametersAttrType["values"] = types.SetType{ElemType: types.StringType}
-	extendedParametersObjAttrType := types.ObjectType{AttrTypes: extendedParametersAttrType}
-	extendedParametersToState, respDiags := types.MapValueFrom(ctx, extendedParametersObjAttrType, r.ExtendedParameters)
-	diags.Append(respDiags...)
-	state.ExtendedParameters = extendedParametersToState
-
-	state.DeviceFlowSettingType = types.StringPointerValue(r.DeviceFlowSettingType)
-	state.UserAuthorizationUrlOverride = types.StringPointerValue(r.UserAuthorizationUrlOverride)
-	state.PendingAuthorizationTimeoutOverride = types.Int64PointerValue(r.PendingAuthorizationTimeoutOverride)
-	state.DevicePollingIntervalOverride = types.Int64PointerValue(r.DevicePollingIntervalOverride)
-	state.BypassActivationCodeConfirmationOverride = types.BoolPointerValue(r.BypassActivationCodeConfirmationOverride)
-	state.RequireProofKeyForCodeExchange = types.BoolPointerValue(r.RequireProofKeyForCodeExchange)
-	state.CibaDeliveryMode = types.StringPointerValue(r.CibaDeliveryMode)
-	state.CibaNotificationEndpoint = types.StringPointerValue(r.CibaNotificationEndpoint)
-	state.CibaPollingInterval = types.Int64PointerValue(r.CibaPollingInterval)
-	state.CibaRequireSignedRequests = types.BoolPointerValue(r.CibaRequireSignedRequests)
-	state.CibaRequestObjectSigningAlgorithm = types.StringPointerValue(r.CibaRequestObjectSigningAlgorithm)
-	state.CibaUserCodeSupported = types.BoolPointerValue(r.CibaUserCodeSupported)
-
-	// state.RequestPolicyRef
-	requestPolicyRefToState, respDiags := resourcelink.ToState(ctx, r.RequestPolicyRef)
-	diags.Append(respDiags...)
-	state.RequestPolicyRef = requestPolicyRefToState
-
-	// state.TokenExchangeProcessorPolicyRef
-	tokenExchangeProcessorPolicyRefToState, respDiags := resourcelink.ToState(ctx, r.TokenExchangeProcessorPolicyRef)
-	diags.Append(respDiags...)
-	state.TokenExchangeProcessorPolicyRef = tokenExchangeProcessorPolicyRefToState
-
-	state.RefreshTokenRollingGracePeriodType = types.StringPointerValue(r.RefreshTokenRollingGracePeriodType)
-	state.RefreshTokenRollingGracePeriod = types.Int64PointerValue(r.RefreshTokenRollingGracePeriod)
-	state.ClientSecretRetentionPeriodType = types.StringPointerValue(r.ClientSecretRetentionPeriodType)
-	state.ClientSecretRetentionPeriod = types.Int64PointerValue(r.ClientSecretRetentionPeriod)
-	state.ClientSecretChangedTime = types.StringValue(r.GetClientSecretChangedTime().Format(time.RFC3339Nano))
-	state.TokenIntrospectionSigningAlgorithm = types.StringPointerValue(r.TokenIntrospectionSigningAlgorithm)
-	state.TokenIntrospectionEncryptionAlgorithm = types.StringPointerValue(r.TokenIntrospectionEncryptionAlgorithm)
-	state.TokenIntrospectionContentEncryptionAlgorithm = types.StringPointerValue(r.TokenIntrospectionContentEncryptionAlgorithm)
-	state.JwtSecuredAuthorizationResponseModeSigningAlgorithm = types.StringPointerValue(r.JwtSecuredAuthorizationResponseModeSigningAlgorithm)
-	state.JwtSecuredAuthorizationResponseModeEncryptionAlgorithm = types.StringPointerValue(r.JwtSecuredAuthorizationResponseModeEncryptionAlgorithm)
-	state.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm = types.StringPointerValue(r.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm)
 
 	return diags
 }
