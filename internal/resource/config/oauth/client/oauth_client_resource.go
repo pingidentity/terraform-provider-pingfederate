@@ -551,15 +551,16 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						Optional:    true,
 					},
 					"enforce_replay_prevention": schema.BoolAttribute{
-						Description: "Enforce replay prevention on JSON Web Tokens. This field is applicable only for Private Key JWT Client Authentication.",
+						Description: "Enforce replay prevention on JSON Web Tokens. This field is applicable only for Private Key JWT Client and Client Secret JWT Authentication.",
 						Optional:    true,
 					},
 					"token_endpoint_auth_signing_algorithm": schema.StringAttribute{
-						MarkdownDescription: "The JSON Web Signature [JWS] algorithm that must be used to sign the JSON Web Tokens. This field is applicable only for Private Key JWT Client Authentication. All signing algorithms are allowed if value is not present\nRS256 - RSA using SHA-256\nRS384 - RSA using SHA-384\nRS512 - RSA using SHA-512\nES256 - ECDSA using P256 Curve and SHA-256\nES384 - ECDSA using P384 Curve and SHA-384\nES512 - ECDSA using P521 Curve and SHA-512\nPS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\nPS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\nPS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\nRSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.",
-						Description:         "The JSON Web Signature [JWS] algorithm that must be used to sign the JSON Web Tokens. This field is applicable only for Private Key JWT Client Authentication. All signing algorithms are allowed if value is not present, RS256 - RSA using SHA-256, RS384 - RSA using SHA-384, RS512 - RSA using SHA-512, ES256 - ECDSA using P256 Curve and SHA-256, ES384 - ECDSA using P384 Curve and SHA-384, ES512 - ECDSA using P521 Curve and SHA-512, PS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256, PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384, PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512, RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.",
+						MarkdownDescription: "The JSON Web Signature [JWS] algorithm that must be used to sign the JSON Web Tokens. This field is applicable only for Private Key JWT and Client Secret JWT Client Authentication. All asymmetric signing algorithms are allowed for Private Key JWT if value is not present. All symmetric signing algorithms are allowed for Client Secret JWT if value is not present\nRS256 - RSA using SHA-256\nRS384 - RSA using SHA-384\nRS512 - RSA using SHA-512\nES256 - ECDSA using P256 Curve and SHA-256\nES384 - ECDSA using P384 Curve and SHA-384\nES512 - ECDSA using P521 Curve and SHA-512\nPS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\nPS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\nPS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\nRSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.\nHS256 - HMAC using SHA-256\nHS384 - HMAC using SHA-384\nHS512 - HMAC using SHA-512.",
+						Description:         "The JSON Web Signature [JWS] algorithm that must be used to sign the JSON Web Tokens. This field is applicable only for Private Key JWT and Client Secret JWT Client Authentication. All asymmetric signing algorithms are allowed for Private Key JWT if value is not present. All symmetric signing algorithms are allowed for Client Secret JWT if value is not present RS256 - RSA using SHA-256, RS384 - RSA using SHA-384, RS512 - RSA using SHA-512, ES256 - ECDSA using P256 Curve and SHA-256, ES384 - ECDSA using P384 Curve and SHA-384, ES512 - ECDSA using P521 Curve and SHA-512, PS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256, PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384, PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512, RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11. HS256 - HMAC using SHA-256, HS384 - HMAC using SHA-384, HS512 - HMAC using SHA-512.",
 						Optional:            true,
 						Validators: []validator.String{
-							stringvalidator.OneOf("RS256",
+							stringvalidator.OneOf(
+								"RS256",
 								"RS384",
 								"RS512",
 								"ES256",
@@ -568,6 +569,9 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 								"PS256",
 								"PS384",
 								"PS512",
+								"HS256",
+								"HS384",
+								"HS512",
 							),
 						},
 					},
