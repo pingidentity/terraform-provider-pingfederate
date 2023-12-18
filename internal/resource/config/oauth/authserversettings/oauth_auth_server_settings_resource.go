@@ -462,19 +462,19 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 			},
 			"dpop_proof_require_nonce": schema.BoolAttribute{
 				// Default is set in ModifyPlan below. Once only PF 11.3 and newer is supported, we can set the default in the schema here
-				Description: "Determines whether nonce is required in the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is false.",
+				Description: "Determines whether nonce is required in the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is false. Supported in PF version 11.3 or later.",
 				Computed:    true,
 				Optional:    true,
 			},
 			"dpop_proof_lifetime_seconds": schema.Int64Attribute{
 				// Default is set in ModifyPlan below. Once only PF 11.3 and newer is supported, we can set the default in the schema here
-				Description: "The lifetime, in seconds, of the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is 120.",
+				Description: "The lifetime, in seconds, of the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is 120. Supported in PF version 11.3 or later.",
 				Computed:    true,
 				Optional:    true,
 			},
 			"dpop_proof_enforce_replay_prevention": schema.BoolAttribute{
 				// Default is set in ModifyPlan below. Once only PF 11.3 and newer is supported, we can set the default in the schema here
-				Description: "Determines whether Demonstrating Proof-of-Possession (DPoP) proof JWT replay prevention is enforced. The default value is false.",
+				Description: "Determines whether Demonstrating Proof-of-Possession (DPoP) proof JWT replay prevention is enforced. The default value is false. Supported in PF version 11.3 or later.",
 				Computed:    true,
 				Optional:    true,
 			},

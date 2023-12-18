@@ -26,6 +26,7 @@ var (
 		"initial_warning_period":     types.Int64Type,
 		"final_warning_period":       types.Int64Type,
 		"notification_publisher_ref": types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"notification_mode":          types.StringType,
 	}
 
 	notificationSettingsAttrType = map[string]attr.Type{
