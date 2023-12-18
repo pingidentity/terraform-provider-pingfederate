@@ -4,9 +4,10 @@ import client "github.com/pingidentity/pingfederate-go-client/v1130/configuratio
 
 // Configuration used by the provider and resources
 type ProviderConfiguration struct {
-	HttpsHost string
-	Username  string
-	Password  string
+	HttpsHost      string
+	Username       string
+	Password       string
+	ProductVersion string
 }
 
 // Configuration passed to resources
