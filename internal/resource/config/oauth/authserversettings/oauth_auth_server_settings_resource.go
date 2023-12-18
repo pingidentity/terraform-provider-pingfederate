@@ -31,6 +31,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -460,22 +461,22 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Default:     int64default.StaticInt64(600),
 			},
 			"dpop_proof_require_nonce": schema.BoolAttribute{
+				// Default is set in ModifyPlan below. Once only PF 11.3 and newer is supported, we can set the default in the schema here
 				Description: "Determines whether nonce is required in the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is false.",
 				Computed:    true,
 				Optional:    true,
-				Default:     booldefault.StaticBool(false),
 			},
 			"dpop_proof_lifetime_seconds": schema.Int64Attribute{
+				// Default is set in ModifyPlan below. Once only PF 11.3 and newer is supported, we can set the default in the schema here
 				Description: "The lifetime, in seconds, of the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is 120.",
 				Computed:    true,
 				Optional:    true,
-				Default:     int64default.StaticInt64(120),
 			},
 			"dpop_proof_enforce_replay_prevention": schema.BoolAttribute{
+				// Default is set in ModifyPlan below. Once only PF 11.3 and newer is supported, we can set the default in the schema here
 				Description: "Determines whether Demonstrating Proof-of-Possession (DPoP) proof JWT replay prevention is enforced. The default value is false.",
 				Computed:    true,
 				Optional:    true,
-				Default:     booldefault.StaticBool(false),
 			},
 		},
 	}
@@ -528,6 +529,54 @@ func (r *oauthAuthServerSettingsResource) ValidateConfig(ctx context.Context, re
 	matchVal := internaltypes.MatchStringInSets(scopeNames, eScopeNames)
 	if matchVal != nil {
 		resp.Diagnostics.AddError("Scope name conflict!", fmt.Sprintf("The scope name \"%s\" is already defined in another scope list", *matchVal))
+	}
+}
+
+func (r *oauthAuthServerSettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	// Compare to version 11.3 of PF
+	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	var plan oauthAuthServerSettingsModel
+	req.Plan.Get(ctx, &plan)
+	// If any of these fields are set by the user and the PF version is not new enough, throw an error
+	if compare < 0 {
+		if internaltypes.IsDefined(plan.DpopProofEnforceReplayPrevention) {
+			resp.Diagnostics.AddError("Attribute 'dpop_proof_enforce_replay_prevention' not supported by PingFederate version "+r.providerConfig.ProductVersion, "")
+		} else if plan.DpopProofEnforceReplayPrevention.IsUnknown() {
+			// Set a null default when the version isn't new enough to use this attribute
+			plan.DpopProofEnforceReplayPrevention = types.BoolNull()
+		}
+
+		if internaltypes.IsDefined(plan.DpopProofLifetimeSeconds) {
+			resp.Diagnostics.AddError("Attribute 'dpop_proof_lifetime_seconds' not supported by PingFederate version "+r.providerConfig.ProductVersion, "")
+		} else if plan.DpopProofLifetimeSeconds.IsUnknown() {
+			plan.DpopProofLifetimeSeconds = types.Int64Null()
+		}
+
+		if internaltypes.IsDefined(plan.DpopProofRequireNonce) {
+			resp.Diagnostics.AddError("Attribute 'dpop_proof_require_nonce' not supported by PingFederate version "+r.providerConfig.ProductVersion, "")
+		} else if plan.DpopProofRequireNonce.IsUnknown() {
+			plan.DpopProofRequireNonce = types.BoolNull()
+		}
+	} else { //PF version is new enough for these attributes, set defaults
+		if plan.DpopProofEnforceReplayPrevention.IsUnknown() {
+			plan.DpopProofEnforceReplayPrevention = types.BoolValue(false)
+		}
+
+		if plan.DpopProofLifetimeSeconds.IsUnknown() {
+			plan.DpopProofLifetimeSeconds = types.Int64Value(120)
+		}
+
+		if plan.DpopProofRequireNonce.IsUnknown() {
+			plan.DpopProofRequireNonce = types.BoolValue(false)
+		}
+	}
+
+	if !resp.Diagnostics.HasError() {
+		resp.Plan.Set(ctx, &plan)
 	}
 }
 
