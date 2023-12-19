@@ -92,7 +92,7 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 			Default:     int64default.StaticInt64(0),
 		},
 		"connection_url_tags": schema.SetNestedAttribute{
-			Description: "A JDBC data store's connection URLs and tags configuration. This is required if no default JDBC database location is specified.",
+			Description: "The set of connection URLs and associated tags for this JDBC data store. This is required if 'connectionUrl' is not provided.",
 			Computed:    true,
 			Optional:    true,
 			NestedObject: schema.NestedAttributeObject{
@@ -141,7 +141,7 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 			Required:    true,
 		},
 		"connection_url": schema.StringAttribute{
-			Description: "The default location of the JDBC database. This field is required if no mapping for JDBC database location and tags are specified.",
+			Description: "The default location of the JDBC database. This field is required if no mapping for JDBC database location and tags is specified.",
 			Computed:    true,
 			Optional:    true,
 			Validators: []validator.String{
@@ -153,7 +153,7 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 		},
 		"user_name": schema.StringAttribute{
 			Description: "The name that identifies the user when connecting to the database.",
-			Required:    true,
+			Optional:    true,
 		},
 		"allow_multi_value_attributes": schema.BoolAttribute{
 			Description: "Indicates that this data store can select more than one record from a column and return the results as a multi-value attribute.",
@@ -210,7 +210,7 @@ func toDataSourceSchemaJdbcDataStore() datasourceschema.SingleNestedAttribute {
 			Optional:    false,
 		},
 		"connection_url_tags": datasourceschema.SetNestedAttribute{
-			Description: "A JDBC data store's connection URLs and tags configuration.",
+			Description: "The set of connection URLs and associated tags for this JDBC data store. This is required if 'connectionUrl' is not provided.",
 			Computed:    true,
 			Optional:    false,
 			NestedObject: datasourceschema.NestedAttributeObject{
@@ -249,7 +249,7 @@ func toDataSourceSchemaJdbcDataStore() datasourceschema.SingleNestedAttribute {
 			Optional:    false,
 		},
 		"connection_url": datasourceschema.StringAttribute{
-			Description: "The default location of the JDBC database.",
+			Description: "The default location of the JDBC database. This field is required if no mapping for JDBC database location and tags is specified.",
 			Computed:    true,
 			Optional:    false,
 		},

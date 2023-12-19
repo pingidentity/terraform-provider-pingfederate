@@ -18,6 +18,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 var (
@@ -84,6 +85,22 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 
 	if plan == nil {
 		return
+	}
+
+	// Compare to version 11.3 of PF
+	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+
+	// Prior to 11.3, the user_name field is required for jdbc data stores
+	if compare < 0 && internaltypes.IsDefined(plan.JdbcDataStore) {
+		username := plan.JdbcDataStore.Attributes()["user_name"]
+		if !internaltypes.IsDefined(username) {
+			resp.Diagnostics.AddError("'user_name' is required for JDBC data stores prior to PingFederate 11.3", "")
+			return
+		}
 	}
 
 	// Build name attribute for data stores that have it
