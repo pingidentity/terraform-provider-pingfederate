@@ -102,7 +102,7 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 						Required:    true,
 					},
 					"tags": schema.StringAttribute{
-						Description: "Tags associated with this data source.",
+						Description: "Tags associated with the connection URL. At runtime, nodes will use the first JdbcTagConfig that has a tag that matches with node.tags in run.properties.",
 						Optional:    true,
 					},
 					"default_source": schema.BoolAttribute{
@@ -221,7 +221,7 @@ func toDataSourceSchemaJdbcDataStore() datasourceschema.SingleNestedAttribute {
 						Optional:    false,
 					},
 					"tags": datasourceschema.StringAttribute{
-						Description: "Tags associated with this data source.",
+						Description: "Tags associated with the connection URL. At runtime, nodes will use the first JdbcTagConfig that has a tag that matches with node.tags in run.properties.",
 						Computed:    true,
 						Optional:    false,
 					},
