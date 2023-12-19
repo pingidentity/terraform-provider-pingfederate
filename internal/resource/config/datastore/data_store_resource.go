@@ -309,9 +309,14 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 
 		ldapDataStore["name"] = nameValue
 
-		// If PF version is at least 11.3 then set a default for retry_failed_operations
-		if compare >= 0 && ldapDataStore["retry_failed_operations"].IsUnknown() {
-			ldapDataStore["retry_failed_operations"] = types.BoolValue(false)
+		// If PF version is at least 11.3 then set a default for retry_failed_operations.
+		// If not ensure it is set to null rather than unknown.
+		if ldapDataStore["retry_failed_operations"].IsUnknown() {
+			if compare >= 0 {
+				ldapDataStore["retry_failed_operations"] = types.BoolValue(false)
+			} else {
+				ldapDataStore["retry_failed_operations"] = types.BoolNull()
+			}
 		}
 
 		plan.LdapDataStore, respDiags = types.ObjectValue(ldapDataStoreAttrType, ldapDataStore)
