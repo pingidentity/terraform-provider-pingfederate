@@ -10,7 +10,7 @@ import (
 
 func ClientStruct(planObj basetypes.ObjectValue) (*client.ResourceLink, error) {
 	if !internaltypes.IsDefined(planObj) {
-		return nil, errors.New("null or Unknown object value passed in when creating resource link client struct")
+		return nil, nil
 	}
 
 	objValues := planObj.Attributes()
