@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -13,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
@@ -23,6 +25,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -175,6 +178,20 @@ func (r *oauthOpenIdConnectPolicyResource) Schema(ctx context.Context, req resou
 					},
 				},
 			},
+			"include_x5t_in_id_token": schema.BoolAttribute{
+				Description: "Determines whether the X.509 thumbprint header should be included in the ID Token. Supported in PF version 11.3 or later.",
+				Optional:    true,
+				Computed:    true,
+				// Default is set in modify plan since it depends on PF version
+			},
+			"id_token_typ_header_value": schema.StringAttribute{
+				Description: "ID Token Type (typ) Header Value. Supported in PF version 11.3 or later.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
+			},
 		},
 	}
 	id.ToSchema(&schema)
@@ -182,25 +199,48 @@ func (r *oauthOpenIdConnectPolicyResource) Schema(ctx context.Context, req resou
 	resp.Schema = schema
 }
 
+func (r *oauthOpenIdConnectPolicyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	// Compare to version 11.3 of PF
+	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	var plan oauthOpenIdConnectPolicyModel
+	req.Plan.Get(ctx, &plan)
+	planModified := false
+	// If include_x5t_in_id_token or id_token_typ_header_value is set prior to PF version 11.3, throw an error
+	if compare < 0 {
+		if internaltypes.IsDefined(plan.IncludeX5tInIdToken) {
+			resp.Diagnostics.AddError("Attribute 'include_x5t_in_id_token' not supported by PingFederate version "+r.providerConfig.ProductVersion, "PF version 11.3 or later is required for this attribute")
+		}
+		if internaltypes.IsDefined(plan.IdTokenTypHeaderValue) {
+			resp.Diagnostics.AddError("Attribute 'id_token_typ_header_value' not supported by PingFederate version "+r.providerConfig.ProductVersion, "PF version 11.3 or later is required for this attribute")
+		}
+		plan.IncludeX5tInIdToken = types.BoolNull()
+		plan.IdTokenTypHeaderValue = types.StringNull()
+		planModified = true
+	}
+	// Set default if PF version is new enough
+	if compare >= 0 && plan.IncludeX5tInIdToken.IsUnknown() {
+		plan.IncludeX5tInIdToken = types.BoolValue(false)
+		planModified = true
+	}
+
+	if planModified {
+		resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
+	}
+}
+
 func addOptionalOauthOpenIdConnectPolicyFields(ctx context.Context, policy *client.OpenIdConnectPolicy, plan oauthOpenIdConnectPolicyModel) error {
-	if internaltypes.IsDefined(plan.IdTokenLifetime) {
-		policy.IdTokenLifetime = plan.IdTokenLifetime.ValueInt64Pointer()
-	}
-	if internaltypes.IsDefined(plan.IncludeSriInIdToken) {
-		policy.IncludeSriInIdToken = plan.IncludeSriInIdToken.ValueBoolPointer()
-	}
-	if internaltypes.IsDefined(plan.IncludeUserInfoInIdToken) {
-		policy.IncludeUserInfoInIdToken = plan.IncludeUserInfoInIdToken.ValueBoolPointer()
-	}
-	if internaltypes.IsDefined(plan.IncludeSHashInIdToken) {
-		policy.IncludeSHashInIdToken = plan.IncludeSHashInIdToken.ValueBoolPointer()
-	}
-	if internaltypes.IsDefined(plan.ReturnIdTokenOnRefreshGrant) {
-		policy.ReturnIdTokenOnRefreshGrant = plan.ReturnIdTokenOnRefreshGrant.ValueBoolPointer()
-	}
-	if internaltypes.IsDefined(plan.ReissueIdTokenInHybridFlow) {
-		policy.ReissueIdTokenInHybridFlow = plan.ReissueIdTokenInHybridFlow.ValueBoolPointer()
-	}
+	policy.IdTokenLifetime = plan.IdTokenLifetime.ValueInt64Pointer()
+	policy.IncludeSriInIdToken = plan.IncludeSriInIdToken.ValueBoolPointer()
+	policy.IncludeUserInfoInIdToken = plan.IncludeUserInfoInIdToken.ValueBoolPointer()
+	policy.IncludeSHashInIdToken = plan.IncludeSHashInIdToken.ValueBoolPointer()
+	policy.ReturnIdTokenOnRefreshGrant = plan.ReturnIdTokenOnRefreshGrant.ValueBoolPointer()
+	policy.ReissueIdTokenInHybridFlow = plan.ReissueIdTokenInHybridFlow.ValueBoolPointer()
+	policy.IncludeX5tInIdToken = plan.IncludeX5tInIdToken.ValueBoolPointer()
+	policy.IdTokenTypHeaderValue = plan.IdTokenTypHeaderValue.ValueStringPointer()
 	if internaltypes.IsDefined(plan.ScopeAttributeMappings) {
 		scopeAttributeMappings := map[string]client.ParameterValues{}
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ScopeAttributeMappings, false)), &scopeAttributeMappings)
