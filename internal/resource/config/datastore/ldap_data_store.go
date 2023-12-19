@@ -97,7 +97,7 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Default:     int64default.StaticInt64(0),
 		},
 		"hostnames": schema.SetAttribute{
-			Description: "The default LDAP host names. This field is required if no mapping for host names and tags are specified.",
+			Description: "The default LDAP host names. This field is required if no mapping for host names and tags is specified. Failover can be configured by providing multiple host names.",
 			Computed:    true,
 			Optional:    true,
 			ElementType: types.StringType,
@@ -195,7 +195,7 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Default:     int64default.StaticInt64(-1),
 		},
 		"hostnames_tags": schema.SetNestedAttribute{
-			Description: "A LDAP data store's host names and tags configuration. This is required if no default LDAP host names are specified.",
+			Description: "The set of host names and associated tags for this LDAP data store. This is required if 'hostnames' is not provided.",
 			Computed:    true,
 			Optional:    true,
 			NestedObject: schema.NestedAttributeObject{
@@ -235,7 +235,7 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Default:     int64default.StaticInt64(0),
 		},
 		"user_dn": schema.StringAttribute{
-			Description: "The username credential required to access the data store.",
+			Description: "The username credential required to access the data store. If specified, no other authentication fields should be provided.",
 			Required:    true,
 		},
 		"password": schema.StringAttribute{
@@ -247,7 +247,7 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			},
 		},
 		"bind_anonymously": schema.BoolAttribute{
-			Description: "Whether username and password are required. The default value is false.",
+			Description: "Whether username and password are required. If true, no other authentication fields should be provided. The default value is false.",
 			Computed:    true,
 			Optional:    true,
 			Default:     booldefault.StaticBool(false),
@@ -304,7 +304,7 @@ func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
 			Optional:    false,
 		},
 		"hostnames": datasourceschema.SetAttribute{
-			Description: "The default LDAP host names.",
+			Description: "The default LDAP host names. Failover can be configured by providing multiple host names.",
 			Computed:    true,
 			Optional:    false,
 			ElementType: types.StringType,
@@ -381,7 +381,7 @@ func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
 			Optional:    false,
 		},
 		"hostnames_tags": datasourceschema.SetNestedAttribute{
-			Description: "A LDAP data store's host names and tags configuration.",
+			Description: "The set of host names and associated tags for this LDAP data store.",
 			Computed:    true,
 			Optional:    false,
 			NestedObject: datasourceschema.NestedAttributeObject{
@@ -411,7 +411,7 @@ func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
 			Optional:    false,
 		},
 		"user_dn": datasourceschema.StringAttribute{
-			Description: "The username credential required to access the data store.",
+			Description: "The username credential required to access the data store. If specified, no other authentication fields should be provided.",
 			Computed:    true,
 			Optional:    false,
 		},
@@ -421,7 +421,7 @@ func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
 			Optional:    false,
 		},
 		"bind_anonymously": datasourceschema.BoolAttribute{
-			Description: "Whether username and password are required.",
+			Description: "Whether username and password are required. If true, no other authentication fields should be provided. The default value is false.",
 			Computed:    true,
 			Optional:    false,
 		},
