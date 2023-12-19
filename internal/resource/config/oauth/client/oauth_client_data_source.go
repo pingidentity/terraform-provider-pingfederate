@@ -293,6 +293,16 @@ func (r *oauthClientDataSource) Schema(ctx context.Context, req datasource.Schem
 						Optional:    false,
 						Computed:    true,
 					},
+					"logout_mode": schema.StringAttribute{
+						Description: "The logout mode for this client. The default is 'NONE'. Supported in PF version 11.3 or later.",
+						Optional:    false,
+						Computed:    true,
+					},
+					"back_channel_logout_uri": schema.StringAttribute{
+						Description: "The back-channel logout URI for this client. Supported in PF version 11.3 or later.",
+						Optional:    false,
+						Computed:    true,
+					},
 				},
 			},
 			"client_auth": schema.SingleNestedAttribute{

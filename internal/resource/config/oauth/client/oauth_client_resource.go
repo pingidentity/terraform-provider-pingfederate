@@ -43,67 +43,10 @@ var (
 )
 
 var (
-	emptyStringSet, _    = types.SetValue(types.StringType, []attr.Value{})
-	jwksSettingsAttrType = map[string]attr.Type{
-		"jwks_url": types.StringType,
-		"jwks":     types.StringType,
-	}
-
-	oidcPolicyAttrType = map[string]attr.Type{
-		"id_token_signing_algorithm":                  types.StringType,
-		"id_token_encryption_algorithm":               types.StringType,
-		"id_token_content_encryption_algorithm":       types.StringType,
-		"policy_group":                                types.ObjectType{AttrTypes: resourcelink.AttrType()},
-		"grant_access_session_revocation_api":         types.BoolType,
-		"grant_access_session_session_management_api": types.BoolType,
-		"ping_access_logout_capable":                  types.BoolType,
-		"logout_uris":                                 types.SetType{ElemType: types.StringType},
-		"pairwise_identifier_user_type":               types.BoolType,
-		"sector_identifier_uri":                       types.StringType,
-	}
-
-	oidcPolicyDefaultAttrValue = map[string]attr.Value{
-		"id_token_signing_algorithm":                  types.StringNull(),
-		"id_token_encryption_algorithm":               types.StringNull(),
-		"id_token_content_encryption_algorithm":       types.StringNull(),
-		"policy_group":                                types.ObjectNull(resourcelink.AttrType()),
-		"grant_access_session_revocation_api":         types.BoolValue(false),
-		"grant_access_session_session_management_api": types.BoolValue(false),
-		"ping_access_logout_capable":                  types.BoolValue(false),
-		"logout_uris":                                 types.SetNull(types.StringType),
-		"pairwise_identifier_user_type":               types.BoolValue(false),
-	}
-
-	oidcPolicyDefaultObj, _ = types.ObjectValue(oidcPolicyAttrType, oidcPolicyDefaultAttrValue)
-
-	secondarySecretsAttrType = map[string]attr.Type{
-		"secret":      types.StringType,
-		"expiry_time": types.StringType,
-	}
-
+	emptyStringSet, _           = types.SetValue(types.StringType, []attr.Value{})
+	oidcPolicyDefaultObj, _     = types.ObjectValue(oidcPolicyAttrType, oidcPolicyDefaultAttrValue)
 	secondarySecretsEmptySet, _ = types.SetValue(types.ObjectType{AttrTypes: secondarySecretsAttrType}, []attr.Value{})
-
-	clientAuthAttrType = map[string]attr.Type{
-		"type":                                  types.StringType,
-		"secret":                                types.StringType,
-		"secondary_secrets":                     types.SetType{ElemType: types.ObjectType{AttrTypes: secondarySecretsAttrType}},
-		"client_cert_issuer_dn":                 types.StringType,
-		"client_cert_subject_dn":                types.StringType,
-		"enforce_replay_prevention":             types.BoolType,
-		"token_endpoint_auth_signing_algorithm": types.StringType,
-	}
-
-	clientAuthDefaultAttrValue = map[string]attr.Value{
-		"type":                                  types.StringValue("NONE"),
-		"secret":                                types.StringNull(),
-		"secondary_secrets":                     secondarySecretsEmptySet,
-		"client_cert_issuer_dn":                 types.StringNull(),
-		"client_cert_subject_dn":                types.StringNull(),
-		"enforce_replay_prevention":             types.BoolNull(),
-		"token_endpoint_auth_signing_algorithm": types.StringNull(),
-	}
-
-	clientAuthDefaultObj, _ = types.ObjectValue(clientAuthAttrType, clientAuthDefaultAttrValue)
+	clientAuthDefaultObj, _     = types.ObjectValue(clientAuthAttrType, clientAuthDefaultAttrValue)
 )
 
 // OauthClientResource is a helper function to simplify the provider implementation.
@@ -498,6 +441,22 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 							configvalidators.ValidUrl(),
 						},
 					},
+					"logout_mode": schema.StringAttribute{
+						Description: "The logout mode for this client. The default is 'NONE'. Supported in PF version 11.3 or later.",
+						Optional:    true,
+						Computed:    true,
+						Validators: []validator.String{
+							stringvalidator.OneOf(
+								"NONE",
+								"PING_FRONT_CHANNEL",
+								"OIDC_BACK_CHANNEL",
+							),
+						},
+					},
+					"back_channel_logout_uri": schema.StringAttribute{
+						Description: "The back-channel logout URI for this client. Supported in PF version 11.3 or later.",
+						Optional:    true,
+					},
 				},
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
@@ -849,6 +808,8 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				MarkdownDescription: "Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Supported in PF version 11.3 or later.",
 				Description:         "Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Supported in PF version 11.3 or later.",
 				Optional:            true,
+				Computed:            true,
+				// Default set when appropriate in ModifyPlan before
 			},
 		},
 	}
@@ -1006,9 +967,40 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 	}
 	var plan oauthClientModel
 	req.Plan.Get(ctx, &plan)
+	planModified := false
 	// If require_dpop is set prior to PF version 11.3, throw an error
 	if compare < 0 && internaltypes.IsDefined(plan.RequireDpop) {
 		resp.Diagnostics.AddError("Attribute 'require_dpop' not supported by PingFederate version "+r.providerConfig.ProductVersion, "")
+	}
+	// Set a default of false if the PF version is new enough
+	if compare >= 0 && plan.RequireDpop.IsUnknown() {
+		plan.RequireDpop = types.BoolValue(false)
+		planModified = true
+	}
+	// If oidc_policy.logout_mode is set prior to PF version 11.3, throw an error. Otherwise, set the PF default.
+	if internaltypes.IsDefined(plan.OidcPolicy) {
+		planOidcPolicyAttrs := plan.OidcPolicy.Attributes()
+		planLogoutMode := planOidcPolicyAttrs["logout_mode"].(types.String)
+		planBackChannelLogoutUri := planOidcPolicyAttrs["back_channel_logout_uri"].(types.String)
+		if compare < 0 {
+			if internaltypes.IsDefined(planLogoutMode) {
+				resp.Diagnostics.AddError("Attribute 'oidc_policy.logout_mode' not supported by PingFederate version "+r.providerConfig.ProductVersion, "")
+			}
+			if internaltypes.IsDefined(planBackChannelLogoutUri) {
+				resp.Diagnostics.AddError("Attribute 'oidc_policy.back_channel_logout_uri' not supported by PingFederate version "+r.providerConfig.ProductVersion, "")
+			}
+		} else if planLogoutMode.IsUnknown() {
+			// Set a default logout_mode if the PF version is new enough
+			planOidcPolicyAttrs["logout_mode"] = types.StringValue("NONE")
+			var diags diag.Diagnostics
+			plan.OidcPolicy, diags = types.ObjectValue(plan.OidcPolicy.AttributeTypes(ctx), planOidcPolicyAttrs)
+			resp.Diagnostics.Append(diags...)
+			planModified = true
+		}
+	}
+
+	if planModified {
+		resp.Plan.Set(ctx, &plan)
 	}
 }
 

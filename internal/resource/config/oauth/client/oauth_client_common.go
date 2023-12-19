@@ -12,6 +12,67 @@ import (
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
+var (
+	jwksSettingsAttrType = map[string]attr.Type{
+		"jwks_url": types.StringType,
+		"jwks":     types.StringType,
+	}
+
+	oidcPolicyAttrType = map[string]attr.Type{
+		"id_token_signing_algorithm":                  types.StringType,
+		"id_token_encryption_algorithm":               types.StringType,
+		"id_token_content_encryption_algorithm":       types.StringType,
+		"policy_group":                                types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"grant_access_session_revocation_api":         types.BoolType,
+		"grant_access_session_session_management_api": types.BoolType,
+		"ping_access_logout_capable":                  types.BoolType,
+		"logout_uris":                                 types.SetType{ElemType: types.StringType},
+		"pairwise_identifier_user_type":               types.BoolType,
+		"sector_identifier_uri":                       types.StringType,
+		"logout_mode":                                 types.StringType,
+		"back_channel_logout_uri":                     types.StringType,
+	}
+
+	oidcPolicyDefaultAttrValue = map[string]attr.Value{
+		"id_token_signing_algorithm":                  types.StringNull(),
+		"id_token_encryption_algorithm":               types.StringNull(),
+		"id_token_content_encryption_algorithm":       types.StringNull(),
+		"policy_group":                                types.ObjectNull(resourcelink.AttrType()),
+		"grant_access_session_revocation_api":         types.BoolValue(false),
+		"grant_access_session_session_management_api": types.BoolValue(false),
+		"ping_access_logout_capable":                  types.BoolValue(false),
+		"logout_uris":                                 types.SetNull(types.StringType),
+		"pairwise_identifier_user_type":               types.BoolValue(false),
+		"logout_mode":                                 types.StringUnknown(),
+		"back_channel_logout_uri":                     types.StringUnknown(),
+	}
+
+	secondarySecretsAttrType = map[string]attr.Type{
+		"secret":      types.StringType,
+		"expiry_time": types.StringType,
+	}
+
+	clientAuthAttrType = map[string]attr.Type{
+		"type":                                  types.StringType,
+		"secret":                                types.StringType,
+		"secondary_secrets":                     types.SetType{ElemType: types.ObjectType{AttrTypes: secondarySecretsAttrType}},
+		"client_cert_issuer_dn":                 types.StringType,
+		"client_cert_subject_dn":                types.StringType,
+		"enforce_replay_prevention":             types.BoolType,
+		"token_endpoint_auth_signing_algorithm": types.StringType,
+	}
+
+	clientAuthDefaultAttrValue = map[string]attr.Value{
+		"type":                                  types.StringValue("NONE"),
+		"secret":                                types.StringNull(),
+		"secondary_secrets":                     secondarySecretsEmptySet,
+		"client_cert_issuer_dn":                 types.StringNull(),
+		"client_cert_subject_dn":                types.StringNull(),
+		"enforce_replay_prevention":             types.BoolNull(),
+		"token_endpoint_auth_signing_algorithm": types.StringNull(),
+	}
+)
+
 type oauthClientModel struct {
 	Id                                                            types.String `tfsdk:"id"`
 	ClientId                                                      types.String `tfsdk:"client_id"`
