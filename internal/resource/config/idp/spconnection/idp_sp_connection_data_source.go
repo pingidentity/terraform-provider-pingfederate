@@ -1318,6 +1318,11 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Optional:    false,
 						Description: "The WS-Trust version for a WS-Federation connection.",
 					},
+					"sso_application_endpoint": schema.StringAttribute{
+						Optional:    false,
+						Computed:    true,
+						Description: "Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter. Supported in PF version 11.3 or later.",
+					},
 				},
 				Computed:    true,
 				Optional:    false,

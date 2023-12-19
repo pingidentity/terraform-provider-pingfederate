@@ -2,6 +2,7 @@ package acctest_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -19,9 +20,22 @@ const (
 	resourceType   = "IdP SP Connection"
 )
 
+var outboundEnvironmentSetting = ""
+
 func TestAccIdpSpConnection(t *testing.T) {
+	connId := os.Getenv("PF_TF_P1_CONNECTION_ID")
+	envId := os.Getenv("PF_TF_P1_CONNECTION_ENV_ID")
+	outboundEnvironmentSetting = connId + "|" + envId
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		PreCheck: func() {
+			acctest.ConfigurationPreCheck(t)
+			if connId == "" {
+				t.Fatal("PF_TF_P1_CONNECTION_ID must be set for the IdP SP Connection acceptance test")
+			}
+			if envId == "" {
+				t.Fatal("PF_TF_P1_CONNECTION_ENV_ID must be set for the IdP SP Connection acceptance test")
+			}
+		},
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
@@ -112,13 +126,13 @@ func baseHcl(resourceName string) string {
 }
 
 func outboundProvisionHcl() string {
-	return `
+	return fmt.Sprintf(`
   outbound_provision = {
     type = "PingOne"
     target_settings = [
       {
         name  = "PINGONE_ENVIRONMENT"
-        value = "example"
+        value = "%s"
       }
     ]
     channels = [
@@ -182,7 +196,7 @@ func outboundProvisionHcl() string {
       }
     ]
   }
-  `
+  `, outboundEnvironmentSetting)
 }
 
 func wsTrustHcl() string {

@@ -263,6 +263,7 @@ var (
 			"minutes_before": types.Int64Type,
 			"minutes_after":  types.Int64Type,
 		}},
+		"sso_application_endpoint": types.StringType,
 	}
 
 	policyAttrTypes = map[string]attr.Type{
@@ -1598,6 +1599,11 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								"WSTRUST13",
 							),
 						},
+					},
+					"sso_application_endpoint": schema.StringAttribute{
+						Optional:    false,
+						Computed:    true,
+						Description: "Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter. Supported in PF version 11.3 or later.",
 					},
 				},
 				Optional:    true,
