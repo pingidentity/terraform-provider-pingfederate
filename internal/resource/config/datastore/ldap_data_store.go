@@ -201,12 +201,12 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"hostnames": schema.SetAttribute{
-						Description: "The LDAP host names.",
+						Description: "The LDAP host names. Failover can be configured by providing multiple host names.",
 						Required:    true,
 						ElementType: types.StringType,
 					},
 					"tags": schema.StringAttribute{
-						Description: "Tags associated with this data source.",
+						Description: "Tags associated with the host names. At runtime, nodes will use the first LdapTagConfig that has a tag that matches with node.tags in run.properties.",
 						Optional:    true,
 					},
 					"default_source": schema.BoolAttribute{
@@ -387,13 +387,13 @@ func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
 			NestedObject: datasourceschema.NestedAttributeObject{
 				Attributes: map[string]datasourceschema.Attribute{
 					"hostnames": datasourceschema.SetAttribute{
-						Description: "The LDAP host names.",
+						Description: "The LDAP host names. Failover can be configured by providing multiple host names.",
 						Computed:    true,
 						Optional:    false,
 						ElementType: types.StringType,
 					},
 					"tags": datasourceschema.StringAttribute{
-						Description: "Tags associated with this data source.",
+						Description: "Tags associated with the host names. At runtime, nodes will use the first LdapTagConfig that has a tag that matches with node.tags in run.properties.",
 						Computed:    true,
 						Optional:    false,
 					},
