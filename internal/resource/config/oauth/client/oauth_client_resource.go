@@ -424,7 +424,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						Default:     booldefault.StaticBool(false),
 					},
 					"logout_uris": schema.SetAttribute{
-						Description: "A list of client logout URI's which will be invoked when a user logs out through one of PingFederate's SLO endpoints.",
+						Description: "A list of front-channel logout URIs for this client.",
 						ElementType: types.StringType,
 						Optional:    true,
 					},

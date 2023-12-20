@@ -159,6 +159,13 @@ func TestAccOauthClient(t *testing.T) {
 }
 
 func oidcPolicyHcl(clientOidcPolicy *client.ClientOIDCPolicy) string {
+	versionedHcl := ""
+	if acctest.VersionAtLeast(version.PingFederate1130) {
+		versionedHcl += `
+	logout_mode = "OIDC_BACK_CHANNEL"
+	back_channel_logout_uri = "https://example.com"	
+		`
+	}
 	return fmt.Sprintf(`
   oidc_policy = {
     id_token_signing_algorithm                  = "%s"
@@ -169,6 +176,7 @@ func oidcPolicyHcl(clientOidcPolicy *client.ClientOIDCPolicy) string {
     sector_identifier_uri                       = "%s"
     id_token_encryption_algorithm               = "%s"
     id_token_content_encryption_algorithm       = "%s"
+	%s
   }
 	`, *clientOidcPolicy.IdTokenSigningAlgorithm,
 		*clientOidcPolicy.GrantAccessSessionRevocationApi,
@@ -177,7 +185,8 @@ func oidcPolicyHcl(clientOidcPolicy *client.ClientOIDCPolicy) string {
 		*clientOidcPolicy.PairwiseIdentifierUserType,
 		*clientOidcPolicy.SectorIdentifierUri,
 		*clientOidcPolicy.IdTokenEncryptionAlgorithm,
-		*clientOidcPolicy.IdTokenContentEncryptionAlgorithm)
+		*clientOidcPolicy.IdTokenContentEncryptionAlgorithm,
+		versionedHcl)
 }
 
 func clientAuthHcl(clientAuth *client.ClientAuth) string {
