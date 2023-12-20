@@ -1,3 +1,7 @@
+# v0.5.0 (Unreleased)
+### FEATURES
+* Added support for PingFederate version `11.3` and full support for all `11.2.x` versions ([#149](https://github.com/pingidentity/terraform-provider-pingfederate/pull/149))
+
 # v0.4.0 December 13, 2023 => MVP
 ### FEATURES
 #### Resources
