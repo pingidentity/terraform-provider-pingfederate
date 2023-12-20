@@ -314,13 +314,13 @@ func updatePingOneLdapGatewayDataStore(plan dataStoreModel, con context.Context,
 
 	err = addOptionalPingOneLdapGatewayDataStoreFields(updatePingOneLdapGatewayDataStore, con, client.PingOneLdapGatewayDataStore{}, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for DataStore", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for the DataStore", err.Error())
 		return
 	}
 
 	response, httpResp, err := updateDataStore(updatePingOneLdapGatewayDataStore, dsr, con, resp, plan.Id.ValueString())
-	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while updating DataStore", err, httpResp)
+	if err != nil {
+		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while updating the DataStore", err, httpResp)
 		return
 	}
 

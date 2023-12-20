@@ -214,7 +214,6 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopeResource) Delete(ctx context
 	httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.RemoveExclusiveScope(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Name.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a OAuth Auth Server Settings Scopes Exclusive Scope", err, httpResp)
-		return
 	}
 }
 

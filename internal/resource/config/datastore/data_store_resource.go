@@ -355,6 +355,7 @@ func (r *dataStoreResource) Read(ctx context.Context, req resource.ReadRequest, 
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the data store", err, httpResp)
 		}
+		return
 	}
 
 	if dataStoreGetReq.CustomDataStore != nil {
@@ -428,7 +429,6 @@ func (r *dataStoreResource) Delete(ctx context.Context, req resource.DeleteReque
 	httpResp, err := r.apiClient.DataStoresAPI.DeleteDataStore(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a data store", err, httpResp)
-		return
 	}
 }
 

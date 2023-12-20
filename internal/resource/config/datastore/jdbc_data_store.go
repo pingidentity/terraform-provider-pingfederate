@@ -454,13 +454,13 @@ func updateJdbcDataStore(plan dataStoreModel, con context.Context, req resource.
 	updateJdbcDataStore := client.JdbcDataStoreAsDataStoreAggregation(client.NewJdbcDataStore(driverClass, userName, "JDBC"))
 	err = addOptionalJdbcDataStoreFields(updateJdbcDataStore, con, client.JdbcDataStore{}, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for DataStore", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for the DataStore", err.Error())
 		return
 	}
 
 	response, httpResponse, err := updateDataStore(updateJdbcDataStore, dsr, con, resp, plan.Id.ValueString())
-	if err != nil && (httpResponse == nil || httpResponse.StatusCode != 404) {
-		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while updating DataStore", err, httpResponse)
+	if err != nil {
+		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while updating the DataStore", err, httpResponse)
 		return
 	}
 

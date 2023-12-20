@@ -379,9 +379,7 @@ func (r *keyPairsSigningImportResource) Delete(ctx context.Context, req resource
 	httpResp, err := r.apiClient.KeyPairsSigningAPI.DeleteSigningKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ImportId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a key pair signing import resource", err, httpResp)
-		return
 	}
-
 }
 
 func (r *keyPairsSigningImportResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
