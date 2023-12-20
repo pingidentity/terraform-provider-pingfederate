@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -31,7 +32,7 @@ type authenticationPoliciesSettingsDataSource struct {
 // GetSchema defines the schema for the datasource.
 func (r *authenticationPoliciesSettingsDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages Authentication Policies Settings",
+		Description: "Describes the authentication policies settings",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "The ID of the resource.",
@@ -40,22 +41,17 @@ func (r *authenticationPoliciesSettingsDataSource) Schema(ctx context.Context, r
 			},
 			"enable_idp_authn_selection": schema.BoolAttribute{
 				Description: "Enable IdP authentication policies.",
-				Optional:    true,
 				Computed:    true,
+				Optional:    false,
 			},
 			"enable_sp_authn_selection": schema.BoolAttribute{
 				Description: "Enable SP authentication policies.",
-				Optional:    true,
 				Computed:    true,
+				Optional:    false,
 			},
 		},
 	}
 
-	// // Set attributes in string list
-	// if setOptionalToComputed {
-	// 	config.SetAllAttributesToOptionalAndComputed(&schema, []string{"FIX_ME"})
-	// }
-	// config.AddCommonSchema(&schema, false)
 	id.ToDataSourceSchema(&schema)
 	resp.Schema = schema
 }
@@ -87,15 +83,13 @@ func (r *authenticationPoliciesSettingsDataSource) Read(ctx context.Context, req
 	apiReadAuthenticationPoliciesSettings, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.GetAuthenticationPolicySettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 
 	if err != nil {
-		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the authentication policies settings", err, httpResp)
-			return
-		}
-
-		readAuthenticationPoliciesSettings(ctx, apiReadAuthenticationPoliciesSettings, &state, id)
-
-		// Set refreshed state
-		diags = resp.State.Set(ctx, &state)
-		resp.Diagnostics.Append(diags...)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the authentication policies settings", err, httpResp)
+		return
 	}
+
+	readAuthenticationPoliciesSettingsResponse(ctx, apiReadAuthenticationPoliciesSettings, &state, pointers.String("authentication_policies_settings_id"))
+
+	// Set refreshed state
+	diags = resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diags...)
 }

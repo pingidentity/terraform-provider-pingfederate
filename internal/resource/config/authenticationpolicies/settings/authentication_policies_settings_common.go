@@ -14,7 +14,7 @@ type authenticationPoliciesSettingsModel struct {
 	EnableSpAuthnSelection  types.Bool   `tfsdk:"enable_sp_authn_selection"`
 }
 
-func readAuthenticationPoliciesSettings(ctx context.Context, r *client.AuthenticationPoliciesSettings, state *authenticationPoliciesSettingsModel, existingId *string) {
+func readAuthenticationPoliciesSettingsResponse(ctx context.Context, r *client.AuthenticationPoliciesSettings, state *authenticationPoliciesSettingsModel, existingId *string) {
 	if existingId != nil {
 		state.Id = types.StringValue(*existingId)
 	} else {

@@ -57,11 +57,6 @@ func (r *authenticationPoliciesSettingsResource) Schema(ctx context.Context, req
 		},
 	}
 
-	// // Set attributes in string list
-	// if setOptionalToComputed {
-	// 	config.SetAllAttributesToOptionalAndComputed(&schema, []string{"FIX_ME"})
-	// }
-	// config.AddCommonSchema(&schema, false)
 	id.ToSchema(&schema)
 	resp.Schema = schema
 }
@@ -131,7 +126,7 @@ func (r *authenticationPoliciesSettingsResource) Create(ctx context.Context, req
 	// Read the response into the state
 	var state authenticationPoliciesSettingsModel
 
-	readAuthenticationPoliciesSettings(ctx, authenticationPoliciesSettingsResponse, &state, nil)
+	readAuthenticationPoliciesSettingsResponse(ctx, authenticationPoliciesSettingsResponse, &state, nil)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -166,7 +161,7 @@ func (r *authenticationPoliciesSettingsResource) Read(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	readAuthenticationPoliciesSettings(ctx, apiReadAuthenticationPoliciesSettings, &state, id)
+	readAuthenticationPoliciesSettingsResponse(ctx, apiReadAuthenticationPoliciesSettings, &state, id)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -215,7 +210,7 @@ func (r *authenticationPoliciesSettingsResource) Update(ctx context.Context, req
 		return
 	}
 	// Read the response
-	readAuthenticationPoliciesSettings(ctx, updateAuthenticationPoliciesSettingsResponse, &state, id)
+	readAuthenticationPoliciesSettingsResponse(ctx, updateAuthenticationPoliciesSettingsResponse, &state, id)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
@@ -228,8 +223,5 @@ func (r *authenticationPoliciesSettingsResource) Delete(ctx context.Context, req
 
 func (r *authenticationPoliciesSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	// Set a placeholder id value to appease terraform.
-	// The real attributes will be imported when terraform performs a read after the import.
-	// If no value is set here, Terraform will error out when importing.
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), "id")...)
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }

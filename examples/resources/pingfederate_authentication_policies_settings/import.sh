@@ -1,0 +1,2 @@
+# "authenticationPoliciesSettingsId" should be "id"
+terraform import pingfederate_authentication_policies_settings.myAuthenticationPoliciesSettings authenticationPoliciesSettingsId

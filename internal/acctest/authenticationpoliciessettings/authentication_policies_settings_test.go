@@ -12,8 +12,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-//const authenticationPoliciesSettingsId = "2"
-
 // Attributes to test with. Add optional properties to test here if desired.
 type authenticationPoliciesSettingsResourceModel struct {
 	enableIdpAuthnSelection bool
@@ -62,6 +60,10 @@ func testAccAuthenticationPoliciesSettings(resourceName string, resourceModel au
 resource "pingfederate_authentication_policies_settings" "%[1]s" {
   enable_idp_authn_selection = %[2]t
   enable_sp_authn_selection  = %[3]t
+}
+
+data "pingfederate_authentication_policies_settings" "%[1]s" {
+  depends_on = [pingfederate_authentication_policies_settings.%[1]s]
 }`, resourceName,
 		resourceModel.enableIdpAuthnSelection,
 		resourceModel.enableSpAuthnSelection,
