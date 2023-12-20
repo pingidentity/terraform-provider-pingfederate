@@ -108,11 +108,11 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 			ldapDataStoreAttrs := plan.LdapDataStore.Attributes()
 			clientTlsCertificateRef := ldapDataStoreAttrs["client_tls_certificate_ref"]
 			if internaltypes.IsDefined(clientTlsCertificateRef) {
-				resp.Diagnostics.AddError("Attribute 'client_tls_certificate_ref' not supported for LDAP data stores by PingFederate version "+r.providerConfig.ProductVersion, "PF 11.3 or later required")
+				resp.Diagnostics.AddError("Attribute 'client_tls_certificate_ref' not supported for LDAP data stores by PingFederate version "+string(r.providerConfig.ProductVersion), "PF 11.3 or later required")
 			}
 			retryFailedOperations := ldapDataStoreAttrs["retry_failed_operations"].(types.Bool)
 			if internaltypes.IsDefined(retryFailedOperations) {
-				resp.Diagnostics.AddError("Attribute 'retry_failed_operations' not supported for LDAP data stores by PingFederate version "+r.providerConfig.ProductVersion, "PF 11.3 or later required")
+				resp.Diagnostics.AddError("Attribute 'retry_failed_operations' not supported for LDAP data stores by PingFederate version "+string(r.providerConfig.ProductVersion), "PF 11.3 or later required")
 			}
 		}
 	}

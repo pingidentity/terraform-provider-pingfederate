@@ -210,6 +210,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	}
 
 	var productVersion string
+	var parsedProductVersion version.SupportedVersion
 	var err error
 	if !config.ProductVersion.IsUnknown() && !config.ProductVersion.IsNull() {
 		productVersion = config.ProductVersion.ValueString()
@@ -224,7 +225,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 		)
 	} else {
 		// Validate the PingFederate version
-		productVersion, err = version.Parse(productVersion)
+		parsedProductVersion, err = version.Parse(productVersion)
 		if err != nil {
 			resp.Diagnostics.AddError("Invalid PingFederate version", err.Error())
 		}
@@ -297,7 +298,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 		HttpsHost:      httpsHost,
 		Username:       username,
 		Password:       password,
-		ProductVersion: productVersion,
+		ProductVersion: parsedProductVersion,
 	}
 	resourceConfig.ProviderConfig = providerConfig
 	clientConfig := client.NewConfiguration()

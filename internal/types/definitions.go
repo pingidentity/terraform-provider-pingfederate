@@ -1,13 +1,16 @@
 package types
 
-import client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
+import (
+	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
+)
 
 // Configuration used by the provider and resources
 type ProviderConfiguration struct {
 	HttpsHost      string
 	Username       string
 	Password       string
-	ProductVersion string
+	ProductVersion version.SupportedVersion
 }
 
 // Configuration passed to resources

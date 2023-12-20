@@ -544,20 +544,20 @@ func (r *oauthAuthServerSettingsResource) ModifyPlan(ctx context.Context, req re
 	// If any of these fields are set by the user and the PF version is not new enough, throw an error
 	if compare < 0 {
 		if internaltypes.IsDefined(plan.DpopProofEnforceReplayPrevention) {
-			resp.Diagnostics.AddError("Attribute 'dpop_proof_enforce_replay_prevention' not supported by PingFederate version "+r.providerConfig.ProductVersion, "")
+			resp.Diagnostics.AddError("Attribute 'dpop_proof_enforce_replay_prevention' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "")
 		} else if plan.DpopProofEnforceReplayPrevention.IsUnknown() {
 			// Set a null default when the version isn't new enough to use this attribute
 			plan.DpopProofEnforceReplayPrevention = types.BoolNull()
 		}
 
 		if internaltypes.IsDefined(plan.DpopProofLifetimeSeconds) {
-			resp.Diagnostics.AddError("Attribute 'dpop_proof_lifetime_seconds' not supported by PingFederate version "+r.providerConfig.ProductVersion, "")
+			resp.Diagnostics.AddError("Attribute 'dpop_proof_lifetime_seconds' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "")
 		} else if plan.DpopProofLifetimeSeconds.IsUnknown() {
 			plan.DpopProofLifetimeSeconds = types.Int64Null()
 		}
 
 		if internaltypes.IsDefined(plan.DpopProofRequireNonce) {
-			resp.Diagnostics.AddError("Attribute 'dpop_proof_require_nonce' not supported by PingFederate version "+r.providerConfig.ProductVersion, "")
+			resp.Diagnostics.AddError("Attribute 'dpop_proof_require_nonce' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "")
 		} else if plan.DpopProofRequireNonce.IsUnknown() {
 			plan.DpopProofRequireNonce = types.BoolNull()
 		}

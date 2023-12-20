@@ -972,7 +972,7 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 	// If require_dpop is set prior to PF version 11.3, throw an error
 	if compare < 0 {
 		if internaltypes.IsDefined(plan.RequireDpop) {
-			resp.Diagnostics.AddError("Attribute 'require_dpop' not supported by PingFederate version "+r.providerConfig.ProductVersion, "")
+			resp.Diagnostics.AddError("Attribute 'require_dpop' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "")
 		} else if plan.RequireDpop.IsUnknown() {
 			// Ensure require_dpop is not unknown for older versions of PF, so that it gets passed in as nil rather than false.
 			// Passing it in as false would break older versions of PF, since it is an unrecognized property.
@@ -991,7 +991,7 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		planBackChannelLogoutUri := planOidcPolicyAttrs["back_channel_logout_uri"].(types.String)
 		if compare < 0 {
 			if internaltypes.IsDefined(planLogoutMode) {
-				resp.Diagnostics.AddError("Attribute 'oidc_policy.logout_mode' not supported by PingFederate version "+r.providerConfig.ProductVersion, "")
+				resp.Diagnostics.AddError("Attribute 'oidc_policy.logout_mode' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "")
 			} else if planLogoutMode.IsUnknown() {
 				// Ensure logout_mode is not unknown for older versions of PF
 				planOidcPolicyAttrs["logout_mode"] = types.StringNull()
@@ -1000,7 +1000,7 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 				planModified = true
 			}
 			if internaltypes.IsDefined(planBackChannelLogoutUri) {
-				resp.Diagnostics.AddError("Attribute 'oidc_policy.back_channel_logout_uri' not supported by PingFederate version "+r.providerConfig.ProductVersion, "")
+				resp.Diagnostics.AddError("Attribute 'oidc_policy.back_channel_logout_uri' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "")
 			}
 		} else if planLogoutMode.IsUnknown() {
 			// Set a default logout_mode if the PF version is new enough
