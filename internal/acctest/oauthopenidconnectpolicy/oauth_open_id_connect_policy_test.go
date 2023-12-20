@@ -13,6 +13,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const oauthOpenIdConnectPoliciesId = "testOpenIdConnectPolicy"
@@ -190,6 +191,13 @@ func testAccOauthOpenIdConnectPolicies(resourceName string, resourceModel oauthO
 			*resourceModel.includeSHashInIdToken,
 			*resourceModel.includeUserInfoInIdToken,
 			*resourceModel.idTokenLifetime)
+
+		if acctest.VersionAtLeast(version.PingFederate1130) {
+			optionalHcl += `
+		include_x5t_in_id_token = true
+		id_token_typ_header_value = "Example"
+			`
+		}
 	}
 
 	return fmt.Sprintf(`
