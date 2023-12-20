@@ -14,6 +14,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // These variables cannot be modified due to resource dependent values
@@ -123,6 +124,13 @@ func hcl(lds *client.LdapDataStore) string {
 		return ""
 	}
 	if lds != nil {
+		versionedHcl := ""
+		if acctest.VersionAtLeast(version.PingFederate1130) {
+			versionedHcl += `
+			retry_failed_operations = true
+			`
+		}
+
 		top := `
 		data_store_id             = "%[1]s"
 		%[2]s
@@ -156,6 +164,7 @@ func hcl(lds *client.LdapDataStore) string {
 		  %[20]s
 			%[21]s
 			%[22]s
+			%[23]s
 		}
 		`
 		hostnames := func() string {
@@ -194,7 +203,8 @@ func hcl(lds *client.LdapDataStore) string {
 			acctest.TfKeyValuePairToString("binary_attributes", binaryAttributes(), false),
 			acctest.TfKeyValuePairToString("dns_ttl", strconv.FormatInt(lds.GetDnsTtl(), 10), false),
 			acctest.TfKeyValuePairToString("ldap_dns_srv_prefix", lds.GetLdapDnsSrvPrefix(), true),
-			acctest.TfKeyValuePairToString("ldaps_dns_srv_prefix", lds.GetLdapsDnsSrvPrefix(), true)),
+			acctest.TfKeyValuePairToString("ldaps_dns_srv_prefix", lds.GetLdapsDnsSrvPrefix(), true),
+			versionedHcl),
 		)
 	}
 	return builder.String()
