@@ -9,7 +9,14 @@ type SupportedVersion string
 
 // Supported PingFederate versions
 const (
+	PingFederate1120 SupportedVersion = "11.2.0"
+	PingFederate1121 SupportedVersion = "11.2.1"
+	PingFederate1122 SupportedVersion = "11.2.2"
+	PingFederate1123 SupportedVersion = "11.2.3"
+	PingFederate1124 SupportedVersion = "11.2.4"
 	PingFederate1125 SupportedVersion = "11.2.5"
+	PingFederate1126 SupportedVersion = "11.2.6"
+	PingFederate1127 SupportedVersion = "11.2.7"
 	PingFederate1130 SupportedVersion = "11.3.0"
 	PingFederate1131 SupportedVersion = "11.3.1"
 	PingFederate1132 SupportedVersion = "11.3.2"
