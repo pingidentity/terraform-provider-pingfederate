@@ -1,3 +1,12 @@
+# v0.5.0 (unreleased)
+### FEATURES
+#### Resources
+* **New Resource:** `pingfederate_authentication_policies_settings` ([#TBD](https://github.com/pingidentity/terraform-provider-pingfederate/pull/TBD))
+
+#### Data Sources
+* **New Data Source:** `pingfederate_authentication_policies_settings` ([#TBD](https://github.com/pingidentity/terraform-provider-pingfederate/pull/TBD))
+
+
 # v0.4.0 December 13, 2023 => MVP
 ### FEATURES
 #### Resources
