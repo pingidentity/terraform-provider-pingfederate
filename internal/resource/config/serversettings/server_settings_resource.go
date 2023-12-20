@@ -552,6 +552,7 @@ func (r *serverSettingsResource) ModifyPlan(ctx context.Context, req resource.Mo
 		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
 		return
 	}
+	pfVersionAtLeast113 := compare >= 0
 	var plan serverSettingsModel
 	req.Plan.Get(ctx, &plan)
 	if !internaltypes.IsDefined(plan.Notifications) {
@@ -569,7 +570,7 @@ func (r *serverSettingsResource) ModifyPlan(ctx context.Context, req resource.Mo
 
 	// If notification_mode is set and the PF version is not new enough, throw an error
 	updatePlan := false
-	if compare < 0 {
+	if !pfVersionAtLeast113 {
 		if internaltypes.IsDefined(planNotificationMode) {
 			resp.Diagnostics.AddError("Attribute 'notifications.certificate_expirations.notification_mode' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "")
 		} else if planNotificationMode.IsUnknown() {

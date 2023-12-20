@@ -965,12 +965,13 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
 		return
 	}
+	pfVersionAtLeast113 := compare >= 0
 	var plan oauthClientModel
 	var diags diag.Diagnostics
 	req.Plan.Get(ctx, &plan)
 	planModified := false
 	// If require_dpop is set prior to PF version 11.3, throw an error
-	if compare < 0 {
+	if !pfVersionAtLeast113 {
 		if internaltypes.IsDefined(plan.RequireDpop) {
 			resp.Diagnostics.AddError("Attribute 'require_dpop' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "")
 		} else if plan.RequireDpop.IsUnknown() {
@@ -989,7 +990,7 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		planOidcPolicyAttrs := plan.OidcPolicy.Attributes()
 		planLogoutMode := planOidcPolicyAttrs["logout_mode"].(types.String)
 		planBackChannelLogoutUri := planOidcPolicyAttrs["back_channel_logout_uri"].(types.String)
-		if compare < 0 {
+		if !pfVersionAtLeast113 {
 			if internaltypes.IsDefined(planLogoutMode) {
 				resp.Diagnostics.AddError("Attribute 'oidc_policy.logout_mode' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "")
 			} else if planLogoutMode.IsUnknown() {

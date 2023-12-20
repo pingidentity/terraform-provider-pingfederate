@@ -94,8 +94,9 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
 		return
 	}
+	pfVersionAtLeast113 := compare >= 0
 
-	if compare < 0 {
+	if !pfVersionAtLeast113 {
 		// Prior to 11.3, the user_name field is required for jdbc data stores
 		if internaltypes.IsDefined(plan.JdbcDataStore) {
 			username := plan.JdbcDataStore.Attributes()["user_name"]
@@ -312,7 +313,7 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		// If PF version is at least 11.3 then set a default for retry_failed_operations.
 		// If not ensure it is set to null rather than unknown.
 		if ldapDataStore["retry_failed_operations"].IsUnknown() {
-			if compare >= 0 {
+			if pfVersionAtLeast113 {
 				ldapDataStore["retry_failed_operations"] = types.BoolValue(false)
 			} else {
 				ldapDataStore["retry_failed_operations"] = types.BoolNull()

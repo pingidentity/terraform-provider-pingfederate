@@ -539,10 +539,11 @@ func (r *oauthAuthServerSettingsResource) ModifyPlan(ctx context.Context, req re
 		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
 		return
 	}
+	pfVersionAtLeast113 := compare >= 0
 	var plan oauthAuthServerSettingsModel
 	req.Plan.Get(ctx, &plan)
 	// If any of these fields are set by the user and the PF version is not new enough, throw an error
-	if compare < 0 {
+	if !pfVersionAtLeast113 {
 		if internaltypes.IsDefined(plan.DpopProofEnforceReplayPrevention) {
 			resp.Diagnostics.AddError("Attribute 'dpop_proof_enforce_replay_prevention' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "")
 		} else if plan.DpopProofEnforceReplayPrevention.IsUnknown() {
