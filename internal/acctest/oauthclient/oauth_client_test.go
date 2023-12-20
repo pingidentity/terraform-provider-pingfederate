@@ -12,6 +12,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const oauthClientId = "myOauthClient"
@@ -261,6 +262,12 @@ func testAccOauthClient(resourceName string, resourceModel oauthClientResourceMo
 			*resourceModel.tokenIntrospectionSigningAlgorithm,
 			*resourceModel.requireSignedRequests,
 		)
+
+		if acctest.VersionAtLeast(version.PingFederate1130) {
+			optionalHcl += `
+		require_dpop = true	
+			`
+		}
 	}
 
 	return fmt.Sprintf(`
