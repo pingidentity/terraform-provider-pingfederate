@@ -264,7 +264,6 @@ func (r *administrativeAccountsResource) Delete(ctx context.Context, req resourc
 	httpResp, err := r.apiClient.AdministrativeAccountsAPI.DeleteAccount(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Username.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an administrative account", err, httpResp)
-		return
 	}
 }
 
