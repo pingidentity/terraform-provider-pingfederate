@@ -20,6 +20,8 @@ type authenticationPoliciesSettingsResourceModel struct {
 
 func TestAccAuthenticationPoliciesSettings(t *testing.T) {
 	resourceName := "myAuthenticationPoliciesSettings"
+	// No required resources, test empty resource
+	emptyResourceModel := authenticationPoliciesSettingsResourceModel{}
 	initialResourceModel := authenticationPoliciesSettingsResourceModel{
 		enableIdpAuthnSelection: false,
 		enableSpAuthnSelection:  true,
@@ -35,6 +37,11 @@ func TestAccAuthenticationPoliciesSettings(t *testing.T) {
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
 		Steps: []resource.TestStep{
+			// Test empty call
+			{
+				Config: testAccAuthenticationPoliciesSettings(resourceName, emptyResourceModel),
+				Check:  testAccCheckExpectedAuthenticationPoliciesSettingsAttributes(emptyResourceModel),
+			},
 			{
 				Config: testAccAuthenticationPoliciesSettings(resourceName, initialResourceModel),
 				Check:  testAccCheckExpectedAuthenticationPoliciesSettingsAttributes(initialResourceModel),
@@ -50,6 +57,11 @@ func TestAccAuthenticationPoliciesSettings(t *testing.T) {
 				ResourceName:      "pingfederate_authentication_policies_settings." + resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+			{
+				// Back to minimal model
+				Config: testAccAuthenticationPoliciesSettings(resourceName, emptyResourceModel),
+				Check:  testAccCheckExpectedAuthenticationPoliciesSettingsAttributes(emptyResourceModel),
 			},
 		},
 	})

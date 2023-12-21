@@ -20,6 +20,6 @@ func readAuthenticationPoliciesSettingsResponse(ctx context.Context, r *client.A
 	} else {
 		state.Id = id.GenerateUUIDToState(existingId)
 	}
-	state.EnableIdpAuthnSelection = types.BoolValue(*r.EnableIdpAuthnSelection)
-	state.EnableSpAuthnSelection = types.BoolValue(*r.EnableSpAuthnSelection)
+	state.EnableIdpAuthnSelection = types.BoolPointerValue(r.EnableIdpAuthnSelection)
+	state.EnableSpAuthnSelection = types.BoolPointerValue(r.EnableSpAuthnSelection)
 }

@@ -34,11 +34,6 @@ func (r *authenticationPoliciesSettingsDataSource) Schema(ctx context.Context, r
 	schema := schema.Schema{
 		Description: "Describes the authentication policies settings",
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Description: "The ID of the resource.",
-				Computed:    true,
-				Optional:    false,
-			},
 			"enable_idp_authn_selection": schema.BoolAttribute{
 				Description: "Enable IdP authentication policies.",
 				Computed:    true,

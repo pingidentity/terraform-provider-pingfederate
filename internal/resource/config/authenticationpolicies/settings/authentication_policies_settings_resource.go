@@ -61,18 +61,9 @@ func (r *authenticationPoliciesSettingsResource) Schema(ctx context.Context, req
 	resp.Schema = schema
 }
 
-func addOptionalAuthenticationPoliciesSettingsFields(ctx context.Context, addRequest *client.AuthenticationPoliciesSettings, plan authenticationPoliciesSettingsModel) error {
-
-	if internaltypes.IsDefined(plan.EnableIdpAuthnSelection) {
-		addRequest.EnableIdpAuthnSelection = plan.EnableIdpAuthnSelection.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.EnableSpAuthnSelection) {
-		addRequest.EnableSpAuthnSelection = plan.EnableSpAuthnSelection.ValueBoolPointer()
-	}
-
-	return nil
-
+func addOptionalAuthenticationPoliciesSettingsFields(addRequest *client.AuthenticationPoliciesSettings, plan authenticationPoliciesSettingsModel) {
+	addRequest.EnableIdpAuthnSelection = plan.EnableIdpAuthnSelection.ValueBoolPointer()
+	addRequest.EnableSpAuthnSelection = plan.EnableSpAuthnSelection.ValueBoolPointer()
 }
 
 // Metadata returns the resource type name.
@@ -101,11 +92,7 @@ func (r *authenticationPoliciesSettingsResource) Create(ctx context.Context, req
 	}
 
 	createAuthenticationPoliciesSettings := client.NewAuthenticationPoliciesSettings()
-	err := addOptionalAuthenticationPoliciesSettingsFields(ctx, createAuthenticationPoliciesSettings, plan)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for authentication policies settings", err.Error())
-		return
-	}
+	addOptionalAuthenticationPoliciesSettingsFields(createAuthenticationPoliciesSettings, plan)
 	requestJson, err := createAuthenticationPoliciesSettings.MarshalJSON()
 	if err == nil {
 		tflog.Debug(ctx, "Add request: "+string(requestJson))
@@ -148,6 +135,7 @@ func (r *authenticationPoliciesSettingsResource) Read(ctx context.Context, req r
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the authentication policies settings", err, httpResp)
 		}
+		return
 	}
 	// Log response JSON
 	responseJson, err := apiReadAuthenticationPoliciesSettings.MarshalJSON()
@@ -183,18 +171,11 @@ func (r *authenticationPoliciesSettingsResource) Update(ctx context.Context, req
 	req.State.Get(ctx, &state)
 	updateAuthenticationPoliciesSettings := r.apiClient.AuthenticationPoliciesAPI.UpdateAuthenticationPolicySettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewAuthenticationPoliciesSettings()
-	err := addOptionalAuthenticationPoliciesSettingsFields(ctx, createUpdateRequest, plan)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for authentication policies settings", err.Error())
-		return
-	}
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Update request: "+string(requestJson))
-	}
+	addOptionalAuthenticationPoliciesSettingsFields(createUpdateRequest, plan)
+
 	updateAuthenticationPoliciesSettings = updateAuthenticationPoliciesSettings.Body(*createUpdateRequest)
 	updateAuthenticationPoliciesSettingsResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.UpdateAuthenticationPolicySettingsExecute(updateAuthenticationPoliciesSettings)
-	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
+	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the authentication policies settings", err, httpResp)
 		return
 	}
