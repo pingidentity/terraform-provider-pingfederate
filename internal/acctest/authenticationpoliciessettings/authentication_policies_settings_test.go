@@ -12,24 +12,8 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-// Attributes to test with. Add optional properties to test here if desired.
-type authenticationPoliciesSettingsResourceModel struct {
-	enableIdpAuthnSelection bool
-	enableSpAuthnSelection  bool
-}
-
 func TestAccAuthenticationPoliciesSettings(t *testing.T) {
 	resourceName := "myAuthenticationPoliciesSettings"
-	// No required resources, test empty resource
-	emptyResourceModel := authenticationPoliciesSettingsResourceModel{}
-	initialResourceModel := authenticationPoliciesSettingsResourceModel{
-		enableIdpAuthnSelection: false,
-		enableSpAuthnSelection:  true,
-	}
-	updatedResourceModel := authenticationPoliciesSettingsResourceModel{
-		enableIdpAuthnSelection: true,
-		enableSpAuthnSelection:  false,
-	}
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
@@ -37,53 +21,70 @@ func TestAccAuthenticationPoliciesSettings(t *testing.T) {
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
 		Steps: []resource.TestStep{
-			// Test empty call
+			// Test empty object (defaults)
 			{
-				Config: testAccAuthenticationPoliciesSettings(resourceName, emptyResourceModel),
-				Check:  testAccCheckExpectedAuthenticationPoliciesSettingsAttributes(emptyResourceModel),
+				Config: testAccAuthenticationPoliciesSettings(resourceName, false),
+				Check:  testAccCheckExpectedAuthenticationPoliciesSettingsAttributes(false),
 			},
+			// Test updating all fields
 			{
-				Config: testAccAuthenticationPoliciesSettings(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedAuthenticationPoliciesSettingsAttributes(initialResourceModel),
-			},
-			{
-				// Test updating some fields
-				Config: testAccAuthenticationPoliciesSettings(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedAuthenticationPoliciesSettingsAttributes(updatedResourceModel),
+				Config: testAccAuthenticationPoliciesSettings(resourceName, true),
+				Check:  testAccCheckExpectedAuthenticationPoliciesSettingsAttributes(true),
 			},
 			{
 				// Test importing the resource
-				Config:            testAccAuthenticationPoliciesSettings(resourceName, updatedResourceModel),
+				Config:            testAccAuthenticationPoliciesSettings(resourceName, true),
 				ResourceName:      "pingfederate_authentication_policies_settings." + resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
 			{
 				// Back to minimal model
-				Config: testAccAuthenticationPoliciesSettings(resourceName, emptyResourceModel),
-				Check:  testAccCheckExpectedAuthenticationPoliciesSettingsAttributes(emptyResourceModel),
+				Config: testAccAuthenticationPoliciesSettings(resourceName, false),
+				Check:  testAccCheckExpectedAuthenticationPoliciesSettingsAttributes(false),
 			},
 		},
 	})
 }
 
-func testAccAuthenticationPoliciesSettings(resourceName string, resourceModel authenticationPoliciesSettingsResourceModel) string {
+func testAccAuthenticationPoliciesSettings(resourceName string, includeAttributes bool) string {
+	optionalHcl := ""
+	if includeAttributes {
+		optionalHcl = `
+		enable_idp_authn_selection = true
+		enable_sp_authn_selection  = true
+		`
+	}
+
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_policies_settings" "%[1]s" {
-  enable_idp_authn_selection = %[2]t
-  enable_sp_authn_selection  = %[3]t
+		%[2]s
 }
 
 data "pingfederate_authentication_policies_settings" "%[1]s" {
   depends_on = [pingfederate_authentication_policies_settings.%[1]s]
 }`, resourceName,
-		resourceModel.enableIdpAuthnSelection,
-		resourceModel.enableSpAuthnSelection,
+		optionalHcl,
 	)
 }
 
+// func testAccAuthenticationPoliciesSettings(resourceName string, resourceModel authenticationPoliciesSettingsResourceModel) string {
+// 	return fmt.Sprintf(`
+// resource "pingfederate_authentication_policies_settings" "%[1]s" {
+//   enable_idp_authn_selection = %[2]t
+//   enable_sp_authn_selection  = %[3]t
+// }
+
+// data "pingfederate_authentication_policies_settings" "%[1]s" {
+//   depends_on = [pingfederate_authentication_policies_settings.%[1]s]
+// }`, resourceName,
+// 		resourceModel.enableIdpAuthnSelection,
+// 		resourceModel.enableSpAuthnSelection,
+// 	)
+// }
+
 // Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedAuthenticationPoliciesSettingsAttributes(config authenticationPoliciesSettingsResourceModel) resource.TestCheckFunc {
+func testAccCheckExpectedAuthenticationPoliciesSettingsAttributes(includeAttributes bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		resourceType := "AuthenticationPoliciesSettings"
 		testClient := acctest.TestClient()
@@ -96,13 +97,13 @@ func testAccCheckExpectedAuthenticationPoliciesSettingsAttributes(config authent
 
 		// Verify that attributes have expected values
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "enable_idp_authn_selection",
-			config.enableIdpAuthnSelection, *response.EnableIdpAuthnSelection)
+			includeAttributes, *response.EnableIdpAuthnSelection)
 		if err != nil {
 			return err
 		}
 
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "enable_sp_authn_selection",
-			config.enableSpAuthnSelection, *response.EnableSpAuthnSelection)
+			includeAttributes, *response.EnableSpAuthnSelection)
 		if err != nil {
 			return err
 		}

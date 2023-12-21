@@ -82,7 +82,7 @@ func (r *authenticationPoliciesSettingsDataSource) Read(ctx context.Context, req
 		return
 	}
 
-	readAuthenticationPoliciesSettingsResponse(ctx, apiReadAuthenticationPoliciesSettings, &state, pointers.String("authentication_policies_settings_id"))
+	readAuthenticationPoliciesSettingsResponse(apiReadAuthenticationPoliciesSettings, &state, pointers.String("authentication_policies_settings_id"))
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)

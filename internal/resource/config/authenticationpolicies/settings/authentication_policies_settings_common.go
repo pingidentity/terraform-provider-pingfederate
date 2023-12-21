@@ -1,8 +1,6 @@
 package authenticationpoliciessettings
 
 import (
-	"context"
-
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -14,7 +12,7 @@ type authenticationPoliciesSettingsModel struct {
 	EnableSpAuthnSelection  types.Bool   `tfsdk:"enable_sp_authn_selection"`
 }
 
-func readAuthenticationPoliciesSettingsResponse(ctx context.Context, r *client.AuthenticationPoliciesSettings, state *authenticationPoliciesSettingsModel, existingId *string) {
+func readAuthenticationPoliciesSettingsResponse(r *client.AuthenticationPoliciesSettings, state *authenticationPoliciesSettingsModel, existingId *string) {
 	if existingId != nil {
 		state.Id = types.StringValue(*existingId)
 	} else {

@@ -7,7 +7,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -88,10 +87,6 @@ func (r *authenticationPoliciesSettingsResource) Create(ctx context.Context, req
 
 	createAuthenticationPoliciesSettings := client.NewAuthenticationPoliciesSettings()
 	addOptionalAuthenticationPoliciesSettingsFields(createAuthenticationPoliciesSettings, plan)
-	requestJson, err := createAuthenticationPoliciesSettings.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
-	}
 
 	apiCreateAuthenticationPoliciesSettings := r.apiClient.AuthenticationPoliciesAPI.UpdateAuthenticationPolicySettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateAuthenticationPoliciesSettings = apiCreateAuthenticationPoliciesSettings.Body(*createAuthenticationPoliciesSettings)
@@ -100,15 +95,11 @@ func (r *authenticationPoliciesSettingsResource) Create(ctx context.Context, req
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the authentication policies settings", err, httpResp)
 		return
 	}
-	responseJson, err := authenticationPoliciesSettingsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add response: "+string(responseJson))
-	}
 
 	// Read the response into the state
 	var state authenticationPoliciesSettingsModel
 
-	readAuthenticationPoliciesSettingsResponse(ctx, authenticationPoliciesSettingsResponse, &state, nil)
+	readAuthenticationPoliciesSettingsResponse(authenticationPoliciesSettingsResponse, &state, nil)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -132,11 +123,6 @@ func (r *authenticationPoliciesSettingsResource) Read(ctx context.Context, req r
 		}
 		return
 	}
-	// Log response JSON
-	responseJson, err := apiReadAuthenticationPoliciesSettings.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
-	}
 
 	// Read the response into the state
 	id, diags := id.GetID(ctx, req.State)
@@ -144,7 +130,7 @@ func (r *authenticationPoliciesSettingsResource) Read(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	readAuthenticationPoliciesSettingsResponse(ctx, apiReadAuthenticationPoliciesSettings, &state, id)
+	readAuthenticationPoliciesSettingsResponse(apiReadAuthenticationPoliciesSettings, &state, id)
 
 	// Set refreshed state
 	diags = resp.State.Set(ctx, &state)
@@ -174,11 +160,6 @@ func (r *authenticationPoliciesSettingsResource) Update(ctx context.Context, req
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the authentication policies settings", err, httpResp)
 		return
 	}
-	// Log response JSON
-	responseJson, err := updateAuthenticationPoliciesSettingsResponse.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Read response: "+string(responseJson))
-	}
 
 	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
@@ -186,7 +167,7 @@ func (r *authenticationPoliciesSettingsResource) Update(ctx context.Context, req
 		return
 	}
 	// Read the response
-	readAuthenticationPoliciesSettingsResponse(ctx, updateAuthenticationPoliciesSettingsResponse, &state, id)
+	readAuthenticationPoliciesSettingsResponse(updateAuthenticationPoliciesSettingsResponse, &state, id)
 
 	// Update computed values
 	diags = resp.State.Set(ctx, state)
