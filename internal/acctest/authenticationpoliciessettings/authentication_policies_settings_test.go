@@ -68,21 +68,6 @@ data "pingfederate_authentication_policies_settings" "%[1]s" {
 	)
 }
 
-// func testAccAuthenticationPoliciesSettings(resourceName string, resourceModel authenticationPoliciesSettingsResourceModel) string {
-// 	return fmt.Sprintf(`
-// resource "pingfederate_authentication_policies_settings" "%[1]s" {
-//   enable_idp_authn_selection = %[2]t
-//   enable_sp_authn_selection  = %[3]t
-// }
-
-// data "pingfederate_authentication_policies_settings" "%[1]s" {
-//   depends_on = [pingfederate_authentication_policies_settings.%[1]s]
-// }`, resourceName,
-// 		resourceModel.enableIdpAuthnSelection,
-// 		resourceModel.enableSpAuthnSelection,
-// 	)
-// }
-
 // Test that the expected attributes are set on the PingFederate server
 func testAccCheckExpectedAuthenticationPoliciesSettingsAttributes(includeAttributes bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
