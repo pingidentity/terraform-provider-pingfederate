@@ -1293,7 +1293,7 @@ func (r *oauthClientResource) Update(ctx context.Context, req resource.UpdateReq
 	createUpdateRequest := client.NewClient(plan.ClientId.ValueString(), grantTypes(plan.GrantTypes), plan.Name.ValueString())
 	err := addOptionalOauthClientFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Client", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for the OAuth Client", err.Error())
 		return
 	}
 
@@ -1304,8 +1304,8 @@ func (r *oauthClientResource) Update(ctx context.Context, req resource.UpdateReq
 
 	updateOauthClient = updateOauthClient.Body(*createUpdateRequest)
 	updateOauthClientResponse, httpResp, err := r.apiClient.OauthClientsAPI.UpdateOauthClientExecute(updateOauthClient)
-	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OAuth Client", err, httpResp)
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the OAuth Client", err, httpResp)
 		return
 	}
 
@@ -1330,7 +1330,6 @@ func (r *oauthClientResource) Delete(ctx context.Context, req resource.DeleteReq
 	httpResp, err := r.apiClient.OauthClientsAPI.DeleteOauthClient(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ClientId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Client", err, httpResp)
-		return
 	}
 }
 

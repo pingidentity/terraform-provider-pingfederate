@@ -786,13 +786,13 @@ func updateLdapDataStore(plan dataStoreModel, con context.Context, req resource.
 	updateLdapDataStore := client.LdapDataStoreAsDataStoreAggregation(client.NewLdapDataStore(ldapType, "LDAP"))
 	err = addOptionalLdapDataStoreFields(updateLdapDataStore, con, client.LdapDataStore{}, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for DataStore", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for the DataStore", err.Error())
 		return
 	}
 
 	response, httpResponse, err := updateDataStore(updateLdapDataStore, dsr, con, resp, plan.Id.ValueString())
-	if err != nil && (httpResponse == nil || httpResponse.StatusCode != 404) {
-		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while updating DataStore", err, httpResponse)
+	if err != nil {
+		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while updating the DataStore", err, httpResponse)
 		return
 	}
 

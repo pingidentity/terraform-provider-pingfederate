@@ -652,7 +652,7 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 
 	updateOauthAccessTokenManager = updateOauthAccessTokenManager.Body(*createUpdateRequest)
 	updateOauthAccessTokenManagerResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.UpdateTokenManagerExecute(updateOauthAccessTokenManager)
-	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
+	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an OAuth access token manager", err, httpResp)
 		return
 	}
@@ -679,7 +679,6 @@ func (r *oauthAccessTokenManagerResource) Delete(ctx context.Context, req resour
 	httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.DeleteTokenManager(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ManagerId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth access token manager", err, httpResp)
-		return
 	}
 }
 

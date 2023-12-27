@@ -2249,14 +2249,14 @@ func (r *idpSpConnectionResource) Update(ctx context.Context, req resource.Updat
 	createUpdateRequest := client.NewSpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
 	err := addOptionalIdpSpconnectionFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdP SP Connection", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for the IdP SP Connection", err.Error())
 		return
 	}
 
 	updateIdpSpconnection = updateIdpSpconnection.Body(*createUpdateRequest)
 	updateIdpSpconnectionResponse, httpResp, err := r.apiClient.IdpSpConnectionsAPI.UpdateSpConnectionExecute(updateIdpSpconnection)
-	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating IdP SP Connection", err, httpResp)
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the IdP SP Connection", err, httpResp)
 		return
 	}
 

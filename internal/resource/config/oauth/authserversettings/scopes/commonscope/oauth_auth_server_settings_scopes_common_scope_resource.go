@@ -214,7 +214,6 @@ func (r *oauthAuthServerSettingsScopesCommonScopeResource) Delete(ctx context.Co
 	httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.RemoveCommonScope(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Name.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a OAuth Auth Server Settings Scopes Common Scope", err, httpResp)
-		return
 	}
 }
 

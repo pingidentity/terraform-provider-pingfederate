@@ -20,6 +20,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/administrativeaccount"
 	authenticationapisettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi/settings"
+	authenticationpoliciessettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicies/settings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicycontract"
 	certificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificate/ca"
 	datastore "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/datastore"
@@ -331,6 +332,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 	return []func() datasource.DataSource{
 		administrativeaccount.AdministrativeAccountDataSource,
 		authenticationapisettings.AuthenticationApiSettingsDataSource,
+		authenticationpoliciessettings.AuthenticationPoliciesSettingsDataSource,
 		authenticationpolicycontract.AuthenticationPolicyContractDataSource,
 		certificate.CertificateDataSource,
 		datastore.DataStoreDataSource,
@@ -371,6 +373,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 	return []func() resource.Resource{
 		administrativeaccount.AdministrativeAccountResource,
 		authenticationapisettings.AuthenticationApiSettingsResource,
+		authenticationpoliciessettings.AuthenticationPoliciesSettingsResource,
 		authenticationpolicycontract.AuthenticationPolicyContractResource,
 		certificate.CertificateCAResource,
 		idpadapter.IdpAdapterResource,

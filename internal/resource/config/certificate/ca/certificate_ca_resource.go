@@ -196,7 +196,6 @@ func (r *certificateCAResource) Delete(ctx context.Context, req resource.DeleteR
 	httpResp, err := r.apiClient.CertificatesCaAPI.DeleteTrustedCA(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CaId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a CA Certificate", err, httpResp)
-		return
 	}
 }
 

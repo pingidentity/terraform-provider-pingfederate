@@ -192,6 +192,7 @@ func (r *spAuthenticationPolicyContractMappingResource) Read(ctx context.Context
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the SP Authentication Policy Contract Mapping Resource", err, httpResp)
 		}
+		return
 	}
 
 	// Read the response into the state
@@ -225,7 +226,7 @@ func (r *spAuthenticationPolicyContractMappingResource) Update(ctx context.Conte
 	}
 	updateSpAuthenticationPolicyContractMappingResource = updateSpAuthenticationPolicyContractMappingResource.Body(*createUpdateRequest)
 	updateSpAuthenticationPolicyContractMappingResourceResponse, httpResp, err := r.apiClient.SpAuthenticationPolicyContractMappingsAPI.UpdateApcToSpAdapterMappingByIdExecute(updateSpAuthenticationPolicyContractMappingResource)
-	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
+	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the SP Authentication Policy Contract Mapping Resource", err, httpResp)
 		return
 	}
