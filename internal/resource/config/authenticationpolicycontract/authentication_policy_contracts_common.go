@@ -2,6 +2,7 @@ package authenticationpolicycontract
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -21,6 +22,7 @@ type authenticationPolicyContractModel struct {
 	Name               types.String `tfsdk:"name"`
 	CoreAttributes     types.List   `tfsdk:"core_attributes"`
 	ExtendedAttributes types.Set    `tfsdk:"extended_attributes"`
+	LastModified       types.String `tfsdk:"last_modified"`
 }
 
 func readAuthenticationPolicyContractsResponse(ctx context.Context, r *client.AuthenticationPolicyContract, state *authenticationPolicyContractModel, expectedValues *authenticationPolicyContractModel) diag.Diagnostics {
@@ -34,6 +36,12 @@ func readAuthenticationPolicyContractsResponse(ctx context.Context, r *client.Au
 
 	state.ExtendedAttributes, respDiags = types.SetValueFrom(ctx, attributeElemAttrType, r.GetExtendedAttributes())
 	diags.Append(respDiags...)
+
+	if r.LastModified == nil {
+		state.LastModified = types.StringNull()
+	} else {
+		state.LastModified = types.StringValue(r.LastModified.Format(time.RFC3339))
+	}
 
 	return diags
 }

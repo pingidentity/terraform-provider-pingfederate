@@ -64,6 +64,11 @@ func (r *authenticationPolicyContractDataSource) Schema(ctx context.Context, req
 				Computed:    true,
 				Optional:    false,
 			},
+			"last_modified": schema.StringAttribute{
+				Description: "The time at which the authentication policy contract was last changed.",
+				Optional:    false,
+				Computed:    true,
+			},
 		},
 	}
 
