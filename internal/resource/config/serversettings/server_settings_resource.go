@@ -572,7 +572,8 @@ func (r *serverSettingsResource) ModifyPlan(ctx context.Context, req resource.Mo
 	updatePlan := false
 	if !pfVersionAtLeast113 {
 		if internaltypes.IsDefined(planNotificationMode) {
-			resp.Diagnostics.AddError("Attribute 'notifications.certificate_expirations.notification_mode' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "")
+			version.AddUnsupportedAttributeError("notifications.certificate_expirations.notification_mode",
+				r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
 		} else if planNotificationMode.IsUnknown() {
 			// Set a null default when the version isn't new enough to use this attribute
 			planNotificationMode = types.StringNull()

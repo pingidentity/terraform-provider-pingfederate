@@ -478,6 +478,18 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Computed:    true,
 				Optional:    true,
 			},
+			"bypass_authorization_for_approved_consents": schema.BoolAttribute{
+				// Default is set in ModifyPlan below. Once only PF 12.0 and newer is supported, we can set the default in the schema here
+				Description: "Bypass authorization for previously approved consents. The default value is false. Supported in PF version 12.0 or later.",
+				Computed:    true,
+				Optional:    true,
+			},
+			"consent_lifetime_days": schema.Int64Attribute{
+				// Default is set in ModifyPlan below. Once only PF 12.0 and newer is supported, we can set the default in the schema here
+				Description: "The consent lifetime in days. The default value is indefinite. -1 indicates an indefinite amount of time. Supported in PF version 12.0 or later.",
+				Computed:    true,
+				Optional:    true,
+			},
 		},
 	}
 
@@ -540,25 +552,34 @@ func (r *oauthAuthServerSettingsResource) ModifyPlan(ctx context.Context, req re
 		return
 	}
 	pfVersionAtLeast113 := compare >= 0
+	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast120 := compare >= 0
 	var plan oauthAuthServerSettingsModel
 	req.Plan.Get(ctx, &plan)
 	// If any of these fields are set by the user and the PF version is not new enough, throw an error
 	if !pfVersionAtLeast113 {
 		if internaltypes.IsDefined(plan.DpopProofEnforceReplayPrevention) {
-			resp.Diagnostics.AddError("Attribute 'dpop_proof_enforce_replay_prevention' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "")
+			version.AddUnsupportedAttributeError("dpop_proof_enforce_replay_prevention",
+				r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
 		} else if plan.DpopProofEnforceReplayPrevention.IsUnknown() {
 			// Set a null default when the version isn't new enough to use this attribute
 			plan.DpopProofEnforceReplayPrevention = types.BoolNull()
 		}
 
 		if internaltypes.IsDefined(plan.DpopProofLifetimeSeconds) {
-			resp.Diagnostics.AddError("Attribute 'dpop_proof_lifetime_seconds' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "")
+			version.AddUnsupportedAttributeError("dpop_proof_lifetime_seconds",
+				r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
 		} else if plan.DpopProofLifetimeSeconds.IsUnknown() {
 			plan.DpopProofLifetimeSeconds = types.Int64Null()
 		}
 
 		if internaltypes.IsDefined(plan.DpopProofRequireNonce) {
-			resp.Diagnostics.AddError("Attribute 'dpop_proof_require_nonce' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "")
+			version.AddUnsupportedAttributeError("dpop_proof_require_nonce",
+				r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
 		} else if plan.DpopProofRequireNonce.IsUnknown() {
 			plan.DpopProofRequireNonce = types.BoolNull()
 		}
@@ -573,6 +594,30 @@ func (r *oauthAuthServerSettingsResource) ModifyPlan(ctx context.Context, req re
 
 		if plan.DpopProofRequireNonce.IsUnknown() {
 			plan.DpopProofRequireNonce = types.BoolValue(false)
+		}
+	}
+
+	// Similar logic for PF 12.0
+	if !pfVersionAtLeast120 {
+		if internaltypes.IsDefined(plan.BypassAuthorizationForApprovedConsents) {
+			version.AddUnsupportedAttributeError("bypass_authorization_for_approved_consents",
+				r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
+		} else if plan.BypassAuthorizationForApprovedConsents.IsUnknown() {
+			plan.BypassAuthorizationForApprovedConsents = types.BoolNull()
+		}
+
+		if internaltypes.IsDefined(plan.ConsentLifetimeDays) {
+			version.AddUnsupportedAttributeError("consent_lifetime_days",
+				r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
+		} else if plan.ConsentLifetimeDays.IsUnknown() {
+			plan.ConsentLifetimeDays = types.Int64Null()
+		}
+	} else {
+		if plan.BypassAuthorizationForApprovedConsents.IsUnknown() {
+			plan.BypassAuthorizationForApprovedConsents = types.BoolValue(false)
+		}
+		if plan.ConsentLifetimeDays.IsUnknown() {
+			plan.ConsentLifetimeDays = types.Int64Value(-1)
 		}
 	}
 
@@ -664,6 +709,8 @@ func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *c
 	addRequest.DpopProofEnforceReplayPrevention = plan.DpopProofEnforceReplayPrevention.ValueBoolPointer()
 	addRequest.DpopProofLifetimeSeconds = plan.DpopProofLifetimeSeconds.ValueInt64Pointer()
 	addRequest.DpopProofRequireNonce = plan.DpopProofRequireNonce.ValueBoolPointer()
+	addRequest.BypassAuthorizationForApprovedConsents = plan.BypassAuthorizationForApprovedConsents.ValueBoolPointer()
+	addRequest.ConsentLifetimeDays = plan.ConsentLifetimeDays.ValueInt64Pointer()
 
 	return nil
 

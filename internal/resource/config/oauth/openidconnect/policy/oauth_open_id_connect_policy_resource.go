@@ -213,13 +213,15 @@ func (r *oauthOpenIdConnectPolicyResource) ModifyPlan(ctx context.Context, req r
 	// If include_x5t_in_id_token or id_token_typ_header_value is set prior to PF version 11.3, throw an error
 	if !pfVersionAtLeast113 {
 		if internaltypes.IsDefined(plan.IncludeX5tInIdToken) {
-			resp.Diagnostics.AddError("Attribute 'include_x5t_in_id_token' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "PF version 11.3 or later is required for this attribute")
+			version.AddUnsupportedAttributeError("include_x5t_in_id_token",
+				r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
 		} else if plan.IncludeX5tInIdToken.IsUnknown() {
 			plan.IncludeX5tInIdToken = types.BoolNull()
 			planModified = true
 		}
 		if internaltypes.IsDefined(plan.IdTokenTypHeaderValue) {
-			resp.Diagnostics.AddError("Attribute 'id_token_typ_header_value' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "PF version 11.3 or later is required for this attribute")
+			version.AddUnsupportedAttributeError("id_token_typ_header_value",
+				r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
 		} else if plan.IdTokenTypHeaderValue.IsUnknown() {
 			plan.IdTokenTypHeaderValue = types.StringNull()
 			planModified = true
