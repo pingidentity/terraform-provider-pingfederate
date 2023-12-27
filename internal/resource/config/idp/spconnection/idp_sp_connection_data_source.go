@@ -1014,6 +1014,11 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 										},
 										"parent_ref":            datasourceresourcelink.ToDataSourceSchemaSingleNestedAttributeCustomDescription("The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)"),
 										"plugin_descriptor_ref": datasourceresourcelink.ToDataSourceSchemaSingleNestedAttributeCustomDescription("Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override."),
+										"last_modified": schema.StringAttribute{
+											Description: "The time at which the plugin instance was last changed. This property is read only and is ignored on PUT and POST requests. Supported in PF version 12.0 or later.",
+											Optional:    false,
+											Computed:    true,
+										},
 									},
 									Computed: true,
 									Optional: false,

@@ -2,6 +2,7 @@ package idpadapter
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -90,6 +91,7 @@ type idpAdapterModel struct {
 	Configuration       types.Object `tfsdk:"configuration"`
 	AttributeMapping    types.Object `tfsdk:"attribute_mapping"`
 	AttributeContract   types.Object `tfsdk:"attribute_contract"`
+	LastModified        types.String `tfsdk:"last_modified"`
 }
 
 func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *idpAdapterModel, plan *idpAdapterModel) diag.Diagnostics {
@@ -102,6 +104,11 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 	respDiags.Append(diags...)
 	state.ParentRef, diags = resourcelink.ToState(ctx, r.ParentRef)
 	respDiags.Append(diags...)
+	if r.LastModified == nil {
+		state.LastModified = types.StringNull()
+	} else {
+		state.LastModified = types.StringValue(r.LastModified.Format(time.RFC3339))
+	}
 	// Configuration
 	if plan != nil {
 		state.Configuration, diags = pluginconfiguration.ToState(plan.Configuration, &r.Configuration)

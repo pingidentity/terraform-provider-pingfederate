@@ -2,6 +2,7 @@ package passwordcredentialvalidator
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -34,6 +35,7 @@ type passwordCredentialValidatorModel struct {
 	PluginDescriptorRef types.Object `tfsdk:"plugin_descriptor_ref"`
 	ParentRef           types.Object `tfsdk:"parent_ref"`
 	Configuration       types.Object `tfsdk:"configuration"`
+	LastModified        types.String `tfsdk:"last_modified"`
 }
 
 func readPasswordCredentialValidatorResponse(ctx context.Context, r *client.PasswordCredentialValidator, state *passwordCredentialValidatorModel, configurationFromPlan types.Object, isResource bool) diag.Diagnostics {
@@ -45,6 +47,11 @@ func readPasswordCredentialValidatorResponse(ctx context.Context, r *client.Pass
 	diags.Append(respDiags...)
 	state.ParentRef, respDiags = resourcelink.ToState(ctx, r.ParentRef)
 	diags.Append(respDiags...)
+	if r.LastModified == nil {
+		state.LastModified = types.StringNull()
+	} else {
+		state.LastModified = types.StringValue(r.LastModified.Format(time.RFC3339))
+	}
 	if isResource {
 		state.Configuration, respDiags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration)
 		diags.Append(respDiags...)
