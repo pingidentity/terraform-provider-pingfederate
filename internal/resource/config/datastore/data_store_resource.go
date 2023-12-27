@@ -118,6 +118,17 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		}
 	}
 
+	// Check for parent_ref, which had support removed in version 12.0
+	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast120 := compare >= 0
+	if pfVersionAtLeast120 && internaltypes.IsDefined(plan.CustomDataStore) && internaltypes.IsDefined(plan.CustomDataStore.Attributes()["parent_ref"]) {
+		resp.Diagnostics.AddError("Attribute 'parent_ref' not supported for custom data stores by PingFederate version "+string(r.providerConfig.ProductVersion), "PF 11.3 or earlier required")
+	}
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
