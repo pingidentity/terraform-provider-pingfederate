@@ -39,6 +39,11 @@ func getSortedVersionIndex(versionString SupportedVersion) int {
 
 func getSortedVersions() []SupportedVersion {
 	return []SupportedVersion{
+		PingFederate1120,
+		PingFederate1121,
+		PingFederate1122,
+		PingFederate1123,
+		PingFederate1124,
 		PingFederate1125,
 		PingFederate1130,
 		PingFederate1131,
