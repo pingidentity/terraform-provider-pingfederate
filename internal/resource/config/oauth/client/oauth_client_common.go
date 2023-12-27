@@ -46,7 +46,7 @@ var (
 		"pairwise_identifier_user_type":               types.BoolValue(false),
 		"logout_mode":                                 types.StringUnknown(),
 		"back_channel_logout_uri":                     types.StringUnknown(),
-		"post_logout_redirect_uris":                   types.SetUnknown(types.StringType),
+		"post_logout_redirect_uris":                   types.SetNull(types.StringType),
 	}
 
 	secondarySecretsAttrType = map[string]attr.Type{
