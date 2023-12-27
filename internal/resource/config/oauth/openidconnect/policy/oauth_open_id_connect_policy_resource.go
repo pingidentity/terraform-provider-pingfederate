@@ -192,6 +192,11 @@ func (r *oauthOpenIdConnectPolicyResource) Schema(ctx context.Context, req resou
 					stringvalidator.LengthAtLeast(1),
 				},
 			},
+			"last_modified": schema.StringAttribute{
+				Description: "The time at which the policy was last changed. This property is read only and is ignored on PUT and POST requests. Supported in PF version 12.0 or later.",
+				Optional:    false,
+				Computed:    true,
+			},
 		},
 	}
 	id.ToSchema(&schema)
