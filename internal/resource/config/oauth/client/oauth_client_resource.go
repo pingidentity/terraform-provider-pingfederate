@@ -449,6 +449,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 							stringvalidator.OneOf(
 								"NONE",
 								"PING_FRONT_CHANNEL",
+								"OIDC_FRONT_CHANNEL",
 								"OIDC_BACK_CHANNEL",
 							),
 						},
@@ -456,6 +457,11 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 					"back_channel_logout_uri": schema.StringAttribute{
 						Description: "The back-channel logout URI for this client. Supported in PF version 11.3 or later.",
 						Optional:    true,
+					},
+					"post_logout_redirect_uris": schema.SetAttribute{
+						Description: "URIs to which the OIDC OP may redirect the resource owner's user agent after RP-initiated logout has completed. Wildcards are allowed. However, for security reasons, make the URL as restrictive as possible. Supported in PF version 12.0 or later.",
+						Optional:    true,
+						ElementType: types.StringType,
 					},
 				},
 				PlanModifiers: []planmodifier.Object{
@@ -965,13 +971,19 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 }
 
 func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Compare to version 11.3 of PF
+	// Compare to version 11.3 and 12.0 of PF
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
 		return
 	}
 	pfVersionAtLeast113 := compare >= 0
+	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast120 := compare >= 0
 	var plan oauthClientModel
 	var diags diag.Diagnostics
 	req.Plan.Get(ctx, &plan)
@@ -992,9 +1004,9 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		plan.RequireDpop = types.BoolValue(false)
 		planModified = true
 	}
-	// If oidc_policy.logout_mode is set prior to PF version 11.3, throw an error. Otherwise, set the PF default.
 	if internaltypes.IsDefined(plan.OidcPolicy) {
 		planOidcPolicyAttrs := plan.OidcPolicy.Attributes()
+		// If oidc_policy.logout_mode is set prior to PF version 11.3, throw an error. Otherwise, set the PF default.
 		planLogoutMode := planOidcPolicyAttrs["logout_mode"].(types.String)
 		planBackChannelLogoutUri := planOidcPolicyAttrs["back_channel_logout_uri"].(types.String)
 		if !pfVersionAtLeast113 {
@@ -1018,6 +1030,12 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 			plan.OidcPolicy, diags = types.ObjectValue(plan.OidcPolicy.AttributeTypes(ctx), planOidcPolicyAttrs)
 			resp.Diagnostics.Append(diags...)
 			planModified = true
+		}
+		// If oidc_policy.post_logout_redirect_uris is set prior to PF version 12.0, throw an error.
+		planPostLogoutRedirectUris := planOidcPolicyAttrs["post_logout_redirect_uris"].(types.Set)
+		if !pfVersionAtLeast120 && internaltypes.IsDefined(planPostLogoutRedirectUris) {
+			version.AddUnsupportedAttributeError("oidc_policy.post_logout_redirect_uris",
+				r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
 		}
 	}
 

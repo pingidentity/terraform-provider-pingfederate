@@ -303,6 +303,12 @@ func (r *oauthClientDataSource) Schema(ctx context.Context, req datasource.Schem
 						Optional:    false,
 						Computed:    true,
 					},
+					"post_logout_redirect_uris": schema.SetAttribute{
+						Description: "URIs to which the OIDC OP may redirect the resource owner's user agent after RP-initiated logout has completed. Wildcards are allowed. However, for security reasons, make the URL as restrictive as possible. Supported in PF version 12.0 or later.",
+						Optional:    false,
+						Computed:    true,
+						ElementType: types.StringType,
+					},
 				},
 			},
 			"client_auth": schema.SingleNestedAttribute{
