@@ -35,6 +35,11 @@ func (r *dataStoreDataSource) Schema(ctx context.Context, req datasource.SchemaR
 				Computed:    true,
 				Optional:    false,
 			},
+			"last_modified": schema.StringAttribute{
+				Description: "The time at which the datastore instance was last changed. Supported in PF version 12.0 or later.",
+				Optional:    false,
+				Computed:    true,
+			},
 			"custom_data_store":                toDataSourceSchemaCustomDataStore(),
 			"jdbc_data_store":                  toDataSourceSchemaJdbcDataStore(),
 			"ldap_data_store":                  toDataSourceSchemaLdapDataStore(),

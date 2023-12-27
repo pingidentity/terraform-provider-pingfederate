@@ -3,6 +3,7 @@ package datastore
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
@@ -598,6 +599,11 @@ func readLdapDataStoreResponse(ctx context.Context, r *client.DataStoreAggregati
 	state.Id = types.StringPointerValue(r.LdapDataStore.Id)
 	state.DataStoreId = types.StringPointerValue(r.LdapDataStore.Id)
 	state.MaskAttributeValues = types.BoolPointerValue(r.LdapDataStore.MaskAttributeValues)
+	if r.LdapDataStore.LastModified != nil {
+		state.LastModified = types.StringValue(r.LdapDataStore.LastModified.Format(time.RFC3339))
+	} else {
+		state.LastModified = types.StringNull()
+	}
 	if isResource {
 		state.CustomDataStore = customDataStoreEmptyStateObj
 		state.JdbcDataStore = jdbcDataStoreEmptyStateObj

@@ -47,6 +47,11 @@ func (r *dataStoreResource) Schema(ctx context.Context, req resource.SchemaReque
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
 			},
+			"last_modified": schema.StringAttribute{
+				Description: "The time at which the datastore instance was last changed. This property is read only and is ignored on PUT and POST requests. Supported in PF version 12.0 or later.",
+				Optional:    false,
+				Computed:    true,
+			},
 			"custom_data_store":                toSchemaCustomDataStore(),
 			"jdbc_data_store":                  toSchemaJdbcDataStore(),
 			"ldap_data_store":                  toSchemaLdapDataStore(),

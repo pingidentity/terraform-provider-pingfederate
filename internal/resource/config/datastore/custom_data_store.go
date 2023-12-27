@@ -3,6 +3,7 @@ package datastore
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -162,6 +163,11 @@ func readCustomDataStoreResponse(ctx context.Context, r *client.DataStoreAggrega
 	state.Id = types.StringPointerValue(r.CustomDataStore.Id)
 	state.DataStoreId = types.StringPointerValue(r.CustomDataStore.Id)
 	state.MaskAttributeValues = types.BoolPointerValue(r.CustomDataStore.MaskAttributeValues)
+	if r.CustomDataStore.LastModified != nil {
+		state.LastModified = types.StringValue(r.CustomDataStore.LastModified.Format(time.RFC3339))
+	} else {
+		state.LastModified = types.StringNull()
+	}
 	state.PingOneLdapGatewayDataStore = pingOneLdapGatewayDataStoreEmptyStateObj
 	if isResource {
 		state.JdbcDataStore = jdbcDataStoreEmptyStateObj
