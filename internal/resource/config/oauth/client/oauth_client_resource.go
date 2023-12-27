@@ -811,6 +811,12 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Computed:            true,
 				// Default set when appropriate in ModifyPlan before
 			},
+			"replication_status": schema.StringAttribute{
+				MarkdownDescription: "This status indicates whether the client has been replicated to the cluster. This property only applies when using XML client storage and automatic replication of clients is enabled. It is read only and is ignored on PUT and POST requests.",
+				Description:         "This status indicates whether the client has been replicated to the cluster. This property only applies when using XML client storage and automatic replication of clients is enabled. It is read only and is ignored on PUT and POST requests.",
+				Optional:            false,
+				Computed:            true,
+			},
 		},
 	}
 

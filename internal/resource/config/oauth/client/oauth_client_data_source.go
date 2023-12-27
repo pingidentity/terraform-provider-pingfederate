@@ -534,6 +534,12 @@ func (r *oauthClientDataSource) Schema(ctx context.Context, req datasource.Schem
 				Optional:            false,
 				Computed:            true,
 			},
+			"replication_status": schema.StringAttribute{
+				MarkdownDescription: "This status indicates whether the client has been replicated to the cluster. This property only applies when using XML client storage and automatic replication of clients is enabled. It is read only and is ignored on PUT and POST requests.",
+				Description:         "This status indicates whether the client has been replicated to the cluster. This property only applies when using XML client storage and automatic replication of clients is enabled. It is read only and is ignored on PUT and POST requests.",
+				Optional:            false,
+				Computed:            true,
+			},
 		},
 	}
 	id.ToDataSourceSchema(&schemaDef)
