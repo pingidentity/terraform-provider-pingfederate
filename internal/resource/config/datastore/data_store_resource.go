@@ -10,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
@@ -51,6 +53,9 @@ func (r *dataStoreResource) Schema(ctx context.Context, req resource.SchemaReque
 				Description: "The time at which the datastore instance was last changed. This property is read only and is ignored on PUT and POST requests. Supported in PF version 12.0 or later.",
 				Optional:    false,
 				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"custom_data_store":                toSchemaCustomDataStore(),
 			"jdbc_data_store":                  toSchemaJdbcDataStore(),
@@ -186,31 +191,36 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		}
 
 		// If connection_url is not defined, use connection_url_tags connection_url value
-		var connectionUrlVal basetypes.StringValue
-		if !hasTopConnectionUrl {
-			connectionUrlVal = connectionUrlTagsConnectionUrlVal
-		} else {
-			connectionUrlVal = types.StringValue(topConnectionUrlVal)
+		if !internaltypes.IsDefined(jdbcDataStore["connection_url"]) {
+			jdbcDataStore["connection_url"] = connectionUrlTagsConnectionUrlVal
 		}
-		jdbcDataStore["connection_url"] = connectionUrlVal
 
 		connectionUrlTagsAttrVal := map[string]attr.Value{
-			"connection_url": connectionUrlVal,
+			"connection_url": jdbcDataStore["connection_url"],
 			"tags":           connectionUrlTagsTags,
 			"default_source": connectionUrlTagsDefaultSource,
 		}
 		connectionUrlTagsObj, respDiags := types.ObjectValue(jdbcTagConfigAttrType.AttrTypes, connectionUrlTagsAttrVal)
 		resp.Diagnostics.Append(respDiags...)
 
+		// Use a map as a set to prevent adding duplicates to the final slice
+		finalTags := map[string]attr.Value{
+			jdbcDataStore["connection_url"].(types.String).ValueString(): connectionUrlTagsObj,
+		}
+		for _, element := range jdbcDataStore["connection_url_tags"].(types.Set).Elements() {
+			url := element.(types.Object).Attributes()["connection_url"]
+			finalTags[url.(types.String).ValueString()] = element
+		}
+		// Build the final slice and the framework object value
 		connectionUrlTagsSetAttrValue := []attr.Value{}
-		connectionUrlTagsSetAttrValue = append(connectionUrlTagsSetAttrValue, connectionUrlTagsObj)
-		connectionUrlTagsSetAttrValue = append(connectionUrlTagsSetAttrValue, jdbcDataStore["connection_url_tags"].(types.Set).Elements()...)
+		for _, val := range finalTags {
+			connectionUrlTagsSetAttrValue = append(connectionUrlTagsSetAttrValue, val)
+		}
 		connectionUrlTagsSet, respDiags := types.SetValue(jdbcTagConfigAttrType, connectionUrlTagsSetAttrValue)
 		resp.Diagnostics.Append(respDiags...)
 		jdbcDataStore["connection_url_tags"] = connectionUrlTagsSet
 
 		//  Build name attribute if not defined
-		var namePrefix basetypes.StringValue
 		var prefix string
 		if !internaltypes.IsDefined(jdbcDataStore["name"]) {
 			if hasTopConnectionUrl {
@@ -220,12 +230,9 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 				prefix = connectionUrlTagsConnectionUrlVal.ValueString()
 			}
 			userName := jdbcDataStore["user_name"].(types.String).ValueString()
-			namePrefix = types.StringValue(prefix + " (" + userName + ")")
-		} else {
-			namePrefix = jdbcDataStore["name"].(types.String)
+			jdbcDataStore["name"] = types.StringValue(prefix + " (" + userName + ")")
 		}
 
-		jdbcDataStore["name"] = namePrefix
 		plan.JdbcDataStore, respDiags = types.ObjectValue(jdbcDataStoreAttrType, jdbcDataStore)
 		resp.Diagnostics.Append(respDiags...)
 	}
@@ -364,6 +371,12 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 
 		plan.CustomDataStore, respDiags = types.ObjectValue(plan.CustomDataStore.AttributeTypes(ctx), customDataStore)
 		resp.Diagnostics.Append(respDiags...)
+	}
+
+	// If the new plan doesn't match the state, invalidate the last_modified value
+	req.Plan.Set(ctx, plan)
+	if !req.Plan.Raw.Equal(req.State.Raw) {
+		plan.LastModified = types.StringUnknown()
 	}
 
 	resp.Plan.Set(ctx, plan)

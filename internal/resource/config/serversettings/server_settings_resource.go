@@ -227,7 +227,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 				},
 			},
 			"roles_and_protocols": schema.SingleNestedAttribute{
-				Description: "Configure roles and protocols.",
+				Description: "Configure roles and protocols. As of PingFederate 12.0: This property has been deprecated and is no longer used. All Roles and protocols are always enabled.",
 				Computed:    true,
 				Optional:    false,
 				Default:     objectdefault.StaticValue(rolesAndProtocolsDefault),
