@@ -1044,7 +1044,7 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 	}
 
 	// If the new plan doesn't match the state, aside from replication_status, invalidate the replication_status and any last-changed time values
-	// Hopefully this won't be required in the future pending https://github.com/hashicorp/terraform-plugin-framework/issues/898
+	// See https://github.com/hashicorp/terraform-plugin-framework/issues/898 for some info on why this is needed
 	plan.ReplicationStatus = state.ReplicationStatus
 	req.Plan.Set(ctx, plan)
 	if !req.Plan.Raw.Equal(req.State.Raw) {
