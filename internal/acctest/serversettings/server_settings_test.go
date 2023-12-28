@@ -130,6 +130,20 @@ func testAccServerSettingsComplete(resourceName string, resourceModel serverSett
       notification_mode = "NOTIFICATION_PUBLISHER"
 		`
 	}
+	if acctest.VersionAtLeast(version.PingFederate1200) {
+		versionedHcl = `
+	  expired_certificate_administrative_console_warning_days = 10
+	  expiring_certificate_administrative_console_warning_days = 11
+	  thread_pool_exhaustion_notification_settings = {
+		email_address = "example@example.com"
+		thread_dump_enabled = false
+		notification_publisher_ref = {
+			id = "exampleSmtpPublisher"
+		}
+		notification_mode = "LOGGING_ONLY"
+	  }
+		`
+	}
 	return fmt.Sprintf(`
 resource "pingfederate_server_settings" "%[1]s" {
   contact_info = {

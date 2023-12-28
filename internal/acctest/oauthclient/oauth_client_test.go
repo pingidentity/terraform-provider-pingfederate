@@ -166,6 +166,11 @@ func oidcPolicyHcl(clientOidcPolicy *client.ClientOIDCPolicy) string {
 	back_channel_logout_uri = "https://example.com"	
 		`
 	}
+	if acctest.VersionAtLeast(version.PingFederate1200) {
+		versionedHcl += `
+	post_logout_redirect_uris = ["https://example.com", "https://pingidentity.com"]
+		`
+	}
 	return fmt.Sprintf(`
   oidc_policy = {
     id_token_signing_algorithm                  = "%s"
