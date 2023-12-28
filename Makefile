@@ -27,7 +27,7 @@ starttestcontainer:
 		-e SERVER_PROFILE_URL=https://github.com/pingidentity/pingidentity-server-profiles.git \
 		-e SERVER_PROFILE_BRANCH=terraform-provider-pingfederate-1125 \
 		-e SERVER_PROFILE_PATH=terraform-provider-pingfederate/pingfederate \
-		pingidentity/pingfederate:$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.0}-edge
+		pingidentity/pingfederate:$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.0}-latest
 # Wait for the instance to become ready
 	sleep 1
 	duration=0
