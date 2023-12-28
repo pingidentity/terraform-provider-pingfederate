@@ -822,6 +822,9 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Description:         "This status indicates whether the client has been replicated to the cluster. This property only applies when using XML client storage and automatic replication of clients is enabled. It is read only and is ignored on PUT and POST requests. Supported in PF version 12.0 or later.",
 				Optional:            false,
 				Computed:            true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 		},
 	}
@@ -984,9 +987,10 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		return
 	}
 	pfVersionAtLeast120 := compare >= 0
-	var plan oauthClientModel
+	var plan, state oauthClientModel
 	var diags diag.Diagnostics
 	req.Plan.Get(ctx, &plan)
+	req.State.Get(ctx, &state)
 	planModified := false
 	// If require_dpop is set prior to PF version 11.3, throw an error
 	if !pfVersionAtLeast113 {
@@ -1037,6 +1041,17 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 			version.AddUnsupportedAttributeError("oidc_policy.post_logout_redirect_uris",
 				r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
 		}
+	}
+
+	// If the new plan doesn't match the state, aside from replication_status, invalidate the replication_status and any last-changed time values
+	// Hopefully this won't be required in the future pending https://github.com/hashicorp/terraform-plugin-framework/issues/898
+	plan.ReplicationStatus = state.ReplicationStatus
+	req.Plan.Set(ctx, plan)
+	if !req.Plan.Raw.Equal(req.State.Raw) {
+		plan.ReplicationStatus = types.StringUnknown()
+		plan.ModificationDate = types.StringUnknown()
+		plan.ClientSecretChangedTime = types.StringUnknown()
+		planModified = true
 	}
 
 	if planModified {
@@ -1342,7 +1357,7 @@ func (r *oauthClientResource) Update(ctx context.Context, req resource.UpdateReq
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
-	diags = resp.State.Set(ctx, plan)
+	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 }
 

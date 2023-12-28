@@ -374,6 +374,7 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 	}
 
 	// If the new plan doesn't match the state, invalidate the last_modified value
+	// Hopefully this won't be required in the future pending https://github.com/hashicorp/terraform-plugin-framework/issues/898
 	req.Plan.Set(ctx, plan)
 	if !req.Plan.Raw.Equal(req.State.Raw) {
 		plan.LastModified = types.StringUnknown()
