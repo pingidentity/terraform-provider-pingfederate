@@ -71,6 +71,7 @@ resource "pingfederate_oauth_open_id_connect_policy" "oauthOIDCPolicyExample" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `last_modified` (String) The time at which the policy was last changed. This property is read only and is ignored on PUT and POST requests. Supported in PF version 12.0 or later.
 
 <a id="nestedatt--access_token_manager_ref"></a>
 ### Nested Schema for `access_token_manager_ref`

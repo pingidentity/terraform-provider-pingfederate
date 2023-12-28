@@ -117,6 +117,7 @@ RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
 - `refresh_token_rolling_grace_period_type` (String) When specified, it overrides the global Refresh Token Grace Period defined in the Authorization Server Settings. The default value is SERVER_DEFAULT
 - `refresh_token_rolling_interval` (Number) The minimum interval to roll refresh tokens, in hours. This value will override the Refresh Token Rolling Interval Value on the Authorization Server Settings.
 - `refresh_token_rolling_interval_type` (String) Use OVERRIDE_SERVER_DEFAULT to override the Refresh Token Rolling Interval value on the Authorization Server Settings. SERVER_DEFAULT will default to the Refresh Token Rolling Interval value on the Authorization Server Setting. Defaults to SERVER_DEFAULT.
+- `replication_status` (String) This status indicates whether the client has been replicated to the cluster. This property only applies when using XML client storage and automatic replication of clients is enabled. It is read only and is ignored on PUT and POST requests.
 - `request_object_signing_algorithm` (String) The JSON Web Signature [JWS] algorithm that must be used to sign the Request Object. All signing algorithms are allowed if value is not present
 RS256 - RSA using SHA-256
 
@@ -288,6 +289,7 @@ RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
 - `pairwise_identifier_user_type` (Boolean) Determines whether the subject identifier type is pairwise.
 - `ping_access_logout_capable` (Boolean) Set this value to true if you wish to enable client application logout, and the client is PingAccess, or its logout endpoints follow the PingAccess path convention
 - `policy_group` (Attributes) The Open ID Connect policy. A null value will represent the default policy group. (see [below for nested schema](#nestedatt--oidc_policy--policy_group))
+- `post_logout_redirect_uris` (Set of String) URIs to which the OIDC OP may redirect the resource owner's user agent after RP-initiated logout has completed. Wildcards are allowed. However, for security reasons, make the URL as restrictive as possible. Supported in PF version 12.0 or later.
 - `sector_identifier_uri` (String) The URI references a file with a single JSON array of Redirect URI and JWKS URL values.
 
 <a id="nestedatt--oidc_policy--policy_group"></a>

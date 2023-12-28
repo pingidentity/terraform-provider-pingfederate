@@ -323,6 +323,7 @@ resource "pingfederate_data_store" "myPingOneLdapDataStore" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `last_modified` (String) The time at which the datastore instance was last changed. This property is read only and is ignored on PUT and POST requests. Supported in PF version 12.0 or later.
 
 <a id="nestedatt--custom_data_store"></a>
 ### Nested Schema for `custom_data_store`
@@ -335,7 +336,7 @@ Required:
 
 Optional:
 
-- `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides) (see [below for nested schema](#nestedatt--custom_data_store--parent_ref))
+- `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides). Supported prior to PingFederate 12.0. (see [below for nested schema](#nestedatt--custom_data_store--parent_ref))
 
 Read-Only:
 

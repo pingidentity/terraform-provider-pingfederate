@@ -32,6 +32,7 @@ data "pingfederate_idp_adapter" "idpAdapterExample" {
 - `authn_ctx_class_ref` (String) The fixed value that indicates how the user was authenticated.
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--configuration))
 - `id` (String) ID of this resource.
+- `last_modified` (String) The time at which the plugin instance was last changed. This property is read only and is ignored on PUT and POST requests. Supported in PF version 12.0 or later.
 - `name` (String) The plugin instance name.
 - `parent_ref` (Attributes) The reference to this plugin's parent instance. (see [below for nested schema](#nestedatt--parent_ref))
 - `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))

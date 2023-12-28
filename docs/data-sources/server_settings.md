@@ -88,13 +88,19 @@ Read-Only:
 <a id="nestedatt--notifications"></a>
 ### Nested Schema for `notifications`
 
+Optional:
+
+- `expired_certificate_administrative_console_warning_days` (Number) Indicates the number of days prior to certificate expiry date, the administrative console warning starts. The default value is 14 days. Supported in PF 12.0 or later.
+
 Read-Only:
 
 - `account_changes_notification_publisher_ref` (Attributes) Reference to the associated notification publisher for admin user account changes. (see [below for nested schema](#nestedatt--notifications--account_changes_notification_publisher_ref))
 - `certificate_expirations` (Attributes) Notification settings for certificate expiration events. (see [below for nested schema](#nestedatt--notifications--certificate_expirations))
+- `expiring_certificate_administrative_console_warning_days` (Number) Indicates the number of days past the certificate expiry date, the administrative console warning ends. The default value is 14 days. Supported in PF 12.0 or later.
 - `license_events` (Attributes) Settings for license event notifications. (see [below for nested schema](#nestedatt--notifications--license_events))
 - `metadata_notification_settings` (Attributes) Settings for metadata update event notifications. (see [below for nested schema](#nestedatt--notifications--metadata_notification_settings))
 - `notify_admin_user_password_changes` (Boolean) Determines whether admin users are notified through email when their account is changed.
+- `thread_pool_exhaustion_notification_settings` (Attributes) Notification settings for thread pool exhaustion events. Supported in PF 12.0 or later. (see [below for nested schema](#nestedatt--notifications--thread_pool_exhaustion_notification_settings))
 
 <a id="nestedatt--notifications--account_changes_notification_publisher_ref"></a>
 ### Nested Schema for `notifications.account_changes_notification_publisher_ref`
@@ -154,6 +160,26 @@ Read-Only:
 
 <a id="nestedatt--notifications--metadata_notification_settings--notification_publisher_ref"></a>
 ### Nested Schema for `notifications.metadata_notification_settings.notification_publisher_ref`
+
+Read-Only:
+
+- `id` (String) The ID of the resource.
+- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+
+
+
+<a id="nestedatt--notifications--thread_pool_exhaustion_notification_settings"></a>
+### Nested Schema for `notifications.thread_pool_exhaustion_notification_settings`
+
+Read-Only:
+
+- `email_address` (String) Email address where notifications are sent.
+- `notification_mode` (String) The mode of notification. Set to NOTIFICATION_PUBLISHER to enable email notifications and server log messages. Set to LOGGING_ONLY to enable server log messages. Defaults to LOGGING_ONLY.
+- `notification_publisher_ref` (Attributes) Reference to the associated notification publisher. (see [below for nested schema](#nestedatt--notifications--thread_pool_exhaustion_notification_settings--notification_publisher_ref))
+- `thread_dump_enabled` (Boolean) Generate a thread dump when approaching thread pool exhaustion.
+
+<a id="nestedatt--notifications--thread_pool_exhaustion_notification_settings--notification_publisher_ref"></a>
+### Nested Schema for `notifications.thread_pool_exhaustion_notification_settings.notification_publisher_ref`
 
 Read-Only:
 

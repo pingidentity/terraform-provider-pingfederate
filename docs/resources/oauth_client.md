@@ -256,6 +256,7 @@ RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
 - `creation_date` (String) The time at which the client was created. This property is read only.
 - `id` (String) The ID of this resource.
 - `modification_date` (String) The time at which the client was last changed. This property is read only.
+- `replication_status` (String) This status indicates whether the client has been replicated to the cluster. This property only applies when using XML client storage and automatic replication of clients is enabled. It is read only and is ignored on PUT and POST requests. Supported in PF version 12.0 or later.
 
 <a id="nestedatt--client_auth"></a>
 ### Nested Schema for `client_auth`
@@ -372,6 +373,7 @@ RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
 - `pairwise_identifier_user_type` (Boolean) Determines whether the subject identifier type is pairwise.
 - `ping_access_logout_capable` (Boolean) Set this value to true if you wish to enable client application logout, and the client is PingAccess, or its logout endpoints follow the PingAccess path convention
 - `policy_group` (Attributes) The Open ID Connect policy. A null value will represent the default policy group. (see [below for nested schema](#nestedatt--oidc_policy--policy_group))
+- `post_logout_redirect_uris` (Set of String) URIs to which the OIDC OP may redirect the resource owner's user agent after RP-initiated logout has completed. Wildcards are allowed. However, for security reasons, make the URL as restrictive as possible. Supported in PF version 12.0 or later.
 - `sector_identifier_uri` (String) The URI references a file with a single JSON array of Redirect URI and JWKS URL values.
 
 <a id="nestedatt--oidc_policy--policy_group"></a>
