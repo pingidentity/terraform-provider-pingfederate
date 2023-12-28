@@ -3,7 +3,6 @@ package idpspconnection
 import (
 	"context"
 	"encoding/json"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -1968,59 +1967,7 @@ func (r *idpSpConnectionResource) Configure(_ context.Context, req resource.Conf
 
 func readIdpSpconnectionResourceResponse(ctx context.Context, r *client.SpConnection, state *idpSpConnectionModel, plan *idpSpConnectionModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-
-	state.ConnectionId = types.StringPointerValue(r.Id)
-	state.Id = types.StringPointerValue(r.Id)
-	state.Type = types.StringPointerValue(r.Type)
-	state.EntityId = types.StringValue(r.EntityId)
-	state.Name = types.StringValue(r.Name)
-	state.Active = types.BoolPointerValue(r.Active)
-	state.BaseUrl = types.StringPointerValue(r.BaseUrl)
-	state.DefaultVirtualEntityId = types.StringPointerValue(r.DefaultVirtualEntityId)
-	state.LicenseConnectionGroup = types.StringPointerValue(r.LicenseConnectionGroup)
-	state.LoggingMode = types.StringPointerValue(r.LoggingMode)
-	state.ApplicationName = types.StringPointerValue(r.ApplicationName)
-	state.ApplicationIconUrl = types.StringPointerValue(r.ApplicationIconUrl)
-	state.ConnectionTargetType = types.StringPointerValue(r.ConnectionTargetType)
-	state.ReplicationStatus = types.StringPointerValue(r.ReplicationStatus)
-
-	if r.CreationDate != nil {
-		state.CreationDate = types.StringValue(r.CreationDate.Format(time.RFC3339))
-	} else {
-		state.CreationDate = types.StringNull()
-	}
-
-	state.VirtualEntityIds, respDiags = types.SetValueFrom(ctx, types.StringType, r.VirtualEntityIds)
-	diags.Append(respDiags...)
-
-	state.MetadataReloadSettings, respDiags = types.ObjectValueFrom(ctx, metadataReloadSettingsAttrTypes, r.MetadataReloadSettings)
-	diags.Append(respDiags...)
-
-	state.Credentials, respDiags = types.ObjectValueFrom(ctx, credentialsAttrTypes, r.Credentials)
-	diags.Append(respDiags...)
-	if r.Credentials != nil && r.Credentials.SigningSettings != nil && r.Credentials.SigningSettings.IncludeCertInSignature == nil {
-		// PF returns false for include_cert_in_signature as nil. If nil is returned, just set it to false
-		credentialsAttrs := state.Credentials.Attributes()
-		signingSettingsAttrs := credentialsAttrs["signing_settings"].(types.Object).Attributes()
-		signingSettingsAttrs["include_cert_in_signature"] = types.BoolValue(false)
-		newSigningSettings, respDiags := types.ObjectValue(signingSettingsAttrTypes, signingSettingsAttrs)
-		diags.Append(respDiags...)
-		credentialsAttrs["signing_settings"] = newSigningSettings
-		state.Credentials, respDiags = types.ObjectValue(credentialsAttrTypes, credentialsAttrs)
-		diags.Append(respDiags...)
-	}
-
-	state.ContactInfo, respDiags = types.ObjectValueFrom(ctx, contactInfoAttrTypes, r.ContactInfo)
-	diags.Append(respDiags...)
-
-	state.AdditionalAllowedEntitiesConfiguration, respDiags = types.ObjectValueFrom(ctx, additionalAllowedEntitiesConfigurationAttrTypes, r.AdditionalAllowedEntitiesConfiguration)
-	diags.Append(respDiags...)
-
-	state.ExtendedProperties, respDiags = types.MapValueFrom(ctx, types.ObjectType{AttrTypes: extendedPropertiesElemAttrTypes}, r.ExtendedProperties)
-	diags.Append(respDiags...)
-
-	state.SpBrowserSso, respDiags = types.ObjectValueFrom(ctx, spBrowserSSOAttrTypes, r.SpBrowserSso)
-	diags.Append(respDiags...)
+	diags.Append(readIdpSpconnectionResponseCommon(ctx, r, state)...)
 
 	if r.AttributeQuery != nil {
 		attributeQueryValues := map[string]attr.Value{}
@@ -2044,9 +1991,6 @@ func readIdpSpconnectionResourceResponse(ctx context.Context, r *client.SpConnec
 	} else {
 		state.AttributeQuery = types.ObjectNull(attributeQueryAttrTypes)
 	}
-
-	state.WsTrust, respDiags = types.ObjectValueFrom(ctx, wsTrustAttrTypes, r.WsTrust)
-	diags.Append(respDiags...)
 
 	if r.OutboundProvision != nil {
 		outboundProvisionAttrs := map[string]attr.Value{
