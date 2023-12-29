@@ -2,7 +2,6 @@ package oauthopenidconnectpolicy
 
 import (
 	"context"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -65,7 +64,6 @@ type oauthOpenIdConnectPolicyModel struct {
 	ScopeAttributeMappings      types.Map    `tfsdk:"scope_attribute_mappings"`
 	IncludeX5tInIdToken         types.Bool   `tfsdk:"include_x5t_in_id_token"`
 	IdTokenTypHeaderValue       types.String `tfsdk:"id_token_typ_header_value"`
-	LastModified                types.String `tfsdk:"last_modified"`
 }
 
 func readOauthOpenIdConnectPolicyResponse(ctx context.Context, response *client.OpenIdConnectPolicy, state *oauthOpenIdConnectPolicyModel) diag.Diagnostics {
@@ -89,12 +87,6 @@ func readOauthOpenIdConnectPolicyResponse(ctx context.Context, response *client.
 		state.IdTokenTypHeaderValue = types.StringNull()
 	} else {
 		state.IdTokenTypHeaderValue = types.StringPointerValue(response.IdTokenTypHeaderValue)
-	}
-
-	if response.LastModified == nil {
-		state.LastModified = types.StringNull()
-	} else {
-		state.LastModified = types.StringValue(response.LastModified.Format(time.RFC3339))
 	}
 
 	state.AttributeContract, diags = types.ObjectValueFrom(ctx, attributeContractAttrTypes, response.AttributeContract)

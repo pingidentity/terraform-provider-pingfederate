@@ -2,7 +2,6 @@ package oauthaccesstokenmanager
 
 import (
 	"context"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -66,7 +65,6 @@ type oauthAccessTokenManagerDataSourceModel struct {
 	AccessControlSettings     types.Object `tfsdk:"access_control_settings"`
 	SessionValidationSettings types.Object `tfsdk:"session_validation_settings"`
 	SequenceNumber            types.Int64  `tfsdk:"sequence_number"`
-	LastModified              types.String `tfsdk:"last_modified"`
 }
 
 // GetSchema defines the schema for the datasource.
@@ -253,11 +251,6 @@ func (r *oauthAccessTokenManagerDataSource) Schema(ctx context.Context, req data
 				Optional:    false,
 				Computed:    true,
 			},
-			"last_modified": schema.StringAttribute{
-				Description: "The time at which the plugin instance was last changed. This property is read only and is ignored on PUT and POST requests. Supported in PF version 12.0 or later.",
-				Optional:    false,
-				Computed:    true,
-			},
 		},
 	}
 	id.ToDataSourceSchema(&schemaDef)
@@ -297,12 +290,6 @@ func readOauthAccessTokenManagerResponseDataSource(ctx context.Context, r *clien
 	diags.Append(respDiags...)
 	state.Configuration, respDiags = types.ObjectValueFrom(ctx, pluginconfiguration.AttrType(), r.Configuration)
 	diags.Append(respDiags...)
-
-	if r.LastModified == nil {
-		state.LastModified = types.StringNull()
-	} else {
-		state.LastModified = types.StringValue(r.LastModified.Format(time.RFC3339))
-	}
 
 	// state.AttributeContract
 	if r.AttributeContract == nil {

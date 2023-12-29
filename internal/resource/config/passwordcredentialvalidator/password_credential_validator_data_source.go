@@ -93,11 +93,6 @@ func (r *passwordCredentialValidatorDataSource) Schema(ctx context.Context, req 
 					},
 				},
 			},
-			"last_modified": schema.StringAttribute{
-				Description: "The time at which the plugin instance was last changed. This property is read only and is ignored on PUT and POST requests. Supported in PF version 12.0 or later.",
-				Optional:    false,
-				Computed:    true,
-			},
 		},
 	}
 

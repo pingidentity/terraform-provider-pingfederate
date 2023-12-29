@@ -10,8 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
@@ -48,14 +46,6 @@ func (r *dataStoreResource) Schema(ctx context.Context, req resource.SchemaReque
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
-			},
-			"last_modified": schema.StringAttribute{
-				Description: "The time at which the datastore instance was last changed. This property is read only and is ignored on PUT and POST requests. Supported in PF version 12.0 or later.",
-				Optional:    false,
-				Computed:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"custom_data_store":                toSchemaCustomDataStore(),
 			"jdbc_data_store":                  toSchemaJdbcDataStore(),
@@ -371,16 +361,6 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 
 		plan.CustomDataStore, respDiags = types.ObjectValue(plan.CustomDataStore.AttributeTypes(ctx), customDataStore)
 		resp.Diagnostics.Append(respDiags...)
-	}
-
-	// If the new plan doesn't match the state, aside from the last_modified value, invalidate the last_modified value
-	// See https://github.com/hashicorp/terraform-plugin-framework/issues/898 for some info on why this is needed
-	if state != nil {
-		plan.LastModified = state.LastModified
-	}
-	req.Plan.Set(ctx, plan)
-	if !req.Plan.Raw.Equal(req.State.Raw) {
-		plan.LastModified = types.StringUnknown()
 	}
 
 	resp.Plan.Set(ctx, plan)

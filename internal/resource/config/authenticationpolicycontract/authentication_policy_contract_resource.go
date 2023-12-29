@@ -73,11 +73,6 @@ func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req r
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"last_modified": schema.StringAttribute{
-				Description: "The time at which the authentication policy contract was last changed. This property is read only and is ignored on PUT and POST requests.",
-				Optional:    false,
-				Computed:    true,
-			},
 		},
 	}
 

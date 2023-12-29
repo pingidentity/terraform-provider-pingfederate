@@ -2,7 +2,6 @@ package datastore
 
 import (
 	"context"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
@@ -213,11 +212,6 @@ func readPingOneLdapGatewayDataStoreResponse(ctx context.Context, r *client.Data
 	state.Id = types.StringPointerValue(r.PingOneLdapGatewayDataStore.Id)
 	state.DataStoreId = types.StringPointerValue(r.PingOneLdapGatewayDataStore.Id)
 	state.MaskAttributeValues = types.BoolPointerValue(r.PingOneLdapGatewayDataStore.MaskAttributeValues)
-	if r.PingOneLdapGatewayDataStore.LastModified != nil {
-		state.LastModified = types.StringValue(r.PingOneLdapGatewayDataStore.LastModified.Format(time.RFC3339))
-	} else {
-		state.LastModified = types.StringNull()
-	}
 	if isResource {
 		state.CustomDataStore = customDataStoreEmptyStateObj
 		state.JdbcDataStore = jdbcDataStoreEmptyStateObj
