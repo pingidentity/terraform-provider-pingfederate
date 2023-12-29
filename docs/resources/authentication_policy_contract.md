@@ -37,7 +37,6 @@ resource "pingfederate_authentication_policy_contract" "authenticationPolicyCont
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `last_modified` (String) The time at which the authentication policy contract was last changed. This property is read only and is ignored on PUT and POST requests.
 
 <a id="nestedatt--core_attributes"></a>
 ### Nested Schema for `core_attributes`

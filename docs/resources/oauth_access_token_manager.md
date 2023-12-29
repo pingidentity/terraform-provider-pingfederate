@@ -266,7 +266,6 @@ resource "pingfederate_oauth_access_token_manager" "jsonWebTokenOauthAccessToken
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `last_modified` (String) The time at which the plugin instance was last changed. This property is read only and is ignored on PUT and POST requests. Supported in PF version 12.0 or later.
 - `sequence_number` (Number) Number added to an access token to identify which Access Token Manager issued the token.
 
 <a id="nestedatt--attribute_contract"></a>

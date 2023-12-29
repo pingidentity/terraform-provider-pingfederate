@@ -40,7 +40,6 @@ data "pingfederate_oauth_open_id_connect_policy" "myOauthOIDCPolicyExample" {
 - `include_s_hash_in_id_token` (Boolean) Determines whether the State Hash should be included in the ID token.
 - `include_user_info_in_id_token` (Boolean) Determines whether the User Info is always included in the ID token
 - `include_x5t_in_id_token` (Boolean) Determines whether the X.509 thumbprint header should be included in the ID Token. Supported in PF version 11.3 or later.
-- `last_modified` (String) The time at which the policy was last changed. This property is read only and is ignored on PUT and POST requests. Supported in PF version 12.0 or later.
 - `name` (String) The name used for display in UI screens.
 - `reissue_id_token_in_hybrid_flow` (Boolean) Determines whether a new ID Token should be returned during token request of the hybrid flow.
 - `return_id_token_on_refresh_grant` (Boolean) Determines whether an ID Token should be returned when refresh grant is requested or not.

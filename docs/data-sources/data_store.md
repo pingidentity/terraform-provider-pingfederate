@@ -30,7 +30,6 @@ data "pingfederate_data_store" "myDataStore" {
 - `custom_data_store` (Attributes) A custom data store. (see [below for nested schema](#nestedatt--custom_data_store))
 - `id` (String) ID of this resource.
 - `jdbc_data_store` (Attributes) A JDBC data store. (see [below for nested schema](#nestedatt--jdbc_data_store))
-- `last_modified` (String) The time at which the datastore instance was last changed. Supported in PF version 12.0 or later.
 - `ldap_data_store` (Attributes) An LDAP Data Store (see [below for nested schema](#nestedatt--ldap_data_store))
 - `mask_attribute_values` (Boolean) Whether attribute values should be masked in the log.
 - `ping_one_ldap_gateway_data_store` (Attributes) A PingOne LDAP Gateway data store. (see [below for nested schema](#nestedatt--ping_one_ldap_gateway_data_store))
