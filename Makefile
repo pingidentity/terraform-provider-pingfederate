@@ -80,11 +80,11 @@ verifycontent:
 devcheck: verifycontent devchecknotest kaboom testacc
 
 generateresource:
-	PINGFEDERATE_GENERATED_ENDPOINT=serverSettings \
-	PINGFEDERATE_RESOURCE_DEFINITION_NAME=ServerSettings \
+	PINGFEDERATE_GENERATED_ENDPOINT=authenticationPolicies/policy \
+	PINGFEDERATE_RESOURCE_DEFINITION_NAME=AuthenticationPolicyTree \
 	PINGFEDERATE_ALLOW_REQUIRED_BYPASS=False \
 	OVERWRITE_EXISTING_RESOURCE_FILE=False \
-	PINGFEDERATE_PUT_ONLY_RESOURCE=True \
+	PINGFEDERATE_PUT_ONLY_RESOURCE=False \
 	GENERATE_SCHEMA=True \
 	python3 scripts/generate_resource.py
 	make fmt

@@ -20,6 +20,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/administrativeaccount"
 	authenticationapisettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi/settings"
+	authenticationpoliciespolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicies/policy"
 	authenticationpoliciessettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicies/settings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicycontract"
 	certificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificate/ca"
@@ -373,6 +374,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 	return []func() resource.Resource{
 		administrativeaccount.AdministrativeAccountResource,
 		authenticationapisettings.AuthenticationApiSettingsResource,
+		authenticationpoliciespolicy.AuthenticationPoliciesPolicyResource,
 		authenticationpoliciessettings.AuthenticationPoliciesSettingsResource,
 		authenticationpolicycontract.AuthenticationPolicyContractResource,
 		certificate.CertificateCAResource,
