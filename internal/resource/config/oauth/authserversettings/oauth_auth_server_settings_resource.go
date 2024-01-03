@@ -23,7 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -31,6 +31,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -269,10 +270,10 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Default:     booldefault.StaticBool(true),
 			},
 			"refresh_token_rolling_grace_period": schema.Int64Attribute{
-				Description: "The grace period that a rolled refresh token remains valid in seconds. The default value is 0.",
+				Description: "The grace period that a rolled refresh token remains valid in seconds. The default value is 60.",
 				Computed:    true,
 				Optional:    true,
-				Default:     int64default.StaticInt64(0),
+				Default:     int64default.StaticInt64(60),
 			},
 			"refresh_rolling_interval": schema.Int64Attribute{
 				Description: "The minimum interval to roll refresh tokens, in hours.",
@@ -459,6 +460,24 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Optional:    true,
 				Default:     int64default.StaticInt64(600),
 			},
+			"dpop_proof_require_nonce": schema.BoolAttribute{
+				// Default is set in ModifyPlan below. Once only PF 11.3 and newer is supported, we can set the default in the schema here
+				Description: "Determines whether nonce is required in the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is false. Supported in PF version 11.3 or later.",
+				Computed:    true,
+				Optional:    true,
+			},
+			"dpop_proof_lifetime_seconds": schema.Int64Attribute{
+				// Default is set in ModifyPlan below. Once only PF 11.3 and newer is supported, we can set the default in the schema here
+				Description: "The lifetime, in seconds, of the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is 120. Supported in PF version 11.3 or later.",
+				Computed:    true,
+				Optional:    true,
+			},
+			"dpop_proof_enforce_replay_prevention": schema.BoolAttribute{
+				// Default is set in ModifyPlan below. Once only PF 11.3 and newer is supported, we can set the default in the schema here
+				Description: "Determines whether Demonstrating Proof-of-Possession (DPoP) proof JWT replay prevention is enforced. The default value is false. Supported in PF version 11.3 or later.",
+				Computed:    true,
+				Optional:    true,
+			},
 		},
 	}
 
@@ -513,6 +532,55 @@ func (r *oauthAuthServerSettingsResource) ValidateConfig(ctx context.Context, re
 	}
 }
 
+func (r *oauthAuthServerSettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	// Compare to version 11.3 of PF
+	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast113 := compare >= 0
+	var plan oauthAuthServerSettingsModel
+	req.Plan.Get(ctx, &plan)
+	// If any of these fields are set by the user and the PF version is not new enough, throw an error
+	if !pfVersionAtLeast113 {
+		if internaltypes.IsDefined(plan.DpopProofEnforceReplayPrevention) {
+			resp.Diagnostics.AddError("Attribute 'dpop_proof_enforce_replay_prevention' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "")
+		} else if plan.DpopProofEnforceReplayPrevention.IsUnknown() {
+			// Set a null default when the version isn't new enough to use this attribute
+			plan.DpopProofEnforceReplayPrevention = types.BoolNull()
+		}
+
+		if internaltypes.IsDefined(plan.DpopProofLifetimeSeconds) {
+			resp.Diagnostics.AddError("Attribute 'dpop_proof_lifetime_seconds' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "")
+		} else if plan.DpopProofLifetimeSeconds.IsUnknown() {
+			plan.DpopProofLifetimeSeconds = types.Int64Null()
+		}
+
+		if internaltypes.IsDefined(plan.DpopProofRequireNonce) {
+			resp.Diagnostics.AddError("Attribute 'dpop_proof_require_nonce' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "")
+		} else if plan.DpopProofRequireNonce.IsUnknown() {
+			plan.DpopProofRequireNonce = types.BoolNull()
+		}
+	} else { //PF version is new enough for these attributes, set defaults
+		if plan.DpopProofEnforceReplayPrevention.IsUnknown() {
+			plan.DpopProofEnforceReplayPrevention = types.BoolValue(false)
+		}
+
+		if plan.DpopProofLifetimeSeconds.IsUnknown() {
+			plan.DpopProofLifetimeSeconds = types.Int64Value(120)
+		}
+
+		if plan.DpopProofRequireNonce.IsUnknown() {
+			plan.DpopProofRequireNonce = types.BoolValue(false)
+		}
+	}
+
+	if !resp.Diagnostics.HasError() {
+		resp.Plan.Set(ctx, &plan)
+	}
+}
+
 func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *client.AuthorizationServerSettings, plan oauthAuthServerSettingsModel) error {
 
 	if internaltypes.IsDefined(plan.Scopes) {
@@ -543,51 +611,19 @@ func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *c
 		}
 	}
 
-	if internaltypes.IsDefined(plan.DisallowPlainPKCE) {
-		addRequest.DisallowPlainPKCE = plan.DisallowPlainPKCE.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.IncludeIssuerInAuthorizationResponse) {
-		addRequest.IncludeIssuerInAuthorizationResponse = plan.IncludeIssuerInAuthorizationResponse.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.TrackUserSessionsForLogout) {
-		addRequest.TrackUserSessionsForLogout = plan.TrackUserSessionsForLogout.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.TokenEndpointBaseUrl) {
-		addRequest.TokenEndpointBaseUrl = plan.TokenEndpointBaseUrl.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.PersistentGrantLifetime) {
-		addRequest.PersistentGrantLifetime = plan.PersistentGrantLifetime.ValueInt64Pointer()
-	}
-
-	if internaltypes.IsDefined(plan.PersistentGrantLifetimeUnit) {
-		addRequest.PersistentGrantLifetimeUnit = plan.PersistentGrantLifetimeUnit.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.PersistentGrantIdleTimeout) {
-		addRequest.PersistentGrantIdleTimeout = plan.PersistentGrantIdleTimeout.ValueInt64Pointer()
-	}
-
-	if internaltypes.IsDefined(plan.PersistentGrantIdleTimeoutTimeUnit) {
-		addRequest.PersistentGrantIdleTimeoutTimeUnit = plan.PersistentGrantIdleTimeoutTimeUnit.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.RollRefreshTokenValues) {
-		addRequest.RollRefreshTokenValues = plan.RollRefreshTokenValues.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.RefreshTokenRollingGracePeriod) {
-		addRequest.RefreshTokenRollingGracePeriod = plan.RefreshTokenRollingGracePeriod.ValueInt64Pointer()
-	}
-
-	if internaltypes.IsDefined(plan.PersistentGrantReuseGrantTypes) {
-		var slice []string
-		plan.PersistentGrantReuseGrantTypes.ElementsAs(ctx, &slice, false)
-		addRequest.PersistentGrantReuseGrantTypes = slice
-	}
+	addRequest.DisallowPlainPKCE = plan.DisallowPlainPKCE.ValueBoolPointer()
+	addRequest.IncludeIssuerInAuthorizationResponse = plan.IncludeIssuerInAuthorizationResponse.ValueBoolPointer()
+	addRequest.TrackUserSessionsForLogout = plan.TrackUserSessionsForLogout.ValueBoolPointer()
+	addRequest.TokenEndpointBaseUrl = plan.TokenEndpointBaseUrl.ValueStringPointer()
+	addRequest.PersistentGrantLifetime = plan.PersistentGrantLifetime.ValueInt64Pointer()
+	addRequest.PersistentGrantLifetimeUnit = plan.PersistentGrantLifetimeUnit.ValueStringPointer()
+	addRequest.PersistentGrantIdleTimeout = plan.PersistentGrantIdleTimeout.ValueInt64Pointer()
+	addRequest.PersistentGrantIdleTimeoutTimeUnit = plan.PersistentGrantIdleTimeoutTimeUnit.ValueStringPointer()
+	addRequest.RollRefreshTokenValues = plan.RollRefreshTokenValues.ValueBoolPointer()
+	addRequest.RefreshTokenRollingGracePeriod = plan.RefreshTokenRollingGracePeriod.ValueInt64Pointer()
+	var persistentGrantReuseTypes []string
+	plan.PersistentGrantReuseGrantTypes.ElementsAs(ctx, &persistentGrantReuseTypes, false)
+	addRequest.PersistentGrantReuseGrantTypes = persistentGrantReuseTypes
 
 	if internaltypes.IsDefined(plan.PersistentGrantContract) {
 		addRequest.PersistentGrantContract = client.NewPersistentGrantContractWithDefaults()
@@ -596,18 +632,9 @@ func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *c
 			return err
 		}
 	}
-
-	if internaltypes.IsDefined(plan.BypassAuthorizationForApprovedGrants) {
-		addRequest.BypassAuthorizationForApprovedGrants = plan.BypassAuthorizationForApprovedGrants.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.AllowUnidentifiedClientROCreds) {
-		addRequest.AllowUnidentifiedClientROCreds = plan.AllowUnidentifiedClientROCreds.ValueBoolPointer()
-	}
-
-	if internaltypes.IsDefined(plan.AllowUnidentifiedClientExtensionGrants) {
-		addRequest.AllowUnidentifiedClientExtensionGrants = plan.AllowUnidentifiedClientExtensionGrants.ValueBoolPointer()
-	}
+	addRequest.BypassAuthorizationForApprovedGrants = plan.BypassAuthorizationForApprovedGrants.ValueBoolPointer()
+	addRequest.AllowUnidentifiedClientROCreds = plan.AllowUnidentifiedClientROCreds.ValueBoolPointer()
+	addRequest.AllowUnidentifiedClientExtensionGrants = plan.AllowUnidentifiedClientExtensionGrants.ValueBoolPointer()
 
 	if internaltypes.IsDefined(plan.AdminWebServicePcvRef) {
 		addRequest.AdminWebServicePcvRef = client.NewResourceLinkWithDefaults()
@@ -616,68 +643,27 @@ func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *c
 			return err
 		}
 	}
+	addRequest.AtmIdForOAuthGrantManagement = plan.AtmIdForOAuthGrantManagement.ValueStringPointer()
+	addRequest.ScopeForOAuthGrantManagement = plan.ScopeForOAuthGrantManagement.ValueStringPointer()
+	var allowedOrigins []string
+	plan.AllowedOrigins.ElementsAs(ctx, &allowedOrigins, false)
+	addRequest.AllowedOrigins = allowedOrigins
+	addRequest.UserAuthorizationUrl = plan.UserAuthorizationUrl.ValueStringPointer()
+	addRequest.DevicePollingInterval = plan.DevicePollingInterval.ValueInt64()
+	addRequest.ActivationCodeCheckMode = plan.ActivationCodeCheckMode.ValueStringPointer()
+	addRequest.UserAuthorizationConsentPageSetting = plan.UserAuthorizationConsentPageSetting.ValueStringPointer()
+	addRequest.UserAuthorizationConsentAdapter = plan.UserAuthorizationConsentAdapter.ValueStringPointer()
+	addRequest.ApprovedScopesAttribute = plan.ApprovedScopesAttribute.ValueStringPointer()
+	addRequest.ApprovedAuthorizationDetailAttribute = plan.ApprovedAuthorizationDetailAttribute.ValueStringPointer()
+	addRequest.ParReferenceTimeout = plan.ParReferenceTimeout.ValueInt64Pointer()
+	addRequest.ParReferenceLength = plan.ParReferenceLength.ValueInt64Pointer()
+	addRequest.ParStatus = plan.ParStatus.ValueStringPointer()
+	addRequest.ClientSecretRetentionPeriod = plan.ClientSecretRetentionPeriod.ValueInt64Pointer()
 
-	if internaltypes.IsDefined(plan.AtmIdForOAuthGrantManagement) {
-		addRequest.AtmIdForOAuthGrantManagement = plan.AtmIdForOAuthGrantManagement.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.ScopeForOAuthGrantManagement) {
-		addRequest.ScopeForOAuthGrantManagement = plan.ScopeForOAuthGrantManagement.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.AllowedOrigins) {
-		var slice []string
-		plan.AllowedOrigins.ElementsAs(ctx, &slice, false)
-		addRequest.AllowedOrigins = slice
-	}
-
-	if internaltypes.IsDefined(plan.UserAuthorizationUrl) {
-		addRequest.UserAuthorizationUrl = plan.UserAuthorizationUrl.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.DevicePollingInterval) {
-		addRequest.DevicePollingInterval = plan.DevicePollingInterval.ValueInt64()
-	}
-
-	if internaltypes.IsDefined(plan.ActivationCodeCheckMode) {
-		addRequest.ActivationCodeCheckMode = plan.ActivationCodeCheckMode.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.UserAuthorizationConsentPageSetting) {
-		addRequest.UserAuthorizationConsentPageSetting = plan.UserAuthorizationConsentPageSetting.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.UserAuthorizationConsentAdapter) {
-		addRequest.UserAuthorizationConsentAdapter = plan.UserAuthorizationConsentAdapter.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.ApprovedScopesAttribute) {
-		addRequest.ApprovedScopesAttribute = plan.ApprovedScopesAttribute.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.ApprovedAuthorizationDetailAttribute) {
-		addRequest.ApprovedAuthorizationDetailAttribute = plan.ApprovedAuthorizationDetailAttribute.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.ParReferenceTimeout) {
-		addRequest.ParReferenceTimeout = plan.ParReferenceTimeout.ValueInt64Pointer()
-	}
-
-	if internaltypes.IsDefined(plan.ParReferenceLength) {
-		addRequest.ParReferenceLength = plan.ParReferenceLength.ValueInt64Pointer()
-	}
-
-	if internaltypes.IsDefined(plan.ParStatus) {
-		addRequest.ParStatus = plan.ParStatus.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.ClientSecretRetentionPeriod) {
-		addRequest.ClientSecretRetentionPeriod = plan.ClientSecretRetentionPeriod.ValueInt64Pointer()
-	}
-
-	if internaltypes.IsDefined(plan.JwtSecuredAuthorizationResponseModeLifetime) {
-		addRequest.JwtSecuredAuthorizationResponseModeLifetime = plan.JwtSecuredAuthorizationResponseModeLifetime.ValueInt64Pointer()
-	}
+	addRequest.JwtSecuredAuthorizationResponseModeLifetime = plan.JwtSecuredAuthorizationResponseModeLifetime.ValueInt64Pointer()
+	addRequest.DpopProofEnforceReplayPrevention = plan.DpopProofEnforceReplayPrevention.ValueBoolPointer()
+	addRequest.DpopProofLifetimeSeconds = plan.DpopProofLifetimeSeconds.ValueInt64Pointer()
+	addRequest.DpopProofRequireNonce = plan.DpopProofRequireNonce.ValueBoolPointer()
 
 	return nil
 

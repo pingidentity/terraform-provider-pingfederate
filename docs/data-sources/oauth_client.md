@@ -130,6 +130,7 @@ PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384
 PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512
 RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.
 - `request_policy_ref` (Attributes) The CIBA request policy. (see [below for nested schema](#nestedatt--request_policy_ref))
+- `require_dpop` (Boolean) Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Supported in PF version 11.3 or later.
 - `require_jwt_secured_authorization_response_mode` (Boolean) Determines whether JWT secured authorization response mode is required when initiating an authorization request. The default is false.
 - `require_proof_key_for_code_exchange` (Boolean) Determines whether Proof Key for Code Exchange (PKCE) is required for this client.
 - `require_pushed_authorization_requests` (Boolean) Determines whether pushed authorization requests are required when initiating an authorization request. The default is false.
@@ -242,6 +243,7 @@ Read-Only:
 
 Read-Only:
 
+- `back_channel_logout_uri` (String) The back-channel logout URI for this client. Supported in PF version 11.3 or later.
 - `grant_access_session_revocation_api` (Boolean) Determines whether this client is allowed to access the Session Revocation API.
 - `grant_access_session_session_management_api` (Boolean) Determines whether this client is allowed to access the Session Management API.
 - `id_token_content_encryption_algorithm` (String) The JSON Web Encryption [JWE] content encryption algorithm for the ID Token.
@@ -281,6 +283,7 @@ PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384
 PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512
 A null value will represent the default algorithm which is RS256.
 RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
+- `logout_mode` (String) The logout mode for this client. The default is 'NONE'. Supported in PF version 11.3 or later.
 - `logout_uris` (Set of String) A list of client logout URI's which will be invoked when a user logs out through one of PingFederate's SLO endpoints.
 - `pairwise_identifier_user_type` (Boolean) Determines whether the subject identifier type is pairwise.
 - `ping_access_logout_capable` (Boolean) Set this value to true if you wish to enable client application logout, and the client is PingAccess, or its logout endpoints follow the PingAccess path convention

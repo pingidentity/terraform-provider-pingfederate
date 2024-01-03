@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
@@ -30,7 +30,8 @@ type jdbcDataStoreResourceModel struct {
 }
 
 func initialJdbcDataStore() *client.JdbcDataStore {
-	jdbcDataStore := client.NewJdbcDataStore(driverClass, userName, jdbcDataStoreType)
+	jdbcDataStore := client.NewJdbcDataStore(driverClass, jdbcDataStoreType)
+	jdbcDataStore.UserName = pointers.String(userName)
 	jdbcDataStore.Password = pointers.String(password)
 	jdbcDataStore.ConnectionUrl = pointers.String(connectionUrl)
 	jdbcDataStore.Name = pointers.String("initialJdbcDataStore")
@@ -43,7 +44,8 @@ func initialJdbcDataStore() *client.JdbcDataStore {
 }
 
 func updatedJdbcDataStore() *client.JdbcDataStore {
-	jdbcDataStore := client.NewJdbcDataStore(driverClass, userName, jdbcDataStoreType)
+	jdbcDataStore := client.NewJdbcDataStore(driverClass, jdbcDataStoreType)
+	jdbcDataStore.UserName = pointers.String(userName)
 	jdbcDataStore.Password = pointers.String(password)
 	jdbcDataStore.ConnectionUrl = pointers.String(connectionUrl)
 	jdbcDataStore.Name = pointers.String("updatedJdbcDataStore")

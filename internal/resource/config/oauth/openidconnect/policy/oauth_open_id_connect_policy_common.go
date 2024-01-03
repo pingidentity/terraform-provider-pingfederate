@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
@@ -62,6 +62,8 @@ type oauthOpenIdConnectPolicyModel struct {
 	AttributeContract           types.Object `tfsdk:"attribute_contract"`
 	AttributeMapping            types.Object `tfsdk:"attribute_mapping"`
 	ScopeAttributeMappings      types.Map    `tfsdk:"scope_attribute_mappings"`
+	IncludeX5tInIdToken         types.Bool   `tfsdk:"include_x5t_in_id_token"`
+	IdTokenTypHeaderValue       types.String `tfsdk:"id_token_typ_header_value"`
 }
 
 func readOauthOpenIdConnectPolicyResponse(ctx context.Context, response *client.OpenIdConnectPolicy, state *oauthOpenIdConnectPolicyModel) diag.Diagnostics {
@@ -79,6 +81,13 @@ func readOauthOpenIdConnectPolicyResponse(ctx context.Context, response *client.
 	state.IncludeSHashInIdToken = types.BoolPointerValue(response.IncludeSHashInIdToken)
 	state.ReturnIdTokenOnRefreshGrant = types.BoolPointerValue(response.ReturnIdTokenOnRefreshGrant)
 	state.ReissueIdTokenInHybridFlow = types.BoolPointerValue(response.ReissueIdTokenInHybridFlow)
+	state.IncludeX5tInIdToken = types.BoolPointerValue(response.IncludeX5tInIdToken)
+	if response.IdTokenTypHeaderValue != nil && *response.IdTokenTypHeaderValue == "" {
+		// PF can return an empty string for a nil value, so treat that as null here
+		state.IdTokenTypHeaderValue = types.StringNull()
+	} else {
+		state.IdTokenTypHeaderValue = types.StringPointerValue(response.IdTokenTypHeaderValue)
+	}
 
 	state.AttributeContract, diags = types.ObjectValueFrom(ctx, attributeContractAttrTypes, response.AttributeContract)
 	respDiags.Append(diags...)

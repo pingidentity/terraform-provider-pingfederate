@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/administrativeaccount"
 	authenticationapiapplication "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi/application"
 	authenticationapisettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi/settings"
@@ -55,6 +55,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/tokenprocessortotokengeneratormapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/virtualhostnames"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // Ensure the implementation satisfies the expected interfacesß
@@ -84,6 +85,7 @@ type pingfederateProviderModel struct {
 	InsecureTrustAllTls             types.Bool   `tfsdk:"insecure_trust_all_tls"`
 	CACertificatePEMFiles           types.Set    `tfsdk:"ca_certificate_pem_files"`
 	XBypassExternalValidationHeader types.Bool   `tfsdk:"x_bypass_external_validation_header"`
+	ProductVersion                  types.String `tfsdk:"product_version"`
 }
 
 // pingfederateProvider is the provider implementation.
@@ -125,6 +127,10 @@ func (p *pingfederateProvider) Schema(_ context.Context, _ provider.SchemaReques
 			},
 			"x_bypass_external_validation_header": schema.BoolAttribute{
 				Description: "Header value in request for PingFederate. The connection test will be bypassed when set to true. Default value can be set with the `PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER` environment variable.",
+				Optional:    true,
+			},
+			"product_version": schema.StringAttribute{
+				Description: "Version of the PingFederate server being configured. Default value can be set with the `PINGFEDERATE_PROVIDER_PRODUCT_VERSION` environment variable.",
 				Optional:    true,
 			},
 		},
@@ -183,7 +189,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 		}
 	}
 
-	// User must provide a username to the provider
+	// User must provide a password to the provider
 	var password string
 	if config.Password.IsUnknown() {
 		// Cannot connect to PingFederate with an unknown value
@@ -205,9 +211,30 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 		}
 	}
 
+	var productVersion string
+	var parsedProductVersion version.SupportedVersion
+	var err error
+	if !config.ProductVersion.IsUnknown() && !config.ProductVersion.IsNull() {
+		productVersion = config.ProductVersion.ValueString()
+	} else {
+		productVersion = os.Getenv("PINGFEDERATE_PROVIDER_PRODUCT_VERSION")
+	}
+
+	if productVersion == "" {
+		resp.Diagnostics.AddError(
+			"Unable to find PingFederate version",
+			"product_version cannot be an empty string. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_PRODUCT_VERSION environment variable.",
+		)
+	} else {
+		// Validate the PingFederate version
+		parsedProductVersion, err = version.Parse(productVersion)
+		if err != nil {
+			resp.Diagnostics.AddError("Invalid PingFederate version", err.Error())
+		}
+	}
+
 	// Optional attributes
 	var insecureTrustAllTls bool
-	var err error
 	if !config.InsecureTrustAllTls.IsUnknown() && !config.InsecureTrustAllTls.IsNull() {
 		insecureTrustAllTls = config.InsecureTrustAllTls.ValueBool()
 	} else {
@@ -270,9 +297,10 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	// type Configure methods.
 	var resourceConfig internaltypes.ResourceConfiguration
 	providerConfig := internaltypes.ProviderConfiguration{
-		HttpsHost: httpsHost,
-		Username:  username,
-		Password:  password,
+		HttpsHost:      httpsHost,
+		Username:       username,
+		Password:       password,
+		ProductVersion: parsedProductVersion,
 	}
 	resourceConfig.ProviderConfig = providerConfig
 	clientConfig := client.NewConfiguration()

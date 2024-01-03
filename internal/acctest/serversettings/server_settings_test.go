@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // Attributes to test with. Add optional properties to test here if desired.
@@ -123,6 +124,12 @@ resource "pingfederate_server_settings" "%s" {
 }
 
 func testAccServerSettingsComplete(resourceName string, resourceModel serverSettingsResourceModel) string {
+	versionedHcl := ""
+	if acctest.VersionAtLeast(version.PingFederate1130) {
+		versionedHcl = `
+      notification_mode = "NOTIFICATION_PUBLISHER"
+		`
+	}
 	return fmt.Sprintf(`
 resource "pingfederate_server_settings" "%[1]s" {
   contact_info = {
@@ -166,6 +173,7 @@ resource "pingfederate_server_settings" "%[1]s" {
       notification_publisher_ref = {
         id = "exampleSmtpPublisher"
       }
+	  %[13]s
     }
     notify_admin_user_password_changes = true
     account_changes_notification_publisher_ref = {
@@ -198,6 +206,7 @@ data "pingfederate_server_settings" "%[1]s" {
 		resourceModel.emailServer.emailServer,
 		resourceModel.captchaSettings.siteKey,
 		resourceModel.captchaSettings.secretKey,
+		versionedHcl,
 	)
 }
 

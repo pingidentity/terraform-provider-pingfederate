@@ -114,6 +114,9 @@ resource "pingfederate_oauth_auth_server_settings" "myOauthAuthServerSettings" {
 - `bypass_authorization_for_approved_grants` (Boolean) Bypass authorization for previously approved persistent grants. The default value is false.
 - `client_secret_retention_period` (Number) The length of time in minutes that client secrets will be retained as secondary secrets after secret change. The default value is 0, which will disable secondary client secret retention.
 - `disallow_plain_pkce` (Boolean) Determines whether PKCE's 'plain' code challenge method will be disallowed. The default value is false.
+- `dpop_proof_enforce_replay_prevention` (Boolean) Determines whether Demonstrating Proof-of-Possession (DPoP) proof JWT replay prevention is enforced. The default value is false. Supported in PF version 11.3 or later.
+- `dpop_proof_lifetime_seconds` (Number) The lifetime, in seconds, of the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is 120. Supported in PF version 11.3 or later.
+- `dpop_proof_require_nonce` (Boolean) Determines whether nonce is required in the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is false. Supported in PF version 11.3 or later.
 - `exclusive_scope_groups` (Attributes Set) The list of exclusive scope groups. (see [below for nested schema](#nestedatt--exclusive_scope_groups))
 - `exclusive_scopes` (Attributes Set) The list of exclusive scopes. (see [below for nested schema](#nestedatt--exclusive_scopes))
 - `include_issuer_in_authorization_response` (Boolean) Determines whether the authorization server's issuer value is added to the authorization response or not. The default value is false.
@@ -127,7 +130,7 @@ resource "pingfederate_oauth_auth_server_settings" "myOauthAuthServerSettings" {
 - `persistent_grant_lifetime` (Number) The persistent grant lifetime. The default value is indefinite. -1 indicates an indefinite amount of time.
 - `persistent_grant_lifetime_unit` (String) The persistent grant lifetime unit.
 - `persistent_grant_reuse_grant_types` (Set of String) The grant types that the OAuth AS can reuse rather than creating a new grant for each request. Only 'IMPLICIT' or 'AUTHORIZATION_CODE' or 'RESOURCE_OWNER_CREDENTIALS' are valid grant types.
-- `refresh_token_rolling_grace_period` (Number) The grace period that a rolled refresh token remains valid in seconds. The default value is 0.
+- `refresh_token_rolling_grace_period` (Number) The grace period that a rolled refresh token remains valid in seconds. The default value is 60.
 - `roll_refresh_token_values` (Boolean) The roll refresh token values default policy. The default value is true.
 - `scope_for_oauth_grant_management` (String) The OAuth scope to validate when accessing grant management service.
 - `scope_groups` (Attributes Set) The list of common scope groups. (see [below for nested schema](#nestedatt--scope_groups))

@@ -8,10 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const oauthClientId = "myOauthClient"
@@ -158,6 +159,13 @@ func TestAccOauthClient(t *testing.T) {
 }
 
 func oidcPolicyHcl(clientOidcPolicy *client.ClientOIDCPolicy) string {
+	versionedHcl := ""
+	if acctest.VersionAtLeast(version.PingFederate1130) {
+		versionedHcl += `
+	logout_mode = "OIDC_BACK_CHANNEL"
+	back_channel_logout_uri = "https://example.com"	
+		`
+	}
 	return fmt.Sprintf(`
   oidc_policy = {
     id_token_signing_algorithm                  = "%s"
@@ -168,6 +176,7 @@ func oidcPolicyHcl(clientOidcPolicy *client.ClientOIDCPolicy) string {
     sector_identifier_uri                       = "%s"
     id_token_encryption_algorithm               = "%s"
     id_token_content_encryption_algorithm       = "%s"
+	%s
   }
 	`, *clientOidcPolicy.IdTokenSigningAlgorithm,
 		*clientOidcPolicy.GrantAccessSessionRevocationApi,
@@ -176,7 +185,8 @@ func oidcPolicyHcl(clientOidcPolicy *client.ClientOIDCPolicy) string {
 		*clientOidcPolicy.PairwiseIdentifierUserType,
 		*clientOidcPolicy.SectorIdentifierUri,
 		*clientOidcPolicy.IdTokenEncryptionAlgorithm,
-		*clientOidcPolicy.IdTokenContentEncryptionAlgorithm)
+		*clientOidcPolicy.IdTokenContentEncryptionAlgorithm,
+		versionedHcl)
 }
 
 func clientAuthHcl(clientAuth *client.ClientAuth) string {
@@ -261,6 +271,12 @@ func testAccOauthClient(resourceName string, resourceModel oauthClientResourceMo
 			*resourceModel.tokenIntrospectionSigningAlgorithm,
 			*resourceModel.requireSignedRequests,
 		)
+
+		if acctest.VersionAtLeast(version.PingFederate1130) {
+			optionalHcl += `
+		require_dpop = true	
+			`
+		}
 	}
 
 	return fmt.Sprintf(`

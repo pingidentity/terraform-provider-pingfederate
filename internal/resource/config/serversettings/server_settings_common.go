@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -26,6 +26,7 @@ var (
 		"initial_warning_period":     types.Int64Type,
 		"final_warning_period":       types.Int64Type,
 		"notification_publisher_ref": types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"notification_mode":          types.StringType,
 	}
 
 	notificationSettingsAttrType = map[string]attr.Type{

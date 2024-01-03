@@ -201,6 +201,7 @@ PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384
 PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512
 RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.
 - `request_policy_ref` (Attributes) The CIBA request policy. (see [below for nested schema](#nestedatt--request_policy_ref))
+- `require_dpop` (Boolean) Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Supported in PF version 11.3 or later.
 - `require_jwt_secured_authorization_response_mode` (Boolean) Determines whether JWT secured authorization response mode is required when initiating an authorization request. The default is false.
 - `require_proof_key_for_code_exchange` (Boolean) Determines whether Proof Key for Code Exchange (PKCE) is required for this client.
 - `require_pushed_authorization_requests` (Boolean) Determines whether pushed authorization requests are required when initiating an authorization request. The default is false.
@@ -263,10 +264,10 @@ Optional:
 
 - `client_cert_issuer_dn` (String) Client TLS Certificate Issuer DN.
 - `client_cert_subject_dn` (String) Client TLS Certificate Subject DN.
-- `enforce_replay_prevention` (Boolean) Enforce replay prevention on JSON Web Tokens. This field is applicable only for Private Key JWT Client Authentication.
+- `enforce_replay_prevention` (Boolean) Enforce replay prevention on JSON Web Tokens. This field is applicable only for Private Key JWT Client and Client Secret JWT Authentication.
 - `secondary_secrets` (Attributes Set) The list of secondary client secrets that are temporarily retained. (see [below for nested schema](#nestedatt--client_auth--secondary_secrets))
 - `secret` (String) Client secret for Basic Authentication. To update the client secret, specify the plaintext value in this field. This field will not be populated for GET requests.
-- `token_endpoint_auth_signing_algorithm` (String) The JSON Web Signature [JWS] algorithm that must be used to sign the JSON Web Tokens. This field is applicable only for Private Key JWT Client Authentication. All signing algorithms are allowed if value is not present
+- `token_endpoint_auth_signing_algorithm` (String) The JSON Web Signature [JWS] algorithm that must be used to sign the JSON Web Tokens. This field is applicable only for Private Key JWT and Client Secret JWT Client Authentication. All asymmetric signing algorithms are allowed for Private Key JWT if value is not present. All symmetric signing algorithms are allowed for Client Secret JWT if value is not present
 RS256 - RSA using SHA-256
 RS384 - RSA using SHA-384
 RS512 - RSA using SHA-512
@@ -277,6 +278,9 @@ PS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256
 PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384
 PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512
 RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.
+HS256 - HMAC using SHA-256
+HS384 - HMAC using SHA-384
+HS512 - HMAC using SHA-512.
 - `type` (String) Client authentication type. The required field for type SECRET is secret.	The required fields for type CERTIFICATE are clientCertIssuerDn and clientCertSubjectDn. The required field for type PRIVATE_KEY_JWT is: either jwks or jwksUrl.
 
 <a id="nestedatt--client_auth--secondary_secrets"></a>
@@ -323,6 +327,7 @@ Optional:
 
 Optional:
 
+- `back_channel_logout_uri` (String) The back-channel logout URI for this client. Supported in PF version 11.3 or later.
 - `grant_access_session_revocation_api` (Boolean) Determines whether this client is allowed to access the Session Revocation API.
 - `grant_access_session_session_management_api` (Boolean) Determines whether this client is allowed to access the Session Management API.
 - `id_token_content_encryption_algorithm` (String) The JSON Web Encryption [JWE] content encryption algorithm for the ID Token.
@@ -362,7 +367,8 @@ PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384
 PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512
 A null value will represent the default algorithm which is RS256.
 RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
-- `logout_uris` (Set of String) A list of client logout URI's which will be invoked when a user logs out through one of PingFederate's SLO endpoints.
+- `logout_mode` (String) The logout mode for this client. The default is 'NONE'. Supported in PF version 11.3 or later.
+- `logout_uris` (Set of String) A list of front-channel logout URIs for this client.
 - `pairwise_identifier_user_type` (Boolean) Determines whether the subject identifier type is pairwise.
 - `ping_access_logout_capable` (Boolean) Set this value to true if you wish to enable client application logout, and the client is PingAccess, or its logout endpoints follow the PingAccess path convention
 - `policy_group` (Attributes) The Open ID Connect policy. A null value will represent the default policy group. (see [below for nested schema](#nestedatt--oidc_policy--policy_group))
