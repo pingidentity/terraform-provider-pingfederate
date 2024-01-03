@@ -21,8 +21,7 @@ jobs:
           - "11.2.0"
           - "11.2.7"
           - "11.3.0"
-          # The 11.3.4-latest image isn't out yet, so using 11.3.3 here
-          - "11.3.3"
+          - "11.3.4"
       max-parallel: 1
     steps:
       - uses: actions/checkout@v4
