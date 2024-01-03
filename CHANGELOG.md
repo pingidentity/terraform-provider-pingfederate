@@ -1,9 +1,13 @@
-# v0.5.0 (unreleased)
-### FEATURES
+# v0.5.0 (Unreleased)
+### BUG FIXES
+* **OAuth Client Resource:** Resolved issue where default issues on the `pingfederate_authentication_api_application` resource cause an invalid apply ([#145](https://github.com/pingidentity/terraform-provider-pingfederate/pull/145)) 
+
 #### Resources
+* **New Resource:** `pingfederate_authentication_api_application` ([#](https://github.com/pingidentity/terraform-provider-pingfederate/pull/))
 * **New Resource:** `pingfederate_authentication_policies_settings` ([#150](https://github.com/pingidentity/terraform-provider-pingfederate/pull/150))
 
 #### Data Sources
+* **New Data Source:** `pingfederate_authentication_api_application` ([#](https://github.com/pingidentity/terraform-provider-pingfederate/pull/))
 * **New Data Source:** `pingfederate_authentication_policies_settings` ([#150](https://github.com/pingidentity/terraform-provider-pingfederate/pull/150))
 
 
