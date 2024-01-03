@@ -1431,11 +1431,6 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 				Optional:    false,
 				Description: "Ws-Trust STS provides security-token validation and creation to extend SSO access to identity-enabled Web Services",
 			},
-			"replication_status": schema.StringAttribute{
-				Description: "This status indicates whether the connection has been replicated to the cluster. This property only applies when automatic replication of connections is enabled. It is read only and is ignored on PUT and POST requests. Supported in PF version 12.0 or later.",
-				Optional:    false,
-				Computed:    true,
-			},
 		},
 	}
 

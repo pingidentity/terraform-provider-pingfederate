@@ -817,15 +817,6 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Computed:            true,
 				// Default set when appropriate in ModifyPlan before
 			},
-			"replication_status": schema.StringAttribute{
-				MarkdownDescription: "This status indicates whether the client has been replicated to the cluster. This property only applies when using XML client storage and automatic replication of clients is enabled. It is read only and is ignored on PUT and POST requests. Supported in PF version 12.0 or later.",
-				Description:         "This status indicates whether the client has been replicated to the cluster. This property only applies when using XML client storage and automatic replication of clients is enabled. It is read only and is ignored on PUT and POST requests. Supported in PF version 12.0 or later.",
-				Optional:            false,
-				Computed:            true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
 		},
 	}
 
@@ -1043,12 +1034,10 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		}
 	}
 
-	// If the new plan doesn't match the state, aside from replication_status, invalidate the replication_status and any last-changed time values
+	// If the new plan doesn't match the state, invalidate any last-changed time values
 	// See https://github.com/hashicorp/terraform-plugin-framework/issues/898 for some info on why this is needed
-	plan.ReplicationStatus = state.ReplicationStatus
 	req.Plan.Set(ctx, plan)
 	if !req.Plan.Raw.Equal(req.State.Raw) {
-		plan.ReplicationStatus = types.StringUnknown()
 		plan.ModificationDate = types.StringUnknown()
 		plan.ClientSecretChangedTime = types.StringUnknown()
 		planModified = true

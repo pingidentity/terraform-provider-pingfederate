@@ -141,7 +141,6 @@ type oauthClientModel struct {
 	JwtSecuredAuthorizationResponseModeEncryptionAlgorithm        types.String `tfsdk:"jwt_secured_authorization_response_mode_encryption_algorithm"`
 	JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm types.String `tfsdk:"jwt_secured_authorization_response_mode_content_encryption_algorithm"`
 	RequireDpop                                                   types.Bool   `tfsdk:"require_dpop"`
-	ReplicationStatus                                             types.String `tfsdk:"replication_status"`
 }
 
 func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state *oauthClientModel) diag.Diagnostics {
@@ -212,7 +211,6 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state 
 	state.JwtSecuredAuthorizationResponseModeEncryptionAlgorithm = types.StringPointerValue(r.JwtSecuredAuthorizationResponseModeEncryptionAlgorithm)
 	state.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm = types.StringPointerValue(r.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm)
 	state.RequireDpop = types.BoolPointerValue(r.RequireDpop)
-	state.ReplicationStatus = types.StringPointerValue(r.ReplicationStatus)
 
 	// state.OidcPolicy
 	oidcPolicyToState, respDiags := types.ObjectValueFrom(ctx, oidcPolicyAttrType, r.OidcPolicy)

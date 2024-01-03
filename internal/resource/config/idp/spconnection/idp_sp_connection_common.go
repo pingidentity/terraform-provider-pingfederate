@@ -36,7 +36,6 @@ type idpSpConnectionModel struct {
 	ApplicationIconUrl                     types.String `tfsdk:"application_icon_url"`
 	OutboundProvision                      types.Object `tfsdk:"outbound_provision"`
 	ConnectionTargetType                   types.String `tfsdk:"connection_target_type"`
-	ReplicationStatus                      types.String `tfsdk:"replication_status"`
 }
 
 var (
@@ -117,7 +116,6 @@ func readIdpSpconnectionResponseCommon(ctx context.Context, r *client.SpConnecti
 	state.ApplicationName = types.StringPointerValue(r.ApplicationName)
 	state.ApplicationIconUrl = types.StringPointerValue(r.ApplicationIconUrl)
 	state.ConnectionTargetType = types.StringPointerValue(r.ConnectionTargetType)
-	state.ReplicationStatus = types.StringPointerValue(r.ReplicationStatus)
 
 	if r.CreationDate != nil {
 		state.CreationDate = types.StringValue(r.CreationDate.Format(time.RFC3339))
