@@ -160,26 +160,17 @@ func (r *authenticationApiApplicationResource) Create(ctx context.Context, req r
 
 	// Read the response into the state
 	var state authenticationApiApplicationModel
-	var clientForRedirectlessModeRef *client.ResourceLink
-
+	// This is a workaround for the fact that the API does not return the location of oauth client ClientForRedirectlessModeRef
 	if internaltypes.IsDefined(plan.ClientForRedirectlessModeRef) {
-		apiReadAuthenticationApiApplication, httpResp, err := r.apiClient.AuthenticationApiAPI.GetApplication(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
-
+		authenticationApiApplicationResponse, httpResp, err = r.apiClient.AuthenticationApiAPI.GetApplication(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.ApplicationId.ValueString()).Execute()
 		if err != nil {
-			if httpResp != nil && httpResp.StatusCode == 404 {
-				config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp)
-			} else {
-				config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp)
-			}
-		} else {
-			*clientForRedirectlessModeRef = apiReadAuthenticationApiApplication.GetClientForRedirectlessModeRef()
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp)
 		}
-	} else {
-		clientForRedirectlessModeRef = nil
 	}
 
-	diags = readAuthenticationApiApplicationResponse(ctx, authenticationApiApplicationResponse, &state, clientForRedirectlessModeRef)
+	diags = readAuthenticationApiApplicationResponse(ctx, authenticationApiApplicationResponse, &state)
 	resp.Diagnostics.Append(diags...)
+
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
@@ -193,7 +184,7 @@ func (r *authenticationApiApplicationResource) Read(ctx context.Context, req res
 		return
 	}
 
-	apiReadAuthenticationApiApplication, httpResp, err := r.apiClient.AuthenticationApiAPI.GetApplication(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadAuthenticationApiApplication, httpResp, err := r.apiClient.AuthenticationApiAPI.GetApplication(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ApplicationId.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -204,7 +195,7 @@ func (r *authenticationApiApplicationResource) Read(ctx context.Context, req res
 		}
 	}
 
-	diags = readAuthenticationApiApplicationResponse(ctx, apiReadAuthenticationApiApplication, &state, apiReadAuthenticationApiApplication.ClientForRedirectlessModeRef)
+	diags = readAuthenticationApiApplicationResponse(ctx, apiReadAuthenticationApiApplication, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -232,36 +223,26 @@ func (r *authenticationApiApplicationResource) Update(ctx context.Context, req r
 
 	updateAuthenticationApiApplication = updateAuthenticationApiApplication.Body(*createUpdateRequest)
 	updateAuthenticationApiApplicationResponse, httpResp, err := r.apiClient.AuthenticationApiAPI.UpdateApplicationExecute(updateAuthenticationApiApplication)
-	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
+	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an Authentication Api Application", err, httpResp)
 		return
 	}
 
 	// Read the response
 	var state authenticationApiApplicationModel
-	var clientForRedirectlessModeRef *client.ResourceLink
-
+	// This is a workaround for the fact that the API does not return the location of oauth client ClientForRedirectlessModeRef
 	if internaltypes.IsDefined(plan.ClientForRedirectlessModeRef) {
-		apiReadAuthenticationApiApplication, httpResp, err := r.apiClient.AuthenticationApiAPI.GetApplication(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Id.ValueString()).Execute()
-
+		updateAuthenticationApiApplicationResponse, httpResp, err = r.apiClient.AuthenticationApiAPI.GetApplication(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Id.ValueString()).Execute()
 		if err != nil {
-			if httpResp != nil && httpResp.StatusCode == 404 {
-				config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp)
-			} else {
-				config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp)
-			}
-		} else {
-			clientForRedirectlessModeRef = &client.ResourceLink{}
-			clientForRedirectlessModeRef.Id = apiReadAuthenticationApiApplication.ClientForRedirectlessModeRef.Id
-			clientForRedirectlessModeRef.Location = apiReadAuthenticationApiApplication.ClientForRedirectlessModeRef.Location
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp)
 		}
 	}
 
-	diags = readAuthenticationApiApplicationResponse(ctx, updateAuthenticationApiApplicationResponse, &state, clientForRedirectlessModeRef)
+	diags = readAuthenticationApiApplicationResponse(ctx, updateAuthenticationApiApplicationResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
-	diags = resp.State.Set(ctx, plan)
+	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 

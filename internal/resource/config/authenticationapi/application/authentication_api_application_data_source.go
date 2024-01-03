@@ -102,7 +102,7 @@ func (r *authenticationApiApplicationDataSource) Read(ctx context.Context, req d
 	}
 
 	// Read the response into the state
-	diags = readAuthenticationApiApplicationResponse(ctx, apiReadAuthenticationApiApplication, &state, apiReadAuthenticationApiApplication.ClientForRedirectlessModeRef)
+	diags = readAuthenticationApiApplicationResponse(ctx, apiReadAuthenticationApiApplication, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state

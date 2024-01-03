@@ -20,7 +20,7 @@ type authenticationApiApplicationModel struct {
 	ClientForRedirectlessModeRef types.Object `tfsdk:"client_for_redirectless_mode_ref"`
 }
 
-func readAuthenticationApiApplicationResponse(ctx context.Context, r *client.AuthnApiApplication, state *authenticationApiApplicationModel, clientForRedirectlessModeRef *client.ResourceLink) diag.Diagnostics {
+func readAuthenticationApiApplicationResponse(ctx context.Context, r *client.AuthnApiApplication, state *authenticationApiApplicationModel) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	state.Id = types.StringValue(r.Id)
@@ -29,7 +29,7 @@ func readAuthenticationApiApplicationResponse(ctx context.Context, r *client.Aut
 	state.Url = types.StringValue(r.Url)
 	state.Description = types.StringPointerValue(r.Description)
 	state.AdditionalAllowedOrigins = internaltypes.GetStringList(r.AdditionalAllowedOrigins)
-	state.ClientForRedirectlessModeRef, diags = resourcelink.ToState(ctx, clientForRedirectlessModeRef)
+	state.ClientForRedirectlessModeRef, diags = resourcelink.ToState(ctx, r.ClientForRedirectlessModeRef)
 
 	return diags
 }
