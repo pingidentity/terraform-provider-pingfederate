@@ -2,6 +2,7 @@ package acctest_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -9,33 +10,35 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
-
-const fileData = "SUQ9MDA0ODk3MzEKV1NUcnVzdFNUUz10cnVlCk9BdXRoPXRydWUKU2Fhc1Byb3Zpc2lvbmluZz10cnVlClByb2R1Y3Q9UGluZ0ZlZGVyYXRlClZlcnNpb249MTEuMgpFbmZvcmNlbWVudFR5cGU9MwpUaWVyPUZyZWUKSXNzdWVEYXRlPTIwMjMtMDYtMDcKRXhwaXJhdGlvbkRhdGU9MjAyNC0wNi0wNwpEZXBsb3ltZW50TWV0aG9kPURvY2tlcgpPcmdhbml6YXRpb249UGluZyBJZGVudGl0eSBDb3Jwb3JhdGlvbgpTaWduQ29kZT1GRjBGClNpZ25hdHVyZT0zMDJDMDIxNDM4QkIwQzk5RjYwQUY1RkE4MzBBRUQ4NjEzOENGRENCNTAxNDYzNzUwMjE0NENCODc3MEI3N0ZDNzgwMUQ0M0QwNjQwMTVDNjIwOTJBNDY1RjZEMA=="
-
-// Attributes to test with. Add optional properties to test here if desired.
-type licenseResourceModel struct {
-	fileData string
-}
 
 func TestAccLicense(t *testing.T) {
 	resourceName := "myLicense"
-	initialResourceModel := licenseResourceModel{
-		fileData: fileData,
+
+	licenseVar := "PF_TF_ACC_TEST_LICENSE_11"
+	if acctest.VersionAtLeast(version.PingFederate1200) {
+		licenseVar = "PF_TF_ACC_TEST_LICENSE_12"
 	}
+	licenseFileData := os.Getenv(licenseVar)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		PreCheck: func() {
+			acctest.ConfigurationPreCheck(t)
+			if licenseFileData == "" {
+				t.Fatal(licenseVar + " must be set for acceptance tests on this PingFederate version")
+			}
+		},
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: testAccLicense(resourceName, initialResourceModel),
+				Config: testAccLicense(resourceName, licenseFileData),
 			},
 			{
 				// Test importing the resource
-				Config:            testAccLicense(resourceName, initialResourceModel),
+				Config:            testAccLicense(resourceName, licenseFileData),
 				ResourceName:      "pingfederate_license." + resourceName,
 				ImportState:       true,
 				ImportStateVerify: false,
@@ -44,7 +47,7 @@ func TestAccLicense(t *testing.T) {
 	})
 }
 
-func testAccLicense(resourceName string, resourceModel licenseResourceModel) string {
+func testAccLicense(resourceName string, licenseFileData string) string {
 	return fmt.Sprintf(`
 resource "pingfederate_license" "%[1]s" {
   file_data = "%[2]s"
@@ -59,6 +62,6 @@ data "pingfederate_license" "%[1]s" {
 resource "pingfederate_license" "licenseExample" {
   file_data = "%[2]s"
 }`, resourceName,
-		fileData,
+		licenseFileData,
 	)
 }

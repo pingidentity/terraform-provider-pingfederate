@@ -335,7 +335,7 @@ Required:
 
 Optional:
 
-- `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides) (see [below for nested schema](#nestedatt--custom_data_store--parent_ref))
+- `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides). Supported prior to PingFederate 12.0. (see [below for nested schema](#nestedatt--custom_data_store--parent_ref))
 
 Read-Only:
 

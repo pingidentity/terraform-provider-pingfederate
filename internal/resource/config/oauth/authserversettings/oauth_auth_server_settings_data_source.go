@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	resourcelinkdatasource "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
@@ -422,19 +422,31 @@ func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req data
 				Computed:    true,
 			},
 			"dpop_proof_require_nonce": schema.BoolAttribute{
-				Description: "Determines whether nonce is required in the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is false.",
+				Description: "Determines whether nonce is required in the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is false. Supported in PF version 11.3 or later.",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
 			},
 			"dpop_proof_lifetime_seconds": schema.Int64Attribute{
-				Description: "The lifetime, in seconds, of the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is 120.",
+				Description: "The lifetime, in seconds, of the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is 120. Supported in PF version 11.3 or later.",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
 			},
 			"dpop_proof_enforce_replay_prevention": schema.BoolAttribute{
-				Description: "Determines whether Demonstrating Proof-of-Possession (DPoP) proof JWT replay prevention is enforced. The default value is false.",
+				Description: "Determines whether Demonstrating Proof-of-Possession (DPoP) proof JWT replay prevention is enforced. The default value is false. Supported in PF version 11.3 or later.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"bypass_authorization_for_approved_consents": schema.BoolAttribute{
+				Description: "Bypass authorization for previously approved consents. The default value is false. Supported in PF version 12.0 or later.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"consent_lifetime_days": schema.Int64Attribute{
+				Description: "The consent lifetime in days. The default value is indefinite. -1 indicates an indefinite amount of time. Supported in PF version 12.0 or later.",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,

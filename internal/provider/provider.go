@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/administrativeaccount"
 	authenticationapisettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi/settings"
 	authenticationpoliciessettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicies/settings"

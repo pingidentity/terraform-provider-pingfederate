@@ -154,6 +154,13 @@ func testAccOauthAuthServerSettings(resourceName string, resourceModel oauthAuth
   dpop_proof_enforce_replay_prevention = false
 			`
 		}
+
+		if acctest.VersionAtLeast(version.PingFederate1200) {
+			optionalHcl += `
+  bypass_authorization_for_approved_consents = true
+  consent_lifetime_days = 5
+			`
+		}
 	}
 
 	return fmt.Sprintf(`

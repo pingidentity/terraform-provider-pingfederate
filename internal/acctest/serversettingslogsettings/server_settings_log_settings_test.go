@@ -11,6 +11,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 func TestAccServerSettingsLogSettings(t *testing.T) {
@@ -85,8 +86,18 @@ log_categories = [
       id      = "restdatastore"
       enabled = true
     },
-  ]
 `, *logCategoriesEnabled)
+		if acctest.VersionAtLeast(version.PingFederate1200) {
+			logCategoriesHcl += `
+		{
+			id = "protocolrequestresponse"
+			enabled = false
+		},
+			`
+		}
+		logCategoriesHcl += `
+	]
+	`
 	}
 
 	return fmt.Sprintf(`

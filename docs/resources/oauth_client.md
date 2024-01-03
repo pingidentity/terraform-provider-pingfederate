@@ -372,6 +372,7 @@ RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
 - `pairwise_identifier_user_type` (Boolean) Determines whether the subject identifier type is pairwise.
 - `ping_access_logout_capable` (Boolean) Set this value to true if you wish to enable client application logout, and the client is PingAccess, or its logout endpoints follow the PingAccess path convention
 - `policy_group` (Attributes) The Open ID Connect policy. A null value will represent the default policy group. (see [below for nested schema](#nestedatt--oidc_policy--policy_group))
+- `post_logout_redirect_uris` (Set of String) URIs to which the OIDC OP may redirect the resource owner's user agent after RP-initiated logout has completed. Wildcards are allowed. However, for security reasons, make the URL as restrictive as possible. Supported in PF version 12.0 or later.
 - `sector_identifier_uri` (String) The URI references a file with a single JSON array of Redirect URI and JWKS URL values.
 
 <a id="nestedatt--oidc_policy--policy_group"></a>

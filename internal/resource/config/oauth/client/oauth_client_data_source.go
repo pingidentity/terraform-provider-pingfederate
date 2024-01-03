@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	resourcelinkdatasource "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -302,6 +302,12 @@ func (r *oauthClientDataSource) Schema(ctx context.Context, req datasource.Schem
 						Description: "The back-channel logout URI for this client. Supported in PF version 11.3 or later.",
 						Optional:    false,
 						Computed:    true,
+					},
+					"post_logout_redirect_uris": schema.SetAttribute{
+						Description: "URIs to which the OIDC OP may redirect the resource owner's user agent after RP-initiated logout has completed. Wildcards are allowed. However, for security reasons, make the URL as restrictive as possible. Supported in PF version 12.0 or later.",
+						Optional:    false,
+						Computed:    true,
+						ElementType: types.StringType,
 					},
 				},
 			},
