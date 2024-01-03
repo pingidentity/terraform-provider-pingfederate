@@ -1296,7 +1296,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 								"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
 								"attribute_sources":              attributesources.ToSchema(0),
-								"idp_adapter_ref":                resourcelink.CompleteSingleNestedAttribute(false, false, true, "Reference to the associated IdP adapter. Note: This is ignored if adapter overrides for this mapping exists. In this case, the override's parent adapter reference is used."),
+								"idp_adapter_ref":                resourcelink.CompleteSingleNestedAttribute(true, false, false, "Reference to the associated IdP adapter. Note: This is ignored if adapter overrides for this mapping exists. In this case, the override's parent adapter reference is used."),
 								"issuance_criteria":              issuancecriteria.ToSchema(),
 								"restrict_virtual_entity_ids": schema.BoolAttribute{
 									Optional:    true,
