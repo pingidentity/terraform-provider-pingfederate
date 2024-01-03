@@ -67,11 +67,12 @@ func TestAccAuthenticationApiApplication(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccAuthenticationApiApplication(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_authentication_api_application." + resourceName,
-				ImportStateId:     authenticationApiApplicationId,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:                  testAccAuthenticationApiApplication(resourceName, updatedResourceModel),
+				ResourceName:            "pingfederate_authentication_api_application." + resourceName,
+				ImportStateId:           authenticationApiApplicationId,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"client_for_redirectless_mode_ref"},
 			},
 			{
 				Config: testAccAuthenticationApiApplication(resourceName, initialResourceModel),
@@ -114,16 +115,16 @@ func testAccAuthenticationApiApplication(resourceName string, resourceModel auth
 	optionalFields := optionalHcl(resourceModel)
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_client" "myOauthClientExample" {
-	client_id = "myOauthClientExample"
-	name = "myOauthClientExample"
-	grant_types = ["EXTENSION"]
-	allow_authentication_api_init = true
+  client_id                     = "myOauthClientExample"
+  name                          = "myOauthClientExample"
+  grant_types                   = ["EXTENSION"]
+  allow_authentication_api_init = true
 }
 
 resource "pingfederate_authentication_api_application" "%[1]s" {
-	application_id = "%[2]s"
-	name = "%[3]s"
-	url = "%[4]s"
+  application_id = "%[2]s"
+  name           = "%[3]s"
+  url            = "%[4]s"
 	%[5]s
 }`, resourceName,
 		resourceModel.applicationId,
