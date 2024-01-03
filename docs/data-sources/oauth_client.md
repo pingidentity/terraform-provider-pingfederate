@@ -117,7 +117,6 @@ RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
 - `refresh_token_rolling_grace_period_type` (String) When specified, it overrides the global Refresh Token Grace Period defined in the Authorization Server Settings. The default value is SERVER_DEFAULT
 - `refresh_token_rolling_interval` (Number) The minimum interval to roll refresh tokens, in hours. This value will override the Refresh Token Rolling Interval Value on the Authorization Server Settings.
 - `refresh_token_rolling_interval_type` (String) Use OVERRIDE_SERVER_DEFAULT to override the Refresh Token Rolling Interval value on the Authorization Server Settings. SERVER_DEFAULT will default to the Refresh Token Rolling Interval value on the Authorization Server Setting. Defaults to SERVER_DEFAULT.
-- `replication_status` (String) This status indicates whether the client has been replicated to the cluster. This property only applies when using XML client storage and automatic replication of clients is enabled. It is read only and is ignored on PUT and POST requests.
 - `request_object_signing_algorithm` (String) The JSON Web Signature [JWS] algorithm that must be used to sign the Request Object. All signing algorithms are allowed if value is not present
 RS256 - RSA using SHA-256
 

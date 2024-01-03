@@ -256,7 +256,6 @@ RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
 - `creation_date` (String) The time at which the client was created. This property is read only.
 - `id` (String) The ID of this resource.
 - `modification_date` (String) The time at which the client was last changed. This property is read only.
-- `replication_status` (String) This status indicates whether the client has been replicated to the cluster. This property only applies when using XML client storage and automatic replication of clients is enabled. It is read only and is ignored on PUT and POST requests. Supported in PF version 12.0 or later.
 
 <a id="nestedatt--client_auth"></a>
 ### Nested Schema for `client_auth`

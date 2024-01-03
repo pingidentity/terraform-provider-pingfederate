@@ -357,7 +357,6 @@ resource "pingfederate_idp_sp_connection" "samlSpBrowserSSOExample" {
 
 - `creation_date` (String) The time at which the connection was created. This property is read only and is ignored on PUT and POST requests.
 - `id` (String) The ID of this resource.
-- `replication_status` (String) This status indicates whether the connection has been replicated to the cluster. This property only applies when automatic replication of connections is enabled. It is read only and is ignored on PUT and POST requests. Supported in PF version 12.0 or later.
 - `type` (String) The type of this connection.
 
 <a id="nestedatt--additional_allowed_entities_configuration"></a>

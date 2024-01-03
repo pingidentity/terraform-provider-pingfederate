@@ -46,7 +46,6 @@ data "pingfederate_idp_sp_connection" "myIdpSpConnection" {
 - `metadata_reload_settings` (Attributes) Configuration settings to enable automatic reload of partner's metadata. (see [below for nested schema](#nestedatt--metadata_reload_settings))
 - `name` (String) The connection name.
 - `outbound_provision` (Attributes) Outbound Provisioning allows an IdP to create and maintain user accounts at standards-based partner sites using SCIM as well as select-proprietary provisioning partner sites that are protocol-enabled. (see [below for nested schema](#nestedatt--outbound_provision))
-- `replication_status` (String) This status indicates whether the connection has been replicated to the cluster. This property only applies when automatic replication of connections is enabled. It is read only and is ignored on PUT and POST requests. Supported in PF version 12.0 or later.
 - `sp_browser_sso` (Attributes) The SAML settings used to enable secure browser-based SSO to resources at your partner's site. (see [below for nested schema](#nestedatt--sp_browser_sso))
 - `type` (String) The type of this connection.
 - `virtual_entity_ids` (Set of String) List of alternate entity IDs that identifies the local server to this partner.
