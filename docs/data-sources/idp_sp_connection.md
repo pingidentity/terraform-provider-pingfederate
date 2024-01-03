@@ -511,7 +511,7 @@ Read-Only:
 
 Read-Only:
 
-- `algorithm` (String) The algorithm used to sign messages sent to this partner.
+- `algorithm` (String) The algorithm used to sign messages sent to this partner. The default is SHA1withDSA for DSA certs, SHA256withRSA for RSA certs, and SHA256withECDSA for EC certs. For RSA certs, SHA1withRSA, SHA384withRSA, SHA512withRSA, SHA256withRSAandMGF1, SHA384withRSAandMGF1 and SHA512withRSAandMGF1 are also supported. For EC certs, SHA384withECDSA and SHA512withECDSA are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512
 - `alternative_signing_key_pair_refs` (Attributes List) The list of IDs of alternative key pairs used to sign messages sent to this partner. The ID of the key pair is also known as the alias and can be found by viewing the corresponding certificate under 'Signing & Decryption Keys & Certificates' in the PingFederate admin console. (see [below for nested schema](#nestedatt--credentials--signing_settings--alternative_signing_key_pair_refs))
 - `include_cert_in_signature` (Boolean) Determines whether the signing certificate is included in the signature <KeyInfo> element.
 - `include_raw_key_in_signature` (Boolean) Determines whether the <KeyValue> element with the raw public key is included in the signature <KeyInfo> element.
@@ -749,6 +749,7 @@ Read-Only:
 - `slo_service_endpoints` (Attributes List) A list of possible endpoints to send SLO requests and responses. (see [below for nested schema](#nestedatt--sp_browser_sso--slo_service_endpoints))
 - `sp_saml_identity_mapping` (String) Process in which users authenticated by the IdP are associated with user accounts local to the SP.
 - `sp_ws_fed_identity_mapping` (String) Process in which users authenticated by the IdP are associated with user accounts local to the SP for WS-Federation connection types.
+- `sso_application_endpoint` (String) Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter. Supported in PF version 11.3 or later.
 - `sso_service_endpoints` (Attributes List) A list of possible endpoints to send assertions to. (see [below for nested schema](#nestedatt--sp_browser_sso--sso_service_endpoints))
 - `url_whitelist_entries` (Attributes List) For WS-Federation connections, a whitelist of additional allowed domains and paths used to validate wreply for SLO, if enabled. (see [below for nested schema](#nestedatt--sp_browser_sso--url_whitelist_entries))
 - `ws_fed_token_type` (String) The WS-Federation Token Type to use.

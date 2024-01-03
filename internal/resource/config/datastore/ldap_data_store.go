@@ -23,8 +23,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
+	datasourceresourcelink "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -39,29 +41,31 @@ var (
 	}
 
 	ldapDataStoreCommonAttrType = map[string]attr.Type{
-		"hostnames":              types.SetType{ElemType: types.StringType},
-		"verify_host":            types.BoolType,
-		"test_on_return":         types.BoolType,
-		"ldap_type":              types.StringType,
-		"dns_ttl":                types.Int64Type,
-		"connection_timeout":     types.Int64Type,
-		"min_connections":        types.Int64Type,
-		"use_ssl":                types.BoolType,
-		"test_on_borrow":         types.BoolType,
-		"ldap_dns_srv_prefix":    types.StringType,
-		"name":                   types.StringType,
-		"read_timeout":           types.Int64Type,
-		"use_dns_srv_records":    types.BoolType,
-		"max_connections":        types.Int64Type,
-		"user_dn":                types.StringType,
-		"create_if_necessary":    types.BoolType,
-		"binary_attributes":      types.SetType{ElemType: types.StringType},
-		"max_wait":               types.Int64Type,
-		"hostnames_tags":         types.SetType{ElemType: ldapTagConfigAttrType},
-		"time_between_evictions": types.Int64Type,
-		"type":                   types.StringType,
-		"bind_anonymously":       types.BoolType,
-		"follow_ldap_referrals":  types.BoolType,
+		"hostnames":                  types.SetType{ElemType: types.StringType},
+		"verify_host":                types.BoolType,
+		"test_on_return":             types.BoolType,
+		"ldap_type":                  types.StringType,
+		"dns_ttl":                    types.Int64Type,
+		"connection_timeout":         types.Int64Type,
+		"min_connections":            types.Int64Type,
+		"use_ssl":                    types.BoolType,
+		"test_on_borrow":             types.BoolType,
+		"ldap_dns_srv_prefix":        types.StringType,
+		"name":                       types.StringType,
+		"read_timeout":               types.Int64Type,
+		"use_dns_srv_records":        types.BoolType,
+		"max_connections":            types.Int64Type,
+		"user_dn":                    types.StringType,
+		"create_if_necessary":        types.BoolType,
+		"binary_attributes":          types.SetType{ElemType: types.StringType},
+		"max_wait":                   types.Int64Type,
+		"hostnames_tags":             types.SetType{ElemType: ldapTagConfigAttrType},
+		"time_between_evictions":     types.Int64Type,
+		"type":                       types.StringType,
+		"bind_anonymously":           types.BoolType,
+		"follow_ldap_referrals":      types.BoolType,
+		"client_tls_certificate_ref": types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"retry_failed_operations":    types.BoolType,
 	}
 
 	ldapDataStoreAttrType                = internaltypes.AddKeyValToMapStringAttrType(ldapDataStoreCommonAttrType, "password", types.StringType)
@@ -93,7 +97,7 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Default:     int64default.StaticInt64(0),
 		},
 		"hostnames": schema.SetAttribute{
-			Description: "The default LDAP host names. This field is required if no mapping for host names and tags are specified.",
+			Description: "The default LDAP host names. This field is required if no mapping for host names and tags is specified. Failover can be configured by providing multiple host names.",
 			Computed:    true,
 			Optional:    true,
 			ElementType: types.StringType,
@@ -191,18 +195,18 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Default:     int64default.StaticInt64(-1),
 		},
 		"hostnames_tags": schema.SetNestedAttribute{
-			Description: "A LDAP data store's host names and tags configuration. This is required if no default LDAP host names are specified.",
+			Description: "The set of host names and associated tags for this LDAP data store. This is required if 'hostnames' is not provided.",
 			Computed:    true,
 			Optional:    true,
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
 					"hostnames": schema.SetAttribute{
-						Description: "The LDAP host names.",
+						Description: "The LDAP host names. Failover can be configured by providing multiple host names.",
 						Required:    true,
 						ElementType: types.StringType,
 					},
 					"tags": schema.StringAttribute{
-						Description: "Tags associated with this data source.",
+						Description: "Tags associated with the host names. At runtime, nodes will use the first LdapTagConfig that has a tag that matches with node.tags in run.properties.",
 						Optional:    true,
 					},
 					"default_source": schema.BoolAttribute{
@@ -231,7 +235,7 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Default:     int64default.StaticInt64(0),
 		},
 		"user_dn": schema.StringAttribute{
-			Description: "The username credential required to access the data store.",
+			Description: "The username credential required to access the data store. If specified, no other authentication fields should be provided.",
 			Required:    true,
 		},
 		"password": schema.StringAttribute{
@@ -243,7 +247,7 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			},
 		},
 		"bind_anonymously": schema.BoolAttribute{
-			Description: "Whether username and password are required. The default value is false.",
+			Description: "Whether username and password are required. If true, no other authentication fields should be provided. The default value is false.",
 			Computed:    true,
 			Optional:    true,
 			Default:     booldefault.StaticBool(false),
@@ -253,6 +257,17 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Computed:    true,
 			Optional:    true,
 			Default:     booldefault.StaticBool(false),
+		},
+		"client_tls_certificate_ref": schema.SingleNestedAttribute{
+			Optional:    true,
+			Description: "The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS and no other authentication fields should be provided. See '/keyPairs/sslClient' to manage certificates. Supported in PF version 11.3 or later.",
+			Attributes:  resourcelink.ToSchema(),
+		},
+		"retry_failed_operations": schema.BoolAttribute{
+			Description: "Indicates whether failed operations should be retried. The default is false. Supported in PF version 11.3 or later.",
+			Computed:    true,
+			Optional:    true,
+			// The default is set in ModifyPlan, since it is dependent on PF version 11.3+
 		},
 	}
 
@@ -289,7 +304,7 @@ func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
 			Optional:    false,
 		},
 		"hostnames": datasourceschema.SetAttribute{
-			Description: "The default LDAP host names.",
+			Description: "The default LDAP host names. Failover can be configured by providing multiple host names.",
 			Computed:    true,
 			Optional:    false,
 			ElementType: types.StringType,
@@ -366,19 +381,19 @@ func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
 			Optional:    false,
 		},
 		"hostnames_tags": datasourceschema.SetNestedAttribute{
-			Description: "A LDAP data store's host names and tags configuration.",
+			Description: "The set of host names and associated tags for this LDAP data store.",
 			Computed:    true,
 			Optional:    false,
 			NestedObject: datasourceschema.NestedAttributeObject{
 				Attributes: map[string]datasourceschema.Attribute{
 					"hostnames": datasourceschema.SetAttribute{
-						Description: "The LDAP host names.",
+						Description: "The LDAP host names. Failover can be configured by providing multiple host names.",
 						Computed:    true,
 						Optional:    false,
 						ElementType: types.StringType,
 					},
 					"tags": datasourceschema.StringAttribute{
-						Description: "Tags associated with this data source.",
+						Description: "Tags associated with the host names. At runtime, nodes will use the first LdapTagConfig that has a tag that matches with node.tags in run.properties.",
 						Computed:    true,
 						Optional:    false,
 					},
@@ -396,7 +411,7 @@ func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
 			Optional:    false,
 		},
 		"user_dn": datasourceschema.StringAttribute{
-			Description: "The username credential required to access the data store.",
+			Description: "The username credential required to access the data store. If specified, no other authentication fields should be provided.",
 			Computed:    true,
 			Optional:    false,
 		},
@@ -406,12 +421,23 @@ func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
 			Optional:    false,
 		},
 		"bind_anonymously": datasourceschema.BoolAttribute{
-			Description: "Whether username and password are required.",
+			Description: "Whether username and password are required. If true, no other authentication fields should be provided. The default value is false.",
 			Computed:    true,
 			Optional:    false,
 		},
 		"follow_ldap_referrals": datasourceschema.BoolAttribute{
 			Description: "Follow LDAP Referrals in the domain tree.",
+			Computed:    true,
+			Optional:    false,
+		},
+		"client_tls_certificate_ref": datasourceschema.SingleNestedAttribute{
+			Computed:    true,
+			Optional:    false,
+			Description: "The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS and no other authentication fields should be provided. See '/keyPairs/sslClient' to manage certificates. Supported in PF version 11.3 or later.",
+			Attributes:  datasourceresourcelink.ToDataSourceSchema(),
+		},
+		"retry_failed_operations": datasourceschema.BoolAttribute{
+			Description: "Indicates whether failed operations should be retried. The default is false. Supported in PF version 11.3 or later.",
 			Computed:    true,
 			Optional:    false,
 		},
@@ -473,32 +499,37 @@ func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataSto
 		binaryAttributes = types.SetNull(types.StringType)
 	}
 
+	clientTlsCertificateRef, diags := resourcelink.ToState(con, ldapDataStore.ClientTlsCertificateRef)
+	allDiags = append(allDiags, diags...)
+
 	//  final obj value
 	ldapDataStoreAttrVal := map[string]attr.Value{
-		"hostnames":              internaltypes.GetStringSet(ldapDataStore.Hostnames),
-		"verify_host":            types.BoolPointerValue(ldapDataStore.VerifyHost),
-		"test_on_return":         types.BoolPointerValue(ldapDataStore.TestOnReturn),
-		"ldap_type":              types.StringValue(ldapDataStore.LdapType),
-		"dns_ttl":                types.Int64PointerValue(ldapDataStore.DnsTtl),
-		"connection_timeout":     types.Int64PointerValue(ldapDataStore.ConnectionTimeout),
-		"min_connections":        types.Int64PointerValue(ldapDataStore.MinConnections),
-		"use_ssl":                types.BoolPointerValue(ldapDataStore.UseSsl),
-		"test_on_borrow":         types.BoolPointerValue(ldapDataStore.TestOnBorrow),
-		"ldap_dns_srv_prefix":    types.StringPointerValue(ldapDataStore.LdapDnsSrvPrefix),
-		"name":                   types.StringPointerValue(ldapDataStore.Name),
-		"read_timeout":           types.Int64PointerValue(ldapDataStore.ReadTimeout),
-		"use_dns_srv_records":    types.BoolPointerValue(ldapDataStore.UseDnsSrvRecords),
-		"max_connections":        types.Int64PointerValue(ldapDataStore.MaxConnections),
-		"user_dn":                userDn(),
-		"create_if_necessary":    types.BoolPointerValue(ldapDataStore.CreateIfNecessary),
-		"binary_attributes":      binaryAttributes,
-		"max_wait":               types.Int64PointerValue(ldapDataStore.MaxWait),
-		"hostnames_tags":         hostnamesTagsVal,
-		"time_between_evictions": types.Int64PointerValue(ldapDataStore.TimeBetweenEvictions),
-		"type":                   types.StringValue("LDAP"),
-		"password":               password,
-		"bind_anonymously":       types.BoolPointerValue(ldapDataStore.BindAnonymously),
-		"follow_ldap_referrals":  followLdapReferrals,
+		"hostnames":                  internaltypes.GetStringSet(ldapDataStore.Hostnames),
+		"verify_host":                types.BoolPointerValue(ldapDataStore.VerifyHost),
+		"test_on_return":             types.BoolPointerValue(ldapDataStore.TestOnReturn),
+		"ldap_type":                  types.StringValue(ldapDataStore.LdapType),
+		"dns_ttl":                    types.Int64PointerValue(ldapDataStore.DnsTtl),
+		"connection_timeout":         types.Int64PointerValue(ldapDataStore.ConnectionTimeout),
+		"min_connections":            types.Int64PointerValue(ldapDataStore.MinConnections),
+		"use_ssl":                    types.BoolPointerValue(ldapDataStore.UseSsl),
+		"test_on_borrow":             types.BoolPointerValue(ldapDataStore.TestOnBorrow),
+		"ldap_dns_srv_prefix":        types.StringPointerValue(ldapDataStore.LdapDnsSrvPrefix),
+		"name":                       types.StringPointerValue(ldapDataStore.Name),
+		"read_timeout":               types.Int64PointerValue(ldapDataStore.ReadTimeout),
+		"use_dns_srv_records":        types.BoolPointerValue(ldapDataStore.UseDnsSrvRecords),
+		"max_connections":            types.Int64PointerValue(ldapDataStore.MaxConnections),
+		"user_dn":                    userDn(),
+		"create_if_necessary":        types.BoolPointerValue(ldapDataStore.CreateIfNecessary),
+		"binary_attributes":          binaryAttributes,
+		"max_wait":                   types.Int64PointerValue(ldapDataStore.MaxWait),
+		"hostnames_tags":             hostnamesTagsVal,
+		"time_between_evictions":     types.Int64PointerValue(ldapDataStore.TimeBetweenEvictions),
+		"type":                       types.StringValue("LDAP"),
+		"password":                   password,
+		"bind_anonymously":           types.BoolPointerValue(ldapDataStore.BindAnonymously),
+		"follow_ldap_referrals":      followLdapReferrals,
+		"client_tls_certificate_ref": clientTlsCertificateRef,
+		"retry_failed_operations":    types.BoolPointerValue(ldapDataStore.RetryFailedOperations),
 	}
 
 	ldapDataStoreObj, diags := types.ObjectValue(ldapDataStoreAttrType, ldapDataStoreAttrVal)
@@ -524,32 +555,37 @@ func toDataSourceStateLdapDataStore(con context.Context, ldapDataStore *client.L
 		followLdapReferrals = types.BoolPointerValue(ldapDataStore.FollowLDAPReferrals)
 	}
 
+	clientTlsCertificateRef, diags := resourcelink.ToState(con, ldapDataStore.ClientTlsCertificateRef)
+	allDiags = append(allDiags, diags...)
+
 	//  final obj value
 	ldapDataStoreAttrVal := map[string]attr.Value{
-		"hostnames":              internaltypes.GetStringSet(ldapDataStore.Hostnames),
-		"verify_host":            types.BoolPointerValue(ldapDataStore.VerifyHost),
-		"test_on_return":         types.BoolPointerValue(ldapDataStore.TestOnReturn),
-		"ldap_type":              types.StringValue(ldapDataStore.LdapType),
-		"dns_ttl":                types.Int64PointerValue(ldapDataStore.DnsTtl),
-		"connection_timeout":     types.Int64PointerValue(ldapDataStore.ConnectionTimeout),
-		"min_connections":        types.Int64PointerValue(ldapDataStore.MinConnections),
-		"use_ssl":                types.BoolPointerValue(ldapDataStore.UseSsl),
-		"test_on_borrow":         types.BoolPointerValue(ldapDataStore.TestOnBorrow),
-		"ldap_dns_srv_prefix":    types.StringPointerValue(ldapDataStore.LdapDnsSrvPrefix),
-		"name":                   types.StringPointerValue(ldapDataStore.Name),
-		"read_timeout":           types.Int64PointerValue(ldapDataStore.ReadTimeout),
-		"use_dns_srv_records":    types.BoolPointerValue(ldapDataStore.UseDnsSrvRecords),
-		"max_connections":        types.Int64PointerValue(ldapDataStore.MaxConnections),
-		"user_dn":                types.StringPointerValue(ldapDataStore.UserDN),
-		"create_if_necessary":    types.BoolPointerValue(ldapDataStore.CreateIfNecessary),
-		"binary_attributes":      internaltypes.GetStringSet(ldapDataStore.BinaryAttributes),
-		"max_wait":               types.Int64PointerValue(ldapDataStore.MaxWait),
-		"hostnames_tags":         hostnamesTagsVal,
-		"time_between_evictions": types.Int64PointerValue(ldapDataStore.TimeBetweenEvictions),
-		"type":                   types.StringValue("LDAP"),
-		"encrypted_password":     types.StringPointerValue(ldapDataStore.EncryptedPassword),
-		"bind_anonymously":       types.BoolPointerValue(ldapDataStore.BindAnonymously),
-		"follow_ldap_referrals":  followLdapReferrals,
+		"hostnames":                  internaltypes.GetStringSet(ldapDataStore.Hostnames),
+		"verify_host":                types.BoolPointerValue(ldapDataStore.VerifyHost),
+		"test_on_return":             types.BoolPointerValue(ldapDataStore.TestOnReturn),
+		"ldap_type":                  types.StringValue(ldapDataStore.LdapType),
+		"dns_ttl":                    types.Int64PointerValue(ldapDataStore.DnsTtl),
+		"connection_timeout":         types.Int64PointerValue(ldapDataStore.ConnectionTimeout),
+		"min_connections":            types.Int64PointerValue(ldapDataStore.MinConnections),
+		"use_ssl":                    types.BoolPointerValue(ldapDataStore.UseSsl),
+		"test_on_borrow":             types.BoolPointerValue(ldapDataStore.TestOnBorrow),
+		"ldap_dns_srv_prefix":        types.StringPointerValue(ldapDataStore.LdapDnsSrvPrefix),
+		"name":                       types.StringPointerValue(ldapDataStore.Name),
+		"read_timeout":               types.Int64PointerValue(ldapDataStore.ReadTimeout),
+		"use_dns_srv_records":        types.BoolPointerValue(ldapDataStore.UseDnsSrvRecords),
+		"max_connections":            types.Int64PointerValue(ldapDataStore.MaxConnections),
+		"user_dn":                    types.StringPointerValue(ldapDataStore.UserDN),
+		"create_if_necessary":        types.BoolPointerValue(ldapDataStore.CreateIfNecessary),
+		"binary_attributes":          internaltypes.GetStringSet(ldapDataStore.BinaryAttributes),
+		"max_wait":                   types.Int64PointerValue(ldapDataStore.MaxWait),
+		"hostnames_tags":             hostnamesTagsVal,
+		"time_between_evictions":     types.Int64PointerValue(ldapDataStore.TimeBetweenEvictions),
+		"type":                       types.StringValue("LDAP"),
+		"encrypted_password":         types.StringPointerValue(ldapDataStore.EncryptedPassword),
+		"bind_anonymously":           types.BoolPointerValue(ldapDataStore.BindAnonymously),
+		"follow_ldap_referrals":      followLdapReferrals,
+		"client_tls_certificate_ref": clientTlsCertificateRef,
+		"retry_failed_operations":    types.BoolPointerValue(ldapDataStore.RetryFailedOperations),
 	}
 
 	ldapDataStoreObj, diags := types.ObjectValue(ldapDataStoreEncryptedPassAttrType, ldapDataStoreAttrVal)
@@ -695,6 +731,20 @@ func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con 
 	followLdapReferrals, ok := ldapDataStorePlan["follow_ldap_referrals"]
 	if ok {
 		addRequest.LdapDataStore.FollowLDAPReferrals = followLdapReferrals.(types.Bool).ValueBoolPointer()
+	}
+
+	clientTlsCertificateRef, ok := ldapDataStorePlan["client_tls_certificate_ref"]
+	if ok {
+		ref, err := resourcelink.ClientStruct(clientTlsCertificateRef.(types.Object))
+		if err != nil {
+			return err
+		}
+		addRequest.LdapDataStore.ClientTlsCertificateRef = ref
+	}
+
+	retryFailedOperations, ok := ldapDataStorePlan["retry_failed_operations"]
+	if ok {
+		addRequest.LdapDataStore.RetryFailedOperations = retryFailedOperations.(types.Bool).ValueBoolPointer()
 	}
 
 	return nil

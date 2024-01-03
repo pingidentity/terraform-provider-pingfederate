@@ -21,7 +21,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -92,7 +92,7 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 			Default:     int64default.StaticInt64(0),
 		},
 		"connection_url_tags": schema.SetNestedAttribute{
-			Description: "A JDBC data store's connection URLs and tags configuration. This is required if no default JDBC database location is specified.",
+			Description: "The set of connection URLs and associated tags for this JDBC data store. This is required if 'connectionUrl' is not provided.",
 			Computed:    true,
 			Optional:    true,
 			NestedObject: schema.NestedAttributeObject{
@@ -102,7 +102,7 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 						Required:    true,
 					},
 					"tags": schema.StringAttribute{
-						Description: "Tags associated with this data source.",
+						Description: "Tags associated with the connection URL. At runtime, nodes will use the first JdbcTagConfig that has a tag that matches with node.tags in run.properties.",
 						Optional:    true,
 					},
 					"default_source": schema.BoolAttribute{
@@ -141,7 +141,7 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 			Required:    true,
 		},
 		"connection_url": schema.StringAttribute{
-			Description: "The default location of the JDBC database. This field is required if no mapping for JDBC database location and tags are specified.",
+			Description: "The default location of the JDBC database. This field is required if no mapping for JDBC database location and tags is specified.",
 			Computed:    true,
 			Optional:    true,
 			Validators: []validator.String{
@@ -153,7 +153,7 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 		},
 		"user_name": schema.StringAttribute{
 			Description: "The name that identifies the user when connecting to the database.",
-			Required:    true,
+			Optional:    true,
 		},
 		"allow_multi_value_attributes": schema.BoolAttribute{
 			Description: "Indicates that this data store can select more than one record from a column and return the results as a multi-value attribute.",
@@ -210,7 +210,7 @@ func toDataSourceSchemaJdbcDataStore() datasourceschema.SingleNestedAttribute {
 			Optional:    false,
 		},
 		"connection_url_tags": datasourceschema.SetNestedAttribute{
-			Description: "A JDBC data store's connection URLs and tags configuration.",
+			Description: "The set of connection URLs and associated tags for this JDBC data store. This is required if 'connectionUrl' is not provided.",
 			Computed:    true,
 			Optional:    false,
 			NestedObject: datasourceschema.NestedAttributeObject{
@@ -221,7 +221,7 @@ func toDataSourceSchemaJdbcDataStore() datasourceschema.SingleNestedAttribute {
 						Optional:    false,
 					},
 					"tags": datasourceschema.StringAttribute{
-						Description: "Tags associated with this data source.",
+						Description: "Tags associated with the connection URL. At runtime, nodes will use the first JdbcTagConfig that has a tag that matches with node.tags in run.properties.",
 						Computed:    true,
 						Optional:    false,
 					},
@@ -249,7 +249,7 @@ func toDataSourceSchemaJdbcDataStore() datasourceschema.SingleNestedAttribute {
 			Optional:    false,
 		},
 		"connection_url": datasourceschema.StringAttribute{
-			Description: "The default location of the JDBC database.",
+			Description: "The default location of the JDBC database. This field is required if no mapping for JDBC database location and tags is specified.",
 			Computed:    true,
 			Optional:    false,
 		},
@@ -311,7 +311,7 @@ func toStateJdbcDataStore(con context.Context, jdbcDataStore *client.JdbcDataSto
 		"max_pool_size":                types.Int64PointerValue(jdbcDataStore.MaxPoolSize),
 		"min_pool_size":                types.Int64PointerValue(jdbcDataStore.MinPoolSize),
 		"name":                         types.StringPointerValue(jdbcDataStore.Name),
-		"user_name":                    types.StringValue(jdbcDataStore.UserName),
+		"user_name":                    types.StringPointerValue(jdbcDataStore.UserName),
 		"allow_multi_value_attributes": types.BoolPointerValue(jdbcDataStore.AllowMultiValueAttributes),
 		"validate_connection_sql":      types.StringPointerValue(jdbcDataStore.ValidateConnectionSql),
 	}
@@ -382,6 +382,11 @@ func addOptionalJdbcDataStoreFields(addRequest client.DataStoreAggregation, con 
 		addRequest.JdbcDataStore.Name = name.(types.String).ValueStringPointer()
 	}
 
+	userName, ok := jdbcDataStorePlan["user_name"]
+	if ok {
+		addRequest.JdbcDataStore.UserName = userName.(types.String).ValueStringPointer()
+	}
+
 	blockingTimeout, ok := jdbcDataStorePlan["blocking_timeout"]
 	if ok {
 		addRequest.JdbcDataStore.BlockingTimeout = blockingTimeout.(types.Int64).ValueInt64Pointer()
@@ -420,9 +425,8 @@ func createJdbcDataStore(plan dataStoreModel, con context.Context, req resource.
 
 	jdbcPlan := plan.JdbcDataStore.Attributes()
 	driverClass := jdbcPlan["driver_class"].(types.String).ValueString()
-	userName := jdbcPlan["user_name"].(types.String).ValueString()
 
-	createJdbcDataStore := client.JdbcDataStoreAsDataStoreAggregation(client.NewJdbcDataStore(driverClass, userName, "JDBC"))
+	createJdbcDataStore := client.JdbcDataStoreAsDataStoreAggregation(client.NewJdbcDataStore(driverClass, "JDBC"))
 	err = addOptionalJdbcDataStoreFields(createJdbcDataStore, con, client.JdbcDataStore{}, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for DataStore", err.Error())
@@ -449,9 +453,8 @@ func updateJdbcDataStore(plan dataStoreModel, con context.Context, req resource.
 
 	jdbcPlan := plan.JdbcDataStore.Attributes()
 	driverClass := jdbcPlan["driver_class"].(types.String).ValueString()
-	userName := jdbcPlan["user_name"].(types.String).ValueString()
 
-	updateJdbcDataStore := client.JdbcDataStoreAsDataStoreAggregation(client.NewJdbcDataStore(driverClass, userName, "JDBC"))
+	updateJdbcDataStore := client.JdbcDataStoreAsDataStoreAggregation(client.NewJdbcDataStore(driverClass, "JDBC"))
 	err = addOptionalJdbcDataStoreFields(updateJdbcDataStore, con, client.JdbcDataStore{}, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for the DataStore", err.Error())

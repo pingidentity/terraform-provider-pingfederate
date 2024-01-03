@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
@@ -91,7 +91,7 @@ func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.Sc
 						},
 					},
 					"certificate_expirations": schema.SingleNestedAttribute{
-						Description: "Settings for license event notifications.",
+						Description: "Notification settings for certificate expiration events.",
 						Computed:    true,
 						Optional:    false,
 						Attributes: map[string]schema.Attribute{
@@ -115,6 +115,11 @@ func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.Sc
 								Computed:    true,
 								Optional:    false,
 								Attributes:  resourcelink.ToDataSourceSchema(),
+							},
+							"notification_mode": schema.StringAttribute{
+								Description: "The mode of notification. Set to NOTIFICATION_PUBLISHER to enable email notifications and server log messages. Set to LOGGING_ONLY to enable server log messages. Defaults to NOTIFICATION_PUBLISHER. Supported in PF version 11.3 or later.",
+								Optional:    false,
+								Computed:    true,
 							},
 						},
 					},

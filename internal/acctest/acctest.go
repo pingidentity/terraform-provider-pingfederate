@@ -10,9 +10,10 @@ import (
 	"strings"
 	"testing"
 
-	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // Verify that any required environment variables are set before the test begins
@@ -23,6 +24,7 @@ func ConfigurationPreCheck(t *testing.T) {
 		"PINGFEDERATE_PROVIDER_PASSWORD",
 		"PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS",
 		"PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER",
+		"PINGFEDERATE_PROVIDER_PRODUCT_VERSION",
 	}
 
 	errorFound := false
@@ -31,6 +33,14 @@ func ConfigurationPreCheck(t *testing.T) {
 			t.Errorf("The '%s' environment variable must be set to run acceptance tests", envVar)
 			errorFound = true
 		}
+	}
+
+	// Verify that the version supplied in the environment can be parsed
+	versionVar := os.Getenv("PINGFEDERATE_PROVIDER_PRODUCT_VERSION")
+	_, err := version.Parse(versionVar)
+	if err != nil {
+		t.Errorf("The '%s' value for the 'PINGFEDERATE_PROVIDER_PRODUCT_VERSION' environment variable is not a valid version: %s", versionVar, err.Error())
+		errorFound = true
 	}
 
 	if errorFound {
@@ -228,4 +238,20 @@ func missingAttributeError(resourceType string, resourceName *string, attributeN
 
 func missingAttributeErrorSingletonResource(resourceType, attributeName, expected string) error {
 	return fmt.Errorf("missing %s attribute for %s. expected '%s'", attributeName, resourceType, expected)
+}
+
+// Check that the version being tested is at least the given minimum version
+var versionAtLeastResults = map[version.SupportedVersion]bool{}
+
+func VersionAtLeast(minimumVersion version.SupportedVersion) bool {
+	savedResult, ok := versionAtLeastResults[minimumVersion]
+	if ok {
+		return savedResult
+	}
+
+	// Just swallow the errors here since we already verify that the product version environment variable is valid in the pre-check.
+	// Assume the version passed in is valid.
+	supportedVersion, _ := version.Parse(os.Getenv("PINGFEDERATE_PROVIDER_PRODUCT_VERSION"))
+	compare, _ := version.Compare(supportedVersion, minimumVersion)
+	return compare >= 0
 }

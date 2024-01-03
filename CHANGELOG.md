@@ -1,11 +1,12 @@
-# v0.5.0 (unreleased)
+# v0.5.0 (Unreleased)
 ### FEATURES
+* Added support for PingFederate version `11.3` and full support for all `11.2.x` versions ([#149](https://github.com/pingidentity/terraform-provider-pingfederate/pull/149))
+
 #### Resources
 * **New Resource:** `pingfederate_authentication_policies_settings` ([#150](https://github.com/pingidentity/terraform-provider-pingfederate/pull/150))
 
 #### Data Sources
 * **New Data Source:** `pingfederate_authentication_policies_settings` ([#150](https://github.com/pingidentity/terraform-provider-pingfederate/pull/150))
-
 
 # v0.4.0 December 13, 2023 => MVP
 ### FEATURES

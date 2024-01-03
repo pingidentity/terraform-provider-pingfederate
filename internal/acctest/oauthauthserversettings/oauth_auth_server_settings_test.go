@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // Attributes to test with. Add optional properties to test here if desired.
@@ -146,6 +147,13 @@ func testAccOauthAuthServerSettings(resourceName string, resourceModel oauthAuth
   client_secret_retention_period                   = 0
   jwt_secured_authorization_response_mode_lifetime = 600
 		`
+		if acctest.VersionAtLeast(version.PingFederate1130) {
+			optionalHcl += `
+  dpop_proof_require_nonce = true
+  dpop_proof_lifetime_seconds = 60
+  dpop_proof_enforce_replay_prevention = false
+			`
+		}
 	}
 
 	return fmt.Sprintf(`

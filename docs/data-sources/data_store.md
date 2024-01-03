@@ -121,8 +121,8 @@ Read-Only:
 
 - `allow_multi_value_attributes` (Boolean) Indicates that this data store can select more than one record from a column and return the results as a multi-value attribute.
 - `blocking_timeout` (Number) The amount of time in milliseconds a request waits to get a connection from the connection pool before it fails.
-- `connection_url` (String) The default location of the JDBC database.
-- `connection_url_tags` (Attributes Set) A JDBC data store's connection URLs and tags configuration. (see [below for nested schema](#nestedatt--jdbc_data_store--connection_url_tags))
+- `connection_url` (String) The default location of the JDBC database. This field is required if no mapping for JDBC database location and tags is specified.
+- `connection_url_tags` (Attributes Set) The set of connection URLs and associated tags for this JDBC data store. This is required if 'connectionUrl' is not provided. (see [below for nested schema](#nestedatt--jdbc_data_store--connection_url_tags))
 - `driver_class` (String) The name of the driver class used to communicate with the source database.
 - `encrypted_password` (String) The encrypted password needed to access the database.
 - `idle_timeout` (Number) The length of time in minutes the connection can be idle in the pool before it is closed.
@@ -140,7 +140,7 @@ Read-Only:
 
 - `connection_url` (String) The location of the JDBC database.
 - `default_source` (Boolean) Whether this is the default connection.
-- `tags` (String) Tags associated with this data source.
+- `tags` (String) Tags associated with the connection URL. At runtime, nodes will use the first JdbcTagConfig that has a tag that matches with node.tags in run.properties.
 
 
 
@@ -154,28 +154,39 @@ Optional:
 Read-Only:
 
 - `binary_attributes` (Set of String) A list of LDAP attributes to be handled as binary data.
-- `bind_anonymously` (Boolean) Whether username and password are required.
+- `bind_anonymously` (Boolean) Whether username and password are required. If true, no other authentication fields should be provided. The default value is false.
+- `client_tls_certificate_ref` (Attributes) The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS and no other authentication fields should be provided. See '/keyPairs/sslClient' to manage certificates. Supported in PF version 11.3 or later. (see [below for nested schema](#nestedatt--ldap_data_store--client_tls_certificate_ref))
 - `connection_timeout` (Number) The maximum number of milliseconds that a connection attempt should be allowed to continue before returning an error.
 - `create_if_necessary` (Boolean) Indicates whether temporary connections can be created when the Maximum Connections threshold is reached.
 - `dns_ttl` (Number) The maximum time in milliseconds that DNS information are cached.
 - `encrypted_password` (String) The encrypted password credential required to access the data store.
 - `follow_ldap_referrals` (Boolean) Follow LDAP Referrals in the domain tree.
-- `hostnames` (Set of String) The default LDAP host names.
-- `hostnames_tags` (Attributes Set) A LDAP data store's host names and tags configuration. (see [below for nested schema](#nestedatt--ldap_data_store--hostnames_tags))
+- `hostnames` (Set of String) The default LDAP host names. Failover can be configured by providing multiple host names.
+- `hostnames_tags` (Attributes Set) The set of host names and associated tags for this LDAP data store. (see [below for nested schema](#nestedatt--ldap_data_store--hostnames_tags))
 - `ldap_dns_srv_prefix` (String) The prefix value used to discover LDAP DNS SRV record.
 - `ldap_type` (String) A type that allows PingFederate to configure many provisioning settings automatically.
 - `max_connections` (Number) The largest number of active connections that can remain in each pool without releasing extra ones.
 - `max_wait` (Number) The maximum number of milliseconds the pool waits for a connection to become available when trying to obtain a connection from the pool.
 - `min_connections` (Number) The smallest number of connections that can remain in each pool, without creating extra ones.
 - `read_timeout` (Number) The maximum number of milliseconds a connection waits for a response to be returned before producing an error.
+- `retry_failed_operations` (Boolean) Indicates whether failed operations should be retried. The default is false. Supported in PF version 11.3 or later.
 - `test_on_borrow` (Boolean) Indicates whether objects are validated before being borrowed from the pool.
 - `test_on_return` (Boolean) Indicates whether objects are validated before being returned to the pool.
 - `time_between_evictions` (Number) The frequency, in milliseconds, that the evictor cleans up the connections in the pool.
 - `type` (String) The data store type.
 - `use_dns_srv_records` (Boolean) Use DNS SRV Records to discover LDAP server information.
 - `use_ssl` (Boolean) Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS).
-- `user_dn` (String) The username credential required to access the data store.
+- `user_dn` (String) The username credential required to access the data store. If specified, no other authentication fields should be provided.
 - `verify_host` (Boolean) Verifies that the presented server certificate includes the address to which the client intended to establish a connection.
+
+<a id="nestedatt--ldap_data_store--client_tls_certificate_ref"></a>
+### Nested Schema for `ldap_data_store.client_tls_certificate_ref`
+
+Read-Only:
+
+- `id` (String) The ID of the resource.
+- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+
 
 <a id="nestedatt--ldap_data_store--hostnames_tags"></a>
 ### Nested Schema for `ldap_data_store.hostnames_tags`
@@ -183,8 +194,8 @@ Read-Only:
 Read-Only:
 
 - `default_source` (Boolean) Whether this is the default connection.
-- `hostnames` (Set of String) The LDAP host names.
-- `tags` (String) Tags associated with this data source.
+- `hostnames` (Set of String) The LDAP host names. Failover can be configured by providing multiple host names.
+- `tags` (String) Tags associated with the host names. At runtime, nodes will use the first LdapTagConfig that has a tag that matches with node.tags in run.properties.
 
 
 

@@ -91,7 +91,7 @@ Read-Only:
 Read-Only:
 
 - `account_changes_notification_publisher_ref` (Attributes) Reference to the associated notification publisher for admin user account changes. (see [below for nested schema](#nestedatt--notifications--account_changes_notification_publisher_ref))
-- `certificate_expirations` (Attributes) Settings for license event notifications. (see [below for nested schema](#nestedatt--notifications--certificate_expirations))
+- `certificate_expirations` (Attributes) Notification settings for certificate expiration events. (see [below for nested schema](#nestedatt--notifications--certificate_expirations))
 - `license_events` (Attributes) Settings for license event notifications. (see [below for nested schema](#nestedatt--notifications--license_events))
 - `metadata_notification_settings` (Attributes) Settings for metadata update event notifications. (see [below for nested schema](#nestedatt--notifications--metadata_notification_settings))
 - `notify_admin_user_password_changes` (Boolean) Determines whether admin users are notified through email when their account is changed.
@@ -113,6 +113,7 @@ Read-Only:
 - `email_address` (String) The email address where notifications are sent.
 - `final_warning_period` (Number) Time before certificate expiration when final warning is sent (in days).
 - `initial_warning_period` (Number) Time before certificate expiration when initial warning is sent (in days).
+- `notification_mode` (String) The mode of notification. Set to NOTIFICATION_PUBLISHER to enable email notifications and server log messages. Set to LOGGING_ONLY to enable server log messages. Defaults to NOTIFICATION_PUBLISHER. Supported in PF version 11.3 or later.
 - `notification_publisher_ref` (Attributes) Reference to the associated notification publisher. (see [below for nested schema](#nestedatt--notifications--certificate_expirations--notification_publisher_ref))
 
 <a id="nestedatt--notifications--certificate_expirations--notification_publisher_ref"></a>

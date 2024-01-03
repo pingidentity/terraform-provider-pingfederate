@@ -12,12 +12,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
-	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	"github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 var (
@@ -83,6 +84,41 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 	var respDiags diag.Diagnostics
 
 	if plan == nil {
+		return
+	}
+
+	// Validating attributes that depend on a specific version of PF
+	// Compare to version 11.3 of PF
+	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast113 := compare >= 0
+
+	if !pfVersionAtLeast113 {
+		// Prior to 11.3, the user_name field is required for jdbc data stores
+		if internaltypes.IsDefined(plan.JdbcDataStore) {
+			username := plan.JdbcDataStore.Attributes()["user_name"]
+			if !internaltypes.IsDefined(username) {
+				resp.Diagnostics.AddError("'user_name' is required for JDBC data stores prior to PingFederate 11.3", "")
+			}
+		}
+		// The ldap data store client_tls_certificate_ref and retry_failed_operations attributes require PF 11.3
+		if internaltypes.IsDefined(plan.LdapDataStore) {
+			ldapDataStoreAttrs := plan.LdapDataStore.Attributes()
+			clientTlsCertificateRef := ldapDataStoreAttrs["client_tls_certificate_ref"]
+			if internaltypes.IsDefined(clientTlsCertificateRef) {
+				resp.Diagnostics.AddError("Attribute 'client_tls_certificate_ref' not supported for LDAP data stores by PingFederate version "+string(r.providerConfig.ProductVersion), "PF 11.3 or later required")
+			}
+			retryFailedOperations := ldapDataStoreAttrs["retry_failed_operations"].(types.Bool)
+			if internaltypes.IsDefined(retryFailedOperations) {
+				resp.Diagnostics.AddError("Attribute 'retry_failed_operations' not supported for LDAP data stores by PingFederate version "+string(r.providerConfig.ProductVersion), "PF 11.3 or later required")
+			}
+		}
+	}
+
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -273,6 +309,17 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		}
 
 		ldapDataStore["name"] = nameValue
+
+		// If PF version is at least 11.3 then set a default for retry_failed_operations.
+		// If not ensure it is set to null rather than unknown.
+		if ldapDataStore["retry_failed_operations"].IsUnknown() {
+			if pfVersionAtLeast113 {
+				ldapDataStore["retry_failed_operations"] = types.BoolValue(false)
+			} else {
+				ldapDataStore["retry_failed_operations"] = types.BoolNull()
+			}
+		}
+
 		plan.LdapDataStore, respDiags = types.ObjectValue(ldapDataStoreAttrType, ldapDataStore)
 		resp.Diagnostics.Append(respDiags...)
 	}

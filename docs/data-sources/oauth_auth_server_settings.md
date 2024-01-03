@@ -38,6 +38,9 @@ data "pingfederate_oauth_auth_server_settings" "myOauthAuthServerSettings" {
 - `default_scope_description` (String) The default scope description.
 - `device_polling_interval` (Number) The amount of time client should wait between polling requests, in seconds.
 - `disallow_plain_pkce` (Boolean) Determines whether PKCE's 'plain' code challenge method will be disallowed. The default value is false.
+- `dpop_proof_enforce_replay_prevention` (Boolean) Determines whether Demonstrating Proof-of-Possession (DPoP) proof JWT replay prevention is enforced. The default value is false.
+- `dpop_proof_lifetime_seconds` (Number) The lifetime, in seconds, of the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is 120.
+- `dpop_proof_require_nonce` (Boolean) Determines whether nonce is required in the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is false.
 - `exclusive_scope_groups` (Attributes Set) The list of exclusive scope groups. (see [below for nested schema](#nestedatt--exclusive_scope_groups))
 - `exclusive_scopes` (Attributes Set) The list of exclusive scopes. (see [below for nested schema](#nestedatt--exclusive_scopes))
 - `id` (String) ID of this resource.
@@ -55,7 +58,7 @@ data "pingfederate_oauth_auth_server_settings" "myOauthAuthServerSettings" {
 - `persistent_grant_reuse_grant_types` (Set of String) The grant types that the OAuth AS can reuse rather than creating a new grant for each request. Only 'IMPLICIT' or 'AUTHORIZATION_CODE' or 'RESOURCE_OWNER_CREDENTIALS' are valid grant types.
 - `refresh_rolling_interval` (Number) The minimum interval to roll refresh tokens, in hours.
 - `refresh_token_length` (Number) The refresh token length in number of characters.
-- `refresh_token_rolling_grace_period` (Number) The grace period that a rolled refresh token remains valid in seconds. The default value is 0.
+- `refresh_token_rolling_grace_period` (Number) The grace period that a rolled refresh token remains valid in seconds. The default value is 60.
 - `registered_authorization_path` (String) The Registered Authorization Path is concatenated to PingFederate base URL to generate 'verification_url' and 'verification_url_complete' values in a Device Authorization request. PingFederate listens to this path if specified
 - `roll_refresh_token_values` (Boolean) The roll refresh token values default policy. The default value is true.
 - `scope_for_oauth_grant_management` (String) The OAuth scope to validate when accessing grant management service.

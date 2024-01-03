@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )

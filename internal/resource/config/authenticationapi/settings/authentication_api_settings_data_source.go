@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	resourcelinkdatasource "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"

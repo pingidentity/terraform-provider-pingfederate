@@ -4,13 +4,13 @@ import (
 	"errors"
 
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
 func ClientStruct(planObj basetypes.ObjectValue) (*client.ResourceLink, error) {
 	if !internaltypes.IsDefined(planObj) {
-		return nil, errors.New("null or Unknown object value passed in when creating resource link client struct")
+		return nil, nil
 	}
 
 	objValues := planObj.Attributes()

@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
@@ -167,6 +167,16 @@ func (r *oauthOpenIdConnectPolicyDataSource) Schema(ctx context.Context, req dat
 						},
 					},
 				},
+			},
+			"include_x5t_in_id_token": schema.BoolAttribute{
+				Description: "Determines whether the X.509 thumbprint header should be included in the ID Token. Supported in PF version 11.3 or later.",
+				Optional:    false,
+				Computed:    true,
+			},
+			"id_token_typ_header_value": schema.StringAttribute{
+				Description: "ID Token Type (typ) Header Value. Supported in PF version 11.3 or later.",
+				Optional:    false,
+				Computed:    true,
 			},
 		},
 	}

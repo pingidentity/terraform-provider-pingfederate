@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
 	datasourceattributecontractfulfillment "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributecontractfulfillment"
 	datasourceattributesources "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
@@ -594,7 +594,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 							"algorithm": schema.StringAttribute{
 								Computed:    true,
 								Optional:    false,
-								Description: "The algorithm used to sign messages sent to this partner.",
+								Description: "The algorithm used to sign messages sent to this partner. The default is SHA1withDSA for DSA certs, SHA256withRSA for RSA certs, and SHA256withECDSA for EC certs. For RSA certs, SHA1withRSA, SHA384withRSA, SHA512withRSA, SHA256withRSAandMGF1, SHA384withRSAandMGF1 and SHA512withRSAandMGF1 are also supported. For EC certs, SHA384withECDSA and SHA512withECDSA are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512",
 							},
 							"alternative_signing_key_pair_refs": schema.ListNestedAttribute{
 								NestedObject: schema.NestedAttributeObject{
@@ -1317,6 +1317,11 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Computed:    true,
 						Optional:    false,
 						Description: "The WS-Trust version for a WS-Federation connection.",
+					},
+					"sso_application_endpoint": schema.StringAttribute{
+						Optional:    false,
+						Computed:    true,
+						Description: "Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter. Supported in PF version 11.3 or later.",
 					},
 				},
 				Computed:    true,

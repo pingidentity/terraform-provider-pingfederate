@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -17,13 +18,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -105,7 +107,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						},
 					},
 					"certificate_expirations": schema.SingleNestedAttribute{
-						Description: "Settings for license event notifications.",
+						Description: "Notification settings for certificate expiration events.",
 						Optional:    true,
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
@@ -131,6 +133,18 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								Description: "Reference to the associated notification publisher.",
 								Optional:    true,
 								Attributes:  resourcelink.ToSchema(),
+							},
+							"notification_mode": schema.StringAttribute{
+								Description: "The mode of notification. Set to NOTIFICATION_PUBLISHER to enable email notifications and server log messages. Set to LOGGING_ONLY to enable server log messages. Defaults to NOTIFICATION_PUBLISHER. Supported in PF version 11.3 or later.",
+								Optional:    true,
+								Computed:    true,
+								// Default value is set in ModifyPlan below. When PF 11.3+ is all that is supported, the default can be moved to the schema here.
+								Validators: []validator.String{
+									stringvalidator.OneOf(
+										"NOTIFICATION_PUBLISHER",
+										"LOGGING_ONLY",
+									),
+								},
 							},
 						},
 					},
@@ -528,6 +542,58 @@ func (r *serverSettingsResource) ValidateConfig(ctx context.Context, req resourc
 				resp.Diagnostics.AddError("Overlapping settings!", "If the email server setting \"use_ssl\" is true, \"use_tls\" cannot be set. Remove one of the two values from your resource file.")
 			}
 		}
+	}
+}
+
+func (r *serverSettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	// Compare to version 11.3 of PF
+	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast113 := compare >= 0
+	var plan serverSettingsModel
+	req.Plan.Get(ctx, &plan)
+	if !internaltypes.IsDefined(plan.Notifications) {
+		return
+	}
+
+	planNotificationsAttrs := plan.Notifications.Attributes()
+	planCertificateExpirations := planNotificationsAttrs["certificate_expirations"].(types.Object)
+	if !internaltypes.IsDefined(planCertificateExpirations) {
+		return
+	}
+
+	planCertificateExpirationsAttrs := planCertificateExpirations.Attributes()
+	planNotificationMode := planCertificateExpirationsAttrs["notification_mode"].(types.String)
+
+	// If notification_mode is set and the PF version is not new enough, throw an error
+	updatePlan := false
+	if !pfVersionAtLeast113 {
+		if internaltypes.IsDefined(planNotificationMode) {
+			resp.Diagnostics.AddError("Attribute 'notifications.certificate_expirations.notification_mode' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "")
+		} else if planNotificationMode.IsUnknown() {
+			// Set a null default when the version isn't new enough to use this attribute
+			planNotificationMode = types.StringNull()
+			updatePlan = true
+		}
+	} else if planNotificationMode.IsUnknown() { //PF version is new enough for these attributes, set defaults
+		planNotificationMode = types.StringValue("NOTIFICATION_PUBLISHER")
+		updatePlan = true
+	}
+
+	// Update plan if necessary
+	if updatePlan && !resp.Diagnostics.HasError() {
+		planCertificateExpirationsAttrs["notification_mode"] = planNotificationMode
+		planCertificateExpirations, diags := types.ObjectValue(planCertificateExpirations.AttributeTypes(ctx), planCertificateExpirationsAttrs)
+		resp.Diagnostics.Append(diags...)
+
+		planNotificationsAttrs["certificate_expirations"] = planCertificateExpirations
+		plan.Notifications, diags = types.ObjectValue(plan.Notifications.AttributeTypes(ctx), planNotificationsAttrs)
+		resp.Diagnostics.Append(diags...)
+
+		resp.Plan.Set(ctx, &plan)
 	}
 }
 

@@ -24,7 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
@@ -263,6 +263,7 @@ var (
 			"minutes_before": types.Int64Type,
 			"minutes_after":  types.Int64Type,
 		}},
+		"sso_application_endpoint": types.StringType,
 	}
 
 	policyAttrTypes = map[string]attr.Type{
@@ -884,7 +885,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Attributes: map[string]schema.Attribute{
 							"algorithm": schema.StringAttribute{
 								Optional:    true,
-								Description: "The algorithm used to sign messages sent to this partner. The default is SHA1withDSA for DSA certs, SHA256withRSA for RSA certs, and SHA256withECDSA for EC certs. For RSA certs, SHA1withRSA, SHA384withRSA, and SHA512withRSA are also supported. For EC certs, SHA384withECDSA and SHA512withECDSA are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512",
+								Description: "The algorithm used to sign messages sent to this partner. The default is SHA1withDSA for DSA certs, SHA256withRSA for RSA certs, and SHA256withECDSA for EC certs. For RSA certs, SHA1withRSA, SHA384withRSA, SHA512withRSA, SHA256withRSAandMGF1, SHA384withRSAandMGF1 and SHA512withRSAandMGF1 are also supported. For EC certs, SHA384withECDSA and SHA512withECDSA are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512",
 							},
 							"alternative_signing_key_pair_refs": schema.ListNestedAttribute{
 								NestedObject: schema.NestedAttributeObject{
@@ -1598,6 +1599,11 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								"WSTRUST13",
 							),
 						},
+					},
+					"sso_application_endpoint": schema.StringAttribute{
+						Optional:    false,
+						Computed:    true,
+						Description: "Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter. Supported in PF version 11.3 or later.",
 					},
 				},
 				Optional:    true,
