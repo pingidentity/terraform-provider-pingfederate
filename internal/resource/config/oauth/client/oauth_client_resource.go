@@ -24,7 +24,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -1326,11 +1325,6 @@ func (r *oauthClientResource) Update(ctx context.Context, req resource.UpdateReq
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for the OAuth Client", err.Error())
 		return
-	}
-
-	requestJson, err := createUpdateRequest.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
 	}
 
 	updateOauthClient = updateOauthClient.Body(*createUpdateRequest)
