@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/scopeentry"
@@ -79,6 +79,8 @@ type oauthAuthServerSettingsModel struct {
 	DpopProofRequireNonce                       types.Bool   `tfsdk:"dpop_proof_require_nonce"`
 	DpopProofLifetimeSeconds                    types.Int64  `tfsdk:"dpop_proof_lifetime_seconds"`
 	DpopProofEnforceReplayPrevention            types.Bool   `tfsdk:"dpop_proof_enforce_replay_prevention"`
+	BypassAuthorizationForApprovedConsents      types.Bool   `tfsdk:"bypass_authorization_for_approved_consents"`
+	ConsentLifetimeDays                         types.Int64  `tfsdk:"consent_lifetime_days"`
 }
 
 func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsModel, existingId *string) diag.Diagnostics {
@@ -142,5 +144,7 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 	state.DpopProofRequireNonce = types.BoolPointerValue(r.DpopProofRequireNonce)
 	state.DpopProofLifetimeSeconds = types.Int64PointerValue(r.DpopProofLifetimeSeconds)
 	state.DpopProofEnforceReplayPrevention = types.BoolPointerValue(r.DpopProofEnforceReplayPrevention)
+	state.BypassAuthorizationForApprovedConsents = types.BoolPointerValue(r.BypassAuthorizationForApprovedConsents)
+	state.ConsentLifetimeDays = types.Int64PointerValue(r.ConsentLifetimeDays)
 	return diags
 }

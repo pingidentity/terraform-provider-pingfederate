@@ -12,8 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
-	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -118,6 +117,17 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		}
 	}
 
+	// Check for parent_ref, which had support removed in version 12.0
+	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast120 := compare >= 0
+	if pfVersionAtLeast120 && internaltypes.IsDefined(plan.CustomDataStore) && internaltypes.IsDefined(plan.CustomDataStore.Attributes()["parent_ref"]) {
+		resp.Diagnostics.AddError("Attribute 'parent_ref' not supported for custom data stores by PingFederate version "+string(r.providerConfig.ProductVersion), "PF 11.3 or earlier required")
+	}
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -170,31 +180,36 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		}
 
 		// If connection_url is not defined, use connection_url_tags connection_url value
-		var connectionUrlVal basetypes.StringValue
-		if !hasTopConnectionUrl {
-			connectionUrlVal = connectionUrlTagsConnectionUrlVal
-		} else {
-			connectionUrlVal = types.StringValue(topConnectionUrlVal)
+		if !internaltypes.IsDefined(jdbcDataStore["connection_url"]) {
+			jdbcDataStore["connection_url"] = connectionUrlTagsConnectionUrlVal
 		}
-		jdbcDataStore["connection_url"] = connectionUrlVal
 
 		connectionUrlTagsAttrVal := map[string]attr.Value{
-			"connection_url": connectionUrlVal,
+			"connection_url": jdbcDataStore["connection_url"],
 			"tags":           connectionUrlTagsTags,
 			"default_source": connectionUrlTagsDefaultSource,
 		}
 		connectionUrlTagsObj, respDiags := types.ObjectValue(jdbcTagConfigAttrType.AttrTypes, connectionUrlTagsAttrVal)
 		resp.Diagnostics.Append(respDiags...)
 
+		// Use a map as a set to prevent adding duplicates to the final slice
+		finalTags := map[string]attr.Value{
+			jdbcDataStore["connection_url"].(types.String).ValueString(): connectionUrlTagsObj,
+		}
+		for _, element := range jdbcDataStore["connection_url_tags"].(types.Set).Elements() {
+			url := element.(types.Object).Attributes()["connection_url"]
+			finalTags[url.(types.String).ValueString()] = element
+		}
+		// Build the final slice and the framework object value
 		connectionUrlTagsSetAttrValue := []attr.Value{}
-		connectionUrlTagsSetAttrValue = append(connectionUrlTagsSetAttrValue, connectionUrlTagsObj)
-		connectionUrlTagsSetAttrValue = append(connectionUrlTagsSetAttrValue, jdbcDataStore["connection_url_tags"].(types.Set).Elements()...)
+		for _, val := range finalTags {
+			connectionUrlTagsSetAttrValue = append(connectionUrlTagsSetAttrValue, val)
+		}
 		connectionUrlTagsSet, respDiags := types.SetValue(jdbcTagConfigAttrType, connectionUrlTagsSetAttrValue)
 		resp.Diagnostics.Append(respDiags...)
 		jdbcDataStore["connection_url_tags"] = connectionUrlTagsSet
 
 		//  Build name attribute if not defined
-		var namePrefix basetypes.StringValue
 		var prefix string
 		if !internaltypes.IsDefined(jdbcDataStore["name"]) {
 			if hasTopConnectionUrl {
@@ -204,12 +219,9 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 				prefix = connectionUrlTagsConnectionUrlVal.ValueString()
 			}
 			userName := jdbcDataStore["user_name"].(types.String).ValueString()
-			namePrefix = types.StringValue(prefix + " (" + userName + ")")
-		} else {
-			namePrefix = jdbcDataStore["name"].(types.String)
+			jdbcDataStore["name"] = types.StringValue(prefix + " (" + userName + ")")
 		}
 
-		jdbcDataStore["name"] = namePrefix
 		plan.JdbcDataStore, respDiags = types.ObjectValue(jdbcDataStoreAttrType, jdbcDataStore)
 		resp.Diagnostics.Append(respDiags...)
 	}
@@ -353,7 +365,7 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 	resp.Plan.Set(ctx, plan)
 }
 
-func createDataStore(dataStore configurationapi.DataStoreAggregation, dsr *dataStoreResource, con context.Context, resp *resource.CreateResponse) (*client.DataStoreAggregation, *http.Response, error) {
+func createDataStore(dataStore client.DataStoreAggregation, dsr *dataStoreResource, con context.Context, resp *resource.CreateResponse) (*client.DataStoreAggregation, *http.Response, error) {
 	apiCreateDataStore := dsr.apiClient.DataStoresAPI.CreateDataStore(config.ProviderBasicAuthContext(con, dsr.providerConfig))
 	apiCreateDataStore = apiCreateDataStore.Body(dataStore)
 	return dsr.apiClient.DataStoresAPI.CreateDataStoreExecute(apiCreateDataStore)
@@ -430,7 +442,7 @@ func (r *dataStoreResource) Read(ctx context.Context, req resource.ReadRequest, 
 	resp.Diagnostics.Append(diags...)
 }
 
-func updateDataStore(dataStore configurationapi.DataStoreAggregation, dsr *dataStoreResource, con context.Context, resp *resource.UpdateResponse, id string) (*client.DataStoreAggregation, *http.Response, error) {
+func updateDataStore(dataStore client.DataStoreAggregation, dsr *dataStoreResource, con context.Context, resp *resource.UpdateResponse, id string) (*client.DataStoreAggregation, *http.Response, error) {
 	updateDataStore := dsr.apiClient.DataStoresAPI.UpdateDataStore(config.ProviderBasicAuthContext(con, dsr.providerConfig), id)
 	updateDataStore = updateDataStore.Body(dataStore)
 	return dsr.apiClient.DataStoresAPI.UpdateDataStoreExecute(updateDataStore)

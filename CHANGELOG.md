@@ -4,6 +4,7 @@
 
 ### FEATURES
 * Added support for PingFederate version `11.3` and full support for all `11.2.x` versions ([#149](https://github.com/pingidentity/terraform-provider-pingfederate/pull/149))
+* Added support for PingFederate version `12.0` ([#153](https://github.com/pingidentity/terraform-provider-pingfederate/pull/153))
 
 #### Resources
 * **New Resource:** `pingfederate_authentication_api_application` ([#](https://github.com/pingidentity/terraform-provider-pingfederate/pull/))

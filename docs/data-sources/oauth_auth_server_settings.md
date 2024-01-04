@@ -33,14 +33,16 @@ data "pingfederate_oauth_auth_server_settings" "myOauthAuthServerSettings" {
 - `authorization_code_entropy` (Number) The authorization code entropy, in bytes.
 - `authorization_code_timeout` (Number) The authorization code timeout, in seconds.
 - `bypass_activation_code_confirmation` (Boolean) Indicates if the Activation Code Confirmation page should be bypassed if 'verification_url_complete' is used by the end user to authorize a device.
+- `bypass_authorization_for_approved_consents` (Boolean) Bypass authorization for previously approved consents. The default value is false. Supported in PF version 12.0 or later.
 - `bypass_authorization_for_approved_grants` (Boolean) Bypass authorization for previously approved persistent grants. The default value is false.
 - `client_secret_retention_period` (Number) The length of time in minutes that client secrets will be retained as secondary secrets after secret change. The default value is 0, which will disable secondary client secret retention.
+- `consent_lifetime_days` (Number) The consent lifetime in days. The default value is indefinite. -1 indicates an indefinite amount of time. Supported in PF version 12.0 or later.
 - `default_scope_description` (String) The default scope description.
 - `device_polling_interval` (Number) The amount of time client should wait between polling requests, in seconds.
 - `disallow_plain_pkce` (Boolean) Determines whether PKCE's 'plain' code challenge method will be disallowed. The default value is false.
-- `dpop_proof_enforce_replay_prevention` (Boolean) Determines whether Demonstrating Proof-of-Possession (DPoP) proof JWT replay prevention is enforced. The default value is false.
-- `dpop_proof_lifetime_seconds` (Number) The lifetime, in seconds, of the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is 120.
-- `dpop_proof_require_nonce` (Boolean) Determines whether nonce is required in the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is false.
+- `dpop_proof_enforce_replay_prevention` (Boolean) Determines whether Demonstrating Proof-of-Possession (DPoP) proof JWT replay prevention is enforced. The default value is false. Supported in PF version 11.3 or later.
+- `dpop_proof_lifetime_seconds` (Number) The lifetime, in seconds, of the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is 120. Supported in PF version 11.3 or later.
+- `dpop_proof_require_nonce` (Boolean) Determines whether nonce is required in the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is false. Supported in PF version 11.3 or later.
 - `exclusive_scope_groups` (Attributes Set) The list of exclusive scope groups. (see [below for nested schema](#nestedatt--exclusive_scope_groups))
 - `exclusive_scopes` (Attributes Set) The list of exclusive scopes. (see [below for nested schema](#nestedatt--exclusive_scopes))
 - `id` (String) ID of this resource.

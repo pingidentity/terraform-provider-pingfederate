@@ -2,7 +2,10 @@ package version
 
 import (
 	"errors"
+	"fmt"
 	"strings"
+
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
 type SupportedVersion string
@@ -22,6 +25,7 @@ const (
 	PingFederate1132 SupportedVersion = "11.3.2"
 	PingFederate1133 SupportedVersion = "11.3.3"
 	PingFederate1134 SupportedVersion = "11.3.4"
+	PingFederate1200 SupportedVersion = "12.0.0"
 )
 
 func IsValid(versionString string) bool {
@@ -50,6 +54,7 @@ func getSortedVersions() []SupportedVersion {
 		PingFederate1132,
 		PingFederate1133,
 		PingFederate1134,
+		PingFederate1200,
 	}
 }
 
@@ -87,4 +92,13 @@ func Parse(versionString string) (SupportedVersion, error) {
 		err = errors.New("unsupported PingFederate version: " + versionString)
 	}
 	return SupportedVersion(versionString), err
+}
+
+func AddUnsupportedAttributeError(attr string, actualVersion, requiredVersion SupportedVersion, diags *diag.Diagnostics) {
+	if diags == nil {
+		return
+	}
+
+	diags.AddError(fmt.Sprintf("Attribute '%s' not supported by PingFederate version %s", attr, string(actualVersion)),
+		fmt.Sprintf("PingFederate version %s or later is required for this attribute", string(requiredVersion)))
 }

@@ -111,8 +111,10 @@ resource "pingfederate_oauth_auth_server_settings" "myOauthAuthServerSettings" {
 - `approved_authorization_detail_attribute` (String) Attribute from the external consent adapter's contract, intended for storing approved authorization details returned by the external consent page.
 - `approved_scopes_attribute` (String) Attribute from the external consent adapter's contract, intended for storing approved scopes returned by the external consent page.
 - `atm_id_for_oauth_grant_management` (String) The ID of the Access Token Manager used for OAuth enabled grant management.
+- `bypass_authorization_for_approved_consents` (Boolean) Bypass authorization for previously approved consents. The default value is false. Supported in PF version 12.0 or later.
 - `bypass_authorization_for_approved_grants` (Boolean) Bypass authorization for previously approved persistent grants. The default value is false.
 - `client_secret_retention_period` (Number) The length of time in minutes that client secrets will be retained as secondary secrets after secret change. The default value is 0, which will disable secondary client secret retention.
+- `consent_lifetime_days` (Number) The consent lifetime in days. The default value is indefinite. -1 indicates an indefinite amount of time. Supported in PF version 12.0 or later.
 - `disallow_plain_pkce` (Boolean) Determines whether PKCE's 'plain' code challenge method will be disallowed. The default value is false.
 - `dpop_proof_enforce_replay_prevention` (Boolean) Determines whether Demonstrating Proof-of-Possession (DPoP) proof JWT replay prevention is enforced. The default value is false. Supported in PF version 11.3 or later.
 - `dpop_proof_lifetime_seconds` (Number) The lifetime, in seconds, of the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is 120. Supported in PF version 11.3 or later.

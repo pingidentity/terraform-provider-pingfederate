@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -34,12 +34,22 @@ var (
 		"notification_publisher_ref": types.ObjectType{AttrTypes: resourcelink.AttrType()},
 	}
 
+	threadPoolExhaustionNotificationSettingsAttrType = map[string]attr.Type{
+		"email_address":              types.StringType,
+		"thread_dump_enabled":        types.BoolType,
+		"notification_publisher_ref": types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"notification_mode":          types.StringType,
+	}
+
 	notificationsAttrType = map[string]attr.Type{
-		"license_events":                             types.ObjectType{AttrTypes: notificationSettingsAttrType},
-		"certificate_expirations":                    types.ObjectType{AttrTypes: certificateExpirationsAttrType},
-		"notify_admin_user_password_changes":         types.BoolType,
-		"account_changes_notification_publisher_ref": types.ObjectType{AttrTypes: resourcelink.AttrType()},
-		"metadata_notification_settings":             types.ObjectType{AttrTypes: notificationSettingsAttrType},
+		"license_events":                                           types.ObjectType{AttrTypes: notificationSettingsAttrType},
+		"certificate_expirations":                                  types.ObjectType{AttrTypes: certificateExpirationsAttrType},
+		"notify_admin_user_password_changes":                       types.BoolType,
+		"account_changes_notification_publisher_ref":               types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"metadata_notification_settings":                           types.ObjectType{AttrTypes: notificationSettingsAttrType},
+		"expired_certificate_administrative_console_warning_days":  types.Int64Type,
+		"expiring_certificate_administrative_console_warning_days": types.Int64Type,
+		"thread_pool_exhaustion_notification_settings":             types.ObjectType{AttrTypes: threadPoolExhaustionNotificationSettingsAttrType},
 	}
 
 	oauthRoleAttrType = map[string]attr.Type{
@@ -126,11 +136,14 @@ var (
 	})
 
 	notificationsDefault, _ = types.ObjectValue(notificationsAttrType, map[string]attr.Value{
-		"license_events":                             types.ObjectNull(notificationSettingsAttrType),
-		"certificate_expirations":                    types.ObjectNull(certificateExpirationsAttrType),
-		"notify_admin_user_password_changes":         types.BoolValue(false),
-		"account_changes_notification_publisher_ref": types.ObjectNull(resourcelink.AttrType()),
-		"metadata_notification_settings":             types.ObjectNull(notificationSettingsAttrType),
+		"license_events":                                           types.ObjectNull(notificationSettingsAttrType),
+		"certificate_expirations":                                  types.ObjectNull(certificateExpirationsAttrType),
+		"notify_admin_user_password_changes":                       types.BoolValue(false),
+		"account_changes_notification_publisher_ref":               types.ObjectNull(resourcelink.AttrType()),
+		"metadata_notification_settings":                           types.ObjectNull(notificationSettingsAttrType),
+		"expired_certificate_administrative_console_warning_days":  types.Int64Unknown(),
+		"expiring_certificate_administrative_console_warning_days": types.Int64Unknown(),
+		"thread_pool_exhaustion_notification_settings":             types.ObjectNull(threadPoolExhaustionNotificationSettingsAttrType),
 	})
 
 	oauthRoleDefault, _ = types.ObjectValue(oauthRoleAttrType, map[string]attr.Value{

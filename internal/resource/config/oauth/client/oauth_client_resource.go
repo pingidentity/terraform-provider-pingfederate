@@ -26,7 +26,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -454,6 +454,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 							stringvalidator.OneOf(
 								"NONE",
 								"PING_FRONT_CHANNEL",
+								"OIDC_FRONT_CHANNEL",
 								"OIDC_BACK_CHANNEL",
 							),
 						},
@@ -461,6 +462,11 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 					"back_channel_logout_uri": schema.StringAttribute{
 						Description: "The back-channel logout URI for this client. Supported in PF version 11.3 or later.",
 						Optional:    true,
+					},
+					"post_logout_redirect_uris": schema.SetAttribute{
+						Description: "URIs to which the OIDC OP may redirect the resource owner's user agent after RP-initiated logout has completed. Wildcards are allowed. However, for security reasons, make the URL as restrictive as possible. Supported in PF version 12.0 or later.",
+						Optional:    true,
+						ElementType: types.StringType,
 					},
 				},
 				PlanModifiers: []planmodifier.Object{
@@ -964,21 +970,29 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 }
 
 func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Compare to version 11.3 of PF
+	// Compare to version 11.3 and 12.0 of PF
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
 		return
 	}
 	pfVersionAtLeast113 := compare >= 0
-	var plan oauthClientModel
+	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast120 := compare >= 0
+	var plan, state oauthClientModel
 	var diags diag.Diagnostics
 	req.Plan.Get(ctx, &plan)
+	req.State.Get(ctx, &state)
 	planModified := false
 	// If require_dpop is set prior to PF version 11.3, throw an error
 	if !pfVersionAtLeast113 {
 		if internaltypes.IsDefined(plan.RequireDpop) {
-			resp.Diagnostics.AddError("Attribute 'require_dpop' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "")
+			version.AddUnsupportedAttributeError("require_dpop",
+				r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
 		} else if plan.RequireDpop.IsUnknown() {
 			// Ensure require_dpop is not unknown for older versions of PF, so that it gets passed in as nil rather than false.
 			// Passing it in as false would break older versions of PF, since it is an unrecognized property.
@@ -990,14 +1004,15 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		plan.RequireDpop = types.BoolValue(false)
 		planModified = true
 	}
-	// If oidc_policy.logout_mode is set prior to PF version 11.3, throw an error. Otherwise, set the PF default.
 	if internaltypes.IsDefined(plan.OidcPolicy) {
 		planOidcPolicyAttrs := plan.OidcPolicy.Attributes()
+		// If oidc_policy.logout_mode is set prior to PF version 11.3, throw an error. Otherwise, set the PF default.
 		planLogoutMode := planOidcPolicyAttrs["logout_mode"].(types.String)
 		planBackChannelLogoutUri := planOidcPolicyAttrs["back_channel_logout_uri"].(types.String)
 		if !pfVersionAtLeast113 {
 			if internaltypes.IsDefined(planLogoutMode) {
-				resp.Diagnostics.AddError("Attribute 'oidc_policy.logout_mode' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "")
+				version.AddUnsupportedAttributeError("oidc_policy.logout_mode",
+					r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
 			} else if planLogoutMode.IsUnknown() {
 				// Ensure logout_mode is not unknown for older versions of PF
 				planOidcPolicyAttrs["logout_mode"] = types.StringNull()
@@ -1006,7 +1021,8 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 				planModified = true
 			}
 			if internaltypes.IsDefined(planBackChannelLogoutUri) {
-				resp.Diagnostics.AddError("Attribute 'oidc_policy.back_channel_logout_uri' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "")
+				version.AddUnsupportedAttributeError("oidc_policy.back_channel_logout_uri",
+					r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
 			}
 		} else if planLogoutMode.IsUnknown() {
 			// Set a default logout_mode if the PF version is new enough
@@ -1015,6 +1031,21 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 			resp.Diagnostics.Append(diags...)
 			planModified = true
 		}
+		// If oidc_policy.post_logout_redirect_uris is set prior to PF version 12.0, throw an error.
+		planPostLogoutRedirectUris := planOidcPolicyAttrs["post_logout_redirect_uris"].(types.Set)
+		if !pfVersionAtLeast120 && internaltypes.IsDefined(planPostLogoutRedirectUris) {
+			version.AddUnsupportedAttributeError("oidc_policy.post_logout_redirect_uris",
+				r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
+		}
+	}
+
+	// If the new plan doesn't match the state, invalidate any last-changed time values
+	// See https://github.com/hashicorp/terraform-plugin-framework/issues/898 for some info on why this is needed
+	req.Plan.Set(ctx, plan)
+	if !req.Plan.Raw.Equal(req.State.Raw) {
+		plan.ModificationDate = types.StringUnknown()
+		plan.ClientSecretChangedTime = types.StringUnknown()
+		planModified = true
 	}
 
 	if planModified {
@@ -1320,7 +1351,7 @@ func (r *oauthClientResource) Update(ctx context.Context, req resource.UpdateReq
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
-	diags = resp.State.Set(ctx, plan)
+	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 }
 

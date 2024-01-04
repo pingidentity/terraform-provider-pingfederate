@@ -10,7 +10,7 @@ The PingFederate provider manages the configuration of a PingFederate server.
 
 ## PingFederate Version Support
 
-The PingFederate provider supports versions `11.2` and `11.3` of PingFederate.
+The PingFederate provider supports versions `11.2` through `12.0` of PingFederate.
 
 ## Documentation
 Detailed documentation on PingFederate can be found in the [online docs](https://docs.pingidentity.com/r/en-us/pingfederate-112/pf_pingfederate_landing_page)

@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -18,7 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1130/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -177,10 +178,56 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 							},
 						},
 					},
+					"expired_certificate_administrative_console_warning_days": schema.Int64Attribute{
+						Description: "Indicates the number of days prior to certificate expiry date, the administrative console warning starts. The default value is 14 days. Supported in PF 12.0 or later.",
+						Optional:    true,
+						Computed:    true,
+						// Default will be set in ModifyPlan method. Once we drop support for pre-12.0 versions, we can set the default here instead.
+					},
+					"expiring_certificate_administrative_console_warning_days": schema.Int64Attribute{
+						Description: "Indicates the number of days past the certificate expiry date, the administrative console warning ends. The default value is 14 days. Supported in PF 12.0 or later.",
+						Optional:    true,
+						Computed:    true,
+						// Default will be set in ModifyPlan method. Once we drop support for pre-12.0 versions, we can set the default here instead.
+					},
+					"thread_pool_exhaustion_notification_settings": schema.SingleNestedAttribute{
+						Description: "Notification settings for thread pool exhaustion events. Supported in PF 12.0 or later.",
+						Optional:    true,
+						Computed:    true,
+						Default:     objectdefault.StaticValue(types.ObjectNull(threadPoolExhaustionNotificationSettingsAttrType)),
+						// Default will be set in ModifyPlan method. Once we drop support for pre-12.0 versions, we can set the default here instead.
+						Attributes: map[string]schema.Attribute{
+							"email_address": schema.StringAttribute{
+								Description: "Email address where notifications are sent.",
+								Required:    true,
+							},
+							"thread_dump_enabled": schema.BoolAttribute{
+								Description: "Generate a thread dump when approaching thread pool exhaustion.",
+								Optional:    true,
+							},
+							"notification_publisher_ref": schema.SingleNestedAttribute{
+								Description: "Reference to the associated notification publisher.",
+								Optional:    true,
+								Attributes:  resourcelink.ToSchema(),
+							},
+							"notification_mode": schema.StringAttribute{
+								Description: "The mode of notification. Set to NOTIFICATION_PUBLISHER to enable email notifications and server log messages. Set to LOGGING_ONLY to enable server log messages. Defaults to LOGGING_ONLY.",
+								Optional:    true,
+								Computed:    true,
+								Default:     stringdefault.StaticString("LOGGING_ONLY"),
+								Validators: []validator.String{
+									stringvalidator.OneOf(
+										"NOTIFICATION_PUBLISHER",
+										"LOGGING_ONLY",
+									),
+								},
+							},
+						},
+					},
 				},
 			},
 			"roles_and_protocols": schema.SingleNestedAttribute{
-				Description: "Configure roles and protocols.",
+				Description: "Configure roles and protocols. As of PingFederate 12.0: This property has been deprecated and is no longer used. All Roles and protocols are always enabled.",
 				Computed:    true,
 				Optional:    false,
 				Default:     objectdefault.StaticValue(rolesAndProtocolsDefault),
@@ -546,50 +593,96 @@ func (r *serverSettingsResource) ValidateConfig(ctx context.Context, req resourc
 }
 
 func (r *serverSettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Compare to version 11.3 of PF
+	// Compare to versions 11.3 and 12.0 of PF
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
 		return
 	}
 	pfVersionAtLeast113 := compare >= 0
+	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast120 := compare >= 0
 	var plan serverSettingsModel
 	req.Plan.Get(ctx, &plan)
 	if !internaltypes.IsDefined(plan.Notifications) {
 		return
 	}
 
+	var diags diag.Diagnostics
+	updatePlan := false
 	planNotificationsAttrs := plan.Notifications.Attributes()
 	planCertificateExpirations := planNotificationsAttrs["certificate_expirations"].(types.Object)
-	if !internaltypes.IsDefined(planCertificateExpirations) {
-		return
-	}
+	if internaltypes.IsDefined(planCertificateExpirations) {
+		planCertificateExpirationsAttrs := planCertificateExpirations.Attributes()
+		planNotificationMode := planCertificateExpirationsAttrs["notification_mode"].(types.String)
 
-	planCertificateExpirationsAttrs := planCertificateExpirations.Attributes()
-	planNotificationMode := planCertificateExpirationsAttrs["notification_mode"].(types.String)
-
-	// If notification_mode is set and the PF version is not new enough, throw an error
-	updatePlan := false
-	if !pfVersionAtLeast113 {
-		if internaltypes.IsDefined(planNotificationMode) {
-			resp.Diagnostics.AddError("Attribute 'notifications.certificate_expirations.notification_mode' not supported by PingFederate version "+string(r.providerConfig.ProductVersion), "")
-		} else if planNotificationMode.IsUnknown() {
-			// Set a null default when the version isn't new enough to use this attribute
-			planNotificationMode = types.StringNull()
+		// If notification_mode is set and the PF version is not new enough, throw an error
+		if !pfVersionAtLeast113 {
+			if internaltypes.IsDefined(planNotificationMode) {
+				version.AddUnsupportedAttributeError("notifications.certificate_expirations.notification_mode",
+					r.providerConfig.ProductVersion, version.PingFederate1130, &resp.Diagnostics)
+			} else if planNotificationMode.IsUnknown() {
+				// Set a null default when the version isn't new enough to use this attribute
+				planNotificationMode = types.StringNull()
+				updatePlan = true
+			}
+		} else if planNotificationMode.IsUnknown() { //PF version is new enough for these attributes, set defaults
+			planNotificationMode = types.StringValue("NOTIFICATION_PUBLISHER")
 			updatePlan = true
 		}
-	} else if planNotificationMode.IsUnknown() { //PF version is new enough for these attributes, set defaults
-		planNotificationMode = types.StringValue("NOTIFICATION_PUBLISHER")
-		updatePlan = true
+
+		if updatePlan {
+			planCertificateExpirationsAttrs["notification_mode"] = planNotificationMode
+			planCertificateExpirations, diags = types.ObjectValue(planCertificateExpirations.AttributeTypes(ctx), planCertificateExpirationsAttrs)
+			resp.Diagnostics.Append(diags...)
+		}
+	}
+
+	// Check for attributes only allowed after version 12.0
+	planExpiredCertWarningDays := planNotificationsAttrs["expired_certificate_administrative_console_warning_days"].(types.Int64)
+	planExpiringCertWarningDays := planNotificationsAttrs["expiring_certificate_administrative_console_warning_days"].(types.Int64)
+	if !pfVersionAtLeast120 {
+		if internaltypes.IsDefined(planExpiredCertWarningDays) {
+			version.AddUnsupportedAttributeError("expired_certificate_administrative_console_warning_days",
+				r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
+		} else if planExpiredCertWarningDays.IsUnknown() {
+			planExpiredCertWarningDays = types.Int64Null()
+			updatePlan = true
+		}
+
+		if internaltypes.IsDefined(planExpiringCertWarningDays) {
+			version.AddUnsupportedAttributeError("expiring_certificate_administrative_console_warning_days",
+				r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
+		} else if planExpiringCertWarningDays.IsUnknown() {
+			planExpiringCertWarningDays = types.Int64Null()
+			updatePlan = true
+		}
+
+		if internaltypes.IsDefined(planNotificationsAttrs["thread_pool_exhaustion_notification_settings"]) {
+			version.AddUnsupportedAttributeError("thread_pool_exhaustion_notification_settings",
+				r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
+		}
+	} else {
+		if planExpiredCertWarningDays.IsUnknown() {
+			planExpiredCertWarningDays = types.Int64Value(14)
+			updatePlan = true
+		}
+		if planExpiringCertWarningDays.IsUnknown() {
+			planExpiringCertWarningDays = types.Int64Value(14)
+			updatePlan = true
+		}
 	}
 
 	// Update plan if necessary
 	if updatePlan && !resp.Diagnostics.HasError() {
-		planCertificateExpirationsAttrs["notification_mode"] = planNotificationMode
-		planCertificateExpirations, diags := types.ObjectValue(planCertificateExpirations.AttributeTypes(ctx), planCertificateExpirationsAttrs)
-		resp.Diagnostics.Append(diags...)
-
 		planNotificationsAttrs["certificate_expirations"] = planCertificateExpirations
+		planNotificationsAttrs["expired_certificate_administrative_console_warning_days"] = planExpiredCertWarningDays
+		planNotificationsAttrs["expiring_certificate_administrative_console_warning_days"] = planExpiringCertWarningDays
+
 		plan.Notifications, diags = types.ObjectValue(plan.Notifications.AttributeTypes(ctx), planNotificationsAttrs)
 		resp.Diagnostics.Append(diags...)
 
