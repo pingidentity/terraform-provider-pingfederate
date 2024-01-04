@@ -71,6 +71,7 @@ func (r *certificateCAResource) Schema(ctx context.Context, req resource.SchemaR
 	id.ToSchemaCustomId(&schema,
 		"ca_id",
 		false,
+		true,
 		"The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-].")
 	resp.Schema = schema
 }

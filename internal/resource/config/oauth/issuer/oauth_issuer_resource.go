@@ -54,6 +54,7 @@ func (r *oauthIssuerResource) Schema(ctx context.Context, req resource.SchemaReq
 	id.ToSchemaCustomId(&schema,
 		"issuer_id",
 		true,
+		true,
 		"The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-].")
 	resp.Schema = schema
 }

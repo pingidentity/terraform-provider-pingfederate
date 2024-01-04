@@ -195,7 +195,7 @@ func (r *oauthOpenIdConnectPolicyResource) Schema(ctx context.Context, req resou
 		},
 	}
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, "policy_id", false, "The policy ID used internally.")
+	id.ToSchemaCustomId(&schema, "policy_id", false, true, "The policy ID used internally.")
 	resp.Schema = schema
 }
 

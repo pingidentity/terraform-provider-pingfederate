@@ -9,8 +9,12 @@ import (
 )
 
 func ToSchema(computed bool) schema.SingleNestedAttribute {
+	return ToSchemaWithDescription(computed, "The attribute value source.")
+}
+
+func ToSchemaWithDescription(computed bool, description string) schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
-		Description: "The attribute value source.",
+		Description: description,
 		Required:    !computed,
 		Optional:    computed,
 		Computed:    computed,
