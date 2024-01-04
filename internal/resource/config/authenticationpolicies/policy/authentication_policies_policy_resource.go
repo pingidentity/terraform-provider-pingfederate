@@ -79,9 +79,10 @@ func (r *authenticationPoliciesPolicyResource) Schema(ctx context.Context, req r
 				Optional:    true,
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
-					"type": schema.StringAttribute{
+					"action": schema.SingleNestedAttribute{
 						Description: "The type of the node.",
 						Required:    true,
+						Attributes:  map[string]schema.Attribute{},
 					},
 				},
 			},
