@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	client "github.com/pingidentity/pingfederate-go-client/v1125/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
@@ -119,6 +119,10 @@ resource "pingfederate_oauth_client" "myOauthClientExample" {
   name                          = "myOauthClientExample"
   grant_types                   = ["EXTENSION"]
   allow_authentication_api_init = true
+}
+
+resource "pingfederate_authentication_api_settings" "myAuthenticationApiSettingsExample" {
+  restrict_access_to_redirectless_mode = true
 }
 
 resource "pingfederate_authentication_api_application" "%[1]s" {
