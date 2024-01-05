@@ -2,7 +2,6 @@ package authenticationapiapplication
 
 import (
 	"context"
-	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -13,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
-	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -112,22 +110,16 @@ func (r *authenticationApiApplicationResource) Configure(_ context.Context, req 
 
 func addOptionalAuthenticationApiApplicationFields(ctx context.Context, addRequest *client.AuthnApiApplication, plan authenticationApiApplicationModel) error {
 
-	if internaltypes.IsDefined(plan.Description) {
-		addRequest.Description = plan.Description.ValueStringPointer()
-	}
+	addRequest.Description = plan.Description.ValueStringPointer()
 
-	if internaltypes.IsDefined(plan.AdditionalAllowedOrigins) {
-		var slice []string
-		plan.AdditionalAllowedOrigins.ElementsAs(ctx, &slice, false)
-		addRequest.AdditionalAllowedOrigins = slice
-	}
+	var slice []string
+	plan.AdditionalAllowedOrigins.ElementsAs(ctx, &slice, false)
+	addRequest.AdditionalAllowedOrigins = slice
 
-	if internaltypes.IsDefined(plan.ClientForRedirectlessModeRef) {
-		addRequest.ClientForRedirectlessModeRef = &client.ResourceLink{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ClientForRedirectlessModeRef, false)), addRequest.ClientForRedirectlessModeRef)
-		if err != nil {
-			return err
-		}
+	var err error
+	addRequest.ClientForRedirectlessModeRef, err = resourcelink.ClientStruct(plan.ClientForRedirectlessModeRef)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -160,7 +152,7 @@ func (r *authenticationApiApplicationResource) Create(ctx context.Context, req r
 
 	// Read the response into the state
 	var state authenticationApiApplicationModel
-	// This is a workaround for the fact that the API does not return the location of oauth client ClientForRedirectlessModeRef
+	// This is a workaround for the fact that the API does not return the location of oauth client ClientForRedirectlessModeRef. This specifically applies to creates/updates, but location is returned normally on reads, which is why we are running an additional get here.
 	if internaltypes.IsDefined(plan.ClientForRedirectlessModeRef) {
 		authenticationApiApplicationResponse, httpResp, err = r.apiClient.AuthenticationApiAPI.GetApplication(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.ApplicationId.ValueString()).Execute()
 		if err != nil {
@@ -193,6 +185,7 @@ func (r *authenticationApiApplicationResource) Read(ctx context.Context, req res
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp)
 		}
+		return
 	}
 
 	diags = readAuthenticationApiApplicationResponse(ctx, apiReadAuthenticationApiApplication, &state)
@@ -213,8 +206,8 @@ func (r *authenticationApiApplicationResource) Update(ctx context.Context, req r
 		return
 	}
 
-	updateAuthenticationApiApplication := r.apiClient.AuthenticationApiAPI.UpdateApplication(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Id.ValueString())
-	createUpdateRequest := client.NewAuthnApiApplication(plan.Id.ValueString(), plan.Name.ValueString(), plan.Url.ValueString())
+	updateAuthenticationApiApplication := r.apiClient.AuthenticationApiAPI.UpdateApplication(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.ApplicationId.ValueString())
+	createUpdateRequest := client.NewAuthnApiApplication(plan.ApplicationId.ValueString(), plan.Name.ValueString(), plan.Url.ValueString())
 	err := addOptionalAuthenticationApiApplicationFields(ctx, createUpdateRequest, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for an Authentication Api Application", err.Error())
@@ -230,9 +223,9 @@ func (r *authenticationApiApplicationResource) Update(ctx context.Context, req r
 
 	// Read the response
 	var state authenticationApiApplicationModel
-	// This is a workaround for the fact that the API does not return the location of oauth client ClientForRedirectlessModeRef
+	// This is a workaround for the fact that the API does not return the location of oauth client ClientForRedirectlessModeRef. This specifically applies to creates/updates, but location is returned normally on reads, which is why we are running an additional get here.
 	if internaltypes.IsDefined(plan.ClientForRedirectlessModeRef) {
-		updateAuthenticationApiApplicationResponse, httpResp, err = r.apiClient.AuthenticationApiAPI.GetApplication(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Id.ValueString()).Execute()
+		updateAuthenticationApiApplicationResponse, httpResp, err = r.apiClient.AuthenticationApiAPI.GetApplication(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.ApplicationId.ValueString()).Execute()
 		if err != nil {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp)
 		}
@@ -255,7 +248,7 @@ func (r *authenticationApiApplicationResource) Delete(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.AuthenticationApiAPI.DeleteApplication(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	httpResp, err := r.apiClient.AuthenticationApiAPI.DeleteApplication(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ApplicationId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an Authentication Api Application", err, httpResp)
 		return
