@@ -51,15 +51,15 @@ endef
 
 # Set ACC_TEST_NAME to name of test in cli
 testoneacc:
-	$(call test_acc_env_vars) TF_ACC=1 go test ./internal/acctest/... -timeout 10m -run ${ACC_TEST_NAME} -v --count=1
+	$(call test_acc_env_vars) TF_ACC=1 go test ./internal/acctest/... -timeout 10m -run ${ACC_TEST_NAME} -v count=1
 
 testoneacccomplete: spincontainer testoneacc
 
 # Some tests can step on each other's toes so run those tests in single threaded mode. Run the rest in parallel
 testacc:
-	$(call test_acc_env_vars) TF_ACC=1 go test `go list ./internal/acctest/... | grep -v -e oauthauthserversettings -e oauthopenidconnectpolicy` -timeout 10m -v -p 4; \
+	$(call test_acc_env_vars) TF_ACC=1 go test `go list ./internal/acctest/... | grep -v -e authenticationapiapplication -e authenticationapisettings -e oauthauthserversettings -e oauthopenidconnectpolicy` -timeout 10m -v -p 4 count=1; \
 	firstTestResult=$$?; \
-	$(call test_acc_env_vars) TF_ACC=1 go test `go list ./internal/acctest/... | grep -e oauthauthserversettings -e oauthopenidconnectpolicy` -timeout 10m -v -p 1; \
+	$(call test_acc_env_vars) TF_ACC=1 go test `go list ./internal/acctest/... | grep -e authenticationapiapplication -e authenticationapisettings -e oauthauthserversettings -e oauthopenidconnectpolicy` -timeout 10m -v -p 1 count=1; \
 	secondTestResult=$$?; \
 	if test "$$firstTestResult" != "0" || test "$$secondTestResult" != "0" ; then \
 		false; \
