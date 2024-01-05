@@ -10,7 +10,6 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/authenticationpolicytreenode"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/policyaction"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 
@@ -67,14 +66,7 @@ func (r *authenticationPoliciesFragmentResource) Schema(ctx context.Context, req
 				Optional:    true,
 				Description: "A reference to a resource.",
 			},
-			"root_node": schema.SingleNestedAttribute{
-				Attributes: map[string]schema.Attribute{
-					"policy_action": policyaction.Schema(),
-					//TODO children, recursiveness
-				},
-				Optional:    true,
-				Description: "An authentication policy tree node.",
-			},
+			"root_node": authenticationpolicytreenode.Schema(),
 		},
 	}
 	id.ToSchema(&schema)
@@ -111,7 +103,7 @@ func readAuthenticationPoliciesFragmentResponse(ctx context.Context, r *client.A
 	state.Outputs, respDiags = resourcelink.ToState(ctx, r.Outputs)
 	diags.Append(respDiags...)
 
-	state.RootNode, respDiags = authenticationpolicytreenode.State(r.RootNode)
+	state.RootNode, respDiags = authenticationpolicytreenode.State(ctx, r.RootNode)
 	diags.Append(respDiags...)
 
 	return diags
