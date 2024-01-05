@@ -19,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/administrativeaccount"
+	authenticationapiapplication "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi/application"
 	authenticationapisettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi/settings"
 	authenticationpoliciessettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicies/settings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicycontract"
@@ -331,6 +332,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		administrativeaccount.AdministrativeAccountDataSource,
+		authenticationapiapplication.AuthenticationApiApplicationDataSource,
 		authenticationapisettings.AuthenticationApiSettingsDataSource,
 		authenticationpoliciessettings.AuthenticationPoliciesSettingsDataSource,
 		authenticationpolicycontract.AuthenticationPolicyContractDataSource,
@@ -372,6 +374,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		administrativeaccount.AdministrativeAccountResource,
+		authenticationapiapplication.AuthenticationApiApplicationResource,
 		authenticationapisettings.AuthenticationApiSettingsResource,
 		authenticationpoliciessettings.AuthenticationPoliciesSettingsResource,
 		authenticationpolicycontract.AuthenticationPolicyContractResource,
