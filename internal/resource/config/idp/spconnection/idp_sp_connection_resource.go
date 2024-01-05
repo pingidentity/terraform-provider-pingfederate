@@ -1713,7 +1713,6 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 	id.ToSchemaCustomId(&schema,
 		"connection_id",
 		true,
-		true,
 		"The persistent, unique ID for the connection. It can be any combination of [a-zA-Z0-9._-].")
 	resp.Schema = schema
 }

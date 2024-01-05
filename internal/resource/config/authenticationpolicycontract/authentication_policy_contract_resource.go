@@ -80,7 +80,6 @@ func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req r
 	id.ToSchemaCustomId(&schema,
 		"contract_id",
 		false,
-		true,
 		"The persistent, unique ID for the authentication policy contract. It can be any combination of [a-zA-Z0-9._-].")
 	resp.Schema = schema
 }

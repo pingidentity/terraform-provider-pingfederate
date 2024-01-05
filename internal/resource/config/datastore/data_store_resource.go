@@ -56,7 +56,6 @@ func (r *dataStoreResource) Schema(ctx context.Context, req resource.SchemaReque
 	id.ToSchemaCustomId(&schema,
 		"data_store_id",
 		false,
-		true,
 		"The persistent, unique ID for the data store. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.")
 
 	resp.Schema = schema

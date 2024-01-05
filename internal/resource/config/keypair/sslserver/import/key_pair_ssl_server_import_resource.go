@@ -240,7 +240,6 @@ func (r *keyPairsSslServerImportResource) Schema(ctx context.Context, req resour
 	id.ToSchemaCustomId(&schema,
 		"import_id",
 		true,
-		true,
 		"The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.")
 	resp.Schema = schema
 }
