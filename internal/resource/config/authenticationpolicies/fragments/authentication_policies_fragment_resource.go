@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/authenticationpolicytreenode"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/policyaction"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -97,15 +98,47 @@ func (r *authenticationPoliciesFragmentResource) Configure(_ context.Context, re
 
 }
 
-func readAuthenticationPoliciesFragmentResponse(ctx context.Context, r *client.Client, state *authenticationPoliciesFragmentModel) diag.Diagnostics {
-	var diags diag.Diagnostics
+func readAuthenticationPoliciesFragmentResponse(ctx context.Context, r *client.AuthenticationPolicyFragment, state *authenticationPoliciesFragmentModel) diag.Diagnostics {
+	var diags, respDiags diag.Diagnostics
+
+	state.Id = types.StringPointerValue(r.Id)
+	state.FragmentId = types.StringPointerValue(r.Id)
+	state.Name = types.StringPointerValue(r.Name)
+	state.Description = types.StringPointerValue(r.Description)
+
+	state.Inputs, respDiags = resourcelink.ToState(ctx, r.Inputs)
+	diags.Append(respDiags...)
+	state.Outputs, respDiags = resourcelink.ToState(ctx, r.Outputs)
+	diags.Append(respDiags...)
+
+	state.RootNode, respDiags = authenticationpolicytreenode.State(r.RootNode)
+	diags.Append(respDiags...)
 
 	return diags
 }
 
-func addOptionalAuthenticationPoliciesFragmentFields(ctx context.Context, addRequest *client.Client, plan authenticationPoliciesFragmentModel) error {
+func addOptionalAuthenticationPoliciesFragmentFields(ctx context.Context, addRequest *client.AuthenticationPolicyFragment, plan authenticationPoliciesFragmentModel) error {
+	// We require fragment_id in the provider, but to PF it is optional
+	addRequest.Id = plan.FragmentId.ValueStringPointer()
+	addRequest.Name = plan.Name.ValueStringPointer()
+	addRequest.Description = plan.Description.ValueStringPointer()
 
-	return nil
+	var err error
+	if internaltypes.IsDefined(plan.RootNode) {
+		addRequest.RootNode, err = authenticationpolicytreenode.ClientStruct(plan.RootNode)
+		if err != nil {
+			return err
+		}
+	}
+
+	addRequest.Inputs, err = resourcelink.ClientStruct(plan.Inputs)
+	if err != nil {
+		return err
+	}
+
+	addRequest.Outputs, err = resourcelink.ClientStruct(plan.Outputs)
+
+	return err
 }
 
 func (r *authenticationPoliciesFragmentResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -117,9 +150,24 @@ func (r *authenticationPoliciesFragmentResource) Create(ctx context.Context, req
 		return
 	}
 
+	newPolicyFragment := client.NewAuthenticationPolicyFragment()
+	err := addOptionalAuthenticationPoliciesFragmentFields(ctx, newPolicyFragment, plan)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for the Authentication Policy Fragment", err.Error())
+		return
+	}
+
+	apiCreatePolicyFragment := r.apiClient.AuthenticationPoliciesAPI.CreateFragment(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreatePolicyFragment = apiCreatePolicyFragment.Body(*newPolicyFragment)
+	fragmentResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.CreateFragmentExecute(apiCreatePolicyFragment)
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Authentication Policy Fragment", err, httpResp)
+		return
+	}
+
 	// Read the response into the state
 	var state authenticationPoliciesFragmentModel
-	//diags = readAuthenticationPoliciesFragmentResponse(ctx, oauthClientResponse, &state)
+	diags = readAuthenticationPoliciesFragmentResponse(ctx, fragmentResponse, &state)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -134,8 +182,23 @@ func (r *authenticationPoliciesFragmentResource) Read(ctx context.Context, req r
 		return
 	}
 
+	fragmentResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.GetFragment(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.FragmentId.ValueString()).Execute()
+	if err != nil {
+		if httpResp != nil && httpResp.StatusCode == 404 {
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Policy Fragment", err, httpResp)
+			resp.State.RemoveResource(ctx)
+		} else {
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Policy Fragment", err, httpResp)
+		}
+		return
+	}
+
+	var updatedState authenticationPoliciesFragmentModel
+	diags = readAuthenticationPoliciesFragmentResponse(ctx, fragmentResponse, &updatedState)
+	resp.Diagnostics.Append(diags...)
+
 	// Set refreshed state
-	diags = resp.State.Set(ctx, &state)
+	diags = resp.State.Set(ctx, &updatedState)
 	resp.Diagnostics.Append(diags...)
 }
 
@@ -148,9 +211,29 @@ func (r *authenticationPoliciesFragmentResource) Update(ctx context.Context, req
 		return
 	}
 
+	updateFragmentRequest := r.apiClient.AuthenticationPoliciesAPI.UpdateFragment(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.FragmentId.ValueString())
+	updatedFragment := client.NewAuthenticationPolicyFragment()
+	err := addOptionalAuthenticationPoliciesFragmentFields(ctx, updatedFragment, plan)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for the Authentication Policy Fragment", err.Error())
+		return
+	}
+
+	updateFragmentRequest = updateFragmentRequest.Body(*updatedFragment)
+	updateResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.UpdateFragmentExecute(updateFragmentRequest)
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the Authentication Policy Fragment", err, httpResp)
+		return
+	}
+
+	// Read the response
+	var state authenticationPoliciesFragmentModel
+	readResponseDiags := readAuthenticationPoliciesFragmentResponse(ctx, updateResponse, &state)
+	resp.Diagnostics.Append(readResponseDiags...)
+
 	// Set refreshed state
-	//diags = resp.State.Set(ctx, &state)
-	//resp.Diagnostics.Append(diags...)
+	diags = resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diags...)
 }
 
 func (r *authenticationPoliciesFragmentResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
