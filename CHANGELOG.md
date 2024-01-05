@@ -1,6 +1,6 @@
 # v0.5.0 (Unreleased)
 ### BUG FIXES
-* **OAuth Client Resource:** Resolved issue where default issues on the `pingfederate_oauth_client` resource cause an invalid apply ([#](https://github.com/pingidentity/terraform-provider-pingfederate/pull/156)) 
+* **OAuth Client Resource:** Resolved issue where some property default values on the `pingfederate_oauth_client` resource cause an invalid apply ([#156](https://github.com/pingidentity/terraform-provider-pingfederate/pull/156)) 
 
 ### FEATURES
 * Added support for PingFederate version `11.3` and full support for all `11.2.x` versions ([#149](https://github.com/pingidentity/terraform-provider-pingfederate/pull/149))
