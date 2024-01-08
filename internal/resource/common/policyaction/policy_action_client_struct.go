@@ -19,7 +19,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 	attrs := object.Attributes()
 	apcMappingPolicyAction, ok := attrs["apc_mapping_policy_action"]
 	if ok && internaltypes.IsDefined(apcMappingPolicyAction) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(apcMappingPolicyAction, false)), &result.ApcMappingPolicyAction)
+		err := json.Unmarshal([]byte(internaljson.FromValue(apcMappingPolicyAction, true)), &result.ApcMappingPolicyAction)
 		if err != nil {
 			return nil, err
 		}
@@ -28,7 +28,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 	}
 	authnSelectorPolicyAction, ok := attrs["authn_selector_policy_action"]
 	if ok && internaltypes.IsDefined(authnSelectorPolicyAction) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(authnSelectorPolicyAction, false)), &result.AuthnSelectorPolicyAction)
+		err := json.Unmarshal([]byte(internaljson.FromValue(authnSelectorPolicyAction, true)), &result.AuthnSelectorPolicyAction)
 		if err != nil {
 			return nil, err
 		}
@@ -37,7 +37,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 	}
 	authnSourcePolicyAction, ok := attrs["authn_source_policy_action"]
 	if ok && internaltypes.IsDefined(authnSourcePolicyAction) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(authnSourcePolicyAction, false)), &result.AuthnSourcePolicyAction)
+		err := json.Unmarshal([]byte(internaljson.FromValue(authnSourcePolicyAction, true)), &result.AuthnSourcePolicyAction)
 		if err != nil {
 			return nil, err
 		}
@@ -46,7 +46,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 	}
 	continuePolicyAction, ok := attrs["continue_policy_action"]
 	if ok && internaltypes.IsDefined(continuePolicyAction) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(continuePolicyAction, false)), &result.ContinuePolicyAction)
+		err := json.Unmarshal([]byte(internaljson.FromValue(continuePolicyAction, true)), &result.ContinuePolicyAction)
 		if err != nil {
 			return nil, err
 		}
@@ -55,7 +55,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 	}
 	donePolicyAction, ok := attrs["done_policy_action"]
 	if ok && internaltypes.IsDefined(donePolicyAction) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(donePolicyAction, false)), &result.DonePolicyAction)
+		err := json.Unmarshal([]byte(internaljson.FromValue(donePolicyAction, true)), &result.DonePolicyAction)
 		if err != nil {
 			return nil, err
 		}
@@ -64,7 +64,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 	}
 	fragmentPolicyAction, ok := attrs["fragment_policy_action"]
 	if ok && internaltypes.IsDefined(fragmentPolicyAction) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(fragmentPolicyAction, false)), &result.FragmentPolicyAction)
+		err := json.Unmarshal([]byte(internaljson.FromValue(fragmentPolicyAction, true)), &result.FragmentPolicyAction)
 		if err != nil {
 			return nil, err
 		}
@@ -73,7 +73,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 	}
 	localIdentityMappingPolicyAction, ok := attrs["local_identity_mapping_policy_action"]
 	if ok && internaltypes.IsDefined(localIdentityMappingPolicyAction) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(localIdentityMappingPolicyAction, false)), &result.LocalIdentityMappingPolicyAction)
+		err := json.Unmarshal([]byte(internaljson.FromValue(localIdentityMappingPolicyAction, true)), &result.LocalIdentityMappingPolicyAction)
 		if err != nil {
 			return nil, err
 		}
@@ -82,7 +82,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 	}
 	restartPolicyAction, ok := attrs["restart_policy_action"]
 	if ok && internaltypes.IsDefined(restartPolicyAction) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(restartPolicyAction, false)), &result.RestartPolicyAction)
+		err := json.Unmarshal([]byte(internaljson.FromValue(restartPolicyAction, true)), &result.RestartPolicyAction)
 		if err != nil {
 			return nil, err
 		}

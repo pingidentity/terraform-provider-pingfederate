@@ -13,41 +13,41 @@ provider "pingfederate" {
   password   = "2FederateM0re"
   https_host = "https://localhost:9999"
   # Warning: The insecure_trust_all_tls attribute configures the provider to trust any certificate presented by the PingDirectory server.
-  insecure_trust_all_tls = true
+  insecure_trust_all_tls              = true
   x_bypass_external_validation_header = true
-  product_version = "12.0.0"
+  product_version                     = "12.0.0"
 }
 
 
 resource "pingfederate_authentication_policies_fragment" "myAuthenticationPolicyFragment" {
-    fragment_id = "myPolicyFragment"
-    name = "myFragment"
-    root_node = {
+  fragment_id = "myPolicyFragment"
+  name        = "myFragment"
+  root_node = {
+    policy_action = {
+      authn_source_policy_action = {
+        authentication_source = {
+          type = "IDP_ADAPTER"
+          source_ref = {
+            id = "OTIdPJava"
+          }
+        }
+      }
+    },
+    children = [
+      {
         policy_action = {
-            authn_source_policy_action = {
-                authentication_source = {
-                    type = "IDP_ADAPTER"
-                    source_ref = {
-                        id = "OTIdPJava"
-                    }
-                }
-            }
-        },
-        children = [
-            {
-                policy_action = {
-                    done_policy_action = {
-                        context = "Fail"
-                    }
-                }
-            },
-            {
-                policy_action = {
-                    done_policy_action = {
-                        context = "Success"
-                    }
-                }
-            }
-        ]
-    }
+          done_policy_action = {
+            context = "Fail"
+          }
+        }
+      },
+      {
+        policy_action = {
+          done_policy_action = {
+            context = "Success"
+          }
+        }
+      }
+    ]
+  }
 }

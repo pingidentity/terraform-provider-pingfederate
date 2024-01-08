@@ -38,23 +38,37 @@ func buildRootNodeAttrTypesChildren(depth int) types.ListType {
 }
 
 func State(ctx context.Context, node *client.AuthenticationPolicyTreeNode) (types.Object, diag.Diagnostics) {
+	return recursiveState(ctx, node, 1, getRootNodeAttrTypes())
+}
+
+func recursiveState(ctx context.Context, node *client.AuthenticationPolicyTreeNode, depth int, attrTypes map[string]attr.Type) (types.Object, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	if node == nil {
 		diags.AddError("provided authentication policy tree node is nil", "")
-		return types.ObjectNull(getRootNodeAttrTypes()), diags
+		return types.ObjectNull(attrTypes), diags
 	}
 	var attrValues = map[string]attr.Value{}
 
 	attrValues["policy_action"], diags = policyaction.State(ctx, &node.Action)
 	if diags.HasError() {
-		return types.ObjectNull(getRootNodeAttrTypes()), diags
+		return types.ObjectNull(attrTypes), diags
 	}
 
-	childrenType := getRootNodeAttrTypes()["children"].(types.ListType).ElemType
-	attrValues["children"], diags = types.ListValueFrom(ctx, childrenType, node.Children)
-	if diags.HasError() {
-		return types.ObjectNull(getRootNodeAttrTypes()), diags
+	if depth <= maxRecursiveDepth {
+		childrenType := attrTypes["children"].(types.ListType).ElemType.(types.ObjectType)
+		children := []attr.Value{}
+		for _, child := range node.Children {
+			childObj, diags := recursiveState(ctx, &child, depth+1, childrenType.AttrTypes)
+			if diags.HasError() {
+				return types.ObjectNull(attrTypes), diags
+			}
+			children = append(children, childObj)
+		}
+		attrValues["children"], diags = types.ListValue(childrenType, children)
+		if diags.HasError() {
+			return types.ObjectNull(attrTypes), diags
+		}
 	}
 
-	return types.ObjectValue(getRootNodeAttrTypes(), attrValues)
+	return types.ObjectValue(attrTypes, attrValues)
 }

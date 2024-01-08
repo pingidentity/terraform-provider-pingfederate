@@ -19,7 +19,7 @@ var (
 		"context": types.StringType,
 	}
 	attributeMappingAttrTypes = map[string]attr.Type{
-		"attribute_contract_fulfillment": types.ObjectType{AttrTypes: attributecontractfulfillment.AttrType()},
+		"attribute_contract_fulfillment": types.MapType{ElemType: types.ObjectType{AttrTypes: attributecontractfulfillment.AttrType()}},
 		"attribute_sources": types.ListType{
 			ElemType: types.ObjectType{
 				AttrTypes: attributesources.ElemAttrType(),
@@ -48,17 +48,19 @@ var (
 		"context":                     types.StringType,
 		"authentication_selector_ref": types.ObjectType{AttrTypes: resourcelink.AttrType()},
 	}
+	authenticationSourceAttrTypes = map[string]attr.Type{
+		"source_ref": types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"type":       types.StringType,
+	}
+	inputUserIdMappingAttrTypes = map[string]attr.Type{
+		"source": types.ObjectType{AttrTypes: sourcetypeidkey.AttrType()},
+		"value":  types.StringType,
+	}
 	authnSourcePolicyActionAttrTypes = map[string]attr.Type{
-		"context":         types.StringType,
-		"attribute_rules": types.ObjectType{AttrTypes: attributeRulesAttrTypes},
-		"authentication_source": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"source_ref": types.ObjectType{AttrTypes: resourcelink.AttrType()},
-			"type":       types.StringType,
-		}},
-		"input_user_id_mapping": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"source": types.ObjectType{AttrTypes: sourcetypeidkey.AttrType()},
-			"value":  types.StringType,
-		}},
+		"context":               types.StringType,
+		"attribute_rules":       types.ObjectType{AttrTypes: attributeRulesAttrTypes},
+		"authentication_source": types.ObjectType{AttrTypes: authenticationSourceAttrTypes},
+		"input_user_id_mapping": types.ObjectType{AttrTypes: inputUserIdMappingAttrTypes},
 		"user_id_authenticated": types.BoolType,
 	}
 	fragmentPolicyActionAttrTypes = map[string]attr.Type{
@@ -97,31 +99,99 @@ func State(ctx context.Context, response *client.PolicyActionAggregation) (types
 		return types.ObjectNull(policyActionAttrTypes), diags
 	}
 
-	attrs := map[string]attr.Value{}
+	// Default all to null
+	attrs := map[string]attr.Value{
+		"apc_mapping_policy_action":            types.ObjectNull(apcMappingPolicyActionAttrTypes),
+		"authn_selector_policy_action":         types.ObjectNull(authnSelectorPolicyActionAttrTypes),
+		"authn_source_policy_action":           types.ObjectNull(authnSourcePolicyActionAttrTypes),
+		"continue_policy_action":               types.ObjectNull(simplePolicyActionAttrTypes),
+		"done_policy_action":                   types.ObjectNull(simplePolicyActionAttrTypes),
+		"fragment_policy_action":               types.ObjectNull(fragmentPolicyActionAttrTypes),
+		"local_identity_mapping_policy_action": types.ObjectNull(localIdentityMappingPolicyActionAttrTypes),
+		"restart_policy_action":                types.ObjectNull(simplePolicyActionAttrTypes),
+	}
+
 	if response.ApcMappingPolicyAction != nil {
-		attrs["apc_mapping_policy_action"], respDiags = types.ObjectValueFrom(ctx, apcMappingPolicyActionAttrTypes, response.ApcMappingPolicyAction)
+		actionAttrs := map[string]attr.Value{
+			"context": types.StringPointerValue(response.ApcMappingPolicyAction.Context),
+		}
+		actionAttrs["authentication_policy_contract_ref"], respDiags = resourcelink.ToState(ctx, &response.ApcMappingPolicyAction.AuthenticationPolicyContractRef)
 		diags.Append(respDiags...)
+		actionAttrs["attribute_mapping"], respDiags = types.ObjectValueFrom(ctx, attributeMappingAttrTypes, response.ApcMappingPolicyAction.AttributeMapping)
+		diags.Append(respDiags...)
+		attrs["apc_mapping_policy_action"], respDiags = types.ObjectValue(apcMappingPolicyActionAttrTypes, actionAttrs)
+		diags.Append(respDiags...)
+
 	} else if response.AuthnSelectorPolicyAction != nil {
-		attrs["authn_selector_policy_action"], respDiags = types.ObjectValueFrom(ctx, authnSelectorPolicyActionAttrTypes, response.AuthnSelectorPolicyAction)
+		actionAttrs := map[string]attr.Value{
+			"context": types.StringPointerValue(response.AuthnSelectorPolicyAction.Context),
+		}
+		actionAttrs["authentication_selector_ref"], respDiags = resourcelink.ToState(ctx, &response.AuthnSelectorPolicyAction.AuthenticationSelectorRef)
 		diags.Append(respDiags...)
+		attrs["authn_selector_policy_action"], respDiags = types.ObjectValue(authnSelectorPolicyActionAttrTypes, actionAttrs)
+		diags.Append(respDiags...)
+
 	} else if response.AuthnSourcePolicyAction != nil {
-		attrs["authn_source_policy_action"], respDiags = types.ObjectValueFrom(ctx, authnSourcePolicyActionAttrTypes, response.AuthnSourcePolicyAction)
+		actionAttrs := map[string]attr.Value{
+			"context": types.StringPointerValue(response.AuthnSourcePolicyAction.Context),
+		}
+		actionAttrs["attribute_rules"], respDiags = types.ObjectValueFrom(ctx, attributeRulesAttrTypes, response.AuthnSourcePolicyAction.AttributeRules)
 		diags.Append(respDiags...)
+		actionAttrs["authentication_source"], respDiags = types.ObjectValueFrom(ctx, authenticationSourceAttrTypes, response.AuthnSourcePolicyAction.AuthenticationSource)
+		diags.Append(respDiags...)
+		actionAttrs["input_user_id_mapping"], respDiags = types.ObjectValueFrom(ctx, inputUserIdMappingAttrTypes, response.AuthnSourcePolicyAction.InputUserIdMapping)
+		diags.Append(respDiags...)
+		actionAttrs["user_id_authenticated"] = types.BoolPointerValue(response.AuthnSourcePolicyAction.UserIdAuthenticated)
+		attrs["authn_source_policy_action"], respDiags = types.ObjectValue(authnSourcePolicyActionAttrTypes, actionAttrs)
+		diags.Append(respDiags...)
+
 	} else if response.ContinuePolicyAction != nil {
-		attrs["continue_policy_action"], respDiags = types.ObjectValueFrom(ctx, simplePolicyActionAttrTypes, response.ContinuePolicyAction)
+		actionAttrs := map[string]attr.Value{
+			"context": types.StringPointerValue(response.ContinuePolicyAction.Context),
+		}
+		attrs["continue_policy_action"], respDiags = types.ObjectValue(simplePolicyActionAttrTypes, actionAttrs)
 		diags.Append(respDiags...)
+
 	} else if response.DonePolicyAction != nil {
-		attrs["done_policy_action"], respDiags = types.ObjectValueFrom(ctx, simplePolicyActionAttrTypes, response.DonePolicyAction)
+		actionAttrs := map[string]attr.Value{
+			"context": types.StringPointerValue(response.DonePolicyAction.Context),
+		}
+		attrs["done_policy_action"], respDiags = types.ObjectValue(simplePolicyActionAttrTypes, actionAttrs)
 		diags.Append(respDiags...)
+
 	} else if response.FragmentPolicyAction != nil {
-		attrs["fragment_policy_action"], respDiags = types.ObjectValueFrom(ctx, fragmentPolicyActionAttrTypes, response.FragmentPolicyAction)
+		actionAttrs := map[string]attr.Value{
+			"context": types.StringPointerValue(response.FragmentPolicyAction.Context),
+		}
+		actionAttrs["attribute_rules"], respDiags = types.ObjectValueFrom(ctx, attributeRulesAttrTypes, response.FragmentPolicyAction.AttributeRules)
 		diags.Append(respDiags...)
+		actionAttrs["fragment"], respDiags = resourcelink.ToState(ctx, &response.FragmentPolicyAction.Fragment)
+		diags.Append(respDiags...)
+		actionAttrs["fragment_mapping"], respDiags = types.ObjectValueFrom(ctx, attributeMappingAttrTypes, response.FragmentPolicyAction.FragmentMapping)
+		diags.Append(respDiags...)
+		attrs["fragment_policy_action"], respDiags = types.ObjectValue(fragmentPolicyActionAttrTypes, actionAttrs)
+		diags.Append(respDiags...)
+
 	} else if response.LocalIdentityMappingPolicyAction != nil {
-		attrs["local_identity_mapping_policy_action"], respDiags = types.ObjectValueFrom(ctx, localIdentityMappingPolicyActionAttrTypes, response.LocalIdentityMappingPolicyAction)
+		actionAttrs := map[string]attr.Value{
+			"context": types.StringPointerValue(response.LocalIdentityMappingPolicyAction.Context),
+		}
+		actionAttrs["local_identity_ref"], respDiags = resourcelink.ToState(ctx, &response.LocalIdentityMappingPolicyAction.LocalIdentityRef)
 		diags.Append(respDiags...)
+		actionAttrs["inbound_mapping"], respDiags = types.ObjectValueFrom(ctx, attributeMappingAttrTypes, response.LocalIdentityMappingPolicyAction.InboundMapping)
+		diags.Append(respDiags...)
+		actionAttrs["outbound_attribute_mapping"], respDiags = types.ObjectValueFrom(ctx, attributeMappingAttrTypes, response.LocalIdentityMappingPolicyAction.OutboundAttributeMapping)
+		diags.Append(respDiags...)
+		attrs["local_identity_mapping_policy_action"], respDiags = types.ObjectValue(localIdentityMappingPolicyActionAttrTypes, actionAttrs)
+		diags.Append(respDiags...)
+
 	} else if response.RestartPolicyAction != nil {
-		attrs["restart_policy_action"], respDiags = types.ObjectValueFrom(ctx, simplePolicyActionAttrTypes, response.RestartPolicyAction)
+		actionAttrs := map[string]attr.Value{
+			"context": types.StringPointerValue(response.RestartPolicyAction.Context),
+		}
+		attrs["restart_policy_action"], respDiags = types.ObjectValue(simplePolicyActionAttrTypes, actionAttrs)
 		diags.Append(respDiags...)
+
 	} else {
 		diags.AddError("no valid non-nil policy action type found in struct", "")
 	}
