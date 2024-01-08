@@ -24,7 +24,31 @@ func ClientStruct(planNode types.Object) (*client.AuthenticationPolicyTreeNode, 
 	if err != nil {
 		return nil, err
 	}
-	//TODO children
+	children, ok := rootNodeAttrs["children"]
+	if ok { // If there is a children attribute, read the children recursively
+		rootNode.Children, err = getChildren(children.(types.List))
+		if err != nil {
+			return nil, err
+		}
+	}
 	rootNode.Action = *action
 	return &rootNode, nil
+}
+
+func getChildren(planChildren types.List) ([]client.AuthenticationPolicyTreeNode, error) {
+	children := []client.AuthenticationPolicyTreeNode{}
+
+	for _, child := range planChildren.Elements() {
+		childObj, ok := child.(types.Object)
+		if !ok {
+			return []client.AuthenticationPolicyTreeNode{}, errors.New("child policy tree node has invalid type - unable to cast to ObjectType")
+		}
+		childStruct, err := ClientStruct(childObj)
+		if err != nil {
+			return []client.AuthenticationPolicyTreeNode{}, err
+		}
+		children = append(children, *childStruct)
+	}
+
+	return children, nil
 }
