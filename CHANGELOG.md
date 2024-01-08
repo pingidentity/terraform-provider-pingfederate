@@ -9,6 +9,7 @@
 #### Resources
 * **New Resource:** `pingfederate_authentication_api_application` ([#156](https://github.com/pingidentity/terraform-provider-pingfederate/pull/156))
 * **New Resource:** `pingfederate_authentication_policies_settings` ([#150](https://github.com/pingidentity/terraform-provider-pingfederate/pull/150))
+* **New Resource:** `pingfederate_kerberos_realm` ([#158](https://github.com/pingidentity/terraform-provider-pingfederate/pull/158))
 
 #### Data Sources
 * **New Data Source:** `pingfederate_authentication_api_application` ([#156](https://github.com/pingidentity/terraform-provider-pingfederate/pull/156))

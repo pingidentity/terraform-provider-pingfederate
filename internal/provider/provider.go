@@ -28,6 +28,7 @@ import (
 	idpadapter "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/adapter"
 	idpdefaulturls "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/defaulturls"
 	idpspconnection "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/spconnection"
+	kerberosrealms "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/kerberos/realms"
 	keypairsigningimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypair/signing/import"
 	keypairsslserverimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypair/sslserver/import"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/license"
@@ -382,6 +383,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		idpadapter.IdpAdapterResource,
 		idpdefaulturls.IdpDefaultUrlsResource,
 		idpspconnection.IdpSpConnectionResource,
+		kerberosrealms.KerberosRealmsResource,
 		keypairsigningimport.KeyPairsSigningImportResource,
 		keypairsslserverimport.KeyPairsSslServerImportResource,
 		datastore.DataStoreResource,
