@@ -169,7 +169,7 @@ func (r *kerberosRealmsResource) ValidateConfig(ctx context.Context, req resourc
 func (r *kerberosRealmsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	var plan kerberosRealmsResourceModel
 	req.Plan.Get(ctx, &plan)
-	if plan.ConnectionType.IsNull() || plan.ConnectionType.ValueString() == "DIRECT" {
+	if plan.ConnectionType.ValueString() == "DIRECT" {
 		if !internaltypes.IsDefined(plan.RetainPreviousKeysOnPasswordChange) {
 			plan.RetainPreviousKeysOnPasswordChange = types.BoolValue(false)
 		}
