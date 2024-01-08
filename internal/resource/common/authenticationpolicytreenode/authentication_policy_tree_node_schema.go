@@ -19,8 +19,8 @@ func Schema() schema.SingleNestedAttribute {
 				NestedObject: buildSchema(1),
 			},
 		},
-		Optional:    true,
-		Description: "An authentication policy tree node.",
+		Required:    true,
+		Description: "The beginning action for the authentication fragment policy.",
 	}
 }
 

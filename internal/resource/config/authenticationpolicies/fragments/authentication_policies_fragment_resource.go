@@ -58,7 +58,7 @@ func (r *authenticationPoliciesFragmentResource) Schema(ctx context.Context, req
 				Description: "A reference to a resource.",
 			},
 			"name": schema.StringAttribute{
-				Optional:    true,
+				Required:    true,
 				Description: "The authentication policy fragment name. Name is unique.",
 			},
 			"outputs": schema.SingleNestedAttribute{
