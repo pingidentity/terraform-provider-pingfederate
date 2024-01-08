@@ -46,7 +46,6 @@ resource "pingfederate_kerberos_realm" "myKerberosRealmExample" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `kerberos_encrypted_password` (String, Sensitive) This field contains the encrypted Domain/Realm password, if one exists. Only applicable when 'connectionType' is DIRECT.
 
 <a id="nestedatt--ldap_gateway_data_store_ref"></a>
 ### Nested Schema for `ldap_gateway_data_store_ref`
