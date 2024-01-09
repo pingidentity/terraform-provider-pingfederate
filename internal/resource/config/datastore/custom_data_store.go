@@ -12,7 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
@@ -57,7 +59,20 @@ func toSchemaCustomDataStore() schema.SingleNestedAttribute {
 		"plugin_descriptor_ref": schema.SingleNestedAttribute{
 			Required:    true,
 			Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
-			Attributes:  resourcelink.ToSchema(),
+			Attributes: map[string]schema.Attribute{
+				"id": schema.StringAttribute{
+					Description: "The ID of the resource.",
+					Required:    true,
+				},
+				"location": schema.StringAttribute{
+					Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
+					Computed:    true,
+					Optional:    false,
+					PlanModifiers: []planmodifier.String{
+						stringplanmodifier.UseStateForUnknown(),
+					},
+				},
+			},
 		},
 		"parent_ref": schema.SingleNestedAttribute{
 			Computed:    true,

@@ -1,6 +1,7 @@
 # v0.5.0 (Unreleased)
 ### BUG FIXES
-* **OAuth Client Resource:** Resolved issue where some property default values on the `pingfederate_oauth_client` resource cause an invalid apply ([#156](https://github.com/pingidentity/terraform-provider-pingfederate/pull/156)) 
+* **OAuth Client Resource:** Resolved issue where some property default values on the `pingfederate_oauth_client` resource resulted in an invalid apply ([#156](https://github.com/pingidentity/terraform-provider-pingfederate/pull/156)) 
+* **Resource Link Update:** Resolved issue where updating a resourceLink type in resources resulted in an invalid apply ([#159](https://github.com/pingidentity/terraform-provider-pingfederate/pull/159)) 
 
 ### FEATURES
 * Added support for PingFederate version `11.3` and full support for all `11.2.x` versions ([#149](https://github.com/pingidentity/terraform-provider-pingfederate/pull/149))
@@ -10,6 +11,7 @@
 * **New Resource:** `pingfederate_authentication_api_application` ([#156](https://github.com/pingidentity/terraform-provider-pingfederate/pull/156))
 * **New Resource:** `pingfederate_authentication_policies_settings` ([#150](https://github.com/pingidentity/terraform-provider-pingfederate/pull/150))
 * **New Resource:** `pingfederate_kerberos_realm` ([#158](https://github.com/pingidentity/terraform-provider-pingfederate/pull/158))
+* **New Resource:** `pingfederate_oauth_ciba_server_policy_settings` ([#159](https://github.com/pingidentity/terraform-provider-pingfederate/pull/159))
 
 #### Data Sources
 * **New Data Source:** `pingfederate_authentication_api_application` ([#156](https://github.com/pingidentity/terraform-provider-pingfederate/pull/156))
