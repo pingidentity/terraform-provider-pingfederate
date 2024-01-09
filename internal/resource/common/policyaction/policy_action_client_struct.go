@@ -90,5 +90,5 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 		return &result, nil
 	}
 
-	return nil, errors.New("no valid policy action type found when building client struct. Ensure you have specified a policy_action value in your policy tree node")
+	return nil, errors.New("no valid policy action type found when building client struct. Ensure you have specified an action value in your policy tree node")
 }

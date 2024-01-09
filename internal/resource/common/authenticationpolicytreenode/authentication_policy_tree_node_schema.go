@@ -13,7 +13,7 @@ var childrenDescription = "The nodes inside the authentication policy tree node 
 func Schema() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Attributes: map[string]schema.Attribute{
-			"policy_action": policyaction.Schema(),
+			"action": policyaction.Schema(),
 			"children": schema.ListNestedAttribute{
 				Optional:     true,
 				Description:  childrenDescription,
@@ -27,7 +27,7 @@ func Schema() schema.SingleNestedAttribute {
 
 func buildSchema(depth int) schema.NestedAttributeObject {
 	attrs := map[string]schema.Attribute{
-		"policy_action": policyaction.Schema(),
+		"action": policyaction.Schema(),
 	}
 	if depth < maxRecursiveDepth {
 		attrs["children"] = schema.ListNestedAttribute{

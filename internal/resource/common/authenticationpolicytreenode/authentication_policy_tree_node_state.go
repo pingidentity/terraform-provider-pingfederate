@@ -18,8 +18,8 @@ func getRootNodeAttrTypes() map[string]attr.Type {
 		return rootNodeAttrTypes
 	}
 	rootNodeAttrTypes = map[string]attr.Type{
-		"policy_action": types.ObjectType{AttrTypes: policyaction.AttrTypes()},
-		"children":      buildRootNodeAttrTypesChildren(1),
+		"action":   types.ObjectType{AttrTypes: policyaction.AttrTypes()},
+		"children": buildRootNodeAttrTypesChildren(1),
 	}
 	rootNodeAttrTypesBuilt = true
 	return rootNodeAttrTypes
@@ -27,7 +27,7 @@ func getRootNodeAttrTypes() map[string]attr.Type {
 
 func buildRootNodeAttrTypesChildren(depth int) types.ListType {
 	attrs := map[string]attr.Type{
-		"policy_action": types.ObjectType{AttrTypes: policyaction.AttrTypes()},
+		"action": types.ObjectType{AttrTypes: policyaction.AttrTypes()},
 	}
 	if depth < maxRecursiveDepth {
 		attrs["children"] = buildRootNodeAttrTypesChildren(depth + 1)
@@ -49,7 +49,7 @@ func recursiveState(ctx context.Context, node *client.AuthenticationPolicyTreeNo
 	}
 	var attrValues = map[string]attr.Value{}
 
-	attrValues["policy_action"], diags = policyaction.State(ctx, &node.Action)
+	attrValues["action"], diags = policyaction.State(ctx, &node.Action)
 	if diags.HasError() {
 		return types.ObjectNull(attrTypes), diags
 	}

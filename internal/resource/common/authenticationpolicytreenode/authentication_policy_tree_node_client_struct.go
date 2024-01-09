@@ -16,9 +16,9 @@ func ClientStruct(planNode types.Object) (*client.AuthenticationPolicyTreeNode, 
 
 	rootNode := client.AuthenticationPolicyTreeNode{}
 	rootNodeAttrs := planNode.Attributes()
-	policyAction, ok := rootNodeAttrs["policy_action"]
+	policyAction, ok := rootNodeAttrs["action"]
 	if !ok {
-		return nil, errors.New("policy_action attribute not defined in plan authentication policy tree node")
+		return nil, errors.New("action attribute not defined in plan authentication policy tree node")
 	}
 	action, err := policyaction.ClientStruct(policyAction.(types.Object))
 	if err != nil {
