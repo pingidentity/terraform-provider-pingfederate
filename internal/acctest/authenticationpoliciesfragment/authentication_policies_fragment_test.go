@@ -80,6 +80,10 @@ resource "pingfederate_authentication_policies_fragment" "%[1]s" {
 			  }
 			]
 		  }
+}
+
+data "pingfederate_authentication_policies_fragment" "%[1]s" {
+	fragment_id = pingfederate_authentication_policies_fragment.%[1]s.fragment_id
 }`, resourceName,
 	)
 }
@@ -118,6 +122,10 @@ resource "pingfederate_authentication_policies_fragment" "%[1]s" {
 			  }
 			]
 		  }
+}
+
+data "pingfederate_authentication_policies_fragment" "%[1]s" {
+	fragment_id = pingfederate_authentication_policies_fragment.%[1]s.fragment_id
 }`, resourceName,
 	)
 }
@@ -140,6 +148,8 @@ func testAccCheckExpectedAuthenticationPoliciesFragmentAttributes(id string, isC
 		if err != nil {
 			return err
 		}
+
+		//TODO
 
 		return nil
 	}

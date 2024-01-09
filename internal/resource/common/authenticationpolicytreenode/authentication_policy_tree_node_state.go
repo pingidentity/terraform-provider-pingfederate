@@ -12,6 +12,7 @@ import (
 
 var rootNodeAttrTypes map[string]attr.Type
 var rootNodeAttrTypesBuilt = false
+var childrenAttrTypesByDepth = map[int]types.ListType{}
 
 func getRootNodeAttrTypes() map[string]attr.Type {
 	if rootNodeAttrTypesBuilt {
@@ -19,22 +20,28 @@ func getRootNodeAttrTypes() map[string]attr.Type {
 	}
 	rootNodeAttrTypes = map[string]attr.Type{
 		"action":   types.ObjectType{AttrTypes: policyaction.AttrTypes()},
-		"children": buildRootNodeAttrTypesChildren(1),
+		"children": childrenAttrTypes(1),
 	}
 	rootNodeAttrTypesBuilt = true
 	return rootNodeAttrTypes
 }
 
-func buildRootNodeAttrTypesChildren(depth int) types.ListType {
+func childrenAttrTypes(depth int) types.ListType {
+	childrenTypes, ok := childrenAttrTypesByDepth[depth]
+	if ok {
+		return childrenTypes
+	}
+
 	attrs := map[string]attr.Type{
 		"action": types.ObjectType{AttrTypes: policyaction.AttrTypes()},
 	}
-	if depth < maxRecursiveDepth {
-		attrs["children"] = buildRootNodeAttrTypesChildren(depth + 1)
+	if depth < MaxPolicyNodeRecursiveDepth {
+		attrs["children"] = childrenAttrTypes(depth + 1)
 	}
-	return types.ListType{
+	childrenAttrTypesByDepth[depth] = types.ListType{
 		ElemType: types.ObjectType{AttrTypes: attrs},
 	}
+	return childrenAttrTypesByDepth[depth]
 }
 
 func State(ctx context.Context, node *client.AuthenticationPolicyTreeNode) (types.Object, diag.Diagnostics) {
@@ -54,7 +61,7 @@ func recursiveState(ctx context.Context, node *client.AuthenticationPolicyTreeNo
 		return types.ObjectNull(attrTypes), diags
 	}
 
-	if depth <= maxRecursiveDepth {
+	if depth <= MaxPolicyNodeRecursiveDepth {
 		childrenType := attrTypes["children"].(types.ListType).ElemType.(types.ObjectType)
 		children := []attr.Value{}
 		for _, child := range node.Children {

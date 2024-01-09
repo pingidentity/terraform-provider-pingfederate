@@ -47,6 +47,7 @@ type authenticationPoliciesFragmentModel struct {
 
 func (r *authenticationPoliciesFragmentResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
+		Description: "Manages an Authentication Policy Fragment",
 		Attributes: map[string]schema.Attribute{
 			"description": schema.StringAttribute{
 				Optional:    true,

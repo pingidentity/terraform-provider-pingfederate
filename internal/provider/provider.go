@@ -333,6 +333,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 	return []func() datasource.DataSource{
 		administrativeaccount.AdministrativeAccountDataSource,
 		authenticationapisettings.AuthenticationApiSettingsDataSource,
+		authenticationpoliciesfragments.AuthenticationPoliciesFragmentDataSource,
 		authenticationpoliciessettings.AuthenticationPoliciesSettingsDataSource,
 		authenticationpolicycontract.AuthenticationPolicyContractDataSource,
 		certificate.CertificateDataSource,
