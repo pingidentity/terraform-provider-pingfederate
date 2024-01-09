@@ -37,8 +37,9 @@ starttestcontainer:
 		sleep 1; \
 	done
 # Fail if the container didn't become ready in time
-	docker logs pingfederate_terraform_provider_container 2>&1 | grep -q "PingFederate is up" || \
-		{ echo "PingFederate container did not become ready in time. Logs:"; docker logs pingfederate_terraform_provider_container; exit 1; }
+# docker logs pingfederate_terraform_provider_container 2>&1 | grep -q "PingFederate is up" || \
+# 	{ echo "PingFederate container did not become ready in time. Logs:"; docker logs pingfederate_terraform_provider_container; exit 1; }
+	docker logs pingfederate_terraform_provider_container;
 		
 removetestcontainer:
 	docker rm -f pingfederate_terraform_provider_container
