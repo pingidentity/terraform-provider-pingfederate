@@ -31,15 +31,14 @@ starttestcontainer:
 # Wait for the instance to become ready
 	sleep 1
 	duration=0
-	while (( duration < 240 )) && ! docker logs pingfederate_terraform_provider_container 2>&1 | grep -q "PingFederate is up"; \
+	while (( duration < 240 )) && ! docker logs pingfederate_terraform_provider_container 2>&1 | grep -q "Removing Imported Bulk File\|CONTAINER FAILURE"; \
 	do \
 	    duration=$$((duration+1)); \
 		sleep 1; \
 	done
 # Fail if the container didn't become ready in time
-# docker logs pingfederate_terraform_provider_container 2>&1 | grep -q "PingFederate is up" || \
-# 	{ echo "PingFederate container did not become ready in time. Logs:"; docker logs pingfederate_terraform_provider_container; exit 1; }
-	docker logs pingfederate_terraform_provider_container -f
+	docker logs pingfederate_terraform_provider_container 2>&1 | grep -q "Removing Imported Bulk File" || \
+		{ echo "PingFederate container did not become ready in time or contains errors. Logs:"; docker logs pingfederate_terraform_provider_container -f && exit 1; }
 		
 removetestcontainer:
 	docker rm -f pingfederate_terraform_provider_container
