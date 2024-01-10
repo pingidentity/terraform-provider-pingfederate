@@ -64,8 +64,8 @@ func recursiveState(ctx context.Context, node *client.AuthenticationPolicyTreeNo
 	if depth <= MaxPolicyNodeRecursiveDepth {
 		childrenType := attrTypes["children"].(types.ListType).ElemType.(types.ObjectType)
 		children := []attr.Value{}
-		for _, child := range node.Children {
-			childObj, diags := recursiveState(ctx, &child, depth+1, childrenType.AttrTypes)
+		for i := range node.Children {
+			childObj, diags := recursiveState(ctx, &node.Children[i], depth+1, childrenType.AttrTypes)
 			if diags.HasError() {
 				return types.ObjectNull(attrTypes), diags
 			}
