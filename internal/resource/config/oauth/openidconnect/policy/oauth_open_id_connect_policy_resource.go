@@ -19,6 +19,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributemapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
@@ -154,15 +155,7 @@ func (r *oauthOpenIdConnectPolicyResource) Schema(ctx context.Context, req resou
 					},
 				},
 			},
-			"attribute_mapping": schema.SingleNestedAttribute{
-				Description: "The attributes mapping from attribute sources to attribute targets.",
-				Required:    true,
-				Attributes: map[string]schema.Attribute{
-					"attribute_sources":              attributesources.ToSchema(0),
-					"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
-					"issuance_criteria":              issuancecriteria.ToSchema(),
-				},
-			},
+			"attribute_mapping": attributemapping.Schema(),
 			"scope_attribute_mappings": schema.MapNestedAttribute{
 				Description: "The attribute scope mappings from scopes to attribute names.",
 				Optional:    true,

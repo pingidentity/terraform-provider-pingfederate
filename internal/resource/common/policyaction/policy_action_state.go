@@ -7,9 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributemapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 )
@@ -17,15 +15,6 @@ import (
 var (
 	simplePolicyActionAttrTypes = map[string]attr.Type{
 		"context": types.StringType,
-	}
-	attributeMappingAttrTypes = map[string]attr.Type{
-		"attribute_contract_fulfillment": types.MapType{ElemType: types.ObjectType{AttrTypes: attributecontractfulfillment.AttrType()}},
-		"attribute_sources": types.ListType{
-			ElemType: types.ObjectType{
-				AttrTypes: attributesources.ElemAttrType(),
-			},
-		},
-		"issuance_criteria": types.ObjectType{AttrTypes: issuancecriteria.AttrType()},
 	}
 	attributeRulesAttrTypes = map[string]attr.Type{
 		"fallback_to_success": types.BoolType,
@@ -41,7 +30,7 @@ var (
 
 	apcMappingPolicyActionAttrTypes = map[string]attr.Type{
 		"context":                            types.StringType,
-		"attribute_mapping":                  types.ObjectType{AttrTypes: attributeMappingAttrTypes},
+		"attribute_mapping":                  types.ObjectType{AttrTypes: attributemapping.AttrTypes()},
 		"authentication_policy_contract_ref": types.ObjectType{AttrTypes: resourcelink.AttrType()},
 	}
 	authnSelectorPolicyActionAttrTypes = map[string]attr.Type{
@@ -67,13 +56,13 @@ var (
 		"context":          types.StringType,
 		"attribute_rules":  types.ObjectType{AttrTypes: attributeRulesAttrTypes},
 		"fragment":         types.ObjectType{AttrTypes: resourcelink.AttrType()},
-		"fragment_mapping": types.ObjectType{AttrTypes: attributeMappingAttrTypes},
+		"fragment_mapping": types.ObjectType{AttrTypes: attributemapping.AttrTypes()},
 	}
 	localIdentityMappingPolicyActionAttrTypes = map[string]attr.Type{
 		"context":                    types.StringType,
-		"inbound_mapping":            types.ObjectType{AttrTypes: attributeMappingAttrTypes},
+		"inbound_mapping":            types.ObjectType{AttrTypes: attributemapping.AttrTypes()},
 		"local_identity_ref":         types.ObjectType{AttrTypes: resourcelink.AttrType()},
-		"outbound_attribute_mapping": types.ObjectType{AttrTypes: attributeMappingAttrTypes},
+		"outbound_attribute_mapping": types.ObjectType{AttrTypes: attributemapping.AttrTypes()},
 	}
 
 	policyActionAttrTypes = map[string]attr.Type{
@@ -117,7 +106,7 @@ func State(ctx context.Context, response *client.PolicyActionAggregation) (types
 		}
 		actionAttrs["authentication_policy_contract_ref"], respDiags = resourcelink.ToState(ctx, &response.ApcMappingPolicyAction.AuthenticationPolicyContractRef)
 		diags.Append(respDiags...)
-		actionAttrs["attribute_mapping"], respDiags = types.ObjectValueFrom(ctx, attributeMappingAttrTypes, response.ApcMappingPolicyAction.AttributeMapping)
+		actionAttrs["attribute_mapping"], respDiags = types.ObjectValueFrom(ctx, attributemapping.AttrTypes(), response.ApcMappingPolicyAction.AttributeMapping)
 		diags.Append(respDiags...)
 		attrs["apc_mapping_policy_action"], respDiags = types.ObjectValue(apcMappingPolicyActionAttrTypes, actionAttrs)
 		diags.Append(respDiags...)
@@ -167,7 +156,7 @@ func State(ctx context.Context, response *client.PolicyActionAggregation) (types
 		diags.Append(respDiags...)
 		actionAttrs["fragment"], respDiags = resourcelink.ToState(ctx, &response.FragmentPolicyAction.Fragment)
 		diags.Append(respDiags...)
-		actionAttrs["fragment_mapping"], respDiags = types.ObjectValueFrom(ctx, attributeMappingAttrTypes, response.FragmentPolicyAction.FragmentMapping)
+		actionAttrs["fragment_mapping"], respDiags = types.ObjectValueFrom(ctx, attributemapping.AttrTypes(), response.FragmentPolicyAction.FragmentMapping)
 		diags.Append(respDiags...)
 		attrs["fragment_policy_action"], respDiags = types.ObjectValue(fragmentPolicyActionAttrTypes, actionAttrs)
 		diags.Append(respDiags...)
@@ -178,9 +167,9 @@ func State(ctx context.Context, response *client.PolicyActionAggregation) (types
 		}
 		actionAttrs["local_identity_ref"], respDiags = resourcelink.ToState(ctx, &response.LocalIdentityMappingPolicyAction.LocalIdentityRef)
 		diags.Append(respDiags...)
-		actionAttrs["inbound_mapping"], respDiags = types.ObjectValueFrom(ctx, attributeMappingAttrTypes, response.LocalIdentityMappingPolicyAction.InboundMapping)
+		actionAttrs["inbound_mapping"], respDiags = types.ObjectValueFrom(ctx, attributemapping.AttrTypes(), response.LocalIdentityMappingPolicyAction.InboundMapping)
 		diags.Append(respDiags...)
-		actionAttrs["outbound_attribute_mapping"], respDiags = types.ObjectValueFrom(ctx, attributeMappingAttrTypes, response.LocalIdentityMappingPolicyAction.OutboundAttributeMapping)
+		actionAttrs["outbound_attribute_mapping"], respDiags = types.ObjectValueFrom(ctx, attributemapping.AttrTypes(), response.LocalIdentityMappingPolicyAction.OutboundAttributeMapping)
 		diags.Append(respDiags...)
 		attrs["local_identity_mapping_policy_action"], respDiags = types.ObjectValue(localIdentityMappingPolicyActionAttrTypes, actionAttrs)
 		diags.Append(respDiags...)

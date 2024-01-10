@@ -7,10 +7,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributecontractfulfillment"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributesources"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributemapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -143,16 +141,7 @@ func (r *oauthOpenIdConnectPolicyDataSource) Schema(ctx context.Context, req dat
 					},
 				},
 			},
-			"attribute_mapping": schema.SingleNestedAttribute{
-				Description: "The attributes mapping from attribute sources to attribute targets.",
-				Computed:    true,
-				Optional:    false,
-				Attributes: map[string]schema.Attribute{
-					"attribute_sources":              attributesources.ToDataSourceSchema(),
-					"attribute_contract_fulfillment": attributecontractfulfillment.ToDataSourceSchema(),
-					"issuance_criteria":              issuancecriteria.ToDataSourceSchema(),
-				},
-			},
+			"attribute_mapping": attributemapping.DataSourceSchema(),
 			"scope_attribute_mappings": schema.MapNestedAttribute{
 				Description: "The attribute scope mappings from scopes to attribute names.",
 				Computed:    true,

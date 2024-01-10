@@ -4,9 +4,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributemapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 )
@@ -19,19 +17,6 @@ func commonPolicyActionSchema() map[string]schema.Attribute {
 		Description: "The result context.",
 	}
 	return commonPolicyActionSchema
-}
-
-// TODO probably make common across other resources
-func commonAttributeMappingAttr() schema.Attribute {
-	return schema.SingleNestedAttribute{
-		Attributes: map[string]schema.Attribute{
-			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
-			"attribute_sources":              attributesources.ToSchema(0),
-			"issuance_criteria":              issuancecriteria.ToSchema(),
-		},
-		Required:    true,
-		Description: "A list of mappings from attribute sources to attribute targets.",
-	}
 }
 
 func commonAttributeRulesAttr() schema.Attribute {
@@ -96,7 +81,7 @@ func commonAttributeRulesAttr() schema.Attribute {
 
 func apcMappingPolicyActionSchema() schema.SingleNestedAttribute {
 	attrs := commonPolicyActionSchema()
-	attrs["attribute_mapping"] = commonAttributeMappingAttr()
+	attrs["attribute_mapping"] = attributemapping.Schema()
 	attrs["authentication_policy_contract_ref"] = schema.SingleNestedAttribute{
 		Attributes:  resourcelink.ToSchema(),
 		Required:    true,
@@ -193,7 +178,7 @@ func fragmentPolicyActionSchema() schema.SingleNestedAttribute {
 		Required:    true,
 		Description: "A reference to a resource.",
 	}
-	attrs["fragment_mapping"] = commonAttributeMappingAttr()
+	attrs["fragment_mapping"] = attributemapping.Schema()
 	return schema.SingleNestedAttribute{
 		Attributes:  attrs,
 		Optional:    true,
@@ -203,13 +188,13 @@ func fragmentPolicyActionSchema() schema.SingleNestedAttribute {
 
 func localIdentityMappingPolicyActionSchema() schema.SingleNestedAttribute {
 	attrs := commonPolicyActionSchema()
-	attrs["inbound_mapping"] = commonAttributeMappingAttr()
+	attrs["inbound_mapping"] = attributemapping.Schema()
 	attrs["local_identity_ref"] = schema.SingleNestedAttribute{
 		Attributes:  resourcelink.ToSchema(),
 		Required:    true,
 		Description: "A reference to a resource.",
 	}
-	attrs["outbound_attribute_mapping"] = commonAttributeMappingAttr()
+	attrs["outbound_attribute_mapping"] = attributemapping.Schema()
 	return schema.SingleNestedAttribute{
 		Attributes:  attrs,
 		Optional:    true,
