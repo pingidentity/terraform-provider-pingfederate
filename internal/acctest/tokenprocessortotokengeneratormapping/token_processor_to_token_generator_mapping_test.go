@@ -75,6 +75,18 @@ func TestAccTokenProcessorToTokenGeneratorMapping(t *testing.T) {
 				Config: testAccTokenProcessorToTokenGeneratorMapping(resourceName, initialResourceModel),
 				Check:  testAccCheckExpectedTokenProcessorToTokenGeneratorMappingAttributes(initialResourceModel),
 			},
+			{
+				PreConfig: func() {
+					testClient := acctest.TestClient()
+					ctx := acctest.TestBasicAuthContext()
+					_, err := testClient.TokenProcessorToTokenGeneratorMappingsAPI.DeleteTokenToTokenMappingById(ctx, tokenProcessorToTokenGeneratorMappingId).Execute()
+					if err != nil {
+						t.Fatalf("Failed to delete config: %v", err)
+					}
+				},
+				RefreshState:       true,
+				ExpectNonEmptyPlan: true,
+			},
 		},
 	})
 }

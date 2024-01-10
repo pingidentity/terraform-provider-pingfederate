@@ -83,6 +83,18 @@ func TestAccOauthOpenIdConnectPolicies(t *testing.T) {
 				Config: testAccOauthOpenIdConnectPolicies(resourceName, initialResourceModel),
 				Check:  testAccCheckExpectedOauthOpenIdConnectPoliciesAttributes(initialResourceModel),
 			},
+			{
+				PreConfig: func() {
+					testClient := acctest.TestClient()
+					ctx := acctest.TestBasicAuthContext()
+					_, err := testClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(ctx, oauthOpenIdConnectPoliciesId).Execute()
+					if err != nil {
+						t.Fatalf("Failed to delete config: %v", err)
+					}
+				},
+				RefreshState:       true,
+				ExpectNonEmptyPlan: true,
+			},
 		},
 	})
 }

@@ -66,6 +66,18 @@ func TestAccCertificate(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: false,
 			},
+			{
+				PreConfig: func() {
+					testClient := acctest.TestClient()
+					ctx := acctest.TestBasicAuthContext()
+					_, err := testClient.CertificatesCaAPI.DeleteTrustedCA(ctx, updatedResourceModel.id).Execute()
+					if err != nil {
+						t.Fatalf("Failed to delete config: %v", err)
+					}
+				},
+				RefreshState:       true,
+				ExpectNonEmptyPlan: true,
+			},
 		},
 	})
 }

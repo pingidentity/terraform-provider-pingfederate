@@ -12,31 +12,31 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const stateID = "2"
+const oauthIssuerId = "2"
 
 type oauthIssuerResourceModel struct {
-	description string
-	host        string
-	name        string
-	path        string
-	stateId     string
+	description   string
+	host          string
+	name          string
+	path          string
+	oauthIssuerId string
 }
 
 func TestAccOauthIssuer(t *testing.T) {
 	resourceName := "myOauthIssuer"
 	initialResourceModel := oauthIssuerResourceModel{
-		description: "description",
-		host:        "hostname",
-		name:        "name",
-		path:        "/example",
-		stateId:     stateID,
+		description:   "description",
+		host:          "hostname",
+		name:          "name",
+		path:          "/example",
+		oauthIssuerId: oauthIssuerId,
 	}
 	updatedResourceModel := oauthIssuerResourceModel{
-		description: "updated description",
-		host:        "updatedhostname",
-		name:        "updatedname",
-		path:        "/updated",
-		stateId:     stateID,
+		description:   "updated description",
+		host:          "updatedhostname",
+		name:          "updatedname",
+		path:          "/updated",
+		oauthIssuerId: oauthIssuerId,
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -44,6 +44,7 @@ func TestAccOauthIssuer(t *testing.T) {
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
+		CheckDestroy: testAccCheckOauthIssuerDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOauthIssuer(resourceName, initialResourceModel),
@@ -58,11 +59,23 @@ func TestAccOauthIssuer(t *testing.T) {
 				// Test importing the resource
 				Config:            testAccOauthIssuer(resourceName, updatedResourceModel),
 				ResourceName:      "pingfederate_oauth_issuer." + resourceName,
-				ImportStateId:     initialResourceModel.stateId,
+				ImportStateId:     initialResourceModel.oauthIssuerId,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
 			// No need to go back to "minimal" here since everything is required on this resource
+			{
+				PreConfig: func() {
+					testClient := acctest.TestClient()
+					ctx := acctest.TestBasicAuthContext()
+					_, err := testClient.OauthIssuersAPI.DeleteOauthIssuer(ctx, oauthIssuerId).Execute()
+					if err != nil {
+						t.Fatalf("Failed to delete config: %v", err)
+					}
+				},
+				RefreshState:       true,
+				ExpectNonEmptyPlan: true,
+			},
 		},
 	})
 }
@@ -79,7 +92,7 @@ resource "pingfederate_oauth_issuer" "%[1]s" {
 data "pingfederate_oauth_issuer" "%[1]s" {
   issuer_id = pingfederate_oauth_issuer.%[1]s.id
 }`, resourceName,
-		resourceModel.stateId,
+		resourceModel.oauthIssuerId,
 		resourceModel.description,
 		resourceModel.host,
 		resourceModel.name,
@@ -93,27 +106,27 @@ func testAccCheckExpectedOauthIssuerAttributes(config oauthIssuerResourceModel) 
 		resourceType := "OauthIssuer"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.OauthIssuersAPI.GetOauthIssuerById(ctx, config.stateId).Execute()
+		response, _, err := testClient.OauthIssuersAPI.GetOauthIssuerById(ctx, config.oauthIssuerId).Execute()
 		if err != nil {
 			return err
 		}
 		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchString(resourceType, &config.stateId, "description",
+		err = acctest.TestAttributesMatchString(resourceType, &config.oauthIssuerId, "description",
 			config.description, *response.Description)
 		if err != nil {
 			return err
 		}
-		err = acctest.TestAttributesMatchString(resourceType, &config.stateId, "host",
+		err = acctest.TestAttributesMatchString(resourceType, &config.oauthIssuerId, "host",
 			config.host, response.Host)
 		if err != nil {
 			return err
 		}
-		err = acctest.TestAttributesMatchString(resourceType, &config.stateId, "name",
+		err = acctest.TestAttributesMatchString(resourceType, &config.oauthIssuerId, "name",
 			config.name, response.Name)
 		if err != nil {
 			return err
 		}
-		err = acctest.TestAttributesMatchString(resourceType, &config.stateId, "path",
+		err = acctest.TestAttributesMatchString(resourceType, &config.oauthIssuerId, "path",
 			config.path, *response.Path)
 		if err != nil {
 			return err
@@ -121,4 +134,15 @@ func testAccCheckExpectedOauthIssuerAttributes(config oauthIssuerResourceModel) 
 
 		return nil
 	}
+}
+
+// Test that any objects created by the test are destroyed
+func testAccCheckOauthIssuerDestroy(s *terraform.State) error {
+	testClient := acctest.TestClient()
+	ctx := acctest.TestBasicAuthContext()
+	_, err := testClient.OauthIssuersAPI.DeleteOauthIssuer(ctx, oauthIssuerId).Execute()
+	if err == nil {
+		return acctest.ExpectedDestroyError("OauthIssuer", oauthIssuerId)
+	}
+	return nil
 }

@@ -78,6 +78,18 @@ func TestAccAuthenticationApiApplication(t *testing.T) {
 				Config: testAccAuthenticationApiApplication(resourceName, initialResourceModel),
 				Check:  testAccCheckExpectedAuthenticationApiApplicationAttributes(initialResourceModel),
 			},
+			{
+				PreConfig: func() {
+					testClient := acctest.TestClient()
+					ctx := acctest.TestBasicAuthContext()
+					_, err := testClient.AuthenticationApiAPI.DeleteApplication(ctx, updatedResourceModel.applicationId).Execute()
+					if err != nil {
+						t.Fatalf("Failed to delete config: %v", err)
+					}
+				},
+				RefreshState:       true,
+				ExpectNonEmptyPlan: true,
+			},
 		},
 	})
 }

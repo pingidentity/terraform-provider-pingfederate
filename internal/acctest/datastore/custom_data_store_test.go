@@ -116,6 +116,18 @@ func TestAccCustomDataStore(t *testing.T) {
 				Config: testAccCustomDataStore(resourceName, initialResourceModel),
 				Check:  testAccCheckExpectedCustomDataStoreAttributes(initialResourceModel),
 			},
+			{
+				PreConfig: func() {
+					testClient := acctest.TestClient()
+					ctx := acctest.TestBasicAuthContext()
+					_, err := testClient.DataStoresAPI.DeleteDataStore(ctx, customDataStoreId).Execute()
+					if err != nil {
+						t.Fatalf("Failed to delete config: %v", err)
+					}
+				},
+				RefreshState:       true,
+				ExpectNonEmptyPlan: true,
+			},
 		},
 	})
 }

@@ -219,6 +219,18 @@ func TestAccAdministrativeAccount(t *testing.T) {
 				Config: testAccAdministrativeAccount(resourceName, initialResourceModel),
 				Check:  testAccCheckExpectedAdministrativeAccountAttributes(initialResourceModel),
 			},
+			{
+				PreConfig: func() {
+					testClient := acctest.TestClient()
+					ctx := acctest.TestBasicAuthContext()
+					_, err := testClient.AdministrativeAccountsAPI.DeleteAccount(ctx, updatedResourceModel.administrativeAccount.Username).Execute()
+					if err != nil {
+						t.Fatalf("Failed to delete config: %v", err)
+					}
+				},
+				RefreshState:       true,
+				ExpectNonEmptyPlan: true,
+			},
 		},
 	})
 }

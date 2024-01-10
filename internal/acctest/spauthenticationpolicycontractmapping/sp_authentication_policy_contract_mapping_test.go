@@ -74,6 +74,18 @@ func TestAccSpAuthenticationPolicyContractMapping(t *testing.T) {
 				Config: testAccSpAuthenticationPolicyContractMapping(resourceName, initialResourceModel),
 				Check:  testAccCheckExpectedSpAuthenticationPolicyContractMappingAttributes(initialResourceModel),
 			},
+			{
+				PreConfig: func() {
+					testClient := acctest.TestClient()
+					ctx := acctest.TestBasicAuthContext()
+					_, err := testClient.SpAuthenticationPolicyContractMappingsAPI.DeleteApcToSpAdapterMappingById(ctx, spAuthenticationPolicyContractMappingId).Execute()
+					if err != nil {
+						t.Fatalf("Failed to delete config: %v", err)
+					}
+				},
+				RefreshState:       true,
+				ExpectNonEmptyPlan: true,
+			},
 		},
 	})
 }

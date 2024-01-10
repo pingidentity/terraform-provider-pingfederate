@@ -194,6 +194,18 @@ func TestAccIdpAdapter(t *testing.T) {
 				Config: testAccIdpAdapter(resourceName, initialResourceModel),
 				Check:  testAccCheckExpectedIdpAdapterAttributes(initialResourceModel),
 			},
+			{
+				PreConfig: func() {
+					testClient := acctest.TestClient()
+					ctx := acctest.TestBasicAuthContext()
+					_, err := testClient.IdpAdaptersAPI.DeleteIdpAdapter(ctx, idpAdapterId).Execute()
+					if err != nil {
+						t.Fatalf("Failed to delete config: %v", err)
+					}
+				},
+				RefreshState:       true,
+				ExpectNonEmptyPlan: true,
+			},
 		},
 	})
 }

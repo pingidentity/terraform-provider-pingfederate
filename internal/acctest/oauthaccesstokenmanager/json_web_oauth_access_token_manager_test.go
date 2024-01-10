@@ -78,6 +78,18 @@ func TestAccJsonWebTokenOauthAccessTokenManager(t *testing.T) {
 				Config: testAccJsonWebOauthAccessTokenManagerMinimal(resourceName, initialResourceModel),
 				Check:  testAccCheckExpectedJsonWebOauthAccessTokenManagerAttributes(initialResourceModel, true),
 			},
+			{
+				PreConfig: func() {
+					testClient := acctest.TestClient()
+					ctx := acctest.TestBasicAuthContext()
+					_, err := testClient.OauthAccessTokenManagersAPI.DeleteTokenManager(ctx, updatedResourceModel.id).Execute()
+					if err != nil {
+						t.Fatalf("Failed to delete config: %v", err)
+					}
+				},
+				RefreshState:       true,
+				ExpectNonEmptyPlan: true,
+			},
 		},
 	})
 }

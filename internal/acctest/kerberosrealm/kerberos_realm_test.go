@@ -71,6 +71,22 @@ func TestAccKerberosRealms(t *testing.T) {
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"kerberos_password", "kerberos_encrypted_password"},
 			},
+			{
+				Config: testAccKerberosRealms(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedKerberosRealmsAttributes(initialResourceModel),
+			},
+			{
+				PreConfig: func() {
+					testClient := acctest.TestClient()
+					ctx := acctest.TestBasicAuthContext()
+					_, err := testClient.KerberosRealmsAPI.DeleteKerberosRealm(ctx, kerberosRealmId).Execute()
+					if err != nil {
+						t.Fatalf("Failed to delete config: %v", err)
+					}
+				},
+				RefreshState:       true,
+				ExpectNonEmptyPlan: true,
+			},
 		},
 	})
 }
