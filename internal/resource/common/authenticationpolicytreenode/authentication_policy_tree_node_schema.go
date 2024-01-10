@@ -8,8 +8,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/policyaction"
 )
 
-// TODO reset to 10, performance test some different options
-const MaxPolicyNodeRecursiveDepth = 3
+const MaxPolicyNodeRecursiveDepth = 10
 
 var (
 	childrenDescription = "The nodes inside the authentication policy tree node of type AuthenticationPolicyTreeNode."

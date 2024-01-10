@@ -1,9 +1,7 @@
 package policyaction
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
@@ -108,17 +106,6 @@ func apcMappingPolicyActionSchema() schema.SingleNestedAttribute {
 		Attributes:  attrs,
 		Optional:    true,
 		Description: "An authentication policy contract selection action.",
-		Validators: []validator.Object{
-			objectvalidator.ExactlyOneOf(
-				path.MatchRelative().AtParent().AtName("authn_selector_policy_action"),
-				path.MatchRelative().AtParent().AtName("authn_source_policy_action"),
-				path.MatchRelative().AtParent().AtName("continue_policy_action"),
-				path.MatchRelative().AtParent().AtName("done_policy_action"),
-				path.MatchRelative().AtParent().AtName("fragment_policy_action"),
-				path.MatchRelative().AtParent().AtName("local_identity_mapping_policy_action"),
-				path.MatchRelative().AtParent().AtName("restart_policy_action"),
-			),
-		},
 	}
 }
 
@@ -133,17 +120,6 @@ func authnSelectorPolicyActionSchema() schema.SingleNestedAttribute {
 		Attributes:  attrs,
 		Optional:    true,
 		Description: "An authentication selector selection action.",
-		Validators: []validator.Object{
-			objectvalidator.ExactlyOneOf(
-				path.MatchRelative().AtParent().AtName("apc_mapping_policy_action"),
-				path.MatchRelative().AtParent().AtName("authn_source_policy_action"),
-				path.MatchRelative().AtParent().AtName("continue_policy_action"),
-				path.MatchRelative().AtParent().AtName("done_policy_action"),
-				path.MatchRelative().AtParent().AtName("fragment_policy_action"),
-				path.MatchRelative().AtParent().AtName("local_identity_mapping_policy_action"),
-				path.MatchRelative().AtParent().AtName("restart_policy_action"),
-			),
-		},
 	}
 }
 
@@ -190,17 +166,6 @@ func authnSourcePolicyActionSchema() schema.SingleNestedAttribute {
 		Attributes:  attrs,
 		Optional:    true,
 		Description: "An authentication source (IdP adapter or IdP connection).",
-		Validators: []validator.Object{
-			objectvalidator.ExactlyOneOf(
-				path.MatchRelative().AtParent().AtName("authn_selector_policy_action"),
-				path.MatchRelative().AtParent().AtName("apc_mapping_policy_action"),
-				path.MatchRelative().AtParent().AtName("continue_policy_action"),
-				path.MatchRelative().AtParent().AtName("done_policy_action"),
-				path.MatchRelative().AtParent().AtName("fragment_policy_action"),
-				path.MatchRelative().AtParent().AtName("local_identity_mapping_policy_action"),
-				path.MatchRelative().AtParent().AtName("restart_policy_action"),
-			),
-		},
 	}
 }
 
@@ -209,17 +174,6 @@ func continuePolicyActionSchema() schema.SingleNestedAttribute {
 		Attributes:  commonPolicyActionSchema(),
 		Optional:    true,
 		Description: "The continue selection action.",
-		Validators: []validator.Object{
-			objectvalidator.ExactlyOneOf(
-				path.MatchRelative().AtParent().AtName("authn_selector_policy_action"),
-				path.MatchRelative().AtParent().AtName("apc_mapping_policy_action"),
-				path.MatchRelative().AtParent().AtName("authn_source_policy_action"),
-				path.MatchRelative().AtParent().AtName("done_policy_action"),
-				path.MatchRelative().AtParent().AtName("fragment_policy_action"),
-				path.MatchRelative().AtParent().AtName("local_identity_mapping_policy_action"),
-				path.MatchRelative().AtParent().AtName("restart_policy_action"),
-			),
-		},
 	}
 }
 
@@ -228,17 +182,6 @@ func donePolicyActionSchema() schema.SingleNestedAttribute {
 		Attributes:  commonPolicyActionSchema(),
 		Optional:    true,
 		Description: "The done selection action.",
-		Validators: []validator.Object{
-			objectvalidator.ExactlyOneOf(
-				path.MatchRelative().AtParent().AtName("authn_selector_policy_action"),
-				path.MatchRelative().AtParent().AtName("apc_mapping_policy_action"),
-				path.MatchRelative().AtParent().AtName("authn_source_policy_action"),
-				path.MatchRelative().AtParent().AtName("continue_policy_action"),
-				path.MatchRelative().AtParent().AtName("fragment_policy_action"),
-				path.MatchRelative().AtParent().AtName("local_identity_mapping_policy_action"),
-				path.MatchRelative().AtParent().AtName("restart_policy_action"),
-			),
-		},
 	}
 }
 
@@ -255,17 +198,6 @@ func fragmentPolicyActionSchema() schema.SingleNestedAttribute {
 		Attributes:  attrs,
 		Optional:    true,
 		Description: "A authentication policy fragment selection action.",
-		Validators: []validator.Object{
-			objectvalidator.ExactlyOneOf(
-				path.MatchRelative().AtParent().AtName("authn_selector_policy_action"),
-				path.MatchRelative().AtParent().AtName("apc_mapping_policy_action"),
-				path.MatchRelative().AtParent().AtName("authn_source_policy_action"),
-				path.MatchRelative().AtParent().AtName("continue_policy_action"),
-				path.MatchRelative().AtParent().AtName("done_policy_action"),
-				path.MatchRelative().AtParent().AtName("local_identity_mapping_policy_action"),
-				path.MatchRelative().AtParent().AtName("restart_policy_action"),
-			),
-		},
 	}
 }
 
@@ -282,17 +214,6 @@ func localIdentityMappingPolicyActionSchema() schema.SingleNestedAttribute {
 		Attributes:  attrs,
 		Optional:    true,
 		Description: "A local identity profile selection action.",
-		Validators: []validator.Object{
-			objectvalidator.ExactlyOneOf(
-				path.MatchRelative().AtParent().AtName("authn_selector_policy_action"),
-				path.MatchRelative().AtParent().AtName("apc_mapping_policy_action"),
-				path.MatchRelative().AtParent().AtName("authn_source_policy_action"),
-				path.MatchRelative().AtParent().AtName("continue_policy_action"),
-				path.MatchRelative().AtParent().AtName("done_policy_action"),
-				path.MatchRelative().AtParent().AtName("fragment_policy_action"),
-				path.MatchRelative().AtParent().AtName("restart_policy_action"),
-			),
-		},
 	}
 }
 
@@ -301,22 +222,13 @@ func restartPolicyActionSchema() schema.SingleNestedAttribute {
 		Attributes:  commonPolicyActionSchema(),
 		Optional:    true,
 		Description: "The restart selection action.",
-		Validators: []validator.Object{
-			objectvalidator.ExactlyOneOf(
-				path.MatchRelative().AtParent().AtName("authn_selector_policy_action"),
-				path.MatchRelative().AtParent().AtName("apc_mapping_policy_action"),
-				path.MatchRelative().AtParent().AtName("authn_source_policy_action"),
-				path.MatchRelative().AtParent().AtName("continue_policy_action"),
-				path.MatchRelative().AtParent().AtName("done_policy_action"),
-				path.MatchRelative().AtParent().AtName("fragment_policy_action"),
-				path.MatchRelative().AtParent().AtName("local_identity_mapping_policy_action"),
-			),
-		},
 	}
 }
 
 // Schema for the polymorphic attribute allowing you to specify a single policy action type
 func Schema() schema.SingleNestedAttribute {
+	// In the future it may be worth adding validators to ensure only one of the policy action types is set, but
+	// currently it causes a big performance hit
 	return schema.SingleNestedAttribute{
 		Description: "The result action.",
 		Optional:    true,
