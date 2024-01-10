@@ -43,21 +43,12 @@ func (r *oauthCibaServerPolicySettingsResource) Schema(ctx context.Context, req 
 	schema := schema.Schema{
 		Description: "Manages OAuth CIBA Server Policy Settings",
 		Attributes: map[string]schema.Attribute{
-			"default_request_policy_ref": schema.SingleNestedAttribute{
-				Description: "A reference to a resource.",
-				Required:    true,
-				Attributes: map[string]schema.Attribute{
-					"id": schema.StringAttribute{
-						Description: "The ID of the resource.",
-						Required:    true,
-					},
-					"location": schema.StringAttribute{
-						Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-						Computed:    true,
-						Optional:    false,
-					},
-				},
-			},
+			"default_request_policy_ref": resourcelink.CompleteSingleNestedAttribute(
+				false,
+				false,
+				true,
+				"Reference to the default request policy, if one is defined.",
+			),
 		},
 	}
 
