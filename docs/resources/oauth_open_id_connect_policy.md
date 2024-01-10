@@ -52,7 +52,7 @@ resource "pingfederate_oauth_open_id_connect_policy" "oauthOIDCPolicyExample" {
 
 - `access_token_manager_ref` (Attributes) The access token manager associated with this Open ID Connect policy. (see [below for nested schema](#nestedatt--access_token_manager_ref))
 - `attribute_contract` (Attributes) The list of attributes that will be returned to OAuth clients in response to requests received at the PingFederate UserInfo endpoint. (see [below for nested schema](#nestedatt--attribute_contract))
-- `attribute_mapping` (Attributes) The attributes mapping from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--attribute_mapping))
+- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--attribute_mapping))
 - `name` (String) The name used for display in UI screens.
 - `policy_id` (String) The policy ID used internally.
 
