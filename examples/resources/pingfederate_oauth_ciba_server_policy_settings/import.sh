@@ -1,2 +1,2 @@
-# "oauthCibaServerPolicySettingsId" should be "id"
+# "oauthCibaServerPolicySettingsId" should be the id desired for importing. This is due to the resource being singular.
 terraform import pingfederate_oauth_ciba_server_policy_settings.myOauthCibaServerPolicySettings oauthCibaServerPolicySettingsId

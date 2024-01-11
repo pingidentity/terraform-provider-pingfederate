@@ -1,2 +1,2 @@
-# "sessionAuthenticationSessionPoliciesGlobalId" should be "id"
+# "sessionAuthenticationSessionPoliciesGlobalId" should be the id desired for importing. This is due to the resource being singular.
 terraform import pingfederate_session_authentication_session_policies_global.mySessionAuthenticationSessionPoliciesGlobal sessionAuthenticationSessionPoliciesGlobalId

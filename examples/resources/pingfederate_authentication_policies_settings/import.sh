@@ -1,2 +1,2 @@
-# "authenticationPoliciesSettingsId" should be "id"
+# "authenticationPoliciesSettingsId" should be the id desired for importing. This is due to the resource being singular.
 terraform import pingfederate_authentication_policies_settings.myAuthenticationPoliciesSettings authenticationPoliciesSettingsId

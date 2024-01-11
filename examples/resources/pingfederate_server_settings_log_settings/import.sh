@@ -1,2 +1,2 @@
-# "serverSettingsLogSettingsId" should be "id"
+# "serverSettingsLogSettingsId" should be the id desired for importing. This is due to the resource being singular.
 terraform import pingfederate_server_settings_log_settings.myServerSettingsLogSettings serverSettingsLogSettingsId
