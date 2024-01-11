@@ -36,6 +36,6 @@ resource "pingfederate_protocol_metadata_lifetime_settings" "protocolMetadataLif
 Import is supported using the following syntax:
 
 ```shell
-# "protocolMetadataLifetimeSettingsId" should be "id"
+# This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
 terraform import pingfederate_protocol_metadata_lifetime_settings.myProtocolMetadataLifetimeSettings protocolMetadataLifetimeSettingsId
 ```

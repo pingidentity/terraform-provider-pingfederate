@@ -1,2 +1,2 @@
-# "serverSettingsGeneralSettingsId" should be "id"
+# This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
 terraform import pingfederate_server_settings_general_settings.myServerSettingsGeneralSettings serverSettingsGeneralSettingsId

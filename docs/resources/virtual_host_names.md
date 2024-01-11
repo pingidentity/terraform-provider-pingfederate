@@ -34,6 +34,6 @@ resource "pingfederate_virtual_host_names" "virtualHostNamesExample" {
 Import is supported using the following syntax:
 
 ```shell
-# "virtualHostNamesId" should be "id"
+# This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
 terraform import pingfederate_virtual_host_names.myVirtualHostNames virtualHostNamesId
 ```

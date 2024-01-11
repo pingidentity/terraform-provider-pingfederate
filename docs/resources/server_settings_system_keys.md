@@ -86,6 +86,6 @@ Read-Only:
 Import is supported using the following syntax:
 
 ```shell
-# "serverSettingsSystemKeysId" should be "id"
+# This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
 terraform import pingfederate_server_settings_system_keys.myServerSettingsSystemKeys serverSettingsSystemKeysId
 ```
