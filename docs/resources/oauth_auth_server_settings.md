@@ -237,6 +237,6 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-# "oauthAuthServerSettingsId" should be "id"
+# This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
 terraform import pingfederate_oauth_auth_server_settings.myOauthAuthServerSettings oauthAuthServerSettingsId
 ```

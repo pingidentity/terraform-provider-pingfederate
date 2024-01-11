@@ -1,2 +1,2 @@
-# "idpDefaultUrlId" should be the id desired for importing. This is due to the resource being singular.
+# This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
 terraform import pingfederate_idp_default_urls.myIdpDefaultUrl idpDefaultUrlId
