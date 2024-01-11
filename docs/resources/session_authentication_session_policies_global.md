@@ -49,6 +49,6 @@ resource "pingfederate_session_authentication_session_policies_global" "sessionA
 Import is supported using the following syntax:
 
 ```shell
-# "sessionAuthenticationSessionPoliciesGlobalId" should be "id"
+# This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
 terraform import pingfederate_session_authentication_session_policies_global.mySessionAuthenticationSessionPoliciesGlobal sessionAuthenticationSessionPoliciesGlobalId
 ```

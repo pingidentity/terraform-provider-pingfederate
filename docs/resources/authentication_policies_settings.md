@@ -36,6 +36,6 @@ resource "pingfederate_authentication_policies_settings" "authenticationPolicies
 Import is supported using the following syntax:
 
 ```shell
-# "authenticationPoliciesSettingsId" should be "id"
+# This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
 terraform import pingfederate_authentication_policies_settings.myAuthenticationPoliciesSettings authenticationPoliciesSettingsId
 ```

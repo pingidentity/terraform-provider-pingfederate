@@ -36,6 +36,6 @@ resource "pingfederate_license_agreement" "myLicenseAgreement" {
 Import is supported using the following syntax:
 
 ```shell
-# "licenseAgreementId" should be "id"
+# This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
 terraform import pingfederate_license_agreement.myLicenseAgreement licenseAgreementId
 ```
