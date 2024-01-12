@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -64,6 +65,12 @@ type serverSettingsLogSettingsResource struct {
 	apiClient      *client.APIClient
 }
 
+type serverSettingsLogSettingsResourceModel struct {
+	Id               types.String `tfsdk:"id"`
+	LogCategories    types.Set    `tfsdk:"log_categories"`
+	LogCategoriesAll types.Set    `tfsdk:"log_categories_all"`
+}
+
 // GetSchema defines the schema for the resource.
 func (r *serverSettingsLogSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
@@ -111,6 +118,35 @@ func (r *serverSettingsLogSettingsResource) Schema(ctx context.Context, req reso
 					},
 				},
 			},
+			"log_categories_all": schema.SetNestedAttribute{
+				Description: "The log categories defined for the system and whether they are enabled. On a PUT request, if a category is not included in the list, it will be disabled. This attribute will include any categories not specified in the normal log_categories attribute.",
+				Optional:    false,
+				Computed:    true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							Description: "The ID of the log category. This field must match one of the category IDs defined in log4j-categories.xml.",
+							Optional:    false,
+							Computed:    true,
+						},
+						"name": schema.StringAttribute{
+							Description: "The description of the log category. This field is read-only and is ignored for PUT requests.",
+							Optional:    false,
+							Computed:    true,
+						},
+						"description": schema.StringAttribute{
+							Description: "The description of the log category. This field is read-only and is ignored for PUT requests.",
+							Optional:    false,
+							Computed:    true,
+						},
+						"enabled": schema.BoolAttribute{
+							Description: "Determines whether or not the log category is enabled. The default is false.",
+							Optional:    false,
+							Computed:    true,
+						},
+					},
+				},
+			},
 		},
 	}
 
@@ -118,7 +154,7 @@ func (r *serverSettingsLogSettingsResource) Schema(ctx context.Context, req reso
 	resp.Schema = schema
 }
 
-func addOptionalServerSettingsLogSettingsFields(ctx context.Context, addRequest *client.LogSettings, plan serverSettingsLogSettingsModel) error {
+func addOptionalServerSettingsLogSettingsFields(ctx context.Context, addRequest *client.LogSettings, plan serverSettingsLogSettingsResourceModel) error {
 	if internaltypes.IsDefined(plan.LogCategories) {
 		addRequest.LogCategories = []client.LogCategorySettings{}
 		for _, logCategoriesSetting := range plan.LogCategories.Elements() {
@@ -150,8 +186,47 @@ func (r *serverSettingsLogSettingsResource) Configure(_ context.Context, req res
 
 }
 
+func readServerSettingsLogSettingsResourceResponse(ctx context.Context, r *client.LogSettings, plan *serverSettingsLogSettingsResourceModel, state *serverSettingsLogSettingsResourceModel, existingId *string) diag.Diagnostics {
+	var diags, respDiags diag.Diagnostics
+	if existingId != nil {
+		state.Id = types.StringValue(*existingId)
+	} else {
+		state.Id = id.GenerateUUIDToState(existingId)
+	}
+
+	// Build a list of log categories specified in the plan
+	plannedIds := map[string]bool{}
+	if plan != nil {
+		for _, plannedCategory := range plan.LogCategories.Elements() {
+			plannedCategoryId := plannedCategory.(types.Object).Attributes()["id"]
+			if internaltypes.IsDefined(plannedCategoryId) {
+				plannedIds[plannedCategoryId.(types.String).ValueString()] = true
+			}
+		}
+	}
+
+	// Build list of planned and unplanned log categories
+	plannedCategories := []client.LogCategorySettings{}
+	unplannedCategories := []client.LogCategorySettings{}
+	for _, resultCategory := range r.LogCategories {
+		_, isInPlan := plannedIds[resultCategory.Id]
+		if isInPlan {
+			plannedCategories = append(plannedCategories, resultCategory)
+		} else {
+			unplannedCategories = append(unplannedCategories, resultCategory)
+		}
+	}
+
+	// Build results
+	state.LogCategories, respDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: logCategoriesAttrTypes}, plannedCategories)
+	diags.Append(respDiags...)
+	state.LogCategoriesAll, respDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: logCategoriesAttrTypes}, unplannedCategories)
+	diags.Append(respDiags...)
+	return diags
+}
+
 func (r *serverSettingsLogSettingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan serverSettingsLogSettingsModel
+	var plan serverSettingsLogSettingsResourceModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -175,15 +250,15 @@ func (r *serverSettingsLogSettingsResource) Create(ctx context.Context, req reso
 	}
 
 	// Read the response into the state
-	var state serverSettingsLogSettingsModel
-	diags = readServerSettingsLogSettingsResponse(ctx, serverSettingsLogSettingsResponse, &state, nil)
+	var state serverSettingsLogSettingsResourceModel
+	diags = readServerSettingsLogSettingsResourceResponse(ctx, serverSettingsLogSettingsResponse, &plan, &state, nil)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
 func (r *serverSettingsLogSettingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state serverSettingsLogSettingsModel
+	var state serverSettingsLogSettingsResourceModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -207,7 +282,7 @@ func (r *serverSettingsLogSettingsResource) Read(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	diags = readServerSettingsLogSettingsResponse(ctx, apiReadServerSettingsLogSettings, &state, id)
+	diags = readServerSettingsLogSettingsResourceResponse(ctx, apiReadServerSettingsLogSettings, &state, &state, id)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -218,7 +293,7 @@ func (r *serverSettingsLogSettingsResource) Read(ctx context.Context, req resour
 // Update updates the resource and sets the updated Terraform state on success.
 func (r *serverSettingsLogSettingsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// Retrieve values from plan
-	var plan serverSettingsLogSettingsModel
+	var plan serverSettingsLogSettingsResourceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -241,13 +316,13 @@ func (r *serverSettingsLogSettingsResource) Update(ctx context.Context, req reso
 	}
 
 	// Read the response
-	var state serverSettingsLogSettingsModel
+	var state serverSettingsLogSettingsResourceModel
 	id, diags := id.GetID(ctx, req.State)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	diags = readServerSettingsLogSettingsResponse(ctx, updateServerSettingsLogSettingsResponse, &state, id)
+	diags = readServerSettingsLogSettingsResourceResponse(ctx, updateServerSettingsLogSettingsResponse, &plan, &state, id)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values

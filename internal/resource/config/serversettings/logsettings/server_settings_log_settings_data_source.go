@@ -5,8 +5,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -27,6 +28,11 @@ func ServerSettingsLogSettingsDataSource() datasource.DataSource {
 type serverSettingsLogSettingsDataSource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
+}
+
+type serverSettingsLogSettingsDataSourceModel struct {
+	Id            types.String `tfsdk:"id"`
+	LogCategories types.Set    `tfsdk:"log_categories"`
 }
 
 // GetSchema defines the schema for the datasource.
@@ -86,8 +92,15 @@ func (r *serverSettingsLogSettingsDataSource) Configure(_ context.Context, req d
 
 }
 
+func readServerSettingsLogSettingsDataSourceResponse(ctx context.Context, r *client.LogSettings, state *serverSettingsLogSettingsDataSourceModel, id string) diag.Diagnostics {
+	var diags diag.Diagnostics
+	state.Id = types.StringValue(id)
+	state.LogCategories, diags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: logCategoriesAttrTypes}, r.LogCategories)
+	return diags
+}
+
 func (r *serverSettingsLogSettingsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state serverSettingsLogSettingsModel
+	var state serverSettingsLogSettingsDataSourceModel
 
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -100,7 +113,7 @@ func (r *serverSettingsLogSettingsDataSource) Read(ctx context.Context, req data
 		return
 	}
 
-	diags = readServerSettingsLogSettingsResponse(ctx, apiReadServerSettingsLogSettings, &state, pointers.String("server_settings_log_settings_id"))
+	diags = readServerSettingsLogSettingsDataSourceResponse(ctx, apiReadServerSettingsLogSettings, &state, "server_settings_log_settings_id")
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
