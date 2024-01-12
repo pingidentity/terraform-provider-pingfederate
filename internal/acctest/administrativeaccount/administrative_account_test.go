@@ -174,7 +174,7 @@ func testAccCheckExpectedAdministrativeAccountAttributes(config administrativeAc
 func testAccCheckAdministrativeAccountDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.LocalIdentityIdentityProfilesAPI.DeleteIdentityProfile(ctx, username).Execute()
+	_, err := testClient.AdministrativeAccountsAPI.DeleteAccount(ctx, username).Execute()
 	if err == nil {
 		return acctest.ExpectedDestroyError("AdministrativeAccount", username)
 	}
@@ -214,6 +214,22 @@ func TestAccAdministrativeAccount(t *testing.T) {
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"encrypted_password", "password"},
+			},
+			{
+				Config: testAccAdministrativeAccount(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedAdministrativeAccountAttributes(initialResourceModel),
+			},
+			{
+				PreConfig: func() {
+					testClient := acctest.TestClient()
+					ctx := acctest.TestBasicAuthContext()
+					_, err := testClient.AdministrativeAccountsAPI.DeleteAccount(ctx, updatedResourceModel.administrativeAccount.Username).Execute()
+					if err != nil {
+						t.Fatalf("Failed to delete config: %v", err)
+					}
+				},
+				RefreshState:       true,
+				ExpectNonEmptyPlan: true,
 			},
 			{
 				Config: testAccAdministrativeAccount(resourceName, initialResourceModel),

@@ -65,6 +65,26 @@ func TestAccKeyPairsSslServerImport(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: false,
 			},
+			{
+				Config: testAccKeyPairsSslServerImport(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedKeyPairsSslServerImportAttributes(initialResourceModel),
+			},
+			{
+				PreConfig: func() {
+					testClient := acctest.TestClient()
+					ctx := acctest.TestBasicAuthContext()
+					_, err := testClient.KeyPairsSslServerAPI.DeleteSslServerKeyPair(ctx, updatedResourceModel.id).Execute()
+					if err != nil {
+						t.Fatalf("Failed to delete config: %v", err)
+					}
+				},
+				RefreshState:       true,
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config: testAccKeyPairsSslServerImport(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedKeyPairsSslServerImportAttributes(initialResourceModel),
+			},
 		},
 	})
 }

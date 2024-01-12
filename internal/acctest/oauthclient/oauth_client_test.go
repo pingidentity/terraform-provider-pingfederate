@@ -154,6 +154,22 @@ func TestAccOauthClient(t *testing.T) {
 				Config: testAccOauthClient(resourceName, minimalResourceModel),
 				Check:  testAccCheckExpectedOauthClientAttributes(minimalResourceModel),
 			},
+			{
+				PreConfig: func() {
+					testClient := acctest.TestClient()
+					ctx := acctest.TestBasicAuthContext()
+					_, err := testClient.OauthClientsAPI.DeleteOauthClient(ctx, oauthClientId).Execute()
+					if err != nil {
+						t.Fatalf("Failed to delete config: %v", err)
+					}
+				},
+				RefreshState:       true,
+				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config: testAccOauthClient(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedOauthClientAttributes(initialResourceModel),
+			},
 		},
 	})
 }
