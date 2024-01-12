@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributemapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -27,18 +28,6 @@ var (
 	attributeContractAttrTypes = map[string]attr.Type{
 		"core_attributes":     attributesListAttrType,
 		"extended_attributes": attributesListAttrType,
-	}
-
-	attributeMappingAttrTypes = map[string]attr.Type{
-		"attribute_sources": types.ListType{
-			ElemType: types.ObjectType{
-				AttrTypes: attributesources.ElemAttrType(),
-			},
-		},
-		"attribute_contract_fulfillment": attributecontractfulfillment.MapType(),
-		"issuance_criteria": types.ObjectType{
-			AttrTypes: issuancecriteria.AttrType(),
-		},
 	}
 
 	scopeAttributeMappingsElemAttrTypes = map[string]attr.Type{
@@ -108,7 +97,7 @@ func readOauthOpenIdConnectPolicyResponse(ctx context.Context, response *client.
 	respDiags.Append(diags...)
 
 	// Build complete attribute mapping value
-	state.AttributeMapping, diags = types.ObjectValue(attributeMappingAttrTypes, attributeMappingValues)
+	state.AttributeMapping, diags = types.ObjectValue(attributemapping.AttrTypes(), attributeMappingValues)
 	respDiags.Append(diags...)
 
 	state.ScopeAttributeMappings, diags = types.MapValueFrom(ctx, types.ObjectType{AttrTypes: scopeAttributeMappingsElemAttrTypes}, response.ScopeAttributeMappings)

@@ -21,6 +21,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/administrativeaccount"
 	authenticationapiapplication "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi/application"
 	authenticationapisettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi/settings"
+	authenticationpoliciesfragments "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicies/fragments"
 	authenticationpoliciessettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicies/settings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicycontract"
 	certificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificate/ca"
@@ -336,6 +337,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		administrativeaccount.AdministrativeAccountDataSource,
 		authenticationapiapplication.AuthenticationApiApplicationDataSource,
 		authenticationapisettings.AuthenticationApiSettingsDataSource,
+		authenticationpoliciesfragments.AuthenticationPoliciesFragmentDataSource,
 		authenticationpoliciessettings.AuthenticationPoliciesSettingsDataSource,
 		authenticationpolicycontract.AuthenticationPolicyContractDataSource,
 		certificate.CertificateDataSource,
@@ -378,6 +380,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		administrativeaccount.AdministrativeAccountResource,
 		authenticationapiapplication.AuthenticationApiApplicationResource,
 		authenticationapisettings.AuthenticationApiSettingsResource,
+		authenticationpoliciesfragments.AuthenticationPoliciesFragmentResource,
 		authenticationpoliciessettings.AuthenticationPoliciesSettingsResource,
 		authenticationpolicycontract.AuthenticationPolicyContractResource,
 		certificate.CertificateCAResource,

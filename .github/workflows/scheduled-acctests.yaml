@@ -46,3 +46,4 @@ jobs:
           PINGFEDERATE_PROVIDER_PRODUCT_VERSION: ${{ matrix.pingfederate }}
           PF_TF_ACC_TEST_LICENSE_11: ${{ secrets.PF_TF_ACC_TEST_LICENSE_11 }}
           PF_TF_ACC_TEST_LICENSE_12: ${{ secrets.PF_TF_ACC_TEST_LICENSE_12 }}
+          PF_TF_P1_POPULATION_ID: ${{ secrets.PF_TF_P1_POPULATION_ID }}
