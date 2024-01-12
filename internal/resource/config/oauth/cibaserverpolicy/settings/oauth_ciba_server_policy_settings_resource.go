@@ -1,4 +1,4 @@
-package oauth
+package oauthcibaserverpolicysettings
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/defaultref"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -43,12 +44,7 @@ func (r *oauthCibaServerPolicySettingsResource) Schema(ctx context.Context, req 
 	schema := schema.Schema{
 		Description: "Manages OAuth CIBA Server Policy Settings",
 		Attributes: map[string]schema.Attribute{
-			"default_request_policy_ref": resourcelink.CompleteSingleNestedAttribute(
-				false,
-				false,
-				true,
-				"Reference to the default request policy, if one is defined.",
-			),
+			"default_request_policy_ref": defaultref.ToSchema(),
 		},
 	}
 
