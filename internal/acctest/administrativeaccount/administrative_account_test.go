@@ -174,7 +174,7 @@ func testAccCheckExpectedAdministrativeAccountAttributes(config administrativeAc
 func testAccCheckAdministrativeAccountDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.LocalIdentityIdentityProfilesAPI.DeleteIdentityProfile(ctx, username).Execute()
+	_, err := testClient.AdministrativeAccountsAPI.DeleteAccount(ctx, username).Execute()
 	if err == nil {
 		return acctest.ExpectedDestroyError("AdministrativeAccount", username)
 	}
@@ -230,6 +230,10 @@ func TestAccAdministrativeAccount(t *testing.T) {
 				},
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
+			},
+			{
+				Config: testAccAdministrativeAccount(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedAdministrativeAccountAttributes(initialResourceModel),
 			},
 		},
 	})

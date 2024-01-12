@@ -87,6 +87,10 @@ func TestAccTokenProcessorToTokenGeneratorMapping(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				Config: testAccTokenProcessorToTokenGeneratorMapping(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedTokenProcessorToTokenGeneratorMappingAttributes(initialResourceModel),
+			},
 		},
 	})
 }

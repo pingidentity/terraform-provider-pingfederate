@@ -86,6 +86,10 @@ func TestAccSpAuthenticationPolicyContractMapping(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				Config: testAccSpAuthenticationPolicyContractMapping(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedSpAuthenticationPolicyContractMappingAttributes(initialResourceModel),
+			},
 		},
 	})
 }

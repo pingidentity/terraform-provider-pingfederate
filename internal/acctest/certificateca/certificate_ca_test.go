@@ -78,6 +78,10 @@ func TestAccCertificate(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				Config: testAccCertificate(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedCertificateAttributes(initialResourceModel),
+			},
 		},
 	})
 }

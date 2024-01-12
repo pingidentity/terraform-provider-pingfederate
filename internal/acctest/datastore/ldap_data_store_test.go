@@ -126,6 +126,11 @@ func TestAccLdapDataStore(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				// Minimal model
+				Config: testAccLdapDataStore(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedLdapDataStoreAttributes(initialResourceModel),
+			},
 		},
 	})
 }

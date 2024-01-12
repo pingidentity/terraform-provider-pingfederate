@@ -90,6 +90,10 @@ func TestAccAuthenticationApiApplication(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				Config: testAccAuthenticationApiApplication(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedAuthenticationApiApplicationAttributes(initialResourceModel),
+			},
 		},
 	})
 }

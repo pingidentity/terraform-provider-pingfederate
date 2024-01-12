@@ -80,6 +80,11 @@ func TestAccAuthenticationPolicyContract(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				// Minimal model
+				Config: testAccAuthenticationPolicyContract(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedAuthenticationPolicyContractAttributes(initialResourceModel),
+			},
 		},
 	})
 }

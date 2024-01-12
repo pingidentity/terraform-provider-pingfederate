@@ -166,6 +166,10 @@ func TestAccOauthClient(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				Config: testAccOauthClient(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedOauthClientAttributes(initialResourceModel),
+			},
 		},
 	})
 }

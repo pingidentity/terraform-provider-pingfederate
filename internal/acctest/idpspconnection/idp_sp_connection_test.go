@@ -96,6 +96,11 @@ func TestAccIdpSpConnection(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				// Outbound provision connection, minimal
+				Config: testAccSpConnectionOutboundProvision(spConnectionId),
+				Check:  testAccCheckExpectedSpConnectionAttributesOutboundProvision(),
+			},
 		},
 	})
 }

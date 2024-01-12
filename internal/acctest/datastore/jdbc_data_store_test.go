@@ -148,6 +148,11 @@ func TestAccJdbcDataStore(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				// Minimal model
+				Config: testAccJdbcDataStore(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedJdbcDataStoreAttributes(initialResourceModel),
+			},
 		},
 	})
 }

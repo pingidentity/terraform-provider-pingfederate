@@ -128,6 +128,11 @@ func TestAccCustomDataStore(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				// Minimal model
+				Config: testAccCustomDataStore(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedCustomDataStoreAttributes(initialResourceModel),
+			},
 		},
 	})
 }

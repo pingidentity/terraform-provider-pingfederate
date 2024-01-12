@@ -191,6 +191,10 @@ func TestAccOauthTokenExchangeProcessorTokenGeneratorMapping(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				Config: testAccOauthTokenExchangeProcessorTokenGeneratorMapping(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedOauthTokenExchangeProcessorTokenGeneratorMappingAttributes(initialResourceModel),
+			},
 		},
 	})
 }

@@ -83,6 +83,10 @@ func TestAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(t *testing
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				Config: testAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedPingOneForEnterpriseDirectoryPasswordCredentialValidatorsAttributes(initialResourceModel),
+			},
 		},
 	})
 }

@@ -417,6 +417,10 @@ func TestAccLocalIdentityIdentityProfiles(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				Config: testAccLocalIdentityIdentityProfiles(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(initialResourceModel),
+			},
 		},
 	})
 }

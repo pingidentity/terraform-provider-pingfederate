@@ -80,6 +80,10 @@ func TestAccInternallyManagedReferenceOauthAccessTokenManager(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				Config: testAccInternallyManagedReferenceOauthAccessTokenManagerMinimal(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedInternallyManagedReferenceOauthAccessTokenManagerAttributes(initialResourceModel, true),
+			},
 		},
 	})
 }

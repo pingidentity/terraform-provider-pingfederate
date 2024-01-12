@@ -78,6 +78,10 @@ func TestAccOauthAuthServerSettingsScopesExclusiveScopes(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				Config: testAccOauthAuthServerSettingsScopesExclusiveScopes(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedOauthAuthServerSettingsScopesExclusiveScopesAttributes(initialResourceModel),
+			},
 		},
 	})
 }

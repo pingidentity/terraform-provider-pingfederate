@@ -83,6 +83,10 @@ func TestAccKeyPairsSigningImport(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				Config: testAccKeyPairsSigningImport(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedKeyPairsSigningImportAttributes(initialResourceModel),
+			},
 		},
 	})
 }

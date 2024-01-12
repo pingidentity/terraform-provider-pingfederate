@@ -81,6 +81,10 @@ func TestAccKeyPairsSslServerImport(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				Config: testAccKeyPairsSslServerImport(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedKeyPairsSslServerImportAttributes(initialResourceModel),
+			},
 		},
 	})
 }

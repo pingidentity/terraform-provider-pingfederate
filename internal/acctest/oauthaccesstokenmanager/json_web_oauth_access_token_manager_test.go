@@ -90,6 +90,10 @@ func TestAccJsonWebTokenOauthAccessTokenManager(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				Config: testAccJsonWebOauthAccessTokenManagerMinimal(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedJsonWebOauthAccessTokenManagerAttributes(initialResourceModel, true),
+			},
 		},
 	})
 }

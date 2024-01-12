@@ -89,6 +89,10 @@ func TestAccRadiusPasswordCredentialValidators(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				Config: testAccRadiusPasswordCredentialValidators(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedRadiusPasswordCredentialValidatorsAttributes(initialResourceModel),
+			},
 		},
 	})
 }

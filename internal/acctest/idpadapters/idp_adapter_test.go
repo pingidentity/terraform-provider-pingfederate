@@ -206,6 +206,11 @@ func TestAccIdpAdapter(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				// Minimal model
+				Config: testAccIdpAdapter(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedIdpAdapterAttributes(initialResourceModel),
+			},
 		},
 	})
 }

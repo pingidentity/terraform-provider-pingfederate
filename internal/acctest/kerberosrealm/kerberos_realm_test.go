@@ -87,6 +87,10 @@ func TestAccKerberosRealms(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				Config: testAccKerberosRealms(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedKerberosRealmsAttributes(initialResourceModel),
+			},
 		},
 	})
 }

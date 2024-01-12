@@ -82,6 +82,10 @@ func TestAccSimpleUsernamePasswordCredentialValidators(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				Config: testAccPasswordCredentialValidators(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedPasswordCredentialValidatorsAttributes(initialResourceModel),
+			},
 		},
 	})
 }

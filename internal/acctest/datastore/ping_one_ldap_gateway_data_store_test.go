@@ -122,6 +122,11 @@ func TestAccPingOneLdapGatewayDataStore(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				// Minimal model
+				Config: testAccPingOneLdapGatewayDataStore(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedPingOneLdapGatewayDataStoreAttributes(initialResourceModel),
+			},
 		},
 	})
 }

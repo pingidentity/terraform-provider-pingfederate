@@ -95,6 +95,10 @@ func TestAccOauthOpenIdConnectPolicies(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				Config: testAccOauthOpenIdConnectPolicies(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedOauthOpenIdConnectPoliciesAttributes(initialResourceModel),
+			},
 		},
 	})
 }

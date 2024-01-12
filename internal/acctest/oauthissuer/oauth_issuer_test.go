@@ -76,6 +76,10 @@ func TestAccOauthIssuer(t *testing.T) {
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
 			},
+			{
+				Config: testAccOauthIssuer(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedOauthIssuerAttributes(initialResourceModel),
+			},
 		},
 	})
 }
