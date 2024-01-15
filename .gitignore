@@ -37,3 +37,7 @@ terraform
 scripts/*
 scratch/*
 *__debug_bin*
+
+# Ignore for local development
+vendor
+terraform-provider-pingfederate
