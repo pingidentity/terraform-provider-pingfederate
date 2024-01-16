@@ -651,8 +651,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 	outboundProvisionTargetSettingsNestedObject := schema.NestedAttributeObject{
 		Attributes: map[string]schema.Attribute{
 			"inherited": schema.BoolAttribute{
-				Optional:    true,
-				Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
+				DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
+				Optional:           true,
+				Description:        "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
 			},
 			"name": schema.StringAttribute{
 				Required:    true,
@@ -1248,8 +1249,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													Description:  "A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them.",
 												},
 												"inherited": schema.BoolAttribute{
-													Optional:    true,
-													Description: "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
+													DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
+													Optional:           true,
+													Description:        "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
 												},
 												"mask_ognl_values": schema.BoolAttribute{
 													Optional:    true,
@@ -1268,8 +1270,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 												"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
 												"attribute_sources":              attributesources.ToSchema(0),
 												"inherited": schema.BoolAttribute{
-													Optional:    true,
-													Description: "Whether this attribute mapping is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
+													DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
+													Optional:           true,
+													Description:        "Whether this attribute mapping is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
 												},
 												"issuance_criteria": issuancecriteria.ToSchema(),
 											},
