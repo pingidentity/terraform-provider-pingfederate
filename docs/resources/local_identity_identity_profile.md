@@ -13,9 +13,9 @@ Manages a configured local identity profile
 ## Example Usage
 
 ```terraform
-resource "pingfederate_local_identity_identity_profile" "myLocalIdentityIdentityProfile" {
-  name       = "yourIdentityProfileName"
-  profile_id = "yourid"
+resource "pingfederate_local_identity_identity_profile" "localIdentityIdentityProfile" {
+  name       = "identityProfileName"
+  profile_id = "profileId"
   apc_id = {
     id = "apcid"
   }
@@ -369,5 +369,5 @@ Import is supported using the following syntax:
 
 ```shell
 # "localIdentityIdentityProfileId" should be the id of the Local Identity Identity Profile to be imported
-terraform import pingfederate_local_identity_identity_profile.myLocalIdentityIdentityProfile localIdentityIdentityProfileId
+terraform import pingfederate_local_identity_identity_profile.localIdentityIdentityProfile localIdentityIdentityProfileId
 ```

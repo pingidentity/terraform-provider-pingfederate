@@ -14,7 +14,7 @@ Manages an authentication policy contract.
 
 ```terraform
 resource "pingfederate_authentication_policy_contract" "authenticationPolicyContractExample" {
-  contract_id         = "MyAuthenticationPolicyContract"
+  contract_id         = "authenticationPolicyContract"
   core_attributes     = [{ name = "subject" }]
   extended_attributes = [{ name = "extended_attribute" }, { name = "extended_attribute2" }]
   name                = "example"
@@ -59,5 +59,5 @@ Import is supported using the following syntax:
 
 ```shell
 # "authenticationPolicyContractId" should be the id of the Authentication Policy Contract to be imported
-terraform import pingfederate_authentication_policy_contract.myAuthenticationPolicyContract authenticationPolicyContractId
+terraform import pingfederate_authentication_policy_contract.authenticationPolicyContract authenticationPolicyContractId
 ```

@@ -3,10 +3,10 @@
 # https://developer.hashicorp.com/terraform/plugin/best-practices/sensitive-state #
 
 # x_bypass_external_validation_header may be used in the provider block to bypass the connection test.
-resource "pingfederate_data_store" "myCustomDataStore" {
-  data_store_id = "myCustomDataStore"
+resource "pingfederate_data_store" "customDataStore" {
+  data_store_id = "customDataStore"
   custom_data_store = {
-    name = "myCustomDataStore"
+    name = "customDataStore"
     plugin_descriptor_ref = {
       id = "com.pingidentity.pf.datastore.other.RestDataSourceDriver"
     }
@@ -149,11 +149,11 @@ resource "pingfederate_data_store" "myCustomDataStore" {
   }
 }
 
-resource "pingfederate_data_store" "myJdbcDataStore" {
-  data_store_id         = "myJdbcDataStore"
+resource "pingfederate_data_store" "jdbcDataStore" {
+  data_store_id         = "jdbcDataStore"
   mask_attribute_values = false
   jdbc_data_store = {
-    name                         = "myJdbcDataStore"
+    name                         = "jdbcDataStore"
     connection_url               = "jdbc:hsqldb:$${pf.server.data.dir}$${/}hypersonic$${/}ProvisionerDefaultDB;hsqldb.lock_file=false"
     driver_class                 = "org.hsqldb.jdbcDriver"
     user_name                    = "sa"
@@ -172,8 +172,8 @@ resource "pingfederate_data_store" "myJdbcDataStore" {
   }
 }
 
-resource "pingfederate_data_store" "myPingDirectoryLdapDataStore" {
-  data_store_id = "myPingDirectoryLdapDataStore"
+resource "pingfederate_data_store" "pingDirectoryLdapDataStore" {
+  data_store_id = "pingDirectoryLdapDataStore"
   ldap_data_store = {
     ldap_type          = "PING_DIRECTORY"
     bind_anonymously   = false
@@ -181,7 +181,7 @@ resource "pingfederate_data_store" "myPingDirectoryLdapDataStore" {
     password           = "2FederateM0re"
     use_ssl            = false
     use_dns_srv_record = false
-    name               = "myPingDirectoryLdapDataStore"
+    name               = "pingDirectoryLdapDataStore"
     hostnames = [
       "pingdirectory:1389"
     ]
@@ -207,10 +207,10 @@ resource "pingfederate_data_store" "myPingDirectoryLdapDataStore" {
   }
 }
 
-resource "pingfederate_data_store" "myPingOneDataStore" {
-  data_store_id = "myPingOneDataStore"
+resource "pingfederate_data_store" "pingOneDataStore" {
+  data_store_id = "pingOneDataStore"
   custom_data_store = {
-    name = "myPingOneDataStore"
+    name = "pingOneDataStore"
     plugin_descriptor_ref = {
       id = "com.pingidentity.plugins.datastore.p14c.PingOneForCustomersDataStore"
     }
@@ -274,12 +274,12 @@ resource "pingfederate_data_store" "myPingOneDataStore" {
   }
 }
 
-resource "pingfederate_data_store" "myPingOneLdapDataStore" {
-  data_store_id         = "myPingOneLdapDataStore"
+resource "pingfederate_data_store" "pingOneLdapDataStore" {
+  data_store_id         = "pingOneLdapDataStore"
   mask_attribute_values = false
   ping_one_ldap_gateway_data_store = {
     ldap_type = "PING_DIRECTORY"
-    name      = "myPingOneLdapDataStore"
+    name      = "pingOneLdapDataStore"
     ping_one_connection_ref = {
       id = ""
     },

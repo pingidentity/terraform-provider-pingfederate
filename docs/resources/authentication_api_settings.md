@@ -13,7 +13,7 @@ Manages the Authentication API application settings.
 ## Example Usage
 
 ```terraform
-resource "pingfederate_authentication_api_settings" "myAuthenticationApiSettings" {
+resource "pingfederate_authentication_api_settings" "authenticationApiSettings" {
   api_enabled                          = true
   enable_api_descriptions              = false
   restrict_access_to_redirectless_mode = false
@@ -57,5 +57,5 @@ Import is supported using the following syntax:
 
 ```shell
 # This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
-terraform import pingfederate_authentication_api_settings.myAuthenticationApiSettings authenticationApiSettingsId
+terraform import pingfederate_authentication_api_settings.authenticationApiSettings authenticationApiSettingsId
 ```

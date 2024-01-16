@@ -13,7 +13,7 @@ Manages a license agreement link.
 ## Example Usage
 
 ```terraform
-resource "pingfederate_license_agreement" "myLicenseAgreement" {
+resource "pingfederate_license_agreement" "licenseAgreement" {
   # this value needs to be true in order for license agreement to be accepted
   accepted = true
 }
@@ -37,5 +37,5 @@ Import is supported using the following syntax:
 
 ```shell
 # This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
-terraform import pingfederate_license_agreement.myLicenseAgreement licenseAgreementId
+terraform import pingfederate_license_agreement.licenseAgreement licenseAgreementId
 ```

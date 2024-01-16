@@ -13,9 +13,9 @@ Manages OAuth CIBA Server Policy Settings
 ## Example Usage
 
 ```terraform
-resource "pingfederate_oauth_ciba_server_policy_settings" "myOauthCibaServerPolicySettingsExample" {
+resource "pingfederate_oauth_ciba_server_policy_settings" "oauthCibaServerPolicySettingsExample" {
   default_request_policy_ref = {
-    id = "myExampleOauthCibaServerPolicy"
+    id = "exampleOauthCibaServerPolicy"
   }
 }
 ```
@@ -48,5 +48,5 @@ Import is supported using the following syntax:
 
 ```shell
 # This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
-terraform import pingfederate_oauth_ciba_server_policy_settings.myOauthCibaServerPolicySettings oauthCibaServerPolicySettingsId
+terraform import pingfederate_oauth_ciba_server_policy_settings.oauthCibaServerPolicySettings oauthCibaServerPolicySettingsId
 ```

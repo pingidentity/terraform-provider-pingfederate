@@ -13,8 +13,8 @@ Manages a trusted Certificate CA.
 ## Example Usage
 
 ```terraform
-resource "pingfederate_certificate_ca" "myCertificateCa" {
-  ca_id = "MyCertificateCA"
+resource "pingfederate_certificate_ca" "certificateCa" {
+  ca_id = "certificateCA"
   # this property needs to contain base64 encoded value of your pem certificate.
   file_data = ""
 }
@@ -42,5 +42,5 @@ Import is supported using the following syntax:
 
 ```shell
 # "certificateCaId" should be the id of the Certificate CA to be imported
-terraform import pingfederate_certificate_ca.myCertificateCa certificateCaId
+terraform import pingfederate_certificate_ca.certificateCa certificateCaId
 ```

@@ -17,7 +17,7 @@ Manages an Oauth Client
 # Please refer to the link below on how to best store state files and data within. #
 # https://developer.hashicorp.com/terraform/plugin/best-practices/sensitive-state #
 
-resource "pingfederate_oauth_client" "myOauthClient" {
+resource "pingfederate_oauth_client" "oauthClient" {
   client_id = "oauthClientId"
   grant_types = [
     "IMPLICIT",
@@ -30,7 +30,7 @@ resource "pingfederate_oauth_client" "myOauthClient" {
     "CIBA",
     "TOKEN_EXCHANGE"
   ]
-  name                          = "myOauthClient"
+  name                          = "oauthClient"
   allow_authentication_api_init = false
   bypass_approval_page          = true
   ciba_delivery_mode            = "PING"
@@ -40,10 +40,10 @@ resource "pingfederate_oauth_client" "myOauthClient" {
   ciba_notification_endpoint    = "https://example.com"
   client_auth = {
     type   = "SECRET"
-    secret = "mySecretValue"
+    secret = "secretValue"
     secondary_secrets = [
       {
-        secret      = "myOtherSecretValue"
+        secret      = "otherSecretValue"
         expiry_time = "2030-01-02T15:24:00Z"
       }
     ]
@@ -417,5 +417,5 @@ Import is supported using the following syntax:
 
 ```shell
 # "oauthClientId" should be the id of the OAuth Client to be imported
-terraform import pingfederate_oauth_client.myOauthClient oauthClientId
+terraform import pingfederate_oauth_client.oauthClient oauthClientId
 ```

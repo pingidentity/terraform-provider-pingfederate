@@ -13,7 +13,7 @@ Manages the IdP default URL settings
 ## Example Usage
 
 ```terraform
-resource "pingfederate_idp_default_urls" "myIdpDefaultUrl" {
+resource "pingfederate_idp_default_urls" "idpDefaultUrl" {
   confirm_idp_slo     = true
   idp_error_msg       = "errorDetail.idpSsoFailure"
   idp_slo_success_url = "https://example"
@@ -42,5 +42,5 @@ Import is supported using the following syntax:
 
 ```shell
 # This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
-terraform import pingfederate_idp_default_urls.myIdpDefaultUrl idpDefaultUrlId
+terraform import pingfederate_idp_default_urls.idpDefaultUrl idpDefaultUrlId
 ```

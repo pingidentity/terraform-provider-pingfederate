@@ -1,8 +1,8 @@
 resource "pingfederate_oauth_open_id_connect_policy" "oauthOIDCPolicyExample" {
-  policy_id = "myOIDCPolicy"
-  name      = "myOIDCPolicy"
+  policy_id = "oidcPolicy"
+  name      = "oidcPolicy"
   access_token_manager_ref = {
-    id = "myATM"
+    id = "accessTokenManagerRefId"
   }
   attribute_contract = {
     extended_attributes = []

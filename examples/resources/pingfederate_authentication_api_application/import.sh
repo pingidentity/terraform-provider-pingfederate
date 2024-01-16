@@ -1,2 +1,2 @@
 # "authenticationApiApplicationId" should be the application_id of the Authentication Api Application to be imported
-terraform import pingfederate_authentication_api_application.myAuthenticationApiApplication authenticationApiApplicationId
+terraform import pingfederate_authentication_api_application.authenticationApiApplication authenticationApiApplicationId

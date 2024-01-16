@@ -13,8 +13,8 @@ Manages an Authentication Policy Fragment
 ## Example Usage
 
 ```terraform
-resource "pingfederate_authentication_policies_fragment" "myPolicyFragment" {
-  fragment_id = "myFragment"
+resource "pingfederate_authentication_policies_fragment" "policyFragment" {
+  fragment_id = "fragment"
   name        = "Verify_Register"
   description = "Sample Registration"
   root_node = {
@@ -23,7 +23,7 @@ resource "pingfederate_authentication_policies_fragment" "myPolicyFragment" {
         authentication_source = {
           type = "IDP_ADAPTER"
           source_ref = {
-            id = "MyAdapter"
+            id = "adapter"
           }
         }
         input_user_id_mapping = {
@@ -49,7 +49,7 @@ resource "pingfederate_authentication_policies_fragment" "myPolicyFragment" {
           apc_mapping_policy_action = {
             context = "Success"
             authentication_policy_contract_ref = {
-              id = "MyPolicyContract"
+              id = "policyContract"
             }
             attribute_mapping = {
               attribute_sources = []
@@ -57,21 +57,21 @@ resource "pingfederate_authentication_policies_fragment" "myPolicyFragment" {
                 "firstName" : {
                   source = {
                     type = "ADAPTER",
-                    id   = "MyAdapter"
+                    id   = "adapter"
                   }
                   value = "firstName"
                 }
                 "lastName" : {
                   source = {
                     type = "ADAPTER",
-                    id   = "MyAdapter"
+                    id   = "adapter"
                   }
                   value = "lastName"
                 }
                 "subject" : {
                   source = {
                     type = "ADAPTER",
-                    id   = "MyAdapter"
+                    id   = "adapter"
                   }
                   value = "subject"
                 }
@@ -84,7 +84,7 @@ resource "pingfederate_authentication_policies_fragment" "myPolicyFragment" {
                 "photo" : {
                   source = {
                     type = "ADAPTER",
-                    id   = "MyAdapter"
+                    id   = "adapter"
                   }
                   value = "photo"
                 }
@@ -103,10 +103,10 @@ resource "pingfederate_authentication_policies_fragment" "myPolicyFragment" {
     ]
   }
   inputs = {
-    id = "MyPolicyContract"
+    id = "policyContract"
   }
   outputs = {
-    id = "MyPolicyContract"
+    id = "policyContract"
   }
 
 }
@@ -15713,5 +15713,5 @@ Import is supported using the following syntax:
 
 ```shell
 # "fragmentId" should be the id of the Authentication Policy Fragment to be imported
-terraform import pingfederate_authentication_policies_fragment.myPolicyFragment fragmentId
+terraform import pingfederate_authentication_policies_fragment.policyFragment fragmentId
 ```

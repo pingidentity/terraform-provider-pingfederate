@@ -13,7 +13,7 @@ Manages a common scope in the authorization server settings.
 ## Example Usage
 
 ```terraform
-resource "pingfederate_oauth_auth_server_settings_scopes_common_scope" "myOauthAuthServerSettingsScopesCommonScope" {
+resource "pingfederate_oauth_auth_server_settings_scopes_common_scope" "oauthAuthServerSettingsScopesCommonScope" {
   dynamic     = true
   description = "example"
   name        = "*exampleCommonScope"
@@ -41,6 +41,6 @@ resource "pingfederate_oauth_auth_server_settings_scopes_common_scope" "myOauthA
 Import is supported using the following syntax:
 
 ```shell
-# "myOauthAuthServerSettingsScopesCommonScopeId" should be the name of the OAuth Auth Server Setting Common Scope to be imported
-terraform import pingfederate_oauth_auth_server_settings_scopes_common_scope.myOauthAuthServerSettingsScopesCommonScope myOauthAuthServerSettingsScopesCommonScopeId
+# "oauthAuthServerSettingsScopesCommonScopeId" should be the name of the OAuth Auth Server Setting Common Scope to be imported
+terraform import pingfederate_oauth_auth_server_settings_scopes_common_scope.oauthAuthServerSettingsScopesCommonScope oauthAuthServerSettingsScopesCommonScopeId
 ```

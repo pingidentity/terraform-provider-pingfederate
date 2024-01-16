@@ -1,2 +1,2 @@
-# "myOauthAuthServerSettingsScopesExclusiveScopeId" should be the name of the OAuth Auth Server Setting Exclusive Scope to be imported
-terraform import pingfederate_oauth_auth_server_settings_scopes_exclusive_scope.myOauthAuthServerSettingsScopesExclusiveScope myOauthAuthServerSettingsScopesExclusiveScopeId
+# "oauthAuthServerSettingsScopesExclusiveScopeId" should be the name of the OAuth Auth Server Setting Exclusive Scope to be imported
+terraform import pingfederate_oauth_auth_server_settings_scopes_exclusive_scope.oauthAuthServerSettingsScopesExclusiveScope oauthAuthServerSettingsScopesExclusiveScopeId

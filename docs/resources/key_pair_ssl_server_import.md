@@ -16,8 +16,8 @@ Manages a file for importing an SSL key pair.
 # WARNING! You will need to secure your state file properly when using this resource! #
 # Please refer to the link below on how to best store state files and data within. #
 # https://developer.hashicorp.com/terraform/plugin/best-practices/sensitive-state #
-resource "pingfederate_key_pair_ssl_server_import" "myKeyPairsSslServerImport" {
-  import_id = "MyKeyPairSSLServerImport"
+resource "pingfederate_key_pair_ssl_server_import" "keyPairsSslServerImport" {
+  import_id = "keyPairSSLServerImport"
   file_data = "example"
   format    = "PKCS12"
   # This value will be stored into your state file 
@@ -76,5 +76,5 @@ Import is supported using the following syntax:
 
 ```shell
 # "keyPairsSslServerImportId" should be the id of the SSL Server Key Pair to be imported
-terraform import pingfederate_key_pair_ssl_server_import.myKeyPairsSslServerImport keyPairsSslServerImportId
+terraform import pingfederate_key_pair_ssl_server_import.keyPairsSslServerImport keyPairsSslServerImportId
 ```

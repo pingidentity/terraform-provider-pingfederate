@@ -17,7 +17,7 @@ Manages an administrative account.
 # Please refer to the link below on how to best store state files and data within. #
 # https://developer.hashicorp.com/terraform/plugin/best-practices/sensitive-state #
 
-resource "pingfederate_administrative_account" "myAdministrativeAccount" {
+resource "pingfederate_administrative_account" "administrativeAccount" {
   username    = "example"
   description = "description"
   password    = "2FederateM0re"
@@ -54,5 +54,5 @@ Import is supported using the following syntax:
 
 ```shell
 # "administrativeAccountId" should be the username of the Administrative Account to be imported
-terraform import pingfederate_administrative_account.myAdministrativeAccount administrativeAccountId
+terraform import pingfederate_administrative_account.administrativeAccount administrativeAccountId
 ```
