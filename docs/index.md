@@ -34,7 +34,7 @@ provider "pingfederate" {
   x_bypass_external_validation_header = true
 }
 
-resource "pingfederate_administrative_account" "myAdministrativeAccount" {
+resource "pingfederate_administrative_account" "administrativeAccount" {
   username    = "example"
   description = "description"
   password    = "2FederateM0re"

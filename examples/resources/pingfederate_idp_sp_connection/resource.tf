@@ -1,5 +1,5 @@
 resource "pingfederate_idp_sp_connection" "wsFedSpBrowserSSOExample" {
-  connection_id = "myConnectionId"
+  connection_id = "connectionId"
   name          = "wsfedspconn1"
   entity_id     = "wsfed1"
   active        = false
@@ -71,9 +71,9 @@ resource "pingfederate_idp_sp_connection" "wsFedSpBrowserSSOExample" {
 }
 
 resource "pingfederate_idp_sp_connection" "outboundProvisionExample" {
-  connection_id = "myConnectionId"
+  connection_id = "connectionId"
   name          = "PingOne Connector"
-  entity_id     = "myEntity"
+  entity_id     = "entity"
   active        = false
   contact_info = {
     company = "Example Corp"
@@ -85,7 +85,7 @@ resource "pingfederate_idp_sp_connection" "outboundProvisionExample" {
     certs = []
     signing_settings = {
       signing_key_pair_ref = {
-        id = "419x9yg43rlawqwq9v6az997k"
+        id = ""
       }
       include_raw_key_in_signature = false
       include_cert_in_signature    = false
@@ -164,9 +164,9 @@ resource "pingfederate_idp_sp_connection" "outboundProvisionExample" {
 }
 
 resource "pingfederate_idp_sp_connection" "wsTrustExample" {
-  connection_id      = "myConnection"
-  name               = "myConnection"
-  entity_id          = "myEntity"
+  connection_id      = "connection"
+  name               = "connection"
+  entity_id          = "entity"
   active             = true
   contact_info       = {}
   base_url           = "https://localhost:9031"
@@ -176,7 +176,7 @@ resource "pingfederate_idp_sp_connection" "wsTrustExample" {
     certs = []
     signing_settings = {
       signing_key_pair_ref = {
-        id = "mySigningKey"
+        id = "signingKey"
       }
       include_raw_key_in_signature = false
       include_cert_in_signature    = false
@@ -185,7 +185,7 @@ resource "pingfederate_idp_sp_connection" "wsTrustExample" {
   }
   ws_trust = {
     partner_service_ids = [
-      "myid"
+      "id"
     ]
     oauth_assertion_profiles = true
     default_token_type       = "SAML20"
@@ -226,9 +226,9 @@ resource "pingfederate_idp_sp_connection" "wsTrustExample" {
 }
 
 resource "pingfederate_idp_sp_connection" "samlSpBrowserSSOExample" {
-  connection_id      = "myConnection"
-  name               = "myConnection"
-  entity_id          = "myEntity"
+  connection_id      = "connection"
+  name               = "connection"
+  entity_id          = "entity"
   active             = true
   contact_info       = {}
   base_url           = "https://localhost:9032"
@@ -238,7 +238,7 @@ resource "pingfederate_idp_sp_connection" "samlSpBrowserSSOExample" {
     certs = []
     signing_settings = {
       signing_key_pair_ref = {
-        id = "mySigningKey"
+        id = "signingKey"
       }
       include_raw_key_in_signature = false
       include_cert_in_signature    = false
@@ -254,7 +254,7 @@ resource "pingfederate_idp_sp_connection" "samlSpBrowserSSOExample" {
       {
         abort_sso_transaction_as_fail_safe = false
         authentication_policy_contract_ref = {
-          id = "myContractId"
+          id = "contractId"
         }
         restricted_virtual_entity_ids = []
         attribute_contract_fulfillment = {

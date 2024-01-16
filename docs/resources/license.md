@@ -14,7 +14,7 @@ Manages a license summary object.
 
 ```terraform
 # this resource does not support import
-resource "pingfederate_license" "myLicense" {
+resource "pingfederate_license" "license" {
   # this property needs to contain base64 encoded value of your license.
   file_data = ""
 }
@@ -74,5 +74,5 @@ Import is supported using the following syntax:
 
 ```shell
 # This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
-terraform import pingfederate_license.myLicense licenseId
+terraform import pingfederate_license.license licenseId
 ```

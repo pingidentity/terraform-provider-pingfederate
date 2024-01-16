@@ -13,7 +13,7 @@ Manages the OAuth authorization server settings.
 ## Example Usage
 
 ```terraform
-resource "pingfederate_oauth_auth_server_settings" "myOauthAuthServerSettings" {
+resource "pingfederate_oauth_auth_server_settings" "oauthAuthServerSettings" {
   authorization_code_entropy          = 20
   authorization_code_timeout          = 50
   bypass_activation_code_confirmation = false
@@ -238,5 +238,5 @@ Import is supported using the following syntax:
 
 ```shell
 # This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
-terraform import pingfederate_oauth_auth_server_settings.myOauthAuthServerSettings oauthAuthServerSettingsId
+terraform import pingfederate_oauth_auth_server_settings.oauthAuthServerSettings oauthAuthServerSettingsId
 ```

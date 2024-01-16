@@ -1,4 +1,4 @@
-resource "pingfederate_oauth_access_token_manager" "myInternallyManagedReferenceOauthAccessTokenManager" {
+resource "pingfederate_oauth_access_token_manager" "internallyManagedReferenceOauthAccessTokenManager" {
   manager_id = "internallyManagedReferenceOatm"
   name       = "internallyManagedReferenceExample"
   plugin_descriptor_ref = {

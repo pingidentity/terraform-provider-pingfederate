@@ -13,14 +13,14 @@ Manages an Authentication Api Application
 ## Example Usage
 
 ```terraform
-resource "pingfederate_authentication_api_application" "myAuthenticationApiApplicationExample" {
+resource "pingfederate_authentication_api_application" "authenticationApiApplicationExample" {
   application_id             = "example"
   name                       = "example"
   url                        = "https://example.com"
   description                = "example"
-  additional_allowed_origins = ["https://example1.com"]
+  additional_allowed_origins = ["https://example.com"]
   client_for_redirectless_mode_ref = {
-    id = pingfederate_oauth_client.myOauthClientExample.id
+    id = pingfederate_oauth_client.oauthClientExample.id
   }
 }
 ```
@@ -61,5 +61,5 @@ Import is supported using the following syntax:
 
 ```shell
 # "authenticationApiApplicationId" should be the application_id of the Authentication Api Application to be imported
-terraform import pingfederate_authentication_api_application.myAuthenticationApiApplication authenticationApiApplicationId
+terraform import pingfederate_authentication_api_application.authenticationApiApplication authenticationApiApplicationId
 ```

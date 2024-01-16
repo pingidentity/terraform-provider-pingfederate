@@ -50,5 +50,5 @@ Import is supported using the following syntax:
 
 ```shell
 # This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
-terraform import pingfederate_session_authentication_session_policies_global.mySessionAuthenticationSessionPoliciesGlobal sessionAuthenticationSessionPoliciesGlobalId
+terraform import pingfederate_session_authentication_session_policies_global.sessionAuthenticationSessionPoliciesGlobal sessionAuthenticationSessionPoliciesGlobalId
 ```

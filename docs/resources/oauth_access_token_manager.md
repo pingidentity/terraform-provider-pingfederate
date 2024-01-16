@@ -13,7 +13,7 @@ Manages an OAuth access token manager plugin instance.
 ## Example Usage
 
 ```terraform
-resource "pingfederate_oauth_access_token_manager" "myInternallyManagedReferenceOauthAccessTokenManager" {
+resource "pingfederate_oauth_access_token_manager" "internallyManagedReferenceOauthAccessTokenManager" {
   manager_id = "internallyManagedReferenceOatm"
   name       = "internallyManagedReferenceExample"
   plugin_descriptor_ref = {
@@ -487,7 +487,7 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-# "myOauthAccessTokenManagerId" should be the id of the Access Token Manager to be imported
+# "oauthAccessTokenManagerId" should be the id of the Access Token Manager to be imported
 # After importing this resource, a subsequent terraform apply will be needed if plain-text values are used
-terraform import pingfederate_oauth_access_token_manager.myOauthAccessTokenManager myOauthAccessTokenManagerId
+terraform import pingfederate_oauth_access_token_manager.oauthAccessTokenManager oauthAccessTokenManagerId
 ```

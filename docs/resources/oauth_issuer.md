@@ -13,8 +13,8 @@ Manages a virtual OAuth issuer.
 ## Example Usage
 
 ```terraform
-resource "pingfederate_oauth_issuer" "myOauthIssuer" {
-  issuer_id   = "MyOauthIssuer"
+resource "pingfederate_oauth_issuer" "oauthIssuer" {
+  issuer_id   = "oauthIssuer"
   description = "example description"
   host        = "example"
   name        = "example"
@@ -43,5 +43,5 @@ Import is supported using the following syntax:
 
 ```shell
 # "oauthIssuerId" should be the id of the OAuth Issuer to be imported
-terraform import pingfederate_oauth_issuer.myOauthIssuer oauthIssuerId
+terraform import pingfederate_oauth_issuer.oauthIssuer oauthIssuerId
 ```

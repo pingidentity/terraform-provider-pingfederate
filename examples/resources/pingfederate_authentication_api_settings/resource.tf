@@ -1,4 +1,4 @@
-resource "pingfederate_authentication_api_settings" "myAuthenticationApiSettings" {
+resource "pingfederate_authentication_api_settings" "authenticationApiSettings" {
   api_enabled                          = true
   enable_api_descriptions              = false
   restrict_access_to_redirectless_mode = false

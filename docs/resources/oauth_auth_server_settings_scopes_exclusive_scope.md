@@ -13,7 +13,7 @@ Manages an exclusive scope in the authorization server settings.
 ## Example Usage
 
 ```terraform
-resource "pingfederate_oauth_auth_server_settings_scopes_exclusive_scope" "myOauthAuthServerSettingsScopesExclusiveScope" {
+resource "pingfederate_oauth_auth_server_settings_scopes_exclusive_scope" "oauthAuthServerSettingsScopesExclusiveScope" {
   dynamic     = true
   description = "example"
   name        = "*exampleExclusiveScope"
@@ -41,6 +41,6 @@ resource "pingfederate_oauth_auth_server_settings_scopes_exclusive_scope" "myOau
 Import is supported using the following syntax:
 
 ```shell
-# "myOauthAuthServerSettingsScopesExclusiveScopeId" should be the name of the OAuth Auth Server Setting Exclusive Scope to be imported
-terraform import pingfederate_oauth_auth_server_settings_scopes_exclusive_scope.myOauthAuthServerSettingsScopesExclusiveScope myOauthAuthServerSettingsScopesExclusiveScopeId
+# "oauthAuthServerSettingsScopesExclusiveScopeId" should be the name of the OAuth Auth Server Setting Exclusive Scope to be imported
+terraform import pingfederate_oauth_auth_server_settings_scopes_exclusive_scope.oauthAuthServerSettingsScopesExclusiveScope oauthAuthServerSettingsScopesExclusiveScopeId
 ```
