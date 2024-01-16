@@ -1,5 +1,6 @@
 # v0.5.0 (Unreleased)
 ### BUG FIXES
+* **Server Settings Log Settings Resource:** Fixed provider errors when not specifying all log categories in the server log settings ([#164](https://github.com/pingidentity/terraform-provider-pingfederate/pull/164))
 * **OAuth Client Resource:** Resolved issue where some property default values on the `pingfederate_oauth_client` resource resulted in an invalid apply ([#156](https://github.com/pingidentity/terraform-provider-pingfederate/pull/156)) 
 * **Resource Link Update:** Resolved issue where updating a resourceLink type in resources resulted in an invalid apply ([#159](https://github.com/pingidentity/terraform-provider-pingfederate/pull/159)) 
 
@@ -9,6 +10,7 @@
 
 #### Resources
 * **New Resource:** `pingfederate_authentication_api_application` ([#156](https://github.com/pingidentity/terraform-provider-pingfederate/pull/156))
+* **New Resource:** `pingfederate_authentication_policies_fragment` ([#161](https://github.com/pingidentity/terraform-provider-pingfederate/pull/161))
 * **New Resource:** `pingfederate_authentication_policies_settings` ([#150](https://github.com/pingidentity/terraform-provider-pingfederate/pull/150))
 * **New Resource:** `pingfederate_kerberos_realm` ([#158](https://github.com/pingidentity/terraform-provider-pingfederate/pull/158))
 * **New Resource:** `pingfederate_oauth_ciba_server_policy_settings` ([#159](https://github.com/pingidentity/terraform-provider-pingfederate/pull/159))

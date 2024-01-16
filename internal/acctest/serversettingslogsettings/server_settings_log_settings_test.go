@@ -29,31 +29,33 @@ func TestAccServerSettingsLogSettings(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: testAccServerSettingsLogSettings(resourceName, logCategoriesEnabledInitial),
+				Config: testAccServerSettingsLogSettings(resourceName, logCategoriesEnabledInitial, false),
 				Check:  testAccCheckExpectedServerSettingsLogSettingsAttributes(logCategoriesEnabledInitial),
 			},
 			{
 				// Test updating some fields
-				Config: testAccServerSettingsLogSettings(resourceName, logCategoriesEnabled),
+				Config: testAccServerSettingsLogSettings(resourceName, logCategoriesEnabled, true),
 				Check:  testAccCheckExpectedServerSettingsLogSettingsAttributes(logCategoriesEnabled),
 			},
 			{
 				// Test importing the resource
-				Config:            testAccServerSettingsLogSettings(resourceName, logCategoriesEnabled),
-				ResourceName:      "pingfederate_server_settings_log_settings." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
+				Config:       testAccServerSettingsLogSettings(resourceName, logCategoriesEnabled, true),
+				ResourceName: "pingfederate_server_settings_log_settings." + resourceName,
+				ImportState:  true,
+				// There's only log_categories and log_categories_all in this resource, so import can't be verified,
+				// since all categories will be imported into the log_categories_all attribute.
+				ImportStateVerify: false,
 			},
 			{
 				// Back to minimal model
-				Config: testAccServerSettingsLogSettings(resourceName, logCategoriesEnabledInitial),
+				Config: testAccServerSettingsLogSettings(resourceName, logCategoriesEnabledInitial, false),
 				Check:  testAccCheckExpectedServerSettingsLogSettingsAttributes(logCategoriesEnabledInitial),
 			},
 		},
 	})
 }
 
-func testAccServerSettingsLogSettings(resourceName string, logCategoriesEnabled *bool) string {
+func testAccServerSettingsLogSettings(resourceName string, logCategoriesEnabled *bool, includeAllCategories bool) string {
 	logCategoriesHcl := ""
 	if logCategoriesEnabled != nil {
 		logCategoriesHcl = fmt.Sprintf(`
@@ -74,19 +76,24 @@ log_categories = [
       id      = "xmlsig"
       enabled = %t
     },
-    {
-      id      = "requestheaders"
-      enabled = false
-    },
-    {
-      id      = "requestparams"
-      enabled = true
-    },
-    {
-      id      = "restdatastore"
-      enabled = true
-    },
 `, *logCategoriesEnabled)
+		if includeAllCategories {
+			// Ensure that this resource works even if some categories aren't defined
+			logCategoriesHcl += `
+		{
+			id      = "requestheaders"
+			enabled = false
+		},
+		{
+			id      = "requestparams"
+			enabled = true
+		},
+		{
+			id      = "restdatastore"
+			enabled = true
+		},
+			`
+		}
 		if acctest.VersionAtLeast(version.PingFederate1200) {
 			logCategoriesHcl += `
 		{

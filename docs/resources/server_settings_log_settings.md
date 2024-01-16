@@ -57,6 +57,7 @@ resource "pingfederate_server_settings_log_settings" "serverSettingsLogSettingsE
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `log_categories_all` (Attributes Set) The log categories defined for the system and whether they are enabled. On a PUT request, if a category is not included in the list, it will be disabled. This attribute will include any categories not specified in the normal log_categories attribute. (see [below for nested schema](#nestedatt--log_categories_all))
 
 <a id="nestedatt--log_categories"></a>
 ### Nested Schema for `log_categories`
@@ -72,6 +73,17 @@ Optional:
 Read-Only:
 
 - `description` (String) The description of the log category. This field is read-only and is ignored for PUT requests.
+- `name` (String) The description of the log category. This field is read-only and is ignored for PUT requests.
+
+
+<a id="nestedatt--log_categories_all"></a>
+### Nested Schema for `log_categories_all`
+
+Read-Only:
+
+- `description` (String) The description of the log category. This field is read-only and is ignored for PUT requests.
+- `enabled` (Boolean) Determines whether or not the log category is enabled. The default is false.
+- `id` (String) The ID of the log category. This field must match one of the category IDs defined in log4j-categories.xml.
 - `name` (String) The description of the log category. This field is read-only and is ignored for PUT requests.
 
 ## Import

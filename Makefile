@@ -72,12 +72,12 @@ clearstates:
 	
 kaboom: clearstates spincontainer install
 
-devchecknotest: install golangcilint generate tfproviderlint tflint terrafmtlint importfmtlint
+devchecknotest: verifycontent install golangcilint generate tfproviderlint tflint terrafmtlint importfmtlint
 
 verifycontent:
 	python3 ./devcheck/verifyContent.py
 
-devcheck: verifycontent devchecknotest kaboom testacc
+devcheck: devchecknotest kaboom testacc
 
 generateresource:
 	PINGFEDERATE_GENERATED_ENDPOINT=serverSettings \
