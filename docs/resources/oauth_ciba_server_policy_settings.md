@@ -25,7 +25,7 @@ resource "pingfederate_oauth_ciba_server_policy_settings" "myOauthCibaServerPoli
 
 ### Required
 
-- `default_request_policy_ref` (Attributes) Reference to the default, if one is defined. (see [below for nested schema](#nestedatt--default_request_policy_ref))
+- `default_request_policy_ref` (Attributes) Reference to the default request policy, if one is defined. (see [below for nested schema](#nestedatt--default_request_policy_ref))
 
 ### Read-Only
 

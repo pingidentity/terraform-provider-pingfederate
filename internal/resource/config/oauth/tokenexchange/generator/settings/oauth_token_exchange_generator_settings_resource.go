@@ -44,7 +44,9 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Schema(ctx context.Context
 	schema := schema.Schema{
 		Description: "Manages Oauth Token Exchange Generator Settings",
 		Attributes: map[string]schema.Attribute{
-			"default_generator_group_ref": defaultref.ToSchema(),
+			"default_generator_group_ref": defaultref.ToSchema(
+				"Reference to the default Token Exchange Generator group, if one is defined.",
+			),
 		},
 	}
 

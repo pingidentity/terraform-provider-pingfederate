@@ -25,7 +25,7 @@ resource "pingfederate_oauth_token_exchange_generator_settings" "oauthTokenExcha
 
 ### Required
 
-- `default_generator_group_ref` (Attributes) Reference to the default, if one is defined. (see [below for nested schema](#nestedatt--default_generator_group_ref))
+- `default_generator_group_ref` (Attributes) Reference to the default Token Exchange Generator group, if one is defined. (see [below for nested schema](#nestedatt--default_generator_group_ref))
 
 ### Read-Only
 

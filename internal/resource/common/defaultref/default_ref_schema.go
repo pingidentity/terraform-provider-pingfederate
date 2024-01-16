@@ -5,11 +5,11 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 )
 
-func ToSchema() schema.Attribute {
+func ToSchema(description string) schema.Attribute {
 	return resourcelink.CompleteSingleNestedAttribute(
 		false,
 		false,
 		true,
-		"Reference to the default, if one is defined.",
+		description,
 	)
 }

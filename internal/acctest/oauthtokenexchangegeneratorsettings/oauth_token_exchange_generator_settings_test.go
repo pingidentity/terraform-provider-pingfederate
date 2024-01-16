@@ -12,8 +12,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const oauthTokenExchangeGeneratorSettingsId = "exampleGeneratorGroup"
-
 // Attributes to test with. Add optional properties to test here if desired.
 type oauthTokenExchangeGeneratorSettingsResourceModel struct {
 	defaultGeneratorGroupRefId string
@@ -22,7 +20,11 @@ type oauthTokenExchangeGeneratorSettingsResourceModel struct {
 func TestAccOauthTokenExchangeGeneratorSettings(t *testing.T) {
 	resourceName := "myOauthTokenExchangeGeneratorSettings"
 	initialResourceModel := oauthTokenExchangeGeneratorSettingsResourceModel{
-		defaultGeneratorGroupRefId: oauthTokenExchangeGeneratorSettingsId,
+		defaultGeneratorGroupRefId: "exampleGeneratorGroup",
+	}
+
+	updatedResourceModel := oauthTokenExchangeGeneratorSettingsResourceModel{
+		defaultGeneratorGroupRefId: "exampleGeneratorGroup2",
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -36,11 +38,19 @@ func TestAccOauthTokenExchangeGeneratorSettings(t *testing.T) {
 				Check:  testAccCheckExpectedOauthTokenExchangeGeneratorSettingsAttributes(initialResourceModel),
 			},
 			{
+				Config: testAccOauthTokenExchangeGeneratorSettings(resourceName, updatedResourceModel),
+				Check:  testAccCheckExpectedOauthTokenExchangeGeneratorSettingsAttributes(updatedResourceModel),
+			},
+			{
 				// Test importing the resource
 				Config:            testAccOauthTokenExchangeGeneratorSettings(resourceName, initialResourceModel),
 				ResourceName:      "pingfederate_oauth_token_exchange_generator_settings." + resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+			{
+				Config: testAccOauthTokenExchangeGeneratorSettings(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedOauthTokenExchangeGeneratorSettingsAttributes(initialResourceModel),
 			},
 		},
 	})
