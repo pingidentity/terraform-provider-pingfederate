@@ -69,6 +69,8 @@ func (r *authenticationPoliciesPolicyResource) Schema(ctx context.Context, req r
 			"root_node": authenticationpolicytreenode.Schema(),
 			"handle_failures_locally": schema.BoolAttribute{
 				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 				Description: "If a policy ends in failure keep the user local.",
 			},
 		},
