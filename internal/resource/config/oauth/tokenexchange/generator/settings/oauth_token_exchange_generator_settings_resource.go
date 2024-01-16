@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/defaultref"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -44,7 +43,10 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Schema(ctx context.Context
 	schema := schema.Schema{
 		Description: "Manages Oauth Token Exchange Generator Settings",
 		Attributes: map[string]schema.Attribute{
-			"default_generator_group_ref": defaultref.ToSchema(
+			"default_generator_group_ref": resourcelink.CompleteSingleNestedAttribute(
+				false,
+				false,
+				true,
 				"Reference to the default Token Exchange Generator group, if one is defined.",
 			),
 		},

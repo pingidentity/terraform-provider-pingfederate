@@ -43,7 +43,7 @@ func TestAccOauthTokenExchangeGeneratorSettings(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccOauthTokenExchangeGeneratorSettings(resourceName, initialResourceModel),
+				Config:            testAccOauthTokenExchangeGeneratorSettings(resourceName, updatedResourceModel),
 				ResourceName:      "pingfederate_oauth_token_exchange_generator_settings." + resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
