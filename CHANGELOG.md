@@ -1,3 +1,7 @@
+# v0.6.0 (Unreleased)
+### Deprecation
+* `inherited` property for all Resources and DataSources
+
 # v0.5.0 January 16th, 2024
 ### BUG FIXES
 * **Server Settings Log Settings Resource:** Fixed provider errors when not specifying all log categories in the server log settings ([#164](https://github.com/pingidentity/terraform-provider-pingfederate/pull/164))

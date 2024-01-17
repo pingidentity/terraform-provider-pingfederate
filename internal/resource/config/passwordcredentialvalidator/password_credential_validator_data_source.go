@@ -87,9 +87,10 @@ func (r *passwordCredentialValidatorDataSource) Schema(ctx context.Context, req 
 						},
 					},
 					"inherited": schema.BoolAttribute{
-						Description: "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
-						Optional:    false,
-						Computed:    true,
+						DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
+						Description:        "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
+						Optional:           false,
+						Computed:           true,
 					},
 				},
 			},

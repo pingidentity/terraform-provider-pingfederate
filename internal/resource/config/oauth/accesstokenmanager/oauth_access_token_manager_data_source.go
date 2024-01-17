@@ -144,10 +144,11 @@ func (r *oauthAccessTokenManagerDataSource) Schema(ctx context.Context, req data
 						},
 					},
 					"inherited": schema.BoolAttribute{
-						Description: "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
-						Required:    false,
-						Optional:    false,
-						Computed:    true,
+						DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
+						Description:        "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
+						Required:           false,
+						Optional:           false,
+						Computed:           true,
 					},
 					"default_subject_attribute": schema.StringAttribute{
 						Description: "Default subject attribute to use for audit logging when validating the access token. Blank value means to use USER_KEY attribute value after grant lookup.",
@@ -164,10 +165,11 @@ func (r *oauthAccessTokenManagerDataSource) Schema(ctx context.Context, req data
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
 					"inherited": schema.BoolAttribute{
-						Description: "If this token manager has a parent, this flag determines whether selection settings, such as resource URI's, are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
-						Required:    false,
-						Optional:    false,
-						Computed:    true,
+						DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
+						Description:        "If this token manager has a parent, this flag determines whether selection settings, such as resource URI's, are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
+						Required:           false,
+						Optional:           false,
+						Computed:           true,
 					},
 					"resource_uris": schema.ListAttribute{
 						Description: "The list of base resource URI's which map to this token manager. A resource URI, specified via the 'aud' parameter, can be used to select a specific token manager for an OAuth request.",
@@ -185,10 +187,11 @@ func (r *oauthAccessTokenManagerDataSource) Schema(ctx context.Context, req data
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
 					"inherited": schema.BoolAttribute{
-						Description: "If this token manager has a parent, this flag determines whether access control settings are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
-						Required:    false,
-						Optional:    false,
-						Computed:    true,
+						DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
+						Description:        "If this token manager has a parent, this flag determines whether access control settings are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
+						Required:           false,
+						Optional:           false,
+						Computed:           true,
 					},
 					"restrict_clients": schema.BoolAttribute{
 						Description: "Determines whether access to this token manager is restricted to specific OAuth clients. If false, the 'allowedClients' field is ignored. The default value is false.",
@@ -214,10 +217,11 @@ func (r *oauthAccessTokenManagerDataSource) Schema(ctx context.Context, req data
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
 					"inherited": schema.BoolAttribute{
-						Description: "If this token manager has a parent, this flag determines whether session validation settings, such as checkValidAuthnSession, are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
-						Required:    false,
-						Optional:    false,
-						Computed:    true,
+						DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
+						Description:        "If this token manager has a parent, this flag determines whether session validation settings, such as checkValidAuthnSession, are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
+						Required:           false,
+						Optional:           false,
+						Computed:           true,
 					},
 					"include_session_id": schema.BoolAttribute{
 						Description: "Include the session identifier in the access token. Note that if any of the session validation features is enabled, the session identifier will already be included in the access tokens.",
