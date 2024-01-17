@@ -1,6 +1,12 @@
 # v0.6.0 (Unreleased)
-### Deprecation
+### DEPRECATED
 * `inherited` property for all Resources and DataSources
+
+### FEATURES
+* Added support for PingFederate version `11.2.8` ([#168](https://github.com/pingidentity/terraform-provider-pingfederate/pull/168))
+
+### BUG FIXES
+* Fixed provider not correctly comparing versions for PingFederate `11.2.6` and `11.2.7` ([#168](https://github.com/pingidentity/terraform-provider-pingfederate/pull/168))
 
 # v0.5.0 January 16th, 2024
 ### BUG FIXES

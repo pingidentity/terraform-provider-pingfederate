@@ -20,6 +20,7 @@ const (
 	PingFederate1125 SupportedVersion = "11.2.5"
 	PingFederate1126 SupportedVersion = "11.2.6"
 	PingFederate1127 SupportedVersion = "11.2.7"
+	PingFederate1128 SupportedVersion = "11.2.8"
 	PingFederate1130 SupportedVersion = "11.3.0"
 	PingFederate1131 SupportedVersion = "11.3.1"
 	PingFederate1132 SupportedVersion = "11.3.2"
@@ -49,6 +50,9 @@ func getSortedVersions() []SupportedVersion {
 		PingFederate1123,
 		PingFederate1124,
 		PingFederate1125,
+		PingFederate1126,
+		PingFederate1127,
+		PingFederate1128,
 		PingFederate1130,
 		PingFederate1131,
 		PingFederate1132,
