@@ -1,7 +1,6 @@
 # v0.6.0 (Unreleased)
-### FEATURES
-* Deprecation announced for `inherited` property from all Resources and DataSources
-
+### Deprecation
+* `inherited` property for all Resources and DataSources
 
 # v0.5.0 January 16th, 2024
 ### BUG FIXES
