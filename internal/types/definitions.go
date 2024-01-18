@@ -8,6 +8,7 @@ import (
 // Configuration used by the provider and resources
 type ProviderConfiguration struct {
 	HttpsHost      string
+	AdminApiPath   string
 	Username       string
 	Password       string
 	ProductVersion version.SupportedVersion
