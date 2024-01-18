@@ -84,7 +84,6 @@ func NewTestProvider() provider.Provider {
 // PingFederate ProviderModel maps provider schema data to a Go type.
 type pingfederateProviderModel struct {
 	HttpsHost                       types.String `tfsdk:"https_host"`
-	AdminApiPath                    types.String `tfsdk:"admin_api_path"`
 	Username                        types.String `tfsdk:"username"`
 	Password                        types.String `tfsdk:"password"`
 	InsecureTrustAllTls             types.Bool   `tfsdk:"insecure_trust_all_tls"`
@@ -110,10 +109,6 @@ func (p *pingfederateProvider) Schema(_ context.Context, _ provider.SchemaReques
 		Attributes: map[string]schema.Attribute{
 			"https_host": schema.StringAttribute{
 				MarkdownDescription: "URI for PingFederate HTTPS port. Default value can be set with the `PINGFEDERATE_PROVIDER_HTTPS_HOST` environment variable.",
-				Optional:            true,
-			},
-			"admin_api_path": schema.StringAttribute{
-				MarkdownDescription: "Path for PingFederate Admin API. Default value can be set with the `PINGFEDERATE_PROVIDER_ADMIN_API_PATH` environment variable. If no value is supplied, the value used will be `/pf-admin-api/v1`.",
 				Optional:            true,
 			},
 			"username": schema.StringAttribute{
@@ -173,25 +168,6 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 				"Unable to find https_host",
 				"https_host cannot be an empty string. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_HTTPS_HOST environment variable.",
 			)
-		}
-	}
-
-	// User must provide a admin api base path to the provider
-	var adminApiPath string
-	if config.AdminApiPath.IsUnknown() {
-		// Cannot connect to PingFederate with an unknown value
-		resp.Diagnostics.AddError(
-			"Unable to connect to the PingFederate Server",
-			"Cannot use unknown value as admin_api_path",
-		)
-	} else {
-		if config.AdminApiPath.IsNull() {
-			adminApiPath = os.Getenv("PINGFEDERATE_PROVIDER_ADMIN_API_PATH")
-			if adminApiPath == "" {
-				adminApiPath = "/pf-admin-api/v1"
-			}
-		} else {
-			adminApiPath = config.AdminApiPath.ValueString()
 		}
 	}
 
@@ -326,7 +302,6 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	var resourceConfig internaltypes.ResourceConfiguration
 	providerConfig := internaltypes.ProviderConfiguration{
 		HttpsHost:      httpsHost,
-		AdminApiPath:   adminApiPath,
 		Username:       username,
 		Password:       password,
 		ProductVersion: parsedProductVersion,
@@ -337,7 +312,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	clientConfig.DefaultHeader["X-BypassExternalValidation"] = strconv.FormatBool(xBypassExternalValidation)
 	clientConfig.Servers = client.ServerConfigurations{
 		{
-			URL: httpsHost + adminApiPath,
+			URL: httpsHost,
 		},
 	}
 	// #nosec G402

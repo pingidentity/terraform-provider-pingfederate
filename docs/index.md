@@ -29,8 +29,7 @@ terraform {
 provider "pingfederate" {
   username                            = "administrator"
   password                            = "2FederateM0re"
-  https_host                          = "https://localhost:9999"
-  admin_api_path                      = "/pf-admin-api/v1"
+  https_host                          = "https://localhost:9999/pf-admin-api/v1"
   insecure_trust_all_tls              = true
   x_bypass_external_validation_header = true
 }
@@ -50,7 +49,6 @@ resource "pingfederate_administrative_account" "administrativeAccount" {
 
 - `ca_certificate_pem_files` (Set of String) Paths to files containing PEM-encoded certificates to be trusted as root CAs when connecting to the PingFederate server over HTTPS. If not set, the host's root CA set will be used. Default value can be set with the `PINGFEDERATE_PROVIDER_CA_CERTIFICATE_PEM_FILES` environment variable, using commas to delimit multiple PEM files if necessary.
 - `https_host` (String) URI for PingFederate HTTPS port. Default value can be set with the `PINGFEDERATE_PROVIDER_HTTPS_HOST` environment variable.
-- `admin_api_path` (String) Path for PingFederate Admin API. Default value can be set with the `PINGFEDERATE_PROVIDER_ADMIN_API_PATH` environment variable. If no value is supplied, the value used will be `/pf-admin-api/v1`.",
 - `insecure_trust_all_tls` (Boolean) Set to true to trust any certificate when connecting to the PingFederate server. This is insecure and should not be enabled outside of testing. Default value can be set with the `PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS` environment variable.
 - `password` (String, Sensitive) Password for PingFederate Admin user. Default value can be set with the `PINGFEDERATE_PROVIDER_PASSWORD` environment variable.
 - `username` (String) Username for PingFederate Admin user. Default value can be set with the `PINGFEDERATE_PROVIDER_USERNAME` environment variable.
