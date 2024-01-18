@@ -55,7 +55,7 @@ func TestClient() *client.APIClient {
 	clientConfig.DefaultHeader["X-BypassExternalValidation"] = os.Getenv("PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER")
 	clientConfig.Servers = client.ServerConfigurations{
 		{
-			URL: httpsHost + "/pf-admin-api/v1",
+			URL: httpsHost,
 		},
 	}
 	// Trusting all for the acceptance tests, since they run on localhost

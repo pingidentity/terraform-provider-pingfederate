@@ -312,7 +312,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	clientConfig.DefaultHeader["X-BypassExternalValidation"] = strconv.FormatBool(xBypassExternalValidation)
 	clientConfig.Servers = client.ServerConfigurations{
 		{
-			URL: httpsHost + "/pf-admin-api/v1",
+			URL: httpsHost,
 		},
 	}
 	// #nosec G402
