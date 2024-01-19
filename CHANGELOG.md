@@ -4,7 +4,7 @@
 
 ### FEATURES
 * Added support for PingFederate version `11.2.8` ([#168](https://github.com/pingidentity/terraform-provider-pingfederate/pull/168))
-* `admin_url_path` added to `provider` variables. This variable will allow end-users to set their own admin URL location, rather than being forced to use the hard-coded `/pf-admin-api/v1` suffix value. This variable value will default to `/pf-admin-api/v1` if no value is supplied.
+* `admin_url_path` added to `provider` variables. This variable will allow end-users to set their own admin URL location, rather than being forced to use the hard-coded `/pf-admin-api/v1` suffix value. This variable value will default to `/pf-admin-api/v1` if no value is supplied. ([#170](https://github.com/pingidentity/terraform-provider-pingfederate/pull/170))
 * Added support for the `PINGFEDERATE_TF_APPEND_USER_AGENT` environment variable, used to append a custom suffix to the User-Agent header used by the provider when making HTTP requests. ([#171](https://github.com/pingidentity/terraform-provider-pingfederate/pull/171))
 * Added support for automatically retrying certain HTTP error codes. ([#171](https://github.com/pingidentity/terraform-provider-pingfederate/pull/171))
 
