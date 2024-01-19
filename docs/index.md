@@ -20,7 +20,7 @@ terraform {
   required_version = ">=1.1"
   required_providers {
     pingfederate = {
-      version = "~> 0.4.0"
+      version = "~> 0.5.0"
       source  = "pingidentity/pingfederate"
     }
   }
@@ -33,6 +33,7 @@ provider "pingfederate" {
   admin_api_path                      = "/pf-admin-api/v1"
   insecure_trust_all_tls              = true
   x_bypass_external_validation_header = true
+  product_version                     = "12.0"
 }
 
 resource "pingfederate_administrative_account" "administrativeAccount" {
@@ -63,3 +64,4 @@ export PINGFEDERATE_TF_APPEND_USER_AGENT="Jenkins/2.426.2"
 - `password` (String, Sensitive) Password for PingFederate Admin user. Default value can be set with the `PINGFEDERATE_PROVIDER_PASSWORD` environment variable.
 - `username` (String) Username for PingFederate Admin user. Default value can be set with the `PINGFEDERATE_PROVIDER_USERNAME` environment variable.
 - `x_bypass_external_validation_header` (Boolean) Header value in request for PingFederate. The connection test will be bypassed when set to true. Default value is false.
+- `product_version` (String) Version of the PingFederate server being configured. Default value can be set with the `PINGFEDERATE_PROVIDER_PRODUCT_VERSION` environment variable.

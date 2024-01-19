@@ -2,7 +2,7 @@ terraform {
   required_version = ">=1.1"
   required_providers {
     pingfederate = {
-      version = "~> 0.4.0"
+      version = "~> 0.5.0"
       source  = "pingidentity/pingfederate"
     }
   }
@@ -15,6 +15,7 @@ provider "pingfederate" {
   admin_api_path                      = "/pf-admin-api/v1"
   insecure_trust_all_tls              = true
   x_bypass_external_validation_header = true
+  product_version                     = "12.0"
 }
 
 resource "pingfederate_administrative_account" "administrativeAccount" {
