@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/administrativeaccount"
 	authenticationapiapplication "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi/application"
 	authenticationapisettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi/settings"
@@ -321,6 +322,10 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 		return
 	}
 
+	// The extra suffix for the user-agent is optional and is not considered a provider parameter.
+	// We just use it directly from the environment variable, if set.
+	userAgentExtraSuffix := os.Getenv("PINGFEDERATE_TF_APPEND_USER_AGENT")
+
 	// Make the PingFederate config and API client info available during DataSource and Resource
 	// type Configure methods.
 	var resourceConfig internaltypes.ResourceConfiguration
@@ -348,7 +353,11 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	}
 	httpClient := &http.Client{Transport: tr}
 	clientConfig.HTTPClient = httpClient
-	clientConfig.UserAgent = fmt.Sprintf("pingtools terraform-provider-pingfederate/%s go", p.version)
+	userAgentSuffix := fmt.Sprintf("terraform-provider-pingfederate/%s %s", p.version, productVersion)
+	if userAgentExtraSuffix != "" {
+		userAgentSuffix += fmt.Sprintf(" %s", userAgentExtraSuffix)
+	}
+	clientConfig.UserAgentSuffix = pointers.String(userAgentSuffix)
 	resourceConfig.ApiClient = client.NewAPIClient(clientConfig)
 	resp.ResourceData = resourceConfig
 	resp.DataSourceData = resourceConfig
