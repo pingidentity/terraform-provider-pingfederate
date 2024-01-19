@@ -4,6 +4,7 @@
 
 ### FEATURES
 * Added support for PingFederate version `11.2.8` ([#168](https://github.com/pingidentity/terraform-provider-pingfederate/pull/168))
+* `admin_url_path` added to `provider` variables. This variable will allow end-users to set their own admin URL location, rather than being forced to use the hard-coded `/pf-admin-api/v1` suffix value. This variable value will default to `/pf-admin-api/v1` if no value is supplied. 
 
 ### BUG FIXES
 * Fixed provider not correctly comparing versions for PingFederate `11.2.6` and `11.2.7` ([#168](https://github.com/pingidentity/terraform-provider-pingfederate/pull/168))
