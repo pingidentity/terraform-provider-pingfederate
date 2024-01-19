@@ -326,7 +326,6 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	var resourceConfig internaltypes.ResourceConfiguration
 	providerConfig := internaltypes.ProviderConfiguration{
 		HttpsHost:      httpsHost,
-		AdminApiPath:   adminApiPath,
 		Username:       username,
 		Password:       password,
 		ProductVersion: parsedProductVersion,
