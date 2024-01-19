@@ -50,12 +50,13 @@ func ConfigurationPreCheck(t *testing.T) {
 
 func TestClient() *client.APIClient {
 	httpsHost := os.Getenv("PINGFEDERATE_PROVIDER_HTTPS_HOST")
+	adminApiPath := os.Getenv("PINGFEDERATE_PROVIDER_ADMIN_API_PATH")
 	clientConfig := client.NewConfiguration()
 	clientConfig.DefaultHeader["X-Xsrf-Header"] = "PingFederate"
 	clientConfig.DefaultHeader["X-BypassExternalValidation"] = os.Getenv("PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER")
 	clientConfig.Servers = client.ServerConfigurations{
 		{
-			URL: httpsHost,
+			URL: httpsHost + adminApiPath,
 		},
 	}
 	// Trusting all for the acceptance tests, since they run on localhost
