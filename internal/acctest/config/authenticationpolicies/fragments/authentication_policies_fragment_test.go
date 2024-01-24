@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 var pingOneConnection, pingOneEnvironment, pingOnePopulation string
@@ -98,6 +99,12 @@ resource "pingfederate_authentication_policies_fragment" "%[1]s" {
         }
       }
     ]
+  }
+  inputs = {
+    id = pingfederate_authentication_policy_contract.mycontract.contract_id
+  }
+  outputs = {
+    id = pingfederate_authentication_policy_contract.mycontract.contract_id
   }
 }
 
@@ -221,6 +228,102 @@ data "pingfederate_authentication_policies_fragment" "%[1]s" {
 	)
 }
 
+func verifyFields() string {
+	if acctest.VersionAtLeast(version.PingFederate1130) {
+		return `
+    {
+      name  = "Email Chained Attribute",
+      value = "mail"
+    },
+    {
+      name  = "Phone Chained Attribute",
+      value = "mobile"
+    },
+    {
+      name  = "Reference Image Chained Attribute",
+      value = "photo"
+    },
+    {
+      name  = "Verification URL Delivery Method",
+      value = "User Selection"
+    },
+    {
+      name  = "Verify Policy",
+      value = ""
+    },
+    `
+	} else {
+		return `
+    {
+      name  = "Verify App Name",
+      value = "myappname"
+    },
+     `
+	}
+}
+
+func additionalCoreAttributes() string {
+	if acctest.VersionAtLeast(version.PingFederate1130) {
+		return `
+    {
+      name      = "gender",
+      masked    = false,
+      pseudonym = false
+    },
+    {
+      name      = "weight",
+      masked    = false,
+      pseudonym = false
+    },
+    {
+      name      = "nationality",
+      masked    = false,
+      pseudonym = false
+    },
+    {
+      name      = "issuingCountry",
+      masked    = false,
+      pseudonym = false
+    },
+    `
+	} else {
+		return ""
+	}
+}
+
+func additionalAttributeContractFulfillments() string {
+	if acctest.VersionAtLeast(version.PingFederate1130) {
+		return `
+    "gender" : {
+      source = {
+        type = "ADAPTER"
+      },
+      value = "gender"
+    },
+    "weight" : {
+      source = {
+        type = "ADAPTER"
+      },
+      value = "weight"
+    },
+    "nationality" : {
+      source = {
+        type = "ADAPTER"
+      },
+      value = "nationality"
+    },
+    "issuingCountry" : {
+      source = {
+        type = "ADAPTER"
+      },
+      value = "issuingCountry"
+    },
+    `
+	} else {
+		return ""
+	}
+}
+
 func dependencyHcl() string {
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_policy_contract" "mycontract" {
@@ -286,26 +389,7 @@ resource "pingfederate_idp_adapter" "myadapter" {
         name  = "PingOne Population",
         value = "%s"
       },
-      {
-        name  = "Email Chained Attribute",
-        value = "mail"
-      },
-      {
-        name  = "Phone Chained Attribute",
-        value = "mobile"
-      },
-      {
-        name  = "Reference Image Chained Attribute",
-        value = "photo"
-      },
-      {
-        name  = "Verification URL Delivery Method",
-        value = "User Selection"
-      },
-      {
-        name  = "Verify Policy",
-        value = ""
-      },
+      %s
       {
         name  = "Test Username",
         value = ""
@@ -395,11 +479,6 @@ resource "pingfederate_idp_adapter" "myadapter" {
         pseudonym = false
       },
       {
-        name      = "gender",
-        masked    = false,
-        pseudonym = false
-      },
-      {
         name      = "transactionStatus",
         masked    = false,
         pseudonym = false
@@ -408,11 +487,6 @@ resource "pingfederate_idp_adapter" "myadapter" {
         name      = "subject",
         masked    = false,
         pseudonym = true
-      },
-      {
-        name      = "weight",
-        masked    = false,
-        pseudonym = false
       },
       {
         name      = "addressState",
@@ -435,17 +509,7 @@ resource "pingfederate_idp_adapter" "myadapter" {
         pseudonym = false
       },
       {
-        name      = "nationality",
-        masked    = false,
-        pseudonym = false
-      },
-      {
         name      = "addressStreet",
-        masked    = false,
-        pseudonym = false
-      },
-      {
-        name      = "issuingCountry",
         masked    = false,
         pseudonym = false
       },
@@ -463,7 +527,8 @@ resource "pingfederate_idp_adapter" "myadapter" {
         name      = "expirationDate",
         masked    = false,
         pseudonym = false
-      }
+      },
+      %s
     ],
     extended_attributes = [
       {
@@ -501,12 +566,6 @@ resource "pingfederate_idp_adapter" "myadapter" {
         },
         value = "addressZip"
       },
-      "gender" : {
-        source = {
-          type = "ADAPTER"
-        },
-        value = "gender"
-      },
       "transactionStatus" : {
         source = {
           type = "ADAPTER"
@@ -524,12 +583,6 @@ resource "pingfederate_idp_adapter" "myadapter" {
           type = "ADAPTER"
         },
         value = "photo"
-      },
-      "weight" : {
-        source = {
-          type = "ADAPTER"
-        },
-        value = "weight"
       },
       "addressState" : {
         source = {
@@ -555,23 +608,11 @@ resource "pingfederate_idp_adapter" "myadapter" {
         },
         value = "firstName"
       },
-      "nationality" : {
-        source = {
-          type = "ADAPTER"
-        },
-        value = "nationality"
-      },
       "addressStreet" : {
         source = {
           type = "ADAPTER"
         },
         value = "addressStreet"
-      },
-      "issuingCountry" : {
-        source = {
-          type = "ADAPTER"
-        },
-        value = "issuingCountry"
       },
       "issueDate" : {
         source = {
@@ -590,10 +631,11 @@ resource "pingfederate_idp_adapter" "myadapter" {
           type = "ADAPTER"
         },
         value = "expirationDate"
-      }
+      },
+      %s
     }
   }
-}`, pingOneConnection, pingOneEnvironment, pingOnePopulation)
+}`, pingOneConnection, pingOneEnvironment, pingOnePopulation, verifyFields(), additionalCoreAttributes(), additionalAttributeContractFulfillments())
 }
 
 // Test that the expected attributes are set on the PingFederate server
