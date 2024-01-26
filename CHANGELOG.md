@@ -10,6 +10,7 @@
 
 ### BUG FIXES
 * Fixed provider not correctly comparing versions for PingFederate `11.2.6` and `11.2.7` ([#168](https://github.com/pingidentity/terraform-provider-pingfederate/pull/168))
+* Fixed provider errors when using strings with escaped quotes in certain attributes ([#178](https://github.com/pingidentity/terraform-provider-pingfederate/pull/178))
 
 # v0.5.0 January 16th, 2024
 ### BUG FIXES
