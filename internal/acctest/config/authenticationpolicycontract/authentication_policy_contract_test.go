@@ -2,6 +2,7 @@ package authenticationpolicycontract_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -32,10 +33,11 @@ func TestAccAuthenticationPolicyContract(t *testing.T) {
 		extendedAttributes: []string{},
 	}
 	updatedResourceModel := authenticationPolicyContractResourceModel{
-		id:                 authenticationPolicyContractId,
-		name:               "example",
-		coreAttributes:     []string{coreAttr},
-		extendedAttributes: []string{"extended_attribute", "extended_attribute2"},
+		id:             authenticationPolicyContractId,
+		name:           "example",
+		coreAttributes: []string{coreAttr},
+		// Cover strings with escaped quotes with the final extended attribute
+		extendedAttributes: []string{"extended_attribute", "extended_attribute2", "extendedwith\\\"escaped\\\"quotes"},
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -129,13 +131,14 @@ func testAccCheckExpectedAuthenticationPolicyContractAttributes(config authentic
 			return err
 		}
 
-		rEa := response.GetExtendedAttributes()
-		newSet := make([]string, len(rEa))
-		for i := 0; i < len(newSet); i++ {
-			newSet[i] = rEa[i].Name
+		extendedAttrs := response.GetExtendedAttributes()
+		extendedAttrNames := make([]string, len(extendedAttrs))
+		for i := 0; i < len(extendedAttrNames); i++ {
+			// Need to "re-escape" quotes here since they had to be escaped to form the terraform HCL
+			extendedAttrNames[i] = strings.ReplaceAll(extendedAttrs[i].Name, "\"", "\\\"")
 		}
 		err = acctest.TestAttributesMatchStringSlice(resourceType, &config.id, "extended_attributes",
-			config.extendedAttributes, newSet)
+			config.extendedAttributes, extendedAttrNames)
 		if err != nil {
 			return err
 		}
