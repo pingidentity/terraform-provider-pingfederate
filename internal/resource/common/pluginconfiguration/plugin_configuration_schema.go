@@ -24,8 +24,9 @@ func ToSchema() schema.SingleNestedAttribute {
 				Required:    true,
 			},
 			"inherited": schema.BoolAttribute{
-				Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-				Optional:    true,
+				DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
+				Description:        "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
+				Optional:           true,
 			},
 		},
 	}
@@ -54,8 +55,9 @@ func ToSchema() schema.SingleNestedAttribute {
 										Required:    true,
 									},
 									"inherited": schema.BoolAttribute{
-										Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-										Optional:    true,
+										DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
+										Description:        "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
+										Optional:           true,
 										PlanModifiers: []planmodifier.Bool{
 											boolplanmodifier.UseStateForUnknown(),
 										},
@@ -76,8 +78,9 @@ func ToSchema() schema.SingleNestedAttribute {
 				},
 			},
 			"inherited": schema.BoolAttribute{
-				Description: "Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.",
-				Optional:    true,
+				DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
+				Description:        "Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.",
+				Optional:           true,
 			},
 		},
 	}
