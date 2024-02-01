@@ -9,7 +9,7 @@
 * Added support for automatically retrying certain HTTP error codes. ([#171](https://github.com/pingidentity/terraform-provider-pingfederate/pull/171))
 
 #### Resources
-* **New Resource:** `pingfederate_extended_properties` ([#TBD](https://github.com/pingidentity/terraform-provider-pingfederate/pull/TBD))
+* **New Resource:** `pingfederate_extended_properties` ([#182](https://github.com/pingidentity/terraform-provider-pingfederate/pull/182))
 
 ### BUG FIXES
 * Fixed provider not correctly comparing versions for PingFederate `11.2.6` and `11.2.7` ([#168](https://github.com/pingidentity/terraform-provider-pingfederate/pull/168))
