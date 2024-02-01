@@ -1,6 +1,6 @@
 # v0.6.0 (Unreleased)
 ### DEPRECATED
-* `inherited` property for all Resources and DataSources
+* `inherited` property for all Resources and DataSources. This property will be removed in a future release.
 
 ### FEATURES
 * Added support for PingFederate version `11.2.8` ([#168](https://github.com/pingidentity/terraform-provider-pingfederate/pull/168))
@@ -16,6 +16,9 @@
 * Fixed provider errors when using strings with escaped quotes in certain attributes ([#178](https://github.com/pingidentity/terraform-provider-pingfederate/pull/178))
 
 # v0.5.0 January 16th, 2024
+### BREAKING CHANGES
+* New *required* `product_version` provider attribute. This attribute is used to indicate the version of PingFederate that the provider is targeting. The attribute can also be specified by the `PINGFEDERATE_PROVIDER_PRODUCT_VERSION` environment variable. When upgrading to this provider version, this attribute will need to be configured.
+
 ### BUG FIXES
 * **Server Settings Log Settings Resource:** Fixed provider errors when not specifying all log categories in the server log settings ([#164](https://github.com/pingidentity/terraform-provider-pingfederate/pull/164))
 * **OAuth Client Resource:** Resolved issue where some property default values on the `pingfederate_oauth_client` resource resulted in an invalid apply ([#156](https://github.com/pingidentity/terraform-provider-pingfederate/pull/156)) 
