@@ -85,7 +85,7 @@ func TestBasicAuthContext() context.Context {
 
 func TestOauth2Context() context.Context {
 	ctx := context.Background()
-	return config.OAuthContext(ctx, getTransport(), os.Getenv("PINGFEDERATE_PROVIDER_TOKEN_URL"), os.Getenv("PINGFEDERATE_PROVIDER_CLIENT_ID"), os.Getenv("PINGFEDERATE_PROVIDER_CLIENT_SECRET"), []string{os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_SCOPES")})
+	return config.OAuthContext(ctx, getTransport(), os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL"), os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID"), os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET"), []string{os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_SCOPES")})
 }
 
 // Convert a string slice to the format used in Terraform files

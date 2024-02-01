@@ -41,7 +41,7 @@ data "pingfederate_virtual_host_names" "%[1]s" {
 
 // Test that the expected attributes are set on the PingFederate server
 func testAccGetVirtualHostNames() resource.TestCheckFunc {
-	return func(s *terraform.State) error {
+	test := func(s *terraform.State) error {
 		testClient := acctest.TestClient()
 		ctx := acctest.TestOauth2Context()
 		_, _, err := testClient.VirtualHostNamesAPI.GetVirtualHostNamesSettings(ctx).Execute()
@@ -51,4 +51,5 @@ func testAccGetVirtualHostNames() resource.TestCheckFunc {
 
 		return nil
 	}
+	return test
 }

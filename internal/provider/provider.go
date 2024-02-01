@@ -274,7 +274,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 
 	// Check if the user has provided an OAuth configuration to the provider
 	var clientId string
-	var hasOauthConfig bool
+	var hasOauthConfig bool = false
 	if internaltypes.IsDefined(config.OAuth) {
 		hasOauthConfig = true
 		configClientId := config.OAuth.Attributes()["client_id"].(types.String)
@@ -363,7 +363,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 		}
 
 		// If user has not provided username and password or an OAuth configuration, they must provide an access token
-		if username == "" && password == "" && !internaltypes.IsDefined(config.OAuth) {
+		if username == "" && password == "" && !hasOauthConfig {
 			if accessToken == "" {
 				resp.Diagnostics.AddError(
 					"Unable to find access_token",
@@ -373,7 +373,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 		}
 
 		// If user has not provided username and password or an access token, they must provide an OAuth configuration
-		if !internaltypes.IsDefined(config.OAuth) && (accessToken != "" && (username != "" || password != "")) {
+		if !hasOauthConfig && (accessToken != "" && (username != "" || password != "")) {
 			resp.Diagnostics.AddError(
 				"Unable to find OAuth configuration",
 				"Oauth configuration cannot be empty. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_OAUTH_* environment variables.",
