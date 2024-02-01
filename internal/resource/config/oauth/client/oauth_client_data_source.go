@@ -607,7 +607,7 @@ func (r *oauthClientDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	apiReadOauthClient, httpResp, err := r.apiClient.OauthClientsAPI.GetOauthClientById(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ClientId.ValueString()).Execute()
+	apiReadOauthClient, httpResp, err := r.apiClient.OauthClientsAPI.GetOauthClientById(config.DetermineAuthContext(ctx, r.providerConfig), state.ClientId.ValueString()).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Client", err, httpResp)
 		return

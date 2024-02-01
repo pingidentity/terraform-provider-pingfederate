@@ -1268,7 +1268,7 @@ func (r *oauthClientResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	apiCreateOauthClient := r.apiClient.OauthClientsAPI.CreateOauthClient(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateOauthClient := r.apiClient.OauthClientsAPI.CreateOauthClient(config.DetermineAuthContext(ctx, r.providerConfig))
 	apiCreateOauthClient = apiCreateOauthClient.Body(*createOauthClient)
 	oauthClientResponse, httpResp, err := r.apiClient.OauthClientsAPI.CreateOauthClientExecute(apiCreateOauthClient)
 	if err != nil {
@@ -1293,7 +1293,7 @@ func (r *oauthClientResource) Read(ctx context.Context, req resource.ReadRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthClient, httpResp, err := r.apiClient.OauthClientsAPI.GetOauthClientById(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ClientId.ValueString()).Execute()
+	apiReadOauthClient, httpResp, err := r.apiClient.OauthClientsAPI.GetOauthClientById(config.DetermineAuthContext(ctx, r.providerConfig), state.ClientId.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -1324,7 +1324,7 @@ func (r *oauthClientResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	updateOauthClient := r.apiClient.OauthClientsAPI.UpdateOauthClient(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.ClientId.ValueString())
+	updateOauthClient := r.apiClient.OauthClientsAPI.UpdateOauthClient(config.DetermineAuthContext(ctx, r.providerConfig), plan.ClientId.ValueString())
 	createUpdateRequest := client.NewClient(plan.ClientId.ValueString(), grantTypes(plan.GrantTypes), plan.Name.ValueString())
 	err := addOptionalOauthClientFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -1357,7 +1357,7 @@ func (r *oauthClientResource) Delete(ctx context.Context, req resource.DeleteReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.OauthClientsAPI.DeleteOauthClient(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ClientId.ValueString()).Execute()
+	httpResp, err := r.apiClient.OauthClientsAPI.DeleteOauthClient(config.DetermineAuthContext(ctx, r.providerConfig), state.ClientId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Client", err, httpResp)
 	}

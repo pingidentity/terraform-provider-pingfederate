@@ -75,7 +75,7 @@ func (r *authenticationPoliciesSettingsDataSource) Read(ctx context.Context, req
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadAuthenticationPoliciesSettings, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.GetAuthenticationPolicySettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadAuthenticationPoliciesSettings, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.GetAuthenticationPolicySettings(config.DetermineAuthContext(ctx, r.providerConfig)).Execute()
 
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the authentication policies settings", err, httpResp)

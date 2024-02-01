@@ -102,7 +102,7 @@ func (r *oauthCibaServerPolicySettingsResource) Create(ctx context.Context, req 
 		return
 	}
 
-	apiCreateOauthCibaServerPolicySettings := r.apiClient.OauthCibaServerPolicyAPI.UpdateCibaServerPolicySettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateOauthCibaServerPolicySettings := r.apiClient.OauthCibaServerPolicyAPI.UpdateCibaServerPolicySettings(config.DetermineAuthContext(ctx, r.providerConfig))
 	apiCreateOauthCibaServerPolicySettings = apiCreateOauthCibaServerPolicySettings.Body(*createOauthCibaServerPolicySettings)
 	oauthCibaServerPolicySettingsResponse, httpResp, err := r.apiClient.OauthCibaServerPolicyAPI.UpdateCibaServerPolicySettingsExecute(apiCreateOauthCibaServerPolicySettings)
 	if err != nil {
@@ -127,7 +127,7 @@ func (r *oauthCibaServerPolicySettingsResource) Read(ctx context.Context, req re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthCibaServerPolicySettings, httpResp, err := r.apiClient.OauthCibaServerPolicyAPI.GetCibaServerPolicySettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadOauthCibaServerPolicySettings, httpResp, err := r.apiClient.OauthCibaServerPolicyAPI.GetCibaServerPolicySettings(config.DetermineAuthContext(ctx, r.providerConfig)).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -162,7 +162,7 @@ func (r *oauthCibaServerPolicySettingsResource) Update(ctx context.Context, req 
 		return
 	}
 
-	updateOauthCibaServerPolicySettings := r.apiClient.OauthCibaServerPolicyAPI.UpdateCibaServerPolicySettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateOauthCibaServerPolicySettings := r.apiClient.OauthCibaServerPolicyAPI.UpdateCibaServerPolicySettings(config.DetermineAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewCibaServerPolicySettings()
 	createUpdateRequest.DefaultRequestPolicyRef, err = resourcelink.ClientStruct(plan.DefaultRequestPolicyRef)
 	if err != nil {

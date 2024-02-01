@@ -77,7 +77,7 @@ func (r *sessionApplicationSessionPolicyDataSource) Read(ctx context.Context, re
 		return
 	}
 
-	apiReadSessionApplicationSessionPolicy, httpResp, err := r.apiClient.SessionAPI.GetApplicationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadSessionApplicationSessionPolicy, httpResp, err := r.apiClient.SessionAPI.GetApplicationPolicy(config.DetermineAuthContext(ctx, r.providerConfig)).Execute()
 	// Read the response into the state
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Session Application Session Policy", err, httpResp)

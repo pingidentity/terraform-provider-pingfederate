@@ -95,7 +95,7 @@ func (r *virtualHostNamesResource) Create(ctx context.Context, req resource.Crea
 		return
 	}
 
-	apiCreateVirtualHostNames := r.apiClient.VirtualHostNamesAPI.UpdateVirtualHostNamesSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateVirtualHostNames := r.apiClient.VirtualHostNamesAPI.UpdateVirtualHostNamesSettings(config.DetermineAuthContext(ctx, r.providerConfig))
 	apiCreateVirtualHostNames = apiCreateVirtualHostNames.Body(*createVirtualHostNames)
 	virtualHostNamesResponse, httpResp, err := r.apiClient.VirtualHostNamesAPI.UpdateVirtualHostNamesSettingsExecute(apiCreateVirtualHostNames)
 	if err != nil {
@@ -119,7 +119,7 @@ func (r *virtualHostNamesResource) Read(ctx context.Context, req resource.ReadRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadVirtualHostNames, httpResp, err := r.apiClient.VirtualHostNamesAPI.GetVirtualHostNamesSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadVirtualHostNames, httpResp, err := r.apiClient.VirtualHostNamesAPI.GetVirtualHostNamesSettings(config.DetermineAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a Virtual Host Names", err, httpResp)
@@ -153,7 +153,7 @@ func (r *virtualHostNamesResource) Update(ctx context.Context, req resource.Upda
 		return
 	}
 
-	updateVirtualHostNames := r.apiClient.VirtualHostNamesAPI.UpdateVirtualHostNamesSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateVirtualHostNames := r.apiClient.VirtualHostNamesAPI.UpdateVirtualHostNamesSettings(config.DetermineAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewVirtualHostNameSettings()
 	err := addOptionalVirtualHostNamesFields(ctx, createUpdateRequest, plan)
 	if err != nil {

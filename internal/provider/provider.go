@@ -11,10 +11,13 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
@@ -88,6 +91,8 @@ type pingfederateProviderModel struct {
 	AdminApiPath                    types.String `tfsdk:"admin_api_path"`
 	Username                        types.String `tfsdk:"username"`
 	Password                        types.String `tfsdk:"password"`
+	AccessToken                     types.String `tfsdk:"access_token"`
+	OAuth                           types.Object `tfsdk:"oauth"`
 	InsecureTrustAllTls             types.Bool   `tfsdk:"insecure_trust_all_tls"`
 	CACertificatePEMFiles           types.Set    `tfsdk:"ca_certificate_pem_files"`
 	XBypassExternalValidationHeader types.Bool   `tfsdk:"x_bypass_external_validation_header"`
@@ -117,14 +122,53 @@ func (p *pingfederateProvider) Schema(_ context.Context, _ provider.SchemaReques
 				MarkdownDescription: "Path for PingFederate Admin API. Default value can be set with the `PINGFEDERATE_PROVIDER_ADMIN_API_PATH` environment variable. If no value is supplied, the value used will be `/pf-admin-api/v1`.",
 				Optional:            true,
 			},
+			"access_token": schema.StringAttribute{
+				MarkdownDescription: "Access token for PingFederate Admin API. Default value can be set with the `PINGFEDERATE_PROVIDER_ACCESS_TOKEN` environment variable.",
+				Optional:            true,
+				Sensitive:           true,
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("oauth")),
+					stringvalidator.ConflictsWith(path.MatchRoot("username")),
+					stringvalidator.ConflictsWith(path.MatchRoot("password")),
+				},
+			},
 			"username": schema.StringAttribute{
 				MarkdownDescription: "Username for PingFederate Admin user. Default value can be set with the `PINGFEDERATE_PROVIDER_USERNAME` environment variable.",
 				Optional:            true,
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("oauth")),
+				},
 			},
 			"password": schema.StringAttribute{
 				MarkdownDescription: "Password for PingFederate Admin user. Default value can be set with the `PINGFEDERATE_PROVIDER_PASSWORD` environment variable.",
 				Optional:            true,
 				Sensitive:           true,
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("oauth")),
+				},
+			},
+			"oauth": schema.SingleNestedAttribute{
+				MarkdownDescription: "OAuth configuration for requesting access token. Default values can be set with the `PINGFEDERATE_PROVIDER_OAUTH_*` environment variables.",
+				Optional:            true,
+				Attributes: map[string]schema.Attribute{
+					"client_id": schema.StringAttribute{
+						MarkdownDescription: "OAuth client ID for requesting access token. Default value can be set with the `PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID` environment variable.",
+						Required:            true,
+					},
+					"client_secret": schema.StringAttribute{
+						MarkdownDescription: "OAuth client secret for requesting access token. Default value can be set with the `PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET` environment variable.",
+						Required:            true,
+					},
+					"scopes": schema.ListAttribute{
+						ElementType:         types.StringType,
+						MarkdownDescription: "OAuth scopes for access token. Default value can be set with the `PINGFEDERATE_PROVIDER_OAUTH_SCOPES` environment variable.",
+						Optional:            true,
+					},
+					"token_url": schema.StringAttribute{
+						MarkdownDescription: "OAuth token URL for requesting access token. Default value can be set with the `PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL` environment variable.",
+						Required:            true,
+					},
+				},
 			},
 			"insecure_trust_all_tls": schema.BoolAttribute{
 				Description: "Set to true to trust any certificate when connecting to the PingFederate server. This is insecure and should not be enabled outside of testing. Default value can be set with the `PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS` environment variable.",
@@ -196,50 +240,148 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 		}
 	}
 
-	// User must provide a username to the provider
+	// Check if the user has provided a username to the provider
 	var username string
-	if config.Username.IsUnknown() {
-		// Cannot connect to PingFederate with an unknown value
-		resp.Diagnostics.AddError(
-			"Unable to connect to the PingFederate Server",
-			"Cannot use unknown value as username",
-		)
+	if config.Username.IsNull() {
+		username = os.Getenv("PINGFEDERATE_PROVIDER_USERNAME")
 	} else {
-		if config.Username.IsNull() {
-			username = os.Getenv("PINGFEDERATE_PROVIDER_USERNAME")
-		} else {
-			username = config.Username.ValueString()
-		}
-		if username == "" {
-			resp.Diagnostics.AddError(
-				"Unable to find username",
-				"username cannot be an empty string. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_USERNAME environment variable.",
-			)
-		}
+		username = config.Username.ValueString()
 	}
 
-	// User must provide a password to the provider
+	// Check if the user has provided a password to the provider
 	var password string
-	if config.Password.IsUnknown() {
+	if config.Password.IsNull() {
+		password = os.Getenv("PINGFEDERATE_PROVIDER_PASSWORD")
+	} else {
+		password = config.Password.ValueString()
+	}
+
+	// Check if the user has provided an access token to the provider
+	var accessToken string
+	if config.AccessToken.IsUnknown() {
 		// Cannot connect to PingFederate with an unknown value
 		resp.Diagnostics.AddError(
 			"Unable to connect to the PingFederate Server",
-			"Cannot use unknown value as password",
+			"Cannot use unknown value as access_token",
 		)
 	} else {
-		if config.Password.IsNull() {
-			password = os.Getenv("PINGFEDERATE_PROVIDER_PASSWORD")
+		if config.AccessToken.IsNull() {
+			accessToken = os.Getenv("PINGFEDERATE_PROVIDER_ACCESS_TOKEN")
 		} else {
-			password = config.Password.ValueString()
+			accessToken = config.AccessToken.ValueString()
 		}
-		if password == "" {
+	}
+
+	// Check if the user has provided an OAuth configuration to the provider
+	var clientId string
+	var hasOauthConfig bool
+	if internaltypes.IsDefined(config.OAuth) {
+		hasOauthConfig = true
+		configClientId := config.OAuth.Attributes()["client_id"].(types.String)
+		configClientSecret := config.OAuth.Attributes()["client_secret"].(types.String)
+		configScopes := config.OAuth.Attributes()["scopes"].(types.List)
+		configTokenUrl := config.OAuth.Attributes()["token_url"].(types.String)
+
+		// Check if the user has provided a client_id to the provider
+		if configClientId.IsNull() {
+			clientId = os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID")
+		} else {
+			clientId = configClientId.ValueString()
+		}
+		if clientId == "" {
 			resp.Diagnostics.AddError(
-				"Unable to find password",
-				"password cannot be an empty string. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_PASSWORD environment variable.",
+				"Unable to find client_id",
+				"client_id cannot be an empty string. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID environment variable.",
+			)
+		}
+
+		// Check if the user has provided a client_secret to the provider
+		var clientSecret string
+		if configClientSecret.IsNull() {
+			clientSecret = os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET")
+		} else {
+			clientSecret = configClientSecret.ValueString()
+		}
+		if clientSecret == "" {
+			resp.Diagnostics.AddError(
+				"Unable to find client_secret",
+				"client_secret cannot be an empty string. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET environment variable.",
+			)
+		}
+
+		// Check if the user has provided scopes to the provider
+		var scopes []string
+		if len(configScopes.Elements()) > 0 {
+			scopes = strings.Split(os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_SCOPES"), ",")
+		} else {
+			configScopes.ElementsAs(ctx, &scopes, false)
+		}
+		if len(scopes) == 0 {
+			resp.Diagnostics.AddError(
+				"Unable to find scopes",
+				"scopes cannot be an empty list. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_OAUTH_SCOPES environment variable.",
+			)
+		}
+
+		// Check if the user has provided a token_url to the provider
+		var tokenUrl string
+		if configTokenUrl.IsNull() {
+			tokenUrl = os.Getenv("PINGFEDERATE_PROVIDER_TOKEN_URL")
+		} else {
+			tokenUrl = configTokenUrl.ValueString()
+		}
+		if tokenUrl == "" {
+			resp.Diagnostics.AddError(
+				"Unable to find token_url",
+				"token_url cannot be an empty string. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL environment variable.",
 			)
 		}
 	}
 
+	// Validate the configuration
+	if username == "" && password == "" && accessToken == "" && !hasOauthConfig {
+		resp.Diagnostics.AddError(
+			"Unable to find username and password, access_token, or OAuth configuration",
+			"username and password, access_token, or oauth configuration cannot be empty. Either set them in the configuration or use the PINGFEDERATE_PROVIDER_* environment variables.",
+		)
+	} else {
+		// If user has not provided an OAuth configuration or access token, they must provide username and password
+		if !hasOauthConfig && accessToken == "" {
+			if username == "" {
+				resp.Diagnostics.AddError(
+					"Unable to find username",
+					"username cannot be an empty string. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_USERNAME environment variable.",
+				)
+			}
+
+			if password == "" {
+				resp.Diagnostics.AddError(
+					"Unable to find password",
+					"password cannot be an empty string. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_PASSWORD environment variable.",
+				)
+			}
+		}
+
+		// If user has not provided username and password or an OAuth configuration, they must provide an access token
+		if username == "" && password == "" && !internaltypes.IsDefined(config.OAuth) {
+			if accessToken == "" {
+				resp.Diagnostics.AddError(
+					"Unable to find access_token",
+					"access_token cannot be an empty string. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_ACCESS_TOKEN environment variable.",
+				)
+			}
+		}
+
+		// If user has not provided username and password or an access token, they must provide an OAuth configuration
+		if !internaltypes.IsDefined(config.OAuth) && (accessToken != "" && (username != "" || password != "")) {
+			resp.Diagnostics.AddError(
+				"Unable to find OAuth configuration",
+				"Oauth configuration cannot be empty. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_OAUTH_* environment variables.",
+			)
+		}
+	}
+
+	// User must provide a product version to the provider
 	var productVersion string
 	var parsedProductVersion version.SupportedVersion
 	var err error
@@ -331,10 +473,30 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	var resourceConfig internaltypes.ResourceConfiguration
 	providerConfig := internaltypes.ProviderConfiguration{
 		HttpsHost:      httpsHost,
-		Username:       username,
-		Password:       password,
 		ProductVersion: parsedProductVersion,
 	}
+
+	if username != "" {
+		providerConfig.Username = &username
+	}
+
+	if password != "" {
+		providerConfig.Password = &password
+	}
+
+	if accessToken != "" {
+		providerConfig.AccessToken = &accessToken
+	}
+
+	if hasOauthConfig {
+		providerConfig.ClientId = config.OAuth.Attributes()["client_id"].(types.String).ValueStringPointer()
+		providerConfig.ClientSecret = config.OAuth.Attributes()["client_secret"].(types.String).ValueStringPointer()
+		var scopes []string
+		config.OAuth.Attributes()["scopes"].(types.List).ElementsAs(ctx, &scopes, false)
+		providerConfig.Scopes = scopes
+		providerConfig.TokenUrl = config.OAuth.Attributes()["token_url"].(types.String).ValueStringPointer()
+	}
+
 	resourceConfig.ProviderConfig = providerConfig
 	clientConfig := client.NewConfiguration()
 	clientConfig.DefaultHeader["X-Xsrf-Header"] = "PingFederate"
@@ -352,6 +514,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 		},
 	}
 	httpClient := &http.Client{Transport: tr}
+	resourceConfig.ProviderConfig.Transport = tr
 	clientConfig.HTTPClient = httpClient
 	userAgentSuffix := fmt.Sprintf("terraform-provider-pingfederate/%s %s", p.version, productVersion)
 	if userAgentExtraSuffix != "" {

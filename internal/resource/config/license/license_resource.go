@@ -296,7 +296,7 @@ func (r *licenseResource) Create(ctx context.Context, req resource.CreateRequest
 	}
 
 	createLicense := client.NewLicenseFile(plan.FileData.ValueString())
-	apiCreateLicense := r.apiClient.LicenseAPI.UpdateLicense(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateLicense := r.apiClient.LicenseAPI.UpdateLicense(config.DetermineAuthContext(ctx, r.providerConfig))
 	apiCreateLicense = apiCreateLicense.Body(*createLicense)
 	licenseResponse, httpResp, err := r.apiClient.LicenseAPI.UpdateLicenseExecute(apiCreateLicense)
 	if err != nil {
@@ -321,7 +321,7 @@ func (r *licenseResource) Read(ctx context.Context, req resource.ReadRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadLicense, httpResp, err := r.apiClient.LicenseAPI.GetLicense(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadLicense, httpResp, err := r.apiClient.LicenseAPI.GetLicense(config.DetermineAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the license", err, httpResp)
@@ -356,7 +356,7 @@ func (r *licenseResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	updateLicense := r.apiClient.LicenseAPI.UpdateLicense(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateLicense := r.apiClient.LicenseAPI.UpdateLicense(config.DetermineAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewLicenseFile(plan.FileData.ValueString())
 	updateLicense = updateLicense.Body(*createUpdateRequest)
 	updateLicenseResponse, httpResp, err := r.apiClient.LicenseAPI.UpdateLicenseExecute(updateLicense)

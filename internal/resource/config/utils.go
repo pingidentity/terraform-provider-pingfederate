@@ -22,7 +22,44 @@ func BasicAuthContext(ctx context.Context, username, password string) context.Co
 
 // Get a BasicAuth context from a ProviderConfiguration
 func ProviderBasicAuthContext(ctx context.Context, providerConfig internaltypes.ProviderConfiguration) context.Context {
-	return BasicAuthContext(ctx, providerConfig.Username, providerConfig.Password)
+	return BasicAuthContext(ctx, *providerConfig.Username, *providerConfig.Password)
+}
+
+// Get an AccessToken context with an accessToken
+func AccessTokenContext(ctx context.Context, accessToken string) context.Context {
+	return context.WithValue(ctx, client.ContextAccessToken, accessToken)
+}
+
+// Get an AccessToken context from a ProviderConfiguration
+func ProviderAccessTokenContext(ctx context.Context, providerConfig internaltypes.ProviderConfiguration) context.Context {
+	return AccessTokenContext(ctx, *providerConfig.AccessToken)
+}
+
+// Get an OAuth context with a tokenUrl, clientId, clientSecret, and scopes
+func OAuthContext(ctx context.Context, transport *http.Transport, tokenUrl string, clientId string, clientSecret string, scopes []string) context.Context {
+	return context.WithValue(ctx, client.ContextOAuth2, client.OAuthValues{
+		Transport:    transport,
+		TokenUrl:     tokenUrl,
+		ClientId:     clientId,
+		ClientSecret: clientSecret,
+		Scopes:       scopes,
+	})
+}
+
+// Get an OAuth context from a ProviderConfiguration
+func ProviderOAuthContext(ctx context.Context, providerConfig internaltypes.ProviderConfiguration) context.Context {
+	return OAuthContext(ctx, providerConfig.Transport, *providerConfig.TokenUrl, *providerConfig.ClientId, *providerConfig.ClientSecret, providerConfig.Scopes)
+}
+
+func DetermineAuthContext(ctx context.Context, providerConfig internaltypes.ProviderConfiguration) context.Context {
+	if providerConfig.Username != nil && providerConfig.Password != nil {
+		return ProviderBasicAuthContext(ctx, providerConfig)
+	} else if providerConfig.ClientId != nil && providerConfig.ClientSecret != nil && providerConfig.TokenUrl != nil {
+		return ProviderOAuthContext(ctx, providerConfig)
+	} else if providerConfig.AccessToken != nil {
+		return ProviderAccessTokenContext(ctx, providerConfig)
+	}
+	return ctx
 }
 
 // Error from PF API

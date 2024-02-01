@@ -199,7 +199,7 @@ func (r *oauthOpenIdConnectPolicyDataSource) Read(ctx context.Context, req datas
 		return
 	}
 
-	apiReadOIDCPolicy, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.GetOIDCPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.PolicyId.ValueString()).Execute()
+	apiReadOIDCPolicy, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.GetOIDCPolicy(config.DetermineAuthContext(ctx, r.providerConfig), state.PolicyId.ValueString()).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OIDC Policy", err, httpResp)
 		return
