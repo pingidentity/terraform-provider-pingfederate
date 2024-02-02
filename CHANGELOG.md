@@ -8,6 +8,9 @@
 * Added support for the `PINGFEDERATE_TF_APPEND_USER_AGENT` environment variable, used to append a custom suffix to the User-Agent header used by the provider when making HTTP requests. ([#171](https://github.com/pingidentity/terraform-provider-pingfederate/pull/171))
 * Added support for automatically retrying certain HTTP error codes. ([#171](https://github.com/pingidentity/terraform-provider-pingfederate/pull/171))
 
+#### Resources
+* **New Resource:** `pingfederate_extended_properties` ([#182](https://github.com/pingidentity/terraform-provider-pingfederate/pull/182))
+
 ### BUG FIXES
 * Fixed provider not correctly comparing versions for PingFederate `11.2.6` and `11.2.7` ([#168](https://github.com/pingidentity/terraform-provider-pingfederate/pull/168))
 * Fixed provider errors when using strings with escaped quotes in certain attributes ([#178](https://github.com/pingidentity/terraform-provider-pingfederate/pull/178))
