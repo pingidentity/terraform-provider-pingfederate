@@ -109,6 +109,8 @@ func testAccCheckExpectedExtendedPropertiesAttributes(extendedProperty *client.E
 				return fmt.Errorf("Empty items object sent, expected no items to be returned, but got %d", len(response.GetItems()))
 			}
 			return nil
+		} else if len(response.GetItems()) == 0 {
+			return fmt.Errorf("Expected items to be returned, but got none")
 		}
 
 		// Verify that attributes have expected values
