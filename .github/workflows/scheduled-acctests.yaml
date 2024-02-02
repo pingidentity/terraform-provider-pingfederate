@@ -18,7 +18,7 @@ jobs:
           - "1.6.*"
         # Cover oldest and newest patch release of the major-minor releases we support
         pingfederate:
-          - "11.2.0"
+          - "11.2.2"
           - "11.2.7"
           - "11.3.0"
           - "11.3.4"
