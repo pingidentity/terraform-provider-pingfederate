@@ -20,12 +20,6 @@ import (
 func ConfigurationPreCheck(t *testing.T) {
 	envVars := []string{
 		"PINGFEDERATE_PROVIDER_HTTPS_HOST",
-		"PINGFEDERATE_PROVIDER_USERNAME",
-		"PINGFEDERATE_PROVIDER_PASSWORD",
-		"PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID",
-		"PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET",
-		"PINGFEDERATE_PROVIDER_OAUTH_SCOPES",
-		"PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL",
 		"PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS",
 		"PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER",
 		"PINGFEDERATE_PROVIDER_PRODUCT_VERSION",
@@ -52,7 +46,7 @@ func ConfigurationPreCheck(t *testing.T) {
 	}
 }
 
-func getTransport() *http.Transport {
+func GetTransport() *http.Transport {
 	// Trusting all for the acceptance tests, since they run on localhost
 	// May want to incorporate actual trust here in the future.
 	//#nosec G402
@@ -73,9 +67,15 @@ func TestClient() *client.APIClient {
 		},
 	}
 
-	httpClient := &http.Client{Transport: getTransport()}
+	httpClient := &http.Client{Transport: GetTransport()}
 	clientConfig.HTTPClient = httpClient
 	return client.NewAPIClient(clientConfig)
+}
+
+// lintignore:AT008
+func TestAccessTokenContext(accessToken string) context.Context {
+	ctx := context.Background()
+	return config.AccessTokenContext(ctx, accessToken)
 }
 
 func TestBasicAuthContext() context.Context {
@@ -85,7 +85,7 @@ func TestBasicAuthContext() context.Context {
 
 func TestOauth2Context() context.Context {
 	ctx := context.Background()
-	return config.OAuthContext(ctx, getTransport(), os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL"), os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID"), os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET"), []string{os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_SCOPES")})
+	return config.OAuthContext(ctx, GetTransport(), os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL"), os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID"), os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET"), []string{os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_SCOPES")})
 }
 
 // Convert a string slice to the format used in Terraform files

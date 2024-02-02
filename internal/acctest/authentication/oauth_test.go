@@ -1,7 +1,8 @@
-package virtualhostnames_test
+package auth_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -12,6 +13,13 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
+func getOAuthEnvVars() {
+	os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID")
+	os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET")
+	os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL")
+	os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_SCOPES")
+}
+
 func TestAccOAuthVirtualHostNames(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
@@ -20,14 +28,15 @@ func TestAccOAuthVirtualHostNames(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: testAccVirtualHostNames("virtualHostNames"),
-				Check:  testAccGetVirtualHostNames(),
+				PreConfig: getOAuthEnvVars,
+				Config:    testAccOAuthVirtualHostNames("virtualHostNames"),
+				Check:     testAccOAuthGetVirtualHostNames(),
 			},
 		},
 	})
 }
 
-func testAccVirtualHostNames(resourceName string) string {
+func testAccOAuthVirtualHostNames(resourceName string) string {
 	return fmt.Sprintf(`
 resource "pingfederate_virtual_host_names" "%[1]s" {
   virtual_host_names = %[2]s
@@ -40,7 +49,7 @@ data "pingfederate_virtual_host_names" "%[1]s" {
 }
 
 // Test that the expected attributes are set on the PingFederate server
-func testAccGetVirtualHostNames() resource.TestCheckFunc {
+func testAccOAuthGetVirtualHostNames() resource.TestCheckFunc {
 	test := func(s *terraform.State) error {
 		testClient := acctest.TestClient()
 		ctx := acctest.TestOauth2Context()

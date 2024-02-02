@@ -273,68 +273,62 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	}
 
 	// Check if the user has provided an OAuth configuration to the provider
-	var clientId string
 	var hasOauthConfig bool = false
-	if internaltypes.IsDefined(config.OAuth) {
-		hasOauthConfig = true
-		configClientId := config.OAuth.Attributes()["client_id"].(types.String)
-		configClientSecret := config.OAuth.Attributes()["client_secret"].(types.String)
-		configScopes := config.OAuth.Attributes()["scopes"].(types.List)
-		configTokenUrl := config.OAuth.Attributes()["token_url"].(types.String)
-
-		// Check if the user has provided a client_id to the provider
-		if configClientId.IsNull() {
-			clientId = os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID")
-		} else {
+	var clientId string
+	var clientSecret string
+	var scopes []string
+	var tokenUrl string
+	if username == "" && password == "" && accessToken == "" {
+		configClientId, ok := config.OAuth.Attributes()["client_id"].(types.String)
+		if ok {
 			clientId = configClientId.ValueString()
-		}
-		if clientId == "" {
-			resp.Diagnostics.AddError(
-				"Unable to find client_id",
-				"client_id cannot be an empty string. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID environment variable.",
-			)
+		} else {
+			clientId = os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID")
+			if clientId == "" {
+				resp.Diagnostics.AddError(
+					"Unable to find client_id",
+					"client_id cannot be an empty string. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID environment variable.",
+				)
+			}
 		}
 
-		// Check if the user has provided a client_secret to the provider
-		var clientSecret string
-		if configClientSecret.IsNull() {
-			clientSecret = os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET")
-		} else {
+		configClientSecret, ok := config.OAuth.Attributes()["client_secret"].(types.String)
+		if ok {
 			clientSecret = configClientSecret.ValueString()
-		}
-		if clientSecret == "" {
-			resp.Diagnostics.AddError(
-				"Unable to find client_secret",
-				"client_secret cannot be an empty string. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET environment variable.",
-			)
+		} else {
+			clientSecret = os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET")
+			if clientSecret == "" {
+				resp.Diagnostics.AddError(
+					"Unable to find client_secret",
+					"client_secret cannot be an empty string. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET environment variable.",
+				)
+			}
 		}
 
-		// Check if the user has provided scopes to the provider
-		var scopes []string
-		if len(configScopes.Elements()) > 0 {
-			scopes = strings.Split(os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_SCOPES"), ",")
-		} else {
+		configScopes, ok := config.OAuth.Attributes()["scopes"].(types.List)
+		if ok {
 			configScopes.ElementsAs(ctx, &scopes, false)
-		}
-		if len(scopes) == 0 {
-			resp.Diagnostics.AddError(
-				"Unable to find scopes",
-				"scopes cannot be an empty list. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_OAUTH_SCOPES environment variable.",
-			)
+		} else {
+			scopes = []string{os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_SCOPES")}
 		}
 
-		// Check if the user has provided a token_url to the provider
-		var tokenUrl string
-		if configTokenUrl.IsNull() {
-			tokenUrl = os.Getenv("PINGFEDERATE_PROVIDER_TOKEN_URL")
-		} else {
+		configTokenUrl, ok := config.OAuth.Attributes()["token_url"].(types.String)
+		if ok {
 			tokenUrl = configTokenUrl.ValueString()
+		} else {
+			tokenUrl = os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL")
+			if tokenUrl == "" {
+				resp.Diagnostics.AddError(
+					"Unable to find token_url",
+					"token_url cannot be an empty string. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL environment variable.",
+				)
+			}
 		}
-		if tokenUrl == "" {
-			resp.Diagnostics.AddError(
-				"Unable to find token_url",
-				"token_url cannot be an empty string. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL environment variable.",
-			)
+
+		if clientId != "" && clientSecret != "" && tokenUrl != "" {
+			hasOauthConfig = true
+		} else {
+			hasOauthConfig = false
 		}
 	}
 
@@ -342,7 +336,12 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	if username == "" && password == "" && accessToken == "" && !hasOauthConfig {
 		resp.Diagnostics.AddError(
 			"Unable to find username and password, access_token, or OAuth configuration",
-			"username and password, access_token, or oauth configuration cannot be empty. Either set them in the configuration or use the PINGFEDERATE_PROVIDER_* environment variables.",
+			"username and password, access_token, or oauth configuration required values were not supplied. Either set them in the configuration or use the PINGFEDERATE_PROVIDER_* environment variables.",
+		)
+	} else if username != "" && password != "" && accessToken != "" && hasOauthConfig {
+		resp.Diagnostics.AddError(
+			"Not all values can be set",
+			"username and password, access_token, and oauth configuration cannot all be set. Only one of them can be set.",
 		)
 	} else {
 		// If user has not provided an OAuth configuration or access token, they must provide username and password
@@ -489,12 +488,10 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	}
 
 	if hasOauthConfig {
-		providerConfig.ClientId = config.OAuth.Attributes()["client_id"].(types.String).ValueStringPointer()
-		providerConfig.ClientSecret = config.OAuth.Attributes()["client_secret"].(types.String).ValueStringPointer()
-		var scopes []string
-		config.OAuth.Attributes()["scopes"].(types.List).ElementsAs(ctx, &scopes, false)
+		providerConfig.ClientId = &clientId
+		providerConfig.ClientSecret = &clientSecret
 		providerConfig.Scopes = scopes
-		providerConfig.TokenUrl = config.OAuth.Attributes()["token_url"].(types.String).ValueStringPointer()
+		providerConfig.TokenUrl = &tokenUrl
 	}
 
 	resourceConfig.ProviderConfig = providerConfig
@@ -523,9 +520,8 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	clientConfig.UserAgentSuffix = pointers.String(userAgentSuffix)
 	resourceConfig.ApiClient = client.NewAPIClient(clientConfig)
 	resp.ResourceData = resourceConfig
-	resp.DataSourceData = resourceConfig
-
 	tflog.Info(ctx, "Configured PingFederate client", map[string]interface{}{"success": true})
+	resp.DataSourceData = resourceConfig
 }
 
 // DataSources defines the data sources implemented in the provider.

@@ -25,7 +25,7 @@ starttestcontainer:
 		-d -p 9999:9999 \
 		--env-file "${HOME}/.pingidentity/config" \
 		-e SERVER_PROFILE_URL=https://github.com/pingidentity/pingidentity-server-profiles.git \
-		-e SERVER_PROFILE_BRANCH=terraform-provider-pingfederate-1125 \
+		-e SERVER_PROFILE_BRANCH=oauth-test-dependencies \
 		-e SERVER_PROFILE_PATH=terraform-provider-pingfederate/pingfederate \
 		pingidentity/pingfederate:$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.0}-latest
 # Wait for the instance to become ready
@@ -45,27 +45,44 @@ removetestcontainer:
 	
 spincontainer: removetestcontainer starttestcontainer
 
-define test_acc_env_vars
-	PINGFEDERATE_PROVIDER_HTTPS_HOST=https://localhost:9999 PINGFEDERATE_PROVIDER_ADMIN_API_PATH="/pf-admin-api/v1" PINGFEDERATE_PROVIDER_USERNAME=administrator PINGFEDERATE_PROVIDER_PASSWORD=2FederateM0re PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER=true PINGFEDERATE_PROVIDER_PRODUCT_VERSION=$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0} PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID=test PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET=2FederateM0re! PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL=https://localhost:9031/as/token.oauth2 PINGFEDERATE_PROVIDER_OAUTH_SCOPES=email
+define test_acc_common_env_vars
+	PINGFEDERATE_PROVIDER_HTTPS_HOST=https://localhost:9999 PINGFEDERATE_PROVIDER_ADMIN_API_PATH="/pf-admin-api/v1" PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER=true PINGFEDERATE_PROVIDER_PRODUCT_VERSION=$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0}
+endef
+
+define test_acc_basic_auth_env_vars
+	PINGFEDERATE_PROVIDER_USERNAME=administrator PINGFEDERATE_PROVIDER_PASSWORD=2FederateM0re
+endef
+
+define test_acc_oauth_env_vars
+	PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID=test PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET=2FederateM0re! PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL=https://localhost:9031/as/token.oauth2 PINGFEDERATE_PROVIDER_OAUTH_SCOPES=email
 endef
 
 # Set ACC_TEST_NAME to name of test in cli
 testoneacc:
-	$(call test_acc_env_vars) TF_ACC=1 go test ./internal/acctest/... -timeout 10m -run ${ACC_TEST_NAME} -v count=1
+	$(call test_acc_common_env_vars) TF_ACC=1 go test ./internal/acctest/... -timeout 10m -run ${ACC_TEST_NAME} -v count=1
 
 testoneacccomplete: spincontainer testoneacc
 
 # Some tests can step on each other's toes so run those tests in single threaded mode. Run the rest in parallel
 testacc:
-	$(call test_acc_env_vars) TF_ACC=1 go test `go list ./internal/acctest/... | grep -v -e authenticationapi -e oauth/authserversettings/scopes -e oauth/openidconnect/policy` -timeout 10m -v -p 4; \
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -v -e authenticationapi -e oauth/authserversettings/scopes -e oauth/openidconnect/policy` -timeout 10m -v -p 4; \
 	firstTestResult=$$?; \
-	$(call test_acc_env_vars) TF_ACC=1 go test `go list ./internal/acctest/... | grep -e authenticationapi -e oauth/authserversettings/scopes -e oauth/openidconnect/policy` -timeout 10m -v -p 1; \
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -e authenticationapi -e oauth/authserversettings/scopes -e oauth/openidconnect/policy` -timeout 10m -v -p 1; \
 	secondTestResult=$$?; \
-	if test "$$firstTestResult" != "0" || test "$$secondTestResult" != "0" ; then \
+	if test "$$firstTestResult" != "0" || test "$$secondTestResult" != "0"; then \
 		false; \
 	fi
 
-testacccomplete: spincontainer testacc
+testauthacc:
+	$(call test_acc_common_env_vars) $(call test_acc_oauth_env_vars) TF_ACC=1 go test ./internal/acctest/authentication/oauth_test.go -timeout 5m -v; \
+	oauthResult=$$?; \
+	$(call test_acc_common_env_vars) $(call test_acc_oauth_env_vars) TF_ACC=1 go test ./internal/acctest/authentication/access_token_test.go -timeout 5m -v; \
+	atResult=$$?; \
+	if test "$$oauthResult" != 0 || test "$$atResult" != 0; then \
+		false; \
+	fi
+
+testacccomplete: spincontainer testacc testauthacc
 
 clearstates:
 	find . -name "*tfstate*" -delete
@@ -77,7 +94,7 @@ devchecknotest: verifycontent install golangcilint generate tfproviderlint tflin
 verifycontent:
 	python3 ./devcheck/verifyContent.py
 
-devcheck: devchecknotest kaboom testacc
+devcheck: devchecknotest kaboom testacc testauthacc
 
 generateresource:
 	PINGFEDERATE_GENERATED_ENDPOINT=serverSettings \
