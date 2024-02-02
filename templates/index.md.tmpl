@@ -8,6 +8,9 @@ description: |-
 
 The PingFederate provider manages the configuration of a PingFederate server.
 
+# Disclaimer - Provider in Development
+The PingFederate Terraform provider is under active development. As such, consumers must have flexibility for breaking changes until the `1.0.0` release. When using the PingFederate Terraform Provider within an automated pipeline prior to `1.0.0`, it is recommended to pin the provider version similar to `version = "~> 0.5.0"` to avoid experiencing an unexpected pipeline failure as the result of a provider change. Enhancements, bug fixes, notes and breaking changes can be found on the [Changelog](CHANGELOG.md). If issues are found, please raise a [github issue](https://github.com/pingidentity/terraform-provider-pingfederate/issues/new?assignees=&labels=bug&projects=&template=bug_report.md&title=) on this project.
+
 ## PingFederate Version Support
 
 The PingFederate provider supports versions `11.2` through `12.0` of PingFederate.

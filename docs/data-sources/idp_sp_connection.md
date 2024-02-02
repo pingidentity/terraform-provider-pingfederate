@@ -809,7 +809,7 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables"></a>
@@ -821,7 +821,7 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
 - `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables--rows))
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables--rows"></a>
@@ -842,7 +842,7 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 
 
 
@@ -857,7 +857,7 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables_all"></a>
@@ -869,7 +869,7 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
 - `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables_all--rows))
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables_all--rows"></a>
@@ -890,7 +890,7 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 
 
 
