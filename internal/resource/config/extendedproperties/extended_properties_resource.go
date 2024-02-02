@@ -54,7 +54,7 @@ func (r *extendedPropertiesResource) Schema(ctx context.Context, req resource.Sc
 		Description: "Manages Extended Properties definitions",
 		Attributes: map[string]schema.Attribute{
 			"items": schema.ListNestedAttribute{
-				Description: "Extended Property definition that allows to store additional information about IdP/SP Connections and OAuth Clients.",
+				Description: "A collection of Extended Properties definitions.",
 				Required:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -183,6 +183,7 @@ func (r *extendedPropertiesResource) Read(ctx context.Context, req resource.Read
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the extended properties", err, httpResp)
 		}
+		return
 	}
 
 	id, diags := id.GetID(ctx, req.State)

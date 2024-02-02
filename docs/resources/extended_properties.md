@@ -16,13 +16,13 @@ Manages Extended Properties definitions
 resource "pingfederate_extended_properties" "extendedPropertiesExample" {
   items = [
     {
-      name         = "extended_attribute"
+      name         = "extended_attribute_1"
       description  = "attribute_1_description"
       multi_valued = false
     },
     {
-      name         = "extended_attribute_3"
-      description  = "attribute_3_description"
+      name         = "extended_attribute_2"
+      description  = "attribute_2_description"
       multi_valued = true
     }
   ]
@@ -34,7 +34,7 @@ resource "pingfederate_extended_properties" "extendedPropertiesExample" {
 
 ### Required
 
-- `items` (Attributes List) Extended Property definition that allows to store additional information about IdP/SP Connections and OAuth Clients. (see [below for nested schema](#nestedatt--items))
+- `items` (Attributes List) A collection of Extended Properties definitions. (see [below for nested schema](#nestedatt--items))
 
 ### Read-Only
 
@@ -54,6 +54,6 @@ Optional:
 Import is supported using the following syntax:
 
 ```shell
-# "extendedPropertiesId" should be the ID of the extended properties to be imported
+# This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
 terraform import pingfederate_extended_properties.extendedProperties extendedPropertiesId
 ```

@@ -103,22 +103,26 @@ func testAccCheckExpectedExtendedPropertiesAttributes(extendedProperty *client.E
 			return err
 		}
 
+		// Check for no items if empty object sent
+		if extendedProperty.Name == nil {
+			if len(response.GetItems()) > 0 {
+				return fmt.Errorf("Empty items object sent, expected no items to be returned, but got %d", len(response.GetItems()))
+			}
+			return nil
+		}
+
 		// Verify that attributes have expected values
 		if len(response.GetItems()) > 0 {
 			err = acctest.TestAttributesMatchString(resourceType, nil, "name", *extendedProperty.Name, *response.Items[0].Name)
 			if err != nil {
 				return err
 			}
-		}
 
-		if len(response.GetItems()) > 0 {
 			err = acctest.TestAttributesMatchString(resourceType, nil, "description", *extendedProperty.Description, *response.Items[0].Description)
 			if err != nil {
 				return err
 			}
-		}
 
-		if len(response.GetItems()) > 0 {
 			err = acctest.TestAttributesMatchBool(resourceType, nil, "multi_valued", *extendedProperty.MultiValued, *response.Items[0].MultiValued)
 			if err != nil {
 				return err

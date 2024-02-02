@@ -1,2 +1,2 @@
-# "extendedPropertiesId" should be the ID of the extended properties to be imported
+# This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
 terraform import pingfederate_extended_properties.extendedProperties extendedPropertiesId
