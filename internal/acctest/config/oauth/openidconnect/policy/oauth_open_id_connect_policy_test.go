@@ -2,6 +2,8 @@ package oauthopenidconnectpolicy_test
 
 import (
 	"fmt"
+	"io"
+	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -33,6 +35,33 @@ type oauthOpenIdConnectPoliciesResourceModel struct {
 	reissueIdTokenInHybridFlow  *bool
 }
 
+// This is due to a bug in PingFederate that doesn't allow the OAuth client to set "None" as the OIDC Policy
+func deleteOauthClient() {
+	//#nosec G402
+	client := &http.Client{Transport: acctest.GetTransport()}
+	req, err := http.NewRequest(http.MethodDelete, "https://localhost:9999/pf-admin-api/v1/oauth/clients/test", nil)
+	req.Header.Set("accept", "application/json")
+	req.Header.Set("X-XSRF-Header", "PingFederate")
+	req.SetBasicAuth("Administrator", "2FederateM0re")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	defer resp.Body.Close()
+	_, readErr := io.ReadAll(resp.Body)
+	if readErr != nil {
+		fmt.Println(readErr)
+		return
+	}
+}
+
 func TestAccOauthOpenIdConnectPolicies(t *testing.T) {
 	resourceName := "myOauthOpenIdConnectPolicies"
 
@@ -62,8 +91,9 @@ func TestAccOauthOpenIdConnectPolicies(t *testing.T) {
 		CheckDestroy: testAccCheckOauthOpenIdConnectPoliciesDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOauthOpenIdConnectPolicies(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedOauthOpenIdConnectPoliciesAttributes(initialResourceModel),
+				PreConfig: deleteOauthClient,
+				Config:    testAccOauthOpenIdConnectPolicies(resourceName, initialResourceModel),
+				Check:     testAccCheckExpectedOauthOpenIdConnectPoliciesAttributes(initialResourceModel),
 			},
 			{
 				// Test updating some fields

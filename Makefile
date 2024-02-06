@@ -59,9 +59,9 @@ endef
 
 # Set ACC_TEST_NAME to name of test in cli
 testoneacc:
-	$(call test_acc_common_env_vars) TF_ACC=1 go test ./internal/acctest/... -timeout 10m -run ${ACC_TEST_NAME} -v count=1
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/... -timeout 10m -run ${ACC_TEST_NAME} -v count=1
 
-testoneacccomplete: spincontainer testoneacc
+testoneacccomplete: spincontainer testauthacc testacc
 
 # Some tests can step on each other's toes so run those tests in single threaded mode. Run the rest in parallel
 testacc:
@@ -82,7 +82,7 @@ testauthacc:
 		false; \
 	fi
 
-testacccomplete: spincontainer testacc testauthacc
+testacccomplete: spincontainer testauthacc testacc
 
 clearstates:
 	find . -name "*tfstate*" -delete

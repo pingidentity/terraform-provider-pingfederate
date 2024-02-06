@@ -887,7 +887,7 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 			if clientAuthDefined {
 				clientAuthType := clientAuthAttributes["type"].(types.String).ValueString()
 				clientAuthSecret := clientAuthAttributes["secret"].(types.String).ValueString()
-				if clientAuthType != "NONE" {
+				if clientAuthType != "NONE" && clientAuthType != "SECRET" {
 					resp.Diagnostics.AddError("client_auth.type must be set to \"SECRET\" when \"CLIENT_CREDENTIALS\" is included in grant_types.", "")
 				}
 				if clientAuthSecret == "" {
