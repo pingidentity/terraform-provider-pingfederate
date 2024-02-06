@@ -94,7 +94,7 @@ devchecknotest: verifycontent install golangcilint generate tfproviderlint tflin
 verifycontent:
 	python3 ./devcheck/verifyContent.py
 
-devcheck: devchecknotest kaboom testacc testauthacc
+devcheck: devchecknotest kaboom testauthacc testacc
 
 generateresource:
 	PINGFEDERATE_GENERATED_ENDPOINT=serverSettings \
