@@ -60,15 +60,15 @@ export PINGFEDERATE_TF_APPEND_USER_AGENT="Jenkins/2.426.2"
 
 ### Optional
 
-- `access_token` (String, Sensitive) Access token for PingFederate Admin API. Default value can be set with the `PINGFEDERATE_PROVIDER_ACCESS_TOKEN` environment variable.
+- `access_token` (String, Sensitive) Access token for PingFederate Admin API. Cannot be used in conjunction with username and password, or oauth. Default value can be set with the `PINGFEDERATE_PROVIDER_ACCESS_TOKEN` environment variable.
 - `admin_api_path` (String) Path for PingFederate Admin API. Default value can be set with the `PINGFEDERATE_PROVIDER_ADMIN_API_PATH` environment variable. If no value is supplied, the value used will be `/pf-admin-api/v1`.
 - `ca_certificate_pem_files` (Set of String) Paths to files containing PEM-encoded certificates to be trusted as root CAs when connecting to the PingFederate server over HTTPS. If not set, the host's root CA set will be used. Default value can be set with the `PINGFEDERATE_PROVIDER_CA_CERTIFICATE_PEM_FILES` environment variable, using commas to delimit multiple PEM files if necessary.
 - `https_host` (String) URI for PingFederate HTTPS port. Default value can be set with the `PINGFEDERATE_PROVIDER_HTTPS_HOST` environment variable.
 - `insecure_trust_all_tls` (Boolean) Set to true to trust any certificate when connecting to the PingFederate server. This is insecure and should not be enabled outside of testing. Default value can be set with the `PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS` environment variable.
-- `oauth` (Attributes) OAuth configuration for requesting access token. Default values can be set with the `PINGFEDERATE_PROVIDER_OAUTH_*` environment variables. (see [below for nested schema](#nestedatt--oauth))
-- `password` (String, Sensitive) Password for PingFederate Admin user. Default value can be set with the `PINGFEDERATE_PROVIDER_PASSWORD` environment variable.
+- `oauth` (Attributes) OAuth Client Credentials configuration for requesting access token. Cannot be used in conjunction with access_token, or username and password. Default values can be set with the `PINGFEDERATE_PROVIDER_OAUTH_*` environment variables. (see [below for nested schema](#nestedatt--oauth))
+- `password` (String, Sensitive) Password for PingFederate Admin user. Must only be set with username. Cannot be used in conjunction with access_token, or oauth.  Default value can be set with the `PINGFEDERATE_PROVIDER_PASSWORD` environment variable.
 - `product_version` (String) Version of the PingFederate server being configured. Default value can be set with the `PINGFEDERATE_PROVIDER_PRODUCT_VERSION` environment variable.
-- `username` (String) Username for PingFederate Admin user. Default value can be set with the `PINGFEDERATE_PROVIDER_USERNAME` environment variable.
+- `username` (String) Username for PingFederate Admin user. Must only be set with password. Cannot be used in conjunction with access_token, or oauth. Default value can be set with the `PINGFEDERATE_PROVIDER_USERNAME` environment variable.
 - `x_bypass_external_validation_header` (Boolean) Header value in request for PingFederate. The connection test will be bypassed when set to true. Default value can be set with the `PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER` environment variable.
 
 <a id="nestedatt--oauth"></a>
@@ -77,7 +77,7 @@ export PINGFEDERATE_TF_APPEND_USER_AGENT="Jenkins/2.426.2"
 Required:
 
 - `client_id` (String) OAuth client ID for requesting access token. Default value can be set with the `PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID` environment variable.
-- `client_secret` (String) OAuth client secret for requesting access token. Default value can be set with the `PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET` environment variable.
+- `client_secret` (String, Sensitive) OAuth client secret for requesting access token. Default value can be set with the `PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET` environment variable.
 - `token_url` (String) OAuth token URL for requesting access token. Default value can be set with the `PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL` environment variable.
 
 Optional:
