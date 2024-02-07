@@ -483,7 +483,7 @@ func (r *oauthAuthServerSettingsDataSource) Read(ctx context.Context, req dataso
 		return
 	}
 
-	apiReadOauthAuthServerSettings, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.GetAuthorizationServerSettings(config.DetermineAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadOauthAuthServerSettings, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.GetAuthorizationServerSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Auth Server Settings", err, httpResp)

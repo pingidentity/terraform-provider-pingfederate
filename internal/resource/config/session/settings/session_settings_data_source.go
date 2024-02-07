@@ -78,7 +78,7 @@ func (r *sessionSettingsDataSource) Read(ctx context.Context, req datasource.Rea
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadSessionSettings, httpResp, err := r.apiClient.SessionAPI.GetSessionSettings(config.DetermineAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadSessionSettings, httpResp, err := r.apiClient.SessionAPI.GetSessionSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the session settings", err, httpResp)
 		return

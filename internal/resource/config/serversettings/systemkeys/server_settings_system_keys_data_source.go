@@ -132,7 +132,7 @@ func (r *serverSettingsSystemKeysDataSource) Read(ctx context.Context, req datas
 		return
 	}
 
-	apiReadServerSettingsSystemKeys, httpResp, err := r.apiClient.ServerSettingsAPI.GetSystemKeys(config.DetermineAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadServerSettingsSystemKeys, httpResp, err := r.apiClient.ServerSettingsAPI.GetSystemKeys(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings System Keys", err, httpResp)
 		return

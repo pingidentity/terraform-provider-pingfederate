@@ -157,7 +157,7 @@ func (r *spAuthenticationPolicyContractMappingResource) Create(ctx context.Conte
 		return
 	}
 
-	apiCreateSpAuthenticationPolicyContractMappingResource := r.apiClient.SpAuthenticationPolicyContractMappingsAPI.CreateApcToSpAdapterMapping(config.DetermineAuthContext(ctx, r.providerConfig))
+	apiCreateSpAuthenticationPolicyContractMappingResource := r.apiClient.SpAuthenticationPolicyContractMappingsAPI.CreateApcToSpAdapterMapping(config.AuthContext(ctx, r.providerConfig))
 	apiCreateSpAuthenticationPolicyContractMappingResource = apiCreateSpAuthenticationPolicyContractMappingResource.Body(*createSpAuthenticationPolicyContractMappingResource)
 	spAuthenticationPolicyContractMappingResponse, httpResp, err := r.apiClient.SpAuthenticationPolicyContractMappingsAPI.CreateApcToSpAdapterMappingExecute(apiCreateSpAuthenticationPolicyContractMappingResource)
 	if err != nil {
@@ -183,7 +183,7 @@ func (r *spAuthenticationPolicyContractMappingResource) Read(ctx context.Context
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadSpAuthenticationPolicyContractMappingResource, httpResp, err := r.apiClient.SpAuthenticationPolicyContractMappingsAPI.GetApcToSpAdapterMappingById(config.DetermineAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadSpAuthenticationPolicyContractMappingResource, httpResp, err := r.apiClient.SpAuthenticationPolicyContractMappingsAPI.GetApcToSpAdapterMappingById(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -217,7 +217,7 @@ func (r *spAuthenticationPolicyContractMappingResource) Update(ctx context.Conte
 		resp.Diagnostics.AddError("Failed to build attribute contract fulfillment request object:", err.Error())
 		return
 	}
-	updateSpAuthenticationPolicyContractMappingResource := r.apiClient.SpAuthenticationPolicyContractMappingsAPI.UpdateApcToSpAdapterMappingById(config.DetermineAuthContext(ctx, r.providerConfig), plan.Id.ValueString())
+	updateSpAuthenticationPolicyContractMappingResource := r.apiClient.SpAuthenticationPolicyContractMappingsAPI.UpdateApcToSpAdapterMappingById(config.AuthContext(ctx, r.providerConfig), plan.Id.ValueString())
 	createUpdateRequest := client.NewApcToSpAdapterMapping(attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
 	err = addOptionalSpAuthenticationPolicyContractMappingResourceFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -248,7 +248,7 @@ func (r *spAuthenticationPolicyContractMappingResource) Delete(ctx context.Conte
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.SpAuthenticationPolicyContractMappingsAPI.DeleteApcToSpAdapterMappingById(config.DetermineAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	httpResp, err := r.apiClient.SpAuthenticationPolicyContractMappingsAPI.DeleteApcToSpAdapterMappingById(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the SP Authentication Policy Contract Mapping Resource", err, httpResp)
 	}

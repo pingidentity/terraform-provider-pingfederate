@@ -73,7 +73,7 @@ func (r *dataStoreDataSource) Read(ctx context.Context, req datasource.ReadReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	dataStoreGetReq, httpResp, err := r.apiClient.DataStoresAPI.GetDataStore(config.DetermineAuthContext(ctx, r.providerConfig), state.DataStoreId.ValueString()).Execute()
+	dataStoreGetReq, httpResp, err := r.apiClient.DataStoresAPI.GetDataStore(config.AuthContext(ctx, r.providerConfig), state.DataStoreId.ValueString()).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the data store", err, httpResp)
 

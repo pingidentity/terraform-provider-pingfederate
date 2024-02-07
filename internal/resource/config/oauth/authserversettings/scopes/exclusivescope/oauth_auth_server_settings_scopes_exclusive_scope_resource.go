@@ -123,7 +123,7 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopeResource) Create(ctx context
 		return
 	}
 
-	apiCreateOauthAuthServerSettingsScopesExclusiveScopes := r.apiClient.OauthAuthServerSettingsAPI.AddExclusiveScope(config.DetermineAuthContext(ctx, r.providerConfig))
+	apiCreateOauthAuthServerSettingsScopesExclusiveScopes := r.apiClient.OauthAuthServerSettingsAPI.AddExclusiveScope(config.AuthContext(ctx, r.providerConfig))
 	apiCreateOauthAuthServerSettingsScopesExclusiveScopes = apiCreateOauthAuthServerSettingsScopesExclusiveScopes.Body(*createOauthAuthServerSettingsScopesExclusiveScopes)
 	oauthAuthServerSettingsScopesExclusiveScopesResponse, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.AddExclusiveScopeExecute(apiCreateOauthAuthServerSettingsScopesExclusiveScopes)
 	if err != nil {
@@ -147,7 +147,7 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopeResource) Read(ctx context.C
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthAuthServerSettingsScopesExclusiveScopes, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.GetExclusiveScope(config.DetermineAuthContext(ctx, r.providerConfig), state.Name.ValueString()).Execute()
+	apiReadOauthAuthServerSettingsScopesExclusiveScopes, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.GetExclusiveScope(config.AuthContext(ctx, r.providerConfig), state.Name.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Auth Server Settings Scopes Exclusive Scope", err, httpResp)
@@ -179,7 +179,7 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopeResource) Update(ctx context
 	// Get the current state to see how any attributes are changing
 	var state oauthAuthServerSettingsScopesExclusiveScopeModel
 	req.State.Get(ctx, &state)
-	updateOauthAuthServerSettingsScopesExclusiveScopes := r.apiClient.OauthAuthServerSettingsAPI.UpdateExclusiveScope(config.DetermineAuthContext(ctx, r.providerConfig), plan.Name.ValueString())
+	updateOauthAuthServerSettingsScopesExclusiveScopes := r.apiClient.OauthAuthServerSettingsAPI.UpdateExclusiveScope(config.AuthContext(ctx, r.providerConfig), plan.Name.ValueString())
 	createUpdateRequest := client.NewScopeEntry(plan.Name.ValueString(), plan.Description.ValueString())
 	err := addOptionalOauthAuthServerSettingsScopesExclusiveScopesFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -211,7 +211,7 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopeResource) Delete(ctx context
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.RemoveExclusiveScope(config.DetermineAuthContext(ctx, r.providerConfig), state.Name.ValueString()).Execute()
+	httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.RemoveExclusiveScope(config.AuthContext(ctx, r.providerConfig), state.Name.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a OAuth Auth Server Settings Scopes Exclusive Scope", err, httpResp)
 	}

@@ -91,7 +91,7 @@ func (r *authenticationPoliciesFragmentDataSource) Read(ctx context.Context, req
 		return
 	}
 
-	fragmentResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.GetFragment(config.DetermineAuthContext(ctx, r.providerConfig), state.FragmentId.ValueString()).Execute()
+	fragmentResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.GetFragment(config.AuthContext(ctx, r.providerConfig), state.FragmentId.ValueString()).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Policy Fragment", err, httpResp)
 		return

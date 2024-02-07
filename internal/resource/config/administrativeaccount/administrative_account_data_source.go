@@ -125,7 +125,7 @@ func (r *administrativeAccountDataSource) Read(ctx context.Context, req datasour
 		return
 	}
 
-	apiReadAdministrativeAccount, httpResp, err := r.apiClient.AdministrativeAccountsAPI.GetAccount(config.DetermineAuthContext(ctx, r.providerConfig), state.Username.ValueString()).Execute()
+	apiReadAdministrativeAccount, httpResp, err := r.apiClient.AdministrativeAccountsAPI.GetAccount(config.AuthContext(ctx, r.providerConfig), state.Username.ValueString()).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the administrative account", err, httpResp)
 		return

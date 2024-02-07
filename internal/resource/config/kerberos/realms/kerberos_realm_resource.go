@@ -242,7 +242,7 @@ func (r *kerberosRealmsResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	apiCreateKerberosRealms := r.apiClient.KerberosRealmsAPI.CreateKerberosRealm(config.DetermineAuthContext(ctx, r.providerConfig))
+	apiCreateKerberosRealms := r.apiClient.KerberosRealmsAPI.CreateKerberosRealm(config.AuthContext(ctx, r.providerConfig))
 	apiCreateKerberosRealms = apiCreateKerberosRealms.Body(*createKerberosRealms)
 	kerberosRealmsResponse, httpResp, err := r.apiClient.KerberosRealmsAPI.CreateKerberosRealmExecute(apiCreateKerberosRealms)
 	if err != nil {
@@ -267,7 +267,7 @@ func (r *kerberosRealmsResource) Read(ctx context.Context, req resource.ReadRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadKerberosRealms, httpResp, err := r.apiClient.KerberosRealmsAPI.GetKerberosRealm(config.DetermineAuthContext(ctx, r.providerConfig), state.RealmId.ValueString()).Execute()
+	apiReadKerberosRealms, httpResp, err := r.apiClient.KerberosRealmsAPI.GetKerberosRealm(config.AuthContext(ctx, r.providerConfig), state.RealmId.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -297,7 +297,7 @@ func (r *kerberosRealmsResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	updateKerberosRealms := r.apiClient.KerberosRealmsAPI.UpdateKerberosRealm(config.DetermineAuthContext(ctx, r.providerConfig), plan.RealmId.ValueString())
+	updateKerberosRealms := r.apiClient.KerberosRealmsAPI.UpdateKerberosRealm(config.AuthContext(ctx, r.providerConfig), plan.RealmId.ValueString())
 	createUpdateRequest := client.NewKerberosRealm(plan.KerberosRealmName.ValueString())
 	err := addOptionalKerberosRealmsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -329,7 +329,7 @@ func (r *kerberosRealmsResource) Delete(ctx context.Context, req resource.Delete
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.KerberosRealmsAPI.DeleteKerberosRealm(config.DetermineAuthContext(ctx, r.providerConfig), state.RealmId.ValueString()).Execute()
+	httpResp, err := r.apiClient.KerberosRealmsAPI.DeleteKerberosRealm(config.AuthContext(ctx, r.providerConfig), state.RealmId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a kerberos realm", err, httpResp)
 	}

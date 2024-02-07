@@ -98,7 +98,7 @@ func (r *sessionApplicationSessionPolicyResource) Create(ctx context.Context, re
 		return
 	}
 
-	apiCreateSessionApplicationSessionPolicy := r.apiClient.SessionAPI.UpdateApplicationPolicy(config.DetermineAuthContext(ctx, r.providerConfig))
+	apiCreateSessionApplicationSessionPolicy := r.apiClient.SessionAPI.UpdateApplicationPolicy(config.AuthContext(ctx, r.providerConfig))
 	apiCreateSessionApplicationSessionPolicy = apiCreateSessionApplicationSessionPolicy.Body(*createSessionApplicationSessionPolicy)
 	sessionApplicationSessionPolicyResponse, httpResp, err := r.apiClient.SessionAPI.UpdateApplicationPolicyExecute(apiCreateSessionApplicationSessionPolicy)
 	if err != nil {
@@ -122,7 +122,7 @@ func (r *sessionApplicationSessionPolicyResource) Read(ctx context.Context, req 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadSessionApplicationSessionPolicy, httpResp, err := r.apiClient.SessionAPI.GetApplicationPolicy(config.DetermineAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadSessionApplicationSessionPolicy, httpResp, err := r.apiClient.SessionAPI.GetApplicationPolicy(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a Session Application Session Policy", err, httpResp)
@@ -156,7 +156,7 @@ func (r *sessionApplicationSessionPolicyResource) Update(ctx context.Context, re
 		return
 	}
 
-	updateSessionApplicationSessionPolicy := r.apiClient.SessionAPI.UpdateApplicationPolicy(config.DetermineAuthContext(ctx, r.providerConfig))
+	updateSessionApplicationSessionPolicy := r.apiClient.SessionAPI.UpdateApplicationPolicy(config.AuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewApplicationSessionPolicy()
 	err := addOptionalSessionApplicationSessionPolicyFields(ctx, createUpdateRequest, plan)
 	if err != nil {

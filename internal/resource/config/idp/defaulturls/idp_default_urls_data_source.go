@@ -84,7 +84,7 @@ func (r *idpDefaultUrlsDataSource) Read(ctx context.Context, req datasource.Read
 		return
 	}
 
-	apiReadIdpDefaultUrls, httpResp, err := r.apiClient.IdpDefaultUrlsAPI.GetDefaultUrl(config.DetermineAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadIdpDefaultUrls, httpResp, err := r.apiClient.IdpDefaultUrlsAPI.GetDefaultUrl(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the IdP default URLs", err, httpResp)
 		return

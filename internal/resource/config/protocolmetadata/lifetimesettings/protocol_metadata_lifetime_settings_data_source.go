@@ -76,7 +76,7 @@ func (r *protocolMetadataLifetimeSettingsDataSource) Read(ctx context.Context, r
 		return
 	}
 
-	apiReadProtocolMetadataLifetimeSettings, httpResp, err := r.apiClient.ProtocolMetadataAPI.GetLifetimeSettings(config.DetermineAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadProtocolMetadataLifetimeSettings, httpResp, err := r.apiClient.ProtocolMetadataAPI.GetLifetimeSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Protocol Metadata Lifetime Settings", err, httpResp)
 		return

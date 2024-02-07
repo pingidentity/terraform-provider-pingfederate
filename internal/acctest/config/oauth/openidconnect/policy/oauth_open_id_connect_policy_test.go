@@ -2,8 +2,6 @@ package oauthopenidconnectpolicy_test
 
 import (
 	"fmt"
-	"io"
-	"net/http"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -36,29 +34,15 @@ type oauthOpenIdConnectPoliciesResourceModel struct {
 }
 
 // This is due to a bug in PingFederate that doesn't allow the OAuth client to set "None" as the OIDC Policy
-func deleteOauthClient() {
-	//#nosec G402
-	client := &http.Client{Transport: acctest.GetTransport()}
-	req, err := http.NewRequest(http.MethodDelete, "https://localhost:9999/pf-admin-api/v1/oauth/clients/test", nil)
-	req.Header.Set("accept", "application/json")
-	req.Header.Set("X-XSRF-Header", "PingFederate")
-	req.SetBasicAuth("Administrator", "2FederateM0re")
+// When an OAuth client is created, it comes with a "Default" OIDC Policy
+// Once an OIDC Policy is created, it automatically attaches to the OAuth client configuration
+// This is a workaround to delete the conflicting OAuth client
+func deleteOauthClient(t *testing.T) {
+	testClient := acctest.TestClient()
+	ctx := acctest.TestBasicAuthContext()
+	_, err := testClient.OauthClientsAPI.DeleteOauthClient(ctx, "test").Execute()
 	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	defer resp.Body.Close()
-	_, readErr := io.ReadAll(resp.Body)
-	if readErr != nil {
-		fmt.Println(readErr)
-		return
+		t.Fatalf("Failed to delete conflicting \"test\" OAuth Client: %v", err)
 	}
 }
 
@@ -91,7 +75,7 @@ func TestAccOauthOpenIdConnectPolicies(t *testing.T) {
 		CheckDestroy: testAccCheckOauthOpenIdConnectPoliciesDestroy,
 		Steps: []resource.TestStep{
 			{
-				PreConfig: deleteOauthClient,
+				PreConfig: func() { deleteOauthClient(t) },
 				Config:    testAccOauthOpenIdConnectPolicies(resourceName, initialResourceModel),
 				Check:     testAccCheckExpectedOauthOpenIdConnectPoliciesAttributes(initialResourceModel),
 			},

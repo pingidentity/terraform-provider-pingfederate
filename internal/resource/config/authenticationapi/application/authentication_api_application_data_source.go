@@ -95,7 +95,7 @@ func (r *authenticationApiApplicationDataSource) Read(ctx context.Context, req d
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadAuthenticationApiApplication, httpResp, err := r.apiClient.AuthenticationApiAPI.GetApplication(config.DetermineAuthContext(ctx, r.providerConfig), state.ApplicationId.ValueString()).Execute()
+	apiReadAuthenticationApiApplication, httpResp, err := r.apiClient.AuthenticationApiAPI.GetApplication(config.AuthContext(ctx, r.providerConfig), state.ApplicationId.ValueString()).Execute()
 
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp)

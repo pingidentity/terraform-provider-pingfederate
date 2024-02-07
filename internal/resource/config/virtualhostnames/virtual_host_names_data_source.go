@@ -74,7 +74,7 @@ func (r *virtualHostNamesDataSource) Read(ctx context.Context, req datasource.Re
 		return
 	}
 
-	apiReadVirtualHostNames, httpResp, err := r.apiClient.VirtualHostNamesAPI.GetVirtualHostNamesSettings(config.DetermineAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadVirtualHostNames, httpResp, err := r.apiClient.VirtualHostNamesAPI.GetVirtualHostNamesSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Virtual Host Names", err, httpResp)
 		return

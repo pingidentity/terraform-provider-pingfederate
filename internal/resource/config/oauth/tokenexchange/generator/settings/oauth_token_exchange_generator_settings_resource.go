@@ -103,7 +103,7 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Create(ctx context.Context
 		return
 	}
 
-	apiCreateOauthTokenExchangeGeneratorSettings := r.apiClient.OauthTokenExchangeGeneratorAPI.UpdateOauthTokenExchangeSettings(config.DetermineAuthContext(ctx, r.providerConfig))
+	apiCreateOauthTokenExchangeGeneratorSettings := r.apiClient.OauthTokenExchangeGeneratorAPI.UpdateOauthTokenExchangeSettings(config.AuthContext(ctx, r.providerConfig))
 	apiCreateOauthTokenExchangeGeneratorSettings = apiCreateOauthTokenExchangeGeneratorSettings.Body(*createOauthTokenExchangeGeneratorSettings)
 	oauthTokenExchangeGeneratorSettingsResponse, httpResp, err := r.apiClient.OauthTokenExchangeGeneratorAPI.UpdateOauthTokenExchangeSettingsExecute(apiCreateOauthTokenExchangeGeneratorSettings)
 	if err != nil {
@@ -128,7 +128,7 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Read(ctx context.Context, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthTokenExchangeGeneratorSettings, httpResp, err := r.apiClient.OauthTokenExchangeGeneratorAPI.GetOauthTokenExchangeSettings(config.DetermineAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadOauthTokenExchangeGeneratorSettings, httpResp, err := r.apiClient.OauthTokenExchangeGeneratorAPI.GetOauthTokenExchangeSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -171,7 +171,7 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Update(ctx context.Context
 		return
 	}
 
-	updateOauthTokenExchangeGeneratorSettings := r.apiClient.OauthTokenExchangeGeneratorAPI.UpdateOauthTokenExchangeSettings(config.DetermineAuthContext(ctx, r.providerConfig))
+	updateOauthTokenExchangeGeneratorSettings := r.apiClient.OauthTokenExchangeGeneratorAPI.UpdateOauthTokenExchangeSettings(config.AuthContext(ctx, r.providerConfig))
 	updateOauthTokenExchangeGeneratorSettings = updateOauthTokenExchangeGeneratorSettings.Body(*createUpdateRequest)
 	updateOauthTokenExchangeGeneratorSettingsResponse, httpResp, err := r.apiClient.OauthTokenExchangeGeneratorAPI.UpdateOauthTokenExchangeSettingsExecute(updateOauthTokenExchangeGeneratorSettings)
 	if err != nil {

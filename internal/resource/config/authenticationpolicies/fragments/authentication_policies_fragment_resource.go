@@ -149,7 +149,7 @@ func (r *authenticationPoliciesFragmentResource) Create(ctx context.Context, req
 		return
 	}
 
-	apiCreatePolicyFragment := r.apiClient.AuthenticationPoliciesAPI.CreateFragment(config.DetermineAuthContext(ctx, r.providerConfig))
+	apiCreatePolicyFragment := r.apiClient.AuthenticationPoliciesAPI.CreateFragment(config.AuthContext(ctx, r.providerConfig))
 	apiCreatePolicyFragment = apiCreatePolicyFragment.Body(*newPolicyFragment)
 	fragmentResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.CreateFragmentExecute(apiCreatePolicyFragment)
 	if err != nil {
@@ -174,7 +174,7 @@ func (r *authenticationPoliciesFragmentResource) Read(ctx context.Context, req r
 		return
 	}
 
-	fragmentResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.GetFragment(config.DetermineAuthContext(ctx, r.providerConfig), state.FragmentId.ValueString()).Execute()
+	fragmentResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.GetFragment(config.AuthContext(ctx, r.providerConfig), state.FragmentId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Policy Fragment", err, httpResp)
@@ -203,7 +203,7 @@ func (r *authenticationPoliciesFragmentResource) Update(ctx context.Context, req
 		return
 	}
 
-	updateFragmentRequest := r.apiClient.AuthenticationPoliciesAPI.UpdateFragment(config.DetermineAuthContext(ctx, r.providerConfig), plan.FragmentId.ValueString())
+	updateFragmentRequest := r.apiClient.AuthenticationPoliciesAPI.UpdateFragment(config.AuthContext(ctx, r.providerConfig), plan.FragmentId.ValueString())
 	updatedFragment := client.NewAuthenticationPolicyFragment()
 	err := addOptionalAuthenticationPoliciesFragmentFields(ctx, updatedFragment, plan)
 	if err != nil {
@@ -236,7 +236,7 @@ func (r *authenticationPoliciesFragmentResource) Delete(ctx context.Context, req
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.AuthenticationPoliciesAPI.DeleteFragment(config.DetermineAuthContext(ctx, r.providerConfig), state.FragmentId.ValueString()).Execute()
+	httpResp, err := r.apiClient.AuthenticationPoliciesAPI.DeleteFragment(config.AuthContext(ctx, r.providerConfig), state.FragmentId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an Authentication Policy Fragment", err, httpResp)
 	}

@@ -193,7 +193,7 @@ func (r *certificatesDataSource) Read(ctx context.Context, req datasource.ReadRe
 		return
 	}
 
-	apiReadCertificate, httpResp, err := r.apiClient.CertificatesCaAPI.GetTrustedCert(config.DetermineAuthContext(ctx, r.providerConfig), state.CaId.ValueString()).Execute()
+	apiReadCertificate, httpResp, err := r.apiClient.CertificatesCaAPI.GetTrustedCert(config.AuthContext(ctx, r.providerConfig), state.CaId.ValueString()).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a trusted certificate CA", err, httpResp)
 		return

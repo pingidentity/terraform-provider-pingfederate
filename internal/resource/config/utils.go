@@ -51,7 +51,7 @@ func ProviderOAuthContext(ctx context.Context, providerConfig internaltypes.Prov
 	return OAuthContext(ctx, providerConfig.Transport, *providerConfig.TokenUrl, *providerConfig.ClientId, *providerConfig.ClientSecret, providerConfig.Scopes)
 }
 
-func DetermineAuthContext(ctx context.Context, providerConfig internaltypes.ProviderConfiguration) context.Context {
+func AuthContext(ctx context.Context, providerConfig internaltypes.ProviderConfiguration) context.Context {
 	if providerConfig.Username != nil && providerConfig.Password != nil {
 		return ProviderBasicAuthContext(ctx, providerConfig)
 	} else if providerConfig.ClientId != nil && providerConfig.ClientSecret != nil && providerConfig.TokenUrl != nil {

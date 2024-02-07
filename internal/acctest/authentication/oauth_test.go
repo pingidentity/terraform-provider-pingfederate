@@ -1,8 +1,7 @@
-package auth_test
+package authentication_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -10,15 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/authentication"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
-
-func getOAuthEnvVars() {
-	os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID")
-	os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET")
-	os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL")
-	os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_SCOPES")
-}
 
 func TestAccOAuthVirtualHostNames(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -28,9 +21,11 @@ func TestAccOAuthVirtualHostNames(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				PreConfig: getOAuthEnvVars,
-				Config:    testAccOAuthVirtualHostNames("virtualHostNames"),
-				Check:     testAccOAuthGetVirtualHostNames(),
+				PreConfig: func() {
+					authentication.TestEnvVarSlice([]string{"PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID", "PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET", "PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL", "PINGFEDERATE_PROVIDER_OAUTH_SCOPES"}, "oauth_test.go")
+				},
+				Config: testAccOAuthVirtualHostNames("virtualHostNames"),
+				Check:  testAccOAuthGetVirtualHostNames(),
 			},
 		},
 	})
@@ -39,12 +34,11 @@ func TestAccOAuthVirtualHostNames(t *testing.T) {
 func testAccOAuthVirtualHostNames(resourceName string) string {
 	return fmt.Sprintf(`
 resource "pingfederate_virtual_host_names" "%[1]s" {
-  virtual_host_names = %[2]s
+  virtual_host_names = ["test"]
 }
 data "pingfederate_virtual_host_names" "%[1]s" {
   depends_on = [pingfederate_virtual_host_names.%[1]s]
 }`, resourceName,
-		acctest.StringSliceToTerraformString([]string{"test"}),
 	)
 }
 

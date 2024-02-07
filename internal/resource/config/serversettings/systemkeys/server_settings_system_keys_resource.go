@@ -212,7 +212,7 @@ func (r *serverSettingsSystemKeysResource) Create(ctx context.Context, req resou
 	createServerSettingsSystemKeys := client.NewSystemKeysWithDefaults()
 	addServerSettingsSystemKeysFields(ctx, createServerSettingsSystemKeys, plan)
 
-	apiCreateServerSettingsSystemKeys := r.apiClient.ServerSettingsAPI.UpdateSystemKeys(config.DetermineAuthContext(ctx, r.providerConfig))
+	apiCreateServerSettingsSystemKeys := r.apiClient.ServerSettingsAPI.UpdateSystemKeys(config.AuthContext(ctx, r.providerConfig))
 	apiCreateServerSettingsSystemKeys = apiCreateServerSettingsSystemKeys.Body(*createServerSettingsSystemKeys)
 	serverSettingsSystemKeysResponse, httpResp, err := r.apiClient.ServerSettingsAPI.UpdateSystemKeysExecute(apiCreateServerSettingsSystemKeys)
 	if err != nil {
@@ -236,7 +236,7 @@ func (r *serverSettingsSystemKeysResource) Read(ctx context.Context, req resourc
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadServerSettingsSystemKeys, httpResp, err := r.apiClient.ServerSettingsAPI.GetSystemKeys(config.DetermineAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadServerSettingsSystemKeys, httpResp, err := r.apiClient.ServerSettingsAPI.GetSystemKeys(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings System Keys", err, httpResp)
@@ -274,7 +274,7 @@ func (r *serverSettingsSystemKeysResource) Update(ctx context.Context, req resou
 	createServerSettingsSystemKeys := client.NewSystemKeysWithDefaults()
 	addServerSettingsSystemKeysFields(ctx, createServerSettingsSystemKeys, plan)
 
-	apiCreateServerSettingsSystemKeys := r.apiClient.ServerSettingsAPI.UpdateSystemKeys(config.DetermineAuthContext(ctx, r.providerConfig))
+	apiCreateServerSettingsSystemKeys := r.apiClient.ServerSettingsAPI.UpdateSystemKeys(config.AuthContext(ctx, r.providerConfig))
 	apiCreateServerSettingsSystemKeys = apiCreateServerSettingsSystemKeys.Body(*createServerSettingsSystemKeys)
 	serverSettingsSystemKeysResponse, httpResp, err := r.apiClient.ServerSettingsAPI.UpdateSystemKeysExecute(apiCreateServerSettingsSystemKeys)
 	if err != nil {

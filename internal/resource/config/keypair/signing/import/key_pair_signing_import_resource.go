@@ -316,7 +316,7 @@ func (r *keyPairsSigningImportResource) Create(ctx context.Context, req resource
 		return
 	}
 
-	apiCreateKeyPairsSigningImport := r.apiClient.KeyPairsSigningAPI.ImportSigningKeyPair(config.DetermineAuthContext(ctx, r.providerConfig))
+	apiCreateKeyPairsSigningImport := r.apiClient.KeyPairsSigningAPI.ImportSigningKeyPair(config.AuthContext(ctx, r.providerConfig))
 	apiCreateKeyPairsSigningImport = apiCreateKeyPairsSigningImport.Body(*createKeyPairsSigningImport)
 	keyPairsSigningImportResponse, httpResp, err := r.apiClient.KeyPairsSigningAPI.ImportSigningKeyPairExecute(apiCreateKeyPairsSigningImport)
 	if err != nil {
@@ -341,7 +341,7 @@ func (r *keyPairsSigningImportResource) Read(ctx context.Context, req resource.R
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadKeyPairsSigningImport, httpResp, err := r.apiClient.KeyPairsSigningAPI.GetSigningKeyPair(config.DetermineAuthContext(ctx, r.providerConfig), state.ImportId.ValueString()).Execute()
+	apiReadKeyPairsSigningImport, httpResp, err := r.apiClient.KeyPairsSigningAPI.GetSigningKeyPair(config.AuthContext(ctx, r.providerConfig), state.ImportId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the key pair signing import resource", err, httpResp)
@@ -376,7 +376,7 @@ func (r *keyPairsSigningImportResource) Delete(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.KeyPairsSigningAPI.DeleteSigningKeyPair(config.DetermineAuthContext(ctx, r.providerConfig), state.ImportId.ValueString()).Execute()
+	httpResp, err := r.apiClient.KeyPairsSigningAPI.DeleteSigningKeyPair(config.AuthContext(ctx, r.providerConfig), state.ImportId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a key pair signing import resource", err, httpResp)
 	}
