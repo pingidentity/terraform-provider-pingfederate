@@ -31,7 +31,7 @@ func getAccessToken(t *testing.T) {
 	envVars, errors := authentication.TestEnvVarSlice([]string{"PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID", "PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET"}, "access_token_test.go")
 	if len(errors) > 0 {
 		for _, err := range errors {
-			fmt.Println(err)
+			t.Error(err)
 		}
 		t.FailNow()
 	}
@@ -40,22 +40,19 @@ func getAccessToken(t *testing.T) {
 	jsonBodyReader := strings.NewReader(clientInfo)
 	resp, err := client.Post(tokenRequestUrl, "application/x-www-form-urlencoded", jsonBodyReader)
 	if err != nil {
-		fmt.Sprintln("Error getting access token: ", err)
-		t.FailNow()
+		t.Fatalf("Error getting access token: %s", err)
 	}
 
 	defer resp.Body.Close()
 	body, readErr := io.ReadAll(resp.Body)
 	if readErr != nil {
-		fmt.Sprintln("Error reading response body: ", readErr)
-		t.FailNow()
+		t.Fatalf("Error reading response body: %s", readErr)
 	}
 
 	var response Response
 	jsonErr := json.Unmarshal(body, &response)
 	if jsonErr != nil {
-		fmt.Println(jsonErr)
-		t.FailNow()
+		t.Fatalf("Error unmarshalling response: %s", jsonErr)
 	}
 
 	os.Unsetenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID")
