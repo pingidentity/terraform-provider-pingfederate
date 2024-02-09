@@ -1,4 +1,4 @@
-# v0.6.0 (Unreleased)
+# v0.6.0 February 9th, 2024
 ### DEPRECATED
 * `inherited` property for all Resources and DataSources. This property will be removed in a future release.
 
