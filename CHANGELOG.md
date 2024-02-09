@@ -3,7 +3,7 @@
 ### FEATURES
 
 ### Resources
-* **New Resource:** `pingfederate_notification_publishers_settings ` ([#TBD](https://github.com/pingidentity/terraform-provider-pingfederate/pull/TBD))
+* **New Resource:** `pingfederate_notification_publishers_settings ` ([#187](https://github.com/pingidentity/terraform-provider-pingfederate/pull/187))
 
 ### BUG FIXES
 
