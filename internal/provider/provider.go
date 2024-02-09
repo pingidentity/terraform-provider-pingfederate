@@ -148,6 +148,7 @@ func (p *pingfederateProvider) Schema(_ context.Context, _ provider.SchemaReques
 				MarkdownDescription: "OAuth client ID for requesting access token. Default value can be set with the `PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID` environment variable.",
 				Optional:            true,
 				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("access_token")),
 					stringvalidator.ConflictsWith(path.MatchRoot("username")),
 					stringvalidator.ConflictsWith(path.MatchRoot("password")),
 					stringvalidator.AlsoRequires(path.MatchRoot("client_secret")),
@@ -159,6 +160,7 @@ func (p *pingfederateProvider) Schema(_ context.Context, _ provider.SchemaReques
 				Optional:            true,
 				Sensitive:           true,
 				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRoot("access_token")),
 					stringvalidator.ConflictsWith(path.MatchRoot("username")),
 					stringvalidator.ConflictsWith(path.MatchRoot("password")),
 					stringvalidator.AlsoRequires(path.MatchRoot("client_id")),
@@ -405,14 +407,21 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 		)
 	} else {
 		if config.Scopes.IsNull() {
-			scopes = strings.Split(os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_SCOPES"), ",")
+			envScopes := os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_SCOPES")
+			if strings.Contains(envScopes, ",") {
+				scopes = strings.Split(envScopes, ",")
+			} else {
+				if envScopes != "" {
+					scopes = []string{envScopes}
+				}
+			}
 		} else {
 			config.Scopes.ElementsAs(ctx, &scopes, false)
 		}
-		if len(scopes) <= 1 {
-			tflog.Info(ctx, "Unable to find scopes value")
-		} else {
+		if len(scopes) > 0 {
 			hasScopes = true
+		} else {
+			tflog.Info(ctx, "Unable to find scopes value")
 		}
 	}
 
@@ -494,7 +503,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 		if tokenUrl == "" {
 			returnAuthAttributeDiagsError("token_url", "OAuth", "PINGFEDEATE_PROVIDER_OAUTH_TOKEN_URL", resp)
 		}
-		if len(scopes) <= 1 {
+		if len(scopes) == 0 {
 			tflog.Warn(ctx, "No scopes value configured.")
 		}
 	}

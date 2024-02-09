@@ -17,13 +17,13 @@ The PingFederate provider supports versions `11.2` through `12.0` of PingFederat
 
 ## Documentation
 Detailed documentation on PingFederate can be found in the [online docs](https://docs.pingidentity.com/r/en-us/pingfederate-112/pf_pingfederate_landing_page)
-### Example Usage of PingFederate Provider
+### Simple Example using basic authentication with a resource
 ```terraform
 terraform {
   required_version = ">=1.1"
   required_providers {
     pingfederate = {
-      version = "~> 0.5.0"
+      version = "~> 0.6.0"
       source  = "pingidentity/pingfederate"
     }
   }
@@ -44,6 +44,46 @@ resource "pingfederate_administrative_account" "administrativeAccount" {
   description = "description"
   password    = "2FederateM0re"
   roles       = ["USER_ADMINISTRATOR"]
+}
+```
+
+### When using basic authentication, `username` and `password` must be defined in the `provider` block
+```terraform
+provider "pingfederate" {
+  username                            = "administrator"
+  password                            = "2FederateM0re"
+  https_host                          = "https://localhost:9999"
+  admin_api_path                      = "/pf-admin-api/v1"
+  insecure_trust_all_tls              = true
+  x_bypass_external_validation_header = true
+  product_version                     = "12.0"
+}
+```
+
+### When using OAuth2 Client Credentials flow authentication, `client_id`, `client_secret`, and `token_url` are required, while `scopes` is optional in the `provider` block
+```terraform
+provider "pingfederate" {
+  client_id                           = "clientid"
+  client_secret                       = "clientsecret"
+  scopes                              = ["scope"]
+  token_url                           = "https://localhost:9031/as/token.oauth2"
+  https_host                          = "https://localhost:9999"
+  admin_api_path                      = "/pf-admin-api/v1"
+  insecure_trust_all_tls              = true
+  x_bypass_external_validation_header = true
+  product_version                     = "12.0"
+}
+```
+
+### When using Access Token authentication, `access_token` is required in the `provider` block
+```terraform
+provider "pingfederate" {
+  access_token                        = "accesstokenvaluefromclient"
+  https_host                          = "https://localhost:9999"
+  admin_api_path                      = "/pf-admin-api/v1"
+  insecure_trust_all_tls              = true
+  x_bypass_external_validation_header = true
+  product_version                     = "12.0"
 }
 ```
 

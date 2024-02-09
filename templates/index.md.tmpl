@@ -17,8 +17,17 @@ The PingFederate provider supports versions `11.2` through `12.0` of PingFederat
 
 ## Documentation
 Detailed documentation on PingFederate can be found in the [online docs](https://docs.pingidentity.com/r/en-us/pingfederate-112/pf_pingfederate_landing_page)
-### Example Usage of PingFederate Provider
-{{ tffile "examples/simple-examples/main.tf" }}
+### Simple Example using basic authentication with a resource
+{{ tffile "examples/doc-examples/simple-example.tf" }}
+
+### When using basic authentication, `username` and `password` must be defined in the `provider` block
+{{ tffile "examples/doc-examples/basic-auth.tf" }}
+
+### When using OAuth2 Client Credentials flow authentication, `client_id`, `client_secret`, and `token_url` are required, while `scopes` is optional in the `provider` block
+{{ tffile "examples/doc-examples/oauth2.tf" }}
+
+### When using Access Token authentication, `access_token` is required in the `provider` block
+{{ tffile "examples/doc-examples/access-token.tf" }}
 
 ### Custom User Agent information
 
