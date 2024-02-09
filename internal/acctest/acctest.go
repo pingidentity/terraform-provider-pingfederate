@@ -11,7 +11,6 @@ import (
 	"testing"
 
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/authentication"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
@@ -86,15 +85,7 @@ func TestAccessTokenContext(accessToken string) context.Context {
 
 func TestBasicAuthContext() context.Context {
 	ctx := context.Background()
-	envVars, errors := authentication.TestEnvVarSlice([]string{"PINGFEDERATE_PROVIDER_USERNAME", "PINGFEDERATE_PROVIDER_PASSWORD"}, "acctest.go")
-	if len(errors) > 0 {
-		for _, err := range errors {
-			fmt.Println(err)
-		}
-		return nil
-	}
-
-	return config.BasicAuthContext(ctx, envVars["PINGFEDERATE_PROVIDER_USERNAME"], envVars["PINGFEDERATE_PROVIDER_PASSWORD"])
+	return config.BasicAuthContext(ctx, os.Getenv("PINGFEDERATE_PROVIDER_USERNAME"), os.Getenv("PINGFEDERATE_PROVIDER_PASSWORD"))
 }
 
 func TestOauth2Context() context.Context {

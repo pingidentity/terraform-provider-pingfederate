@@ -22,7 +22,7 @@ func TestAccOAuthVirtualHostNames(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() {
-					authentication.TestEnvVarSlice([]string{"PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID", "PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET", "PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL", "PINGFEDERATE_PROVIDER_OAUTH_SCOPES"}, "oauth_test.go")
+					authentication.TestEnvVarSlice([]string{"PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID", "PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET", "PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL", "PINGFEDERATE_PROVIDER_OAUTH_SCOPES"}, "oauth_test.go", t)
 				},
 				Config: testAccOAuthVirtualHostNames("virtualHostNames"),
 				Check:  testAccOAuthGetVirtualHostNames(),

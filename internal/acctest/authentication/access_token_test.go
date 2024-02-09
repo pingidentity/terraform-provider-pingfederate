@@ -28,14 +28,7 @@ func getAccessToken(t *testing.T) {
 
 	//#nosec G402
 	client := &http.Client{Transport: acctest.GetTransport()}
-	envVars, errors := authentication.TestEnvVarSlice([]string{"PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID", "PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET"}, "access_token_test.go")
-	if len(errors) > 0 {
-		for _, err := range errors {
-			t.Error(err)
-		}
-		t.FailNow()
-	}
-
+	envVars := authentication.TestEnvVarSlice([]string{"PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID", "PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET"}, "access_token_test.go", t)
 	clientInfo := fmt.Sprintf("client_id=%s&grant_type=client_credentials&client_secret=%s&scope=email", envVars["PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID"], envVars["PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET"])
 	jsonBodyReader := strings.NewReader(clientInfo)
 	resp, err := client.Post(tokenRequestUrl, "application/x-www-form-urlencoded", jsonBodyReader)
@@ -57,6 +50,7 @@ func getAccessToken(t *testing.T) {
 
 	os.Unsetenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID")
 	os.Unsetenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET")
+	os.Unsetenv("PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL")
 	os.Setenv("PINGFEDERATE_PROVIDER_ACCESS_TOKEN", response.AccessToken)
 }
 

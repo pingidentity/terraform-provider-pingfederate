@@ -3,9 +3,10 @@ package authentication
 import (
 	"errors"
 	"os"
+	"testing"
 )
 
-func TestEnvVarSlice(vars []string, fileName string) (map[string]string, []error) {
+func TestEnvVarSlice(vars []string, fileName string, t *testing.T) map[string]string {
 	var errorSlice []error
 	var envMap = make(map[string]string)
 	for _, v := range vars {
@@ -15,5 +16,11 @@ func TestEnvVarSlice(vars []string, fileName string) (map[string]string, []error
 			envMap[v] = os.Getenv(v)
 		}
 	}
-	return envMap, errorSlice
+	if len(errorSlice) > 0 {
+		for _, err := range errorSlice {
+			t.Error(err)
+		}
+		t.FailNow()
+	}
+	return envMap
 }
