@@ -138,6 +138,7 @@ func (r *notificationPublishersSettingsResource) Read(ctx context.Context, req r
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Notification Publishers Settings", err, httpResp)
 		}
+		return
 	}
 
 	// Read the response into the state
@@ -162,8 +163,6 @@ func (r *notificationPublishersSettingsResource) Update(ctx context.Context, req
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	//	updateNotificationPublishersSettings := r.apiClient.NotificationPublishersAPI.UpdateNotificationPublishersSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.VALUE.ValueString())
 
 	createUpdateRequest := client.NewNotificationPublishersSettings()
 	createUpdateRequest.DefaultNotificationPublisherRef, err = resourcelink.ClientStruct(plan.DefaultNotificationPublisherRef)

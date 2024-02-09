@@ -1,11 +1,7 @@
 # v0.7.0 (Unreleased)
-### DEPRECATED
-### FEATURES
 
 ### Resources
 * **New Resource:** `pingfederate_notification_publishers_settings ` ([#187](https://github.com/pingidentity/terraform-provider-pingfederate/pull/187))
-
-### BUG FIXES
 
 # v0.6.0 February 9th, 2024
 ### DEPRECATED
