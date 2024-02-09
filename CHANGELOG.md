@@ -1,3 +1,8 @@
+# v0.7.0 (Unreleased)
+
+### Resources
+* **New Resource:** `pingfederate_notification_publishers_settings ` ([#187](https://github.com/pingidentity/terraform-provider-pingfederate/pull/187))
+
 # v0.6.0 February 9th, 2024
 ### DEPRECATED
 * `inherited` property for all Resources and DataSources. This property will be removed in a future release.
