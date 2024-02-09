@@ -121,7 +121,7 @@ func (r *oauthTokenExchangeTokenGeneratorMappingDataSource) Read(ctx context.Con
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthTokenExchangeTokenGeneratorMapping, httpResp, err := r.apiClient.OauthTokenExchangeTokenGeneratorMappingsAPI.GetTokenGeneratorMappingById(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.MappingId.ValueString()).Execute()
+	apiReadOauthTokenExchangeTokenGeneratorMapping, httpResp, err := r.apiClient.OauthTokenExchangeTokenGeneratorMappingsAPI.GetTokenGeneratorMappingById(config.AuthContext(ctx, r.providerConfig), state.MappingId.ValueString()).Execute()
 
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Token Exchange Token Generator Mapping", err, httpResp)

@@ -20,8 +20,6 @@ import (
 func ConfigurationPreCheck(t *testing.T) {
 	envVars := []string{
 		"PINGFEDERATE_PROVIDER_HTTPS_HOST",
-		"PINGFEDERATE_PROVIDER_USERNAME",
-		"PINGFEDERATE_PROVIDER_PASSWORD",
 		"PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS",
 		"PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER",
 		"PINGFEDERATE_PROVIDER_PRODUCT_VERSION",
@@ -48,6 +46,15 @@ func ConfigurationPreCheck(t *testing.T) {
 	}
 }
 
+func GetTransport() *http.Transport {
+	// Trusting all for the acceptance tests, since they run on localhost
+	// May want to incorporate actual trust here in the future.
+	//#nosec G402
+	return &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+}
+
 func TestClient() *client.APIClient {
 	httpsHost := os.Getenv("PINGFEDERATE_PROVIDER_HTTPS_HOST")
 	adminApiPath := os.Getenv("PINGFEDERATE_PROVIDER_ADMIN_API_PATH")
@@ -59,20 +66,31 @@ func TestClient() *client.APIClient {
 			URL: httpsHost + adminApiPath,
 		},
 	}
-	// Trusting all for the acceptance tests, since they run on localhost
-	// May want to incorporate actual trust here in the future.
-	//#nosec G402
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-	httpClient := &http.Client{Transport: tr}
+
+	httpClient := &http.Client{Transport: GetTransport()}
 	clientConfig.HTTPClient = httpClient
 	return client.NewAPIClient(clientConfig)
+}
+
+// lintignore:AT008
+func TestAccessTokenContext(accessToken string) context.Context {
+	ctx := context.Background()
+	if accessToken == "" {
+		fmt.Println("No access token found in environment")
+		return nil
+	}
+
+	return config.AccessTokenContext(ctx, accessToken)
 }
 
 func TestBasicAuthContext() context.Context {
 	ctx := context.Background()
 	return config.BasicAuthContext(ctx, os.Getenv("PINGFEDERATE_PROVIDER_USERNAME"), os.Getenv("PINGFEDERATE_PROVIDER_PASSWORD"))
+}
+
+func TestOauth2Context() context.Context {
+	ctx := context.Background()
+	return config.OAuthContext(ctx, GetTransport(), os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL"), os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID"), os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET"), []string{os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_SCOPES")})
 }
 
 // Convert a string slice to the format used in Terraform files

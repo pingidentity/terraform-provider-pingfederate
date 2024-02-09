@@ -776,7 +776,7 @@ func (r *serverSettingsResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	apiCreateServerSettings := r.apiClient.ServerSettingsAPI.UpdateServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateServerSettings := r.apiClient.ServerSettingsAPI.UpdateServerSettings(config.AuthContext(ctx, r.providerConfig))
 	apiCreateServerSettings = apiCreateServerSettings.Body(*createServerSettings)
 	serverSettingsResponse, httpResp, err := r.apiClient.ServerSettingsAPI.UpdateServerSettingsExecute(apiCreateServerSettings)
 	if err != nil {
@@ -801,7 +801,7 @@ func (r *serverSettingsResource) Read(ctx context.Context, req resource.ReadRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadServerSettings, httpResp, err := r.apiClient.ServerSettingsAPI.GetServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadServerSettings, httpResp, err := r.apiClient.ServerSettingsAPI.GetServerSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -837,7 +837,7 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	updateServerSettings := r.apiClient.ServerSettingsAPI.UpdateServerSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateServerSettings := r.apiClient.ServerSettingsAPI.UpdateServerSettings(config.AuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewServerSettings()
 	err := addOptionalServerSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {

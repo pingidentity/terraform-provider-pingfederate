@@ -81,7 +81,7 @@ func (r *oauthAuthServerSettingsScopesCommonScopeDataSource) Read(ctx context.Co
 		return
 	}
 
-	apiReadOauthAuthServerSettingsScopesCommonScope, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.GetCommonScope(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Name.ValueString()).Execute()
+	apiReadOauthAuthServerSettingsScopesCommonScope, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.GetCommonScope(config.AuthContext(ctx, r.providerConfig), state.Name.ValueString()).Execute()
 
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Auth Server Settings Scopes Common Scope", err, httpResp)

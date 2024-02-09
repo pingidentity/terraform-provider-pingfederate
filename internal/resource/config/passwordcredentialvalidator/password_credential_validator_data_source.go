@@ -129,7 +129,7 @@ func (r *passwordCredentialValidatorDataSource) Read(ctx context.Context, req da
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadPasswordCredentialValidators, httpResp, err := r.apiClient.PasswordCredentialValidatorsAPI.GetPasswordCredentialValidator(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ValidatorId.ValueString()).Execute()
+	apiReadPasswordCredentialValidators, httpResp, err := r.apiClient.PasswordCredentialValidatorsAPI.GetPasswordCredentialValidator(config.AuthContext(ctx, r.providerConfig), state.ValidatorId.ValueString()).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Password Credential Validator", err, httpResp)
 		return

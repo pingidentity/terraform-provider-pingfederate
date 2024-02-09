@@ -103,7 +103,7 @@ func (r *idpDefaultUrlsResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	apiCreateIdpDefaultUrls := r.apiClient.IdpDefaultUrlsAPI.UpdateDefaultUrlSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateIdpDefaultUrls := r.apiClient.IdpDefaultUrlsAPI.UpdateDefaultUrlSettings(config.AuthContext(ctx, r.providerConfig))
 	apiCreateIdpDefaultUrls = apiCreateIdpDefaultUrls.Body(*createIdpDefaultUrls)
 	idpDefaultUrlsResponse, httpResp, err := r.apiClient.IdpDefaultUrlsAPI.UpdateDefaultUrlSettingsExecute(apiCreateIdpDefaultUrls)
 	if err != nil {
@@ -125,7 +125,7 @@ func (r *idpDefaultUrlsResource) Read(ctx context.Context, req resource.ReadRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadIdpDefaultUrls, httpResp, err := r.apiClient.IdpDefaultUrlsAPI.GetDefaultUrl(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadIdpDefaultUrls, httpResp, err := r.apiClient.IdpDefaultUrlsAPI.GetDefaultUrl(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the IdP default URL settings", err, httpResp)
@@ -159,7 +159,7 @@ func (r *idpDefaultUrlsResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	updateIdpDefaultUrls := r.apiClient.IdpDefaultUrlsAPI.UpdateDefaultUrlSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateIdpDefaultUrls := r.apiClient.IdpDefaultUrlsAPI.UpdateDefaultUrlSettings(config.AuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewIdpDefaultUrl(plan.IdpErrorMsg.ValueString())
 	err := addOptionalIdpDefaultUrlsFields(ctx, createUpdateRequest, plan)
 	if err != nil {

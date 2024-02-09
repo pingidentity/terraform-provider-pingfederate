@@ -100,7 +100,7 @@ func (r *sessionAuthenticationSessionPoliciesGlobalDataSource) Read(ctx context.
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadSessionAuthenticationSessionPoliciesGlobal, httpResp, err := r.apiClient.SessionAPI.GetGlobalPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadSessionAuthenticationSessionPoliciesGlobal, httpResp, err := r.apiClient.SessionAPI.GetGlobalPolicy(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the global session authentication session policies settings.", err, httpResp)
 		return

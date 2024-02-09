@@ -90,7 +90,7 @@ func (r *serverSettingsGeneralSettingsDataSource) Read(ctx context.Context, req 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadServerSettingsGeneralSettings, httpResp, err := r.apiClient.ServerSettingsAPI.GetGeneralSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadServerSettingsGeneralSettings, httpResp, err := r.apiClient.ServerSettingsAPI.GetGeneralSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings General Settings", err, httpResp)
 		return
