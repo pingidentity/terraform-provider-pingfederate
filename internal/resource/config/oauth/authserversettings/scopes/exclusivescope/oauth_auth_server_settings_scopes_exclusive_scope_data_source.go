@@ -81,7 +81,7 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopeDataSource) Read(ctx context
 		return
 	}
 
-	apiReadOauthAuthServerSettingsScopesExclusiveScope, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.GetExclusiveScope(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Name.ValueString()).Execute()
+	apiReadOauthAuthServerSettingsScopesExclusiveScope, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.GetExclusiveScope(config.AuthContext(ctx, r.providerConfig), state.Name.ValueString()).Execute()
 
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Auth Server Settings Scopes Exclusive Scope", err, httpResp)

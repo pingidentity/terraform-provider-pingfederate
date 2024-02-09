@@ -241,7 +241,7 @@ func (r *redirectValidationResource) Create(ctx context.Context, req resource.Cr
 		return
 	}
 
-	apiCreateRedirectValidation := r.apiClient.RedirectValidationAPI.UpdateRedirectValidationSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateRedirectValidation := r.apiClient.RedirectValidationAPI.UpdateRedirectValidationSettings(config.AuthContext(ctx, r.providerConfig))
 	apiCreateRedirectValidation = apiCreateRedirectValidation.Body(*createRedirectValidation)
 	redirectValidationResponse, httpResp, err := r.apiClient.RedirectValidationAPI.UpdateRedirectValidationSettingsExecute(apiCreateRedirectValidation)
 	if err != nil {
@@ -265,7 +265,7 @@ func (r *redirectValidationResource) Read(ctx context.Context, req resource.Read
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadRedirectValidation, httpResp, err := r.apiClient.RedirectValidationAPI.GetRedirectValidationSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadRedirectValidation, httpResp, err := r.apiClient.RedirectValidationAPI.GetRedirectValidationSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Redirect Validation", err, httpResp)
@@ -300,7 +300,7 @@ func (r *redirectValidationResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 
-	updateRedirectValidation := r.apiClient.RedirectValidationAPI.UpdateRedirectValidationSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateRedirectValidation := r.apiClient.RedirectValidationAPI.UpdateRedirectValidationSettings(config.AuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewRedirectValidationSettings()
 	err := addOptionalRedirectValidationFields(ctx, createUpdateRequest, plan)
 	if err != nil {

@@ -154,7 +154,7 @@ func (r *redirectValidationDataSource) Read(ctx context.Context, req datasource.
 		return
 	}
 
-	apiReadRedirectValidation, httpResp, err := r.apiClient.RedirectValidationAPI.GetRedirectValidationSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadRedirectValidation, httpResp, err := r.apiClient.RedirectValidationAPI.GetRedirectValidationSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Redirect Validation Settings", err, httpResp)
 		return

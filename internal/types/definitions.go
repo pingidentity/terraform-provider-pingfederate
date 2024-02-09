@@ -1,6 +1,8 @@
 package types
 
 import (
+	"net/http"
+
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -8,8 +10,14 @@ import (
 // Configuration used by the provider and resources
 type ProviderConfiguration struct {
 	HttpsHost      string
-	Username       string
-	Password       string
+	Transport      *http.Transport
+	Username       *string
+	Password       *string
+	AccessToken    *string
+	TokenUrl       *string
+	ClientId       *string
+	ClientSecret   *string
+	Scopes         []string
 	ProductVersion version.SupportedVersion
 }
 

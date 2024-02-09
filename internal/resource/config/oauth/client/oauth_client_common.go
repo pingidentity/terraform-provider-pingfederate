@@ -151,7 +151,12 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state 
 	state.RedirectUris = internaltypes.GetStringSet(r.RedirectUris)
 	state.GrantTypes = internaltypes.GetStringSet(r.GrantTypes)
 	state.Name = types.StringValue(r.Name)
-	state.Description = types.StringPointerValue(r.Description)
+	description := r.Description
+	if description == nil {
+		state.Description = types.StringNull()
+	} else {
+		state.Description = types.StringPointerValue(description)
+	}
 	state.ModificationDate = types.StringValue(r.ModificationDate.Format(time.RFC3339Nano))
 	state.CreationDate = types.StringValue(r.CreationDate.Format(time.RFC3339Nano))
 	state.LogoUrl = types.StringPointerValue(r.LogoUrl)

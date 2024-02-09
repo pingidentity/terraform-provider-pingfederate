@@ -33,6 +33,19 @@ type oauthOpenIdConnectPoliciesResourceModel struct {
 	reissueIdTokenInHybridFlow  *bool
 }
 
+// This is due to a bug in PingFederate that doesn't allow the OAuth client to set "None" as the OIDC Policy
+// When an OAuth client is created, it comes with a "Default" OIDC Policy
+// Once an OIDC Policy is created, it automatically attaches to the OAuth client configuration
+// This is a workaround to delete the conflicting OAuth client
+func deleteOauthClient(t *testing.T) {
+	testClient := acctest.TestClient()
+	ctx := acctest.TestBasicAuthContext()
+	_, err := testClient.OauthClientsAPI.DeleteOauthClient(ctx, "test").Execute()
+	if err != nil {
+		t.Fatalf("Failed to delete conflicting \"test\" OAuth Client: %v", err)
+	}
+}
+
 func TestAccOauthOpenIdConnectPolicies(t *testing.T) {
 	resourceName := "myOauthOpenIdConnectPolicies"
 
@@ -62,8 +75,9 @@ func TestAccOauthOpenIdConnectPolicies(t *testing.T) {
 		CheckDestroy: testAccCheckOauthOpenIdConnectPoliciesDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccOauthOpenIdConnectPolicies(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedOauthOpenIdConnectPoliciesAttributes(initialResourceModel),
+				PreConfig: func() { deleteOauthClient(t) },
+				Config:    testAccOauthOpenIdConnectPolicies(resourceName, initialResourceModel),
+				Check:     testAccCheckExpectedOauthOpenIdConnectPoliciesAttributes(initialResourceModel),
 			},
 			{
 				// Test updating some fields
