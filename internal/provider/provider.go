@@ -37,6 +37,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/license"
 	licenseagreement "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/license/agreement"
 	localidentity "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/localidentity/identityprofile"
+	notificationpublishers "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/notificationpublishers/settings"
 	oauthaccesstokenmanager "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/accesstokenmanager"
 	oauthauthserversettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authserversettings"
 	oauthauthserversettingsscopescommonscope "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authserversettings/scopes/commonscope"
@@ -430,6 +431,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		license.LicenseResource,
 		licenseagreement.LicenseAgreementResource,
 		localidentity.LocalIdentityIdentityProfileResource,
+		notificationpublishers.NotificationPublishersSettingsResource,
 		oauthaccesstokenmanager.OauthAccessTokenManagerResource,
 		oauthauthserversettings.OauthAuthServerSettingsResource,
 		oauthauthserversettingsscopescommonscope.OauthAuthServerSettingsScopesCommonScopeResource,

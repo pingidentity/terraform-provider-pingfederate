@@ -1,4 +1,14 @@
-# v0.6.0 (Unreleased)
+# v0.7.0 (Unreleased)
+### DEPRECATED
+### FEATURES
+
+### Resources
+* **New Resource:** `pingfederate_notification_publishers_settings ` ([#TBD](https://github.com/pingidentity/terraform-provider-pingfederate/pull/TBD))
+
+### BUG FIXES
+
+
+# v0.6.0 February 9th, 2024
 ### DEPRECATED
 * `inherited` property for all Resources and DataSources. This property will be removed in a future release.
 
