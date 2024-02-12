@@ -24,9 +24,7 @@ starttestcontainer:
 		-d -p 9031:9031 \
 		-d -p 9999:9999 \
 		--env-file "${HOME}/.pingidentity/config" \
-		-e SERVER_PROFILE_URL=https://github.com/pingidentity/pingidentity-server-profiles.git \
-		-e SERVER_PROFILE_BRANCH=terraform-provider-pingfederate-1125  \
-		-e SERVER_PROFILE_PATH=terraform-provider-pingfederate/pingfederate \
+		-v $$(pwd)/server-profiles/$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.0}:/opt/in \
 		pingidentity/pingfederate:$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.0}-latest
 # Wait for the instance to become ready
 	sleep 1
