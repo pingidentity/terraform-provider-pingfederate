@@ -59,7 +59,7 @@ func incomingProxySettingsHCLObj(incomingProxySettings *client.IncomingProxySett
 	}
 
 	var proxyTerminatesHttpsConns string
-	// GetProxyTerminatesHttpsConns returns the ProxyTerminatesHttpsConns field value if set, zero value otherwise.
+	// GetProxyTerminatesHttpsConns returns the ProxyTerminatesHttpsConns field value if set, zero value (false) otherwise.
 	if incomingProxySettings.GetProxyTerminatesHttpsConns() == false {
 		return ""
 	} else {
@@ -187,7 +187,6 @@ func testAccCheckExpectedIncomingProxySettingsAttributes(incomingProxySettings *
 			}
 		}
 
-		// API always returns the boolean value (even when sent an empty object) so we can always expect last set value
 		if incomingProxySettings.ProxyTerminatesHttpsConns != nil {
 			err = acctest.TestAttributesMatchBool(resourceType, nil, "proxy_terminates_https_conns", *incomingProxySettings.ProxyTerminatesHttpsConns, *response.ProxyTerminatesHttpsConns)
 			if err != nil {
