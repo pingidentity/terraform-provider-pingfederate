@@ -1,0 +1,2 @@
+# This resource is singleton, so the value of "incomingProxySettingsId" doesn't matter - it is just a placeholder, and required by Terraform
+terraform import pingfederate_incoming_proxy_settings.incomingProxySettings incomingProxySettingsId

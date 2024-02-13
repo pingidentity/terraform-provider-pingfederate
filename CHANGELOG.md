@@ -2,6 +2,8 @@
 
 ### Resources
 * **New Resource:** `pingfederate_notification_publishers_settings ` ([#187](https://github.com/pingidentity/terraform-provider-pingfederate/pull/187))
+* **New Resource:** `pingfederate_incoming_proxy_settings ` ([#TBD](https://github.com/pingidentity/terraform-provider-pingfederate/pull/TBD))
+
 
 # v0.6.0 February 9th, 2024
 ### DEPRECATED
