@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
@@ -60,7 +59,6 @@ func (r *incomingProxySettingsResource) Schema(ctx context.Context, req resource
 				Description: "PingFederate combines multiple comma-separated header values into the same order that they are received. Define which IP address you want to use. Default is to use the last address.",
 				Computed:    true,
 				Optional:    true,
-				Default:     stringdefault.StaticString("LAST"),
 				Validators: []validator.String{
 					stringvalidator.OneOf("FIRST", "LAST"),
 					stringvalidator.AlsoRequires(path.MatchRoot("forwarded_ip_address_header_name")),
@@ -75,7 +73,6 @@ func (r *incomingProxySettingsResource) Schema(ctx context.Context, req resource
 				Description: "PingFederate combines multiple comma-separated header values into the same order that they are received. Define which hostname you want to use. Default is to use the last hostname.",
 				Computed:    true,
 				Optional:    true,
-				Default:     stringdefault.StaticString("LAST"),
 				Validators: []validator.String{
 					stringvalidator.OneOf("FIRST", "LAST"),
 					stringvalidator.AlsoRequires(path.MatchRoot("forwarded_host_header_name")),
@@ -141,8 +138,11 @@ func (r *incomingProxySettingsResource) Configure(_ context.Context, req resourc
 }
 
 func (r *incomingProxySettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	var plan incomingProxySettingsResourceModel
+	var plan *incomingProxySettingsResourceModel
 	req.Plan.Get(ctx, &plan)
+	if plan == nil {
+		return
+	}
 	if internaltypes.IsDefined(plan.ForwardedIpAddressHeaderName) && !internaltypes.IsDefined(plan.ForwardedIpAddressHeaderIndex) {
 		plan.ForwardedIpAddressHeaderIndex = types.StringValue("LAST")
 	}
