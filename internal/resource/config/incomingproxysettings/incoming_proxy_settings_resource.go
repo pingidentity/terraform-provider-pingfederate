@@ -4,10 +4,11 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
@@ -57,10 +58,12 @@ func (r *incomingProxySettingsResource) Schema(ctx context.Context, req resource
 			},
 			"forwarded_ip_address_header_index": schema.StringAttribute{
 				Description: "PingFederate combines multiple comma-separated header values into the same order that they are received. Define which IP address you want to use. Default is to use the last address.",
-				Computed:    false,
+				Computed:    true,
 				Optional:    true,
+				Default:     stringdefault.StaticString("LAST"),
 				Validators: []validator.String{
 					stringvalidator.OneOf("FIRST", "LAST"),
+					stringvalidator.AlsoRequires(path.MatchRoot("forwarded_ip_address_header_name")),
 				},
 			},
 			"forwarded_host_header_name": schema.StringAttribute{
@@ -70,10 +73,12 @@ func (r *incomingProxySettingsResource) Schema(ctx context.Context, req resource
 			},
 			"forwarded_host_header_index": schema.StringAttribute{
 				Description: "PingFederate combines multiple comma-separated header values into the same order that they are received. Define which hostname you want to use. Default is to use the last hostname.",
-				Computed:    false,
+				Computed:    true,
 				Optional:    true,
+				Default:     stringdefault.StaticString("LAST"),
 				Validators: []validator.String{
 					stringvalidator.OneOf("FIRST", "LAST"),
+					stringvalidator.AlsoRequires(path.MatchRoot("forwarded_host_header_name")),
 				},
 			},
 			"client_cert_ssl_header_name": schema.StringAttribute{
@@ -90,6 +95,7 @@ func (r *incomingProxySettingsResource) Schema(ctx context.Context, req resource
 				Description: "Allows you to globally specify that connections to the reverse proxy are made over HTTPS even when HTTP is used between the reverse proxy and PingFederate.",
 				Computed:    true,
 				Optional:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 		},
 	}
@@ -98,37 +104,23 @@ func (r *incomingProxySettingsResource) Schema(ctx context.Context, req resource
 	resp.Schema = schema
 }
 
-func addOptionalIncomingProxySettingsFields(ctx context.Context, addRequest *client.IncomingProxySettings, plan incomingProxySettingsResourceModel) error {
+func addOptionalIncomingProxySettingsFields(ctx context.Context, addRequest *client.IncomingProxySettings, plan incomingProxySettingsResourceModel) {
 
-	if internaltypes.IsDefined(plan.ForwardedIpAddressHeaderName) {
-		addRequest.ForwardedIpAddressHeaderName = plan.ForwardedIpAddressHeaderName.ValueStringPointer()
-	}
+	addRequest.ForwardedIpAddressHeaderName = plan.ForwardedIpAddressHeaderName.ValueStringPointer()
 
 	if internaltypes.IsDefined(plan.ForwardedIpAddressHeaderIndex) {
 		addRequest.ForwardedIpAddressHeaderIndex = plan.ForwardedIpAddressHeaderIndex.ValueStringPointer()
 	}
-
-	if internaltypes.IsDefined(plan.ForwardedHostHeaderName) {
-		addRequest.ForwardedHostHeaderName = plan.ForwardedHostHeaderName.ValueStringPointer()
-	}
+	addRequest.ForwardedHostHeaderName = plan.ForwardedHostHeaderName.ValueStringPointer()
 
 	if internaltypes.IsDefined(plan.ForwardedHostHeaderIndex) {
 		addRequest.ForwardedHostHeaderIndex = plan.ForwardedHostHeaderIndex.ValueStringPointer()
 	}
+	addRequest.ClientCertSSLHeaderName = plan.ClientCertSSLHeaderName.ValueStringPointer()
 
-	if internaltypes.IsDefined(plan.ClientCertSSLHeaderName) {
-		addRequest.ClientCertSSLHeaderName = plan.ClientCertSSLHeaderName.ValueStringPointer()
-	}
+	addRequest.ClientCertChainSSLHeaderName = plan.ClientCertChainSSLHeaderName.ValueStringPointer()
 
-	if internaltypes.IsDefined(plan.ClientCertChainSSLHeaderName) {
-		addRequest.ClientCertChainSSLHeaderName = plan.ClientCertChainSSLHeaderName.ValueStringPointer()
-	}
-
-	if internaltypes.IsDefined(plan.ProxyTerminatesHttpsConns) {
-		addRequest.ProxyTerminatesHttpsConns = plan.ProxyTerminatesHttpsConns.ValueBoolPointer()
-	}
-
-	return nil
+	addRequest.ProxyTerminatesHttpsConns = plan.ProxyTerminatesHttpsConns.ValueBoolPointer()
 
 }
 
@@ -148,13 +140,25 @@ func (r *incomingProxySettingsResource) Configure(_ context.Context, req resourc
 
 }
 
-func readIncomingProxySettingsResponse(ctx context.Context, r *client.IncomingProxySettings, state *incomingProxySettingsResourceModel, existingId *string) diag.Diagnostics {
+func (r *incomingProxySettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	var plan incomingProxySettingsResourceModel
+	req.Plan.Get(ctx, &plan)
+	if internaltypes.IsDefined(plan.ForwardedIpAddressHeaderName) && !internaltypes.IsDefined(plan.ForwardedIpAddressHeaderIndex) {
+		plan.ForwardedIpAddressHeaderIndex = types.StringValue("LAST")
+	}
+	if internaltypes.IsDefined(plan.ForwardedHostHeaderName) && !internaltypes.IsDefined(plan.ForwardedHostHeaderIndex) {
+		plan.ForwardedHostHeaderIndex = types.StringValue("LAST")
+	}
+	resp.Plan.Set(ctx, plan)
+
+}
+
+func readIncomingProxySettingsResponse(ctx context.Context, r *client.IncomingProxySettings, state *incomingProxySettingsResourceModel, existingId *string) {
 	if existingId != nil {
 		state.Id = types.StringValue(*existingId)
 	} else {
 		state.Id = id.GenerateUUIDToState(existingId)
 	}
-	var diags diag.Diagnostics
 
 	state.ForwardedIpAddressHeaderName = types.StringPointerValue(r.ForwardedIpAddressHeaderName)
 	state.ForwardedIpAddressHeaderIndex = types.StringPointerValue(r.ForwardedIpAddressHeaderIndex)
@@ -164,8 +168,6 @@ func readIncomingProxySettingsResponse(ctx context.Context, r *client.IncomingPr
 	state.ClientCertChainSSLHeaderName = types.StringPointerValue(r.ClientCertChainSSLHeaderName)
 	state.ProxyTerminatesHttpsConns = types.BoolPointerValue(r.ProxyTerminatesHttpsConns)
 
-	// make sure all object type building appends diags
-	return diags
 }
 
 func (r *incomingProxySettingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -178,11 +180,7 @@ func (r *incomingProxySettingsResource) Create(ctx context.Context, req resource
 	}
 
 	createIncomingProxySettings := client.NewIncomingProxySettings()
-	err := addOptionalIncomingProxySettingsFields(ctx, createIncomingProxySettings, plan)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for incoming proxy settings.", err.Error())
-		return
-	}
+	addOptionalIncomingProxySettingsFields(ctx, createIncomingProxySettings, plan)
 
 	apiCreateIncomingProxySettings := r.apiClient.IncomingProxySettingsAPI.UpdateIncomingProxySettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateIncomingProxySettings = apiCreateIncomingProxySettings.Body(*createIncomingProxySettings)
@@ -195,7 +193,7 @@ func (r *incomingProxySettingsResource) Create(ctx context.Context, req resource
 	// Read the response into the state
 	var state incomingProxySettingsResourceModel
 
-	diags = readIncomingProxySettingsResponse(ctx, incomingProxySettingsResponse, &state, nil)
+	readIncomingProxySettingsResponse(ctx, incomingProxySettingsResponse, &state, nil)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -247,11 +245,7 @@ func (r *incomingProxySettingsResource) Update(ctx context.Context, req resource
 
 	updateIncomingProxySettings := r.apiClient.IncomingProxySettingsAPI.UpdateIncomingProxySettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewIncomingProxySettings()
-	err := addOptionalIncomingProxySettingsFields(ctx, createUpdateRequest, plan)
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for incomfing proxy settings.", err.Error())
-		return
-	}
+	addOptionalIncomingProxySettingsFields(ctx, createUpdateRequest, plan)
 
 	updateIncomingProxySettings = updateIncomingProxySettings.Body(*createUpdateRequest)
 	updateIncomingProxySettingsResponse, httpResp, err := r.apiClient.IncomingProxySettingsAPI.UpdateIncomingProxySettingsExecute(updateIncomingProxySettings)
@@ -267,7 +261,7 @@ func (r *incomingProxySettingsResource) Update(ctx context.Context, req resource
 	}
 	// Read the response
 	var state incomingProxySettingsResourceModel
-	diags = readIncomingProxySettingsResponse(ctx, updateIncomingProxySettingsResponse, &state, id)
+	readIncomingProxySettingsResponse(ctx, updateIncomingProxySettingsResponse, &state, id)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
