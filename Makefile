@@ -22,7 +22,7 @@ vet:
 starttestcontainer:
 	docker run --name pingfederate_terraform_provider_container \
 		-d -p 9031:9031 \
-		-d -p 9999:9999 \
+		-p 9999:9999 \
 		--env-file "${HOME}/.pingidentity/config" \
 		-v $$(pwd)/server-profiles/shared-profile:/opt/in \
 		-v $$(pwd)/server-profiles/$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.0}/data.json.subst:/opt/in/instance/bulk-config/data.json.subst \
