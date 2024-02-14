@@ -24,7 +24,8 @@ starttestcontainer:
 		-d -p 9031:9031 \
 		-d -p 9999:9999 \
 		--env-file "${HOME}/.pingidentity/config" \
-		-v $$(pwd)/server-profiles/$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.0}:/opt/in \
+		-v $$(pwd)/server-profiles/shared-profile:/opt/in \
+		-v $$(pwd)/server-profiles/$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.0}/data.json.subst:/opt/in/instance/bulk-config/data.json.subst \
 		pingidentity/pingfederate:$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.0}-latest
 # Wait for the instance to become ready
 	sleep 1
@@ -36,7 +37,8 @@ starttestcontainer:
 	done
 # Fail if the container didn't become ready in time
 	docker logs pingfederate_terraform_provider_container 2>&1 | grep -q "Removing Imported Bulk File" || \
-		{ echo "PingFederate container did not become ready in time or contains errors. Logs:"; docker logs pingfederate_terraform_provider_container; exit 1; }
+		{ echo "PingFederate container did not become ready in time or contains errors. Logs:"; docker logs pingfederate_terraform_provider_container; exit 1; }; \
+	rm $$(pwd)/server-profiles/shared-profile/instance/bulk-config/data.json.subst
 		
 removetestcontainer:
 	docker rm -f pingfederate_terraform_provider_container
