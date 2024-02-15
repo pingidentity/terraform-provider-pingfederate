@@ -55,6 +55,9 @@ func (r *incomingProxySettingsResource) Schema(ctx context.Context, req resource
 				Computed:    false,
 				Optional:    true,
 			},
+			// Default value for the index is set in ModifyPlan method if:
+			//    ForwardedIpAddressHeaderName is set in HCL AND
+			//    ForwardedIpAddressHeaderIndex is not
 			"forwarded_ip_address_header_index": schema.StringAttribute{
 				Description: "PingFederate combines multiple comma-separated header values into the same order that they are received. Define which IP address you want to use. Default is to use the last address.",
 				Computed:    true,
@@ -69,6 +72,9 @@ func (r *incomingProxySettingsResource) Schema(ctx context.Context, req resource
 				Computed:    false,
 				Optional:    true,
 			},
+			// Default value for the index is set in ModifyPlan method if:
+			//    ForwardedHostHeaderName is set in HCL AND
+			//    ForwardedHostHeaderIndex is not
 			"forwarded_host_header_index": schema.StringAttribute{
 				Description: "PingFederate combines multiple comma-separated header values into the same order that they are received. Define which hostname you want to use. Default is to use the last hostname.",
 				Computed:    true,
@@ -105,20 +111,21 @@ func addOptionalIncomingProxySettingsFields(ctx context.Context, addRequest *cli
 
 	addRequest.ForwardedIpAddressHeaderName = plan.ForwardedIpAddressHeaderName.ValueStringPointer()
 
-	if internaltypes.IsDefined(plan.ForwardedIpAddressHeaderIndex) {
-		addRequest.ForwardedIpAddressHeaderIndex = plan.ForwardedIpAddressHeaderIndex.ValueStringPointer()
-	}
+	// We only need to set the index if provided in the HCL
+	// if internaltypes.IsDefined(plan.ForwardedIpAddressHeaderIndex) {
+	addRequest.ForwardedIpAddressHeaderIndex = plan.ForwardedIpAddressHeaderIndex.ValueStringPointer()
+	// }
+
 	addRequest.ForwardedHostHeaderName = plan.ForwardedHostHeaderName.ValueStringPointer()
 
-	if internaltypes.IsDefined(plan.ForwardedHostHeaderIndex) {
-		addRequest.ForwardedHostHeaderIndex = plan.ForwardedHostHeaderIndex.ValueStringPointer()
-	}
+	// We only need to set the index if provided in the HCL
+	// if internaltypes.IsDefined(plan.ForwardedHostHeaderIndex) {
+	addRequest.ForwardedHostHeaderIndex = plan.ForwardedHostHeaderIndex.ValueStringPointer()
+	// }
+
 	addRequest.ClientCertSSLHeaderName = plan.ClientCertSSLHeaderName.ValueStringPointer()
-
 	addRequest.ClientCertChainSSLHeaderName = plan.ClientCertChainSSLHeaderName.ValueStringPointer()
-
 	addRequest.ProxyTerminatesHttpsConns = plan.ProxyTerminatesHttpsConns.ValueBoolPointer()
-
 }
 
 // Metadata returns the resource type name.
@@ -139,6 +146,7 @@ func (r *incomingProxySettingsResource) Configure(_ context.Context, req resourc
 
 func (r *incomingProxySettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	var plan *incomingProxySettingsResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	req.Plan.Get(ctx, &plan)
 	if plan == nil {
 		return
