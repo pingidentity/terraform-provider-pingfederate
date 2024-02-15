@@ -137,7 +137,6 @@ func (r *incomingProxySettingsResource) Configure(_ context.Context, req resourc
 func (r *incomingProxySettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	var plan *incomingProxySettingsResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	req.Plan.Get(ctx, &plan)
 	if plan == nil {
 		return
 	}
