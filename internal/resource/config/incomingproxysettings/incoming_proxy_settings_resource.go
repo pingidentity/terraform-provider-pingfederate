@@ -110,19 +110,9 @@ func (r *incomingProxySettingsResource) Schema(ctx context.Context, req resource
 func addOptionalIncomingProxySettingsFields(ctx context.Context, addRequest *client.IncomingProxySettings, plan incomingProxySettingsResourceModel) {
 
 	addRequest.ForwardedIpAddressHeaderName = plan.ForwardedIpAddressHeaderName.ValueStringPointer()
-
-	// We only need to set the index if provided in the HCL
-	// if internaltypes.IsDefined(plan.ForwardedIpAddressHeaderIndex) {
 	addRequest.ForwardedIpAddressHeaderIndex = plan.ForwardedIpAddressHeaderIndex.ValueStringPointer()
-	// }
-
 	addRequest.ForwardedHostHeaderName = plan.ForwardedHostHeaderName.ValueStringPointer()
-
-	// We only need to set the index if provided in the HCL
-	// if internaltypes.IsDefined(plan.ForwardedHostHeaderIndex) {
 	addRequest.ForwardedHostHeaderIndex = plan.ForwardedHostHeaderIndex.ValueStringPointer()
-	// }
-
 	addRequest.ClientCertSSLHeaderName = plan.ClientCertSSLHeaderName.ValueStringPointer()
 	addRequest.ClientCertChainSSLHeaderName = plan.ClientCertChainSSLHeaderName.ValueStringPointer()
 	addRequest.ProxyTerminatesHttpsConns = plan.ProxyTerminatesHttpsConns.ValueBoolPointer()
@@ -151,12 +141,27 @@ func (r *incomingProxySettingsResource) ModifyPlan(ctx context.Context, req reso
 	if plan == nil {
 		return
 	}
+
+	// PingFederate sets index to "LAST" if the header name is set and the index is not
+	// Need these to match the behavior in state
 	if internaltypes.IsDefined(plan.ForwardedIpAddressHeaderName) && !internaltypes.IsDefined(plan.ForwardedIpAddressHeaderIndex) {
 		plan.ForwardedIpAddressHeaderIndex = types.StringValue("LAST")
 	}
+
 	if internaltypes.IsDefined(plan.ForwardedHostHeaderName) && !internaltypes.IsDefined(plan.ForwardedHostHeaderIndex) {
 		plan.ForwardedHostHeaderIndex = types.StringValue("LAST")
 	}
+
+	// Plan checks against nil values, not empty strings
+	if !internaltypes.IsDefined(plan.ForwardedIpAddressHeaderName) && !internaltypes.IsDefined(plan.ForwardedIpAddressHeaderIndex) {
+		plan.ForwardedIpAddressHeaderIndex = types.StringNull()
+	}
+
+	// Plan checks against nil values, not empty strings
+	if !internaltypes.IsDefined(plan.ForwardedHostHeaderName) && !internaltypes.IsDefined(plan.ForwardedHostHeaderIndex) {
+		plan.ForwardedHostHeaderIndex = types.StringNull()
+	}
+
 	resp.Plan.Set(ctx, plan)
 
 }
@@ -258,7 +263,7 @@ func (r *incomingProxySettingsResource) Update(ctx context.Context, req resource
 	updateIncomingProxySettings = updateIncomingProxySettings.Body(*createUpdateRequest)
 	updateIncomingProxySettingsResponse, httpResp, err := r.apiClient.IncomingProxySettingsAPI.UpdateIncomingProxySettingsExecute(updateIncomingProxySettings)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating incomfing proxy settings.", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating incoming proxy settings.", err, httpResp)
 		return
 	}
 
