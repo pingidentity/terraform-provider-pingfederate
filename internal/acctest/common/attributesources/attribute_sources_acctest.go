@@ -58,7 +58,7 @@ func JdbcHcl(attrSource *client.JdbcAttributeSource) string {
 
 func JdbcClientStruct(table string, filter string, attributeSourceType string, resourceLink client.ResourceLink) *client.JdbcAttributeSource {
 	jdbcAttributeSource := client.NewJdbcAttributeSource(
-		table, filter, attributeSourceType, resourceLink,
+		attributeSourceType, resourceLink, table, filter,
 	)
 	jdbcAttributeSource.Id = pointers.String("jdbcattributesourceid")
 	jdbcAttributeSource.ColumnNames = []string{"CREATED"}
@@ -117,7 +117,7 @@ func LdapHcl(attrSource *client.LdapAttributeSource) string {
 }
 
 func LdapClientStruct(searchFilter, searchScope string, dataStoreRef client.ResourceLink) *client.LdapAttributeSource {
-	ldapAttributeSource := client.NewLdapAttributeSource(searchScope, searchFilter, "LDAP", dataStoreRef)
+	ldapAttributeSource := client.NewLdapAttributeSource("LDAP", dataStoreRef, searchScope, searchFilter)
 	ldapAttributeSource.MemberOfNestedGroup = pointers.Bool(false)
 	ldapAttributeSource.Id = pointers.String("ldapattributesourceid")
 	ldapAttributeSource.BaseDn = pointers.String("dc=example,dc=com")

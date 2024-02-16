@@ -58,6 +58,12 @@ func FromValue(value attr.Value, skipNullOrUnknownAttrs bool) string {
 	return jsonString.String()
 }
 
+func FromAttributesMap(values map[string]attr.Value, skipNullOrUnknownAttrs bool) string {
+	var jsonString strings.Builder
+	writeMap(values, &jsonString, skipNullOrUnknownAttrs, true)
+	return jsonString.String()
+}
+
 func writeArray(values []attr.Value, builder *strings.Builder, skipNullOrUnknownAttrs bool) {
 	builder.WriteRune('[')
 	for i, attrValue := range values {

@@ -426,7 +426,7 @@ func createJdbcDataStore(plan dataStoreModel, con context.Context, req resource.
 	jdbcPlan := plan.JdbcDataStore.Attributes()
 	driverClass := jdbcPlan["driver_class"].(types.String).ValueString()
 
-	createJdbcDataStore := client.JdbcDataStoreAsDataStoreAggregation(client.NewJdbcDataStore(driverClass, "JDBC"))
+	createJdbcDataStore := client.JdbcDataStoreAsDataStoreAggregation(client.NewJdbcDataStore("JDBC", driverClass))
 	err = addOptionalJdbcDataStoreFields(createJdbcDataStore, con, client.JdbcDataStore{}, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for DataStore", err.Error())
@@ -454,7 +454,7 @@ func updateJdbcDataStore(plan dataStoreModel, con context.Context, req resource.
 	jdbcPlan := plan.JdbcDataStore.Attributes()
 	driverClass := jdbcPlan["driver_class"].(types.String).ValueString()
 
-	updateJdbcDataStore := client.JdbcDataStoreAsDataStoreAggregation(client.NewJdbcDataStore(driverClass, "JDBC"))
+	updateJdbcDataStore := client.JdbcDataStoreAsDataStoreAggregation(client.NewJdbcDataStore("JDBC", driverClass))
 	err = addOptionalJdbcDataStoreFields(updateJdbcDataStore, con, client.JdbcDataStore{}, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for the DataStore", err.Error())

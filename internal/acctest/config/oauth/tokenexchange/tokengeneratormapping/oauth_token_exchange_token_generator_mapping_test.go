@@ -68,7 +68,7 @@ func attributeContractFulfillmentHclBlock(aCf *client.AttributeFulfillmentValue)
 
 func attributeSource() *client.JdbcAttributeSource {
 	jdbcAttributeSource := client.NewJdbcAttributeSource(
-		"CHANNEL_GROUP", "CONDITION", "JDBC", *client.NewResourceLink("ProvisionerDS"),
+		"JDBC", *client.NewResourceLink("ProvisionerDS"), "CHANNEL_GROUP", "CONDITION",
 	)
 	jdbcAttributeSource.Id = stringPointer("attributesourceid")
 	jdbcAttributeSource.ColumnNames = []string{"CREATED"}

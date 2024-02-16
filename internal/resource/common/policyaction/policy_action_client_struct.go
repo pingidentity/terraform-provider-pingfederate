@@ -19,74 +19,90 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 	attrs := object.Attributes()
 	apcMappingPolicyAction, ok := attrs["apc_mapping_policy_action"]
 	if ok && internaltypes.IsDefined(apcMappingPolicyAction) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(apcMappingPolicyAction, true)), &result.ApcMappingPolicyAction)
+		policyActionAttrs := apcMappingPolicyAction.(types.Object).Attributes()
+		// Set type attribute required by the policy action struct
+		policyActionAttrs["type"] = types.StringValue("APC_MAPPING")
+		err := json.Unmarshal([]byte(internaljson.FromAttributesMap(policyActionAttrs, true)), &result.ApcMappingPolicyAction)
 		if err != nil {
 			return nil, err
 		}
-		result.ApcMappingPolicyAction.Type = "APC_MAPPING"
 		return &result, nil
 	}
 	authnSelectorPolicyAction, ok := attrs["authn_selector_policy_action"]
 	if ok && internaltypes.IsDefined(authnSelectorPolicyAction) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(authnSelectorPolicyAction, true)), &result.AuthnSelectorPolicyAction)
+		policyActionAttrs := authnSelectorPolicyAction.(types.Object).Attributes()
+		// Set type attribute required by the policy action struct
+		policyActionAttrs["type"] = types.StringValue("AUTHN_SELECTOR")
+		err := json.Unmarshal([]byte(internaljson.FromAttributesMap(policyActionAttrs, true)), &result.AuthnSelectorPolicyAction)
 		if err != nil {
 			return nil, err
 		}
-		result.AuthnSelectorPolicyAction.Type = "AUTHN_SELECTOR"
 		return &result, nil
 	}
 	authnSourcePolicyAction, ok := attrs["authn_source_policy_action"]
 	if ok && internaltypes.IsDefined(authnSourcePolicyAction) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(authnSourcePolicyAction, true)), &result.AuthnSourcePolicyAction)
+		policyActionAttrs := authnSourcePolicyAction.(types.Object).Attributes()
+		// Set type attribute required by the policy action struct
+		policyActionAttrs["type"] = types.StringValue("AUTHN_SOURCE")
+		err := json.Unmarshal([]byte(internaljson.FromAttributesMap(policyActionAttrs, true)), &result.AuthnSourcePolicyAction)
 		if err != nil {
 			return nil, err
 		}
-		result.AuthnSourcePolicyAction.Type = "AUTHN_SOURCE"
 		return &result, nil
 	}
 	continuePolicyAction, ok := attrs["continue_policy_action"]
 	if ok && internaltypes.IsDefined(continuePolicyAction) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(continuePolicyAction, true)), &result.ContinuePolicyAction)
+		policyActionAttrs := continuePolicyAction.(types.Object).Attributes()
+		// Set type attribute required by the policy action struct
+		policyActionAttrs["type"] = types.StringValue("CONTINUE")
+		err := json.Unmarshal([]byte(internaljson.FromAttributesMap(policyActionAttrs, true)), &result.ContinuePolicyAction)
 		if err != nil {
 			return nil, err
 		}
-		result.ContinuePolicyAction.Type = "CONTINUE"
 		return &result, nil
 	}
 	donePolicyAction, ok := attrs["done_policy_action"]
 	if ok && internaltypes.IsDefined(donePolicyAction) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(donePolicyAction, true)), &result.DonePolicyAction)
+		policyActionAttrs := donePolicyAction.(types.Object).Attributes()
+		// Set type attribute required by the policy action struct
+		policyActionAttrs["type"] = types.StringValue("DONE")
+		err := json.Unmarshal([]byte(internaljson.FromAttributesMap(policyActionAttrs, true)), &result.DonePolicyAction)
 		if err != nil {
 			return nil, err
 		}
-		result.DonePolicyAction.Type = "DONE"
 		return &result, nil
 	}
 	fragmentPolicyAction, ok := attrs["fragment_policy_action"]
 	if ok && internaltypes.IsDefined(fragmentPolicyAction) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(fragmentPolicyAction, true)), &result.FragmentPolicyAction)
+		policyActionAttrs := fragmentPolicyAction.(types.Object).Attributes()
+		// Set type attribute required by the policy action struct
+		policyActionAttrs["type"] = types.StringValue("FRAGMENT")
+		err := json.Unmarshal([]byte(internaljson.FromAttributesMap(policyActionAttrs, true)), &result.FragmentPolicyAction)
 		if err != nil {
 			return nil, err
 		}
-		result.FragmentPolicyAction.Type = "FRAGMENT"
 		return &result, nil
 	}
 	localIdentityMappingPolicyAction, ok := attrs["local_identity_mapping_policy_action"]
 	if ok && internaltypes.IsDefined(localIdentityMappingPolicyAction) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(localIdentityMappingPolicyAction, true)), &result.LocalIdentityMappingPolicyAction)
+		policyActionAttrs := localIdentityMappingPolicyAction.(types.Object).Attributes()
+		// Set type attribute required by the policy action struct
+		policyActionAttrs["type"] = types.StringValue("LOCAL_IDENTITY_MAPPING")
+		err := json.Unmarshal([]byte(internaljson.FromAttributesMap(policyActionAttrs, true)), &result.LocalIdentityMappingPolicyAction)
 		if err != nil {
 			return nil, err
 		}
-		result.LocalIdentityMappingPolicyAction.Type = "LOCAL_IDENTITY_MAPPING"
 		return &result, nil
 	}
 	restartPolicyAction, ok := attrs["restart_policy_action"]
 	if ok && internaltypes.IsDefined(restartPolicyAction) {
-		err := json.Unmarshal([]byte(internaljson.FromValue(restartPolicyAction, true)), &result.RestartPolicyAction)
+		policyActionAttrs := restartPolicyAction.(types.Object).Attributes()
+		// Set type attribute required by the policy action struct
+		policyActionAttrs["type"] = types.StringValue("RESTART")
+		err := json.Unmarshal([]byte(internaljson.FromAttributesMap(policyActionAttrs, true)), &result.RestartPolicyAction)
 		if err != nil {
 			return nil, err
 		}
-		result.RestartPolicyAction.Type = "RESTART"
 		return &result, nil
 	}
 

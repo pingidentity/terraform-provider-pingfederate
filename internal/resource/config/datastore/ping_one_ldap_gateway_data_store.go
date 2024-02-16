@@ -265,11 +265,11 @@ func createPingOneLdapGatewayDataStore(plan dataStoreModel, con context.Context,
 	pingOneEnvId := pingOneLdapGatewayDsPlan["ping_one_environment_id"].(types.String).ValueString()
 	pingOneGatewayId := pingOneLdapGatewayDsPlan["ping_one_ldap_gateway_id"].(types.String).ValueString()
 	createPingOneLdapGatewayDataStore := client.PingOneLdapGatewayDataStoreAsDataStoreAggregation(client.NewPingOneLdapGatewayDataStore(
+		"PING_ONE_LDAP_GATEWAY",
 		ldapType,
 		*pingOneConnectionRef,
 		pingOneEnvId,
 		pingOneGatewayId,
-		"PING_ONE_LDAP_GATEWAY",
 	))
 	err = addOptionalPingOneLdapGatewayDataStoreFields(createPingOneLdapGatewayDataStore, con, client.PingOneLdapGatewayDataStore{}, plan)
 	if err != nil {
@@ -305,11 +305,11 @@ func updatePingOneLdapGatewayDataStore(plan dataStoreModel, con context.Context,
 	pingOneEnvId := pingOneLdapGatewayDsPlan["ping_one_environment_id"].(types.String).ValueString()
 	pingOneGatewayId := pingOneLdapGatewayDsPlan["ping_one_ldap_gateway_id"].(types.String).ValueString()
 	updatePingOneLdapGatewayDataStore := client.PingOneLdapGatewayDataStoreAsDataStoreAggregation(client.NewPingOneLdapGatewayDataStore(
+		"PING_ONE_LDAP_GATEWAY",
 		ldapType,
 		*pingOneConnectionRef,
 		pingOneEnvId,
 		pingOneGatewayId,
-		"PING_ONE_LDAP_GATEWAY",
 	))
 
 	err = addOptionalPingOneLdapGatewayDataStoreFields(updatePingOneLdapGatewayDataStore, con, client.PingOneLdapGatewayDataStore{}, plan)

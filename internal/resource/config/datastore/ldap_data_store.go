@@ -756,7 +756,7 @@ func createLdapDataStore(plan dataStoreModel, con context.Context, req resource.
 
 	ldapPlan := plan.LdapDataStore.Attributes()
 	ldapType := ldapPlan["ldap_type"].(types.String).ValueString()
-	createLdapDataStore := client.LdapDataStoreAsDataStoreAggregation(client.NewLdapDataStore(ldapType, "LDAP"))
+	createLdapDataStore := client.LdapDataStoreAsDataStoreAggregation(client.NewLdapDataStore("LDAP", ldapType))
 	err = addOptionalLdapDataStoreFields(createLdapDataStore, con, client.LdapDataStore{}, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for DataStore", err.Error())
@@ -783,7 +783,7 @@ func updateLdapDataStore(plan dataStoreModel, con context.Context, req resource.
 
 	ldapPlan := plan.LdapDataStore.Attributes()
 	ldapType := ldapPlan["ldap_type"].(types.String).ValueString()
-	updateLdapDataStore := client.LdapDataStoreAsDataStoreAggregation(client.NewLdapDataStore(ldapType, "LDAP"))
+	updateLdapDataStore := client.LdapDataStoreAsDataStoreAggregation(client.NewLdapDataStore("LDAP", ldapType))
 	err = addOptionalLdapDataStoreFields(updateLdapDataStore, con, client.LdapDataStore{}, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for the DataStore", err.Error())
