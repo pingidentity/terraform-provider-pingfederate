@@ -52,8 +52,8 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Schema(ctx context.Con
 	schema := schema.Schema{
 		Description: "Manages the mapping from a token exchange processor policy to a token generator.",
 		Attributes: map[string]schema.Attribute{
-			"attribute_sources":              attributesources.ToSchema(0),
-			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
+			"attribute_sources":              attributesources.ToSchema(0, false),
+			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
 			"issuance_criteria":              issuancecriteria.ToSchema(),
 			"source_id": schema.StringAttribute{
 				Description: "The id of the Token Exchange Processor policy.",

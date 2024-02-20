@@ -715,8 +715,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"attribute_query": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
-					"attribute_sources":              attributesources.ToSchema(1),
+					"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
+					"attribute_sources":              attributesources.ToSchema(1, false),
 					"attributes": schema.ListAttribute{
 						ElementType: types.StringType,
 						Required:    true,
@@ -1267,8 +1267,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										},
 										"attribute_mapping": schema.SingleNestedAttribute{
 											Attributes: map[string]schema.Attribute{
-												"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
-												"attribute_sources":              attributesources.ToSchema(0),
+												"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
+												"attribute_sources":              attributesources.ToSchema(0, false),
 												"inherited": schema.BoolAttribute{
 													DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
 													Optional:           true,
@@ -1297,8 +1297,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									},
 									Optional: true,
 								},
-								"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
-								"attribute_sources":              attributesources.ToSchema(0),
+								"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
+								"attribute_sources":              attributesources.ToSchema(0, false),
 								"idp_adapter_ref":                resourcelink.CompleteSingleNestedAttribute(true, false, false, "Reference to the associated IdP adapter. Note: This is ignored if adapter overrides for this mapping exists. In this case, the override's parent adapter reference is used."),
 								"issuance_criteria":              issuancecriteria.ToSchema(),
 								"restrict_virtual_entity_ids": schema.BoolAttribute{
@@ -1386,8 +1386,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Optional:    true,
 									Description: "If set to true, SSO transaction will be aborted as a fail-safe when the data-store's attribute mappings fail to complete the attribute contract. Otherwise, the attribute contract with default values is used. By default, this value is false.",
 								},
-								"attribute_contract_fulfillment":     attributecontractfulfillment.ToSchema(true, false),
-								"attribute_sources":                  attributesources.ToSchema(0),
+								"attribute_contract_fulfillment":     attributecontractfulfillment.ToSchema(true, false, false),
+								"attribute_sources":                  attributesources.ToSchema(0, false),
 								"authentication_policy_contract_ref": resourcelink.CompleteSingleNestedAttribute(false, false, true, "Reference to the associated Authentication Policy Contract."),
 								"issuance_criteria":                  issuancecriteria.ToSchema(),
 								"restrict_virtual_entity_ids": schema.BoolAttribute{
@@ -1691,8 +1691,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					"token_processor_mappings": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
-								"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
-								"attribute_sources":              attributesources.ToSchema(0),
+								"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
+								"attribute_sources":              attributesources.ToSchema(0, false),
 								"idp_token_processor_ref":        resourcelink.CompleteSingleNestedAttribute(false, false, true, "Reference to the associated token processor."),
 								"issuance_criteria":              issuancecriteria.ToSchema(),
 								"restricted_virtual_entity_ids": schema.ListAttribute{

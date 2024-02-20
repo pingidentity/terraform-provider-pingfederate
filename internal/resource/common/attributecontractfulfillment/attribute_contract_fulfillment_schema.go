@@ -5,12 +5,12 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 )
 
-func ToSchema(required, fullyComputed bool) schema.MapNestedAttribute {
+func ToSchema(required, computed, fullyComputed bool) schema.MapNestedAttribute {
 	return schema.MapNestedAttribute{
 		Description: "Defines how an attribute in an attribute contract should be populated.",
 		Required:    required,
 		Optional:    !required,
-		Computed:    !required,
+		Computed:    computed,
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
 				"source": sourcetypeidkey.ToSchema(fullyComputed),

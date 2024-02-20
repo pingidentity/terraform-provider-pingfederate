@@ -171,8 +171,8 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Optional:    true,
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
-					"attribute_sources":              attributesources.ToSchema(0),
-					"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(false, true),
+					"attribute_sources":              attributesources.ToSchema(0, false),
+					"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(false, true, true),
 					"issuance_criteria":              issuancecriteria.ToSchema(),
 					"inherited": schema.BoolAttribute{
 						DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
