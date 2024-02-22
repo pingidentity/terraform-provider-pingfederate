@@ -11,8 +11,7 @@ import (
 
 var (
 	resourceLinkAttrTypes = map[string]attr.Type{
-		"id":       types.StringType,
-		"location": types.StringType,
+		"id": types.StringType,
 	}
 )
 

@@ -65,6 +65,9 @@ func (r *oauthAccessTokenMappingsResource) Schema(ctx context.Context, req resou
 			"context": schema.SingleNestedAttribute{
 				Description: "The context of the OAuth Access Token Mapping. This property cannot be changed after the mapping is created.",
 				Required:    true,
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.RequiresReplace(),
+				},
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{
 						Description: "The Access Token Mapping Context type.",
@@ -87,7 +90,10 @@ func (r *oauthAccessTokenMappingsResource) Schema(ctx context.Context, req resou
 			"access_token_manager_ref": schema.SingleNestedAttribute{
 				Description: "Reference to the access token manager this mapping is associated with. This property cannot be changed after the mapping is created.",
 				Required:    true,
-				Attributes:  resourcelink.ToSchemaLocationUseStateForUnknown(),
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.RequiresReplace(),
+				},
+				Attributes: resourcelink.ToSchema(),
 			},
 			"attribute_sources":              attributesources.ToSchema(0, true),
 			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
@@ -175,22 +181,35 @@ func (r *oauthAccessTokenMappingsResource) Create(ctx context.Context, req resou
 		return
 	}
 
+	var hasObjectErrMap = make(map[error]bool)
 	accessTokenMappingContext := &client.AccessTokenMappingContext{}
 	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Context, true)), accessTokenMappingContext)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to create context object for request object:", err.Error())
-		return
+		hasObjectErrMap[err] = true
 	}
 
 	accessTokenManagerRef, err := resourcelink.ClientStruct(plan.AccessTokenManagerRef)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to create AccessTokenManagerRef for request object:", err.Error())
+		hasObjectErrMap[err] = true
 	}
 
 	attributeContractFulfillment, err := attributecontractfulfillment.ClientStruct(plan.AttributeContractFulfillment)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to create AttributeContractFulfillment for request object:", err.Error())
+		hasObjectErrMap[err] = true
 	}
+
+	var needToReturn bool = false
+	for errorVal, hasErr := range hasObjectErrMap {
+		if hasErr {
+			resp.Diagnostics.AddError("Failed to create item for request object:", errorVal.Error())
+		}
+		needToReturn = true
+	}
+
+	if needToReturn {
+		return
+	}
+
 	createOauthAccessTokenMappings := client.NewAccessTokenMapping(*accessTokenMappingContext, *accessTokenManagerRef, attributeContractFulfillment)
 
 	err = addOptionalOauthAccessTokenMappingsFields(ctx, createOauthAccessTokenMappings, plan)
@@ -254,21 +273,33 @@ func (r *oauthAccessTokenMappingsResource) Update(ctx context.Context, req resou
 		return
 	}
 
+	var hasObjectErrMap = make(map[error]bool)
 	accessTokenMappingContext := &client.AccessTokenMappingContext{}
 	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Context, true)), accessTokenMappingContext)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to create context object for request object:", err.Error())
-		return
+		hasObjectErrMap[err] = true
 	}
 
 	accessTokenManagerRef, err := resourcelink.ClientStruct(plan.AccessTokenManagerRef)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to create AccessTokenManagerRef for request object:", err.Error())
+		hasObjectErrMap[err] = true
 	}
 
 	attributeContractFulfillment, err := attributecontractfulfillment.ClientStruct(plan.AttributeContractFulfillment)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to create AttributeContractFulfillment for request object:", err.Error())
+		hasObjectErrMap[err] = true
+	}
+
+	var needToReturn bool = false
+	for errorVal, hasErr := range hasObjectErrMap {
+		if hasErr {
+			resp.Diagnostics.AddError("Failed to create item for request object:", errorVal.Error())
+		}
+		needToReturn = true
+	}
+
+	if needToReturn {
+		return
 	}
 	updateOauthAccessTokenMappings := client.NewAccessTokenMapping(*accessTokenMappingContext, *accessTokenManagerRef, attributeContractFulfillment)
 

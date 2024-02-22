@@ -1,4 +1,4 @@
-package acctest_test
+package accesstokenmapping_test
 
 import (
 	"fmt"
