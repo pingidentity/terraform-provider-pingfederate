@@ -58,7 +58,7 @@ endef
 
 # Set ACC_TEST_NAME to name of test in cli
 testoneacc:
-	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/... -timeout 10m -run ${ACC_TEST_NAME} -v count=1
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/config/oauth/openidconnect/settings/... -timeout 10m -run ${ACC_TEST_NAME} -v count=1
 
 testoneacccomplete: spincontainer testoneacc
 
@@ -96,8 +96,8 @@ verifycontent:
 devcheck: devchecknotest kaboom testauthacc testacc
 
 generateresource:
-	PINGFEDERATE_GENERATED_ENDPOINT=serverSettings \
-	PINGFEDERATE_RESOURCE_DEFINITION_NAME=ServerSettings \
+	PINGFEDERATE_GENERATED_ENDPOINT=openIdConnectSettings \
+	PINGFEDERATE_RESOURCE_DEFINITION_NAME=OpenIdConnectSettings \
 	PINGFEDERATE_ALLOW_REQUIRED_BYPASS=False \
 	OVERWRITE_EXISTING_RESOURCE_FILE=False \
 	PINGFEDERATE_PUT_ONLY_RESOURCE=True \
