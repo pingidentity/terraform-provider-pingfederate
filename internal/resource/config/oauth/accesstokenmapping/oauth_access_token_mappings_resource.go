@@ -33,7 +33,7 @@ var (
 
 	accessTokenMappingContext = map[string]attr.Type{
 		"type":        types.StringType,
-		"context_ref": types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"context_ref": types.ObjectType{AttrTypes: resourcelink.AttrTypeNoLocation()},
 	}
 )
 
@@ -78,12 +78,9 @@ func (r *oauthAccessTokenMappingsResource) Schema(ctx context.Context, req resou
 					},
 					"context_ref": schema.SingleNestedAttribute{
 						Description: "Reference to the associated Access Token Mapping Context instance.",
-						Optional:    true,
 						Computed:    true,
-						Attributes:  resourcelink.ToSchemaLocationUseStateForUnknown(),
-						PlanModifiers: []planmodifier.Object{
-							objectplanmodifier.UseStateForUnknown(),
-						},
+						Optional:    true,
+						Attributes:  resourcelink.ToSchemaNoLocation(),
 					},
 				},
 			},
@@ -93,9 +90,9 @@ func (r *oauthAccessTokenMappingsResource) Schema(ctx context.Context, req resou
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.RequiresReplace(),
 				},
-				Attributes: resourcelink.ToSchema(),
+				Attributes: resourcelink.ToSchemaNoLocation(),
 			},
-			"attribute_sources":              attributesources.ToSchema(0, true),
+			"attribute_sources":              attributesources.ToSchema(0, true, false),
 			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
 			"issuance_criteria":              issuancecriteria.ToSchema(),
 		},
@@ -124,11 +121,18 @@ func readOauthAccessTokenMappingsResponse(ctx context.Context, r *client.AccessT
 	var diags, objDiags diag.Diagnostics
 
 	state.Id = types.StringPointerValue(r.Id)
-	state.Context, objDiags = types.ObjectValueFrom(ctx, accessTokenMappingContext, r.Context)
+
+	contextRefObjValue, objDiags := resourcelink.ToStateNoLocation(&r.Context.ContextRef)
 	diags.Append(objDiags...)
-	state.AccessTokenManagerRef, objDiags = resourcelink.ToState(ctx, &r.AccessTokenManagerRef)
+	contextAttrValue := map[string]attr.Value{
+		"type":        types.StringValue(r.Context.Type),
+		"context_ref": contextRefObjValue,
+	}
+	state.Context, objDiags = types.ObjectValue(accessTokenMappingContext, contextAttrValue)
 	diags.Append(objDiags...)
-	state.AttributeSources, objDiags = attributesources.ToState(ctx, r.AttributeSources)
+	state.AccessTokenManagerRef, objDiags = resourcelink.ToStateNoLocation(&r.AccessTokenManagerRef)
+	diags.Append(objDiags...)
+	state.AttributeSources, objDiags = attributesources.ToState(ctx, r.AttributeSources, false)
 	diags.Append(objDiags...)
 	state.AttributeContractFulfillment, objDiags = attributecontractfulfillment.ToState(ctx, r.AttributeContractFulfillment)
 	diags.Append(objDiags...)

@@ -158,7 +158,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 						Default:     booldefault.StaticBool(false),
 					},
 					"inherited": schema.BoolAttribute{
-						DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
+						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
 						Description:        "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
 						Optional:           true,
 						Computed:           true,
@@ -171,11 +171,11 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Optional:    true,
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
-					"attribute_sources":              attributesources.ToSchema(0, false),
+					"attribute_sources":              attributesources.ToSchema(0, false, true),
 					"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(false, true, true),
 					"issuance_criteria":              issuancecriteria.ToSchema(),
 					"inherited": schema.BoolAttribute{
-						DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
+						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
 						Optional:           true,
 						Computed:           true,
 						Default:            booldefault.StaticBool(false),

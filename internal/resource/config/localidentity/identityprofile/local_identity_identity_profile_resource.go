@@ -395,9 +395,10 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 								Required:    true,
 							},
 							"location": schema.StringAttribute{
-								Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-								Optional:    false,
-								Computed:    true,
+								DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
+								Description:        "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
+								Optional:           false,
+								Computed:           true,
 								PlanModifiers: []planmodifier.String{
 									stringplanmodifier.UseStateForUnknown(),
 								},

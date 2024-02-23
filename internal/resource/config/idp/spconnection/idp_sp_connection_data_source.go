@@ -347,7 +347,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 	outboundProvisionTargetSettingsNestedObject := schema.NestedAttributeObject{
 		Attributes: map[string]schema.Attribute{
 			"inherited": schema.BoolAttribute{
-				DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
+				DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
 				Computed:           true,
 				Optional:           false,
 				Description:        "Whether this field is inherited from its parent instance.",
@@ -962,7 +962,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 													Description:  "A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them.",
 												},
 												"inherited": schema.BoolAttribute{
-													DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
+													DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
 													Computed:           true,
 													Optional:           false,
 													Description:        "Whether this attribute contract is inherited from its parent instance.",
@@ -987,7 +987,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 												"attribute_contract_fulfillment": datasourceattributecontractfulfillment.ToDataSourceSchema(),
 												"attribute_sources":              datasourceattributesources.ToDataSourceSchema(),
 												"inherited": schema.BoolAttribute{
-													DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
+													DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
 													Computed:           true,
 													Optional:           false,
 													Description:        "Whether this attribute mapping is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",

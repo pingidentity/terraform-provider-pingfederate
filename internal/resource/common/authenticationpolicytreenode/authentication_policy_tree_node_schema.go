@@ -29,7 +29,7 @@ func childrenDefault(depth int) types.List {
 func Schema() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Attributes: map[string]schema.Attribute{
-			"action": policyaction.Schema(),
+			"action": policyaction.ToSchema(),
 			"children": schema.ListNestedAttribute{
 				Optional:     true,
 				Computed:     true,
@@ -45,7 +45,7 @@ func Schema() schema.SingleNestedAttribute {
 
 func buildSchema(depth int) schema.NestedAttributeObject {
 	attrs := map[string]schema.Attribute{
-		"action": policyaction.Schema(),
+		"action": policyaction.ToSchema(),
 	}
 	if depth < MaxPolicyNodeRecursiveDepth {
 		attrs["children"] = schema.ListNestedAttribute{

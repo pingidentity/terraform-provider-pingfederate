@@ -99,7 +99,7 @@ func (r *oauthTokenExchangeTokenGeneratorMappingDataSource) Configure(_ context.
 
 func readOauthTokenExchangeTokenGeneratorMappingDataSourceResponse(ctx context.Context, r *client.ProcessorPolicyToGeneratorMapping, state *oauthTokenExchangeTokenGeneratorMappingDataSourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.AttributeSources, respDiags = attributesources.ToState(ctx, r.AttributeSources)
+	state.AttributeSources, respDiags = attributesources.ToState(ctx, r.AttributeSources, true)
 	diags.Append(respDiags...)
 	state.AttributeContractFulfillment, respDiags = attributecontractfulfillment.ToState(ctx, r.AttributeContractFulfillment)
 	diags.Append(respDiags...)
