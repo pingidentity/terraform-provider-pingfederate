@@ -79,11 +79,26 @@ func createDependenciesForTestBecauseIHaveTo(t *testing.T) {
 func deleteOidcPolicy(t *testing.T) {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(ctx, "oidcPolicy").Execute()
+	resp, err := testClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(ctx, "oidcPolicy").Execute()
+	fmt.Print(resp)
 	if err != nil {
 		t.Fatalf("Failed to delete OIDC Policy: %v", err)
 	}
 }
+
+// // This function is used to add back the OAuth client for remaining tests
+// func recreateOauthClient(t *testing.T) {
+// 	testClient := acctest.TestClient()
+// 	ctx := acctest.TestBasicAuthContext()
+
+// 	replacementOauthClient := client.NewClient()
+// 	oauthClient.ClientId = "test"
+// 	//_, _, err := testClient.OauthClientsAPI.CreateOauthClient()
+
+// 	if err != nil {
+// 		t.Fatalf("Failed to recreate \"test\" OAuth Client: %v", err)
+// 	}
+// }
 
 func TestAccOpenIdConnectSettings(t *testing.T) {
 	resourceName := "myOpenIdConnectSettings"
