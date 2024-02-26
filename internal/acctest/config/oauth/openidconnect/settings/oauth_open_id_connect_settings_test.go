@@ -20,14 +20,14 @@ type openIdConnectSettingsResourceModel struct {
 }
 
 // This function is used to delete the server-profile provided OAuth client at the start of the tests
-func deleteOauthClient(t *testing.T) {
-	testClient := acctest.TestClient()
-	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.OauthClientsAPI.DeleteOauthClient(ctx, "test").Execute()
-	if err != nil {
-		t.Fatalf("Failed to delete conflicting \"test\" OAuth Client: %v", err)
-	}
-}
+// func deleteOauthClient(t *testing.T) {
+// 	testClient := acctest.TestClient()
+// 	ctx := acctest.TestBasicAuthContext()
+// 	_, err := testClient.OauthClientsAPI.DeleteOauthClient(ctx, "test").Execute()
+// 	if err != nil {
+// 		t.Fatalf("Failed to delete conflicting \"test\" OAuth Client: %v", err)
+// 	}
+// }
 
 func createDependenciesForTestBecauseIHaveTo(t *testing.T) {
 	testClient := acctest.TestClient()
@@ -121,9 +121,9 @@ func TestAccOpenIdConnectSettings(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				PreConfig: func() { deleteOauthClient(t) },
-				Config:    testAccOpenIdConnectSettings(resourceName, initialResourceModel),
-				Check:     testAccCheckExpectedOpenIdConnectSettingsAttributes(initialResourceModel),
+				// PreConfig: func() { deleteOauthClient(t) },
+				Config: testAccOpenIdConnectSettings(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedOpenIdConnectSettingsAttributes(initialResourceModel),
 			},
 			{
 				// Test updating some fields
