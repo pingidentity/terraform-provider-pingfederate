@@ -123,12 +123,12 @@ func addOptionalAuthenticationPoliciesFragmentFields(ctx context.Context, addReq
 		}
 	}
 
-	addRequest.Inputs, err = resourcelink.ClientStruct(plan.Inputs)
+	addRequest.Inputs, err = resourcelink.ClientStruct(plan.Inputs, true)
 	if err != nil {
 		return err
 	}
 
-	addRequest.Outputs, err = resourcelink.ClientStruct(plan.Outputs)
+	addRequest.Outputs, err = resourcelink.ClientStruct(plan.Outputs, true)
 
 	return err
 }

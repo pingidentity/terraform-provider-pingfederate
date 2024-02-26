@@ -184,7 +184,7 @@ func addOptionalCustomDataStoreFields(addRequest client.DataStoreAggregation, co
 
 	parentRef := customDataStorePlan["parent_ref"]
 	if internaltypes.IsNonEmptyObj(parentRef.(types.Object)) {
-		parentRef, err := resourcelink.ClientStruct(parentRef.(types.Object))
+		parentRef, err := resourcelink.ClientStruct(parentRef.(types.Object), true)
 		if err != nil {
 			return err
 		}
@@ -199,7 +199,7 @@ func createCustomDataStore(plan dataStoreModel, con context.Context, req resourc
 
 	customPlan := plan.CustomDataStore.Attributes()
 	name := customPlan["name"].(types.String).ValueString()
-	pluginDescriptorRef, err := resourcelink.ClientStruct(customPlan["plugin_descriptor_ref"].(types.Object))
+	pluginDescriptorRef, err := resourcelink.ClientStruct(customPlan["plugin_descriptor_ref"].(types.Object), true)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to create plugin descriptor reference object for DataStore", err.Error())
 		return
@@ -237,7 +237,7 @@ func updateCustomDataStore(plan dataStoreModel, con context.Context, req resourc
 	var err error
 
 	customPlan := plan.CustomDataStore.Attributes()
-	pluginDescriptorRef, err := resourcelink.ClientStruct(customPlan["plugin_descriptor_ref"].(types.Object))
+	pluginDescriptorRef, err := resourcelink.ClientStruct(customPlan["plugin_descriptor_ref"].(types.Object), true)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to create plugin descriptor reference object for DataStore", err.Error())
 		return

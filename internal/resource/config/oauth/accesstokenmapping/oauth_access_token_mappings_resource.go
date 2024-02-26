@@ -192,7 +192,7 @@ func (r *oauthAccessTokenMappingsResource) Create(ctx context.Context, req resou
 		hasObjectErrMap[err] = true
 	}
 
-	accessTokenManagerRef, err := resourcelink.ClientStruct(plan.AccessTokenManagerRef)
+	accessTokenManagerRef, err := resourcelink.ClientStruct(plan.AccessTokenManagerRef, false)
 	if err != nil {
 		hasObjectErrMap[err] = true
 	}
@@ -202,15 +202,13 @@ func (r *oauthAccessTokenMappingsResource) Create(ctx context.Context, req resou
 		hasObjectErrMap[err] = true
 	}
 
-	var needToReturn bool = false
 	for errorVal, hasErr := range hasObjectErrMap {
 		if hasErr {
 			resp.Diagnostics.AddError("Failed to create item for request object:", errorVal.Error())
 		}
-		needToReturn = true
 	}
 
-	if needToReturn {
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -284,7 +282,7 @@ func (r *oauthAccessTokenMappingsResource) Update(ctx context.Context, req resou
 		hasObjectErrMap[err] = true
 	}
 
-	accessTokenManagerRef, err := resourcelink.ClientStruct(plan.AccessTokenManagerRef)
+	accessTokenManagerRef, err := resourcelink.ClientStruct(plan.AccessTokenManagerRef, false)
 	if err != nil {
 		hasObjectErrMap[err] = true
 	}
@@ -294,15 +292,13 @@ func (r *oauthAccessTokenMappingsResource) Update(ctx context.Context, req resou
 		hasObjectErrMap[err] = true
 	}
 
-	var needToReturn bool = false
 	for errorVal, hasErr := range hasObjectErrMap {
 		if hasErr {
 			resp.Diagnostics.AddError("Failed to create item for request object:", errorVal.Error())
 		}
-		needToReturn = true
 	}
 
-	if needToReturn {
+	if resp.Diagnostics.HasError() {
 		return
 	}
 	updateOauthAccessTokenMappings := client.NewAccessTokenMapping(*accessTokenMappingContext, *accessTokenManagerRef, attributeContractFulfillment)

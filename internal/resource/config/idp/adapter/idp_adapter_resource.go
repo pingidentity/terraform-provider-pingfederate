@@ -201,7 +201,7 @@ func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdap
 	}
 
 	if internaltypes.IsDefined(plan.ParentRef) {
-		addRequest.ParentRef, err = resourcelink.ClientStruct(plan.ParentRef)
+		addRequest.ParentRef, err = resourcelink.ClientStruct(plan.ParentRef, true)
 		if err != nil {
 			return err
 		}
