@@ -40,8 +40,9 @@ type oauthOpenIdConnectPoliciesResourceModel struct {
 func deleteOauthClient(t *testing.T) {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.OauthClientsAPI.DeleteOauthClient(ctx, "test").Execute()
-	if err != nil {
+	resp, err := testClient.OauthClientsAPI.DeleteOauthClient(ctx, "test").Execute()
+	// If the error isn't a 404 (the client already doesn't exist) then fail
+	if err != nil && (resp == nil || resp.StatusCode != 404) {
 		t.Fatalf("Failed to delete conflicting \"test\" OAuth Client: %v", err)
 	}
 }

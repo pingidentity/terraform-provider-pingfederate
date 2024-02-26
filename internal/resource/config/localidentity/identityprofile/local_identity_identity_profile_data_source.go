@@ -615,7 +615,7 @@ func (r *localIdentityIdentityProfileDataSource) Read(ctx context.Context, req d
 		return
 	}
 
-	apiReadLocalIdentityIdentityProfile, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.GetIdentityProfile(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadLocalIdentityIdentityProfile, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.GetIdentityProfile(config.AuthContext(ctx, r.providerConfig), state.ProfileId.ValueString()).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the local identity profile", err, httpResp)
 		return
