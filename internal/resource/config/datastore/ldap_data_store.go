@@ -735,7 +735,7 @@ func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con 
 
 	clientTlsCertificateRef, ok := ldapDataStorePlan["client_tls_certificate_ref"]
 	if ok {
-		ref, err := resourcelink.ClientStruct(clientTlsCertificateRef.(types.Object), true)
+		ref, err := resourcelink.ClientStruct(clientTlsCertificateRef.(types.Object))
 		if err != nil {
 			return err
 		}

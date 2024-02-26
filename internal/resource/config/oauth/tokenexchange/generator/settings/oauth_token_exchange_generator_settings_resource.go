@@ -97,7 +97,7 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Create(ctx context.Context
 	}
 
 	createOauthTokenExchangeGeneratorSettings := client.NewTokenExchangeGeneratorSettings()
-	createOauthTokenExchangeGeneratorSettings.DefaultGeneratorGroupRef, err = resourcelink.ClientStruct(plan.DefaultGeneratorGroupRef, true)
+	createOauthTokenExchangeGeneratorSettings.DefaultGeneratorGroupRef, err = resourcelink.ClientStruct(plan.DefaultGeneratorGroupRef)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to default_generator_group_ref to add request for OAuth Token Exchange Generator Settings", err.Error())
 		return
@@ -165,7 +165,7 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Update(ctx context.Context
 	}
 
 	createUpdateRequest := client.NewTokenExchangeGeneratorSettings()
-	createUpdateRequest.DefaultGeneratorGroupRef, err = resourcelink.ClientStruct(plan.DefaultGeneratorGroupRef, true)
+	createUpdateRequest.DefaultGeneratorGroupRef, err = resourcelink.ClientStruct(plan.DefaultGeneratorGroupRef)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to default_generator_group_ref to add request for OAuth Token Exchange Generator Settings", err.Error())
 		return

@@ -8,7 +8,7 @@ import (
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
-func ClientStruct(planObj basetypes.ObjectValue, includeLocation bool) (*client.ResourceLink, error) {
+func ClientStruct(planObj basetypes.ObjectValue) (*client.ResourceLink, error) {
 	if !internaltypes.IsDefined(planObj) {
 		return nil, nil
 	}
@@ -22,11 +22,8 @@ func ClientStruct(planObj basetypes.ObjectValue, includeLocation bool) (*client.
 	idStrValue := objId.(basetypes.StringValue)
 	newLink.SetId(idStrValue.ValueString())
 
-	if includeLocation {
-		objLoc, ok := objValues["location"]
-		if !ok {
-			return nil, errors.New("object value missing \"location\" attribute when creating resource link client struct")
-		}
+	objLoc, ok := objValues["location"]
+	if ok {
 		locStrValue := objLoc.(basetypes.StringValue)
 		newLink.SetLocation(locStrValue.ValueString())
 	}

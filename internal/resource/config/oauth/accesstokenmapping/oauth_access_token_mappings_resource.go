@@ -192,7 +192,7 @@ func (r *oauthAccessTokenMappingsResource) Create(ctx context.Context, req resou
 		hasObjectErrMap[err] = true
 	}
 
-	accessTokenManagerRef, err := resourcelink.ClientStruct(plan.AccessTokenManagerRef, false)
+	accessTokenManagerRef, err := resourcelink.ClientStruct(plan.AccessTokenManagerRef)
 	if err != nil {
 		hasObjectErrMap[err] = true
 	}
@@ -282,7 +282,7 @@ func (r *oauthAccessTokenMappingsResource) Update(ctx context.Context, req resou
 		hasObjectErrMap[err] = true
 	}
 
-	accessTokenManagerRef, err := resourcelink.ClientStruct(plan.AccessTokenManagerRef, false)
+	accessTokenManagerRef, err := resourcelink.ClientStruct(plan.AccessTokenManagerRef)
 	if err != nil {
 		hasObjectErrMap[err] = true
 	}

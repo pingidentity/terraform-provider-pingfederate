@@ -929,7 +929,7 @@ func (r *localIdentityIdentityProfileResource) Create(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apcResourceLink, err := resourcelink.ClientStruct(plan.ApcId, true)
+	apcResourceLink, err := resourcelink.ClientStruct(plan.ApcId)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add apc id to add request for a local identity profile", err.Error())
 		return
@@ -995,7 +995,7 @@ func (r *localIdentityIdentityProfileResource) Update(ctx context.Context, req r
 		return
 	}
 	updateLocalIdentityIdentityProfiles := r.apiClient.LocalIdentityIdentityProfilesAPI.UpdateIdentityProfile(config.AuthContext(ctx, r.providerConfig), plan.ProfileId.ValueString())
-	apcResourceLink, err := resourcelink.ClientStruct(plan.ApcId, true)
+	apcResourceLink, err := resourcelink.ClientStruct(plan.ApcId)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add apc id to add request for local identity profile", err.Error())
 		return

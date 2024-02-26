@@ -98,7 +98,7 @@ func (r *notificationPublishersSettingsResource) Create(ctx context.Context, req
 	}
 
 	createNotificationPublishersSettings := client.NewNotificationPublishersSettings()
-	createNotificationPublishersSettings.DefaultNotificationPublisherRef, err = resourcelink.ClientStruct(plan.DefaultNotificationPublisherRef, true)
+	createNotificationPublishersSettings.DefaultNotificationPublisherRef, err = resourcelink.ClientStruct(plan.DefaultNotificationPublisherRef)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add request for Notification Publishers settings", err.Error())
 		return
@@ -165,7 +165,7 @@ func (r *notificationPublishersSettingsResource) Update(ctx context.Context, req
 	}
 
 	createUpdateRequest := client.NewNotificationPublishersSettings()
-	createUpdateRequest.DefaultNotificationPublisherRef, err = resourcelink.ClientStruct(plan.DefaultNotificationPublisherRef, true)
+	createUpdateRequest.DefaultNotificationPublisherRef, err = resourcelink.ClientStruct(plan.DefaultNotificationPublisherRef)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Notification Publishers Settings", err.Error())
 		return

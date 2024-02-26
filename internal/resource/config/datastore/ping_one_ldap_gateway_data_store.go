@@ -257,7 +257,7 @@ func createPingOneLdapGatewayDataStore(plan dataStoreModel, con context.Context,
 
 	pingOneLdapGatewayDsPlan := plan.PingOneLdapGatewayDataStore.Attributes()
 	ldapType := pingOneLdapGatewayDsPlan["ldap_type"].(types.String).ValueString()
-	pingOneConnectionRef, err := resourcelink.ClientStruct(plan.PingOneLdapGatewayDataStore.Attributes()["ping_one_connection_ref"].(types.Object), true)
+	pingOneConnectionRef, err := resourcelink.ClientStruct(plan.PingOneLdapGatewayDataStore.Attributes()["ping_one_connection_ref"].(types.Object))
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to convert ping_one_connection_ref to PingOneConnectionRef", err.Error())
 		return
@@ -297,7 +297,7 @@ func updatePingOneLdapGatewayDataStore(plan dataStoreModel, con context.Context,
 
 	pingOneLdapGatewayDsPlan := plan.PingOneLdapGatewayDataStore.Attributes()
 	ldapType := pingOneLdapGatewayDsPlan["ldap_type"].(types.String).ValueString()
-	pingOneConnectionRef, err := resourcelink.ClientStruct(plan.PingOneLdapGatewayDataStore.Attributes()["ping_one_connection_ref"].(types.Object), true)
+	pingOneConnectionRef, err := resourcelink.ClientStruct(plan.PingOneLdapGatewayDataStore.Attributes()["ping_one_connection_ref"].(types.Object))
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to convert ping_one_connection_ref to PingOneConnectionRef", err.Error())
 		return

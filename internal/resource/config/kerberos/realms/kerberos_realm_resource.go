@@ -210,7 +210,7 @@ func addOptionalKerberosRealmsFields(ctx context.Context, addRequest *client.Ker
 	plan.KeyDistributionCenters.ElementsAs(ctx, &slice, false)
 	addRequest.KeyDistributionCenters = slice
 
-	addRequest.LdapGatewayDataStoreRef, err = resourcelink.ClientStruct(plan.LdapGatewayDataStoreRef, true)
+	addRequest.LdapGatewayDataStoreRef, err = resourcelink.ClientStruct(plan.LdapGatewayDataStoreRef)
 	if err != nil {
 		return err
 	}

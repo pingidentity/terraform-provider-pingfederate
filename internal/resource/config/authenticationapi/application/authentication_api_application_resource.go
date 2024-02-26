@@ -117,7 +117,7 @@ func addOptionalAuthenticationApiApplicationFields(ctx context.Context, addReque
 	addRequest.AdditionalAllowedOrigins = slice
 
 	var err error
-	addRequest.ClientForRedirectlessModeRef, err = resourcelink.ClientStruct(plan.ClientForRedirectlessModeRef, true)
+	addRequest.ClientForRedirectlessModeRef, err = resourcelink.ClientStruct(plan.ClientForRedirectlessModeRef)
 	if err != nil {
 		return err
 	}

@@ -299,7 +299,7 @@ func (r *passwordCredentialValidatorResource) Create(ctx context.Context, req re
 	}
 
 	// PluginDescriptorRef
-	pluginDescRefResLink, err := resourcelink.ClientStruct(plan.PluginDescriptorRef, true)
+	pluginDescRefResLink, err := resourcelink.ClientStruct(plan.PluginDescriptorRef)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to build plugin descriptor ref request object:", err.Error())
 		return
@@ -375,7 +375,7 @@ func (r *passwordCredentialValidatorResource) Update(ctx context.Context, req re
 	}
 
 	// PluginDescriptorRef
-	pluginDescRefResLink, err := resourcelink.ClientStruct(plan.PluginDescriptorRef, true)
+	pluginDescRefResLink, err := resourcelink.ClientStruct(plan.PluginDescriptorRef)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to build plugin descriptor ref request object:", err.Error())
 		return
