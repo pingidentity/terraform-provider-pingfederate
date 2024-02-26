@@ -65,7 +65,7 @@ var (
 	attributeMappingAttrTypes = map[string]attr.Type{
 		"attribute_sources": types.ListType{
 			ElemType: types.ObjectType{
-				AttrTypes: attributesources.ElemAttrType(),
+				AttrTypes: attributesources.ElemAttrType(true),
 			},
 		},
 		"attribute_contract_fulfillment": attributecontractfulfillment.MapType(),
@@ -177,7 +177,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 		respDiags.Append(diags...)
 
 		// Build attribute_sources value
-		attributeMappingValues["attribute_sources"], respDiags = attributesources.ToState(ctx, r.AttributeMapping.AttributeSources)
+		attributeMappingValues["attribute_sources"], respDiags = attributesources.ToState(ctx, r.AttributeMapping.AttributeSources, true)
 		diags.Append(respDiags...)
 
 		// Build complete attribute mapping value

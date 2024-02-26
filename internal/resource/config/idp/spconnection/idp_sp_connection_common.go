@@ -44,7 +44,7 @@ var (
 		"attribute_contract_fulfillment": attributeContractFulfillmentAttrType,
 		"issuance_criteria":              issuanceCriteriaAttrType,
 		"policy":                         types.ObjectType{AttrTypes: policyAttrTypes},
-		"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
+		"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType(true)}},
 	}
 
 	customSchemaAttrTypes = map[string]attr.Type{

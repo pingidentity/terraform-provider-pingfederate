@@ -37,6 +37,7 @@ terraform
 scripts/*
 scratch/*
 *__debug_bin*
+server-profiles/shared-profile/instance/bulk-config/data.json.subst
 
 # Ignore for local development
 vendor

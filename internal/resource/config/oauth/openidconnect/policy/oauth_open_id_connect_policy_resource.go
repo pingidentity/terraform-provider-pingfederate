@@ -155,7 +155,7 @@ func (r *oauthOpenIdConnectPolicyResource) Schema(ctx context.Context, req resou
 					},
 				},
 			},
-			"attribute_mapping": attributemapping.Schema(),
+			"attribute_mapping": attributemapping.ToSchema(),
 			"scope_attribute_mappings": schema.MapNestedAttribute{
 				Description: "The attribute scope mappings from scopes to attribute names.",
 				Optional:    true,

@@ -51,8 +51,8 @@ func (r *spAuthenticationPolicyContractMappingResource) Schema(ctx context.Conte
 	schema := schema.Schema{
 		Description: "Manages the mapping from an Authentication Policy Contract (APC) to a Service Provider (SP).",
 		Attributes: map[string]schema.Attribute{
-			"attribute_sources":              attributesources.ToSchema(0),
-			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
+			"attribute_sources":              attributesources.ToSchema(0, false, true),
+			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
 			"issuance_criteria":              issuancecriteria.ToSchema(),
 			"source_id": schema.StringAttribute{
 				Description: "The id of the Authentication Policy Contract.",
@@ -123,7 +123,7 @@ func (r *spAuthenticationPolicyContractMappingResource) Configure(_ context.Cont
 
 func readSpAuthenticationPolicyContractMappingResourceResponse(ctx context.Context, r *client.ApcToSpAdapterMapping, state *spAuthenticationPolicyContractMappingResourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.AttributeSources, respDiags = attributesources.ToState(ctx, r.AttributeSources)
+	state.AttributeSources, respDiags = attributesources.ToState(ctx, r.AttributeSources, true)
 	diags.Append(respDiags...)
 	state.AttributeContractFulfillment, respDiags = attributecontractfulfillment.ToState(ctx, r.AttributeContractFulfillment)
 	diags.Append(respDiags...)

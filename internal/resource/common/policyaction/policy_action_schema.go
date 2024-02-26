@@ -81,7 +81,7 @@ func commonAttributeRulesAttr() schema.Attribute {
 
 func apcMappingPolicyActionSchema() schema.SingleNestedAttribute {
 	attrs := commonPolicyActionSchema()
-	attrs["attribute_mapping"] = attributemapping.Schema()
+	attrs["attribute_mapping"] = attributemapping.ToSchema()
 	attrs["authentication_policy_contract_ref"] = schema.SingleNestedAttribute{
 		Attributes:  resourcelink.ToSchema(),
 		Required:    true,
@@ -178,7 +178,7 @@ func fragmentPolicyActionSchema() schema.SingleNestedAttribute {
 		Required:    true,
 		Description: "A reference to a resource.",
 	}
-	attrs["fragment_mapping"] = attributemapping.Schema()
+	attrs["fragment_mapping"] = attributemapping.ToSchema()
 	return schema.SingleNestedAttribute{
 		Attributes:  attrs,
 		Optional:    true,
@@ -188,13 +188,13 @@ func fragmentPolicyActionSchema() schema.SingleNestedAttribute {
 
 func localIdentityMappingPolicyActionSchema() schema.SingleNestedAttribute {
 	attrs := commonPolicyActionSchema()
-	attrs["inbound_mapping"] = attributemapping.Schema()
+	attrs["inbound_mapping"] = attributemapping.ToSchema()
 	attrs["local_identity_ref"] = schema.SingleNestedAttribute{
 		Attributes:  resourcelink.ToSchema(),
 		Required:    true,
 		Description: "A reference to a resource.",
 	}
-	attrs["outbound_attribute_mapping"] = attributemapping.Schema()
+	attrs["outbound_attribute_mapping"] = attributemapping.ToSchema()
 	return schema.SingleNestedAttribute{
 		Attributes:  attrs,
 		Optional:    true,
@@ -211,7 +211,7 @@ func restartPolicyActionSchema() schema.SingleNestedAttribute {
 }
 
 // Schema for the polymorphic attribute allowing you to specify a single policy action type
-func Schema() schema.SingleNestedAttribute {
+func ToSchema() schema.SingleNestedAttribute {
 	// In the future it may be worth adding validators to ensure only one of the policy action types is set, but
 	// currently it causes a big performance hit
 	return schema.SingleNestedAttribute{

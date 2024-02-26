@@ -13,9 +13,10 @@ func ToSchemaLocationUseStateForUnknown() map[string]schema.Attribute {
 			Required:    true,
 		},
 		"location": schema.StringAttribute{
-			Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-			Computed:    true,
-			Optional:    false,
+			DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
+			Description:        "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
+			Computed:           true,
+			Optional:           false,
 			PlanModifiers: []planmodifier.String{
 				stringplanmodifier.UseStateForUnknown(),
 			},
@@ -30,9 +31,19 @@ func ToSchema() map[string]schema.Attribute {
 			Required:    true,
 		},
 		"location": schema.StringAttribute{
-			Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-			Computed:    true,
-			Optional:    false,
+			DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
+			Description:        "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
+			Computed:           true,
+			Optional:           false,
+		},
+	}
+}
+
+func ToSchemaNoLocation() map[string]schema.Attribute {
+	return map[string]schema.Attribute{
+		"id": schema.StringAttribute{
+			Description: "The ID of the resource.",
+			Required:    true,
 		},
 	}
 }

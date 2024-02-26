@@ -18,15 +18,15 @@ func ClientStruct(planObj basetypes.ObjectValue) (*client.ResourceLink, error) {
 	if !ok {
 		return nil, errors.New("object value missing \"id\" attribute when creating resource link client struct")
 	}
-	objLoc, ok := objValues["location"]
-	if !ok {
-		return nil, errors.New("object value missing \"location\" attribute when creating resource link client struct")
-	}
-	idStrValue := objId.(basetypes.StringValue)
-	locStrValue := objLoc.(basetypes.StringValue)
 	newLink := client.NewResourceLinkWithDefaults()
+	idStrValue := objId.(basetypes.StringValue)
 	newLink.SetId(idStrValue.ValueString())
-	newLink.SetLocation(locStrValue.ValueString())
+
+	objLoc, ok := objValues["location"]
+	if ok {
+		locStrValue := objLoc.(basetypes.StringValue)
+		newLink.SetLocation(locStrValue.ValueString())
+	}
 
 	return newLink, nil
 }
