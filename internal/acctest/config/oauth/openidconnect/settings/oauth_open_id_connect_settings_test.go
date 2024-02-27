@@ -96,7 +96,6 @@ func TestAccOpenIdConnectSettings(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				// PreConfig: func() { deleteOauthClient(t) },
 				Config: testAccOpenIdConnectSettings(resourceName, initialResourceModel),
 				Check:  testAccCheckExpectedOpenIdConnectSettingsAttributes(initialResourceModel),
 			},

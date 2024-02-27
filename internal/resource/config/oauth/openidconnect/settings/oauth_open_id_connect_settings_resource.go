@@ -69,6 +69,16 @@ func (r *openIdConnectSettingsResource) Schema(ctx context.Context, req resource
 				Description: "The session settings",
 				Computed:    true,
 				Optional:    true,
+				Default: objectdefault.StaticValue(
+					types.ObjectValueMust(
+						openIdConnectSettingsAttrTypes,
+						map[string]attr.Value{
+							"track_user_sessions_for_logout": types.BoolValue(false),
+							"revoke_user_session_on_logout":  types.BoolValue(false),
+							"session_revocation_lifetime":    types.Int64Value(1450),
+						},
+					),
+				),
 				Attributes: map[string]schema.Attribute{
 					"track_user_sessions_for_logout": schema.BoolAttribute{
 						Description: "Determines whether user sessions are tracked for logout. This property is now available under /oauth/authServerSettings and should be accessed through that resource.",
