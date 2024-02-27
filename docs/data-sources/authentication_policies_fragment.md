@@ -155,7 +155,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--action--apc_mapping_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -225,7 +225,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--action--apc_mapping_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -282,7 +282,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--action--apc_mapping_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -377,7 +377,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -401,7 +401,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -436,7 +436,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -534,7 +534,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--action--fragment_policy_action--fragment_mapping"></a>
@@ -609,7 +609,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--action--fragment_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -679,7 +679,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--action--fragment_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -736,7 +736,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--action--fragment_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -942,7 +942,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -1012,7 +1012,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -1069,7 +1069,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -1164,7 +1164,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping"></a>
@@ -1239,7 +1239,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -1309,7 +1309,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -1366,7 +1366,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -1571,7 +1571,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -1641,7 +1641,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -1698,7 +1698,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -1793,7 +1793,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -1817,7 +1817,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -1852,7 +1852,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -1950,7 +1950,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--fragment_mapping"></a>
@@ -2025,7 +2025,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -2095,7 +2095,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -2152,7 +2152,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -2358,7 +2358,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -2428,7 +2428,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -2485,7 +2485,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -2580,7 +2580,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--outbound_attribute_mapping"></a>
@@ -2655,7 +2655,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -2725,7 +2725,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -2782,7 +2782,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -2987,7 +2987,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--apc_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -3057,7 +3057,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--apc_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -3114,7 +3114,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--apc_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -3209,7 +3209,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -3233,7 +3233,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -3268,7 +3268,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -3366,7 +3366,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--fragment_policy_action--fragment_mapping"></a>
@@ -3441,7 +3441,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--fragment_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -3511,7 +3511,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--fragment_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -3568,7 +3568,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--fragment_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -3774,7 +3774,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -3844,7 +3844,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -3901,7 +3901,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -3996,7 +3996,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping"></a>
@@ -4071,7 +4071,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -4141,7 +4141,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -4198,7 +4198,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -4403,7 +4403,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--custom_attribute_source--attribute_contract_fulfillment"></a>
@@ -4473,7 +4473,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--jdbc_attribute_source--attribute_contract_fulfillment"></a>
@@ -4530,7 +4530,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -4625,7 +4625,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -4649,7 +4649,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -4684,7 +4684,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -4782,7 +4782,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--fragment_mapping"></a>
@@ -4857,7 +4857,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--custom_attribute_source--attribute_contract_fulfillment"></a>
@@ -4927,7 +4927,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--jdbc_attribute_source--attribute_contract_fulfillment"></a>
@@ -4984,7 +4984,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -5190,7 +5190,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--custom_attribute_source--attribute_contract_fulfillment"></a>
@@ -5260,7 +5260,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--jdbc_attribute_source--attribute_contract_fulfillment"></a>
@@ -5317,7 +5317,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -5412,7 +5412,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping"></a>
@@ -5487,7 +5487,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--custom_attribute_source--attribute_contract_fulfillment"></a>
@@ -5557,7 +5557,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--jdbc_attribute_source--attribute_contract_fulfillment"></a>
@@ -5614,7 +5614,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -5819,7 +5819,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -5889,7 +5889,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -5946,7 +5946,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -6041,7 +6041,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -6065,7 +6065,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -6100,7 +6100,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -6198,7 +6198,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--fragment_mapping"></a>
@@ -6273,7 +6273,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -6343,7 +6343,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -6400,7 +6400,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -6606,7 +6606,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -6676,7 +6676,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -6733,7 +6733,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -6828,7 +6828,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping"></a>
@@ -6903,7 +6903,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -6973,7 +6973,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -7030,7 +7030,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -7235,7 +7235,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -7305,7 +7305,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -7362,7 +7362,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -7457,7 +7457,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -7481,7 +7481,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -7516,7 +7516,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -7614,7 +7614,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--fragment_mapping"></a>
@@ -7689,7 +7689,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -7759,7 +7759,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -7816,7 +7816,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -8022,7 +8022,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -8092,7 +8092,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -8149,7 +8149,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -8244,7 +8244,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping"></a>
@@ -8319,7 +8319,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -8389,7 +8389,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -8446,7 +8446,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -8651,7 +8651,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--apc_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -8721,7 +8721,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--apc_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -8778,7 +8778,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--apc_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -8873,7 +8873,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -8897,7 +8897,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -8932,7 +8932,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -9030,7 +9030,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--fragment_policy_action--fragment_mapping"></a>
@@ -9105,7 +9105,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--fragment_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -9175,7 +9175,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--fragment_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -9232,7 +9232,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--fragment_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -9438,7 +9438,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -9508,7 +9508,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -9565,7 +9565,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -9660,7 +9660,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping"></a>
@@ -9735,7 +9735,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -9805,7 +9805,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -9862,7 +9862,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -10067,7 +10067,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -10137,7 +10137,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -10194,7 +10194,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -10289,7 +10289,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -10313,7 +10313,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -10348,7 +10348,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -10446,7 +10446,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping"></a>
@@ -10521,7 +10521,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -10591,7 +10591,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -10648,7 +10648,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -10854,7 +10854,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -10924,7 +10924,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -10981,7 +10981,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -11076,7 +11076,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping"></a>
@@ -11151,7 +11151,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -11221,7 +11221,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -11278,7 +11278,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -11483,7 +11483,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -11553,7 +11553,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -11610,7 +11610,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -11705,7 +11705,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -11729,7 +11729,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -11764,7 +11764,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -11862,7 +11862,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping"></a>
@@ -11937,7 +11937,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -12007,7 +12007,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -12064,7 +12064,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -12270,7 +12270,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -12340,7 +12340,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -12397,7 +12397,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -12492,7 +12492,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping"></a>
@@ -12567,7 +12567,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -12637,7 +12637,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -12694,7 +12694,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -12899,7 +12899,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -12969,7 +12969,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -13026,7 +13026,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -13121,7 +13121,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -13145,7 +13145,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -13180,7 +13180,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -13278,7 +13278,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping"></a>
@@ -13353,7 +13353,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -13423,7 +13423,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -13480,7 +13480,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -13686,7 +13686,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -13756,7 +13756,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -13813,7 +13813,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -13908,7 +13908,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping"></a>
@@ -13983,7 +13983,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -14053,7 +14053,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -14110,7 +14110,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -14311,7 +14311,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -14381,7 +14381,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -14438,7 +14438,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -14533,7 +14533,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -14557,7 +14557,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -14592,7 +14592,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -14690,7 +14690,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping"></a>
@@ -14765,7 +14765,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -14835,7 +14835,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -14892,7 +14892,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -15098,7 +15098,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -15168,7 +15168,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -15225,7 +15225,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -15320,7 +15320,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping"></a>
@@ -15395,7 +15395,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -15465,7 +15465,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -15522,7 +15522,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>

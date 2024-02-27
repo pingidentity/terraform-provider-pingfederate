@@ -125,7 +125,7 @@ func (r *idpAdapterDataSource) Schema(ctx context.Context, req datasource.Schema
 						Optional:    false,
 					},
 					"inherited": schema.BoolAttribute{
-						DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
+						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
 						Description:        "Whether this attribute contract is inherited from its parent instance.",
 						Computed:           true,
 						Optional:           false,
@@ -141,7 +141,7 @@ func (r *idpAdapterDataSource) Schema(ctx context.Context, req datasource.Schema
 					"attribute_contract_fulfillment": attributecontractfulfillment.ToDataSourceSchema(),
 					"issuance_criteria":              issuancecriteria.ToDataSourceSchema(),
 					"inherited": schema.BoolAttribute{
-						DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
+						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
 						Computed:           true,
 						Optional:           false,
 						Description:        "Whether this attribute mapping is inherited from its parent instance.",

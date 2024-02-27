@@ -191,7 +191,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 						},
 					},
 					"inherited": schema.BoolAttribute{
-						DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
+						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
 						Description:        "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
 						Optional:           true,
 						Computed:           true,
@@ -210,7 +210,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				Default:     objectdefault.StaticValue(selectionSettingsDefault),
 				Attributes: map[string]schema.Attribute{
 					"inherited": schema.BoolAttribute{
-						DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
+						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
 						Description:        "If this token manager has a parent, this flag determines whether selection settings, such as resource URI's, are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
 						Optional:           true,
 						Computed:           true,
@@ -232,7 +232,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				Default:     objectdefault.StaticValue(accessControlSettingsDefault),
 				Attributes: map[string]schema.Attribute{
 					"inherited": schema.BoolAttribute{
-						DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
+						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
 						Description:        "If this token manager has a parent, this flag determines whether access control settings are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
 						Optional:           true,
 						Computed:           true,
@@ -262,7 +262,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				Default:     objectdefault.StaticValue(sessionValidationSettingsDefault),
 				Attributes: map[string]schema.Attribute{
 					"inherited": schema.BoolAttribute{
-						DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
+						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
 						Description:        "If this token manager has a parent, this flag determines whether session validation settings, such as checkValidAuthnSession, are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
 						Optional:           true,
 						Computed:           true,

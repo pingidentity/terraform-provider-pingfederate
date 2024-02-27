@@ -1,10 +1,11 @@
 # v0.7.0 (Unreleased)
+### DEPRECATED
+* `location` property in `resourceLink` object types for all Resources and DataSources. This property will be removed in a future release. ([#195](https://github.com/pingidentity/terraform-provider-pingfederate/pull/195))
 
 ### Resources
 * **New Resource:** `pingfederate_notification_publishers_settings` ([#187](https://github.com/pingidentity/terraform-provider-pingfederate/pull/187))
 * **New Resource:** `pingfederate_incoming_proxy_settings` ([#190](https://github.com/pingidentity/terraform-provider-pingfederate/pull/190))
 * **New Resource:** `pingfederate_open_id_connect_settings` ([#196](https://github.com/pingidentity/terraform-provider-pingfederate/pull/196))
-
 
 # v0.6.0 February 9th, 2024
 ### DEPRECATED

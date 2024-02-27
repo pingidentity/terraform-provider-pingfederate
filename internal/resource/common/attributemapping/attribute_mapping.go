@@ -13,7 +13,7 @@ var (
 	attributeMappingAttrTypes = map[string]attr.Type{
 		"attribute_sources": types.ListType{
 			ElemType: types.ObjectType{
-				AttrTypes: attributesources.ElemAttrType(),
+				AttrTypes: attributesources.ElemAttrType(true),
 			},
 		},
 		"attribute_contract_fulfillment": attributecontractfulfillment.MapType(),
@@ -27,11 +27,11 @@ func AttrTypes() map[string]attr.Type {
 	return attributeMappingAttrTypes
 }
 
-func Schema() schema.SingleNestedAttribute {
+func ToSchema() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Attributes: map[string]schema.Attribute{
-			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
-			"attribute_sources":              attributesources.ToSchema(0),
+			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
+			"attribute_sources":              attributesources.ToSchema(0, false, true),
 			"issuance_criteria":              issuancecriteria.ToSchema(),
 		},
 		Required:    true,

@@ -142,7 +142,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--attribute_sources--custom_attribute_source--attribute_contract_fulfillment"></a>
@@ -212,7 +212,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment"></a>
@@ -269,7 +269,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
