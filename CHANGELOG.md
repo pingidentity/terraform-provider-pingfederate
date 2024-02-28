@@ -3,6 +3,7 @@
 * `location` property in `resourceLink` object types for all Resources and DataSources. This property will be removed in a future release. ([#195](https://github.com/pingidentity/terraform-provider-pingfederate/pull/195))
 
 ### Resources
+* **New Resource:** `pingfederate_authentication_selector ` ([#198](https://github.com/pingidentity/terraform-provider-pingfederate/pull/198))
 * **New Resource:** `pingfederate_notification_publishers_settings ` ([#187](https://github.com/pingidentity/terraform-provider-pingfederate/pull/187))
 * **New Resource:** `pingfederate_oauth_access_token_mapping ` ([#195](https://github.com/pingidentity/terraform-provider-pingfederate/pull/195))
 * **New Resource:** `pingfederate_incoming_proxy_settings ` ([#190](https://github.com/pingidentity/terraform-provider-pingfederate/pull/190))
