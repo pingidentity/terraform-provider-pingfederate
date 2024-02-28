@@ -63,7 +63,6 @@ resource "pingfederate_authentication_selector" "samlAuthnContextExample" {
 ### Optional
 
 - `attribute_contract` (Attributes) The list of attributes that the Authentication Selector provides. (see [below for nested schema](#nestedatt--attribute_contract))
-- `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. (see [below for nested schema](#nestedatt--parent_ref))
 
 ### Read-Only
 
@@ -200,15 +199,6 @@ Optional:
 Required:
 
 - `name` (String) An attribute for the Authentication Selector attribute contract.
-
-
-
-<a id="nestedatt--parent_ref"></a>
-### Nested Schema for `parent_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
 
 ## Import
 

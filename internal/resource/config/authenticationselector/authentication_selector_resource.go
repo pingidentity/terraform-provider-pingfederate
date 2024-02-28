@@ -52,7 +52,6 @@ type authenticationSelectorResourceModel struct {
 	Id                  types.String `tfsdk:"id"`
 	Name                types.String `tfsdk:"name"`
 	PluginDescriptorRef types.Object `tfsdk:"plugin_descriptor_ref"`
-	ParentRef           types.Object `tfsdk:"parent_ref"`
 	Configuration       types.Object `tfsdk:"configuration"`
 }
 
@@ -72,11 +71,6 @@ func (r *authenticationSelectorResource) Schema(ctx context.Context, req resourc
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.RequiresReplace(),
 				},
-			},
-			"parent_ref": schema.SingleNestedAttribute{
-				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances.",
-				Optional:    true,
-				Attributes:  resourcelink.ToSchemaNoLocation(),
 			},
 			"configuration": pluginconfiguration.ToSchema(),
 			"attribute_contract": schema.SingleNestedAttribute{
@@ -110,14 +104,6 @@ func addOptionalAuthenticationSelectorsFields(ctx context.Context, addRequest *c
 	if internaltypes.IsDefined(plan.AttributeContract) {
 		addRequest.AttributeContract = &client.AuthenticationSelectorAttributeContract{}
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContract, true)), addRequest.AttributeContract)
-		if err != nil {
-			return err
-		}
-	}
-
-	if internaltypes.IsDefined(plan.ParentRef) {
-		addRequest.ParentRef = &client.ResourceLink{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.ParentRef, false)), addRequest.ParentRef)
 		if err != nil {
 			return err
 		}
@@ -169,7 +155,6 @@ func readAuthenticationSelectorsResponse(ctx context.Context, r *client.Authenti
 	state.Name = types.StringValue(r.Name)
 	state.PluginDescriptorRef, objDiags = resourcelink.ToStateNoLocation(&r.PluginDescriptorRef)
 	diags = append(diags, objDiags...)
-	state.ParentRef, objDiags = resourcelink.ToStateNoLocation(r.ParentRef)
 	diags = append(diags, objDiags...)
 	state.Configuration, objDiags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration)
 	diags = append(diags, objDiags...)
