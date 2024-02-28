@@ -3,7 +3,6 @@ package authenticationselector
 import (
 	"context"
 	"encoding/json"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -54,7 +53,6 @@ type authenticationSelectorResourceModel struct {
 	Name                types.String `tfsdk:"name"`
 	PluginDescriptorRef types.Object `tfsdk:"plugin_descriptor_ref"`
 	ParentRef           types.Object `tfsdk:"parent_ref"`
-	LastModified        types.String `tfsdk:"last_modified"`
 	Configuration       types.Object `tfsdk:"configuration"`
 }
 
@@ -81,11 +79,6 @@ func (r *authenticationSelectorResource) Schema(ctx context.Context, req resourc
 				Attributes:  resourcelink.ToSchemaNoLocation(),
 			},
 			"configuration": pluginconfiguration.ToSchema(),
-			"last_modified": schema.StringAttribute{
-				Description: "The time at which the plugin instance was last changed. This property is read-only.",
-				Computed:    true,
-				Optional:    false,
-			},
 			"attribute_contract": schema.SingleNestedAttribute{
 				Description: "The list of attributes that the Authentication Selector provides.",
 				Optional:    true,
@@ -169,7 +162,6 @@ func (r *authenticationSelectorResource) ModifyPlan(ctx context.Context, req res
 func readAuthenticationSelectorsResponse(ctx context.Context, r *client.AuthenticationSelector, state *authenticationSelectorResourceModel, configurationFromPlan types.Object) diag.Diagnostics {
 	var diags, objDiags diag.Diagnostics
 
-	state.LastModified = types.StringValue(r.LastModified.Format(time.RFC3339))
 	state.AttributeContract, objDiags = types.ObjectValueFrom(ctx, attributeContractAttrType, r.AttributeContract)
 	diags = append(diags, objDiags...)
 	state.SelectorId = types.StringValue(r.Id)
@@ -204,8 +196,7 @@ func (r *authenticationSelectorResource) Create(ctx context.Context, req resourc
 	var configuration client.PluginConfiguration
 	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, false)), &configuration)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to read configuration from plan", err.Error())
-		return
+		hasObjectErrMap[err] = true
 	}
 
 	for err, hasErr := range hasObjectErrMap {
@@ -290,8 +281,7 @@ func (r *authenticationSelectorResource) Update(ctx context.Context, req resourc
 	var configuration client.PluginConfiguration
 	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, false)), &configuration)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to read configuration from plan", err.Error())
-		return
+		hasObjectErrMap[err] = true
 	}
 
 	for err, hasErr := range hasObjectErrMap {
