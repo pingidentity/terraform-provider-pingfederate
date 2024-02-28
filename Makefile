@@ -64,9 +64,9 @@ testoneacccomplete: spincontainer testoneacc
 
 # Some tests can step on each other's toes so run those tests in single threaded mode. Run the rest in parallel
 testacc:
-	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -v -e authenticationapi -e oauth/authserversettings/scopes -e oauth/openidconnect/policy` -timeout 10m -v -p 4; \
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -v -e authenticationapi -e oauth/authserversettings/scopes -e oauth/openidconnect/policy -e oauth/openidconnect/settings` -timeout 10m -v -p 4; \
 	firstTestResult=$$?; \
-	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -e authenticationapi -e oauth/authserversettings/scopes -e oauth/openidconnect/policy` -timeout 10m -v -p 1; \
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -e authenticationapi -e oauth/authserversettings/scopes -e oauth/openidconnect/policy -e oauth/openidconnect/settings` -timeout 10m -v -p 1; \
 	secondTestResult=$$?; \
 	if test "$$firstTestResult" != "0" || test "$$secondTestResult" != "0"; then \
 		false; \
@@ -96,8 +96,8 @@ verifycontent:
 devcheck: devchecknotest kaboom testauthacc testacc
 
 generateresource:
-	PINGFEDERATE_GENERATED_ENDPOINT=serverSettings \
-	PINGFEDERATE_RESOURCE_DEFINITION_NAME=ServerSettings \
+	PINGFEDERATE_GENERATED_ENDPOINT=openIdConnectSettings \
+	PINGFEDERATE_RESOURCE_DEFINITION_NAME=OpenIdConnectSettings \
 	PINGFEDERATE_ALLOW_REQUIRED_BYPASS=False \
 	OVERWRITE_EXISTING_RESOURCE_FILE=False \
 	PINGFEDERATE_PUT_ONLY_RESOURCE=True \
