@@ -68,7 +68,6 @@ resource "pingfederate_authentication_selector" "samlAuthnContextExample" {
 ### Read-Only
 
 - `id` (String) The ID of this resource.
-- `last_modified` (String) The time at which the plugin instance was last changed. This property is read-only.
 
 <a id="nestedatt--configuration"></a>
 ### Nested Schema for `configuration`
