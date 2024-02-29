@@ -23,6 +23,7 @@ type authenticationSelectorsResourceModel struct {
 	addOrUpdateAuthNContextAttribute string
 	enableNoMatchResultValue         string
 	enableNotInRequestResultValue    string
+	overrideAuthnContextForFlow      string
 }
 
 func TestAccAuthenticationSelector(t *testing.T) {
@@ -35,6 +36,7 @@ func TestAccAuthenticationSelector(t *testing.T) {
 		addOrUpdateAuthNContextAttribute: "true",
 		enableNoMatchResultValue:         "false",
 		enableNotInRequestResultValue:    "false",
+		overrideAuthnContextForFlow:      "true",
 		attributeContract: &client.AuthenticationSelectorAttributeContract{
 			ExtendedAttributes: []client.AuthenticationSelectorAttribute{
 				{
@@ -51,6 +53,7 @@ func TestAccAuthenticationSelector(t *testing.T) {
 		addOrUpdateAuthNContextAttribute: "false",
 		enableNoMatchResultValue:         "true",
 		enableNotInRequestResultValue:    "true",
+		overrideAuthnContextForFlow:      "false",
 		attributeContract: &client.AuthenticationSelectorAttributeContract{
 			ExtendedAttributes: []client.AuthenticationSelectorAttribute{
 				{
@@ -109,6 +112,17 @@ func TestAccAuthenticationSelector(t *testing.T) {
 	})
 }
 
+func overrideAuthnContextForFlow(overrideAuthnContextForFlowVal string) string {
+	if acctest.VersionAtLeast("11.3.0") {
+		return fmt.Sprintf(`
+		{
+			name  = "Override AuthN Context for Flow"
+			value = "%s"
+		},`, overrideAuthnContextForFlowVal)
+	}
+	return ""
+}
+
 func testAccAuthenticationSelector(resourceName string, resourceModel authenticationSelectorsResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_selector" "%[1]s" {
@@ -120,30 +134,32 @@ resource "pingfederate_authentication_selector" "%[1]s" {
   configuration = {
     tables = []
     fields = [
+			%[4]s
       {
         name  = "Add or Update AuthN Context Attribute"
-        value = "%[4]s"
-      },
-      {
-        name  = "Enable 'No Match' Result Value"
         value = "%[5]s"
       },
       {
-        name  = "Enable 'Not in Request' Result Value"
+        name  = "Enable 'No Match' Result Value"
         value = "%[6]s"
+      },
+      {
+        name  = "Enable 'Not in Request' Result Value"
+        value = "%[7]s"
       }
     ]
   }
   attribute_contract = {
     extended_attributes = [
       {
-        name = "%[7]s"
+        name = "%[8]s"
       }
     ]
   }
 }`, resourceName,
 		authenticationSelectorsId,
 		resourceModel.pluginDescriptorRef.Id,
+		overrideAuthnContextForFlow(resourceModel.overrideAuthnContextForFlow),
 		resourceModel.addOrUpdateAuthNContextAttribute,
 		resourceModel.enableNoMatchResultValue,
 		resourceModel.enableNotInRequestResultValue,
