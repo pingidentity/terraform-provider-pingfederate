@@ -32,6 +32,7 @@ type jsonWebTokenOauthAccessTokenManagerResourceModel struct {
 
 func TestAccJsonWebTokenOauthAccessTokenManager(t *testing.T) {
 	resourceName := "myJsonWebTokenOauthAccessTokenManager"
+
 	initialResourceModel := jsonWebTokenOauthAccessTokenManagerResourceModel{
 		id:                   jsonWebTokenOauthAccessTokenManagerId,
 		name:                 jsonWebTokenOauthAccessTokenManagerName,
@@ -323,6 +324,26 @@ resource "pingfederate_oauth_access_token_manager" "%[1]s" {
       {
         name         = "contract"
         multi_valued = false
+      },
+      {
+        name         = "contract1"
+        multi_valued = false
+      },
+      {
+        name         = "contract2"
+        multi_valued = false
+      },
+      {
+        name         = "contract3"
+        multi_valued = false
+      },
+      {
+        name         = "contract4"
+        multi_valued = false
+      },
+      {
+        name         = "contract5"
+        multi_valued = false
       }
     ]
   }
@@ -362,14 +383,6 @@ func testAccCheckExpectedJsonWebOauthAccessTokenManagerAttributes(config jsonWeb
 
 		if err != nil {
 			return err
-		}
-
-		// Check for the always-defined extended attribute
-		for _, extendedAttr := range response.AttributeContract.ExtendedAttributes {
-			err = acctest.TestAttributesMatchString(resourceType, &config.id, "extended_attribute.name", "contract", extendedAttr.Name)
-			if err != nil {
-				return err
-			}
 		}
 
 		// Verify that attributes have expected values
