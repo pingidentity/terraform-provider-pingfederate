@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -13,10 +14,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
@@ -41,8 +43,8 @@ var (
 	}
 
 	attributeContractTypes = map[string]attr.Type{
-		"core_attributes":           types.ListType{ElemType: types.ObjectType{AttrTypes: attrType}},
-		"extended_attributes":       types.ListType{ElemType: types.ObjectType{AttrTypes: attrType}},
+		"core_attributes":           types.SetType{ElemType: types.ObjectType{AttrTypes: attrType}},
+		"extended_attributes":       types.SetType{ElemType: types.ObjectType{AttrTypes: attrType}},
 		"inherited":                 types.BoolType,
 		"default_subject_attribute": types.StringType,
 	}
@@ -144,12 +146,12 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				Description: "The list of attributes that will be added to an access token.",
 				Required:    true,
 				Attributes: map[string]schema.Attribute{
-					"core_attributes": schema.ListNestedAttribute{
+					"core_attributes": schema.SetNestedAttribute{
 						Description: "A list of core token attributes that are associated with the access token management plugin type. This field is read-only and is ignored on POST/PUT.",
 						Computed:    true,
 						Optional:    false,
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.UseStateForUnknown(),
+						PlanModifiers: []planmodifier.Set{
+							setplanmodifier.UseStateForUnknown(),
 						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
@@ -172,9 +174,12 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 							},
 						},
 					},
-					"extended_attributes": schema.ListNestedAttribute{
+					"extended_attributes": schema.SetNestedAttribute{
 						Description: "A list of additional token attributes that are associated with this access token management plugin instance.",
 						Required:    true,
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -313,20 +318,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 	resp.Schema = schema
 }
 
-func (r *oauthAccessTokenManagerResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var model oauthAccessTokenManagerResourceModel
-	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
-
-	if internaltypes.IsDefined(model.AttributeContract) {
-		extendedAttributes := model.AttributeContract.Attributes()["extended_attributes"].(types.List)
-		if internaltypes.IsDefined(extendedAttributes) && len(extendedAttributes.Elements()) == 0 {
-			resp.Diagnostics.AddError("Empty attribute_contract.extended_attributes", "Please provide valid properties within attribute_contract.extended_attributes. The set cannot be empty if defined.")
-		}
-	}
-}
-
 func addOptionalOauthAccessTokenManagerFields(ctx context.Context, addRequest *client.AccessTokenManager, plan oauthAccessTokenManagerResourceModel) error {
-
 	if internaltypes.IsDefined(plan.ParentRef) {
 		if plan.ParentRef.Attributes()["id"].(types.String).ValueString() != "" {
 			addRequest.ParentRef = client.NewResourceLinkWithDefaults()
@@ -438,7 +430,7 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 			coreAttribute.MultiValued = ca.MultiValued
 			coreAttrs = append(coreAttrs, coreAttribute)
 		}
-		attributeContractCoreAttributes, respDiags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: attrType}, coreAttrs)
+		attributeContractCoreAttributes, respDiags := types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attrType}, coreAttrs)
 		diags.Append(respDiags...)
 
 		// state.AttributeContract extended_attributes
@@ -450,7 +442,7 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 			extendedAttr.MultiValued = ea.MultiValued
 			extdAttrs = append(extdAttrs, extendedAttr)
 		}
-		attributeContractExtendedAttributes, respDiags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: attrType}, extdAttrs)
+		attributeContractExtendedAttributes, respDiags := types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attrType}, extdAttrs)
 		diags.Append(respDiags...)
 
 		inherited := false

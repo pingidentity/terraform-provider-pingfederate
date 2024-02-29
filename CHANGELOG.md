@@ -1,3 +1,7 @@
+# v0.7.1 February 29th, 2024
+### BUG FIXES
+* `pingfederate_oauth_access_token_manager` resource `attribute_contract.extended_attributes` Provider produced inconsistent result after apply ([#202](https://github.com/pingidentity/terraform-provider-pingfederate/pull/202))
+
 # v0.7.0 February 28th, 2024
 ### DEPRECATED
 * `location` property in `resourceLink` object types for all Resources and DataSources. This property will be removed in a future release. ([#195](https://github.com/pingidentity/terraform-provider-pingfederate/pull/195))

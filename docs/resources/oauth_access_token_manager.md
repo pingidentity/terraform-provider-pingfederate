@@ -273,7 +273,7 @@ resource "pingfederate_oauth_access_token_manager" "jsonWebTokenOauthAccessToken
 
 Required:
 
-- `extended_attributes` (Attributes List) A list of additional token attributes that are associated with this access token management plugin instance. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
+- `extended_attributes` (Attributes Set) A list of additional token attributes that are associated with this access token management plugin instance. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
 
 Optional:
 
@@ -282,7 +282,7 @@ Optional:
 
 Read-Only:
 
-- `core_attributes` (Attributes List) A list of core token attributes that are associated with the access token management plugin type. This field is read-only and is ignored on POST/PUT. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
+- `core_attributes` (Attributes Set) A list of core token attributes that are associated with the access token management plugin type. This field is read-only and is ignored on POST/PUT. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
 
 <a id="nestedatt--attribute_contract--extended_attributes"></a>
 ### Nested Schema for `attribute_contract.extended_attributes`
