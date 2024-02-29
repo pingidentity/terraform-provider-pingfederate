@@ -21,7 +21,6 @@ type authenticationSelectorsResourceModel struct {
 	attributeContract                *client.AuthenticationSelectorAttributeContract
 	pluginDescriptorRef              client.ResourceLink
 	addOrUpdateAuthNContextAttribute string
-	overrideAuthNContextForFlow      string
 	enableNoMatchResultValue         string
 	enableNotInRequestResultValue    string
 }
@@ -34,7 +33,6 @@ func TestAccAuthenticationSelector(t *testing.T) {
 			Id: "com.pingidentity.pf.selectors.saml.SamlAuthnContextAdapterSelector",
 		},
 		addOrUpdateAuthNContextAttribute: "true",
-		overrideAuthNContextForFlow:      "true",
 		enableNoMatchResultValue:         "false",
 		enableNotInRequestResultValue:    "false",
 		attributeContract: &client.AuthenticationSelectorAttributeContract{
@@ -51,7 +49,6 @@ func TestAccAuthenticationSelector(t *testing.T) {
 			Id: "com.pingidentity.pf.selectors.saml.SamlAuthnContextAdapterSelector",
 		},
 		addOrUpdateAuthNContextAttribute: "false",
-		overrideAuthNContextForFlow:      "false",
 		enableNoMatchResultValue:         "true",
 		enableNotInRequestResultValue:    "true",
 		attributeContract: &client.AuthenticationSelectorAttributeContract{
@@ -128,23 +125,19 @@ resource "pingfederate_authentication_selector" "%[1]s" {
         value = "%[4]s"
       },
       {
-        name  = "Override AuthN Context for Flow"
+        name  = "Enable 'No Match' Result Value"
         value = "%[5]s"
       },
       {
-        name  = "Enable 'No Match' Result Value"
-        value = "%[6]s"
-      },
-      {
         name  = "Enable 'Not in Request' Result Value"
-        value = "%[7]s"
+        value = "%[6]s"
       }
     ]
   }
   attribute_contract = {
     extended_attributes = [
       {
-        name = "%s"
+        name = "%[7]s"
       }
     ]
   }
@@ -152,7 +145,6 @@ resource "pingfederate_authentication_selector" "%[1]s" {
 		authenticationSelectorsId,
 		resourceModel.pluginDescriptorRef.Id,
 		resourceModel.addOrUpdateAuthNContextAttribute,
-		resourceModel.overrideAuthNContextForFlow,
 		resourceModel.enableNoMatchResultValue,
 		resourceModel.enableNotInRequestResultValue,
 		resourceModel.attributeContract.ExtendedAttributes[0].Name,
@@ -187,13 +179,6 @@ func testAccCheckExpectedAuthenticationSelectorAttributes(config authenticationS
 
 			if field.Name == "Add or Update AuthN Context Attribute" {
 				err = acctest.TestAttributesMatchString(resourceType, pointers.String(authenticationSelectorsId), "value", config.addOrUpdateAuthNContextAttribute, *field.Value)
-				if err != nil {
-					return err
-				}
-			}
-
-			if field.Name == "Override AuthN Context For Flow" {
-				err = acctest.TestAttributesMatchString(resourceType, pointers.String(authenticationSelectorsId), "value", config.overrideAuthNContextForFlow, *field.Value)
 				if err != nil {
 					return err
 				}
