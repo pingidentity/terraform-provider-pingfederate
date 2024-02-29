@@ -21,9 +21,9 @@ type authenticationSelectorsResourceModel struct {
 	attributeContract                *client.AuthenticationSelectorAttributeContract
 	pluginDescriptorRef              client.ResourceLink
 	addOrUpdateAuthNContextAttribute string
-	overrideAuthNContextForFlow      string
 	enableNoMatchResultValue         string
 	enableNotInRequestResultValue    string
+	overrideAuthnContextForFlow      string
 }
 
 func TestAccAuthenticationSelector(t *testing.T) {
@@ -34,9 +34,9 @@ func TestAccAuthenticationSelector(t *testing.T) {
 			Id: "com.pingidentity.pf.selectors.saml.SamlAuthnContextAdapterSelector",
 		},
 		addOrUpdateAuthNContextAttribute: "true",
-		overrideAuthNContextForFlow:      "true",
 		enableNoMatchResultValue:         "false",
 		enableNotInRequestResultValue:    "false",
+		overrideAuthnContextForFlow:      "true",
 		attributeContract: &client.AuthenticationSelectorAttributeContract{
 			ExtendedAttributes: []client.AuthenticationSelectorAttribute{
 				{
@@ -51,9 +51,9 @@ func TestAccAuthenticationSelector(t *testing.T) {
 			Id: "com.pingidentity.pf.selectors.saml.SamlAuthnContextAdapterSelector",
 		},
 		addOrUpdateAuthNContextAttribute: "false",
-		overrideAuthNContextForFlow:      "false",
 		enableNoMatchResultValue:         "true",
 		enableNotInRequestResultValue:    "true",
+		overrideAuthnContextForFlow:      "false",
 		attributeContract: &client.AuthenticationSelectorAttributeContract{
 			ExtendedAttributes: []client.AuthenticationSelectorAttribute{
 				{
@@ -112,6 +112,17 @@ func TestAccAuthenticationSelector(t *testing.T) {
 	})
 }
 
+func overrideAuthnContextForFlow(overrideAuthnContextForFlowVal string) string {
+	if acctest.VersionAtLeast("11.3.0") {
+		return fmt.Sprintf(`
+		{
+			name  = "Override AuthN Context for Flow"
+			value = "%s"
+		},`, overrideAuthnContextForFlowVal)
+	}
+	return ""
+}
+
 func testAccAuthenticationSelector(resourceName string, resourceModel authenticationSelectorsResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_selector" "%[1]s" {
@@ -123,12 +134,9 @@ resource "pingfederate_authentication_selector" "%[1]s" {
   configuration = {
     tables = []
     fields = [
+			%[4]s
       {
         name  = "Add or Update AuthN Context Attribute"
-        value = "%[4]s"
-      },
-      {
-        name  = "Override AuthN Context for Flow"
         value = "%[5]s"
       },
       {
@@ -144,15 +152,15 @@ resource "pingfederate_authentication_selector" "%[1]s" {
   attribute_contract = {
     extended_attributes = [
       {
-        name = "%s"
+        name = "%[8]s"
       }
     ]
   }
 }`, resourceName,
 		authenticationSelectorsId,
 		resourceModel.pluginDescriptorRef.Id,
+		overrideAuthnContextForFlow(resourceModel.overrideAuthnContextForFlow),
 		resourceModel.addOrUpdateAuthNContextAttribute,
-		resourceModel.overrideAuthNContextForFlow,
 		resourceModel.enableNoMatchResultValue,
 		resourceModel.enableNotInRequestResultValue,
 		resourceModel.attributeContract.ExtendedAttributes[0].Name,
@@ -187,13 +195,6 @@ func testAccCheckExpectedAuthenticationSelectorAttributes(config authenticationS
 
 			if field.Name == "Add or Update AuthN Context Attribute" {
 				err = acctest.TestAttributesMatchString(resourceType, pointers.String(authenticationSelectorsId), "value", config.addOrUpdateAuthNContextAttribute, *field.Value)
-				if err != nil {
-					return err
-				}
-			}
-
-			if field.Name == "Override AuthN Context For Flow" {
-				err = acctest.TestAttributesMatchString(resourceType, pointers.String(authenticationSelectorsId), "value", config.overrideAuthNContextForFlow, *field.Value)
 				if err != nil {
 					return err
 				}
