@@ -48,6 +48,7 @@ type oauthClientResourceModel struct {
 	jwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm *string
 	tokenIntrospectionSigningAlgorithm                            *string
 	requireSignedRequests                                         *bool
+	includeExtendedParameters                                     bool
 }
 
 func TestAccOauthClient(t *testing.T) {
@@ -75,6 +76,7 @@ func TestAccOauthClient(t *testing.T) {
 		name:                      "initialName",
 		grantTypes:                []string{"DEVICE_CODE"},
 		includeOptionalAttributes: false,
+		includeExtendedParameters: false,
 	}
 
 	updatedResourceModel := oauthClientResourceModel{
@@ -108,6 +110,7 @@ func TestAccOauthClient(t *testing.T) {
 		jwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm: pointers.String("AES_128_CBC_HMAC_SHA_256"),
 		tokenIntrospectionSigningAlgorithm:                            pointers.String("RS256"),
 		requireSignedRequests:                                         pointers.Bool(true),
+		includeExtendedParameters:                                     true,
 	}
 
 	//  Client Auth and Redirect URIs are required for the resource when going back to the minimal model from the updated model
@@ -300,14 +303,33 @@ func testAccOauthClient(resourceName string, resourceModel oauthClientResourceMo
 		}
 	}
 
+	if resourceModel.includeExtendedParameters {
+		optionalHcl += `
+		extended_parameters = {
+			"test" = {
+				"values" = ["test"]
+			}
+		}`
+	}
+
 	return fmt.Sprintf(`
-resource "pingfederate_oauth_client" "%s" {
-  client_id   = "%s"
-  grant_types = %s
-  name        = "%s"
-	%s
-	%s
-	%s
+resource "pingfederate_extended_properties" "%[1]s" {
+	items = [
+		{
+			name = "test"
+			description = "test"
+			multi_valued = false
+		}
+	]
+}
+
+resource "pingfederate_oauth_client" "%[1]s" {
+  client_id   = "%[2]s"
+  grant_types = %[3]s
+  name        = "%[4]s"
+	%[5]s
+	%[6]s
+	%[7]s
 }
 data "pingfederate_oauth_client" "%s" {
   client_id = pingfederate_oauth_client.%s.client_id
