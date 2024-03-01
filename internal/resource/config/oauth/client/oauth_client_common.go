@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -73,6 +74,11 @@ var (
 		"enforce_replay_prevention":             types.BoolNull(),
 		"token_endpoint_auth_signing_algorithm": types.StringNull(),
 	}
+
+	extendedParametersAttrType = map[string]attr.Type{
+		"values": types.SetType{ElemType: types.StringType},
+	}
+	extendedParametersObjAttrType = types.ObjectType{AttrTypes: extendedParametersAttrType}
 )
 
 type oauthClientModel struct {
@@ -143,7 +149,7 @@ type oauthClientModel struct {
 	RequireDpop                                                   types.Bool   `tfsdk:"require_dpop"`
 }
 
-func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state *oauthClientModel) diag.Diagnostics {
+func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state, plan *oauthClientModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.Id = types.StringValue(r.ClientId)
 	state.ClientId = types.StringValue(r.ClientId)
@@ -228,11 +234,18 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state 
 	state.JwksSettings = jwksSettingsToState
 
 	// state.ExtendedParameters
-	extendedParametersAttrType := map[string]attr.Type{}
-	extendedParametersAttrType["values"] = types.SetType{ElemType: types.StringType}
-	extendedParametersObjAttrType := types.ObjectType{AttrTypes: extendedParametersAttrType}
-	extendedParametersToState, respDiags := types.MapValueFrom(ctx, extendedParametersObjAttrType, r.ExtendedParameters)
-	diags.Append(respDiags...)
+	var extendedParametersToState basetypes.MapValue
+	if r.ExtendedParameters != nil {
+		extendedParametersToState, respDiags = types.MapValueFrom(ctx, extendedParametersObjAttrType, r.ExtendedParameters)
+		diags.Append(respDiags...)
+	} else {
+		if plan != nil && internaltypes.IsDefined(plan.ExtendedParameters) {
+			extendedParametersToState = plan.ExtendedParameters
+		} else {
+			extendedParametersToState = types.MapNull(extendedParametersObjAttrType)
+		}
+	}
+
 	state.ExtendedParameters = extendedParametersToState
 
 	// state.RequestPolicyRef

@@ -1054,7 +1054,7 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 
 func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state *oauthClientModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	diags = readOauthClientResponseCommon(ctx, r, state)
+	diags = readOauthClientResponseCommon(ctx, r, state, plan)
 
 	// state.ClientAuth
 	var clientAuthToState types.Object
