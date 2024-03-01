@@ -310,6 +310,9 @@ func testAccOauthClient(resourceName string, resourceModel oauthClientResourceMo
 				"values" = ["test"]
 			}
 		}`
+	} else {
+		optionalHcl += `
+		extended_parameters = {}`
 	}
 
 	return fmt.Sprintf(`
