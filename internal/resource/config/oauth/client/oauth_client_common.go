@@ -239,9 +239,8 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state,
 		extendedParametersToState, respDiags = types.MapValueFrom(ctx, extendedParametersObjAttrType, r.ExtendedParameters)
 		diags.Append(respDiags...)
 	} else {
-		if internaltypes.IsDefined(plan.ExtendedParameters) {
-			extendedParametersToState, respDiags = types.MapValueFrom(ctx, extendedParametersObjAttrType, plan.ExtendedParameters)
-			diags.Append(respDiags...)
+		if plan != nil && internaltypes.IsDefined(plan.ExtendedParameters) {
+			extendedParametersToState = plan.ExtendedParameters
 		} else {
 			extendedParametersToState = types.MapNull(extendedParametersObjAttrType)
 		}
