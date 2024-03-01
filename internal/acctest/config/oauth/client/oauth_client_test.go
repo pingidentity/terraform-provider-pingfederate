@@ -314,13 +314,13 @@ func testAccOauthClient(resourceName string, resourceModel oauthClientResourceMo
 
 	return fmt.Sprintf(`
 resource "pingfederate_extended_properties" "%[1]s" {
-	items = [
-		{
-			name = "test"
-			description = "test"
-			multi_valued = false
-		}
-	]
+  items = [
+    {
+      name         = "test"
+      description  = "test"
+      multi_valued = false
+    }
+  ]
 }
 
 resource "pingfederate_oauth_client" "%[1]s" {
