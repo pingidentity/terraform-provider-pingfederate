@@ -17,7 +17,7 @@ require (
 	github.com/katbyte/terrafmt v0.5.2
 	github.com/pavius/impi v0.0.3
 	github.com/pingidentity/pingfederate-go-client/v1200 v1200.1.2
-	github.com/terraform-linters/tflint v0.48.0
+	github.com/terraform-linters/tflint v0.50.3
 )
 
 require (
