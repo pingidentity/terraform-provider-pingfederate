@@ -308,7 +308,7 @@ Read-Only:
 <a id="nestedatt--extended_parameters"></a>
 ### Nested Schema for `extended_parameters`
 
-Optional:
+Required:
 
 - `values` (Set of String) A list of values
 
