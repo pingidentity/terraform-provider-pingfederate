@@ -570,8 +570,11 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 					Attributes: map[string]schema.Attribute{
 						"values": schema.SetAttribute{
 							Description: "A list of values",
-							Optional:    true,
+							Required:    true,
 							ElementType: types.StringType,
+							Validators: []validator.Set{
+								setvalidator.SizeAtLeast(1),
+							},
 						},
 					},
 				},
