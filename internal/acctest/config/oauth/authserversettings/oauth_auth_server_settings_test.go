@@ -180,10 +180,10 @@ func testAccOauthAuthServerSettings(resourceName string, resourceModel oauthAuth
 
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_auth_server_settings" "%[1]s" {
-  authorization_code_entropy          = %[2]d
-  authorization_code_timeout          = %[3]d
-  refresh_rolling_interval            = %[4]d
-  refresh_token_length                = %[5]d
+  authorization_code_entropy = %[2]d
+  authorization_code_timeout = %[3]d
+  refresh_rolling_interval   = %[4]d
+  refresh_token_length       = %[5]d
   %[6]s
 	%[7]s
 }
