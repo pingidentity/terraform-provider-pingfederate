@@ -81,19 +81,19 @@ func TestAccOauthAuthServerSettings(t *testing.T) {
 func testAccOauthAuthServerSettings(resourceName string, resourceModel oauthAuthServerSettingsResourceModel, includeAllAttributes bool) string {
 	addUpdatedResourceModelFields := []string{}
 	if resourceModel.bypassActivationCodeConfirmation == true {
-		addUpdatedResourceModelFields = append(addUpdatedResourceModelFields, "bypass_activation_code_confirmation = true")
+		addUpdatedResourceModelFields = append(addUpdatedResourceModelFields, fmt.Sprintf("bypass_activation_code_confirmation = %t", resourceModel.bypassActivationCodeConfirmation))
 	}
 	if resourceModel.defaultScopeDescription != "" {
-		addUpdatedResourceModelFields = append(addUpdatedResourceModelFields, "default_scope_description = \"example updated scope description\"")
+		addUpdatedResourceModelFields = append(addUpdatedResourceModelFields, fmt.Sprintf("default_scope_description = \"%s\"", resourceModel.defaultScopeDescription))
 	}
 	if resourceModel.devicePollingInterval == 3 {
-		addUpdatedResourceModelFields = append(addUpdatedResourceModelFields, "device_polling_interval = 3")
+		addUpdatedResourceModelFields = append(addUpdatedResourceModelFields, fmt.Sprintf("device_polling_interval = %d", resourceModel.devicePollingInterval))
 	}
 	if resourceModel.pendingAuthorizationTimeout == 650 {
-		addUpdatedResourceModelFields = append(addUpdatedResourceModelFields, "pending_authorization_timeout = 650")
+		addUpdatedResourceModelFields = append(addUpdatedResourceModelFields, fmt.Sprintf("pending_authorization_timeout = %d", resourceModel.pendingAuthorizationTimeout))
 	}
 	if resourceModel.registeredAuthorizationPath != "" {
-		addUpdatedResourceModelFields = append(addUpdatedResourceModelFields, "registered_authorization_path = \"/example\"")
+		addUpdatedResourceModelFields = append(addUpdatedResourceModelFields, fmt.Sprintf("registered_authorization_path = \"%s\"", resourceModel.registeredAuthorizationPath))
 	}
 
 	updatedResourceModelFields := strings.Join(addUpdatedResourceModelFields[:], "\n")
