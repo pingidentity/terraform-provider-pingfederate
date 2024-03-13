@@ -39,8 +39,11 @@ func TestAccOauthAccessTokenMapping(t *testing.T) {
 	//  Updated Model
 	// attributeContractFulfillment
 	updatedAttributeContractFullfillmentVal := map[string]client.AttributeFulfillmentValue{}
-	updatedAFV := client.NewAttributeFulfillmentValue(*client.NewSourceTypeIdKey("TEXT"), "Administrator2")
-	updatedAttributeContractFullfillmentVal["extended_contract"] = *updatedAFV
+	updatedAttributeContractFullfillmentVal["extended_contract"] = client.AttributeFulfillmentValue{
+		Source: client.SourceTypeIdKey{
+			Type: "NO_MAPPING",
+		},
+	}
 
 	//  attributeSource
 	jdbcAttributeSource := client.NewJdbcAttributeSource("ADMINISTRABLE_ROLE_AUTHORIZATIONS", "${client_id}", "JDBC", *client.NewResourceLink("ProvisionerDS"))

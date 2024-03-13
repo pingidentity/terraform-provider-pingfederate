@@ -93,24 +93,18 @@ Required:
 <a id="nestedatt--attribute_contract_fulfillment"></a>
 ### Nested Schema for `attribute_contract_fulfillment`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--attribute_contract_fulfillment--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--attribute_contract_fulfillment--source"></a>
 ### Nested Schema for `attribute_contract_fulfillment.source`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 

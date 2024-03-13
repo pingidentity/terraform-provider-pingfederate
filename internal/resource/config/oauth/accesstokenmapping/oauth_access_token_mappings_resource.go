@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
@@ -21,6 +22,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -92,9 +94,25 @@ func (r *oauthAccessTokenMappingsResource) Schema(ctx context.Context, req resou
 				},
 				Attributes: resourcelink.ToSchemaNoLocation(),
 			},
-			"attribute_sources":              attributesources.ToSchema(0, true, false),
-			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
-			"issuance_criteria":              issuancecriteria.ToSchema(),
+			"attribute_sources": attributesources.ToSchema(0, true, false),
+			"attribute_contract_fulfillment": schema.MapNestedAttribute{
+				Description: "Defines how an attribute in an attribute contract should be populated.",
+				Required:    true,
+				Optional:    false,
+				Computed:    false,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"source": sourcetypeidkey.ToSchema(true),
+						"value": schema.StringAttribute{
+							Optional:    true,
+							Computed:    true,
+							Description: "The value for this attribute.",
+							Default:     stringdefault.StaticString(""),
+						},
+					},
+				},
+			},
+			"issuance_criteria": issuancecriteria.ToSchema(),
 		},
 	}
 	id.ToSchema(&schema)
