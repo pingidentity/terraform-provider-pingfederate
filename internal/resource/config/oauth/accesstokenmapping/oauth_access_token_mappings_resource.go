@@ -93,7 +93,7 @@ func (r *oauthAccessTokenMappingsResource) Schema(ctx context.Context, req resou
 				Attributes: resourcelink.ToSchemaNoLocation(),
 			},
 			"attribute_sources":              attributesources.ToSchema(0, true, false),
-			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
+			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, true),
 			"issuance_criteria":              issuancecriteria.ToSchema(),
 		},
 	}
