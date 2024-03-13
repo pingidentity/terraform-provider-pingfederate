@@ -1,6 +1,6 @@
 # v0.8.0 (Unreleased)
 ### BUG FIXES
-* `pingfederate_oauth_client` resource, Provider produced inconsistent result after apply error when applying empty `extended_parameters` map value ([#204](https://github.com/pingidentity/terraform-provider-pingfederate/pull/204))
+* `pingfederate_oauth_client` resource, Provider produced inconsistent result after apply error when applying empty `extended_parameters` map value, require values to match product behavior ([#204](https://github.com/pingidentity/terraform-provider-pingfederate/pull/204))
 
 # v0.7.1 February 29th, 2024
 ### BUG FIXES
