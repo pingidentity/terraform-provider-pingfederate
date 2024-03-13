@@ -89,7 +89,9 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 		Attributes: map[string]schema.Attribute{
 			"default_scope_description": schema.StringAttribute{
 				Description: "The default scope description.",
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString(""),
 			},
 			"scopes": schema.SetNestedAttribute{
 				Description: "The list of common scopes.",
@@ -380,18 +382,24 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 			},
 			"registered_authorization_path": schema.StringAttribute{
 				Description: "The Registered Authorization Path is concatenated to PingFederate base URL to generate 'verification_url' and 'verification_url_complete' values in a Device Authorization request. PingFederate listens to this path if specified",
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString(""),
 				Validators: []validator.String{
 					configvalidators.StartsWith("/"),
 				},
 			},
 			"pending_authorization_timeout": schema.Int64Attribute{
 				Description: "The 'device_code' and 'user_code' timeout, in seconds.",
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
+				Default:     int64default.StaticInt64(600),
 			},
 			"device_polling_interval": schema.Int64Attribute{
 				Description: "The amount of time client should wait between polling requests, in seconds.",
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
+				Default:     int64default.StaticInt64(5),
 			},
 			"activation_code_check_mode": schema.StringAttribute{
 				Description: "Determines whether the user is prompted to enter or confirm the activation code after authenticating or before. The default is AFTER_AUTHENTICATION.",
@@ -404,7 +412,9 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 			},
 			"bypass_activation_code_confirmation": schema.BoolAttribute{
 				Description: "Indicates if the Activation Code Confirmation page should be bypassed if 'verification_url_complete' is used by the end user to authorize a device.",
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 			},
 			"user_authorization_consent_page_setting": schema.StringAttribute{
 				Description: "User Authorization Consent Page setting to use PingFederate's internal consent page or an external system",
@@ -655,7 +665,11 @@ func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *c
 			return err
 		}
 	}
-
+	addRequest.RegisteredAuthorizationPath = plan.RegisteredAuthorizationPath.ValueStringPointer()
+	addRequest.BypassActivationCodeConfirmation = plan.BypassActivationCodeConfirmation.ValueBoolPointer()
+	addRequest.DefaultScopeDescription = plan.DefaultScopeDescription.ValueStringPointer()
+	addRequest.DevicePollingInterval = plan.DevicePollingInterval.ValueInt64Pointer()
+	addRequest.PendingAuthorizationTimeout = plan.PendingAuthorizationTimeout.ValueInt64Pointer()
 	addRequest.DisallowPlainPKCE = plan.DisallowPlainPKCE.ValueBoolPointer()
 	addRequest.IncludeIssuerInAuthorizationResponse = plan.IncludeIssuerInAuthorizationResponse.ValueBoolPointer()
 	addRequest.TrackUserSessionsForLogout = plan.TrackUserSessionsForLogout.ValueBoolPointer()
@@ -694,7 +708,7 @@ func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *c
 	plan.AllowedOrigins.ElementsAs(ctx, &allowedOrigins, false)
 	addRequest.AllowedOrigins = allowedOrigins
 	addRequest.UserAuthorizationUrl = plan.UserAuthorizationUrl.ValueStringPointer()
-	addRequest.DevicePollingInterval = plan.DevicePollingInterval.ValueInt64()
+	addRequest.DevicePollingInterval = plan.DevicePollingInterval.ValueInt64Pointer()
 	addRequest.ActivationCodeCheckMode = plan.ActivationCodeCheckMode.ValueStringPointer()
 	addRequest.UserAuthorizationConsentPageSetting = plan.UserAuthorizationConsentPageSetting.ValueStringPointer()
 	addRequest.UserAuthorizationConsentAdapter = plan.UserAuthorizationConsentAdapter.ValueStringPointer()
@@ -704,7 +718,6 @@ func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *c
 	addRequest.ParReferenceLength = plan.ParReferenceLength.ValueInt64Pointer()
 	addRequest.ParStatus = plan.ParStatus.ValueStringPointer()
 	addRequest.ClientSecretRetentionPeriod = plan.ClientSecretRetentionPeriod.ValueInt64Pointer()
-
 	addRequest.JwtSecuredAuthorizationResponseModeLifetime = plan.JwtSecuredAuthorizationResponseModeLifetime.ValueInt64Pointer()
 	addRequest.DpopProofEnforceReplayPrevention = plan.DpopProofEnforceReplayPrevention.ValueBoolPointer()
 	addRequest.DpopProofLifetimeSeconds = plan.DpopProofLifetimeSeconds.ValueInt64Pointer()
@@ -741,7 +754,7 @@ func (r *oauthAuthServerSettingsResource) Create(ctx context.Context, req resour
 		return
 	}
 
-	createOauthAuthServerSettings := client.NewAuthorizationServerSettings(plan.DefaultScopeDescription.ValueString(), plan.AuthorizationCodeTimeout.ValueInt64(), plan.AuthorizationCodeEntropy.ValueInt64(), plan.RefreshTokenLength.ValueInt64(), plan.RefreshRollingInterval.ValueInt64(), plan.RegisteredAuthorizationPath.ValueString(), plan.PendingAuthorizationTimeout.ValueInt64(), plan.DevicePollingInterval.ValueInt64(), plan.BypassActivationCodeConfirmation.ValueBool())
+	createOauthAuthServerSettings := client.NewAuthorizationServerSettings(plan.AuthorizationCodeTimeout.ValueInt64(), plan.AuthorizationCodeEntropy.ValueInt64(), plan.RefreshTokenLength.ValueInt64(), plan.RefreshRollingInterval.ValueInt64())
 	err := addOptionalOauthAuthServerSettingsFields(ctx, createOauthAuthServerSettings, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Auth Server Settings", err.Error())
@@ -810,7 +823,7 @@ func (r *oauthAuthServerSettingsResource) Update(ctx context.Context, req resour
 
 	// Get the current state to see how any attributes are changing
 	updateOauthAuthServerSettings := r.apiClient.OauthAuthServerSettingsAPI.UpdateAuthorizationServerSettings(config.AuthContext(ctx, r.providerConfig))
-	createUpdateRequest := client.NewAuthorizationServerSettings(plan.DefaultScopeDescription.ValueString(), plan.AuthorizationCodeTimeout.ValueInt64(), plan.AuthorizationCodeEntropy.ValueInt64(), plan.RefreshTokenLength.ValueInt64(), plan.RefreshRollingInterval.ValueInt64(), plan.RegisteredAuthorizationPath.ValueString(), plan.PendingAuthorizationTimeout.ValueInt64(), plan.DevicePollingInterval.ValueInt64(), plan.BypassActivationCodeConfirmation.ValueBool())
+	createUpdateRequest := client.NewAuthorizationServerSettings(plan.AuthorizationCodeTimeout.ValueInt64(), plan.AuthorizationCodeEntropy.ValueInt64(), plan.RefreshTokenLength.ValueInt64(), plan.RefreshRollingInterval.ValueInt64())
 	err := addOptionalOauthAuthServerSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Auth Server Settings", err.Error())
