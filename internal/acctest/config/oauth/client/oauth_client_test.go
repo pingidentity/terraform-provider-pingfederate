@@ -77,6 +77,7 @@ func TestAccOauthClient(t *testing.T) {
 		grantTypes:                []string{"DEVICE_CODE"},
 		includeOptionalAttributes: false,
 		includeExtendedParameters: false,
+		logoUrl:                   pointers.String(""),
 	}
 
 	updatedResourceModel := oauthClientResourceModel{

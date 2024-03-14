@@ -1,7 +1,7 @@
 # v0.8.0 (Unreleased)
 ### BUG FIXES
 * `pingfederate_oauth_auth_server_settings` resource, removed unnecessary requirement for `bypass_activation_code_confirmation`, `default_scope_description`, `device_polling_interval`, `pending_authorization_timeout`, `registered_authorization_path` properties([#216](https://github.com/pingidentity/terraform-provider-pingfederate/pull/216))
-* `pingfederate_oauth_client` resource, Provider produced inconsistent result after apply error when applying empty `extended_parameters` map value, require `values` property within to match product behavior ([#204](https://github.com/pingidentity/terraform-provider-pingfederate/pull/204))([#214](https://github.com/pingidentity/terraform-provider-pingfederate/pull/214))
+* `pingfederate_oauth_client` resource, "Provider produced inconsistent result after apply" error when applying empty `extended_parameters` map value, require `values` property within to match product behavior. Fixed `logo_url` "Invalid URL Format" when empty string supplied. ([#204](https://github.com/pingidentity/terraform-provider-pingfederate/pull/204))([#214](https://github.com/pingidentity/terraform-provider-pingfederate/pull/214))([#217](https://github.com/pingidentity/terraform-provider-pingfederate/pull/217))
 
 # v0.7.1 February 29th, 2024
 ### BUG FIXES
