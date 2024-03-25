@@ -45,8 +45,9 @@ var (
 		"ping_access_logout_capable":                  types.BoolValue(false),
 		"logout_uris":                                 types.SetNull(types.StringType),
 		"pairwise_identifier_user_type":               types.BoolValue(false),
-		"logout_mode":                                 types.StringUnknown(),
-		"back_channel_logout_uri":                     types.StringUnknown(),
+		"sector_identifier_uri":                       types.StringNull(),
+		"logout_mode":                                 types.StringNull(),
+		"back_channel_logout_uri":                     types.StringNull(),
 		"post_logout_redirect_uris":                   types.SetNull(types.StringType),
 	}
 

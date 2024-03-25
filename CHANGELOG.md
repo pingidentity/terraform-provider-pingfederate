@@ -1,3 +1,11 @@
+# v0.9.0 (Unreleased)
+#### BUG FIXES
+* `pingfederate_oauth_client` resource has the following bugs resolved ([#221](https://github.com/pingidentity/terraform-provider-pingfederate/pull/221)):
+  - `client_id` now correctly forces a replacement of the resource. Previously if the resource was created, then the `client_id` value was changed, would result in `"Error deleting client. Client <client_id> not found"}`
+  - `Error: client_auth.secret cannot be empty when "CLIENT_CREDENTIALS" is included in grant_types.` when supplying sensitive attribute
+  - `When applying changes to pingfederate_oauth_client.login, provider "provider[\"registry.terraform.io/pingidentity/pingfederate\"]" produced an unexpected new value: .restrict_scopes: was cty.False, but now cty.True.`
+  - `.oidc_policy.sector_identifier_uri: was cty.StringVal(""), but now null.` and other string values within `oidc_policy` no longer produce this error
+
 # v0.8.0 March 14th, 2024
 ### BUG FIXES
 * `pingfederate_oauth_access_token_mapping` resource, resolved "produced an unexpected new value: .attribute_contract_fulfillment["username"].value: was null, but now cty.StringVal("")" error([#215](https://github.com/pingidentity/terraform-provider-pingfederate/pull/215))
