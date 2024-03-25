@@ -1050,7 +1050,7 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		}
 	}
 
-	if plan.AllowAuthenticationApiInit.ValueBool() && !internaltypes.IsDefined(plan.RestrictScopes) {
+	if plan.AllowAuthenticationApiInit.ValueBool() && plan.RestrictScopes.IsUnknown() {
 		plan.RestrictScopes = types.BoolValue(true)
 		planModified = true
 	}
@@ -1170,9 +1170,11 @@ func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client
 	addRequest.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm = plan.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm.ValueStringPointer()
 	addRequest.RequireDpop = plan.RequireDpop.ValueBoolPointer()
 	addRequest.RestrictScopes = plan.RestrictScopes.ValueBoolPointer()
-	var slice []string
-	plan.RestrictedScopes.ElementsAs(ctx, &slice, false)
-	addRequest.RestrictedScopes = slice
+
+	// addRequest.RestrictedScopes
+	var restrictedScopes []string
+	plan.RestrictedScopes.ElementsAs(ctx, &restrictedScopes, false)
+	addRequest.RestrictedScopes = restrictedScopes
 
 	if internaltypes.IsDefined(plan.ExclusiveScopes) {
 		var slice []string
