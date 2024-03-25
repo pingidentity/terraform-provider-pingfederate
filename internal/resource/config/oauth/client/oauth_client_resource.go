@@ -495,6 +495,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 					"secret": schema.StringAttribute{
 						Description: "Client secret for Basic Authentication. To update the client secret, specify the plaintext value in this field. This field will not be populated for GET requests.",
 						Optional:    true,
+						Sensitive:   true,
 					},
 					"secondary_secrets": schema.SetNestedAttribute{
 						Description: "The list of secondary client secrets that are temporarily retained.",
@@ -506,6 +507,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 								"secret": schema.StringAttribute{
 									Description: "Secondary client secret for Basic Authentication. To update the secondary client secret, specify the plaintext value in this field. This field will not be populated for GET requests.",
 									Required:    true,
+									Sensitive:   true,
 								},
 								"expiry_time": schema.StringAttribute{
 									Description: "The expiry time of the secondary secret.",
@@ -892,8 +894,12 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 		if grantTypeVal == "CLIENT_CREDENTIALS" {
 			if clientAuthDefined {
 				clientAuthType := clientAuthAttributes["type"].(types.String).ValueString()
+				clientAuthSecret := clientAuthAttributes["secret"].(types.String)
 				if clientAuthType != "NONE" && clientAuthType != "SECRET" {
 					resp.Diagnostics.AddError("client_auth.type must be set to \"SECRET\" when \"CLIENT_CREDENTIALS\" is included in grant_types.", "")
+				}
+				if clientAuthSecret.IsNull() || (!clientAuthSecret.IsUnknown() && clientAuthSecret.ValueString() == "") {
+					resp.Diagnostics.AddError("client_auth.secret cannot be empty when \"CLIENT_CREDENTIALS\" is included in grant_types.", "")
 				}
 			} else if !clientAuthDefined {
 				resp.Diagnostics.AddError("client_auth must be defined when \"CLIENT_CREDENTIALS\" is included in grant_types.", "")
@@ -1044,7 +1050,7 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		}
 	}
 
-	if plan.AllowAuthenticationApiInit.ValueBool() && internaltypes.IsDefined(plan.RestrictScopes) && !plan.RestrictScopes.ValueBool() {
+	if plan.AllowAuthenticationApiInit.ValueBool() && !internaltypes.IsDefined(plan.RestrictScopes) {
 		plan.RestrictScopes = types.BoolValue(true)
 		planModified = true
 	}
@@ -1164,6 +1170,9 @@ func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client
 	addRequest.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm = plan.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm.ValueStringPointer()
 	addRequest.RequireDpop = plan.RequireDpop.ValueBoolPointer()
 	addRequest.RestrictScopes = plan.RestrictScopes.ValueBoolPointer()
+	var slice []string
+	plan.RestrictedScopes.ElementsAs(ctx, &slice, false)
+	addRequest.RestrictedScopes = slice
 
 	if internaltypes.IsDefined(plan.ExclusiveScopes) {
 		var slice []string
@@ -1189,12 +1198,6 @@ func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client
 		var slice []string
 		plan.PersistentGrantReuseGrantTypes.ElementsAs(ctx, &slice, false)
 		addRequest.PersistentGrantReuseGrantTypes = slice
-	}
-
-	if *plan.RestrictScopes.ValueBoolPointer() && internaltypes.IsDefined(plan.RestrictedScopes) {
-		var slice []string
-		plan.RestrictedScopes.ElementsAs(ctx, &slice, false)
-		addRequest.RestrictedScopes = slice
 	}
 
 	if internaltypes.IsDefined(plan.AuthorizationDetailTypes) {
