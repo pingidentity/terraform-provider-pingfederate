@@ -68,6 +68,9 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 			"client_id": schema.StringAttribute{
 				Description: "A unique identifier the client provides to the Resource Server to identify itself. This identifier is included with every request the client makes. For PUT requests, this field is optional and it will be overridden by the 'id' parameter of the PUT request.",
 				Required:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"enabled": schema.BoolAttribute{
 				Description: "Specifies whether the client is enabled. The default value is true.",
@@ -479,7 +482,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Default:     objectdefault.StaticValue(clientAuthDefaultObj),
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{
-						Description: "Client authentication type. The required field for type SECRET is secret.	The required fields for type CERTIFICATE are clientCertIssuerDn and clientCertSubjectDn. The required field for type PRIVATE_KEY_JWT is: either jwks or jwksUrl.",
+						Description: "Client authentication type. The required field for type SECRET is secret.	The required fields for type CERTIFICATE are client_cert_issuer_dn and client_cert_subject_dn. The required field for type PRIVATE_KEY_JWT is: either jwks or jwks_url.",
 						Optional:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOf("NONE",
@@ -492,6 +495,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 					"secret": schema.StringAttribute{
 						Description: "Client secret for Basic Authentication. To update the client secret, specify the plaintext value in this field. This field will not be populated for GET requests.",
 						Optional:    true,
+						Sensitive:   true,
 					},
 					"secondary_secrets": schema.SetNestedAttribute{
 						Description: "The list of secondary client secrets that are temporarily retained.",
@@ -503,6 +507,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 								"secret": schema.StringAttribute{
 									Description: "Secondary client secret for Basic Authentication. To update the secondary client secret, specify the plaintext value in this field. This field will not be populated for GET requests.",
 									Required:    true,
+									Sensitive:   true,
 								},
 								"expiry_time": schema.StringAttribute{
 									Description: "The expiry time of the secondary secret.",
@@ -554,11 +559,11 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"jwks_url": schema.StringAttribute{
-						Description: "JSON Web Key Set (JWKS) URL of the OAuth client. Either 'jwks' or 'jwksUrl' must be provided if private key JWT client authentication or signed requests is enabled. If the client signs its JWTs using an RSASSA-PSS signing algorithm, PingFederate must either use Java 11 or be integrated with a hardware security module (HSM) to process the digital signatures.",
+						Description: "JSON Web Key Set (JWKS) URL of the OAuth client. Either 'jwks' or 'jwks_url' must be provided if private key JWT client authentication or signed requests is enabled. If the client signs its JWTs using an RSASSA-PSS signing algorithm, PingFederate must either use Java 11 or be integrated with a hardware security module (HSM) to process the digital signatures.",
 						Optional:    true,
 					},
 					"jwks": schema.StringAttribute{
-						Description: "JSON Web Key Set (JWKS) document of the OAuth client. Either 'jwks' or 'jwksUrl' must be provided if private key JWT client authentication or signed requests is enabled. If the client signs its JWTs using an RSASSA-PSS signing algorithm, PingFederate must either use Java 11 or be integrated with a hardware security module (HSM) to process the digital signatures.",
+						Description: "JSON Web Key Set (JWKS) document of the OAuth client. Either 'jwks' or 'jwks_url' must be provided if private key JWT client authentication or signed requests is enabled. If the client signs its JWTs using an RSASSA-PSS signing algorithm, PingFederate must either use Java 11 or be integrated with a hardware security module (HSM) to process the digital signatures.",
 						Optional:    true,
 					},
 				},
@@ -589,7 +594,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"user_authorization_url_override": schema.StringAttribute{
-				Description: "The URL used as 'verification_url' and 'verification_url_complete' values in a Device Authorization request. This property overrides the 'userAuthorizationUrl' value present in Authorization Server Settings.",
+				Description: "The URL used as 'verification_url' and 'verification_url_complete' values in a Device Authorization request. This property overrides the 'user_authorization_url' value present in Authorization Server Settings.",
 				Optional:    true,
 			},
 			"pending_authorization_timeout_override": schema.Int64Attribute{
@@ -889,11 +894,11 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 		if grantTypeVal == "CLIENT_CREDENTIALS" {
 			if clientAuthDefined {
 				clientAuthType := clientAuthAttributes["type"].(types.String).ValueString()
-				clientAuthSecret := clientAuthAttributes["secret"].(types.String).ValueString()
+				clientAuthSecret := clientAuthAttributes["secret"].(types.String)
 				if clientAuthType != "NONE" && clientAuthType != "SECRET" {
 					resp.Diagnostics.AddError("client_auth.type must be set to \"SECRET\" when \"CLIENT_CREDENTIALS\" is included in grant_types.", "")
 				}
-				if clientAuthSecret == "" {
+				if clientAuthSecret.IsNull() || (!clientAuthSecret.IsUnknown() && clientAuthSecret.ValueString() == "") {
 					resp.Diagnostics.AddError("client_auth.secret cannot be empty when \"CLIENT_CREDENTIALS\" is included in grant_types.", "")
 				}
 			} else if !clientAuthDefined {
@@ -946,6 +951,10 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 	}
 
 	// Restrict Scopes Validation
+	if internaltypes.IsDefined(model.RestrictScopes) && !model.RestrictScopes.ValueBool() && model.AllowAuthenticationApiInit.ValueBool() {
+		resp.Diagnostics.AddError("restrict_scopes cannot be configured to false when allow_authentication_api_init is set to true.", "")
+	}
+
 	if len(model.RestrictedScopes.Elements()) > 0 && !model.RestrictScopes.ValueBool() {
 		resp.Diagnostics.AddError("restrict_scopes must be set to true to configure restricted_scopes.", "")
 	}
@@ -1039,6 +1048,11 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 			version.AddUnsupportedAttributeError("oidc_policy.post_logout_redirect_uris",
 				r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
 		}
+	}
+
+	if plan.AllowAuthenticationApiInit.ValueBool() && plan.RestrictScopes.IsUnknown() {
+		plan.RestrictScopes = types.BoolValue(true)
+		planModified = true
 	}
 
 	// If the new plan doesn't match the state, invalidate any last-changed time values
@@ -1155,6 +1169,12 @@ func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client
 	addRequest.JwtSecuredAuthorizationResponseModeEncryptionAlgorithm = plan.JwtSecuredAuthorizationResponseModeEncryptionAlgorithm.ValueStringPointer()
 	addRequest.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm = plan.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm.ValueStringPointer()
 	addRequest.RequireDpop = plan.RequireDpop.ValueBoolPointer()
+	addRequest.RestrictScopes = plan.RestrictScopes.ValueBoolPointer()
+
+	// addRequest.RestrictedScopes
+	var restrictedScopes []string
+	plan.RestrictedScopes.ElementsAs(ctx, &restrictedScopes, false)
+	addRequest.RestrictedScopes = restrictedScopes
 
 	if internaltypes.IsDefined(plan.ExclusiveScopes) {
 		var slice []string
@@ -1182,15 +1202,6 @@ func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client
 		addRequest.PersistentGrantReuseGrantTypes = slice
 	}
 
-	if internaltypes.IsDefined(plan.RestrictScopes) {
-		addRequest.RestrictScopes = plan.RestrictScopes.ValueBoolPointer()
-		if *plan.RestrictScopes.ValueBoolPointer() && internaltypes.IsDefined(plan.RestrictedScopes) {
-			var slice []string
-			plan.RestrictedScopes.ElementsAs(ctx, &slice, false)
-			addRequest.RestrictedScopes = slice
-		}
-	}
-
 	if internaltypes.IsDefined(plan.AuthorizationDetailTypes) {
 		var slice []string
 		plan.AuthorizationDetailTypes.ElementsAs(ctx, &slice, false)
@@ -1204,6 +1215,7 @@ func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client
 	}
 
 	if internaltypes.IsDefined(plan.OidcPolicy) {
+
 		addRequest.OidcPolicy = &client.ClientOIDCPolicy{}
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.OidcPolicy, true)), addRequest.OidcPolicy)
 		if err != nil {

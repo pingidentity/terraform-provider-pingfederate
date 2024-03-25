@@ -90,7 +90,7 @@ func TestAccOauthClient(t *testing.T) {
 		description:                        pointers.String("updatedDescription"),
 		logoUrl:                            pointers.String("https://example.com"),
 		redirectUris:                       []string{"https://example.com"},
-		allowAuthenticationApiInit:         pointers.Bool(false),
+		allowAuthenticationApiInit:         pointers.Bool(true),
 		requirePushedAuthorizationRequests: pointers.Bool(false),
 		requireJwtSecuredAuthorizationResponseMode: pointers.Bool(false),
 		restrictScopes:                      pointers.Bool(true),

@@ -247,7 +247,7 @@ PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384
 PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512
 A null value will represent the default algorithm which is RS256.
 RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
-- `user_authorization_url_override` (String) The URL used as 'verification_url' and 'verification_url_complete' values in a Device Authorization request. This property overrides the 'userAuthorizationUrl' value present in Authorization Server Settings.
+- `user_authorization_url_override` (String) The URL used as 'verification_url' and 'verification_url_complete' values in a Device Authorization request. This property overrides the 'user_authorization_url' value present in Authorization Server Settings.
 - `validate_using_all_eligible_atms` (Boolean) Validates token using all eligible access token managers for the client. This setting is ignored if 'restrictToDefaultAccessTokenManager' is set to true.
 
 ### Read-Only
@@ -266,7 +266,7 @@ Optional:
 - `client_cert_subject_dn` (String) Client TLS Certificate Subject DN.
 - `enforce_replay_prevention` (Boolean) Enforce replay prevention on JSON Web Tokens. This field is applicable only for Private Key JWT Client and Client Secret JWT Authentication.
 - `secondary_secrets` (Attributes Set) The list of secondary client secrets that are temporarily retained. (see [below for nested schema](#nestedatt--client_auth--secondary_secrets))
-- `secret` (String) Client secret for Basic Authentication. To update the client secret, specify the plaintext value in this field. This field will not be populated for GET requests.
+- `secret` (String, Sensitive) Client secret for Basic Authentication. To update the client secret, specify the plaintext value in this field. This field will not be populated for GET requests.
 - `token_endpoint_auth_signing_algorithm` (String) The JSON Web Signature [JWS] algorithm that must be used to sign the JSON Web Tokens. This field is applicable only for Private Key JWT and Client Secret JWT Client Authentication. All asymmetric signing algorithms are allowed for Private Key JWT if value is not present. All symmetric signing algorithms are allowed for Client Secret JWT if value is not present
 RS256 - RSA using SHA-256
 RS384 - RSA using SHA-384
@@ -281,7 +281,7 @@ RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.
 HS256 - HMAC using SHA-256
 HS384 - HMAC using SHA-384
 HS512 - HMAC using SHA-512.
-- `type` (String) Client authentication type. The required field for type SECRET is secret.	The required fields for type CERTIFICATE are clientCertIssuerDn and clientCertSubjectDn. The required field for type PRIVATE_KEY_JWT is: either jwks or jwksUrl.
+- `type` (String) Client authentication type. The required field for type SECRET is secret.	The required fields for type CERTIFICATE are client_cert_issuer_dn and client_cert_subject_dn. The required field for type PRIVATE_KEY_JWT is: either jwks or jwks_url.
 
 <a id="nestedatt--client_auth--secondary_secrets"></a>
 ### Nested Schema for `client_auth.secondary_secrets`
@@ -289,7 +289,7 @@ HS512 - HMAC using SHA-512.
 Required:
 
 - `expiry_time` (String) The expiry time of the secondary secret.
-- `secret` (String) Secondary client secret for Basic Authentication. To update the secondary client secret, specify the plaintext value in this field. This field will not be populated for GET requests.
+- `secret` (String, Sensitive) Secondary client secret for Basic Authentication. To update the secondary client secret, specify the plaintext value in this field. This field will not be populated for GET requests.
 
 
 
@@ -318,8 +318,8 @@ Required:
 
 Optional:
 
-- `jwks` (String) JSON Web Key Set (JWKS) document of the OAuth client. Either 'jwks' or 'jwksUrl' must be provided if private key JWT client authentication or signed requests is enabled. If the client signs its JWTs using an RSASSA-PSS signing algorithm, PingFederate must either use Java 11 or be integrated with a hardware security module (HSM) to process the digital signatures.
-- `jwks_url` (String) JSON Web Key Set (JWKS) URL of the OAuth client. Either 'jwks' or 'jwksUrl' must be provided if private key JWT client authentication or signed requests is enabled. If the client signs its JWTs using an RSASSA-PSS signing algorithm, PingFederate must either use Java 11 or be integrated with a hardware security module (HSM) to process the digital signatures.
+- `jwks` (String) JSON Web Key Set (JWKS) document of the OAuth client. Either 'jwks' or 'jwks_url' must be provided if private key JWT client authentication or signed requests is enabled. If the client signs its JWTs using an RSASSA-PSS signing algorithm, PingFederate must either use Java 11 or be integrated with a hardware security module (HSM) to process the digital signatures.
+- `jwks_url` (String) JSON Web Key Set (JWKS) URL of the OAuth client. Either 'jwks' or 'jwks_url' must be provided if private key JWT client authentication or signed requests is enabled. If the client signs its JWTs using an RSASSA-PSS signing algorithm, PingFederate must either use Java 11 or be integrated with a hardware security module (HSM) to process the digital signatures.
 
 
 <a id="nestedatt--oidc_policy"></a>

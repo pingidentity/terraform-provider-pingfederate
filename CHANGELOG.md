@@ -1,3 +1,11 @@
+# v0.9.0 (Unreleased)
+#### BUG FIXES
+* `pingfederate_oauth_client` resource has the following bugs resolved ([#221](https://github.com/pingidentity/terraform-provider-pingfederate/pull/221)):
+  - `client_id` now correctly forces the resource to be replaced when value is modified after creation.
+  - `client_auth.secret` corrected config validation when using a variable value
+  - `restrict_scopes` no longer returns an incorrect value error after apply
+  - `oidc_policy` child string attribute values no longer return incorrect value errors after apply
+
 # v0.8.0 March 14th, 2024
 ### BUG FIXES
 * `pingfederate_oauth_access_token_mapping` resource, resolved "produced an unexpected new value: .attribute_contract_fulfillment["username"].value: was null, but now cty.StringVal("")" error([#215](https://github.com/pingidentity/terraform-provider-pingfederate/pull/215))
