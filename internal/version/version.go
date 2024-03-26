@@ -103,25 +103,26 @@ func Parse(versionString string) (SupportedVersion, diag.Diagnostics) {
 		}
 		// The major-minor version is valid, only the patch is invalid. Warn but do not fail, assume the lastest patch version
 		sortedVersions := getSortedVersions()
-		originalVersionString := versionString
+		versionIndex := -1
 		switch majorMinorVersionString {
 		case "11.2.0":
 			// Use the first version prior to 11.3.0
-			nextIndex := getSortedVersionIndex(PingFederate1130)
-			versionString = string(sortedVersions[nextIndex-1])
+			versionIndex = getSortedVersionIndex(PingFederate1130) - 1
 		case "11.3.0":
 			// Use the first version prior to 12.0.0
-			nextIndex := getSortedVersionIndex(PingFederate1200)
-			versionString = string(sortedVersions[nextIndex-1])
+			versionIndex = getSortedVersionIndex(PingFederate1200) - 1
 		case "12.0.0":
 			// This is the latest major-minor version, so just use the latest patch version available
-			versionString = string(sortedVersions[len(sortedVersions)-1])
-		default:
+			versionIndex = len(sortedVersions) - 1
+		}
+		if versionIndex < 0 || versionIndex >= len(sortedVersions) {
 			// This should never happen
 			diags.AddError("Unexpected failure determining major-minor PingFederate version", "")
 			return "", diags
 		}
-		diags.AddWarning("Unrecognized PingFederate version '"+originalVersionString+"'", "Assuming the latest patch version available: '"+versionString+"'")
+		assumedVersion := string(sortedVersions[versionIndex])
+		diags.AddWarning("Unrecognized PingFederate version '"+versionString+"'", "Assuming the latest patch version available: '"+assumedVersion+"'")
+		versionString = assumedVersion
 	}
 	return SupportedVersion(versionString), diags
 }
