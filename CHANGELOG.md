@@ -1,6 +1,6 @@
 # v0.9.0 (Unreleased)
 ### FEATURES
-* Resources no longer incorrectly require a `<resource_type>_id` are listed here:
+* Resources that no longer incorrectly require a `<resource_type>_id` are listed here:
   - `pingfederate_authentication_api_application`
   - `pingfederate_authentication_policies_fragment`
   - `pingfederate_authentication_policy_contract`

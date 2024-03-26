@@ -29,6 +29,7 @@ func ToSchemaCustomId(s *schema.Schema, idName string, required, characterLimit 
 	}
 	customId.Required = required
 	customId.Optional = !required
+	customId.Computed = !required
 	if characterLimit {
 		customId.Validators = []validator.String{
 			configvalidators.ValidChars(),
