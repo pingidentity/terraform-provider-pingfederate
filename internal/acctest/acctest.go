@@ -37,7 +37,7 @@ func ConfigurationPreCheck(t *testing.T) {
 	versionVar := os.Getenv("PINGFEDERATE_PROVIDER_PRODUCT_VERSION")
 	_, diags := version.Parse(versionVar)
 	if diags.HasError() {
-		t.Errorf("The '%s' value for the 'PINGFEDERATE_PROVIDER_PRODUCT_VERSION' environment variable is not a valid version: %s", versionVar)
+		t.Errorf("The '%s' value for the 'PINGFEDERATE_PROVIDER_PRODUCT_VERSION' environment variable is not a valid version", versionVar)
 		errorFound = true
 	}
 
