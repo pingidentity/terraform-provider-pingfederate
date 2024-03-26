@@ -62,6 +62,17 @@ func getSortedVersions() []SupportedVersion {
 	}
 }
 
+func getSortedVersionsMessage() string {
+	message := "Supported versions are: "
+	for i, version := range getSortedVersions() {
+		message += string(version)
+		if i < len(getSortedVersions())-1 {
+			message += ", "
+		}
+	}
+	return message
+}
+
 // Compare two PingFederate versions. Returns a negative number if the first argument is less than the second,
 // zero if they are equal, and a positive number if the first argument is greater than the second
 func Compare(version1, version2 SupportedVersion) (int, error) {
@@ -98,7 +109,7 @@ func Parse(versionString string) (SupportedVersion, diag.Diagnostics) {
 		// Check if the major-minor version is valid
 		majorMinorVersionString := versionDigits[0] + "." + versionDigits[1] + ".0"
 		if !IsValid(majorMinorVersionString) {
-			diags.AddError("unsupported PingFederate version '"+versionString+"'", "")
+			diags.AddError("unsupported PingFederate version '"+versionString+"'", getSortedVersionsMessage())
 			return "", diags
 		}
 		// The major-minor version is valid, only the patch is invalid. Warn but do not fail, assume the lastest patch version
