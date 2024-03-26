@@ -77,25 +77,53 @@ func Compare(version1, version2 SupportedVersion) (int, error) {
 	return version1Index - version2Index, nil
 }
 
-func Parse(versionString string) (SupportedVersion, error) {
+func Parse(versionString string) (SupportedVersion, diag.Diagnostics) {
+	var diags diag.Diagnostics
 	if len(versionString) == 0 {
-		return "", errors.New("failed to parse PingFederate version: empty version string")
+		diags.AddError("failed to parse PingFederate version", "empty version string")
+		return "", diags
 	}
 
-	var err error
 	versionDigits := strings.Split(versionString, ".")
 	// Expect a version like "x.x" or "x.x.x"
 	// If only two digits are supplied, the last one will be assumed to be "0"
 	if len(versionDigits) != 2 && len(versionDigits) != 3 {
-		return "", errors.New("failed to parse PingFederate version '" + versionString + "', Expected either two digits (e.g. '11.3') or three digits (e.g. '11.3.4')")
+		diags.AddError("failed to parse PingFederate version '"+versionString+"'", "Expected either two digits (e.g. '11.3') or three digits (e.g. '11.3.4')")
+		return "", diags
 	}
 	if len(versionDigits) == 2 {
 		versionString += ".0"
 	}
 	if !IsValid(versionString) {
-		err = errors.New("unsupported PingFederate version: " + versionString)
+		// Check if the major-minor version is valid
+		majorMinorVersionString := versionDigits[0] + "." + versionDigits[1] + ".0"
+		if !IsValid(majorMinorVersionString) {
+			diags.AddError("unsupported PingFederate version '"+versionString+"'", "")
+			return "", diags
+		}
+		// The major-minor version is valid, only the patch is invalid. Warn but do not fail, assume the lastest patch version
+		sortedVersions := getSortedVersions()
+		originalVersionString := versionString
+		switch majorMinorVersionString {
+		case "11.2.0":
+			// Use the first version prior to 11.3.0
+			nextIndex := getSortedVersionIndex(PingFederate1130)
+			versionString = string(sortedVersions[nextIndex-1])
+		case "11.3.0":
+			// Use the first version prior to 12.0.0
+			nextIndex := getSortedVersionIndex(PingFederate1200)
+			versionString = string(sortedVersions[nextIndex-1])
+		case "12.0.0":
+			// This is the latest major-minor version, so just use the latest patch version available
+			versionString = string(sortedVersions[len(sortedVersions)-1])
+		default:
+			// This should never happen
+			diags.AddError("Unexpected failure determining major-minor PingFederate version", "")
+			return "", diags
+		}
+		diags.AddWarning("Unrecognized PingFederate version '"+originalVersionString+"'", "Assuming the latest patch version available: '"+versionString+"'")
 	}
-	return SupportedVersion(versionString), err
+	return SupportedVersion(versionString), diags
 }
 
 func AddUnsupportedAttributeError(attr string, actualVersion, requiredVersion SupportedVersion, diags *diag.Diagnostics) {
