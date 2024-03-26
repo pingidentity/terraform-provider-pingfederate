@@ -460,15 +460,13 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 	id.ToSchemaCustomId(&schema,
 		"profile_id",
 		true,
+		false,
 		"The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-].")
 	resp.Schema = schema
 }
 
 func addOptionalLocalIdentityIdentityProfileFields(ctx context.Context, addRequest *client.LocalIdentityProfile, plan localIdentityIdentityProfileModel) error {
-
-	if internaltypes.IsDefined(plan.ProfileId) {
-		addRequest.Id = plan.ProfileId.ValueStringPointer()
-	}
+	addRequest.Id = plan.ProfileId.ValueStringPointer()
 
 	if internaltypes.IsDefined(plan.Name) {
 		addRequest.Name = plan.Name.ValueString()

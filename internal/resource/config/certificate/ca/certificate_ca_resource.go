@@ -71,15 +71,14 @@ func (r *certificateCAResource) Schema(ctx context.Context, req resource.SchemaR
 	id.ToSchemaCustomId(&schema,
 		"ca_id",
 		false,
+		false,
 		"The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-].")
 	resp.Schema = schema
 }
 
 func addOptionalCaCertsFields(ctx context.Context, addRequest *client.X509File, plan certificatesResourceModel) error {
 	// Empty strings are treated as equivalent to null
-	if internaltypes.IsDefined(plan.CaId) {
-		addRequest.Id = plan.CaId.ValueStringPointer()
-	}
+	addRequest.Id = plan.CaId.ValueStringPointer()
 	if internaltypes.IsDefined(plan.CryptoProvider) {
 		addRequest.CryptoProvider = plan.CryptoProvider.ValueStringPointer()
 	}

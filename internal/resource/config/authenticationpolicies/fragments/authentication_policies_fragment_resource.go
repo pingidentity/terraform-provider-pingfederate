@@ -70,7 +70,7 @@ func (r *authenticationPoliciesFragmentResource) Schema(ctx context.Context, req
 		},
 	}
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, "fragment_id", false, "The authentication policy fragment ID. ID is unique.")
+	id.ToSchemaCustomId(&schema, "fragment_id", false, false, "The authentication policy fragment ID. ID is unique.")
 	resp.Schema = schema
 }
 
@@ -110,7 +110,6 @@ func readAuthenticationPoliciesFragmentResponse(ctx context.Context, r *client.A
 }
 
 func addOptionalAuthenticationPoliciesFragmentFields(ctx context.Context, addRequest *client.AuthenticationPolicyFragment, plan authenticationPoliciesFragmentModel) error {
-	// We require fragment_id in the provider, but to PF it is optional
 	addRequest.Id = plan.FragmentId.ValueStringPointer()
 	addRequest.Name = plan.Name.ValueStringPointer()
 	addRequest.Description = plan.Description.ValueStringPointer()

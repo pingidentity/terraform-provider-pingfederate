@@ -117,13 +117,13 @@ resource "pingfederate_authentication_policies_fragment" "policyFragment" {
 
 ### Required
 
-- `fragment_id` (String) The authentication policy fragment ID. ID is unique.
 - `name` (String) The authentication policy fragment name. Name is unique.
 - `root_node` (Attributes) The beginning action for the authentication fragment policy. (see [below for nested schema](#nestedatt--root_node))
 
 ### Optional
 
 - `description` (String) A description for the authentication policy fragment.
+- `fragment_id` (String) The authentication policy fragment ID. ID is unique.
 - `inputs` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--inputs))
 - `outputs` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--outputs))
 
