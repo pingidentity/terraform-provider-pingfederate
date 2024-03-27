@@ -13,8 +13,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const certificateId = "test"
-
+var stateId string
 var fileData = os.Getenv("PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_1")
 var fileData2 = os.Getenv("PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_2")
 
@@ -27,12 +26,14 @@ type certificatesResourceModel struct {
 func TestAccCertificate(t *testing.T) {
 	resourceName := "myCertificateCa"
 	initialResourceModel := certificatesResourceModel{
-		id:       certificateId,
 		fileData: fileData,
 	}
 	updatedResourceModel := certificatesResourceModel{
-		id:       certificateId,
 		fileData: fileData2,
+	}
+	minimalResourceModel := certificatesResourceModel{
+		fileData: fileData,
+		id:       "mycertificateca",
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -62,7 +63,6 @@ func TestAccCertificate(t *testing.T) {
 				// Test importing the resource
 				Config:            testAccCertificate(resourceName, initialResourceModel),
 				ResourceName:      "pingfederate_certificate_ca." + resourceName,
-				ImportStateId:     certificateId,
 				ImportState:       true,
 				ImportStateVerify: false,
 			},
@@ -70,7 +70,7 @@ func TestAccCertificate(t *testing.T) {
 				PreConfig: func() {
 					testClient := acctest.TestClient()
 					ctx := acctest.TestBasicAuthContext()
-					_, err := testClient.CertificatesCaAPI.DeleteTrustedCA(ctx, updatedResourceModel.id).Execute()
+					_, err := testClient.CertificatesCaAPI.DeleteTrustedCA(ctx, stateId).Execute()
 					if err != nil {
 						t.Fatalf("Failed to delete config: %v", err)
 					}
@@ -79,8 +79,8 @@ func TestAccCertificate(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccCertificate(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedCertificateAttributes(initialResourceModel),
+				Config: testAccCertificate(resourceName, minimalResourceModel),
+				Check:  testAccCheckExpectedCertificateAttributes(minimalResourceModel),
 			},
 		},
 	})
@@ -90,14 +90,14 @@ func testAccCertificate(resourceName string, resourceModel certificatesResourceM
 	// Not testing with crypto_provider attribute since it requires setting up an HSM
 	return fmt.Sprintf(`
 resource "pingfederate_certificate_ca" "%[1]s" {
-  ca_id     = "%[2]s"
+  %[2]s
   file_data = "%[3]s"
 }
 
 data "pingfederate_certificate_ca" "%[1]s" {
   ca_id = pingfederate_certificate_ca.%[1]s.ca_id
 }`, resourceName,
-		resourceModel.id,
+		acctest.AddIdHcl("ca_id", resourceModel.id),
 		fileData,
 	)
 }
@@ -105,19 +105,15 @@ data "pingfederate_certificate_ca" "%[1]s" {
 // Test that the expected attributes are set on the PingFederate server
 func testAccCheckExpectedCertificateAttributes(config certificatesResourceModel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resourceType := "Certificate"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.CertificatesCaAPI.GetTrustedCert(ctx, config.id).Execute()
+		id := s.Modules[0].Resources["pingfederate_certificate_ca.myCertificateCa"].Primary.Attributes["ca_id"]
+		_, _, err := testClient.CertificatesCaAPI.GetTrustedCert(ctx, id).Execute()
 		if err != nil {
 			return err
 		}
-		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchString(resourceType, &config.id, "id",
-			config.id, *response.Id)
-		if err != nil {
-			return err
-		}
+
+		stateId = id
 		return nil
 	}
 }
@@ -126,9 +122,9 @@ func testAccCheckExpectedCertificateAttributes(config certificatesResourceModel)
 func testAccCheckCertificateDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.CertificatesCaAPI.DeleteTrustedCA(ctx, certificateId).Execute()
+	_, err := testClient.CertificatesCaAPI.DeleteTrustedCA(ctx, stateId).Execute()
 	if err == nil {
-		return acctest.ExpectedDestroyError("Certificate", certificateId)
+		return acctest.ExpectedDestroyError("Certificate", stateId)
 	}
 	return nil
 }

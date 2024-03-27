@@ -259,6 +259,13 @@ func missingAttributeErrorSingletonResource(resourceType, attributeName, expecte
 	return fmt.Errorf("missing %s attribute for %s. expected '%s'", attributeName, resourceType, expected)
 }
 
+func AddIdHcl(idKey, id string) string {
+	if id != "" {
+		return fmt.Sprintf("%s = \"%s\"", idKey, id)
+	}
+	return ""
+}
+
 // Check that the version being tested is at least the given minimum version
 var versionAtLeastResults = map[version.SupportedVersion]bool{}
 

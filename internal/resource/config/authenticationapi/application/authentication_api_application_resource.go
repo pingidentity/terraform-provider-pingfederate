@@ -87,6 +87,7 @@ func (r *authenticationApiApplicationResource) Schema(ctx context.Context, req r
 	id.ToSchemaCustomId(&schema,
 		"application_id",
 		true,
+		true,
 		"The persistent, unique ID for the Authentication API application. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
 	)
 	resp.Schema = schema
