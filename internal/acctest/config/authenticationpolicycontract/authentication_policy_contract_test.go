@@ -13,8 +13,9 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const authenticationPolicyContractId = "2"
 const coreAttr = "subject"
+
+var stateId string
 
 // Attributes to test with. Add optional properties to test here if desired.
 type authenticationPolicyContractResourceModel struct {
@@ -27,17 +28,21 @@ type authenticationPolicyContractResourceModel struct {
 func TestAccAuthenticationPolicyContract(t *testing.T) {
 	resourceName := "myAuthenticationPolicyContract"
 	initialResourceModel := authenticationPolicyContractResourceModel{
-		id:                 authenticationPolicyContractId,
 		name:               "example",
 		coreAttributes:     []string{coreAttr},
 		extendedAttributes: []string{},
 	}
 	updatedResourceModel := authenticationPolicyContractResourceModel{
-		id:             authenticationPolicyContractId,
-		name:           "example",
-		coreAttributes: []string{coreAttr},
-		// Cover strings with escaped quotes with the final extended attribute
+		name:               "example",
+		coreAttributes:     []string{coreAttr},
 		extendedAttributes: []string{"extended_attribute", "extended_attribute2", "extendedwith\\\"escaped\\\"quotes"},
+	}
+
+	minimalResourceModelWithId := authenticationPolicyContractResourceModel{
+		name:               "example",
+		coreAttributes:     []string{coreAttr},
+		extendedAttributes: []string{},
+		id:                 "myAuthenticationPolicyContract",
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -61,7 +66,6 @@ func TestAccAuthenticationPolicyContract(t *testing.T) {
 				// Test importing the resource
 				Config:            testAccAuthenticationPolicyContract(resourceName, updatedResourceModel),
 				ResourceName:      "pingfederate_authentication_policy_contract." + resourceName,
-				ImportStateId:     authenticationPolicyContractId,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -74,7 +78,7 @@ func TestAccAuthenticationPolicyContract(t *testing.T) {
 				PreConfig: func() {
 					testClient := acctest.TestClient()
 					ctx := acctest.TestBasicAuthContext()
-					_, err := testClient.AuthenticationPolicyContractsAPI.DeleteAuthenticationPolicyContract(ctx, updatedResourceModel.id).Execute()
+					_, err := testClient.AuthenticationPolicyContractsAPI.DeleteAuthenticationPolicyContract(ctx, stateId).Execute()
 					if err != nil {
 						t.Fatalf("Failed to delete config: %v", err)
 					}
@@ -84,8 +88,8 @@ func TestAccAuthenticationPolicyContract(t *testing.T) {
 			},
 			{
 				// Minimal model
-				Config: testAccAuthenticationPolicyContract(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedAuthenticationPolicyContractAttributes(initialResourceModel),
+				Config: testAccAuthenticationPolicyContract(resourceName, minimalResourceModelWithId),
+				Check:  testAccCheckExpectedAuthenticationPolicyContractAttributes(minimalResourceModelWithId),
 			},
 		},
 	})
@@ -99,7 +103,7 @@ func testAccAuthenticationPolicyContract(resourceName string, resourceModel auth
 	}
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_policy_contract" "%[1]s" {
-  contract_id     = "%[2]s"
+  %[2]s
   core_attributes = %[3]s
   name            = "%[4]s"
   %[5]s
@@ -107,7 +111,7 @@ resource "pingfederate_authentication_policy_contract" "%[1]s" {
 data "pingfederate_authentication_policy_contract" "authenticationPolicyContractExample" {
   contract_id = pingfederate_authentication_policy_contract.%[1]s.contract_id
 }`, resourceName,
-		resourceModel.id,
+		acctest.AddIdHcl("contract_id", resourceModel.id),
 		acctest.ObjectSliceOfKvStringsToTerraformString("name", resourceModel.coreAttributes),
 		resourceModel.name,
 		extendedAttrsHcl,
@@ -120,7 +124,8 @@ func testAccCheckExpectedAuthenticationPolicyContractAttributes(config authentic
 		resourceType := "AuthenticationPolicyContract"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.AuthenticationPolicyContractsAPI.GetAuthenticationPolicyContract(ctx, authenticationPolicyContractId).Execute()
+		idStateVal := s.Modules[0].Resources["pingfederate_authentication_policy_contract.myAuthenticationPolicyContract"].Primary.Attributes["id"]
+		response, _, err := testClient.AuthenticationPolicyContractsAPI.GetAuthenticationPolicyContract(ctx, idStateVal).Execute()
 		if err != nil {
 			return err
 		}
@@ -143,6 +148,7 @@ func testAccCheckExpectedAuthenticationPolicyContractAttributes(config authentic
 			return err
 		}
 
+		stateId = idStateVal
 		return nil
 	}
 }
@@ -151,9 +157,9 @@ func testAccCheckExpectedAuthenticationPolicyContractAttributes(config authentic
 func testAccCheckAuthenticationPolicyContractDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, _, err := testClient.AuthenticationPolicyContractsAPI.GetAuthenticationPolicyContract(ctx, authenticationPolicyContractId).Execute()
+	_, _, err := testClient.AuthenticationPolicyContractsAPI.GetAuthenticationPolicyContract(ctx, stateId).Execute()
 	if err == nil {
-		return acctest.ExpectedDestroyError("AuthenticationPolicyContract", authenticationPolicyContractId)
+		return acctest.ExpectedDestroyError("AuthenticationPolicyContract", stateId)
 	}
 	return nil
 }

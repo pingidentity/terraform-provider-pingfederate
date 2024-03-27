@@ -54,6 +54,7 @@ resource "pingfederate_oauth_open_id_connect_policy" "oauthOIDCPolicyExample" {
 - `attribute_contract` (Attributes) The list of attributes that will be returned to OAuth clients in response to requests received at the PingFederate UserInfo endpoint. (see [below for nested schema](#nestedatt--attribute_contract))
 - `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--attribute_mapping))
 - `name` (String) The name used for display in UI screens.
+- `policy_id` (String) The policy ID used internally.
 
 ### Optional
 
@@ -63,7 +64,6 @@ resource "pingfederate_oauth_open_id_connect_policy" "oauthOIDCPolicyExample" {
 - `include_sri_in_id_token` (Boolean) Determines whether a Session Reference Identifier is included in the ID token.
 - `include_user_info_in_id_token` (Boolean) Determines whether the User Info is always included in the ID token
 - `include_x5t_in_id_token` (Boolean) Determines whether the X.509 thumbprint header should be included in the ID Token. Supported in PF version 11.3 or later.
-- `policy_id` (String) The policy ID used internally.
 - `reissue_id_token_in_hybrid_flow` (Boolean) Determines whether a new ID Token should be returned during token request of the hybrid flow.
 - `return_id_token_on_refresh_grant` (Boolean) Determines whether an ID Token should be returned when refresh grant is requested or not.
 - `scope_attribute_mappings` (Attributes Map) The attribute scope mappings from scopes to attribute names. (see [below for nested schema](#nestedatt--scope_attribute_mappings))
