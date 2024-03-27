@@ -531,10 +531,8 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 		)
 	} else {
 		// Validate the PingFederate version
-		parsedProductVersion, err = version.Parse(productVersion)
-		if err != nil {
-			resp.Diagnostics.AddError("Invalid PingFederate version", err.Error())
-		}
+		parsedProductVersion, diags = version.Parse(productVersion)
+		resp.Diagnostics.Append(diags...)
 	}
 
 	// Optional attributes
