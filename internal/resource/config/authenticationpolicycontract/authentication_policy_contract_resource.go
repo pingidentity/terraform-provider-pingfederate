@@ -26,18 +26,17 @@ var (
 	_ resource.ResourceWithConfigure   = &authenticationPolicyContractResource{}
 	_ resource.ResourceWithImportState = &authenticationPolicyContractResource{}
 
-	objAttrType = map[string]attr.Type{
+	coreAttributesDefaultObjAttrType = map[string]attr.Type{
 		"name": types.StringType,
 	}
 
-	objValue = map[string]attr.Value{
+	coreAttributesDefaultObjAttrValue = map[string]attr.Value{
 		"name": types.StringValue("subject"),
 	}
 
-	objDefaultValue, _ = types.ObjectValue(objAttrType, objValue)
-
-	listAttrVal         = []attr.Value{objDefaultValue}
-	listDefaultValue, _ = types.ListValue(attributeElemAttrType, listAttrVal)
+	coreAttributesDefaultObjValue, _ = types.ObjectValue(coreAttributesDefaultObjAttrType, coreAttributesDefaultObjAttrValue)
+	coreAttributesDefaultListAttrVal = []attr.Value{coreAttributesDefaultObjValue}
+	coreAttributesDefaultListVal, _  = types.ListValue(attributeElemAttrType, coreAttributesDefaultListAttrVal)
 )
 
 // AuthenticationPolicyContractResource is a helper function to simplify the provider implementation.
@@ -61,7 +60,7 @@ func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req r
 				Description: "A list of read-only assertion attributes (for example, subject) that are automatically populated by PingFederate.",
 				Computed:    true,
 				Optional:    false,
-				Default:     listdefault.StaticValue(listDefaultValue),
+				Default:     listdefault.StaticValue(coreAttributesDefaultListVal),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
