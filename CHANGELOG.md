@@ -19,6 +19,7 @@
   - `pingfederate_password_credential_validator`
 
 ### BUG FIXES
+* `pingfederate_authentication_policy_contract` resource sends in required default value for `core_attributes` ([#224](https://github.com/pingidentity/terraform-provider-pingfederate/pull/224))
 * `pingfederate_oauth_client` resource has the following bugs resolved ([#221](https://github.com/pingidentity/terraform-provider-pingfederate/pull/221)):
   - `client_id` now correctly forces the resource to be replaced when value is modified after creation.
   - `client_auth.secret` corrected config validation when using a variable value
