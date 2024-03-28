@@ -429,7 +429,6 @@ func testAccLocalIdentityIdentityProfiles(resourceName string, resourceModel loc
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_policy_contract" "authenticationPolicyContractsExample" {
   contract_id         = "%[2]s"
-  core_attributes     = [{ name = "subject" }]
   extended_attributes = [{ name = "extended_attribute" }, { name = "extended_attribute2" }]
   name                = "%[2]s"
 }

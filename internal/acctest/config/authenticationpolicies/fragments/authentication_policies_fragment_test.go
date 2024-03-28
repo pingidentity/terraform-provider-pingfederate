@@ -329,11 +329,6 @@ func dependencyHcl() string {
 resource "pingfederate_authentication_policy_contract" "mycontract" {
   contract_id = "fragmentVerifyReg"
   name        = "Fragment - Verify - Registration"
-  core_attributes = [
-    {
-      name = "subject"
-    }
-  ]
   extended_attributes = [
     {
       name = "firstName"

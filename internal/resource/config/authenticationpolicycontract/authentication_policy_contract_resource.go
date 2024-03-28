@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -23,6 +25,18 @@ var (
 	_ resource.Resource                = &authenticationPolicyContractResource{}
 	_ resource.ResourceWithConfigure   = &authenticationPolicyContractResource{}
 	_ resource.ResourceWithImportState = &authenticationPolicyContractResource{}
+
+	coreAttributesDefaultObjAttrType = map[string]attr.Type{
+		"name": types.StringType,
+	}
+
+	coreAttributesDefaultObjAttrValue = map[string]attr.Value{
+		"name": types.StringValue("subject"),
+	}
+
+	coreAttributesDefaultObjValue, _ = types.ObjectValue(coreAttributesDefaultObjAttrType, coreAttributesDefaultObjAttrValue)
+	coreAttributesDefaultListAttrVal = []attr.Value{coreAttributesDefaultObjValue}
+	coreAttributesDefaultListVal, _  = types.ListValue(attributeElemAttrType, coreAttributesDefaultListAttrVal)
 )
 
 // AuthenticationPolicyContractResource is a helper function to simplify the provider implementation.
@@ -44,7 +58,9 @@ func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req r
 		Attributes: map[string]schema.Attribute{
 			"core_attributes": schema.ListNestedAttribute{
 				Description: "A list of read-only assertion attributes (for example, subject) that are automatically populated by PingFederate.",
-				Required:    true,
+				Computed:    true,
+				Optional:    false,
+				Default:     listdefault.StaticValue(coreAttributesDefaultListVal),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
