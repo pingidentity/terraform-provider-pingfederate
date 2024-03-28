@@ -13,15 +13,12 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const coreAttr = "subject"
-
 var stateId string
 
 // Attributes to test with. Add optional properties to test here if desired.
 type authenticationPolicyContractResourceModel struct {
 	id                 string
 	name               string
-	coreAttributes     []string
 	extendedAttributes []string
 }
 
@@ -29,18 +26,15 @@ func TestAccAuthenticationPolicyContract(t *testing.T) {
 	resourceName := "myAuthenticationPolicyContract"
 	initialResourceModel := authenticationPolicyContractResourceModel{
 		name:               "example",
-		coreAttributes:     []string{coreAttr},
 		extendedAttributes: []string{},
 	}
 	updatedResourceModel := authenticationPolicyContractResourceModel{
 		name:               "example",
-		coreAttributes:     []string{coreAttr},
 		extendedAttributes: []string{"extended_attribute", "extended_attribute2", "extendedwith\\\"escaped\\\"quotes"},
 	}
 
 	minimalResourceModelWithId := authenticationPolicyContractResourceModel{
 		name:               "example",
-		coreAttributes:     []string{coreAttr},
 		extendedAttributes: []string{},
 		id:                 "myAuthenticationPolicyContract",
 	}
@@ -104,15 +98,13 @@ func testAccAuthenticationPolicyContract(resourceName string, resourceModel auth
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_policy_contract" "%[1]s" {
   %[2]s
-  core_attributes = %[3]s
-  name            = "%[4]s"
-  %[5]s
+  name = "%[3]s"
+  %[4]s
 }
 data "pingfederate_authentication_policy_contract" "authenticationPolicyContractExample" {
   contract_id = pingfederate_authentication_policy_contract.%[1]s.contract_id
 }`, resourceName,
 		acctest.AddIdHcl("contract_id", resourceModel.id),
-		acctest.ObjectSliceOfKvStringsToTerraformString("name", resourceModel.coreAttributes),
 		resourceModel.name,
 		extendedAttrsHcl,
 	)
