@@ -109,7 +109,7 @@ func optionalHcl(model authenticationApiApplicationResourceModel) string {
 	}
 
 	if len(model.additionalAllowedOrigins) > 0 {
-		hclAdditionalAllowedOrigins = fmt.Sprintf("additional_allowed_origins = %s", acctest.StringSliceToTerraformString(model.additionalAllowedOrigins))
+		hclAdditionalAllowedOrigins = fmt.Sprintf("additional_allowed_origins = [%s]", acctest.StringSliceToTerraformString(model.additionalAllowedOrigins))
 	}
 
 	if model.clientForRedirectlessModeRef != nil {
@@ -160,6 +160,7 @@ func testAccCheckExpectedAuthenticationApiApplicationAttributes(config authentic
 		resourceType := "AuthenticationApiApplication"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
+		stateAttributeValues := s.Modules[0].Resources["pingfederate_authentication_api_application.myAuthenticationApiApplication"].Primary.Attributes
 		response, _, err := testClient.AuthenticationApiAPI.GetApplication(ctx, authenticationApiApplicationId).Execute()
 
 		if err != nil {
@@ -191,6 +192,11 @@ func testAccCheckExpectedAuthenticationApiApplicationAttributes(config authentic
 
 		if config.additionalAllowedOrigins != nil {
 			err = acctest.TestAttributesMatchStringSlice(resourceType, pointers.String(authenticationApiApplicationName), "additional_allowed_origins", config.additionalAllowedOrigins, response.AdditionalAllowedOrigins)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "additional_allowed_origins", acctest.StringSliceToTerraformString(config.additionalAllowedOrigins))
 			if err != nil {
 				return err
 			}

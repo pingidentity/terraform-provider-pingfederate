@@ -123,8 +123,14 @@ func testAccCheckExpectedAdministrativeAccountAttributes(config administrativeAc
 		}
 		resourceType := "AdministrativeAccount"
 		// Verify that attributes have expected values
+		stateAttributeValues := s.Modules[0].Resources["pingfederate_administrative_account.myAdministrativeAccount"].Primary.Attributes
 		err = acctest.TestAttributesMatchBool(resourceType, &config.administrativeAccount.Username, "active",
 			*config.administrativeAccount.Active, response.GetActive())
+		if err != nil {
+			return err
+		}
+
+		err = acctest.VerifyStateAttributeValue(stateAttributeValues, "active", strconv.FormatBool(*config.administrativeAccount.Active))
 		if err != nil {
 			return err
 		}

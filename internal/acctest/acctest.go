@@ -266,6 +266,16 @@ func AddIdHcl(idKey, id string) string {
 	return ""
 }
 
+func VerifyStateAttributeValue(stateAttributes map[string]string, stateKeyValue string, configValue string) error {
+	if stateAttributes == nil {
+		return nil
+	}
+	if stateAttributes[stateKeyValue] != configValue {
+		return fmt.Errorf("state value for %s does not match config value. Expected: %s, Found: %s", stateKeyValue, configValue, stateAttributes[stateKeyValue])
+	}
+	return nil
+}
+
 // Check that the version being tested is at least the given minimum version
 var versionAtLeastResults = map[version.SupportedVersion]bool{}
 
