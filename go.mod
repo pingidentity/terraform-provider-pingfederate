@@ -20,6 +20,8 @@ require (
 	github.com/terraform-linters/tflint v0.50.3
 )
 
+replace github.com/pingidentity/pingfederate-go-client/v1200 v1200.1.3 => ../pingfederate-go-client
+
 require (
 	4d63.com/gocheckcompilerdirectives v1.2.1 // indirect
 	4d63.com/gochecknoglobals v0.2.1 // indirect
