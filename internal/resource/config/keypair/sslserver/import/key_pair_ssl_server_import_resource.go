@@ -240,15 +240,14 @@ func (r *keyPairsSslServerImportResource) Schema(ctx context.Context, req resour
 	id.ToSchemaCustomId(&schema,
 		"import_id",
 		true,
+		false,
 		"The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.")
 	resp.Schema = schema
 }
 
 func addOptionalKeyPairsSslServerImportFields(ctx context.Context, addRequest *client.KeyPairFile, plan keyPairsSslServerImportResourceModel) error {
+	addRequest.Id = plan.ImportId.ValueStringPointer()
 
-	if internaltypes.IsDefined(plan.ImportId) {
-		addRequest.Id = plan.ImportId.ValueStringPointer()
-	}
 	if internaltypes.IsDefined(plan.CryptoProvider) {
 		addRequest.CryptoProvider = plan.CryptoProvider.ValueStringPointer()
 	}

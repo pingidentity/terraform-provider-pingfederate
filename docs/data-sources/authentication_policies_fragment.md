@@ -98,24 +98,18 @@ Optional:
 <a id="nestedatt--root_node--action--apc_mapping_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.action.apc_mapping_policy_action.context.attribute_contract_fulfillment`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--apc_mapping_policy_action--context--attribute_contract_fulfillment--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--apc_mapping_policy_action--context--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--action--apc_mapping_policy_action--context--attribute_contract_fulfillment--source"></a>
 ### Nested Schema for `root_node.action.apc_mapping_policy_action.context.attribute_contract_fulfillment.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -552,24 +546,18 @@ Optional:
 <a id="nestedatt--root_node--action--fragment_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.action.fragment_policy_action.context.attribute_contract_fulfillment`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--fragment_policy_action--context--attribute_contract_fulfillment--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--fragment_policy_action--context--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--action--fragment_policy_action--context--attribute_contract_fulfillment--source"></a>
 ### Nested Schema for `root_node.action.fragment_policy_action.context.attribute_contract_fulfillment.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -885,24 +873,18 @@ Optional:
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.action.local_identity_mapping_policy_action.context.attribute_contract_fulfillment`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--context--attribute_contract_fulfillment--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--context--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--context--attribute_contract_fulfillment--source"></a>
 ### Nested Schema for `root_node.action.local_identity_mapping_policy_action.context.attribute_contract_fulfillment.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -1182,24 +1164,18 @@ Optional:
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.action.local_identity_mapping_policy_action.context.attribute_contract_fulfillment`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--context--attribute_contract_fulfillment--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--context--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--context--attribute_contract_fulfillment--source"></a>
 ### Nested Schema for `root_node.action.local_identity_mapping_policy_action.context.attribute_contract_fulfillment.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -1514,24 +1490,18 @@ Optional:
 <a id="nestedatt--root_node--children--action--restart_policy_action--attribute_mapping--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.attribute_mapping.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--attribute_mapping--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--attribute_mapping--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--attribute_mapping--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.attribute_mapping.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -1968,24 +1938,18 @@ Optional:
 <a id="nestedatt--root_node--children--action--restart_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.fragment_mapping.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--fragment_mapping--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--fragment_mapping--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--fragment_mapping--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.fragment_mapping.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -2301,24 +2265,18 @@ Optional:
 <a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -2598,24 +2556,18 @@ Optional:
 <a id="nestedatt--root_node--children--action--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -2930,24 +2882,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--apc_mapping_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.apc_mapping_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--apc_mapping_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--apc_mapping_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--apc_mapping_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.apc_mapping_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -3384,24 +3330,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--fragment_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.fragment_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--fragment_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--fragment_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--fragment_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.fragment_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -3717,24 +3657,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -4014,24 +3948,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -4346,24 +4274,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action.context.issuance_criteria.source`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -4800,24 +4722,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action.context.issuance_criteria.source`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -5133,24 +5049,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action.context.issuance_criteria.source`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -5430,24 +5340,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action.context.issuance_criteria.source`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -5762,24 +5666,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.context.attribute_contract_fulfillment`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.context.attribute_contract_fulfillment.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -6216,24 +6114,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.context.attribute_contract_fulfillment`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.context.attribute_contract_fulfillment.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -6549,24 +6441,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.context.attribute_contract_fulfillment`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.context.attribute_contract_fulfillment.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -6846,24 +6732,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.context.attribute_contract_fulfillment`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.context.attribute_contract_fulfillment.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -7178,24 +7058,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--attribute_mapping--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.attribute_mapping.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--attribute_mapping--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--attribute_mapping--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--attribute_mapping--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.attribute_mapping.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -7632,24 +7506,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.fragment_mapping.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.fragment_mapping.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -7965,24 +7833,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -8262,24 +8124,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -8594,24 +8450,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--apc_mapping_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.apc_mapping_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--apc_mapping_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--apc_mapping_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--apc_mapping_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.apc_mapping_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -9048,24 +8898,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--fragment_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.fragment_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--fragment_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--fragment_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--fragment_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.fragment_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -9381,24 +9225,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -9678,24 +9516,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -10010,24 +9842,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -10464,24 +10290,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -10797,24 +10617,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -11094,24 +10908,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -11426,24 +11234,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -11880,24 +11682,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -12213,24 +12009,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -12510,24 +12300,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -12842,24 +12626,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -13296,24 +13074,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -13629,24 +13401,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -13926,24 +13692,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -14254,24 +14014,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -14708,24 +14462,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -15041,24 +14789,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 
@@ -15338,24 +15080,18 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.context.issuance_criteria`
 
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
-
 Optional:
 
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.context.issuance_criteria.value`
 
-Required:
-
-- `type` (String) The source type of this key.
-
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
 
 
 

@@ -103,7 +103,7 @@ func (r *kerberosRealmsResource) Schema(ctx context.Context, req resource.Schema
 	}
 
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, "realm_id", false,
+	id.ToSchemaCustomId(&schema, "realm_id", false, false,
 		"The persistent, unique ID for the Kerberos Realm. It can be any combination of [a-z0-9._-].")
 
 	resp.Schema = schema

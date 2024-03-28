@@ -2,6 +2,7 @@ package oauthauthserversettings_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -29,15 +30,10 @@ type oauthAuthServerSettingsResourceModel struct {
 func TestAccOauthAuthServerSettings(t *testing.T) {
 	resourceName := "myOauthAuthServerSettings"
 	initialResourceModel := oauthAuthServerSettingsResourceModel{
-		defaultScopeDescription:          "example scope description",
-		authorizationCodeTimeout:         50,
-		authorizationCodeEntropy:         20,
-		refreshTokenLength:               40,
-		refreshRollingInterval:           1,
-		registeredAuthorizationPath:      "/example",
-		pendingAuthorizationTimeout:      550,
-		devicePollingInterval:            4,
-		bypassActivationCodeConfirmation: false,
+		authorizationCodeTimeout: 50,
+		authorizationCodeEntropy: 20,
+		refreshTokenLength:       40,
+		refreshRollingInterval:   1,
 	}
 	updatedResourceModel := oauthAuthServerSettingsResourceModel{
 		defaultScopeDescription:          "example updated scope description",
@@ -45,7 +41,7 @@ func TestAccOauthAuthServerSettings(t *testing.T) {
 		authorizationCodeEntropy:         30,
 		refreshTokenLength:               50,
 		refreshRollingInterval:           2,
-		registeredAuthorizationPath:      "/updatedexample",
+		registeredAuthorizationPath:      "/example",
 		pendingAuthorizationTimeout:      650,
 		devicePollingInterval:            3,
 		bypassActivationCodeConfirmation: true,
@@ -83,6 +79,25 @@ func TestAccOauthAuthServerSettings(t *testing.T) {
 }
 
 func testAccOauthAuthServerSettings(resourceName string, resourceModel oauthAuthServerSettingsResourceModel, includeAllAttributes bool) string {
+	addUpdatedResourceModelFields := []string{}
+	if resourceModel.bypassActivationCodeConfirmation == true {
+		addUpdatedResourceModelFields = append(addUpdatedResourceModelFields, fmt.Sprintf("bypass_activation_code_confirmation = %t", resourceModel.bypassActivationCodeConfirmation))
+	}
+	if resourceModel.defaultScopeDescription != "" {
+		addUpdatedResourceModelFields = append(addUpdatedResourceModelFields, fmt.Sprintf("default_scope_description = \"%s\"", resourceModel.defaultScopeDescription))
+	}
+	if resourceModel.devicePollingInterval == 3 {
+		addUpdatedResourceModelFields = append(addUpdatedResourceModelFields, fmt.Sprintf("device_polling_interval = %d", resourceModel.devicePollingInterval))
+	}
+	if resourceModel.pendingAuthorizationTimeout == 650 {
+		addUpdatedResourceModelFields = append(addUpdatedResourceModelFields, fmt.Sprintf("pending_authorization_timeout = %d", resourceModel.pendingAuthorizationTimeout))
+	}
+	if resourceModel.registeredAuthorizationPath != "" {
+		addUpdatedResourceModelFields = append(addUpdatedResourceModelFields, fmt.Sprintf("registered_authorization_path = \"%s\"", resourceModel.registeredAuthorizationPath))
+	}
+
+	updatedResourceModelFields := strings.Join(addUpdatedResourceModelFields[:], "\n")
+
 	optionalHcl := ""
 	if includeAllAttributes {
 		optionalHcl = `
@@ -165,16 +180,12 @@ func testAccOauthAuthServerSettings(resourceName string, resourceModel oauthAuth
 
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_auth_server_settings" "%[1]s" {
-  authorization_code_entropy          = %[2]d
-  authorization_code_timeout          = %[3]d
-  registered_authorization_path       = "%[4]s"
-  default_scope_description           = "%[5]s"
-  device_polling_interval             = %[6]d
-  pending_authorization_timeout       = %[7]d
-  refresh_rolling_interval            = %[8]d
-  refresh_token_length                = %[9]d
-  bypass_activation_code_confirmation = %[10]t
-  %[11]s
+  authorization_code_entropy = %[2]d
+  authorization_code_timeout = %[3]d
+  refresh_rolling_interval   = %[4]d
+  refresh_token_length       = %[5]d
+  %[6]s
+	%[7]s
 }
 data "pingfederate_oauth_auth_server_settings" "%[1]s" {
   depends_on = [
@@ -183,14 +194,10 @@ data "pingfederate_oauth_auth_server_settings" "%[1]s" {
 }`, resourceName,
 		resourceModel.authorizationCodeEntropy,
 		resourceModel.authorizationCodeTimeout,
-		resourceModel.registeredAuthorizationPath,
-		resourceModel.defaultScopeDescription,
-		resourceModel.devicePollingInterval,
-		resourceModel.pendingAuthorizationTimeout,
 		resourceModel.refreshRollingInterval,
 		resourceModel.refreshTokenLength,
-		resourceModel.bypassActivationCodeConfirmation,
 		optionalHcl,
+		updatedResourceModelFields,
 	)
 }
 
@@ -220,26 +227,31 @@ func testAccCheckExpectedOauthAuthServerSettingsAttributes(config oauthAuthServe
 		}
 
 		err = acctest.TestAttributesMatchString(resourceType, nil, "registered_authorization_path",
-			config.registeredAuthorizationPath, response.RegisteredAuthorizationPath)
+			config.registeredAuthorizationPath, *response.RegisteredAuthorizationPath)
 		if err != nil {
 			return err
 		}
 
 		err = acctest.TestAttributesMatchString(resourceType, nil, "default_scope_description",
-			config.defaultScopeDescription, response.DefaultScopeDescription)
+			config.defaultScopeDescription, *response.DefaultScopeDescription)
 		if err != nil {
 			return err
 		}
 
-		err = acctest.TestAttributesMatchInt(resourceType, nil, "device_polling_interval",
-			config.devicePollingInterval, response.DevicePollingInterval)
-		if err != nil {
-			return err
+		if config.devicePollingInterval != 0 {
+			err = acctest.TestAttributesMatchInt(resourceType, nil, "device_polling_interval",
+				config.devicePollingInterval, *response.DevicePollingInterval)
+			if err != nil {
+				return err
+			}
 		}
-		err = acctest.TestAttributesMatchInt(resourceType, nil, "pending_authorization_timeout",
-			config.pendingAuthorizationTimeout, response.PendingAuthorizationTimeout)
-		if err != nil {
-			return err
+
+		if config.pendingAuthorizationTimeout != 0 {
+			err = acctest.TestAttributesMatchInt(resourceType, nil, "pending_authorization_timeout",
+				config.pendingAuthorizationTimeout, *response.PendingAuthorizationTimeout)
+			if err != nil {
+				return err
+			}
 		}
 
 		err = acctest.TestAttributesMatchInt(resourceType, nil, "refresh_rolling_interval",
@@ -255,7 +267,7 @@ func testAccCheckExpectedOauthAuthServerSettingsAttributes(config oauthAuthServe
 		}
 
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "bypass_activation_code_confirmation",
-			config.bypassActivationCodeConfirmation, response.BypassActivationCodeConfirmation)
+			config.bypassActivationCodeConfirmation, *response.BypassActivationCodeConfirmation)
 		if err != nil {
 			return err
 		}

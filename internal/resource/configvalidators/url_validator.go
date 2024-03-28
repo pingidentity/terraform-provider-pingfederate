@@ -28,7 +28,7 @@ func (v urlValidator) MarkdownDescription(ctx context.Context) string {
 
 func (v urlValidator) ValidateString(ctx context.Context, req validator.StringRequest, resp *validator.StringResponse) {
 	// If the value is unknown or null, there is nothing to validate.
-	if req.ConfigValue.IsUnknown() || req.ConfigValue.IsNull() {
+	if req.ConfigValue.IsUnknown() || req.ConfigValue.IsNull() || req.ConfigValue.ValueString() == "" {
 		return
 	}
 

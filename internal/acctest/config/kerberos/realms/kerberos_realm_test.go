@@ -13,12 +13,13 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const kerberosRealmId = "myKerberosRealm"
+var stateId string
+
 const kerberosRealmName = "myKerberosRealmName"
 
 // Attributes to test with. Add optional properties to test here if desired.
 type kerberosRealmsResourceModel struct {
-	realmId                            string
+	id                                 string
 	kerberosRealmName                  string
 	keyDistributionCenters             []string
 	kerberosUsername                   string
@@ -30,20 +31,25 @@ type kerberosRealmsResourceModel struct {
 func TestAccKerberosRealms(t *testing.T) {
 	resourceName := "myKerberosRealm"
 	initialResourceModel := kerberosRealmsResourceModel{
-		realmId:           kerberosRealmId,
 		kerberosRealmName: kerberosRealmName,
 		kerberosUsername:  "kerberosUsername",
 		kerberosPassword:  "kerberosPassword",
 	}
 
 	updatedResourceModel := kerberosRealmsResourceModel{
-		realmId:                            kerberosRealmId,
 		kerberosRealmName:                  kerberosRealmName,
 		kerberosUsername:                   "kerberosUpdatedUsername",
 		kerberosPassword:                   "kerberosUpdatedPassword",
 		keyDistributionCenters:             []string{"keyDistributionCenters1", "keyDistributionCenters2"},
 		retainPreviousKeysOnPasswordChange: true,
 		suppressDomainNameConcatenation:    true,
+	}
+
+	minimalResourceModelWithId := kerberosRealmsResourceModel{
+		id:                "myKerberosRealm",
+		kerberosRealmName: kerberosRealmName,
+		kerberosUsername:  "kerberosUsername",
+		kerberosPassword:  "kerberosPassword",
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -66,7 +72,6 @@ func TestAccKerberosRealms(t *testing.T) {
 				// Test importing the resource
 				Config:                  testAccKerberosRealms(resourceName, updatedResourceModel),
 				ResourceName:            "pingfederate_kerberos_realm." + resourceName,
-				ImportStateId:           kerberosRealmId,
 				ImportState:             true,
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"kerberos_password", "kerberos_encrypted_password"},
@@ -79,7 +84,7 @@ func TestAccKerberosRealms(t *testing.T) {
 				PreConfig: func() {
 					testClient := acctest.TestClient()
 					ctx := acctest.TestBasicAuthContext()
-					_, err := testClient.KerberosRealmsAPI.DeleteKerberosRealm(ctx, kerberosRealmId).Execute()
+					_, err := testClient.KerberosRealmsAPI.DeleteKerberosRealm(ctx, stateId).Execute()
 					if err != nil {
 						t.Fatalf("Failed to delete config: %v", err)
 					}
@@ -88,8 +93,8 @@ func TestAccKerberosRealms(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccKerberosRealms(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedKerberosRealmsAttributes(initialResourceModel),
+				Config: testAccKerberosRealms(resourceName, minimalResourceModelWithId),
+				Check:  testAccCheckExpectedKerberosRealmsAttributes(minimalResourceModelWithId),
 			},
 		},
 	})
@@ -112,13 +117,13 @@ func optionalFields(resourceModel kerberosRealmsResourceModel) string {
 func testAccKerberosRealms(resourceName string, resourceModel kerberosRealmsResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_kerberos_realm" "%[1]s" {
-  realm_id            = "%[2]s"
+	%[2]s
   kerberos_realm_name = "%[3]s"
   kerberos_username   = "%[4]s"
   kerberos_password   = "%[5]s"
 	%[6]s
 }`, resourceName,
-		resourceModel.realmId,
+		acctest.AddIdHcl("realm_id", resourceModel.id),
 		resourceModel.kerberosRealmName,
 		resourceModel.kerberosUsername,
 		resourceModel.kerberosPassword,
@@ -132,16 +137,17 @@ func testAccCheckExpectedKerberosRealmsAttributes(config kerberosRealmsResourceM
 		resourceType := "KerberosRealm"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.KerberosRealmsAPI.GetKerberosRealm(ctx, kerberosRealmId).Execute()
-
+		idFromState := s.RootModule().Resources["pingfederate_kerberos_realm.myKerberosRealm"].Primary.Attributes["id"]
+		response, _, err := testClient.KerberosRealmsAPI.GetKerberosRealm(ctx, idFromState).Execute()
 		if err != nil {
 			return err
 		}
 
-		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchString(resourceType, &config.realmId, "id", config.realmId, *response.Id)
-		if err != nil {
-			return err
+		if config.id != "" {
+			err = acctest.TestAttributesMatchString(resourceType, &config.id, "id", config.id, *response.Id)
+			if err != nil {
+				return err
+			}
 		}
 
 		err = acctest.TestAttributesMatchString(resourceType, &config.kerberosRealmName, "kerberos_realm_name", config.kerberosRealmName, response.KerberosRealmName)
@@ -174,7 +180,7 @@ func testAccCheckExpectedKerberosRealmsAttributes(config kerberosRealmsResourceM
 				return err
 			}
 		}
-
+		stateId = idFromState
 		return nil
 	}
 }
@@ -183,9 +189,9 @@ func testAccCheckExpectedKerberosRealmsAttributes(config kerberosRealmsResourceM
 func testAccCheckKerberosRealmsDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.KerberosRealmsAPI.DeleteKerberosRealm(ctx, kerberosRealmId).Execute()
+	_, err := testClient.KerberosRealmsAPI.DeleteKerberosRealm(ctx, stateId).Execute()
 	if err == nil {
-		return acctest.ExpectedDestroyError("KerberosRealm", kerberosRealmId)
+		return acctest.ExpectedDestroyError("KerberosRealm", stateId)
 	}
 	return nil
 }

@@ -80,14 +80,13 @@ func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req r
 	id.ToSchemaCustomId(&schema,
 		"contract_id",
 		false,
+		false,
 		"The persistent, unique ID for the authentication policy contract. It can be any combination of [a-zA-Z0-9._-].")
 	resp.Schema = schema
 }
 
 func addAuthenticationPolicyContractsFields(ctx context.Context, addRequest *client.AuthenticationPolicyContract, plan authenticationPolicyContractModel) error {
-	if internaltypes.IsDefined(plan.ContractId) {
-		addRequest.Id = plan.ContractId.ValueStringPointer()
-	}
+	addRequest.Id = plan.ContractId.ValueStringPointer()
 
 	addRequest.CoreAttributes = []client.AuthenticationPolicyContractAttribute{}
 	for _, coreAttribute := range plan.CoreAttributes.Elements() {

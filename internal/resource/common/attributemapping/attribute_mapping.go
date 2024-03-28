@@ -30,7 +30,7 @@ func AttrTypes() map[string]attr.Type {
 func ToSchema() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Attributes: map[string]schema.Attribute{
-			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
+			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, true),
 			"attribute_sources":              attributesources.ToSchema(0, false, true),
 			"issuance_criteria":              issuancecriteria.ToSchema(),
 		},

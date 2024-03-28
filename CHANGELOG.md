@@ -1,6 +1,35 @@
-# v0.8.0 (Unreleased)
+# v0.9.0 (Unreleased)
+### FEATURES
+* Resources that no longer incorrectly require a `<resource_type>_id` are listed here:
+  - `pingfederate_authentication_api_application`
+  - `pingfederate_authentication_policies_fragment`
+  - `pingfederate_authentication_policy_contract`
+  - `pingfederate_authentication_selector`
+  - `pingfederate_certificate_ca`
+  - `pingfederate_data_store`
+  - `pingfederate_idp_adapter`
+  - `pingfederate_idp_sp_connection`
+  - `pingfederate_kerberos_realm`
+  - `pingfederate_key_pair_signing_import`
+  - `pingfederate_key_pair_ssl_server_import`
+  - `pingfederate_local_identity_identity_profile`
+  - `pingfederate_oauth_access_token_manager`
+  - `pingfederate_oauth_issuer`
+  - `pingfederate_oauth_open_id_connect_policy`
+  - `pingfederate_password_credential_validator`
+
 ### BUG FIXES
-* `pingfederate_oauth_client` resource, Provider produced inconsistent result after apply error when applying empty `extended_parameters` map value ([#204](https://github.com/pingidentity/terraform-provider-pingfederate/pull/204))
+* `pingfederate_oauth_client` resource has the following bugs resolved ([#221](https://github.com/pingidentity/terraform-provider-pingfederate/pull/221)):
+  - `client_id` now correctly forces the resource to be replaced when value is modified after creation.
+  - `client_auth.secret` corrected config validation when using a variable value
+  - `restrict_scopes` no longer returns an incorrect value error after apply
+  - `oidc_policy` child string attribute values no longer return incorrect value errors after apply
+
+# v0.8.0 March 14th, 2024
+### BUG FIXES
+* `pingfederate_oauth_access_token_mapping` resource, resolved "produced an unexpected new value: .attribute_contract_fulfillment["username"].value: was null, but now cty.StringVal("")" error([#215](https://github.com/pingidentity/terraform-provider-pingfederate/pull/215))
+* `pingfederate_oauth_auth_server_settings` resource, removed unnecessary requirement for `bypass_activation_code_confirmation`, `default_scope_description`, `device_polling_interval`, `pending_authorization_timeout`, `registered_authorization_path` properties([#216](https://github.com/pingidentity/terraform-provider-pingfederate/pull/216))
+* `pingfederate_oauth_client` resource, "Provider produced inconsistent result after apply" error when applying empty `extended_parameters` map value, require `values` property within to match product behavior. Fixed `logo_url` "Invalid URL Format" when empty string supplied. ([#204](https://github.com/pingidentity/terraform-provider-pingfederate/pull/204))([#214](https://github.com/pingidentity/terraform-provider-pingfederate/pull/214))([#217](https://github.com/pingidentity/terraform-provider-pingfederate/pull/217))
 
 # v0.7.1 February 29th, 2024
 ### BUG FIXES
