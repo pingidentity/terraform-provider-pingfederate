@@ -26,7 +26,6 @@ resource "pingfederate_authentication_policy_contract" "authenticationPolicyCont
 
 ### Required
 
-- `core_attributes` (Attributes List) A list of read-only assertion attributes (for example, subject) that are automatically populated by PingFederate. (see [below for nested schema](#nestedatt--core_attributes))
 - `name` (String) The Authentication Policy contract name. Name is unique.
 
 ### Optional
@@ -36,18 +35,19 @@ resource "pingfederate_authentication_policy_contract" "authenticationPolicyCont
 
 ### Read-Only
 
+- `core_attributes` (Attributes List) A list of read-only assertion attributes (for example, subject) that are automatically populated by PingFederate. (see [below for nested schema](#nestedatt--core_attributes))
 - `id` (String) The ID of this resource.
 
-<a id="nestedatt--core_attributes"></a>
-### Nested Schema for `core_attributes`
+<a id="nestedatt--extended_attributes"></a>
+### Nested Schema for `extended_attributes`
 
 Required:
 
 - `name` (String)
 
 
-<a id="nestedatt--extended_attributes"></a>
-### Nested Schema for `extended_attributes`
+<a id="nestedatt--core_attributes"></a>
+### Nested Schema for `core_attributes`
 
 Required:
 
