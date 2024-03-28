@@ -18,6 +18,10 @@
   - `pingfederate_oauth_open_id_connect_policy`
   - `pingfederate_password_credential_validator`
 
+### ENHANCEMENTS
+* Allow `product_version` values that are not explicitly supported as long as the major-minor version is supported. For example, version `11.3.10` would be allowed, but version `30.0.0` would not be allowed. (#223)
+* Added support for PingFederate patch versions `11.3.5` and `12.0.1` (#226)
+
 ### BUG FIXES
 * `pingfederate_oauth_client` resource has the following bugs resolved ([#221](https://github.com/pingidentity/terraform-provider-pingfederate/pull/221)):
   - `client_id` now correctly forces the resource to be replaced when value is modified after creation.
