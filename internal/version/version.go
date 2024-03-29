@@ -113,7 +113,7 @@ func Parse(versionString string) (SupportedVersion, diag.Diagnostics) {
 		// Check if the major-minor version is valid
 		majorMinorVersionString := versionDigits[0] + "." + versionDigits[1] + ".0"
 		if !IsValid(majorMinorVersionString) {
-			diags.AddError("unsupported PingFederate version '"+versionString+"'", getSortedVersionsMessage())
+			diags.AddError("PingFederate version '"+versionString+"' is not supported in this version of the PingFederate terraform provider", getSortedVersionsMessage())
 			return "", diags
 		}
 		// The major-minor version is valid, only the patch is invalid. Warn but do not fail, assume the lastest patch version
@@ -136,7 +136,8 @@ func Parse(versionString string) (SupportedVersion, diag.Diagnostics) {
 			return "", diags
 		}
 		assumedVersion := string(sortedVersions[versionIndex])
-		diags.AddWarning("Unrecognized PingFederate version '"+versionString+"'", "Assuming the latest patch version available: '"+assumedVersion+"'")
+		diags.AddWarning("PingFederate patch version '"+versionString+"' is not recognized by this version of the PingFederate terraform provider",
+			"Assuming the latest patch version supported by the provider: '"+assumedVersion+"'")
 		versionString = assumedVersion
 	}
 	return SupportedVersion(versionString), diags
