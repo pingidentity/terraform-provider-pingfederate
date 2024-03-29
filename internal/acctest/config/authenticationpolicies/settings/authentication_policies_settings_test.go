@@ -74,6 +74,7 @@ func testAccCheckExpectedAuthenticationPoliciesSettingsAttributes(includeAttribu
 		resourceType := "AuthenticationPoliciesSettings"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
+		stateAttributes := s.Modules[0].Resources["pingfederate_authentication_policies_settings.myAuthenticationPoliciesSettings"].Primary.Attributes
 		response, _, err := testClient.AuthenticationPoliciesAPI.GetAuthenticationPolicySettings(ctx).Execute()
 
 		if err != nil {
@@ -87,8 +88,18 @@ func testAccCheckExpectedAuthenticationPoliciesSettingsAttributes(includeAttribu
 			return err
 		}
 
+		err = acctest.VerifyStateAttributeValue(stateAttributes, "enable_idp_authn_selection", *response.EnableIdpAuthnSelection)
+		if err != nil {
+			return err
+		}
+
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "enable_sp_authn_selection",
 			includeAttributes, *response.EnableSpAuthnSelection)
+		if err != nil {
+			return err
+		}
+
+		err = acctest.VerifyStateAttributeValue(stateAttributes, "enable_sp_authn_selection", *response.EnableSpAuthnSelection)
 		if err != nil {
 			return err
 		}

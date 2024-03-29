@@ -107,6 +107,17 @@ func StringSliceToTerraformString(values []string) string {
 	return builder.String()
 }
 
+func StringSliceToString(values []string) string {
+	var builder strings.Builder
+	for i, str := range values {
+		builder.WriteString(fmt.Sprintf("\"%s\"", str))
+		if i < len(values)-1 {
+			builder.WriteString(",")
+		}
+	}
+	return builder.String()
+}
+
 // Convert a string slice to the format used in Terraform files
 func ObjectSliceOfKvStringsToTerraformString(keyValue string, values []string) string {
 	var builder strings.Builder
@@ -266,12 +277,56 @@ func AddIdHcl(idKey, id string) string {
 	return ""
 }
 
-func VerifyStateAttributeValue(stateAttributes map[string]string, stateKeyValue string, configValue string) error {
+func ReturnStateMismatchError(stateKey, stateValue, configValue string) error {
+	return fmt.Errorf("state value for %s does not match config value. State: %s, Found: %s", stateKey, stateValue, configValue)
+}
+
+func VerifyStateAttributeValue(stateAttributes map[string]string, stateKeyValue string, configValue interface{}) error {
+	var configValueToTest string
+	var ok bool
+
 	if stateAttributes == nil {
 		return nil
 	}
-	if stateAttributes[stateKeyValue] != configValue {
-		return fmt.Errorf("state value for %s does not match config value. Expected: %s, Found: %s", stateKeyValue, configValue, stateAttributes[stateKeyValue])
+
+	_, ok = configValue.(string)
+	if ok {
+		configValueToTest = configValue.(string)
+	}
+
+	_, ok = configValue.(int64)
+	if ok {
+		configValueToTest = strconv.FormatInt(configValue.(int64), 10)
+	}
+
+	_, ok = configValue.(bool)
+	if ok {
+		configValueToTest = strconv.FormatBool(configValue.(bool))
+	}
+
+	_, ok = configValue.([]string)
+	if ok {
+		configValueToTest = StringSliceToTerraformString(configValue.([]string))
+	}
+
+	if stateAttributes[stateKeyValue] != configValueToTest {
+		ReturnStateMismatchError(stateKeyValue, stateAttributes[stateKeyValue], configValueToTest)
+	}
+
+	return nil
+}
+
+func VerifyStateAttributeSlice(stateAttributes map[string]string, stateKeyValue string, configValue []string) error {
+	var configValueToTest string
+
+	if stateAttributes == nil {
+		return nil
+	}
+
+	configValueToTest = StringSliceToTerraformString(configValue)
+
+	if stateAttributes[stateKeyValue] != configValueToTest {
+		ReturnStateMismatchError(stateKeyValue, stateAttributes[stateKeyValue], configValueToTest)
 	}
 	return nil
 }

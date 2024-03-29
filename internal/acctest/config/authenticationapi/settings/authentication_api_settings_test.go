@@ -102,6 +102,7 @@ func testAccCheckExpectedAuthenticationApiSettingsAttributes(config authenticati
 		resourceType := "AuthenticationApiSettings"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
+		stateAttributes := s.Modules[0].Resources["pingfederate_authentication_api_settings.myAuthenticationApiSettings"].Primary.Attributes
 		response, _, err := testClient.AuthenticationApiAPI.GetAuthenticationApiSettings(ctx).Execute()
 
 		if err != nil {
@@ -115,11 +116,44 @@ func testAccCheckExpectedAuthenticationApiSettingsAttributes(config authenticati
 			return err
 		}
 
+		err = acctest.VerifyStateAttributeValue(stateAttributes, "api_enabled", config.apiEnabled)
+		if err != nil {
+			return err
+		}
+
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "enable_api_descriptions",
 			config.enableApiDescriptions, *response.EnableApiDescriptions)
 		if err != nil {
 			return err
 		}
+
+		err = acctest.VerifyStateAttributeValue(stateAttributes, "enable_api_descriptions", config.enableApiDescriptions)
+		if err != nil {
+			return err
+		}
+
+		err = acctest.TestAttributesMatchBool(resourceType, nil, "restrict_access_to_redirectless_mode",
+			config.restrictAccessToRedirectlessMode, *response.RestrictAccessToRedirectlessMode)
+		if err != nil {
+			return err
+		}
+
+		err = acctest.VerifyStateAttributeValue(stateAttributes, "restrict_access_to_redirectless_mode", config.restrictAccessToRedirectlessMode)
+		if err != nil {
+			return err
+		}
+
+		err = acctest.TestAttributesMatchBool(resourceType, nil, "include_request_context",
+			config.includeRequestContext, *response.IncludeRequestContext)
+		if err != nil {
+			return err
+		}
+
+		err = acctest.VerifyStateAttributeValue(stateAttributes, "include_request_context", config.includeRequestContext)
+		if err != nil {
+			return err
+		}
+
 		return nil
 	}
 }

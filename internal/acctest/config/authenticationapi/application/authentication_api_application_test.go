@@ -45,7 +45,7 @@ func TestAccAuthenticationApiApplication(t *testing.T) {
 		name:                         authenticationApiApplicationName,
 		url:                          authenticationApiApplicationUrl,
 		description:                  "myAuthenticationApiApplicationDescription",
-		additionalAllowedOrigins:     []string{"https://example.com"},
+		additionalAllowedOrigins:     []string{"https://example.com", "https://example2.com"},
 		clientForRedirectlessModeRef: clientForRedirectlessModeRefResourceLink,
 	}
 
@@ -109,7 +109,7 @@ func optionalHcl(model authenticationApiApplicationResourceModel) string {
 	}
 
 	if len(model.additionalAllowedOrigins) > 0 {
-		hclAdditionalAllowedOrigins = fmt.Sprintf("additional_allowed_origins = [%s]", acctest.StringSliceToTerraformString(model.additionalAllowedOrigins))
+		hclAdditionalAllowedOrigins = fmt.Sprintf("additional_allowed_origins = %s", acctest.StringSliceToTerraformString(model.additionalAllowedOrigins))
 	}
 
 	if model.clientForRedirectlessModeRef != nil {
@@ -196,7 +196,7 @@ func testAccCheckExpectedAuthenticationApiApplicationAttributes(config authentic
 				return err
 			}
 
-			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "additional_allowed_origins", acctest.StringSliceToTerraformString(config.additionalAllowedOrigins))
+			err = acctest.VerifyStateAttributeSlice(stateAttributeValues, "additional_allowed_origins", config.additionalAllowedOrigins)
 			if err != nil {
 				return err
 			}
@@ -204,6 +204,11 @@ func testAccCheckExpectedAuthenticationApiApplicationAttributes(config authentic
 
 		if config.clientForRedirectlessModeRef != nil {
 			err = acctest.TestAttributesMatchString(resourceType, pointers.String(authenticationApiApplicationName), "client_for_redirectless_mode_ref", config.clientForRedirectlessModeRef.Id, response.ClientForRedirectlessModeRef.Id)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "client_for_redirectless_mode_ref.id", config.clientForRedirectlessModeRef.Id)
 			if err != nil {
 				return err
 			}
