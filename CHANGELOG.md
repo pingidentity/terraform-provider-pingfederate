@@ -1,4 +1,4 @@
-# v0.9.0 (Unreleased)
+# v0.9.0 March 29th, 2024
 ### FEATURES
 * Resources that no longer incorrectly require a `<resource_type>_id` are listed here:
   - `pingfederate_authentication_api_application`
