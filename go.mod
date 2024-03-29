@@ -16,7 +16,7 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.7.0
 	github.com/katbyte/terrafmt v0.5.3
 	github.com/pavius/impi v0.0.3
-	github.com/pingidentity/pingfederate-go-client/v1200 v1200.1.3
+	github.com/pingidentity/pingfederate-go-client/v1200 v1200.2.0
 	github.com/terraform-linters/tflint v0.50.3
 )
 
@@ -278,7 +278,7 @@ require (
 	golang.org/x/exp/typeparams v0.0.0-20231219180239-dc181d75b848 // indirect
 	golang.org/x/mod v0.16.0 // indirect
 	golang.org/x/net v0.22.0 // indirect
-	golang.org/x/oauth2 v0.17.0 // indirect
+	golang.org/x/oauth2 v0.18.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
