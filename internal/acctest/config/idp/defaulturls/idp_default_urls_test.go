@@ -97,6 +97,7 @@ func testAccCheckExpectedIdpDefaultUrlsAttributes(config idpDefaultUrlsResourceM
 		resourceType := "IdpDefaultUrls"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
+		stateAttributes := s.RootModule().Resources["pingfederate_idp_default_urls.myIdpDefaultUrls"].Primary.Attributes
 		response, _, err := testClient.IdpDefaultUrlsAPI.GetDefaultUrl(ctx).Execute()
 
 		if err != nil {
@@ -115,11 +116,21 @@ func testAccCheckExpectedIdpDefaultUrlsAttributes(config idpDefaultUrlsResourceM
 			if err != nil {
 				return err
 			}
+
+			err = acctest.VerifyStateAttributeValue(stateAttributes, "confirm_idp_slo", *config.confirmIdpSlo)
+			if err != nil {
+				return err
+			}
 		}
 
 		if config.idpSloSuccessUrl != nil {
 			err = acctest.TestAttributesMatchStringPointer(resourceType, nil, "idp_slo_success_url",
 				*config.idpSloSuccessUrl, response.IdpSloSuccessUrl)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.VerifyStateAttributeValue(stateAttributes, "idp_slo_success_url", *config.idpSloSuccessUrl)
 			if err != nil {
 				return err
 			}

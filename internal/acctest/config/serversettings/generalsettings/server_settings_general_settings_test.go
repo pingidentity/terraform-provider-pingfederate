@@ -94,6 +94,7 @@ func testAccCheckExpectedServerSettingsGeneralSettingsAttributes(config *serverS
 		resourceType := "ServerSettingsGeneralSettings"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
+		stateAttributes := s.RootModule().Resources["pingfederate_server_settings_general_settings.myServerSettingsGeneralSettings"].Primary.Attributes
 		response, _, err := testClient.ServerSettingsAPI.GetGeneralSettings(ctx).Execute()
 
 		if err != nil {
@@ -110,23 +111,52 @@ func testAccCheckExpectedServerSettingsGeneralSettingsAttributes(config *serverS
 		if err != nil {
 			return err
 		}
+
+		err = acctest.VerifyStateAttributeValue(stateAttributes, "datastore_validation_interval_secs", config.datastoreValidationIntervalSecs)
+		if err != nil {
+			return err
+		}
+
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "disable_automatic_connection_validation",
 			config.disableAutomaticConnectionValidation, *response.DisableAutomaticConnectionValidation)
 		if err != nil {
 			return err
 		}
+
+		err = acctest.VerifyStateAttributeValue(stateAttributes, "disable_automatic_connection_validation", config.disableAutomaticConnectionValidation)
+		if err != nil {
+			return err
+		}
+
 		err = acctest.TestAttributesMatchString(resourceType, nil, "idp_connection_transaction_logging_override",
 			config.idpConnectionTransactionLoggingOverride, *response.IdpConnectionTransactionLoggingOverride)
 		if err != nil {
 			return err
 		}
+
+		err = acctest.VerifyStateAttributeValue(stateAttributes, "idp_connection_transaction_logging_override", config.idpConnectionTransactionLoggingOverride)
+		if err != nil {
+			return err
+		}
+
 		err = acctest.TestAttributesMatchString(resourceType, nil, "request_header_for_correlation_id",
 			config.requestHeaderForCorrelationId, *response.RequestHeaderForCorrelationId)
 		if err != nil {
 			return err
 		}
+
+		err = acctest.VerifyStateAttributeValue(stateAttributes, "request_header_for_correlation_id", config.requestHeaderForCorrelationId)
+		if err != nil {
+			return err
+		}
+
 		err = acctest.TestAttributesMatchString(resourceType, nil, "sp_connection_transaction_logging_override",
 			config.spConnectionTransactionLoggingOverride, *response.SpConnectionTransactionLoggingOverride)
+		if err != nil {
+			return err
+		}
+
+		err = acctest.VerifyStateAttributeValue(stateAttributes, "sp_connection_transaction_logging_override", config.spConnectionTransactionLoggingOverride)
 		if err != nil {
 			return err
 		}

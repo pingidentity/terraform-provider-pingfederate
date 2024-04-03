@@ -109,6 +109,7 @@ func testAccCheckExpectedSessionAuthenticationSessionPoliciesGlobalAttributes(co
 		resourceType := "SessionAuthenticationSessionPoliciesGlobal"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
+		stateAttributes := s.RootModule().Resources["pingfederate_session_authentication_session_policies_global.mySessionAuthenticationSessionPoliciesGlobal"].Primary.Attributes
 		response, _, err := testClient.SessionAPI.GetGlobalPolicy(ctx).Execute()
 
 		if err != nil {
@@ -121,9 +122,20 @@ func testAccCheckExpectedSessionAuthenticationSessionPoliciesGlobalAttributes(co
 		if err != nil {
 			return err
 		}
+
+		err = acctest.VerifyStateAttributeValue(stateAttributes, "enable_sessions", config.enableSessions)
+		if err != nil {
+			return err
+		}
+
 		if config.persistentSessions != nil {
 			err = acctest.TestAttributesMatchBool(resourceType, nil, "persistent_sessions",
 				*config.persistentSessions, *response.PersistentSessions)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.VerifyStateAttributeValue(stateAttributes, "persistent_sessions", *config.persistentSessions)
 			if err != nil {
 				return err
 			}
@@ -134,10 +146,20 @@ func testAccCheckExpectedSessionAuthenticationSessionPoliciesGlobalAttributes(co
 			if err != nil {
 				return err
 			}
+
+			err = acctest.VerifyStateAttributeValue(stateAttributes, "hash_unique_user_key_attribute", *config.hashUniqueUserKeyAttribute)
+			if err != nil {
+				return err
+			}
 		}
 		if config.idleTimeoutMins != nil {
 			err = acctest.TestAttributesMatchInt(resourceType, nil, "idle_timeout_mins",
 				*config.idleTimeoutMins, *response.IdleTimeoutMins)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.VerifyStateAttributeValue(stateAttributes, "idle_timeout_mins", *config.idleTimeoutMins)
 			if err != nil {
 				return err
 			}
@@ -148,6 +170,11 @@ func testAccCheckExpectedSessionAuthenticationSessionPoliciesGlobalAttributes(co
 			if err != nil {
 				return err
 			}
+
+			err = acctest.VerifyStateAttributeValue(stateAttributes, "idle_timeout_display_unit", *config.idleTimeoutDisplayUnit)
+			if err != nil {
+				return err
+			}
 		}
 		if config.maxTimeoutMins != nil {
 			err = acctest.TestAttributesMatchInt(resourceType, nil, "max_timeout_mins",
@@ -155,10 +182,20 @@ func testAccCheckExpectedSessionAuthenticationSessionPoliciesGlobalAttributes(co
 			if err != nil {
 				return err
 			}
+
+			err = acctest.VerifyStateAttributeValue(stateAttributes, "max_timeout_mins", *config.maxTimeoutMins)
+			if err != nil {
+				return err
+			}
 		}
 		if config.maxTimeoutDisplayUnit != nil {
 			err = acctest.TestAttributesMatchStringPointer(resourceType, nil, "max_timeout_display_unit",
 				*config.maxTimeoutDisplayUnit, response.MaxTimeoutDisplayUnit)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.VerifyStateAttributeValue(stateAttributes, "max_timeout_display_unit", *config.maxTimeoutDisplayUnit)
 			if err != nil {
 				return err
 			}

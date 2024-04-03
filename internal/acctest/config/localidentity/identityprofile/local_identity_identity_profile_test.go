@@ -363,6 +363,7 @@ func TestAccLocalIdentityIdentityProfiles(t *testing.T) {
 		registrationEnabled: false,
 		profileEnabled:      false,
 	}
+
 	updatedResourceModel := localIdentityIdentityProfilesResourceModel{
 		id:                      localIdentityIdentityProfilesId,
 		name:                    "example1",
@@ -409,7 +410,7 @@ func TestAccLocalIdentityIdentityProfiles(t *testing.T) {
 				PreConfig: func() {
 					testClient := acctest.TestClient()
 					ctx := acctest.TestBasicAuthContext()
-					_, err := testClient.LocalIdentityIdentityProfilesAPI.DeleteIdentityProfile(ctx, updatedResourceModel.id).Execute()
+					_, err := testClient.LocalIdentityIdentityProfilesAPI.DeleteIdentityProfile(ctx, localIdentityIdentityProfilesId).Execute()
 					if err != nil {
 						t.Fatalf("Failed to delete config: %v", err)
 					}
@@ -473,8 +474,8 @@ func testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(config localIde
 		resourceType := "LocalIdentityIdentityProfiles"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
+		stateAttributes := s.RootModule().Resources["pingfederate_local_identity_identity_profile.myLocalIdentityIdentityProfiles"].Primary.Attributes
 		response, _, err := testClient.LocalIdentityIdentityProfilesAPI.GetIdentityProfile(ctx, localIdentityIdentityProfilesId).Execute()
-
 		if err != nil {
 			return err
 		}
@@ -484,14 +485,59 @@ func testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(config localIde
 		if err != nil {
 			return err
 		}
+
 		err = acctest.TestAttributesMatchString(resourceType, &config.id, "name",
 			config.name, response.Name)
 		if err != nil {
 			return err
 		}
-		if err != nil {
-			return err
+
+		if config.authSourceUpdatePolicy != nil {
+			err = acctest.TestAttributesMatchBool(resourceType, &config.id, "store_attributes",
+				*config.authSourceUpdatePolicy.StoreAttributes, *response.AuthSourceUpdatePolicy.StoreAttributes)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.VerifyStateAttributeValue(stateAttributes, "auth_source_update_policy.store_attributes", *config.authSourceUpdatePolicy.StoreAttributes)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchBool(resourceType, &config.id, "retain_attributes",
+				*config.authSourceUpdatePolicy.RetainAttributes, *response.AuthSourceUpdatePolicy.RetainAttributes)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.VerifyStateAttributeValue(stateAttributes, "auth_source_update_policy.retain_attributes", *config.authSourceUpdatePolicy.RetainAttributes)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchBool(resourceType, &config.id, "update_attributes",
+				*config.authSourceUpdatePolicy.UpdateAttributes, *response.AuthSourceUpdatePolicy.UpdateAttributes)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.VerifyStateAttributeValue(stateAttributes, "auth_source_update_policy.update_attributes", *config.authSourceUpdatePolicy.UpdateAttributes)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchInt(resourceType, &config.id, "update_interval",
+				int64(*config.authSourceUpdatePolicy.UpdateInterval), int64(*response.AuthSourceUpdatePolicy.UpdateInterval))
+			if err != nil {
+				return err
+			}
+
+			err = acctest.VerifyStateAttributeValue(stateAttributes, "auth_source_update_policy.update_interval", int64(*config.authSourceUpdatePolicy.UpdateInterval))
+			if err != nil {
+				return err
+			}
 		}
+
 		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "registration_enabled",
 			config.registrationEnabled, *response.RegistrationEnabled)
 		if err != nil {
@@ -499,6 +545,11 @@ func testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(config localIde
 		}
 		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "profile_enabled",
 			config.profileEnabled, *response.ProfileEnabled)
+		if err != nil {
+			return err
+		}
+
+		err = acctest.VerifyStateAttributeValue(stateAttributes, "registration_enabled", config.registrationEnabled)
 		if err != nil {
 			return err
 		}
@@ -524,6 +575,7 @@ func testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(config localIde
 
 // Test that any objects created by the test are destroyed
 func testAccCheckLocalIdentityIdentityProfilesDestroy(s *terraform.State) error {
+
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
 	_, err := testClient.LocalIdentityIdentityProfilesAPI.DeleteIdentityProfile(ctx, localIdentityIdentityProfilesId).Execute()

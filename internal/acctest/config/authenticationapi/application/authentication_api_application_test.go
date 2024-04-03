@@ -160,7 +160,7 @@ func testAccCheckExpectedAuthenticationApiApplicationAttributes(config authentic
 		resourceType := "AuthenticationApiApplication"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		stateAttributeValues := s.Modules[0].Resources["pingfederate_authentication_api_application.myAuthenticationApiApplication"].Primary.Attributes
+		stateAttributeValues := s.RootModule().Resources["pingfederate_authentication_api_application.myAuthenticationApiApplication"].Primary.Attributes
 		response, _, err := testClient.AuthenticationApiAPI.GetApplication(ctx, authenticationApiApplicationId).Execute()
 
 		if err != nil {

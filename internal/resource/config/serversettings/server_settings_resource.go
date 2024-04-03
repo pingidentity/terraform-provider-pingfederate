@@ -431,7 +431,10 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Description: "If supplied, the Source ID value entered here is used for SAML 1.x, instead of being derived from the SAML 1.x Issuer/Audience.",
 						Computed:    true,
 						Optional:    true,
-						Default:     stringdefault.StaticString(""),
+						Validators: []validator.String{
+							stringvalidator.LengthBetween(40, 40),
+						},
+						Default: stringdefault.StaticString(""),
 					},
 					"wsfed_realm": schema.StringAttribute{
 						Description: "The URI of the realm associated with the PingFederate server. A realm represents a single unit of security administration or trust.",

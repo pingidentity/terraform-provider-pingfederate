@@ -28,7 +28,6 @@ func TestAccOauthAuthServerSettingsScopesCommonScopes(t *testing.T) {
 		id:          oauthAuthServerSettingsScopesCommonScopesId,
 		name:        oauthAuthServerSettingsScopesCommonScopesId,
 		description: "example",
-		dynamic:     false,
 	}
 	updatedResourceModel := oauthAuthServerSettingsScopesCommonScopesResourceModel{
 		id:          oauthAuthServerSettingsScopesCommonScopesId,
@@ -113,6 +112,7 @@ func testAccCheckExpectedOauthAuthServerSettingsScopesCommonScopesAttributes(con
 		resourceType := "OauthAuthServerSettingsScopesCommonScopes"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
+		stateAttributes := s.RootModule().Resources["pingfederate_oauth_auth_server_settings_scopes_common_scope.myOauthAuthServerSettingsScopesCommonScopes"].Primary.Attributes
 		response, _, err := testClient.OauthAuthServerSettingsAPI.GetCommonScope(ctx, oauthAuthServerSettingsScopesCommonScopesId).Execute()
 		if err != nil {
 			return err
@@ -128,6 +128,15 @@ func testAccCheckExpectedOauthAuthServerSettingsScopesCommonScopesAttributes(con
 			return err
 		}
 
+		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "dynamic", config.dynamic, *response.Dynamic)
+		if err != nil {
+			return err
+		}
+
+		err = acctest.VerifyStateAttributeValue(stateAttributes, "dynamic", config.dynamic)
+		if err != nil {
+			return err
+		}
 		return nil
 	}
 }

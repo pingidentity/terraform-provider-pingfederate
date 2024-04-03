@@ -79,14 +79,15 @@ func TestAccOpenIdConnectSettings(t *testing.T) {
 	resourceName := "myOpenIdConnectSettings"
 	// send empty model to start
 	initialResourceModel := openIdConnectSettingsResourceModel{}
-	updatedSessionSettings := client.NewOIDCSessionSettings()
-	updatedSessionSettings.TrackUserSessionsForLogout = pointers.Bool(true)
-	updatedSessionSettings.RevokeUserSessionOnLogout = pointers.Bool(false)
-	updatedSessionSettings.SessionRevocationLifetime = pointers.Int64(180)
-
 	updatedResourceModel := openIdConnectSettingsResourceModel{
-		defaultPolicyRef: client.NewResourceLink("oidcPolicy"),
-		sessionSettings:  updatedSessionSettings,
+		defaultPolicyRef: &client.ResourceLink{
+			Id: "oidcPolicy",
+		},
+		sessionSettings: &client.OIDCSessionSettings{
+			TrackUserSessionsForLogout: pointers.Bool(true),
+			RevokeUserSessionOnLogout:  pointers.Bool(true),
+			SessionRevocationLifetime:  pointers.Int64(180),
+		},
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -165,8 +166,8 @@ func testAccCheckExpectedOpenIdConnectSettingsAttributes(config openIdConnectSet
 		resourceType := "OpenIdConnectSettings"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
+		stateAttributes := s.RootModule().Resources["pingfederate_open_id_connect_settings.myOpenIdConnectSettings"].Primary.Attributes
 		response, _, err := testClient.OauthOpenIdConnectAPI.GetOIDCSettings(ctx).Execute()
-
 		if err != nil {
 			return err
 		}
@@ -174,6 +175,11 @@ func testAccCheckExpectedOpenIdConnectSettingsAttributes(config openIdConnectSet
 		// Verify that attributes have expected values
 		if config.defaultPolicyRef != nil {
 			err = acctest.TestAttributesMatchString(resourceType, nil, "id", config.defaultPolicyRef.Id, response.DefaultPolicyRef.Id)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.VerifyStateAttributeValue(stateAttributes, "default_policy_ref.id", config.defaultPolicyRef.Id)
 			if err != nil {
 				return err
 			}
@@ -185,12 +191,27 @@ func testAccCheckExpectedOpenIdConnectSettingsAttributes(config openIdConnectSet
 				return err
 			}
 
+			err = acctest.VerifyStateAttributeValue(stateAttributes, "session_settings.track_user_sessions_for_logout", *config.sessionSettings.TrackUserSessionsForLogout)
+			if err != nil {
+				return err
+			}
+
 			err = acctest.TestAttributesMatchBool(resourceType, nil, "revoke_user_session_on_logout", *config.sessionSettings.RevokeUserSessionOnLogout, *response.SessionSettings.RevokeUserSessionOnLogout)
 			if err != nil {
 				return err
 			}
 
+			err = acctest.VerifyStateAttributeValue(stateAttributes, "session_settings.revoke_user_session_on_logout", *config.sessionSettings.RevokeUserSessionOnLogout)
+			if err != nil {
+				return err
+			}
+
 			err = acctest.TestAttributesMatchInt(resourceType, nil, "session_revocation_lifetime", *config.sessionSettings.SessionRevocationLifetime, *response.SessionSettings.SessionRevocationLifetime)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.VerifyStateAttributeValue(stateAttributes, "session_settings.session_revocation_lifetime", *config.sessionSettings.SessionRevocationLifetime)
 			if err != nil {
 				return err
 			}

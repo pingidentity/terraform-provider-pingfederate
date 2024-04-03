@@ -57,6 +57,7 @@ func testAccCheckExpectedLicenseAgreementAttributes(accepted bool) resource.Test
 		resourceType := "LicenseAgreement"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
+		stateAttributes := s.RootModule().Resources["pingfederate_license_agreement.myLicenseAgreement"].Primary.Attributes
 		response, _, err := testClient.LicenseAPI.GetLicenseAgreement(ctx).Execute()
 
 		if err != nil {
@@ -66,6 +67,11 @@ func testAccCheckExpectedLicenseAgreementAttributes(accepted bool) resource.Test
 		// Verify that attributes have expected values
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "accepted",
 			accepted, response.GetAccepted())
+		if err != nil {
+			return err
+		}
+
+		err = acctest.VerifyStateAttributeValue(stateAttributes, "accepted", accepted)
 		if err != nil {
 			return err
 		}

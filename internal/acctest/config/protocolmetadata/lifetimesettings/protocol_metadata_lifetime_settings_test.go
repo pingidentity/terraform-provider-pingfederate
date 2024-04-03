@@ -84,6 +84,7 @@ func testAccCheckExpectedProtocolMetadataLifetimeSettingsAttributes(config *prot
 		resourceType := "ProtocolMetadataLifetimeSettings"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
+		stateAttributeValues := s.RootModule().Resources["pingfederate_protocol_metadata_lifetime_settings.myProtocolMetadataLifetimeSettings"].Primary.Attributes
 		response, _, err := testClient.ProtocolMetadataAPI.GetLifetimeSettings(ctx).Execute()
 
 		if err != nil {
@@ -100,8 +101,19 @@ func testAccCheckExpectedProtocolMetadataLifetimeSettingsAttributes(config *prot
 		if err != nil {
 			return err
 		}
+
+		err = acctest.VerifyStateAttributeValue(stateAttributeValues, "cache_duration", config.cacheDuration)
+		if err != nil {
+			return err
+		}
+
 		err = acctest.TestAttributesMatchInt(resourceType, nil, "reload_delay",
 			config.reloadDelay, *response.ReloadDelay)
+		if err != nil {
+			return err
+		}
+
+		err = acctest.VerifyStateAttributeValue(stateAttributeValues, "reload_delay", config.reloadDelay)
 		if err != nil {
 			return err
 		}

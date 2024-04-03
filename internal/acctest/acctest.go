@@ -285,10 +285,6 @@ func VerifyStateAttributeValue(stateAttributes map[string]string, stateKeyValue 
 	var configValueToTest string
 	var ok bool
 
-	if stateAttributes == nil {
-		return nil
-	}
-
 	_, ok = configValue.(string)
 	if ok {
 		configValueToTest = configValue.(string)
@@ -304,29 +300,24 @@ func VerifyStateAttributeValue(stateAttributes map[string]string, stateKeyValue 
 		configValueToTest = strconv.FormatBool(configValue.(bool))
 	}
 
-	_, ok = configValue.([]string)
-	if ok {
-		configValueToTest = StringSliceToTerraformString(configValue.([]string))
-	}
-
 	if stateAttributes[stateKeyValue] != configValueToTest {
-		ReturnStateMismatchError(stateKeyValue, stateAttributes[stateKeyValue], configValueToTest)
+		err := ReturnStateMismatchError(stateKeyValue, stateAttributes[stateKeyValue], configValueToTest)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
 func VerifyStateAttributeSlice(stateAttributes map[string]string, stateKeyValue string, configValue []string) error {
-	var configValueToTest string
+	configValueToTest := StringSliceToTerraformString(configValue)
 
-	if stateAttributes == nil {
-		return nil
-	}
-
-	configValueToTest = StringSliceToTerraformString(configValue)
-
-	if stateAttributes[stateKeyValue] != configValueToTest {
-		ReturnStateMismatchError(stateKeyValue, stateAttributes[stateKeyValue], configValueToTest)
+	if stateAttributes[stateKeyValue] != configValueToTest && (stateAttributes[stateKeyValue] != "" && configValueToTest == "[]") {
+		err := ReturnStateMismatchError(stateKeyValue, stateAttributes[stateKeyValue], configValueToTest)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

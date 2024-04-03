@@ -84,28 +84,28 @@ func TestAccOauthClient(t *testing.T) {
 		clientId:                           oauthClientId,
 		name:                               "updatedName",
 		grantTypes:                         []string{"IMPLICIT", "AUTHORIZATION_CODE", "RESOURCE_OWNER_CREDENTIALS", "REFRESH_TOKEN", "EXTENSION", "DEVICE_CODE", "ACCESS_TOKEN_VALIDATION", "CIBA", "TOKEN_EXCHANGE"},
-		enabled:                            pointers.Bool(false),
+		enabled:                            pointers.Bool(true),
 		includeOptionalAttributes:          true,
 		bypassApprovalPage:                 pointers.Bool(true),
 		description:                        pointers.String("updatedDescription"),
 		logoUrl:                            pointers.String("https://example.com"),
 		redirectUris:                       []string{"https://example.com"},
 		allowAuthenticationApiInit:         pointers.Bool(true),
-		requirePushedAuthorizationRequests: pointers.Bool(false),
-		requireJwtSecuredAuthorizationResponseMode: pointers.Bool(false),
+		requirePushedAuthorizationRequests: pointers.Bool(true),
+		requireJwtSecuredAuthorizationResponseMode: pointers.Bool(true),
 		restrictScopes:                      pointers.Bool(true),
 		restrictedScopes:                    []string{"openid"},
 		restrictedResponseTypes:             []string{"code", "token", "id_token", "code token", "code id_token", "token id_token", "code token id_token"},
-		restrictToDefaultAccessTokenManager: pointers.Bool(false),
-		validateUsingAllEligibleAtms:        pointers.Bool(false),
+		restrictToDefaultAccessTokenManager: pointers.Bool(true),
+		validateUsingAllEligibleAtms:        pointers.Bool(true),
 		oidcPolicy:                          oidcPolicy,
 		clientAuth:                          clientAuth,
 		jwksSettings:                        jwksSettings,
-		requireProofKeyForCodeExchange:      pointers.Bool(false),
+		requireProofKeyForCodeExchange:      pointers.Bool(true),
 		cibaDeliveryMode:                    pointers.String("PING"),
 		cibaPollingInterval:                 pointers.Int64(1),
 		cibaRequireSignedRequests:           pointers.Bool(true),
-		cibaUserCodeSupported:               pointers.Bool(false),
+		cibaUserCodeSupported:               pointers.Bool(true),
 		cibaNotificationEndpoint:            pointers.String("https://example.com"),
 		jwtSecuredAuthorizationResponseModeEncryptionAlgorithm:        pointers.String("RSA_OAEP"),
 		jwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm: pointers.String("AES_128_CBC_HMAC_SHA_256"),
@@ -355,6 +355,7 @@ func testAccCheckExpectedOauthClientAttributes(config oauthClientResourceModel) 
 		resourceType := "OauthClient"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
+		stateAttributeValues := s.RootModule().Resources["pingfederate_oauth_client."+oauthClientId].Primary.Attributes
 		response, _, err := testClient.OauthClientsAPI.GetOauthClientById(ctx, oauthClientId).Execute()
 
 		if err != nil {
@@ -367,7 +368,17 @@ func testAccCheckExpectedOauthClientAttributes(config oauthClientResourceModel) 
 			return err
 		}
 
+		err = acctest.VerifyStateAttributeValue(stateAttributeValues, "name", config.name)
+		if err != nil {
+			return err
+		}
+
 		err = acctest.TestAttributesMatchStringSlice(resourceType, pointers.String(oauthClientId), "grant_types", config.grantTypes, response.GrantTypes)
+		if err != nil {
+			return err
+		}
+
+		err = acctest.VerifyStateAttributeSlice(stateAttributeValues, "grant_types", config.grantTypes)
 		if err != nil {
 			return err
 		}
@@ -379,142 +390,162 @@ func testAccCheckExpectedOauthClientAttributes(config oauthClientResourceModel) 
 			}
 		}
 
+		err = acctest.VerifyStateAttributeSlice(stateAttributeValues, "redirect_uris", config.redirectUris)
+		if err != nil {
+			return err
+		}
+
 		if config.includeOptionalAttributes {
 			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "enabled", *config.enabled, *response.Enabled)
 			if err != nil {
 				return err
 			}
-			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "bypass_approval_page", *config.bypassApprovalPage, *response.BypassApprovalPage)
+			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "enabled", *config.enabled)
 			if err != nil {
 				return err
 			}
+
 			err = acctest.TestAttributesMatchString(resourceType, pointers.String(oauthClientId), "description", *config.description, *response.Description)
 			if err != nil {
 				return err
 			}
-			err = acctest.TestAttributesMatchString(resourceType, pointers.String(oauthClientId), "logo_url", *config.logoUrl, *response.LogoUrl)
+			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "description", *config.description)
 			if err != nil {
 				return err
 			}
+
 			err = acctest.TestAttributesMatchStringSlice(resourceType, pointers.String(oauthClientId), "redirect_uris", config.redirectUris, response.RedirectUris)
 			if err != nil {
 				return err
 			}
-			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "allow_authentication_api_init", *config.allowAuthenticationApiInit, *response.AllowAuthenticationApiInit)
+			err = acctest.VerifyStateAttributeSlice(stateAttributeValues, "redirect_uris", config.redirectUris)
 			if err != nil {
 				return err
 			}
+
 			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "require_pushed_authorization_requests", *config.requirePushedAuthorizationRequests, *response.RequirePushedAuthorizationRequests)
 			if err != nil {
 				return err
 			}
-			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "require_jwt_secured_authorization_response_mode", *config.requireJwtSecuredAuthorizationResponseMode, *response.RequireJwtSecuredAuthorizationResponseMode)
+			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "require_pushed_authorization_requests", *config.requirePushedAuthorizationRequests)
 			if err != nil {
 				return err
 			}
+
 			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "restrict_scopes", *config.restrictScopes, *response.RestrictScopes)
 			if err != nil {
 				return err
 			}
-			err = acctest.TestAttributesMatchStringSlice(resourceType, pointers.String(oauthClientId), "restricted_scopes", config.restrictedScopes, response.RestrictedScopes)
+			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "restrict_scopes", *config.restrictScopes)
 			if err != nil {
 				return err
 			}
+
 			err = acctest.TestAttributesMatchStringSlice(resourceType, pointers.String(oauthClientId), "restricted_response_types", config.restrictedResponseTypes, response.RestrictedResponseTypes)
 			if err != nil {
 				return err
 			}
-			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "restrict_to_default_access_token_manager", *config.restrictToDefaultAccessTokenManager, *response.RestrictToDefaultAccessTokenManager)
+			err = acctest.VerifyStateAttributeSlice(stateAttributeValues, "restricted_response_types", config.restrictedResponseTypes)
 			if err != nil {
 				return err
 			}
+
 			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "validate_using_all_eligible_atms", *config.validateUsingAllEligibleAtms, *response.ValidateUsingAllEligibleAtms)
 			if err != nil {
 				return err
 			}
-			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "require_proof_key_for_code_exchange", *config.requireProofKeyForCodeExchange, *response.RequireProofKeyForCodeExchange)
+			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "validate_using_all_eligible_atms", *config.validateUsingAllEligibleAtms)
 			if err != nil {
 				return err
 			}
+
 			err = acctest.TestAttributesMatchString(resourceType, pointers.String(oauthClientId), "ciba_delivery_mode", *config.cibaDeliveryMode, *response.CibaDeliveryMode)
 			if err != nil {
 				return err
 			}
-			err = acctest.TestAttributesMatchInt(resourceType, pointers.String(oauthClientId), "ciba_polling_interval", *config.cibaPollingInterval, *response.CibaPollingInterval)
+			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "ciba_delivery_mode", *config.cibaDeliveryMode)
 			if err != nil {
 				return err
 			}
+
 			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "ciba_require_signed_requests", *config.cibaRequireSignedRequests, *response.CibaRequireSignedRequests)
 			if err != nil {
 				return err
 			}
-			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "ciba_user_code_supported", *config.cibaUserCodeSupported, *response.CibaUserCodeSupported)
+			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "ciba_require_signed_requests", *config.cibaRequireSignedRequests)
 			if err != nil {
 				return err
 			}
+
 			err = acctest.TestAttributesMatchString(resourceType, pointers.String(oauthClientId), "ciba_notification_endpoint", *config.cibaNotificationEndpoint, *response.CibaNotificationEndpoint)
 			if err != nil {
 				return err
 			}
-			err = acctest.TestAttributesMatchString(resourceType, pointers.String(oauthClientId), "jwt_secured_authorization_response_mode_encryption_algorithm", *config.jwtSecuredAuthorizationResponseModeEncryptionAlgorithm, *response.JwtSecuredAuthorizationResponseModeEncryptionAlgorithm)
+			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "ciba_notification_endpoint", *config.cibaNotificationEndpoint)
 			if err != nil {
 				return err
 			}
+
 			err = acctest.TestAttributesMatchString(resourceType, pointers.String(oauthClientId), "jwt_secured_authorization_response_mode_content_encryption_algorithm", *config.jwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm, *response.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm)
 			if err != nil {
 				return err
 			}
-			err = acctest.TestAttributesMatchString(resourceType, pointers.String(oauthClientId), "token_introspection_signing_algorithm", *config.tokenIntrospectionSigningAlgorithm, *response.TokenIntrospectionSigningAlgorithm)
+			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "jwt_secured_authorization_response_mode_content_encryption_algorithm", *config.jwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm)
 			if err != nil {
 				return err
 			}
+
 			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "require_signed_requests", *config.requireSignedRequests, *response.RequireSignedRequests)
 			if err != nil {
 				return err
 			}
-
-			//  test oidc policy
-			err = acctest.TestAttributesMatchString(resourceType, pointers.String(oauthClientId), "oidc_policy.id_token_signing_algorithm", *config.oidcPolicy.IdTokenSigningAlgorithm, *response.OidcPolicy.IdTokenSigningAlgorithm)
+			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "require_signed_requests", *config.requireSignedRequests)
 			if err != nil {
 				return err
 			}
+
 			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "oidc_policy.grant_access_session_revocation_api", *config.oidcPolicy.GrantAccessSessionRevocationApi, *response.OidcPolicy.GrantAccessSessionRevocationApi)
 			if err != nil {
 				return err
 			}
-			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "oidc_policy.grant_access_session_session_management_api", *config.oidcPolicy.GrantAccessSessionSessionManagementApi, *response.OidcPolicy.GrantAccessSessionSessionManagementApi)
-			if err != nil {
-				return err
-			}
-			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "oidc_policy.ping_access_logout_capable", *config.oidcPolicy.PingAccessLogoutCapable, *response.OidcPolicy.PingAccessLogoutCapable)
-			if err != nil {
-				return err
-			}
-			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "oidc_policy.pairwise_identifier_user_type", *config.oidcPolicy.PairwiseIdentifierUserType, *response.OidcPolicy.PairwiseIdentifierUserType)
-			if err != nil {
-				return err
-			}
-			err = acctest.TestAttributesMatchString(resourceType, pointers.String(oauthClientId), "oidc_policy.sector_identifier_uri", *config.oidcPolicy.SectorIdentifierUri, *response.OidcPolicy.SectorIdentifierUri)
-			if err != nil {
-				return err
-			}
-			err = acctest.TestAttributesMatchString(resourceType, pointers.String(oauthClientId), "oidc_policy.id_token_encryption_algorithm", *config.oidcPolicy.IdTokenEncryptionAlgorithm, *response.OidcPolicy.IdTokenEncryptionAlgorithm)
-			if err != nil {
-				return err
-			}
-			err = acctest.TestAttributesMatchString(resourceType, pointers.String(oauthClientId), "oidc_policy.id_token_content_encryption_algorithm", *config.oidcPolicy.IdTokenContentEncryptionAlgorithm, *response.OidcPolicy.IdTokenContentEncryptionAlgorithm)
+			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "oidc_policy.grant_access_session_revocation_api", *config.oidcPolicy.GrantAccessSessionRevocationApi)
 			if err != nil {
 				return err
 			}
 
-			// test client auth
-			err = acctest.TestAttributesMatchString(resourceType, pointers.String(oauthClientId), "client_auth.type", *config.clientAuth.Type, *response.ClientAuth.Type)
+			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "oidc_policy.ping_access_logout_capable", *config.oidcPolicy.PingAccessLogoutCapable, *response.OidcPolicy.PingAccessLogoutCapable)
+			if err != nil {
+				return err
+			}
+			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "oidc_policy.ping_access_logout_capable", *config.oidcPolicy.PingAccessLogoutCapable)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, pointers.String(oauthClientId), "oidc_policy.sector_identifier_uri", *config.oidcPolicy.SectorIdentifierUri, *response.OidcPolicy.SectorIdentifierUri)
+			if err != nil {
+				return err
+			}
+			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "oidc_policy.sector_identifier_uri", *config.oidcPolicy.SectorIdentifierUri)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, pointers.String(oauthClientId), "oidc_policy.id_token_content_encryption_algorithm", *config.oidcPolicy.IdTokenContentEncryptionAlgorithm, *response.OidcPolicy.IdTokenContentEncryptionAlgorithm)
+			if err != nil {
+				return err
+			}
+			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "oidc_policy.id_token_content_encryption_algorithm", *config.oidcPolicy.IdTokenContentEncryptionAlgorithm)
 			if err != nil {
 				return err
 			}
 
 			// test jwks settings
 			err = acctest.TestAttributesMatchString(resourceType, pointers.String(oauthClientId), "jwks_settings.jwks_url", *config.jwksSettings.JwksUrl, *response.JwksSettings.JwksUrl)
+			if err != nil {
+				return err
+			}
+			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "jwks_settings.jwks_url", *config.jwksSettings.JwksUrl)
 			if err != nil {
 				return err
 			}

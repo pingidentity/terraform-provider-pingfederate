@@ -116,8 +116,8 @@ func testAccCheckExpectedAuthenticationPolicyContractAttributes(config authentic
 		resourceType := "AuthenticationPolicyContract"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		idStateVal := s.Modules[0].Resources["pingfederate_authentication_policy_contract.myAuthenticationPolicyContract"].Primary.Attributes["id"]
-		response, _, err := testClient.AuthenticationPolicyContractsAPI.GetAuthenticationPolicyContract(ctx, idStateVal).Execute()
+		stateAttributes := s.RootModule().Resources["pingfederate_authentication_policy_contract.myAuthenticationPolicyContract"].Primary.Attributes
+		response, _, err := testClient.AuthenticationPolicyContractsAPI.GetAuthenticationPolicyContract(ctx, stateAttributes["id"]).Execute()
 		if err != nil {
 			return err
 		}
@@ -140,7 +140,12 @@ func testAccCheckExpectedAuthenticationPolicyContractAttributes(config authentic
 			return err
 		}
 
-		stateId = idStateVal
+		err = acctest.VerifyStateAttributeSlice(stateAttributes, "extended_attributes", config.extendedAttributes)
+		if err != nil {
+			return err
+		}
+
+		stateId = stateAttributes["id"]
 		return nil
 	}
 }

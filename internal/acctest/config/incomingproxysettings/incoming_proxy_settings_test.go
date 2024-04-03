@@ -138,6 +138,7 @@ func testAccCheckExpectedIncomingProxySettingsAttributes(incomingProxySettings *
 		resourceType := "IncomingProxySettings"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
+		stateAttributes := s.RootModule().Resources["pingfederate_incoming_proxy_settings.myIncomingProxySettings"].Primary.Attributes
 		response, _, err := testClient.IncomingProxySettingsAPI.GetIncomingProxySettings(ctx).Execute()
 
 		if err != nil {
@@ -157,6 +158,11 @@ func testAccCheckExpectedIncomingProxySettingsAttributes(incomingProxySettings *
 			if err != nil {
 				return err
 			}
+
+			err = acctest.VerifyStateAttributeValue(stateAttributes, "forwarded_ip_address_header_index", *incomingProxySettings.ForwardedIpAddressHeaderIndex)
+			if err != nil {
+				return err
+			}
 		}
 
 		if incomingProxySettings.ForwardedHostHeaderName != nil {
@@ -168,6 +174,11 @@ func testAccCheckExpectedIncomingProxySettingsAttributes(incomingProxySettings *
 
 		if incomingProxySettings.ForwardedHostHeaderIndex != nil {
 			err = acctest.TestAttributesMatchString(resourceType, nil, "forwarded_host_header_index", *incomingProxySettings.ForwardedHostHeaderIndex, *response.ForwardedHostHeaderIndex)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.VerifyStateAttributeValue(stateAttributes, "forwarded_host_header_index", *incomingProxySettings.ForwardedHostHeaderIndex)
 			if err != nil {
 				return err
 			}
@@ -189,6 +200,11 @@ func testAccCheckExpectedIncomingProxySettingsAttributes(incomingProxySettings *
 
 		if incomingProxySettings.ProxyTerminatesHttpsConns != nil {
 			err = acctest.TestAttributesMatchBool(resourceType, nil, "proxy_terminates_https_conns", *incomingProxySettings.ProxyTerminatesHttpsConns, *response.ProxyTerminatesHttpsConns)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.VerifyStateAttributeValue(stateAttributes, "proxy_terminates_https_conns", *incomingProxySettings.ProxyTerminatesHttpsConns)
 			if err != nil {
 				return err
 			}

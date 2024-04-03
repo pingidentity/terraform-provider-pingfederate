@@ -75,6 +75,7 @@ func testAccCheckExpectedVirtualHostNamesAttributes(config virtualHostNamesResou
 		resourceType := "VirtualHostNames"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
+		stateAttributes := s.RootModule().Resources["pingfederate_virtual_host_names.myVirtualHostNames"].Primary.Attributes
 		response, _, err := testClient.VirtualHostNamesAPI.GetVirtualHostNamesSettings(ctx).Execute()
 		if err != nil {
 			return err
@@ -83,6 +84,11 @@ func testAccCheckExpectedVirtualHostNamesAttributes(config virtualHostNamesResou
 		// Verify that attributes have expected values
 		err = acctest.TestAttributesMatchStringSlice(resourceType, nil, "virtual_host_names",
 			config.virtualHostNames, response.GetVirtualHostNames())
+		if err != nil {
+			return err
+		}
+
+		err = acctest.VerifyStateAttributeSlice(stateAttributes, "virtual_host_names", config.virtualHostNames)
 		if err != nil {
 			return err
 		}
