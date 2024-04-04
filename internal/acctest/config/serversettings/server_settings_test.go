@@ -101,7 +101,37 @@ func TestAccServerSettings(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccServerSettingsComplete(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedServerSettingsAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedServerSettingsAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "contact_info.company", *updatedResourceModel.contactInfo.Company),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "contact_info.email", *updatedResourceModel.contactInfo.Email),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "contact_info.first_name", *updatedResourceModel.contactInfo.FirstName),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "contact_info.last_name", *updatedResourceModel.contactInfo.LastName),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "contact_info.phone", *updatedResourceModel.contactInfo.Phone),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "email_server.source_addr", updatedResourceModel.emailServer.SourceAddr),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "email_server.email_server", updatedResourceModel.emailServer.EmailServer),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "email_server.use_ssl", fmt.Sprintf("%t", *updatedResourceModel.emailServer.UseSSL)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "email_server.verify_hostname", fmt.Sprintf("%t", *updatedResourceModel.emailServer.VerifyHostname)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "email_server.enable_utf8_message_headers", fmt.Sprintf("%t", *updatedResourceModel.emailServer.EnableUtf8MessageHeaders)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "email_server.use_debugging", fmt.Sprintf("%t", *updatedResourceModel.emailServer.UseDebugging)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "email_server.username", *updatedResourceModel.emailServer.Username),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.license_events.email_address", updatedResourceModel.notifications.LicenseEvents.EmailAddress),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.license_events.notification_publisher_ref.id", updatedResourceModel.notifications.LicenseEvents.NotificationPublisherRef.Id),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.certificate_expirations.email_address", updatedResourceModel.notifications.CertificateExpirations.EmailAddress),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.certificate_expirations.initial_warning_period", fmt.Sprintf("%d", *updatedResourceModel.notifications.CertificateExpirations.InitialWarningPeriod)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.certificate_expirations.final_warning_period", fmt.Sprintf("%d", updatedResourceModel.notifications.CertificateExpirations.FinalWarningPeriod)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.certificate_expirations.notification_publisher_ref.id", updatedResourceModel.notifications.CertificateExpirations.NotificationPublisherRef.Id),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.notify_admin_user_password_changes", fmt.Sprintf("%t", *updatedResourceModel.notifications.NotifyAdminUserPasswordChanges)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.account_changes_notification_publisher_ref.id", updatedResourceModel.notifications.AccountChangesNotificationPublisherRef.Id),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.metadata_notification_settings.email_address", updatedResourceModel.notifications.MetadataNotificationSettings.EmailAddress),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "notifications.metadata_notification_settings.notification_publisher_ref.id", updatedResourceModel.notifications.MetadataNotificationSettings.NotificationPublisherRef.Id),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "captcha_settings.site_key", *updatedResourceModel.captchaSettings.SiteKey),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "captcha_settings.secret_key", *updatedResourceModel.captchaSettings.SecretKey),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "federation_info.saml_2_entity_id", *updatedResourceModel.federationInfo.Saml2EntityId),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "federation_info.saml_1x_issuer_id", *updatedResourceModel.federationInfo.Saml1xIssuerId),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "federation_info.wsfed_realm", *updatedResourceModel.federationInfo.WsfedRealm),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings.%s", resourceName), "federation_info.base_url", *updatedResourceModel.federationInfo.BaseUrl),
+				),
 			},
 			{
 				// Test importing the resource
@@ -257,7 +287,6 @@ func testAccCheckExpectedServerSettingsAttributes(config serverSettingsResourceM
 		resourceType := "ServerSettings"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		stateAttributes := s.RootModule().Resources["pingfederate_server_settings.myServerSettings"].Primary.Attributes
 		response, _, err := testClient.ServerSettingsAPI.GetServerSettings(ctx).Execute()
 
 		if err != nil {
@@ -271,18 +300,8 @@ func testAccCheckExpectedServerSettingsAttributes(config serverSettingsResourceM
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "federation_info.base_url", *config.federationInfo.BaseUrl)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchStringPointer(resourceType, nil, "saml_2_entity_id",
 			*config.federationInfo.Saml2EntityId, response.FederationInfo.Saml2EntityId)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "federation_info.saml_2_entity_id", *config.federationInfo.Saml2EntityId)
 		if err != nil {
 			return err
 		}
@@ -292,20 +311,10 @@ func testAccCheckExpectedServerSettingsAttributes(config serverSettingsResourceM
 			if err != nil {
 				return err
 			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "federation_info.saml_1x_issuer_id", *config.federationInfo.Saml1xIssuerId)
-			if err != nil {
-				return err
-			}
 		}
 
 		if config.federationInfo.WsfedRealm != nil {
 			err = acctest.TestAttributesMatchString(resourceType, nil, "wsfed_realm", *config.federationInfo.WsfedRealm, *response.FederationInfo.WsfedRealm)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "federation_info.wsfed_realm", *config.federationInfo.WsfedRealm)
 			if err != nil {
 				return err
 			}
@@ -318,18 +327,8 @@ func testAccCheckExpectedServerSettingsAttributes(config serverSettingsResourceM
 				return err
 			}
 
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "contact_info.company", *config.contactInfo.Company)
-			if err != nil {
-				return err
-			}
-
 			err = acctest.TestAttributesMatchString(resourceType, nil, "email",
 				*config.contactInfo.Email, *response.ContactInfo.Email)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "contact_info.email", *config.contactInfo.Email)
 			if err != nil {
 				return err
 			}
@@ -340,29 +339,14 @@ func testAccCheckExpectedServerSettingsAttributes(config serverSettingsResourceM
 				return err
 			}
 
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "contact_info.first_name", *config.contactInfo.FirstName)
-			if err != nil {
-				return err
-			}
-
 			err = acctest.TestAttributesMatchString(resourceType, nil, "last_name",
 				*config.contactInfo.LastName, *response.ContactInfo.LastName)
 			if err != nil {
 				return err
 			}
 
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "contact_info.last_name", *config.contactInfo.LastName)
-			if err != nil {
-				return err
-			}
-
 			err = acctest.TestAttributesMatchString(resourceType, nil, "phone",
 				*config.contactInfo.Phone, *response.ContactInfo.Phone)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "contact_info.phone", *config.contactInfo.Phone)
 			if err != nil {
 				return err
 			}
@@ -375,18 +359,8 @@ func testAccCheckExpectedServerSettingsAttributes(config serverSettingsResourceM
 				return err
 			}
 
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "email_server.source_addr", config.emailServer.SourceAddr)
-			if err != nil {
-				return err
-			}
-
 			err = acctest.TestAttributesMatchString(resourceType, nil, "email_server",
 				config.emailServer.EmailServer, response.EmailServer.EmailServer)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "email_server.email_server", config.emailServer.EmailServer)
 			if err != nil {
 				return err
 			}
@@ -396,17 +370,7 @@ func testAccCheckExpectedServerSettingsAttributes(config serverSettingsResourceM
 				return err
 			}
 
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "email_server.use_ssl", *config.emailServer.UseSSL)
-			if err != nil {
-				return err
-			}
-
 			err = acctest.TestAttributesMatchBool(resourceType, nil, "verify_hostname", *config.emailServer.VerifyHostname, *response.EmailServer.VerifyHostname)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "email_server.verify_hostname", *config.emailServer.VerifyHostname)
 			if err != nil {
 				return err
 			}
@@ -416,27 +380,12 @@ func testAccCheckExpectedServerSettingsAttributes(config serverSettingsResourceM
 				return err
 			}
 
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "email_server.enable_utf8_message_headers", *config.emailServer.EnableUtf8MessageHeaders)
-			if err != nil {
-				return err
-			}
-
 			err = acctest.TestAttributesMatchBool(resourceType, nil, "use_debugging", *config.emailServer.UseDebugging, *response.EmailServer.UseDebugging)
 			if err != nil {
 				return err
 			}
 
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "email_server.use_debugging", *config.emailServer.UseDebugging)
-			if err != nil {
-				return err
-			}
-
 			err = acctest.TestAttributesMatchString(resourceType, nil, "username", *config.emailServer.Username, *response.EmailServer.Username)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "email_server.username", *config.emailServer.Username)
 			if err != nil {
 				return err
 			}
@@ -449,17 +398,7 @@ func testAccCheckExpectedServerSettingsAttributes(config serverSettingsResourceM
 				return err
 			}
 
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "notifications.license_events.email_address", config.notifications.LicenseEvents.EmailAddress)
-			if err != nil {
-				return err
-			}
-
 			err = acctest.TestAttributesMatchString(resourceType, nil, "id", config.notifications.LicenseEvents.NotificationPublisherRef.Id, response.Notifications.LicenseEvents.NotificationPublisherRef.Id)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "notifications.license_events.notification_publisher_ref.id", config.notifications.LicenseEvents.NotificationPublisherRef.Id)
 			if err != nil {
 				return err
 			}
@@ -469,17 +408,7 @@ func testAccCheckExpectedServerSettingsAttributes(config serverSettingsResourceM
 				return err
 			}
 
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "notifications.certificate_expirations.email_address", config.notifications.CertificateExpirations.EmailAddress)
-			if err != nil {
-				return err
-			}
-
 			err = acctest.TestAttributesMatchInt(resourceType, nil, "initial_warning_period", *config.notifications.CertificateExpirations.InitialWarningPeriod, *response.Notifications.CertificateExpirations.InitialWarningPeriod)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "notifications.certificate_expirations.initial_warning_period", *config.notifications.CertificateExpirations.InitialWarningPeriod)
 			if err != nil {
 				return err
 			}
@@ -489,17 +418,7 @@ func testAccCheckExpectedServerSettingsAttributes(config serverSettingsResourceM
 				return err
 			}
 
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "notifications.certificate_expirations.final_warning_period", config.notifications.CertificateExpirations.FinalWarningPeriod)
-			if err != nil {
-				return err
-			}
-
 			err = acctest.TestAttributesMatchBool(resourceType, nil, "notify_admin_user_password_changes", *config.notifications.NotifyAdminUserPasswordChanges, *response.Notifications.NotifyAdminUserPasswordChanges)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "notifications.notify_admin_user_password_changes", *config.notifications.NotifyAdminUserPasswordChanges)
 			if err != nil {
 				return err
 			}
@@ -509,17 +428,7 @@ func testAccCheckExpectedServerSettingsAttributes(config serverSettingsResourceM
 				return err
 			}
 
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "notifications.account_changes_notification_publisher_ref.id", config.notifications.AccountChangesNotificationPublisherRef.Id)
-			if err != nil {
-				return err
-			}
-
 			err = acctest.TestAttributesMatchString(resourceType, nil, "email_address", config.notifications.MetadataNotificationSettings.EmailAddress, response.Notifications.MetadataNotificationSettings.EmailAddress)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "notifications.metadata_notification_settings.email_address", config.notifications.MetadataNotificationSettings.EmailAddress)
 			if err != nil {
 				return err
 			}
@@ -528,20 +437,10 @@ func testAccCheckExpectedServerSettingsAttributes(config serverSettingsResourceM
 			if err != nil {
 				return err
 			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "notifications.metadata_notification_settings.notification_publisher_ref.id", config.notifications.MetadataNotificationSettings.NotificationPublisherRef.Id)
-			if err != nil {
-				return err
-			}
 		}
 		if config.captchaSettings != nil {
 			err = acctest.TestAttributesMatchString(resourceType, nil, "site_key",
 				*config.captchaSettings.SiteKey, *response.CaptchaSettings.SiteKey)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "captcha_settings.site_key", *config.captchaSettings.SiteKey)
 			if err != nil {
 				return err
 			}

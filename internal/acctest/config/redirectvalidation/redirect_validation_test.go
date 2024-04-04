@@ -69,7 +69,28 @@ func TestAccRedirectValidation(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccRedirectValidation(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedRedirectValidationAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedRedirectValidationAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_redirect_validation.%s", resourceName), "redirect_validation_local_settings.enable_target_resource_validation_for_sso", fmt.Sprintf("%t", *updatedResourceModel.redirectValidationLocalSettings.EnableTargetResourceValidationForSSO)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_redirect_validation.%s", resourceName), "redirect_validation_local_settings.white_list.0.valid_domain", updatedResourceModel.whiteList[0].ValidDomain),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_redirect_validation.%s", resourceName), "redirect_validation_local_settings.white_list.0.valid_path", *updatedResourceModel.whiteList[0].ValidPath),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_redirect_validation.%s", resourceName), "redirect_validation_local_settings.white_list.0.allow_query_and_fragment", fmt.Sprintf("%t", *updatedResourceModel.whiteList[0].AllowQueryAndFragment)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_redirect_validation.%s", resourceName), "redirect_validation_local_settings.white_list.0.require_https", fmt.Sprintf("%t", *updatedResourceModel.whiteList[0].RequireHttps)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_redirect_validation.%s", resourceName), "redirect_validation_local_settings.white_list.0.idp_discovery", fmt.Sprintf("%t", *updatedResourceModel.whiteList[0].IdpDiscovery)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_redirect_validation.%s", resourceName), "redirect_validation_local_settings.white_list.0.target_resource_sso", fmt.Sprintf("%t", *updatedResourceModel.whiteList[0].TargetResourceSSO)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_redirect_validation.%s", resourceName), "redirect_validation_local_settings.white_list.0.target_resource_slo", fmt.Sprintf("%t", *updatedResourceModel.whiteList[0].TargetResourceSLO)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_redirect_validation.%s", resourceName), "redirect_validation_local_settings.white_list.0.in_error_resource", fmt.Sprintf("%t", *updatedResourceModel.whiteList[0].InErrorResource)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_redirect_validation.%s", resourceName), "redirect_validation_local_settings.white_list.1.valid_domain", updatedResourceModel.whiteList[1].ValidDomain),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_redirect_validation.%s", resourceName), "redirect_validation_local_settings.white_list.1.valid_path", *updatedResourceModel.whiteList[1].ValidPath),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_redirect_validation.%s", resourceName), "redirect_validation_local_settings.white_list.1.allow_query_and_fragment", fmt.Sprintf("%t", *updatedResourceModel.whiteList[1].AllowQueryAndFragment)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_redirect_validation.%s", resourceName), "redirect_validation_local_settings.white_list.1.require_https", fmt.Sprintf("%t", *updatedResourceModel.whiteList[1].RequireHttps)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_redirect_validation.%s", resourceName), "redirect_validation_local_settings.white_list.1.idp_discovery", fmt.Sprintf("%t", *updatedResourceModel.whiteList[1].IdpDiscovery)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_redirect_validation.%s", resourceName), "redirect_validation_local_settings.white_list.1.target_resource_sso", fmt.Sprintf("%t", *updatedResourceModel.whiteList[1].TargetResourceSSO)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_redirect_validation.%s", resourceName), "redirect_validation_local_settings.white_list.1.target_resource_slo", fmt.Sprintf("%t", *updatedResourceModel.whiteList[1].TargetResourceSLO)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_redirect_validation.%s", resourceName), "redirect_validation_local_settings.white_list.1.in_error_resource", fmt.Sprintf("%t", *updatedResourceModel.whiteList[1].InErrorResource)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_redirect_validation.%s", resourceName), "redirect_validation_partner_settings.enable_wreply_validation_slo", fmt.Sprintf("%t", *updatedResourceModel.redirectValidationPartnerSettings.EnableWreplyValidationSLO)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_redirect_validation.%s", resourceName), "redirect_validation_local_settings.enable_target_resource_validation_for_slo", fmt.Sprintf("%t", *updatedResourceModel.redirectValidationLocalSettings.EnableTargetResourceValidationForSLO)),
+				),
 			},
 			{
 				// Test importing the resource
@@ -161,7 +182,6 @@ func testAccCheckExpectedRedirectValidationAttributes(config redirectValidationR
 		resourceType := "RedirectValidation"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		stateAttributes := s.RootModule().Resources["pingfederate_redirect_validation.myRedirectValidation"].Primary.Attributes
 		response, _, err := testClient.RedirectValidationAPI.GetRedirectValidationSettings(ctx).Execute()
 
 		if err != nil {
@@ -174,17 +194,7 @@ func testAccCheckExpectedRedirectValidationAttributes(config redirectValidationR
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "redirect_validation_local_settings.enable_target_resource_validation_for_sso", *config.redirectValidationLocalSettings.EnableTargetResourceValidationForSSO)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "enable_target_resource_validation_for_slo", *config.redirectValidationLocalSettings.EnableTargetResourceValidationForSLO, *response.RedirectValidationLocalSettings.EnableTargetResourceValidationForSLO)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "redirect_validation_local_settings.enable_target_resource_validation_for_slo", *config.redirectValidationLocalSettings.EnableTargetResourceValidationForSLO)
 		if err != nil {
 			return err
 		}
@@ -194,17 +204,7 @@ func testAccCheckExpectedRedirectValidationAttributes(config redirectValidationR
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "redirect_validation_local_settings.enable_target_resource_validation_for_idp_discovery", *config.redirectValidationLocalSettings.EnableTargetResourceValidationForIdpDiscovery)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "enable_in_error_resource_validation", *config.redirectValidationLocalSettings.EnableInErrorResourceValidation, *response.RedirectValidationLocalSettings.EnableInErrorResourceValidation)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "redirect_validation_local_settings.enable_in_error_resource_validation", *config.redirectValidationLocalSettings.EnableInErrorResourceValidation)
 		if err != nil {
 			return err
 		}
@@ -214,17 +214,7 @@ func testAccCheckExpectedRedirectValidationAttributes(config redirectValidationR
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "redirect_validation_local_settings.white_list.0.target_resource_sso", *config.whiteList[0].TargetResourceSSO)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "target_resource_slo", *config.whiteList[0].TargetResourceSLO, *response.RedirectValidationLocalSettings.WhiteList[0].TargetResourceSLO)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "redirect_validation_local_settings.white_list.0.target_resource_slo", *config.whiteList[0].TargetResourceSLO)
 		if err != nil {
 			return err
 		}
@@ -234,17 +224,7 @@ func testAccCheckExpectedRedirectValidationAttributes(config redirectValidationR
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "redirect_validation_local_settings.white_list.0.in_error_resource", *config.whiteList[0].InErrorResource)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "idp_discovery", *config.whiteList[0].IdpDiscovery, *response.RedirectValidationLocalSettings.WhiteList[0].IdpDiscovery)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "redirect_validation_local_settings.white_list.0.idp_discovery", *config.whiteList[0].IdpDiscovery)
 		if err != nil {
 			return err
 		}
@@ -254,17 +234,7 @@ func testAccCheckExpectedRedirectValidationAttributes(config redirectValidationR
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "redirect_validation_local_settings.white_list.0.valid_domain", config.whiteList[0].ValidDomain)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchString(resourceType, nil, "valid_path", *config.whiteList[0].ValidPath, *response.RedirectValidationLocalSettings.WhiteList[0].ValidPath)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "redirect_validation_local_settings.white_list.0.valid_path", *config.whiteList[0].ValidPath)
 		if err != nil {
 			return err
 		}
@@ -274,17 +244,7 @@ func testAccCheckExpectedRedirectValidationAttributes(config redirectValidationR
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "redirect_validation_local_settings.white_list.0.allow_query_and_fragment", *config.whiteList[0].AllowQueryAndFragment)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "require_https", *config.whiteList[0].RequireHttps, *response.RedirectValidationLocalSettings.WhiteList[0].RequireHttps)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "redirect_validation_local_settings.white_list.0.require_https", *config.whiteList[0].RequireHttps)
 		if err != nil {
 			return err
 		}
@@ -294,17 +254,7 @@ func testAccCheckExpectedRedirectValidationAttributes(config redirectValidationR
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "redirect_validation_local_settings.white_list.1.target_resource_sso", *config.whiteList[1].TargetResourceSSO)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "target_resource_slo", *config.whiteList[1].TargetResourceSLO, *response.RedirectValidationLocalSettings.WhiteList[1].TargetResourceSLO)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "redirect_validation_local_settings.white_list.1.target_resource_slo", *config.whiteList[1].TargetResourceSLO)
 		if err != nil {
 			return err
 		}
@@ -314,17 +264,7 @@ func testAccCheckExpectedRedirectValidationAttributes(config redirectValidationR
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "redirect_validation_local_settings.white_list.1.in_error_resource", *config.whiteList[1].InErrorResource)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "idp_discovery", *config.whiteList[1].IdpDiscovery, *response.RedirectValidationLocalSettings.WhiteList[1].IdpDiscovery)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "redirect_validation_local_settings.white_list.1.idp_discovery", *config.whiteList[1].IdpDiscovery)
 		if err != nil {
 			return err
 		}
@@ -334,17 +274,7 @@ func testAccCheckExpectedRedirectValidationAttributes(config redirectValidationR
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "redirect_validation_local_settings.white_list.1.valid_domain", config.whiteList[1].ValidDomain)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchString(resourceType, nil, "valid_path", *config.whiteList[1].ValidPath, *response.RedirectValidationLocalSettings.WhiteList[1].ValidPath)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "redirect_validation_local_settings.white_list.1.valid_path", *config.whiteList[1].ValidPath)
 		if err != nil {
 			return err
 		}
@@ -354,27 +284,12 @@ func testAccCheckExpectedRedirectValidationAttributes(config redirectValidationR
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "redirect_validation_local_settings.white_list.1.allow_query_and_fragment", *config.whiteList[1].AllowQueryAndFragment)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "require_https", *config.whiteList[1].RequireHttps, *response.RedirectValidationLocalSettings.WhiteList[1].RequireHttps)
 		if err != nil {
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "redirect_validation_local_settings.white_list.1.require_https", *config.whiteList[1].RequireHttps)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "enable_wreply_validation_slo", *config.redirectValidationPartnerSettings.EnableWreplyValidationSLO, *response.RedirectValidationPartnerSettings.EnableWreplyValidationSLO)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "redirect_validation_partner_settings.enable_wreply_validation_slo", *config.redirectValidationPartnerSettings.EnableWreplyValidationSLO)
 		if err != nil {
 			return err
 		}

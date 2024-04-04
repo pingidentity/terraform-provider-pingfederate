@@ -68,7 +68,14 @@ func TestAccKerberosRealms(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccKerberosRealms(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedKerberosRealmsAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedKerberosRealmsAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr("pingfederate_kerberos_realm.myKerberosRealm", "connection_type", updatedResourceModel.connectionType),
+					resource.TestCheckResourceAttr("pingfederate_kerberos_realm.myKerberosRealm", "key_distribution_centers.0", updatedResourceModel.keyDistributionCenters[0]),
+					resource.TestCheckResourceAttr("pingfederate_kerberos_realm.myKerberosRealm", "key_distribution_centers.1", updatedResourceModel.keyDistributionCenters[1]),
+					resource.TestCheckResourceAttr("pingfederate_kerberos_realm.myKerberosRealm", "retain_previous_keys_on_password_change", fmt.Sprintf("%t", updatedResourceModel.retainPreviousKeysOnPasswordChange)),
+					resource.TestCheckResourceAttr("pingfederate_kerberos_realm.myKerberosRealm", "suppress_domain_name_concatenation", fmt.Sprintf("%t", updatedResourceModel.suppressDomainNameConcatenation)),
+				),
 			},
 			{
 				// Test importing the resource
@@ -143,7 +150,6 @@ func testAccCheckExpectedKerberosRealmsAttributes(config kerberosRealmsResourceM
 		resourceType := "KerberosRealm"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		stateAttributes := s.RootModule().Resources["pingfederate_kerberos_realm.myKerberosRealm"].Primary.Attributes
 		idFromState := s.RootModule().Resources["pingfederate_kerberos_realm.myKerberosRealm"].Primary.Attributes["id"]
 		response, _, err := testClient.KerberosRealmsAPI.GetKerberosRealm(ctx, idFromState).Execute()
 		if err != nil {
@@ -158,11 +164,6 @@ func testAccCheckExpectedKerberosRealmsAttributes(config kerberosRealmsResourceM
 		}
 		if config.connectionType != "" {
 			err = acctest.TestAttributesMatchString(resourceType, nil, "connection_type", config.connectionType, *response.ConnectionType)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "connection_type", config.connectionType)
 			if err != nil {
 				return err
 			}
@@ -183,11 +184,6 @@ func testAccCheckExpectedKerberosRealmsAttributes(config kerberosRealmsResourceM
 			if err != nil {
 				return err
 			}
-
-			err = acctest.VerifyStateAttributeSlice(stateAttributes, "key_distribution_centers", config.keyDistributionCenters)
-			if err != nil {
-				return err
-			}
 		}
 
 		if config.retainPreviousKeysOnPasswordChange {
@@ -195,20 +191,10 @@ func testAccCheckExpectedKerberosRealmsAttributes(config kerberosRealmsResourceM
 			if err != nil {
 				return err
 			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "retain_previous_keys_on_password_change", config.retainPreviousKeysOnPasswordChange)
-			if err != nil {
-				return err
-			}
 		}
 
 		if config.suppressDomainNameConcatenation {
 			err = acctest.TestAttributesMatchBool(resourceType, nil, "suppress_domain_name_concatenation", config.suppressDomainNameConcatenation, *response.SuppressDomainNameConcatenation)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "suppress_domain_name_concatenation", config.suppressDomainNameConcatenation)
 			if err != nil {
 				return err
 			}

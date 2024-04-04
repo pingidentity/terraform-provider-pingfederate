@@ -277,51 +277,6 @@ func AddIdHcl(idKey, id string) string {
 	return ""
 }
 
-func ReturnStateMismatchError(stateKey, stateValue, configValue string) error {
-	return fmt.Errorf("state value for %s does not match config value. State: %s, Found: %s", stateKey, stateValue, configValue)
-}
-
-func VerifyStateAttributeValue(stateAttributes map[string]string, stateKeyValue string, configValue interface{}) error {
-	var configValueToTest string
-	var ok bool
-
-	_, ok = configValue.(string)
-	if ok {
-		configValueToTest = configValue.(string)
-	}
-
-	_, ok = configValue.(int64)
-	if ok {
-		configValueToTest = strconv.FormatInt(configValue.(int64), 10)
-	}
-
-	_, ok = configValue.(bool)
-	if ok {
-		configValueToTest = strconv.FormatBool(configValue.(bool))
-	}
-
-	if stateAttributes[stateKeyValue] != configValueToTest {
-		err := ReturnStateMismatchError(stateKeyValue, stateAttributes[stateKeyValue], configValueToTest)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func VerifyStateAttributeSlice(stateAttributes map[string]string, stateKeyValue string, configValue []string) error {
-	configValueToTest := StringSliceToTerraformString(configValue)
-
-	if stateAttributes[stateKeyValue] != configValueToTest && (stateAttributes[stateKeyValue] != "" && configValueToTest == "[]") {
-		err := ReturnStateMismatchError(stateKeyValue, stateAttributes[stateKeyValue], configValueToTest)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 // Check that the version being tested is at least the given minimum version
 var versionAtLeastResults = map[version.SupportedVersion]bool{}
 

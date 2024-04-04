@@ -57,7 +57,11 @@ func TestAccRadiusPasswordCredentialValidators(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccRadiusPasswordCredentialValidators(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedRadiusPasswordCredentialValidatorsAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedRadiusPasswordCredentialValidatorsAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_password_credential_validator.%s", resourceName), "configuration.fields_all.1.value", updatedResourceModel.timeout),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_password_credential_validator.%s", resourceName), "configuration.tables.0.rows.0.fields.1.value", updatedResourceModel.authPort),
+				),
 			},
 			{
 				// Test importing the resource
@@ -192,7 +196,6 @@ func testAccCheckExpectedRadiusPasswordCredentialValidatorsAttributes(config rad
 		resourceType := "PasswordCredentialValidators"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		stateAttributes := s.RootModule().Resources["pingfederate_password_credential_validator.radiusPCV"].Primary.Attributes
 		response, _, err := testClient.PasswordCredentialValidatorsAPI.GetPasswordCredentialValidator(ctx, radiusPasswordCredentialValidatorsId).Execute()
 
 		if err != nil {
@@ -221,11 +224,6 @@ func testAccCheckExpectedRadiusPasswordCredentialValidatorsAttributes(config rad
 			}
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "configuration.tables.0.rows.0.fields.1.value", config.authPort)
-		if err != nil {
-			return err
-		}
-
 		configFields := respConfig.Fields
 		for _, field := range configFields {
 			if field.Name == "Timeout" {
@@ -236,11 +234,6 @@ func testAccCheckExpectedRadiusPasswordCredentialValidatorsAttributes(config rad
 				}
 
 			}
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "configuration.fields_all.1.value", config.timeout)
-		if err != nil {
-			return err
 		}
 
 		return nil

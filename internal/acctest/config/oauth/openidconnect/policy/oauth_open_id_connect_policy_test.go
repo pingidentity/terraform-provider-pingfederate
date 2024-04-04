@@ -83,7 +83,15 @@ func TestAccOauthOpenIdConnectPolicies(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccOauthOpenIdConnectPolicies(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedOauthOpenIdConnectPoliciesAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedOauthOpenIdConnectPoliciesAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_open_id_connect_policy.%s", resourceName), "id_token_lifetime", fmt.Sprintf("%d", *updatedResourceModel.idTokenLifetime)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_open_id_connect_policy.%s", resourceName), "include_sri_in_id_token", fmt.Sprintf("%t", *updatedResourceModel.includeSriInIdToken)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_open_id_connect_policy.%s", resourceName), "include_user_info_in_id_token", fmt.Sprintf("%t", *updatedResourceModel.includeUserInfoInIdToken)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_open_id_connect_policy.%s", resourceName), "include_s_hash_in_id_token", fmt.Sprintf("%t", *updatedResourceModel.includeSHashInIdToken)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_open_id_connect_policy.%s", resourceName), "return_id_token_on_refresh_grant", fmt.Sprintf("%t", *updatedResourceModel.returnIdTokenOnRefreshGrant)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_open_id_connect_policy.%s", resourceName), "reissue_id_token_in_hybrid_flow", fmt.Sprintf("%t", *updatedResourceModel.reissueIdTokenInHybridFlow)),
+				),
 			},
 			{
 				// Test importing the resource
@@ -216,12 +224,14 @@ func testAccOauthOpenIdConnectPolicies(resourceName string, resourceModel oauthO
 		include_s_hash_in_id_token = %t
 		include_user_info_in_id_token = %t
 		id_token_lifetime = %d
+		reissue_id_token_in_hybrid_flow = %t
 		`,
 			*resourceModel.returnIdTokenOnRefreshGrant,
 			*resourceModel.includeSriInIdToken,
 			*resourceModel.includeSHashInIdToken,
 			*resourceModel.includeUserInfoInIdToken,
-			*resourceModel.idTokenLifetime)
+			*resourceModel.idTokenLifetime,
+			*resourceModel.reissueIdTokenInHybridFlow)
 
 		if acctest.VersionAtLeast(version.PingFederate1130) {
 			optionalHcl += `
@@ -263,9 +273,7 @@ func testAccCheckExpectedOauthOpenIdConnectPoliciesAttributes(config oauthOpenId
 		resourceType := "OauthOpenIdConnectPolicy"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		stateAttributeValues := s.RootModule().Resources["pingfederate_oauth_open_id_connect_policy.myOauthOpenIdConnectPolicies"].Primary.Attributes
 		response, _, err := testClient.OauthOpenIdConnectAPI.GetOIDCPolicy(ctx, oauthOpenIdConnectPoliciesId).Execute()
-
 		if err != nil {
 			return err
 		}
@@ -292,17 +300,7 @@ func testAccCheckExpectedOauthOpenIdConnectPoliciesAttributes(config oauthOpenId
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributeValues, "id_token_lifetime", *config.idTokenLifetime)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthOpenIdConnectPoliciesId), "return_id_token_on_refresh_grant", *config.returnIdTokenOnRefreshGrant, *response.ReturnIdTokenOnRefreshGrant)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributeValues, "return_id_token_on_refresh_grant", *config.returnIdTokenOnRefreshGrant)
 		if err != nil {
 			return err
 		}
@@ -312,27 +310,12 @@ func testAccCheckExpectedOauthOpenIdConnectPoliciesAttributes(config oauthOpenId
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributeValues, "include_sri_in_id_token", *config.includeSriInIdToken)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthOpenIdConnectPoliciesId), "include_user_info_in_id_token", *config.includeUserInfoInIdToken, *response.IncludeUserInfoInIdToken)
 		if err != nil {
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributeValues, "include_user_info_in_id_token", *config.includeUserInfoInIdToken)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthOpenIdConnectPoliciesId), "include_s_hash_in_id_token", *config.includeSHashInIdToken, *response.IncludeSHashInIdToken)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributeValues, "include_s_hash_in_id_token", *config.includeSHashInIdToken)
 		if err != nil {
 			return err
 		}

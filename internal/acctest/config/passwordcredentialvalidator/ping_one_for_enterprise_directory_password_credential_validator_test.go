@@ -54,7 +54,10 @@ func TestAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(t *testing
 			{
 				// Test updating some fields
 				Config: testAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedPingOneForEnterpriseDirectoryPasswordCredentialValidatorsAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedPingOneForEnterpriseDirectoryPasswordCredentialValidatorsAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_password_credential_validator.%s", resourceName), "configuration.fields.7.value", updatedResourceModel.connectionPoolTimeout),
+				),
 			},
 			{
 				// Test importing the resource
@@ -173,7 +176,6 @@ func testAccCheckExpectedPingOneForEnterpriseDirectoryPasswordCredentialValidato
 		resourceType := "PasswordCredentialValidators"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		stateAttributes := s.RootModule().Resources["pingfederate_password_credential_validator.pingOneForEnterpriseDirectoryPCV"].Primary.Attributes
 		response, _, err := testClient.PasswordCredentialValidatorsAPI.GetPasswordCredentialValidator(ctx, pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId).Execute()
 
 		if err != nil {
@@ -190,11 +192,6 @@ func testAccCheckExpectedPingOneForEnterpriseDirectoryPasswordCredentialValidato
 		for _, field := range configFields {
 			if field.Name == "Connection Pool Idle Timeout" {
 				err = acctest.TestAttributesMatchString(resourceType, &config.id, "name", config.connectionPoolTimeout, *field.Value)
-				if err != nil {
-					return err
-				}
-
-				err = acctest.VerifyStateAttributeValue(stateAttributes, "configuration.fields.7.value", config.connectionPoolTimeout)
 				if err != nil {
 					return err
 				}

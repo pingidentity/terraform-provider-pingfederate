@@ -38,7 +38,11 @@ func TestAccSessionApplicationSessionPolicy(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccSessionApplicationSessionPolicy(resourceName, &updatedResourceModel),
-				Check:  testAccCheckExpectedSessionApplicationSessionPolicyAttributes(&updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedSessionApplicationSessionPolicyAttributes(&updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_application_session_policy.%s", resourceName), "idle_timeout_mins", fmt.Sprintf("%d", updatedResourceModel.idleTimeoutMins)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_application_session_policy.%s", resourceName), "max_timeout_mins", fmt.Sprintf("%d", updatedResourceModel.maxTimeoutMins)),
+				),
 			},
 			{
 				// Test importing the resource
@@ -85,7 +89,6 @@ func testAccCheckExpectedSessionApplicationSessionPolicyAttributes(config *sessi
 		resourceType := "SessionApplicationSessionPolicy"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		stateAttributes := s.RootModule().Resources["pingfederate_session_application_session_policy.mySessionApplicationSessionPolicy"].Primary.Attributes
 		response, _, err := testClient.SessionAPI.GetApplicationPolicy(ctx).Execute()
 
 		if err != nil {
@@ -103,18 +106,8 @@ func testAccCheckExpectedSessionApplicationSessionPolicyAttributes(config *sessi
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "idle_timeout_mins", config.idleTimeoutMins)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchInt(resourceType, nil, "max_timeout_mins",
 			config.maxTimeoutMins, *response.MaxTimeoutMins)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "max_timeout_mins", config.maxTimeoutMins)
 		if err != nil {
 			return err
 		}

@@ -138,7 +138,47 @@ func TestAccOauthClient(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccOauthClient(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedOauthClientAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedOauthClientAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "enabled", fmt.Sprintf("%t", *updatedResourceModel.enabled)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "description", *updatedResourceModel.description),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "logo_url", *updatedResourceModel.logoUrl),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "redirect_uris.0", updatedResourceModel.redirectUris[0]),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "allow_authentication_api_init", fmt.Sprintf("%t", *updatedResourceModel.allowAuthenticationApiInit)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "require_pushed_authorization_requests", fmt.Sprintf("%t", *updatedResourceModel.requirePushedAuthorizationRequests)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "require_jwt_secured_authorization_response_mode", fmt.Sprintf("%t", *updatedResourceModel.requireJwtSecuredAuthorizationResponseMode)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "restrict_scopes", fmt.Sprintf("%t", *updatedResourceModel.restrictScopes)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "restricted_scopes.0", updatedResourceModel.restrictedScopes[0]),
+					resource.TestCheckTypeSetElemAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "restricted_response_types.*", updatedResourceModel.restrictedResponseTypes[0]),
+					resource.TestCheckTypeSetElemAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "restricted_response_types.*", updatedResourceModel.restrictedResponseTypes[1]),
+					resource.TestCheckTypeSetElemAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "restricted_response_types.*", updatedResourceModel.restrictedResponseTypes[2]),
+					resource.TestCheckTypeSetElemAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "restricted_response_types.*", updatedResourceModel.restrictedResponseTypes[3]),
+					resource.TestCheckTypeSetElemAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "restricted_response_types.*", updatedResourceModel.restrictedResponseTypes[4]),
+					resource.TestCheckTypeSetElemAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "restricted_response_types.*", updatedResourceModel.restrictedResponseTypes[5]),
+					resource.TestCheckTypeSetElemAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "restricted_response_types.*", updatedResourceModel.restrictedResponseTypes[6]),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "restrict_to_default_access_token_manager", fmt.Sprintf("%t", *updatedResourceModel.restrictToDefaultAccessTokenManager)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "validate_using_all_eligible_atms", fmt.Sprintf("%t", *updatedResourceModel.validateUsingAllEligibleAtms)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "oidc_policy.id_token_signing_algorithm", *updatedResourceModel.oidcPolicy.IdTokenSigningAlgorithm),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "oidc_policy.grant_access_session_revocation_api", fmt.Sprintf("%t", *updatedResourceModel.oidcPolicy.GrantAccessSessionRevocationApi)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "oidc_policy.grant_access_session_session_management_api", fmt.Sprintf("%t", *updatedResourceModel.oidcPolicy.GrantAccessSessionSessionManagementApi)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "oidc_policy.ping_access_logout_capable", fmt.Sprintf("%t", *updatedResourceModel.oidcPolicy.PingAccessLogoutCapable)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "oidc_policy.pairwise_identifier_user_type", fmt.Sprintf("%t", *updatedResourceModel.oidcPolicy.PairwiseIdentifierUserType)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "oidc_policy.sector_identifier_uri", *updatedResourceModel.oidcPolicy.SectorIdentifierUri),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "oidc_policy.id_token_encryption_algorithm", *updatedResourceModel.oidcPolicy.IdTokenEncryptionAlgorithm),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "oidc_policy.id_token_content_encryption_algorithm", *updatedResourceModel.oidcPolicy.IdTokenContentEncryptionAlgorithm),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "client_auth.type", *updatedResourceModel.clientAuth.Type),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "jwks_settings.jwks_url", *updatedResourceModel.jwksSettings.JwksUrl),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "require_proof_key_for_code_exchange", fmt.Sprintf("%t", *updatedResourceModel.requireProofKeyForCodeExchange)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "ciba_delivery_mode", *updatedResourceModel.cibaDeliveryMode),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "ciba_polling_interval", fmt.Sprintf("%d", *updatedResourceModel.cibaPollingInterval)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "ciba_require_signed_requests", fmt.Sprintf("%t", *updatedResourceModel.cibaRequireSignedRequests)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "ciba_user_code_supported", fmt.Sprintf("%t", *updatedResourceModel.cibaUserCodeSupported)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "ciba_notification_endpoint", *updatedResourceModel.cibaNotificationEndpoint),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "jwt_secured_authorization_response_mode_encryption_algorithm", *updatedResourceModel.jwtSecuredAuthorizationResponseModeEncryptionAlgorithm),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "jwt_secured_authorization_response_mode_content_encryption_algorithm", *updatedResourceModel.jwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "token_introspection_signing_algorithm", *updatedResourceModel.tokenIntrospectionSigningAlgorithm),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "require_signed_requests", fmt.Sprintf("%t", *updatedResourceModel.requireSignedRequests)),
+				),
 			},
 			{
 				// Test importing the resource
@@ -355,7 +395,6 @@ func testAccCheckExpectedOauthClientAttributes(config oauthClientResourceModel) 
 		resourceType := "OauthClient"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		stateAttributeValues := s.RootModule().Resources["pingfederate_oauth_client."+oauthClientId].Primary.Attributes
 		response, _, err := testClient.OauthClientsAPI.GetOauthClientById(ctx, oauthClientId).Execute()
 
 		if err != nil {
@@ -368,17 +407,7 @@ func testAccCheckExpectedOauthClientAttributes(config oauthClientResourceModel) 
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributeValues, "name", config.name)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchStringSlice(resourceType, pointers.String(oauthClientId), "grant_types", config.grantTypes, response.GrantTypes)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeSlice(stateAttributeValues, "grant_types", config.grantTypes)
 		if err != nil {
 			return err
 		}
@@ -390,17 +419,8 @@ func testAccCheckExpectedOauthClientAttributes(config oauthClientResourceModel) 
 			}
 		}
 
-		err = acctest.VerifyStateAttributeSlice(stateAttributeValues, "redirect_uris", config.redirectUris)
-		if err != nil {
-			return err
-		}
-
 		if config.includeOptionalAttributes {
 			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "enabled", *config.enabled, *response.Enabled)
-			if err != nil {
-				return err
-			}
-			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "enabled", *config.enabled)
 			if err != nil {
 				return err
 			}
@@ -409,16 +429,8 @@ func testAccCheckExpectedOauthClientAttributes(config oauthClientResourceModel) 
 			if err != nil {
 				return err
 			}
-			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "description", *config.description)
-			if err != nil {
-				return err
-			}
 
 			err = acctest.TestAttributesMatchStringSlice(resourceType, pointers.String(oauthClientId), "redirect_uris", config.redirectUris, response.RedirectUris)
-			if err != nil {
-				return err
-			}
-			err = acctest.VerifyStateAttributeSlice(stateAttributeValues, "redirect_uris", config.redirectUris)
 			if err != nil {
 				return err
 			}
@@ -427,16 +439,8 @@ func testAccCheckExpectedOauthClientAttributes(config oauthClientResourceModel) 
 			if err != nil {
 				return err
 			}
-			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "require_pushed_authorization_requests", *config.requirePushedAuthorizationRequests)
-			if err != nil {
-				return err
-			}
 
 			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "restrict_scopes", *config.restrictScopes, *response.RestrictScopes)
-			if err != nil {
-				return err
-			}
-			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "restrict_scopes", *config.restrictScopes)
 			if err != nil {
 				return err
 			}
@@ -445,16 +449,8 @@ func testAccCheckExpectedOauthClientAttributes(config oauthClientResourceModel) 
 			if err != nil {
 				return err
 			}
-			err = acctest.VerifyStateAttributeSlice(stateAttributeValues, "restricted_response_types", config.restrictedResponseTypes)
-			if err != nil {
-				return err
-			}
 
 			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "validate_using_all_eligible_atms", *config.validateUsingAllEligibleAtms, *response.ValidateUsingAllEligibleAtms)
-			if err != nil {
-				return err
-			}
-			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "validate_using_all_eligible_atms", *config.validateUsingAllEligibleAtms)
 			if err != nil {
 				return err
 			}
@@ -463,16 +459,8 @@ func testAccCheckExpectedOauthClientAttributes(config oauthClientResourceModel) 
 			if err != nil {
 				return err
 			}
-			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "ciba_delivery_mode", *config.cibaDeliveryMode)
-			if err != nil {
-				return err
-			}
 
 			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "ciba_require_signed_requests", *config.cibaRequireSignedRequests, *response.CibaRequireSignedRequests)
-			if err != nil {
-				return err
-			}
-			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "ciba_require_signed_requests", *config.cibaRequireSignedRequests)
 			if err != nil {
 				return err
 			}
@@ -481,16 +469,8 @@ func testAccCheckExpectedOauthClientAttributes(config oauthClientResourceModel) 
 			if err != nil {
 				return err
 			}
-			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "ciba_notification_endpoint", *config.cibaNotificationEndpoint)
-			if err != nil {
-				return err
-			}
 
 			err = acctest.TestAttributesMatchString(resourceType, pointers.String(oauthClientId), "jwt_secured_authorization_response_mode_content_encryption_algorithm", *config.jwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm, *response.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm)
-			if err != nil {
-				return err
-			}
-			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "jwt_secured_authorization_response_mode_content_encryption_algorithm", *config.jwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm)
 			if err != nil {
 				return err
 			}
@@ -499,16 +479,8 @@ func testAccCheckExpectedOauthClientAttributes(config oauthClientResourceModel) 
 			if err != nil {
 				return err
 			}
-			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "require_signed_requests", *config.requireSignedRequests)
-			if err != nil {
-				return err
-			}
 
 			err = acctest.TestAttributesMatchBool(resourceType, pointers.String(oauthClientId), "oidc_policy.grant_access_session_revocation_api", *config.oidcPolicy.GrantAccessSessionRevocationApi, *response.OidcPolicy.GrantAccessSessionRevocationApi)
-			if err != nil {
-				return err
-			}
-			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "oidc_policy.grant_access_session_revocation_api", *config.oidcPolicy.GrantAccessSessionRevocationApi)
 			if err != nil {
 				return err
 			}
@@ -517,16 +489,8 @@ func testAccCheckExpectedOauthClientAttributes(config oauthClientResourceModel) 
 			if err != nil {
 				return err
 			}
-			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "oidc_policy.ping_access_logout_capable", *config.oidcPolicy.PingAccessLogoutCapable)
-			if err != nil {
-				return err
-			}
 
 			err = acctest.TestAttributesMatchString(resourceType, pointers.String(oauthClientId), "oidc_policy.sector_identifier_uri", *config.oidcPolicy.SectorIdentifierUri, *response.OidcPolicy.SectorIdentifierUri)
-			if err != nil {
-				return err
-			}
-			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "oidc_policy.sector_identifier_uri", *config.oidcPolicy.SectorIdentifierUri)
 			if err != nil {
 				return err
 			}
@@ -535,17 +499,9 @@ func testAccCheckExpectedOauthClientAttributes(config oauthClientResourceModel) 
 			if err != nil {
 				return err
 			}
-			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "oidc_policy.id_token_content_encryption_algorithm", *config.oidcPolicy.IdTokenContentEncryptionAlgorithm)
-			if err != nil {
-				return err
-			}
 
 			// test jwks settings
 			err = acctest.TestAttributesMatchString(resourceType, pointers.String(oauthClientId), "jwks_settings.jwks_url", *config.jwksSettings.JwksUrl, *response.JwksSettings.JwksUrl)
-			if err != nil {
-				return err
-			}
-			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "jwks_settings.jwks_url", *config.jwksSettings.JwksUrl)
 			if err != nil {
 				return err
 			}

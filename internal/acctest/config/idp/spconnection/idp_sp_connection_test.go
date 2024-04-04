@@ -64,7 +64,11 @@ func TestAccIdpSpConnection(t *testing.T) {
 			{
 				// Complete connection with all three types
 				Config: testAccSpConnectionComplete(spConnectionId),
-				Check:  testAccCheckExpectedSpConnectionAttributesAll(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedSpConnectionAttributesAll(),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_idp_sp_connection.%s", spConnectionId), "virtual_entity_ids.0", "example1"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_idp_sp_connection.%s", spConnectionId), "virtual_entity_ids.1", "example2"),
+				),
 			},
 			{
 				// Test importing the resource
@@ -447,7 +451,6 @@ data "pingfederate_idp_sp_connection" "%[1]s" {
 func testCommonExpectedSpConnectionAttributes(s *terraform.State) (*configurationapi.SpConnection, error) {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	stateAttributes := s.RootModule().Resources["pingfederate_idp_sp_connection."+spConnectionId].Primary.Attributes
 	spConn, _, err := testClient.IdpSpConnectionsAPI.GetSpConnection(ctx, spConnectionId).Execute()
 
 	if err != nil {
@@ -480,11 +483,6 @@ func testCommonExpectedSpConnectionAttributes(s *terraform.State) (*configuratio
 	// Virtual entity ids
 	err = acctest.TestAttributesMatchStringSlice(resourceType, pointers.String(spConnectionId), "virtual_entity_ids",
 		[]string{"example1", "example2"}, spConn.VirtualEntityIds)
-	if err != nil {
-		return spConn, err
-	}
-
-	err = acctest.VerifyStateAttributeSlice(stateAttributes, "virtual_entity_ids", []string{"example1", "example2"})
 	if err != nil {
 		return spConn, err
 	}

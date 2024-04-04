@@ -54,7 +54,12 @@ func TestAccAuthenticationPolicyContract(t *testing.T) {
 			{
 				// More complete model
 				Config: testAccAuthenticationPolicyContract(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedAuthenticationPolicyContractAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedAuthenticationPolicyContractAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policy_contract.%s", resourceName), "extended_attributes.0.name", updatedResourceModel.extendedAttributes[0]),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policy_contract.%s", resourceName), "extended_attributes.1.name", updatedResourceModel.extendedAttributes[1]),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policy_contract.%s", resourceName), "extended_attributes.2.name", "extendedwith\"escaped\"quotes"),
+				),
 			},
 			{
 				// Test importing the resource
@@ -136,11 +141,6 @@ func testAccCheckExpectedAuthenticationPolicyContractAttributes(config authentic
 		}
 		err = acctest.TestAttributesMatchStringSlice(resourceType, &config.id, "extended_attributes",
 			config.extendedAttributes, extendedAttrNames)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeSlice(stateAttributes, "extended_attributes", config.extendedAttributes)
 		if err != nil {
 			return err
 		}

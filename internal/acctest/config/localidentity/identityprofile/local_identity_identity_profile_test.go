@@ -391,7 +391,13 @@ func TestAccLocalIdentityIdentityProfiles(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccLocalIdentityIdentityProfiles(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr("pingfederate_local_identity_identity_profile.myLocalIdentityIdentityProfiles", "auth_source_update_policy.store_attributes", fmt.Sprintf("%t", *updatedResourceModel.authSourceUpdatePolicy.StoreAttributes)),
+					resource.TestCheckResourceAttr("pingfederate_local_identity_identity_profile.myLocalIdentityIdentityProfiles", "auth_source_update_policy.retain_attributes", fmt.Sprintf("%t", *updatedResourceModel.authSourceUpdatePolicy.RetainAttributes)),
+					resource.TestCheckResourceAttr("pingfederate_local_identity_identity_profile.myLocalIdentityIdentityProfiles", "auth_source_update_policy.update_attributes", fmt.Sprintf("%t", *updatedResourceModel.authSourceUpdatePolicy.UpdateAttributes)),
+					resource.TestCheckResourceAttr("pingfederate_local_identity_identity_profile.myLocalIdentityIdentityProfiles", "auth_source_update_policy.update_interval", "0"),
+				),
 			},
 			{
 				// Test importing the resource
@@ -474,7 +480,6 @@ func testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(config localIde
 		resourceType := "LocalIdentityIdentityProfiles"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		stateAttributes := s.RootModule().Resources["pingfederate_local_identity_identity_profile.myLocalIdentityIdentityProfiles"].Primary.Attributes
 		response, _, err := testClient.LocalIdentityIdentityProfilesAPI.GetIdentityProfile(ctx, localIdentityIdentityProfilesId).Execute()
 		if err != nil {
 			return err
@@ -499,18 +504,8 @@ func testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(config localIde
 				return err
 			}
 
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "auth_source_update_policy.store_attributes", *config.authSourceUpdatePolicy.StoreAttributes)
-			if err != nil {
-				return err
-			}
-
 			err = acctest.TestAttributesMatchBool(resourceType, &config.id, "retain_attributes",
 				*config.authSourceUpdatePolicy.RetainAttributes, *response.AuthSourceUpdatePolicy.RetainAttributes)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "auth_source_update_policy.retain_attributes", *config.authSourceUpdatePolicy.RetainAttributes)
 			if err != nil {
 				return err
 			}
@@ -521,18 +516,8 @@ func testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(config localIde
 				return err
 			}
 
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "auth_source_update_policy.update_attributes", *config.authSourceUpdatePolicy.UpdateAttributes)
-			if err != nil {
-				return err
-			}
-
 			err = acctest.TestAttributesMatchInt(resourceType, &config.id, "update_interval",
 				int64(*config.authSourceUpdatePolicy.UpdateInterval), int64(*response.AuthSourceUpdatePolicy.UpdateInterval))
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "auth_source_update_policy.update_interval", int64(*config.authSourceUpdatePolicy.UpdateInterval))
 			if err != nil {
 				return err
 			}
@@ -545,11 +530,6 @@ func testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(config localIde
 		}
 		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "profile_enabled",
 			config.profileEnabled, *response.ProfileEnabled)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "registration_enabled", config.registrationEnabled)
 		if err != nil {
 			return err
 		}

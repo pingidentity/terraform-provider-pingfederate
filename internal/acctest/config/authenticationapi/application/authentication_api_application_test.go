@@ -63,7 +63,12 @@ func TestAccAuthenticationApiApplication(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccAuthenticationApiApplication(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedAuthenticationApiApplicationAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedAuthenticationApiApplicationAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_api_application.%s", resourceName), "additional_allowed_origins.0", updatedResourceModel.additionalAllowedOrigins[0]),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_api_application.%s", resourceName), "additional_allowed_origins.1", updatedResourceModel.additionalAllowedOrigins[1]),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_api_application.%s", resourceName), "client_for_redirectless_mode_ref.id", updatedResourceModel.clientForRedirectlessModeRef.Id),
+				),
 			},
 			{
 				// Test importing the resource
@@ -160,9 +165,7 @@ func testAccCheckExpectedAuthenticationApiApplicationAttributes(config authentic
 		resourceType := "AuthenticationApiApplication"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		stateAttributeValues := s.RootModule().Resources["pingfederate_authentication_api_application.myAuthenticationApiApplication"].Primary.Attributes
 		response, _, err := testClient.AuthenticationApiAPI.GetApplication(ctx, authenticationApiApplicationId).Execute()
-
 		if err != nil {
 			return err
 		}
@@ -195,20 +198,10 @@ func testAccCheckExpectedAuthenticationApiApplicationAttributes(config authentic
 			if err != nil {
 				return err
 			}
-
-			err = acctest.VerifyStateAttributeSlice(stateAttributeValues, "additional_allowed_origins", config.additionalAllowedOrigins)
-			if err != nil {
-				return err
-			}
 		}
 
 		if config.clientForRedirectlessModeRef != nil {
 			err = acctest.TestAttributesMatchString(resourceType, pointers.String(authenticationApiApplicationName), "client_for_redirectless_mode_ref", config.clientForRedirectlessModeRef.Id, response.ClientForRedirectlessModeRef.Id)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributeValues, "client_for_redirectless_mode_ref.id", config.clientForRedirectlessModeRef.Id)
 			if err != nil {
 				return err
 			}

@@ -105,7 +105,35 @@ func TestAccOauthAuthServerSettings(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccOauthAuthServerSettings(resourceName, updatedResourceModel, true),
-				Check:  testAccCheckExpectedOauthAuthServerSettingsAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedOauthAuthServerSettingsAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "activation_code_check_mode", updatedResourceModel.activationCodeCheckMode),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "allow_unidentified_client_extension_grants", fmt.Sprintf("%t", updatedResourceModel.allowUnidentifiedClientExtensionGrants)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "allow_unidentified_client_ro_creds", fmt.Sprintf("%t", updatedResourceModel.allowUnidentifiedClientRoCreds)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "allowed_origins.0", updatedResourceModel.allowedOrigins[0]),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "atm_id_for_oauth_grant_management", updatedResourceModel.atmIdForOauthGrantManagement),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "bypass_activation_code_confirmation", fmt.Sprintf("%t", updatedResourceModel.bypassActivationCodeConfirmation)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "client_secret_retention_period", fmt.Sprintf("%d", updatedResourceModel.clientSecretRetentionPeriod)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "default_scope_description", updatedResourceModel.defaultScopeDescription),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "device_polling_interval", fmt.Sprintf("%d", updatedResourceModel.devicePollingInterval)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "disallow_plain_pkce", fmt.Sprintf("%t", updatedResourceModel.disallowPlainPkce)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "include_issuer_in_authorization_response", fmt.Sprintf("%t", updatedResourceModel.includeIssuerInAuthorizationResponse)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "jwt_secured_authorization_response_mode_lifetime", fmt.Sprintf("%d", updatedResourceModel.jwtSecuredAuthorizationResponseModeLifetime)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "par_status", updatedResourceModel.parStatus),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "persistent_grant_reuse_grant_types.0", updatedResourceModel.persistentGrantReuseGrantTypes[0]),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "pending_authorization_timeout", fmt.Sprintf("%d", updatedResourceModel.pendingAuthorizationTimeout)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "persistent_grant_lifetime", fmt.Sprintf("%d", updatedResourceModel.persistentGrantLifetime)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "persistent_grant_lifetime_unit", updatedResourceModel.persistentGrantLifetimeUnit),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "persistent_grant_idle_timeout", fmt.Sprintf("%d", updatedResourceModel.persistentGrantIdleTimeout)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "refresh_token_rolling_grace_period", "60"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "registered_authorization_path", updatedResourceModel.registeredAuthorizationPath),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "roll_refresh_token_values", fmt.Sprintf("%t", updatedResourceModel.rollRefreshTokenValues)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "scope_for_oauth_grant_management", updatedResourceModel.scopeForOauthGrantManagement),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "token_endpoint_base_url", updatedResourceModel.tokenEndpointBaseUrl),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "track_user_sessions_for_logout", fmt.Sprintf("%t", updatedResourceModel.trackUserSessionsForLogout)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "user_authorization_consent_page_setting", updatedResourceModel.userAuthorizationConsentPageSetting),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "user_authorization_url", updatedResourceModel.userAuthorizationUrl),
+				),
 			},
 			{
 				// Test importing the resource
@@ -312,20 +340,20 @@ func testAccCheckExpectedOauthAuthServerSettingsAttributes(config oauthAuthServe
 		resourceType := "OauthAuthServerSettings"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		stateAttributes := s.RootModule().Resources["pingfederate_oauth_auth_server_settings.myOauthAuthServerSettings"].Primary.Attributes
 		response, _, err := testClient.OauthAuthServerSettingsAPI.GetAuthorizationServerSettings(ctx).Execute()
 		if err != nil {
 			return err
 		}
 
 		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchInt(resourceType, nil, "authorization_code_entropy",
-			config.authorizationCodeEntropy, response.AuthorizationCodeEntropy)
+		err = acctest.TestAttributesMatchStringSlice(resourceType, nil, "allowed_origins",
+			config.allowedOrigins, response.AllowedOrigins)
 		if err != nil {
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "authorization_code_entropy", config.authorizationCodeEntropy)
+		err = acctest.TestAttributesMatchInt(resourceType, nil, "authorization_code_entropy",
+			config.authorizationCodeEntropy, response.AuthorizationCodeEntropy)
 		if err != nil {
 			return err
 		}
@@ -336,18 +364,8 @@ func testAccCheckExpectedOauthAuthServerSettingsAttributes(config oauthAuthServe
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "authorization_code_timeout", config.authorizationCodeTimeout)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchString(resourceType, nil, "registered_authorization_path",
 			config.registeredAuthorizationPath, *response.RegisteredAuthorizationPath)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "registered_authorization_path", config.registeredAuthorizationPath)
 		if err != nil {
 			return err
 		}
@@ -358,19 +376,9 @@ func testAccCheckExpectedOauthAuthServerSettingsAttributes(config oauthAuthServe
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "default_scope_description", config.defaultScopeDescription)
-		if err != nil {
-			return err
-		}
-
 		if config.devicePollingInterval != 0 {
 			err = acctest.TestAttributesMatchInt(resourceType, nil, "device_polling_interval",
 				config.devicePollingInterval, *response.DevicePollingInterval)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "device_polling_interval", config.devicePollingInterval)
 			if err != nil {
 				return err
 			}
@@ -382,20 +390,10 @@ func testAccCheckExpectedOauthAuthServerSettingsAttributes(config oauthAuthServe
 			if err != nil {
 				return err
 			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "pending_authorization_timeout", config.pendingAuthorizationTimeout)
-			if err != nil {
-				return err
-			}
 		}
 
 		err = acctest.TestAttributesMatchInt(resourceType, nil, "refresh_rolling_interval",
 			config.refreshRollingInterval, response.RefreshRollingInterval)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "refresh_rolling_interval", config.refreshRollingInterval)
 		if err != nil {
 			return err
 		}
@@ -406,18 +404,8 @@ func testAccCheckExpectedOauthAuthServerSettingsAttributes(config oauthAuthServe
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "refresh_token_length", config.refreshTokenLength)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "bypass_activation_code_confirmation",
 			config.bypassActivationCodeConfirmation, *response.BypassActivationCodeConfirmation)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "bypass_activation_code_confirmation", config.bypassActivationCodeConfirmation)
 		if err != nil {
 			return err
 		}
@@ -428,18 +416,8 @@ func testAccCheckExpectedOauthAuthServerSettingsAttributes(config oauthAuthServe
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "roll_refresh_token_values", config.rollRefreshTokenValues)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "disallow_plain_pkce",
 			config.disallowPlainPkce, *response.DisallowPlainPKCE)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "disallow_plain_pkce", config.disallowPlainPkce)
 		if err != nil {
 			return err
 		}
@@ -450,19 +428,9 @@ func testAccCheckExpectedOauthAuthServerSettingsAttributes(config oauthAuthServe
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "include_issuer_in_authorization_response", config.includeIssuerInAuthorizationResponse)
-		if err != nil {
-			return err
-		}
-
 		if config.jwtSecuredAuthorizationResponseModeLifetime != 0 {
 			err = acctest.TestAttributesMatchInt(resourceType, nil, "jwt_secured_authorization_response_mode_lifetime",
 				config.jwtSecuredAuthorizationResponseModeLifetime, *response.JwtSecuredAuthorizationResponseModeLifetime)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "jwt_secured_authorization_response_mode_lifetime", config.jwtSecuredAuthorizationResponseModeLifetime)
 			if err != nil {
 				return err
 			}
@@ -474,18 +442,8 @@ func testAccCheckExpectedOauthAuthServerSettingsAttributes(config oauthAuthServe
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "atm_id_for_oauth_grant_management", config.atmIdForOauthGrantManagement)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchString(resourceType, nil, "scope_for_oauth_grant_management",
 			config.scopeForOauthGrantManagement, *response.ScopeForOAuthGrantManagement)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "scope_for_oauth_grant_management", config.scopeForOauthGrantManagement)
 		if err != nil {
 			return err
 		}
@@ -496,18 +454,8 @@ func testAccCheckExpectedOauthAuthServerSettingsAttributes(config oauthAuthServe
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "token_endpoint_base_url", config.tokenEndpointBaseUrl)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "track_user_sessions_for_logout",
 			config.trackUserSessionsForLogout, *response.TrackUserSessionsForLogout)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "track_user_sessions_for_logout", config.trackUserSessionsForLogout)
 		if err != nil {
 			return err
 		}
@@ -518,19 +466,9 @@ func testAccCheckExpectedOauthAuthServerSettingsAttributes(config oauthAuthServe
 			if err != nil {
 				return err
 			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "user_authorization_consent_page_setting", "INTERNAL")
-			if err != nil {
-				return err
-			}
 		} else {
 			err = acctest.TestAttributesMatchString(resourceType, nil, "user_authorization_consent_page_setting",
 				config.userAuthorizationConsentPageSetting, *response.UserAuthorizationConsentPageSetting)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "user_authorization_consent_page_setting", config.userAuthorizationConsentPageSetting)
 			if err != nil {
 				return err
 			}
@@ -542,30 +480,15 @@ func testAccCheckExpectedOauthAuthServerSettingsAttributes(config oauthAuthServe
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "user_authorization_url", config.userAuthorizationUrl)
-		if err != nil {
-			return err
-		}
-
 		if config.parStatus == "" {
 			err = acctest.TestAttributesMatchString(resourceType, nil, "par_status",
 				"ENABLED", *response.ParStatus)
 			if err != nil {
 				return err
 			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "par_status", "ENABLED")
-			if err != nil {
-				return err
-			}
 		} else {
 			err = acctest.TestAttributesMatchString(resourceType, nil, "par_status",
 				config.parStatus, *response.ParStatus)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "par_status", config.parStatus)
 			if err != nil {
 				return err
 			}
@@ -577,18 +500,8 @@ func testAccCheckExpectedOauthAuthServerSettingsAttributes(config oauthAuthServe
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "allow_unidentified_client_extension_grants", config.allowUnidentifiedClientExtensionGrants)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "allow_unidentified_client_ro_creds",
 			config.allowUnidentifiedClientRoCreds, *response.AllowUnidentifiedClientROCreds)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "allow_unidentified_client_ro_creds", config.allowUnidentifiedClientRoCreds)
 		if err != nil {
 			return err
 		}
@@ -599,19 +512,9 @@ func testAccCheckExpectedOauthAuthServerSettingsAttributes(config oauthAuthServe
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "client_secret_retention_period", config.clientSecretRetentionPeriod)
-		if err != nil {
-			return err
-		}
-
 		if config.persistentGrantIdleTimeout != 0 {
 			err = acctest.TestAttributesMatchInt(resourceType, nil, "persistent_grant_idle_timeout",
 				config.persistentGrantIdleTimeout, *response.PersistentGrantIdleTimeout)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "persistent_grant_idle_timeout", config.persistentGrantIdleTimeout)
 			if err != nil {
 				return err
 			}
@@ -623,11 +526,6 @@ func testAccCheckExpectedOauthAuthServerSettingsAttributes(config oauthAuthServe
 			if err != nil {
 				return err
 			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "persistent_grant_lifetime", config.persistentGrantLifetime)
-			if err != nil {
-				return err
-			}
 		}
 
 		if config.persistentGrantLifetimeUnit == "" {
@@ -636,19 +534,9 @@ func testAccCheckExpectedOauthAuthServerSettingsAttributes(config oauthAuthServe
 			if err != nil {
 				return err
 			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "persistent_grant_lifetime_unit", "DAYS")
-			if err != nil {
-				return err
-			}
 		} else {
 			err = acctest.TestAttributesMatchString(resourceType, nil, "persistent_grant_lifetime_unit",
 				config.persistentGrantLifetimeUnit, *response.PersistentGrantLifetimeUnit)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "persistent_grant_lifetime_unit", config.persistentGrantLifetimeUnit)
 			if err != nil {
 				return err
 			}
@@ -660,19 +548,9 @@ func testAccCheckExpectedOauthAuthServerSettingsAttributes(config oauthAuthServe
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "persistent_grant_reuse_grant_types", config.persistentGrantReuseGrantTypes)
-		if err != nil {
-			return err
-		}
-
 		if config.refreshTokenRollingGracePeriod != 0 {
 			err = acctest.TestAttributesMatchInt(resourceType, nil, "refresh_token_rolling_grace_period",
 				config.refreshTokenRollingGracePeriod, *response.RefreshTokenRollingGracePeriod)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.VerifyStateAttributeValue(stateAttributes, "refresh_token_rolling_grace_period", config.refreshTokenRollingGracePeriod)
 			if err != nil {
 				return err
 			}

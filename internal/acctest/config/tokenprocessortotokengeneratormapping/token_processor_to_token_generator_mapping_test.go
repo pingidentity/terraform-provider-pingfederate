@@ -60,7 +60,13 @@ func TestAccTokenProcessorToTokenGeneratorMapping(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccTokenProcessorToTokenGeneratorMapping(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedTokenProcessorToTokenGeneratorMappingAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedTokenProcessorToTokenGeneratorMappingAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_token_processor_to_token_generator_mapping.%s", resourceName), "issuance_criteria.conditional_criteria.0.source.type", updatedResourceModel.issuanceCriteria.Source.Type),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_token_processor_to_token_generator_mapping.%s", resourceName), "issuance_criteria.conditional_criteria.0.attribute_name", updatedResourceModel.issuanceCriteria.AttributeName),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_token_processor_to_token_generator_mapping.%s", resourceName), "issuance_criteria.conditional_criteria.0.condition", updatedResourceModel.issuanceCriteria.Condition),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_token_processor_to_token_generator_mapping.%s", resourceName), "issuance_criteria.conditional_criteria.0.value", updatedResourceModel.issuanceCriteria.Value),
+				),
 			},
 			{
 				// Test importing the resource
@@ -133,7 +139,6 @@ func testAccCheckExpectedTokenProcessorToTokenGeneratorMappingAttributes(config 
 		resourceType := "TokenProcessorToTokenGeneratorMapping"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		stateAttributeValues := s.RootModule().Resources["pingfederate_token_processor_to_token_generator_mapping.myTokenProcessorToTokenGeneratorMapping"].Primary.Attributes
 		response, _, err := testClient.TokenProcessorToTokenGeneratorMappingsAPI.GetTokenToTokenMappingById(ctx, tokenProcessorToTokenGeneratorMappingId).Execute()
 		if err != nil {
 			return err
@@ -167,18 +172,8 @@ func testAccCheckExpectedTokenProcessorToTokenGeneratorMappingAttributes(config 
 					return err
 				}
 
-				err = acctest.VerifyStateAttributeValue(stateAttributeValues, "issuance_criteria.conditional_criteria.0.source.type", config.issuanceCriteria.Source.Type)
-				if err != nil {
-					return err
-				}
-
 				err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "attribute_name",
 					config.issuanceCriteria.AttributeName, conditionalCriteriaEntry.AttributeName)
-				if err != nil {
-					return err
-				}
-
-				err = acctest.VerifyStateAttributeValue(stateAttributeValues, "issuance_criteria.conditional_criteria.0.attribute_name", config.issuanceCriteria.AttributeName)
 				if err != nil {
 					return err
 				}
@@ -189,18 +184,8 @@ func testAccCheckExpectedTokenProcessorToTokenGeneratorMappingAttributes(config 
 					return err
 				}
 
-				err = acctest.VerifyStateAttributeValue(stateAttributeValues, "issuance_criteria.conditional_criteria.0.condition", config.issuanceCriteria.Condition)
-				if err != nil {
-					return err
-				}
-
 				err = acctest.TestAttributesMatchString(resourceType, pointers.String(tokenProcessorToTokenGeneratorMappingId), "value",
 					config.issuanceCriteria.Value, conditionalCriteriaEntry.Value)
-				if err != nil {
-					return err
-				}
-
-				err = acctest.VerifyStateAttributeValue(stateAttributeValues, "issuance_criteria.conditional_criteria.0.value", config.issuanceCriteria.Value)
 				if err != nil {
 					return err
 				}

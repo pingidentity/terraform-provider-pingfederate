@@ -40,7 +40,12 @@ func TestAccSessionSettings(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccSessionSettings(resourceName, &updatedResourceModel),
-				Check:  testAccCheckExpectedSessionSettingsAttributes(&updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedSessionSettingsAttributes(&updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_settings.%s", resourceName), "track_adapter_sessions_for_logout", fmt.Sprintf("%t", updatedResourceModel.trackAdapterSessionsForLogout)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_settings.%s", resourceName), "revoke_user_session_on_logout", fmt.Sprintf("%t", updatedResourceModel.revokeUserSessionOnLogout)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_settings.%s", resourceName), "session_revocation_lifetime", fmt.Sprintf("%d", updatedResourceModel.sessionRevocationLifetime)),
+				),
 			},
 			{
 				// Test importing the resource
@@ -89,7 +94,6 @@ func testAccCheckExpectedSessionSettingsAttributes(config *sessionSettingsResour
 		resourceType := "SessionSettings"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		stateAttributes := s.RootModule().Resources["pingfederate_session_settings.mySessionSettings"].Primary.Attributes
 		response, _, err := testClient.SessionAPI.GetSessionSettings(ctx).Execute()
 
 		if err != nil {
@@ -107,29 +111,14 @@ func testAccCheckExpectedSessionSettingsAttributes(config *sessionSettingsResour
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "track_adapter_sessions_for_logout", config.trackAdapterSessionsForLogout)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchBool(resourceType, nil, "revoke_user_session_on_logout",
 			config.revokeUserSessionOnLogout, *response.RevokeUserSessionOnLogout)
 		if err != nil {
 			return err
 		}
 
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "revoke_user_session_on_logout", config.revokeUserSessionOnLogout)
-		if err != nil {
-			return err
-		}
-
 		err = acctest.TestAttributesMatchInt(resourceType, nil, "session_revocation_lifetime",
 			config.sessionRevocationLifetime, *response.SessionRevocationLifetime)
-		if err != nil {
-			return err
-		}
-
-		err = acctest.VerifyStateAttributeValue(stateAttributes, "session_revocation_lifetime", config.sessionRevocationLifetime)
 		if err != nil {
 			return err
 		}
