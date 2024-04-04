@@ -60,7 +60,13 @@ func TestAccTokenProcessorToTokenGeneratorMapping(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccTokenProcessorToTokenGeneratorMapping(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedTokenProcessorToTokenGeneratorMappingAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedTokenProcessorToTokenGeneratorMappingAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_token_processor_to_token_generator_mapping.%s", resourceName), "issuance_criteria.conditional_criteria.0.source.type", updatedResourceModel.issuanceCriteria.Source.Type),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_token_processor_to_token_generator_mapping.%s", resourceName), "issuance_criteria.conditional_criteria.0.attribute_name", updatedResourceModel.issuanceCriteria.AttributeName),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_token_processor_to_token_generator_mapping.%s", resourceName), "issuance_criteria.conditional_criteria.0.condition", updatedResourceModel.issuanceCriteria.Condition),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_token_processor_to_token_generator_mapping.%s", resourceName), "issuance_criteria.conditional_criteria.0.value", updatedResourceModel.issuanceCriteria.Value),
+				),
 			},
 			{
 				// Test importing the resource

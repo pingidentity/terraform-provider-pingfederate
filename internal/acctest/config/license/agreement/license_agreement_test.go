@@ -23,7 +23,10 @@ func TestAccLicenseAgreement(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccLicenseAgreement(resourceName, true),
-				Check:  testAccCheckExpectedLicenseAgreementAttributes(true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedLicenseAgreementAttributes(true),
+					resource.TestCheckResourceAttr("pingfederate_license_agreement."+resourceName, "accepted", "true"),
+				),
 			},
 			{
 				// Test importing the resource

@@ -52,7 +52,16 @@ func TestAccSessionAuthenticationSessionPoliciesGlobal(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccSessionAuthenticationSessionPoliciesGlobal(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedSessionAuthenticationSessionPoliciesGlobalAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedSessionAuthenticationSessionPoliciesGlobalAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_authentication_session_policies_global.%s", resourceName), "enable_sessions", fmt.Sprintf("%t", updatedResourceModel.enableSessions)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_authentication_session_policies_global.%s", resourceName), "persistent_sessions", fmt.Sprintf("%t", *updatedResourceModel.persistentSessions)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_authentication_session_policies_global.%s", resourceName), "hash_unique_user_key_attribute", fmt.Sprintf("%t", *updatedResourceModel.hashUniqueUserKeyAttribute)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_authentication_session_policies_global.%s", resourceName), "idle_timeout_mins", fmt.Sprintf("%d", *updatedResourceModel.idleTimeoutMins)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_authentication_session_policies_global.%s", resourceName), "idle_timeout_display_unit", *updatedResourceModel.idleTimeoutDisplayUnit),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_authentication_session_policies_global.%s", resourceName), "max_timeout_mins", fmt.Sprintf("%d", *updatedResourceModel.maxTimeoutMins)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_authentication_session_policies_global.%s", resourceName), "max_timeout_display_unit", *updatedResourceModel.maxTimeoutDisplayUnit),
+				),
 			},
 			{
 				// Test importing the resource
@@ -121,6 +130,7 @@ func testAccCheckExpectedSessionAuthenticationSessionPoliciesGlobalAttributes(co
 		if err != nil {
 			return err
 		}
+
 		if config.persistentSessions != nil {
 			err = acctest.TestAttributesMatchBool(resourceType, nil, "persistent_sessions",
 				*config.persistentSessions, *response.PersistentSessions)

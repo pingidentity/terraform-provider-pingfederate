@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -266,10 +267,10 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Required:    true,
 			},
 			"roll_refresh_token_values": schema.BoolAttribute{
-				Description: "The roll refresh token values default policy. The default value is true.",
+				Description: "The roll refresh token values default policy. The default value is false.",
 				Computed:    true,
 				Optional:    true,
-				Default:     booldefault.StaticBool(true),
+				Default:     booldefault.StaticBool(false),
 			},
 			"refresh_token_rolling_grace_period": schema.Int64Attribute{
 				Description: "The grace period that a rolled refresh token remains valid in seconds. The default value is 60.",
@@ -285,6 +286,14 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Description: "The grant types that the OAuth AS can reuse rather than creating a new grant for each request. Only 'IMPLICIT' or 'AUTHORIZATION_CODE' or 'RESOURCE_OWNER_CREDENTIALS' are valid grant types.",
 				Computed:    true,
 				Optional:    true,
+				Validators: []validator.Set{
+					setvalidator.ValueStringsAre(
+						stringvalidator.OneOf(
+							"IMPLICIT",
+							"AUTHORIZATION_CODE",
+							"RESOURCE_OWNER_CREDENTIALS"),
+					),
+				},
 				Default:     setdefault.StaticValue(persistentGrantReuseGrantTypesDefault),
 				ElementType: types.StringType,
 			},

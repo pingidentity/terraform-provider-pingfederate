@@ -105,7 +105,16 @@ func TestAccIncomingProxySettings(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccIncomingProxySettings(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedIncomingProxySettingsAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedIncomingProxySettingsAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_incoming_proxy_settings.%s", resourceName), "forwarded_ip_address_header_name", *updatedResourceModel.ForwardedIpAddressHeaderName),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_incoming_proxy_settings.%s", resourceName), "forwarded_ip_address_header_index", *updatedResourceModel.ForwardedIpAddressHeaderIndex),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_incoming_proxy_settings.%s", resourceName), "forwarded_host_header_name", *updatedResourceModel.ForwardedHostHeaderName),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_incoming_proxy_settings.%s", resourceName), "forwarded_host_header_index", *updatedResourceModel.ForwardedHostHeaderIndex),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_incoming_proxy_settings.%s", resourceName), "client_cert_ssl_header_name", *updatedResourceModel.ClientCertSSLHeaderName),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_incoming_proxy_settings.%s", resourceName), "client_cert_chain_ssl_header_name", *updatedResourceModel.ClientCertChainSSLHeaderName),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_incoming_proxy_settings.%s", resourceName), "proxy_terminates_https_conns", fmt.Sprintf("%t", *updatedResourceModel.ProxyTerminatesHttpsConns)),
+				),
 			},
 			{
 				// Test importing the resource

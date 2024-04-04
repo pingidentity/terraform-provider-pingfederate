@@ -28,7 +28,6 @@ func TestAccOauthAuthServerSettingsScopesExclusiveScopes(t *testing.T) {
 		id:          oauthAuthServerSettingsScopesExclusiveScopesId,
 		name:        oauthAuthServerSettingsScopesExclusiveScopesId,
 		description: "example",
-		dynamic:     false,
 	}
 	updatedResourceModel := oauthAuthServerSettingsScopesExclusiveScopesResourceModel{
 		id:          oauthAuthServerSettingsScopesExclusiveScopesId,
@@ -51,7 +50,10 @@ func TestAccOauthAuthServerSettingsScopesExclusiveScopes(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccOauthAuthServerSettingsScopesExclusiveScopes(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedOauthAuthServerSettingsScopesExclusiveScopesAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedOauthAuthServerSettingsScopesExclusiveScopesAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings_scopes_exclusive_scope.%s", resourceName), "dynamic", fmt.Sprintf("%t", updatedResourceModel.dynamic)),
+				),
 			},
 			{
 				// Test importing the resource
@@ -127,6 +129,13 @@ func testAccCheckExpectedOauthAuthServerSettingsScopesExclusiveScopesAttributes(
 		err = acctest.TestAttributesMatchString(resourceType, &config.id, "name", config.name, response.Name)
 		if err != nil {
 			return err
+		}
+
+		if config.dynamic {
+			err = acctest.TestAttributesMatchBool(resourceType, &config.id, "dynamic", config.dynamic, *response.Dynamic)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil

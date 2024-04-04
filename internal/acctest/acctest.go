@@ -107,6 +107,17 @@ func StringSliceToTerraformString(values []string) string {
 	return builder.String()
 }
 
+func StringSliceToString(values []string) string {
+	var builder strings.Builder
+	for i, str := range values {
+		builder.WriteString(fmt.Sprintf("\"%s\"", str))
+		if i < len(values)-1 {
+			builder.WriteString(",")
+		}
+	}
+	return builder.String()
+}
+
 // Convert a string slice to the format used in Terraform files
 func ObjectSliceOfKvStringsToTerraformString(keyValue string, values []string) string {
 	var builder strings.Builder

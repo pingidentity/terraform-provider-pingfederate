@@ -79,14 +79,15 @@ func TestAccOpenIdConnectSettings(t *testing.T) {
 	resourceName := "myOpenIdConnectSettings"
 	// send empty model to start
 	initialResourceModel := openIdConnectSettingsResourceModel{}
-	updatedSessionSettings := client.NewOIDCSessionSettings()
-	updatedSessionSettings.TrackUserSessionsForLogout = pointers.Bool(true)
-	updatedSessionSettings.RevokeUserSessionOnLogout = pointers.Bool(false)
-	updatedSessionSettings.SessionRevocationLifetime = pointers.Int64(180)
-
 	updatedResourceModel := openIdConnectSettingsResourceModel{
-		defaultPolicyRef: client.NewResourceLink("oidcPolicy"),
-		sessionSettings:  updatedSessionSettings,
+		defaultPolicyRef: &client.ResourceLink{
+			Id: "oidcPolicy",
+		},
+		sessionSettings: &client.OIDCSessionSettings{
+			TrackUserSessionsForLogout: pointers.Bool(true),
+			RevokeUserSessionOnLogout:  pointers.Bool(true),
+			SessionRevocationLifetime:  pointers.Int64(180),
+		},
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -103,7 +104,13 @@ func TestAccOpenIdConnectSettings(t *testing.T) {
 				// Test updating some fields
 				PreConfig: func() { createDependenciesForTestBecauseIHaveTo(t) },
 				Config:    testAccOpenIdConnectSettings(resourceName, updatedResourceModel),
-				Check:     testAccCheckExpectedOpenIdConnectSettingsAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedOpenIdConnectSettingsAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_open_id_connect_settings.%s", resourceName), "default_policy_ref.id", updatedResourceModel.defaultPolicyRef.Id),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_open_id_connect_settings.%s", resourceName), "session_settings.track_user_sessions_for_logout", fmt.Sprintf("%t", *updatedResourceModel.sessionSettings.TrackUserSessionsForLogout)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_open_id_connect_settings.%s", resourceName), "session_settings.revoke_user_session_on_logout", fmt.Sprintf("%t", *updatedResourceModel.sessionSettings.RevokeUserSessionOnLogout)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_open_id_connect_settings.%s", resourceName), "session_settings.session_revocation_lifetime", fmt.Sprintf("%d", *updatedResourceModel.sessionSettings.SessionRevocationLifetime)),
+				),
 			},
 			{
 				// Test importing the resource
@@ -166,7 +173,6 @@ func testAccCheckExpectedOpenIdConnectSettingsAttributes(config openIdConnectSet
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
 		response, _, err := testClient.OauthOpenIdConnectAPI.GetOIDCSettings(ctx).Execute()
-
 		if err != nil {
 			return err
 		}

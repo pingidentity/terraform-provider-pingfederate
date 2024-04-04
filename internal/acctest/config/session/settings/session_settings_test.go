@@ -40,7 +40,12 @@ func TestAccSessionSettings(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccSessionSettings(resourceName, &updatedResourceModel),
-				Check:  testAccCheckExpectedSessionSettingsAttributes(&updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedSessionSettingsAttributes(&updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_settings.%s", resourceName), "track_adapter_sessions_for_logout", fmt.Sprintf("%t", updatedResourceModel.trackAdapterSessionsForLogout)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_settings.%s", resourceName), "revoke_user_session_on_logout", fmt.Sprintf("%t", updatedResourceModel.revokeUserSessionOnLogout)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_settings.%s", resourceName), "session_revocation_lifetime", fmt.Sprintf("%d", updatedResourceModel.sessionRevocationLifetime)),
+				),
 			},
 			{
 				// Test importing the resource

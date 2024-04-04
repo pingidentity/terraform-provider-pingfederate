@@ -46,7 +46,11 @@ func TestAccIdpDefaultUrls(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccIdpDefaultUrls(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedIdpDefaultUrlsAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedIdpDefaultUrlsAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_idp_default_urls.%s", resourceName), "confirm_idp_slo", fmt.Sprintf("%t", *updatedResourceModel.confirmIdpSlo)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_idp_default_urls.%s", resourceName), "idp_slo_success_url", *updatedResourceModel.idpSloSuccessUrl),
+				),
 			},
 			{
 				// Test importing the resource

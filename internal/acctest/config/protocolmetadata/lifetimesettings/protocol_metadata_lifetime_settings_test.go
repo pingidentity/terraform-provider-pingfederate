@@ -38,7 +38,11 @@ func TestAccProtocolMetadataLifetimeSettings(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccProtocolMetadataLifetimeSettings(resourceName, &updatedResourceModel),
-				Check:  testAccCheckExpectedProtocolMetadataLifetimeSettingsAttributes(&updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedProtocolMetadataLifetimeSettingsAttributes(&updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_protocol_metadata_lifetime_settings.%s", resourceName), "cache_duration", fmt.Sprintf("%d", updatedResourceModel.cacheDuration)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_protocol_metadata_lifetime_settings.%s", resourceName), "reload_delay", fmt.Sprintf("%d", updatedResourceModel.reloadDelay)),
+				),
 			},
 			{
 				// Test importing the resource
@@ -100,6 +104,7 @@ func testAccCheckExpectedProtocolMetadataLifetimeSettingsAttributes(config *prot
 		if err != nil {
 			return err
 		}
+
 		err = acctest.TestAttributesMatchInt(resourceType, nil, "reload_delay",
 			config.reloadDelay, *response.ReloadDelay)
 		if err != nil {

@@ -54,7 +54,12 @@ func TestAccAuthenticationPolicyContract(t *testing.T) {
 			{
 				// More complete model
 				Config: testAccAuthenticationPolicyContract(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedAuthenticationPolicyContractAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedAuthenticationPolicyContractAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policy_contract.%s", resourceName), "extended_attributes.0.name", updatedResourceModel.extendedAttributes[0]),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policy_contract.%s", resourceName), "extended_attributes.1.name", updatedResourceModel.extendedAttributes[1]),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policy_contract.%s", resourceName), "extended_attributes.2.name", "extendedwith\"escaped\"quotes"),
+				),
 			},
 			{
 				// Test importing the resource
@@ -116,8 +121,8 @@ func testAccCheckExpectedAuthenticationPolicyContractAttributes(config authentic
 		resourceType := "AuthenticationPolicyContract"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		idStateVal := s.Modules[0].Resources["pingfederate_authentication_policy_contract.myAuthenticationPolicyContract"].Primary.Attributes["id"]
-		response, _, err := testClient.AuthenticationPolicyContractsAPI.GetAuthenticationPolicyContract(ctx, idStateVal).Execute()
+		stateAttributes := s.RootModule().Resources["pingfederate_authentication_policy_contract.myAuthenticationPolicyContract"].Primary.Attributes
+		response, _, err := testClient.AuthenticationPolicyContractsAPI.GetAuthenticationPolicyContract(ctx, stateAttributes["id"]).Execute()
 		if err != nil {
 			return err
 		}
@@ -140,7 +145,7 @@ func testAccCheckExpectedAuthenticationPolicyContractAttributes(config authentic
 			return err
 		}
 
-		stateId = idStateVal
+		stateId = stateAttributes["id"]
 		return nil
 	}
 }

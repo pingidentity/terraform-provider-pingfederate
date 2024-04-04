@@ -107,7 +107,7 @@ func testAccCheckExpectedCertificateAttributes(config certificatesResourceModel)
 	return func(s *terraform.State) error {
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		id := s.Modules[0].Resources["pingfederate_certificate_ca.myCertificateCa"].Primary.Attributes["ca_id"]
+		id := s.RootModule().Resources["pingfederate_certificate_ca.myCertificateCa"].Primary.Attributes["ca_id"]
 		_, _, err := testClient.CertificatesCaAPI.GetTrustedCert(ctx, id).Execute()
 		if err != nil {
 			return err

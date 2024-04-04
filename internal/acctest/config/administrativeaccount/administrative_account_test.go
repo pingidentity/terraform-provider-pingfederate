@@ -204,7 +204,10 @@ func TestAccAdministrativeAccount(t *testing.T) {
 			},
 			{
 				Config: testAccAdministrativeAccount(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedAdministrativeAccountAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedAdministrativeAccountAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_administrative_account.%s", resourceName), "active", "false"),
+				),
 			},
 			{
 				// Test importing the resource

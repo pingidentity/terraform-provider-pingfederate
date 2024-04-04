@@ -45,7 +45,7 @@ func TestAccAuthenticationApiApplication(t *testing.T) {
 		name:                         authenticationApiApplicationName,
 		url:                          authenticationApiApplicationUrl,
 		description:                  "myAuthenticationApiApplicationDescription",
-		additionalAllowedOrigins:     []string{"https://example.com"},
+		additionalAllowedOrigins:     []string{"https://example.com", "https://example2.com"},
 		clientForRedirectlessModeRef: clientForRedirectlessModeRefResourceLink,
 	}
 
@@ -63,7 +63,12 @@ func TestAccAuthenticationApiApplication(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccAuthenticationApiApplication(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedAuthenticationApiApplicationAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedAuthenticationApiApplicationAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_api_application.%s", resourceName), "additional_allowed_origins.0", updatedResourceModel.additionalAllowedOrigins[0]),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_api_application.%s", resourceName), "additional_allowed_origins.1", updatedResourceModel.additionalAllowedOrigins[1]),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_api_application.%s", resourceName), "client_for_redirectless_mode_ref.id", updatedResourceModel.clientForRedirectlessModeRef.Id),
+				),
 			},
 			{
 				// Test importing the resource
@@ -161,7 +166,6 @@ func testAccCheckExpectedAuthenticationApiApplicationAttributes(config authentic
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
 		response, _, err := testClient.AuthenticationApiAPI.GetApplication(ctx, authenticationApiApplicationId).Execute()
-
 		if err != nil {
 			return err
 		}

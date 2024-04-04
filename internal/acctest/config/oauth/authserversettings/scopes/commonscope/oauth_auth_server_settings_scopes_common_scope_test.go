@@ -28,7 +28,6 @@ func TestAccOauthAuthServerSettingsScopesCommonScopes(t *testing.T) {
 		id:          oauthAuthServerSettingsScopesCommonScopesId,
 		name:        oauthAuthServerSettingsScopesCommonScopesId,
 		description: "example",
-		dynamic:     false,
 	}
 	updatedResourceModel := oauthAuthServerSettingsScopesCommonScopesResourceModel{
 		id:          oauthAuthServerSettingsScopesCommonScopesId,
@@ -51,7 +50,10 @@ func TestAccOauthAuthServerSettingsScopesCommonScopes(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccOauthAuthServerSettingsScopesCommonScopes(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedOauthAuthServerSettingsScopesCommonScopesAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedOauthAuthServerSettingsScopesCommonScopesAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings_scopes_common_scope.%s", resourceName), "dynamic", fmt.Sprintf("%t", updatedResourceModel.dynamic)),
+				),
 			},
 			{
 				// Test importing the resource
@@ -124,6 +126,11 @@ func testAccCheckExpectedOauthAuthServerSettingsScopesCommonScopesAttributes(con
 		}
 
 		err = acctest.TestAttributesMatchString(resourceType, &config.id, "name", config.name, response.Name)
+		if err != nil {
+			return err
+		}
+
+		err = acctest.TestAttributesMatchBool(resourceType, &config.id, "dynamic", config.dynamic, *response.Dynamic)
 		if err != nil {
 			return err
 		}

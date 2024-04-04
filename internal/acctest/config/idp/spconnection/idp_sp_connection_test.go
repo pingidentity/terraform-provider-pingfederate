@@ -64,7 +64,11 @@ func TestAccIdpSpConnection(t *testing.T) {
 			{
 				// Complete connection with all three types
 				Config: testAccSpConnectionComplete(spConnectionId),
-				Check:  testAccCheckExpectedSpConnectionAttributesAll(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedSpConnectionAttributesAll(),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_idp_sp_connection.%s", spConnectionId), "virtual_entity_ids.0", "example1"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_idp_sp_connection.%s", spConnectionId), "virtual_entity_ids.1", "example2"),
+				),
 			},
 			{
 				// Test importing the resource
@@ -444,7 +448,7 @@ data "pingfederate_idp_sp_connection" "%[1]s" {
 	)
 }
 
-func testCommonExpectedSpConnectionAttributes() (*configurationapi.SpConnection, error) {
+func testCommonExpectedSpConnectionAttributes(s *terraform.State) (*configurationapi.SpConnection, error) {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
 	spConn, _, err := testClient.IdpSpConnectionsAPI.GetSpConnection(ctx, spConnectionId).Execute()
@@ -520,7 +524,7 @@ func testExpectedSpConnectionOutboundProvisionAttributes(response *configuration
 // Test that the expected attributes are set on the PingFederate server
 func testAccCheckExpectedSpConnectionAttributesOutboundProvision() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		response, err := testCommonExpectedSpConnectionAttributes()
+		response, err := testCommonExpectedSpConnectionAttributes(s)
 		if err != nil {
 			return err
 		}
@@ -572,7 +576,7 @@ func testExpectedSpConnectionBrowserSSOAttributes(response *configurationapi.SpC
 // Test that the expected attributes are set on the PingFederate server
 func testAccCheckExpectedSpConnectionAttributesBrowserSSO(useWsFed bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		response, err := testCommonExpectedSpConnectionAttributes()
+		response, err := testCommonExpectedSpConnectionAttributes(s)
 		if err != nil {
 			return err
 		}
@@ -609,7 +613,7 @@ func testExpectedSpConnectionWsTrustAttributes(response *configurationapi.SpConn
 // Test that the expected attributes are set on the PingFederate server
 func testAccCheckExpectedSpConnectionAttributesWsTrust() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		response, err := testCommonExpectedSpConnectionAttributes()
+		response, err := testCommonExpectedSpConnectionAttributes(s)
 		if err != nil {
 			return err
 		}
@@ -621,7 +625,7 @@ func testAccCheckExpectedSpConnectionAttributesWsTrust() resource.TestCheckFunc 
 // Test that the expected attributes are set on the PingFederate server
 func testAccCheckExpectedSpConnectionAttributesAll() resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		response, err := testCommonExpectedSpConnectionAttributes()
+		response, err := testCommonExpectedSpConnectionAttributes(s)
 		if err != nil {
 			return err
 		}

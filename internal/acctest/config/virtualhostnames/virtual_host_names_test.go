@@ -34,7 +34,12 @@ func TestAccVirtualHostNames(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccVirtualHostNames(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedVirtualHostNamesAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedVirtualHostNamesAttributes(updatedResourceModel),
+					resource.TestCheckTypeSetElemAttr("data.pingfederate_virtual_host_names.myVirtualHostNames", "virtual_host_names.*", updatedResourceModel.virtualHostNames[0]),
+					resource.TestCheckTypeSetElemAttr("data.pingfederate_virtual_host_names.myVirtualHostNames", "virtual_host_names.*", updatedResourceModel.virtualHostNames[1]),
+					resource.TestCheckTypeSetElemAttr("data.pingfederate_virtual_host_names.myVirtualHostNames", "virtual_host_names.*", updatedResourceModel.virtualHostNames[2]),
+				),
 			},
 			{
 				// Test importing the resource
@@ -86,7 +91,6 @@ func testAccCheckExpectedVirtualHostNamesAttributes(config virtualHostNamesResou
 		if err != nil {
 			return err
 		}
-
 		return nil
 	}
 }

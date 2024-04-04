@@ -20,6 +20,7 @@ const kerberosRealmName = "myKerberosRealmName"
 // Attributes to test with. Add optional properties to test here if desired.
 type kerberosRealmsResourceModel struct {
 	id                                 string
+	connectionType                     string
 	kerberosRealmName                  string
 	keyDistributionCenters             []string
 	kerberosUsername                   string
@@ -37,6 +38,7 @@ func TestAccKerberosRealms(t *testing.T) {
 	}
 
 	updatedResourceModel := kerberosRealmsResourceModel{
+		connectionType:                     "DIRECT",
 		kerberosRealmName:                  kerberosRealmName,
 		kerberosUsername:                   "kerberosUpdatedUsername",
 		kerberosPassword:                   "kerberosUpdatedPassword",
@@ -66,7 +68,14 @@ func TestAccKerberosRealms(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccKerberosRealms(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedKerberosRealmsAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedKerberosRealmsAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr("pingfederate_kerberos_realm.myKerberosRealm", "connection_type", updatedResourceModel.connectionType),
+					resource.TestCheckResourceAttr("pingfederate_kerberos_realm.myKerberosRealm", "key_distribution_centers.0", updatedResourceModel.keyDistributionCenters[0]),
+					resource.TestCheckResourceAttr("pingfederate_kerberos_realm.myKerberosRealm", "key_distribution_centers.1", updatedResourceModel.keyDistributionCenters[1]),
+					resource.TestCheckResourceAttr("pingfederate_kerberos_realm.myKerberosRealm", "retain_previous_keys_on_password_change", fmt.Sprintf("%t", updatedResourceModel.retainPreviousKeysOnPasswordChange)),
+					resource.TestCheckResourceAttr("pingfederate_kerberos_realm.myKerberosRealm", "suppress_domain_name_concatenation", fmt.Sprintf("%t", updatedResourceModel.suppressDomainNameConcatenation)),
+				),
 			},
 			{
 				// Test importing the resource
@@ -102,6 +111,10 @@ func TestAccKerberosRealms(t *testing.T) {
 
 func optionalFields(resourceModel kerberosRealmsResourceModel) string {
 	var stringBuilder strings.Builder
+
+	if resourceModel.connectionType != "" {
+		stringBuilder.WriteString(fmt.Sprintf("connection_type = \"%[1]s\"\n", resourceModel.connectionType))
+	}
 	if len(resourceModel.keyDistributionCenters) > 0 {
 		stringBuilder.WriteString(fmt.Sprintf("key_distribution_centers = %[1]s\n", acctest.StringSliceToTerraformString(resourceModel.keyDistributionCenters)))
 	}
@@ -145,6 +158,12 @@ func testAccCheckExpectedKerberosRealmsAttributes(config kerberosRealmsResourceM
 
 		if config.id != "" {
 			err = acctest.TestAttributesMatchString(resourceType, &config.id, "id", config.id, *response.Id)
+			if err != nil {
+				return err
+			}
+		}
+		if config.connectionType != "" {
+			err = acctest.TestAttributesMatchString(resourceType, nil, "connection_type", config.connectionType, *response.ConnectionType)
 			if err != nil {
 				return err
 			}

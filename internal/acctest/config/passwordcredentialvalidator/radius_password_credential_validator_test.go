@@ -57,7 +57,11 @@ func TestAccRadiusPasswordCredentialValidators(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccRadiusPasswordCredentialValidators(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedRadiusPasswordCredentialValidatorsAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedRadiusPasswordCredentialValidatorsAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_password_credential_validator.%s", resourceName), "configuration.fields_all.1.value", updatedResourceModel.timeout),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_password_credential_validator.%s", resourceName), "configuration.tables.0.rows.0.fields.1.value", updatedResourceModel.authPort),
+				),
 			},
 			{
 				// Test importing the resource
@@ -228,6 +232,7 @@ func testAccCheckExpectedRadiusPasswordCredentialValidatorsAttributes(config rad
 				if err != nil {
 					return err
 				}
+
 			}
 		}
 

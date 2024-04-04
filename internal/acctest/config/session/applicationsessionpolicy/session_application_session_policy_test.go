@@ -38,7 +38,11 @@ func TestAccSessionApplicationSessionPolicy(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccSessionApplicationSessionPolicy(resourceName, &updatedResourceModel),
-				Check:  testAccCheckExpectedSessionApplicationSessionPolicyAttributes(&updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedSessionApplicationSessionPolicyAttributes(&updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_application_session_policy.%s", resourceName), "idle_timeout_mins", fmt.Sprintf("%d", updatedResourceModel.idleTimeoutMins)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_application_session_policy.%s", resourceName), "max_timeout_mins", fmt.Sprintf("%d", updatedResourceModel.maxTimeoutMins)),
+				),
 			},
 			{
 				// Test importing the resource

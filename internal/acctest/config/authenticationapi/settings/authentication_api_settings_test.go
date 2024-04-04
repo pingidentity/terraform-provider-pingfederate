@@ -42,7 +42,14 @@ func TestAccAuthenticationApiSettings(t *testing.T) {
 			},
 			{
 				Config: testAccAuthenticationApiSettings(resourceName, &updatedResourceModel),
-				Check:  testAccCheckExpectedAuthenticationApiSettingsAttributes(updatedResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedAuthenticationApiSettingsAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr("pingfederate_authentication_api_settings.myAuthenticationApiSettings", "api_enabled", fmt.Sprintf("%t", updatedResourceModel.apiEnabled)),
+					resource.TestCheckResourceAttr("pingfederate_authentication_api_settings.myAuthenticationApiSettings", "enable_api_descriptions", fmt.Sprintf("%t", updatedResourceModel.enableApiDescriptions)),
+					resource.TestCheckResourceAttr("pingfederate_authentication_api_settings.myAuthenticationApiSettings", "restrict_access_to_redirectless_mode", fmt.Sprintf("%t", updatedResourceModel.restrictAccessToRedirectlessMode)),
+					resource.TestCheckResourceAttr("pingfederate_authentication_api_settings.myAuthenticationApiSettings", "include_request_context", fmt.Sprintf("%t", updatedResourceModel.includeRequestContext)),
+					resource.TestCheckResourceAttr("pingfederate_authentication_api_settings.myAuthenticationApiSettings", "default_application_ref.id", updatedResourceModel.defaultApplicationRef),
+				),
 			},
 			{
 				// Test importing the resource
@@ -120,6 +127,19 @@ func testAccCheckExpectedAuthenticationApiSettingsAttributes(config authenticati
 		if err != nil {
 			return err
 		}
+
+		err = acctest.TestAttributesMatchBool(resourceType, nil, "restrict_access_to_redirectless_mode",
+			config.restrictAccessToRedirectlessMode, *response.RestrictAccessToRedirectlessMode)
+		if err != nil {
+			return err
+		}
+
+		err = acctest.TestAttributesMatchBool(resourceType, nil, "include_request_context",
+			config.includeRequestContext, *response.IncludeRequestContext)
+		if err != nil {
+			return err
+		}
+
 		return nil
 	}
 }
