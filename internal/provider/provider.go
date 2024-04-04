@@ -57,6 +57,7 @@ import (
 	oauthtokenexchangegeneratorsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/generator/settings"
 	oauthtokenexchangetokengeneratormapping "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/tokengeneratormapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/passwordcredentialvalidator"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/pingoneconnection"
 	protocolmetadatalifetimesettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/protocolmetadata/lifetimesettings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/redirectvalidation"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings"
@@ -736,6 +737,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		oauthtokenexchangegeneratorsettings.OauthTokenExchangeGeneratorSettingsResource,
 		oauthtokenexchangetokengeneratormapping.OauthTokenExchangeTokenGeneratorMappingResource,
 		passwordcredentialvalidator.PasswordCredentialValidatorResource,
+		pingoneconnection.PingOneConnectionResource,
 		protocolmetadatalifetimesettings.ProtocolMetadataLifetimeSettingsResource,
 		redirectvalidation.RedirectValidationResource,
 		serversettings.ServerSettingsResource,
