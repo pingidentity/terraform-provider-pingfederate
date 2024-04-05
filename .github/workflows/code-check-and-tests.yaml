@@ -143,8 +143,8 @@ jobs:
   #         fi
   acceptance:
     name: Acceptance Tests
-    needs:
-      [fmt, vet, lint, generate, importfmt, tfproviderlint, tflint, terrafmt]
+    # needs:
+    #   [fmt, vet, lint, generate, importfmt, tfproviderlint, tflint, terrafmt]
     if: ${{ github.actor != 'dependabot[bot]' }}
     runs-on: ubuntu-20.04
     steps:
