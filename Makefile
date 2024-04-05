@@ -20,7 +20,7 @@ vet:
 	go vet ./...
 
 define productversiondir
- 	PRODUCT_VERSION_DIR=$$(echo "$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.1}" | cut -b 1-4) && echo $${PRODUCT_VERSION_DIR}
+ 	PRODUCT_VERSION_DIR=$$(echo "$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.1}" | cut -b 1-4)
 endef
 
 starttestcontainer:
