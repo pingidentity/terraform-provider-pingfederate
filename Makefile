@@ -19,17 +19,13 @@ fmt:
 vet:
 	go vet ./...
 
-define setprofileversion
-	PROFILE_VERSION=$$(echo $${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.1} | grep -E '\d\d\.\d' -o) PROFILE_LOCATION=$$(pwd)/server-profiles/$${PROFILE_VERSION}/data.json.subst
-endef
-
 starttestcontainer:
-	$(call setprofileversion) && docker run --name pingfederate_terraform_provider_container \
+	docker run --name pingfederate_terraform_provider_container \
 		-d -p 9031:9031 \
 		-p 9999:9999 \
 		--env-file "${HOME}/.pingidentity/config" \
 		-v $$(pwd)/server-profiles/shared-profile:/opt/in \
-		-v $${PROFILE_LOCATION}:/opt/in/instance/bulk-config/data.json.subst \
+		-v $$(pwd)/server-profiles/$$(echo $${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.1} | grep -E '\d\d\.\d' -o)/data.json.subst:/opt/in/instance/bulk-config/data.json.subst \
 		pingidentity/pingfederate:$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.1}-latest
 # Wait for the instance to become ready
 	sleep 1
