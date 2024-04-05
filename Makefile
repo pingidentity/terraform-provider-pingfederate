@@ -20,7 +20,7 @@ vet:
 	go vet ./...
 
 define productversiondir
-	export PRODUCT_VERSION_DIR=$$(echo "12.0.1" | grep -E '\d\d\.\d' -o) && echo $${PRODUCT_VERSION_DIR} && test -d server-profiles/$${PRODUCT_VERSION_DIR} || { echo "No server-profiles/$${PRODUCT_VERSION_DIR} directory found. Exiting."; exit 1; }
+	export PRODUCT_VERSION_DIR=$$(echo "12.0.1" | grep -o '\d\d\.\d' ) && echo $${PRODUCT_VERSION_DIR} && test -d server-profiles/$${PRODUCT_VERSION_DIR} || { echo "No server-profiles/$${PRODUCT_VERSION_DIR} directory found. Exiting."; exit 1; }
 endef
 
 starttestcontainer:
