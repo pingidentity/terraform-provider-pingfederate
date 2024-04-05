@@ -20,7 +20,7 @@ vet:
 	go vet ./...
 
 define productversiondir
-	export PRODUCT_VERSION_DIR=$$(echo "12.0.1" | grep -o '\d\d\.\d' ) && echo $${PRODUCT_VERSION_DIR} && test -d server-profiles/$${PRODUCT_VERSION_DIR} || { echo "No server-profiles/$${PRODUCT_VERSION_DIR} directory found. Exiting."; exit 1; }
+ 	PRODUCT_VERSION_DIR=$$(echo "$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.1}" | cut -b 1-4) && echo $${PRODUCT_VERSION_DIR}
 endef
 
 starttestcontainer:
