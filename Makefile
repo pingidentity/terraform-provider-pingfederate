@@ -19,13 +19,17 @@ fmt:
 vet:
 	go vet ./...
 
+define productversiondir
+ 	PRODUCT_VERSION_DIR=$$(echo "$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.1}" | cut -b 1-4)
+endef
+
 starttestcontainer:
-	docker run --name pingfederate_terraform_provider_container \
+	$(call productversiondir) && docker run --name pingfederate_terraform_provider_container \
 		-d -p 9031:9031 \
 		-p 9999:9999 \
 		--env-file "${HOME}/.pingidentity/config" \
 		-v $$(pwd)/server-profiles/shared-profile:/opt/in \
-		-v $$(pwd)/server-profiles/$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.0}/data.json.subst:/opt/in/instance/bulk-config/data.json.subst \
+		-v $$(pwd)/server-profiles/$${PRODUCT_VERSION_DIR}/data.json.subst:/opt/in/instance/bulk-config/data.json.subst \
 		pingidentity/pingfederate:$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.1}-latest
 # Wait for the instance to become ready
 	sleep 1
@@ -38,7 +42,7 @@ starttestcontainer:
 # Fail if the container didn't become ready in time
 	docker logs pingfederate_terraform_provider_container 2>&1 | grep -q "Removing Imported Bulk File" || \
 		{ echo "PingFederate container did not become ready in time or contains errors. Logs:"; docker logs pingfederate_terraform_provider_container; exit 1; }
-		
+
 removetestcontainer:
 	docker rm -f pingfederate_terraform_provider_container
 	
