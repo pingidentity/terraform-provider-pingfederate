@@ -20,7 +20,7 @@ vet:
 	go vet ./...
 
 define setprofileversion
-	export PROFILE_VERSION=$$(echo $${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.1} | grep -E '\d\d\.\d' -o)
+	PROFILE_VERSION=$$(echo $${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.1} | grep -E '\d\d\.\d' -o) PROFILE_LOCATION=$$(pwd)/server-profiles/$${PROFILE_VERSION}/data.json.subst
 endef
 
 starttestcontainer:
@@ -29,7 +29,7 @@ starttestcontainer:
 		-p 9999:9999 \
 		--env-file "${HOME}/.pingidentity/config" \
 		-v $$(pwd)/server-profiles/shared-profile:/opt/in \
-		-v $$(pwd)/server-profiles/$${PROFILE_VERSION}/data.json.subst:/opt/in/instance/bulk-config/data.json.subst \
+		-v $${PROFILE_LOCATION}:/opt/in/instance/bulk-config/data.json.subst \
 		pingidentity/pingfederate:$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.1}-latest
 # Wait for the instance to become ready
 	sleep 1
