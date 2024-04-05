@@ -20,11 +20,11 @@ vet:
 	go vet ./...
 
 define setprofileversion
-	PROFILE_VERSION=$$(echo $${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.1} | grep -E '\d\d\.\d' -o);
+	PROFILE_VERSION=$$(echo $${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.1} | grep -E '\d\d\.\d' -o)
 endef
 
 starttestcontainer:
-	$(call setprofileversion) docker run --name pingfederate_terraform_provider_container \
+	$(call setprofileversion) && docker run --name pingfederate_terraform_provider_container \
 		-d -p 9031:9031 \
 		-p 9999:9999 \
 		--env-file "${HOME}/.pingidentity/config" \
