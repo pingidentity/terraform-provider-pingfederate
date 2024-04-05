@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: install generate fmt vet test starttestcontainer removetestcontainer spincontainer clearstates kaboom testacc testacccomplete generateresource openlocalwebapi golangcilint tfproviderlint tflint terrafmtlint importfmtlint devcheck devchecknotest openapp testoneacc verifycontent
+.PHONY: install generate fmt vet test starttestcontainer removetestcontainer spincontainer clearstates kaboom testacc testacccomplete generateresource openlocalwebapi golangcilint tfproviderlint tflint terrafmtlint importfmtlint devcheck devchecknotest openapp testoneacc verifycontent getproductversion
 
 default: install
 
@@ -19,13 +19,14 @@ fmt:
 vet:
 	go vet ./...
 
-starttestcontainer:
+starttestcontainer: 
+	PROFILE_VERSION=$$(echo $${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.1} | grep -E '\d\d.\d' -o); \
 	docker run --name pingfederate_terraform_provider_container \
 		-d -p 9031:9031 \
 		-p 9999:9999 \
 		--env-file "${HOME}/.pingidentity/config" \
 		-v $$(pwd)/server-profiles/shared-profile:/opt/in \
-		-v $$(pwd)/server-profiles/$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.0}/data.json.subst:/opt/in/instance/bulk-config/data.json.subst \
+		-v $$(pwd)/server-profiles/$${PROFILE_VERSION}/data.json.subst:/opt/in/instance/bulk-config/data.json.subst \
 		pingidentity/pingfederate:$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.1}-latest
 # Wait for the instance to become ready
 	sleep 1
