@@ -20,7 +20,7 @@ vet:
 	go vet ./...
 
 define setprofileversion
-	PROFILE_VERSION=$$(echo ${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.1} | grep -E '\d\d\.\d' -o)
+	PROFILE_VERSION=$$(echo $${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.1} | grep -E '\d\d\.\d' -o)
 endef
 
 starttestcontainer:
