@@ -26,5 +26,6 @@ resource "pingfederate_oauth_open_id_connect_policy" "oauthOIDCPolicyExample" {
   include_sri_in_id_token          = false
   include_s_hash_in_id_token       = false
   include_user_info_in_id_token    = false
+  reissue_id_token_in_hybrid_flow  = false
   id_token_lifetime                = 5
 }

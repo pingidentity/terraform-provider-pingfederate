@@ -666,7 +666,7 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 
 
 <a id="nestedatt--configuration--tables"></a>
@@ -678,7 +678,7 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
 - `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--configuration--tables--rows))
 
 <a id="nestedatt--configuration--tables--rows"></a>
@@ -699,7 +699,7 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 
 
 
@@ -714,7 +714,7 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 
 
 <a id="nestedatt--configuration--tables_all"></a>
@@ -726,7 +726,7 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
 - `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--configuration--tables_all--rows))
 
 <a id="nestedatt--configuration--tables_all--rows"></a>
@@ -747,7 +747,7 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 
 
 
@@ -762,7 +762,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--attribute_contract"></a>
@@ -771,7 +771,7 @@ Read-Only:
 Optional:
 
 - `extended_attributes` (Attributes List) A list of additional attributes that can be returned by the password credential validator. The extended attributes are only used if the adapter supports them. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
-- `inherited` (Boolean) Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.
 
 Read-Only:
 
@@ -803,7 +803,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 ## Import
 

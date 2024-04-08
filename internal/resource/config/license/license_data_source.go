@@ -272,7 +272,7 @@ func (r *licenseDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		return
 	}
 
-	apiReadLicense, httpResp, err := r.apiClient.LicenseAPI.GetLicense(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadLicense, httpResp, err := r.apiClient.LicenseAPI.GetLicense(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the license summary", err, httpResp)
 		return

@@ -87,9 +87,10 @@ func (r *passwordCredentialValidatorDataSource) Schema(ctx context.Context, req 
 						},
 					},
 					"inherited": schema.BoolAttribute{
-						Description: "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
-						Optional:    false,
-						Computed:    true,
+						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
+						Description:        "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
+						Optional:           false,
+						Computed:           true,
 					},
 				},
 			},
@@ -128,7 +129,7 @@ func (r *passwordCredentialValidatorDataSource) Read(ctx context.Context, req da
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadPasswordCredentialValidators, httpResp, err := r.apiClient.PasswordCredentialValidatorsAPI.GetPasswordCredentialValidator(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ValidatorId.ValueString()).Execute()
+	apiReadPasswordCredentialValidators, httpResp, err := r.apiClient.PasswordCredentialValidatorsAPI.GetPasswordCredentialValidator(config.AuthContext(ctx, r.providerConfig), state.ValidatorId.ValueString()).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Password Credential Validator", err, httpResp)
 		return

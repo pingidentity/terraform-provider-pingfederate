@@ -99,7 +99,7 @@ func (r *oauthTokenExchangeTokenGeneratorMappingDataSource) Configure(_ context.
 
 func readOauthTokenExchangeTokenGeneratorMappingDataSourceResponse(ctx context.Context, r *client.ProcessorPolicyToGeneratorMapping, state *oauthTokenExchangeTokenGeneratorMappingDataSourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.AttributeSources, respDiags = attributesources.ToState(ctx, r.AttributeSources)
+	state.AttributeSources, respDiags = attributesources.ToState(ctx, r.AttributeSources, true)
 	diags.Append(respDiags...)
 	state.AttributeContractFulfillment, respDiags = attributecontractfulfillment.ToState(ctx, r.AttributeContractFulfillment)
 	diags.Append(respDiags...)
@@ -121,7 +121,7 @@ func (r *oauthTokenExchangeTokenGeneratorMappingDataSource) Read(ctx context.Con
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthTokenExchangeTokenGeneratorMapping, httpResp, err := r.apiClient.OauthTokenExchangeTokenGeneratorMappingsAPI.GetTokenGeneratorMappingById(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.MappingId.ValueString()).Execute()
+	apiReadOauthTokenExchangeTokenGeneratorMapping, httpResp, err := r.apiClient.OauthTokenExchangeTokenGeneratorMappingsAPI.GetTokenGeneratorMappingById(config.AuthContext(ctx, r.providerConfig), state.MappingId.ValueString()).Execute()
 
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Token Exchange Token Generator Mapping", err, httpResp)

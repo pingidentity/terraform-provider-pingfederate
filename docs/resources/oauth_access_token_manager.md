@@ -273,16 +273,16 @@ resource "pingfederate_oauth_access_token_manager" "jsonWebTokenOauthAccessToken
 
 Required:
 
-- `extended_attributes` (Attributes List) A list of additional token attributes that are associated with this access token management plugin instance. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
+- `extended_attributes` (Attributes Set) A list of additional token attributes that are associated with this access token management plugin instance. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
 
 Optional:
 
 - `default_subject_attribute` (String) Default subject attribute to use for audit logging when validating the access token. Blank value means to use USER_KEY attribute value after grant lookup.
-- `inherited` (Boolean) Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.
 
 Read-Only:
 
-- `core_attributes` (Attributes List) A list of core token attributes that are associated with the access token management plugin type. This field is read-only and is ignored on POST/PUT. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
+- `core_attributes` (Attributes Set) A list of core token attributes that are associated with the access token management plugin type. This field is read-only and is ignored on POST/PUT. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
 
 <a id="nestedatt--attribute_contract--extended_attributes"></a>
 ### Nested Schema for `attribute_contract.extended_attributes`
@@ -329,7 +329,7 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 
 
 <a id="nestedatt--configuration--tables"></a>
@@ -341,7 +341,7 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
 - `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--configuration--tables--rows))
 
 <a id="nestedatt--configuration--tables--rows"></a>
@@ -362,7 +362,7 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 
 
 
@@ -377,7 +377,7 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 
 
 <a id="nestedatt--configuration--tables_all"></a>
@@ -389,7 +389,7 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
 - `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--configuration--tables_all--rows))
 
 <a id="nestedatt--configuration--tables_all--rows"></a>
@@ -410,7 +410,7 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 
 
 
@@ -425,7 +425,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--access_control_settings"></a>
@@ -434,7 +434,7 @@ Read-Only:
 Optional:
 
 - `allowed_clients` (Attributes List) If 'restrictClients' is true, this field defines the list of OAuth clients that are allowed to access the token manager. (see [below for nested schema](#nestedatt--access_control_settings--allowed_clients))
-- `inherited` (Boolean) If this token manager has a parent, this flag determines whether access control settings are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) If this token manager has a parent, this flag determines whether access control settings are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.
 - `restrict_clients` (Boolean) Determines whether access to this token manager is restricted to specific OAuth clients. If false, the 'allowedClients' field is ignored. The default value is false.
 
 <a id="nestedatt--access_control_settings--allowed_clients"></a>
@@ -446,7 +446,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -459,7 +459,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--selection_settings"></a>
@@ -467,7 +467,7 @@ Read-Only:
 
 Optional:
 
-- `inherited` (Boolean) If this token manager has a parent, this flag determines whether selection settings, such as resource URI's, are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) If this token manager has a parent, this flag determines whether selection settings, such as resource URI's, are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.
 - `resource_uris` (List of String) The list of base resource URI's which map to this token manager. A resource URI, specified via the 'aud' parameter, can be used to select a specific token manager for an OAuth request.
 
 
@@ -479,7 +479,7 @@ Optional:
 - `check_session_revocation_status` (Boolean) Check the session revocation status when validating the access token.
 - `check_valid_authn_session` (Boolean) Check for a valid authentication session when validating the access token.
 - `include_session_id` (Boolean) Include the session identifier in the access token. Note that if any of the session validation features is enabled, the session identifier will already be included in the access tokens.
-- `inherited` (Boolean) If this token manager has a parent, this flag determines whether session validation settings, such as checkValidAuthnSession, are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.
+- `inherited` (Boolean, Deprecated) If this token manager has a parent, this flag determines whether session validation settings, such as checkValidAuthnSession, are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.
 - `update_authn_session_activity` (Boolean) Update authentication session activity when validating the access token.
 
 ## Import

@@ -46,7 +46,7 @@ data "pingfederate_local_identity_identity_profile" "myLocalIdentityIdentityProf
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--auth_source_update_policy"></a>
@@ -98,7 +98,7 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -131,7 +131,7 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -186,7 +186,7 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--registration_config--registration_workflow"></a>
@@ -195,4 +195,4 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.

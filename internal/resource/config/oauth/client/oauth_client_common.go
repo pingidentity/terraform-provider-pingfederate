@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -44,8 +45,9 @@ var (
 		"ping_access_logout_capable":                  types.BoolValue(false),
 		"logout_uris":                                 types.SetNull(types.StringType),
 		"pairwise_identifier_user_type":               types.BoolValue(false),
-		"logout_mode":                                 types.StringUnknown(),
-		"back_channel_logout_uri":                     types.StringUnknown(),
+		"sector_identifier_uri":                       types.StringNull(),
+		"logout_mode":                                 types.StringNull(),
+		"back_channel_logout_uri":                     types.StringNull(),
 		"post_logout_redirect_uris":                   types.SetNull(types.StringType),
 	}
 
@@ -73,6 +75,11 @@ var (
 		"enforce_replay_prevention":             types.BoolNull(),
 		"token_endpoint_auth_signing_algorithm": types.StringNull(),
 	}
+
+	extendedParametersAttrType = map[string]attr.Type{
+		"values": types.SetType{ElemType: types.StringType},
+	}
+	extendedParametersObjAttrType = types.ObjectType{AttrTypes: extendedParametersAttrType}
 )
 
 type oauthClientModel struct {
@@ -143,7 +150,7 @@ type oauthClientModel struct {
 	RequireDpop                                                   types.Bool   `tfsdk:"require_dpop"`
 }
 
-func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state *oauthClientModel) diag.Diagnostics {
+func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state, plan *oauthClientModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.Id = types.StringValue(r.ClientId)
 	state.ClientId = types.StringValue(r.ClientId)
@@ -151,7 +158,12 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state 
 	state.RedirectUris = internaltypes.GetStringSet(r.RedirectUris)
 	state.GrantTypes = internaltypes.GetStringSet(r.GrantTypes)
 	state.Name = types.StringValue(r.Name)
-	state.Description = types.StringPointerValue(r.Description)
+	description := r.Description
+	if description == nil {
+		state.Description = types.StringNull()
+	} else {
+		state.Description = types.StringPointerValue(description)
+	}
 	state.ModificationDate = types.StringValue(r.ModificationDate.Format(time.RFC3339Nano))
 	state.CreationDate = types.StringValue(r.CreationDate.Format(time.RFC3339Nano))
 	state.LogoUrl = types.StringPointerValue(r.LogoUrl)
@@ -223,11 +235,18 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state 
 	state.JwksSettings = jwksSettingsToState
 
 	// state.ExtendedParameters
-	extendedParametersAttrType := map[string]attr.Type{}
-	extendedParametersAttrType["values"] = types.SetType{ElemType: types.StringType}
-	extendedParametersObjAttrType := types.ObjectType{AttrTypes: extendedParametersAttrType}
-	extendedParametersToState, respDiags := types.MapValueFrom(ctx, extendedParametersObjAttrType, r.ExtendedParameters)
-	diags.Append(respDiags...)
+	var extendedParametersToState basetypes.MapValue
+	if r.ExtendedParameters != nil {
+		extendedParametersToState, respDiags = types.MapValueFrom(ctx, extendedParametersObjAttrType, r.ExtendedParameters)
+		diags.Append(respDiags...)
+	} else {
+		if plan != nil && internaltypes.IsDefined(plan.ExtendedParameters) {
+			extendedParametersToState = plan.ExtendedParameters
+		} else {
+			extendedParametersToState = types.MapNull(extendedParametersObjAttrType)
+		}
+	}
+
 	state.ExtendedParameters = extendedParametersToState
 
 	// state.RequestPolicyRef

@@ -71,15 +71,14 @@ func (r *certificateCAResource) Schema(ctx context.Context, req resource.SchemaR
 	id.ToSchemaCustomId(&schema,
 		"ca_id",
 		false,
+		false,
 		"The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-].")
 	resp.Schema = schema
 }
 
 func addOptionalCaCertsFields(ctx context.Context, addRequest *client.X509File, plan certificatesResourceModel) error {
 	// Empty strings are treated as equivalent to null
-	if internaltypes.IsDefined(plan.CaId) {
-		addRequest.Id = plan.CaId.ValueStringPointer()
-	}
+	addRequest.Id = plan.CaId.ValueStringPointer()
 	if internaltypes.IsDefined(plan.CryptoProvider) {
 		addRequest.CryptoProvider = plan.CryptoProvider.ValueStringPointer()
 	}
@@ -135,7 +134,7 @@ func (r *certificateCAResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	apiCreateCertificate := r.apiClient.CertificatesCaAPI.ImportTrustedCA(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateCertificate := r.apiClient.CertificatesCaAPI.ImportTrustedCA(config.AuthContext(ctx, r.providerConfig))
 	apiCreateCertificate = apiCreateCertificate.Body(*createCertificate)
 	certificateResponse, httpResp, err := r.apiClient.CertificatesCaAPI.ImportTrustedCAExecute(apiCreateCertificate)
 	if err != nil {
@@ -159,7 +158,7 @@ func (r *certificateCAResource) Read(ctx context.Context, req resource.ReadReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadCertificate, httpResp, err := r.apiClient.CertificatesCaAPI.GetTrustedCert(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CaId.ValueString()).Execute()
+	apiReadCertificate, httpResp, err := r.apiClient.CertificatesCaAPI.GetTrustedCert(config.AuthContext(ctx, r.providerConfig), state.CaId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while looking for a Certificate", err, httpResp)
@@ -193,7 +192,7 @@ func (r *certificateCAResource) Delete(ctx context.Context, req resource.DeleteR
 		return
 	}
 
-	httpResp, err := r.apiClient.CertificatesCaAPI.DeleteTrustedCA(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.CaId.ValueString()).Execute()
+	httpResp, err := r.apiClient.CertificatesCaAPI.DeleteTrustedCA(config.AuthContext(ctx, r.providerConfig), state.CaId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a CA Certificate", err, httpResp)
 	}

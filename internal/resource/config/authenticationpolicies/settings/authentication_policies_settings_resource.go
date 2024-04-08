@@ -88,7 +88,7 @@ func (r *authenticationPoliciesSettingsResource) Create(ctx context.Context, req
 	createAuthenticationPoliciesSettings := client.NewAuthenticationPoliciesSettings()
 	addOptionalAuthenticationPoliciesSettingsFields(createAuthenticationPoliciesSettings, plan)
 
-	apiCreateAuthenticationPoliciesSettings := r.apiClient.AuthenticationPoliciesAPI.UpdateAuthenticationPolicySettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateAuthenticationPoliciesSettings := r.apiClient.AuthenticationPoliciesAPI.UpdateAuthenticationPolicySettings(config.AuthContext(ctx, r.providerConfig))
 	apiCreateAuthenticationPoliciesSettings = apiCreateAuthenticationPoliciesSettings.Body(*createAuthenticationPoliciesSettings)
 	authenticationPoliciesSettingsResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.UpdateAuthenticationPolicySettingsExecute(apiCreateAuthenticationPoliciesSettings)
 	if err != nil {
@@ -112,7 +112,7 @@ func (r *authenticationPoliciesSettingsResource) Read(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadAuthenticationPoliciesSettings, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.GetAuthenticationPolicySettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadAuthenticationPoliciesSettings, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.GetAuthenticationPolicySettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -150,7 +150,7 @@ func (r *authenticationPoliciesSettingsResource) Update(ctx context.Context, req
 	// Get the current state to see how any attributes are changing
 	var state authenticationPoliciesSettingsModel
 	req.State.Get(ctx, &state)
-	updateAuthenticationPoliciesSettings := r.apiClient.AuthenticationPoliciesAPI.UpdateAuthenticationPolicySettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateAuthenticationPoliciesSettings := r.apiClient.AuthenticationPoliciesAPI.UpdateAuthenticationPolicySettings(config.AuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewAuthenticationPoliciesSettings()
 	addOptionalAuthenticationPoliciesSettingsFields(createUpdateRequest, plan)
 

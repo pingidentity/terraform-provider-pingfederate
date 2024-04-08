@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -23,6 +25,18 @@ var (
 	_ resource.Resource                = &authenticationPolicyContractResource{}
 	_ resource.ResourceWithConfigure   = &authenticationPolicyContractResource{}
 	_ resource.ResourceWithImportState = &authenticationPolicyContractResource{}
+
+	coreAttributesDefaultObjAttrType = map[string]attr.Type{
+		"name": types.StringType,
+	}
+
+	coreAttributesDefaultObjAttrValue = map[string]attr.Value{
+		"name": types.StringValue("subject"),
+	}
+
+	coreAttributesDefaultObjValue, _ = types.ObjectValue(coreAttributesDefaultObjAttrType, coreAttributesDefaultObjAttrValue)
+	coreAttributesDefaultListAttrVal = []attr.Value{coreAttributesDefaultObjValue}
+	coreAttributesDefaultListVal, _  = types.ListValue(attributeElemAttrType, coreAttributesDefaultListAttrVal)
 )
 
 // AuthenticationPolicyContractResource is a helper function to simplify the provider implementation.
@@ -44,7 +58,9 @@ func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req r
 		Attributes: map[string]schema.Attribute{
 			"core_attributes": schema.ListNestedAttribute{
 				Description: "A list of read-only assertion attributes (for example, subject) that are automatically populated by PingFederate.",
-				Required:    true,
+				Computed:    true,
+				Optional:    false,
+				Default:     listdefault.StaticValue(coreAttributesDefaultListVal),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
@@ -80,14 +96,13 @@ func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req r
 	id.ToSchemaCustomId(&schema,
 		"contract_id",
 		false,
+		false,
 		"The persistent, unique ID for the authentication policy contract. It can be any combination of [a-zA-Z0-9._-].")
 	resp.Schema = schema
 }
 
 func addAuthenticationPolicyContractsFields(ctx context.Context, addRequest *client.AuthenticationPolicyContract, plan authenticationPolicyContractModel) error {
-	if internaltypes.IsDefined(plan.ContractId) {
-		addRequest.Id = plan.ContractId.ValueStringPointer()
-	}
+	addRequest.Id = plan.ContractId.ValueStringPointer()
 
 	addRequest.CoreAttributes = []client.AuthenticationPolicyContractAttribute{}
 	for _, coreAttribute := range plan.CoreAttributes.Elements() {
@@ -148,7 +163,7 @@ func (r *authenticationPolicyContractResource) Create(ctx context.Context, req r
 		return
 	}
 
-	apiCreateAuthenticationPolicyContracts := r.apiClient.AuthenticationPolicyContractsAPI.CreateAuthenticationPolicyContract(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateAuthenticationPolicyContracts := r.apiClient.AuthenticationPolicyContractsAPI.CreateAuthenticationPolicyContract(config.AuthContext(ctx, r.providerConfig))
 	apiCreateAuthenticationPolicyContracts = apiCreateAuthenticationPolicyContracts.Body(*createAuthenticationPolicyContracts)
 	authenticationPolicyContractsResponse, httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.CreateAuthenticationPolicyContractExecute(apiCreateAuthenticationPolicyContracts)
 	if err != nil {
@@ -173,7 +188,7 @@ func (r *authenticationPolicyContractResource) Read(ctx context.Context, req res
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadAuthenticationPolicyContracts, httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.GetAuthenticationPolicyContract(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ContractId.ValueString()).Execute()
+	apiReadAuthenticationPolicyContracts, httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.GetAuthenticationPolicyContract(config.AuthContext(ctx, r.providerConfig), state.ContractId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an authentication policy contract", err, httpResp)
@@ -205,7 +220,7 @@ func (r *authenticationPolicyContractResource) Update(ctx context.Context, req r
 
 	// Get the current state to see how any attributes are changing
 	var state authenticationPolicyContractModel
-	updateAuthenticationPolicyContracts := r.apiClient.AuthenticationPolicyContractsAPI.UpdateAuthenticationPolicyContract(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.ContractId.ValueString())
+	updateAuthenticationPolicyContracts := r.apiClient.AuthenticationPolicyContractsAPI.UpdateAuthenticationPolicyContract(config.AuthContext(ctx, r.providerConfig), plan.ContractId.ValueString())
 	createUpdateRequest := client.NewAuthenticationPolicyContract()
 	err := addAuthenticationPolicyContractsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -238,7 +253,7 @@ func (r *authenticationPolicyContractResource) Delete(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.DeleteAuthenticationPolicyContract(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ContractId.ValueString()).Execute()
+	httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.DeleteAuthenticationPolicyContract(config.AuthContext(ctx, r.providerConfig), state.ContractId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an authentication policy contract", err, httpResp)
 	}

@@ -43,7 +43,7 @@ Read-Only:
 
 - `core_attributes` (Attributes Set) A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
 - `extended_attributes` (Attributes Set) A list of additional attributes that can be returned by the IdP adapter. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
-- `inherited` (Boolean) Whether this attribute contract is inherited from its parent instance.
+- `inherited` (Boolean, Deprecated) Whether this attribute contract is inherited from its parent instance.
 - `mask_ognl_values` (Boolean) Whether or not all OGNL expressions used to fulfill an outgoing assertion contract should be masked in the logs.
 - `unique_user_key_attribute` (String) The attribute to use for uniquely identify a user's authentication sessions.
 
@@ -75,7 +75,7 @@ Read-Only:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--attribute_mapping--attribute_contract_fulfillment))
 - `attribute_sources` (Attributes List) (see [below for nested schema](#nestedatt--attribute_mapping--attribute_sources))
-- `inherited` (Boolean) Whether this attribute mapping is inherited from its parent instance.
+- `inherited` (Boolean, Deprecated) Whether this attribute mapping is inherited from its parent instance.
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--attribute_mapping--attribute_contract_fulfillment"></a>

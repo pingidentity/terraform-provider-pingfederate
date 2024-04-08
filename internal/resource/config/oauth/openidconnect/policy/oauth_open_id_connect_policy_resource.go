@@ -155,7 +155,7 @@ func (r *oauthOpenIdConnectPolicyResource) Schema(ctx context.Context, req resou
 					},
 				},
 			},
-			"attribute_mapping": attributemapping.Schema(),
+			"attribute_mapping": attributemapping.ToSchema(),
 			"scope_attribute_mappings": schema.MapNestedAttribute{
 				Description: "The attribute scope mappings from scopes to attribute names.",
 				Optional:    true,
@@ -188,7 +188,7 @@ func (r *oauthOpenIdConnectPolicyResource) Schema(ctx context.Context, req resou
 		},
 	}
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, "policy_id", false, "The policy ID used internally.")
+	id.ToSchemaCustomId(&schema, "policy_id", true, false, "The policy ID used internally.")
 	resp.Schema = schema
 }
 
@@ -334,7 +334,7 @@ func (r *oauthOpenIdConnectPolicyResource) Create(ctx context.Context, req resou
 		return
 	}
 
-	apiCreateOIDCPolicy := r.apiClient.OauthOpenIdConnectAPI.CreateOIDCPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateOIDCPolicy := r.apiClient.OauthOpenIdConnectAPI.CreateOIDCPolicy(config.AuthContext(ctx, r.providerConfig))
 	apiCreateOIDCPolicy = apiCreateOIDCPolicy.Body(*newOIDCPolicy)
 	oidcPolicyResponse, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.CreateOIDCPolicyExecute(apiCreateOIDCPolicy)
 	if err != nil {
@@ -358,7 +358,7 @@ func (r *oauthOpenIdConnectPolicyResource) Read(ctx context.Context, req resourc
 		return
 	}
 
-	apiReadOIDCPolicy, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.GetOIDCPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.PolicyId.ValueString()).Execute()
+	apiReadOIDCPolicy, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.GetOIDCPolicy(config.AuthContext(ctx, r.providerConfig), state.PolicyId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an OIDC Policy", err, httpResp)
@@ -387,7 +387,7 @@ func (r *oauthOpenIdConnectPolicyResource) Update(ctx context.Context, req resou
 		return
 	}
 
-	updateOIDCPolicyRequest := r.apiClient.OauthOpenIdConnectAPI.UpdateOIDCPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.PolicyId.ValueString())
+	updateOIDCPolicyRequest := r.apiClient.OauthOpenIdConnectAPI.UpdateOIDCPolicy(config.AuthContext(ctx, r.providerConfig), plan.PolicyId.ValueString())
 
 	accessTokenManagerRef, attributeContract, attributeMapping := getRequiredOauthOpenIDConnectPolicyFields(plan, &resp.Diagnostics)
 	if accessTokenManagerRef == nil || attributeContract == nil || attributeMapping == nil {
@@ -430,7 +430,7 @@ func (r *oauthOpenIdConnectPolicyResource) Delete(ctx context.Context, req resou
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.PolicyId.ValueString()).Execute()
+	httpResp, err := r.apiClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(config.AuthContext(ctx, r.providerConfig), state.PolicyId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the OIDC Policy", err, httpResp)
 	}

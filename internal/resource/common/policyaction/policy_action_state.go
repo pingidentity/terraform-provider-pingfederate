@@ -81,7 +81,7 @@ func AttrTypes() map[string]attr.Type {
 	return policyActionAttrTypes
 }
 
-func State(ctx context.Context, response *client.PolicyActionAggregation) (types.Object, diag.Diagnostics) {
+func ToState(ctx context.Context, response *client.PolicyActionAggregation) (types.Object, diag.Diagnostics) {
 	var diags, respDiags diag.Diagnostics
 	if response == nil {
 		diags.AddError("provided client struct is nil", "")

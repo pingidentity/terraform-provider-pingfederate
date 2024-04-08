@@ -31,7 +31,6 @@ resource "pingfederate_kerberos_realm" "kerberosRealmExample" {
 ### Required
 
 - `kerberos_realm_name` (String) The Domain/Realm name used for display in UI screens.
-- `realm_id` (String) The persistent, unique ID for the Kerberos Realm. It can be any combination of [a-z0-9._-].
 
 ### Optional
 
@@ -40,6 +39,7 @@ resource "pingfederate_kerberos_realm" "kerberosRealmExample" {
 - `kerberos_username` (String) The Domain/Realm username. Only required when 'connectionType' is DIRECT.
 - `key_distribution_centers` (Set of String) The Domain Controller/Key Distribution Center Host Action Names. Only applicable when 'connectionType' is DIRECT.
 - `ldap_gateway_data_store_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--ldap_gateway_data_store_ref))
+- `realm_id` (String) The persistent, unique ID for the Kerberos Realm. It can be any combination of [a-z0-9._-].
 - `retain_previous_keys_on_password_change` (Boolean) Determines whether the previous encryption keys are retained when the password is updated. Retaining the previous keys allows existing Kerberos tickets to continue to be validated. The default is false. Only applicable when 'connectionType' is DIRECT.
 - `suppress_domain_name_concatenation` (Boolean) Controls whether the KDC hostnames and the realm name are concatenated in the auto-generated krb5.conf file. Only applicable when 'connectionType' is DIRECT.
 
@@ -56,7 +56,7 @@ Required:
 
 Read-Only:
 
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 ## Import
 

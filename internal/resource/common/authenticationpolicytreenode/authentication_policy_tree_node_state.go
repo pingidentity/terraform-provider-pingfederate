@@ -56,7 +56,7 @@ func recursiveState(ctx context.Context, node *client.AuthenticationPolicyTreeNo
 	}
 	var attrValues = map[string]attr.Value{}
 
-	attrValues["action"], diags = policyaction.State(ctx, &node.Action)
+	attrValues["action"], diags = policyaction.ToState(ctx, &node.Action)
 	if diags.HasError() {
 		return types.ObjectNull(attrTypes), diags
 	}

@@ -565,7 +565,7 @@ func (r *oauthClientDataSource) Configure(_ context.Context, req datasource.Conf
 // Read a OauthClientResponse object into the model struct
 func readOauthClientResponseDataSource(ctx context.Context, r *client.Client, state *oauthClientModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	diags = readOauthClientResponseCommon(ctx, r, state)
+	diags = readOauthClientResponseCommon(ctx, r, state, nil)
 
 	// state.ClientAuth
 	var secondarySecretsSetSlice []attr.Value
@@ -607,7 +607,7 @@ func (r *oauthClientDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	apiReadOauthClient, httpResp, err := r.apiClient.OauthClientsAPI.GetOauthClientById(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ClientId.ValueString()).Execute()
+	apiReadOauthClient, httpResp, err := r.apiClient.OauthClientsAPI.GetOauthClientById(config.AuthContext(ctx, r.providerConfig), state.ClientId.ValueString()).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Client", err, httpResp)
 		return

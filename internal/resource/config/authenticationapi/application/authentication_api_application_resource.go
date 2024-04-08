@@ -87,6 +87,7 @@ func (r *authenticationApiApplicationResource) Schema(ctx context.Context, req r
 	id.ToSchemaCustomId(&schema,
 		"application_id",
 		true,
+		true,
 		"The persistent, unique ID for the Authentication API application. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
 	)
 	resp.Schema = schema
@@ -142,7 +143,7 @@ func (r *authenticationApiApplicationResource) Create(ctx context.Context, req r
 		return
 	}
 
-	apiCreateAuthenticationApiApplication := r.apiClient.AuthenticationApiAPI.CreateApplication(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateAuthenticationApiApplication := r.apiClient.AuthenticationApiAPI.CreateApplication(config.AuthContext(ctx, r.providerConfig))
 	apiCreateAuthenticationApiApplication = apiCreateAuthenticationApiApplication.Body(*createAuthenticationApiApplication)
 	authenticationApiApplicationResponse, httpResp, err := r.apiClient.AuthenticationApiAPI.CreateApplicationExecute(apiCreateAuthenticationApiApplication)
 	if err != nil {
@@ -154,7 +155,7 @@ func (r *authenticationApiApplicationResource) Create(ctx context.Context, req r
 	var state authenticationApiApplicationModel
 	// This is a workaround for the fact that the API does not return the location of oauth client ClientForRedirectlessModeRef. This specifically applies to creates/updates, but location is returned normally on reads, which is why we are running an additional get here.
 	if internaltypes.IsDefined(plan.ClientForRedirectlessModeRef) {
-		authenticationApiApplicationResponse, httpResp, err = r.apiClient.AuthenticationApiAPI.GetApplication(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.ApplicationId.ValueString()).Execute()
+		authenticationApiApplicationResponse, httpResp, err = r.apiClient.AuthenticationApiAPI.GetApplication(config.AuthContext(ctx, r.providerConfig), plan.ApplicationId.ValueString()).Execute()
 		if err != nil {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp)
 		}
@@ -176,7 +177,7 @@ func (r *authenticationApiApplicationResource) Read(ctx context.Context, req res
 		return
 	}
 
-	apiReadAuthenticationApiApplication, httpResp, err := r.apiClient.AuthenticationApiAPI.GetApplication(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ApplicationId.ValueString()).Execute()
+	apiReadAuthenticationApiApplication, httpResp, err := r.apiClient.AuthenticationApiAPI.GetApplication(config.AuthContext(ctx, r.providerConfig), state.ApplicationId.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -206,7 +207,7 @@ func (r *authenticationApiApplicationResource) Update(ctx context.Context, req r
 		return
 	}
 
-	updateAuthenticationApiApplication := r.apiClient.AuthenticationApiAPI.UpdateApplication(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.ApplicationId.ValueString())
+	updateAuthenticationApiApplication := r.apiClient.AuthenticationApiAPI.UpdateApplication(config.AuthContext(ctx, r.providerConfig), plan.ApplicationId.ValueString())
 	createUpdateRequest := client.NewAuthnApiApplication(plan.ApplicationId.ValueString(), plan.Name.ValueString(), plan.Url.ValueString())
 	err := addOptionalAuthenticationApiApplicationFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -225,7 +226,7 @@ func (r *authenticationApiApplicationResource) Update(ctx context.Context, req r
 	var state authenticationApiApplicationModel
 	// This is a workaround for the fact that the API does not return the location of oauth client ClientForRedirectlessModeRef. This specifically applies to creates/updates, but location is returned normally on reads, which is why we are running an additional get here.
 	if internaltypes.IsDefined(plan.ClientForRedirectlessModeRef) {
-		updateAuthenticationApiApplicationResponse, httpResp, err = r.apiClient.AuthenticationApiAPI.GetApplication(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.ApplicationId.ValueString()).Execute()
+		updateAuthenticationApiApplicationResponse, httpResp, err = r.apiClient.AuthenticationApiAPI.GetApplication(config.AuthContext(ctx, r.providerConfig), plan.ApplicationId.ValueString()).Execute()
 		if err != nil {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp)
 		}
@@ -248,7 +249,7 @@ func (r *authenticationApiApplicationResource) Delete(ctx context.Context, req r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.AuthenticationApiAPI.DeleteApplication(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ApplicationId.ValueString()).Execute()
+	httpResp, err := r.apiClient.AuthenticationApiAPI.DeleteApplication(config.AuthContext(ctx, r.providerConfig), state.ApplicationId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an Authentication Api Application", err, httpResp)
 		return

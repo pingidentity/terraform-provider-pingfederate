@@ -70,7 +70,7 @@ func (r *authenticationPoliciesFragmentResource) Schema(ctx context.Context, req
 		},
 	}
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, "fragment_id", false, "The authentication policy fragment ID. ID is unique.")
+	id.ToSchemaCustomId(&schema, "fragment_id", false, false, "The authentication policy fragment ID. ID is unique.")
 	resp.Schema = schema
 }
 
@@ -110,7 +110,6 @@ func readAuthenticationPoliciesFragmentResponse(ctx context.Context, r *client.A
 }
 
 func addOptionalAuthenticationPoliciesFragmentFields(ctx context.Context, addRequest *client.AuthenticationPolicyFragment, plan authenticationPoliciesFragmentModel) error {
-	// We require fragment_id in the provider, but to PF it is optional
 	addRequest.Id = plan.FragmentId.ValueStringPointer()
 	addRequest.Name = plan.Name.ValueStringPointer()
 	addRequest.Description = plan.Description.ValueStringPointer()
@@ -149,7 +148,7 @@ func (r *authenticationPoliciesFragmentResource) Create(ctx context.Context, req
 		return
 	}
 
-	apiCreatePolicyFragment := r.apiClient.AuthenticationPoliciesAPI.CreateFragment(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreatePolicyFragment := r.apiClient.AuthenticationPoliciesAPI.CreateFragment(config.AuthContext(ctx, r.providerConfig))
 	apiCreatePolicyFragment = apiCreatePolicyFragment.Body(*newPolicyFragment)
 	fragmentResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.CreateFragmentExecute(apiCreatePolicyFragment)
 	if err != nil {
@@ -174,7 +173,7 @@ func (r *authenticationPoliciesFragmentResource) Read(ctx context.Context, req r
 		return
 	}
 
-	fragmentResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.GetFragment(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.FragmentId.ValueString()).Execute()
+	fragmentResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.GetFragment(config.AuthContext(ctx, r.providerConfig), state.FragmentId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Policy Fragment", err, httpResp)
@@ -203,7 +202,7 @@ func (r *authenticationPoliciesFragmentResource) Update(ctx context.Context, req
 		return
 	}
 
-	updateFragmentRequest := r.apiClient.AuthenticationPoliciesAPI.UpdateFragment(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.FragmentId.ValueString())
+	updateFragmentRequest := r.apiClient.AuthenticationPoliciesAPI.UpdateFragment(config.AuthContext(ctx, r.providerConfig), plan.FragmentId.ValueString())
 	updatedFragment := client.NewAuthenticationPolicyFragment()
 	err := addOptionalAuthenticationPoliciesFragmentFields(ctx, updatedFragment, plan)
 	if err != nil {
@@ -236,7 +235,7 @@ func (r *authenticationPoliciesFragmentResource) Delete(ctx context.Context, req
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.AuthenticationPoliciesAPI.DeleteFragment(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.FragmentId.ValueString()).Execute()
+	httpResp, err := r.apiClient.AuthenticationPoliciesAPI.DeleteFragment(config.AuthContext(ctx, r.providerConfig), state.FragmentId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an Authentication Policy Fragment", err, httpResp)
 	}

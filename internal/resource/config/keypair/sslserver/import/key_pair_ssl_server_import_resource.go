@@ -240,15 +240,14 @@ func (r *keyPairsSslServerImportResource) Schema(ctx context.Context, req resour
 	id.ToSchemaCustomId(&schema,
 		"import_id",
 		true,
+		false,
 		"The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.")
 	resp.Schema = schema
 }
 
 func addOptionalKeyPairsSslServerImportFields(ctx context.Context, addRequest *client.KeyPairFile, plan keyPairsSslServerImportResourceModel) error {
+	addRequest.Id = plan.ImportId.ValueStringPointer()
 
-	if internaltypes.IsDefined(plan.ImportId) {
-		addRequest.Id = plan.ImportId.ValueStringPointer()
-	}
 	if internaltypes.IsDefined(plan.CryptoProvider) {
 		addRequest.CryptoProvider = plan.CryptoProvider.ValueStringPointer()
 	}
@@ -315,7 +314,7 @@ func (r *keyPairsSslServerImportResource) Create(ctx context.Context, req resour
 		return
 	}
 
-	apiCreateKeyPairsSslServerImport := r.apiClient.KeyPairsSslServerAPI.ImportSslServerKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateKeyPairsSslServerImport := r.apiClient.KeyPairsSslServerAPI.ImportSslServerKeyPair(config.AuthContext(ctx, r.providerConfig))
 	apiCreateKeyPairsSslServerImport = apiCreateKeyPairsSslServerImport.Body(*createKeyPairsSslServerImport)
 	keyPairsSslServerImportResponse, httpResp, err := r.apiClient.KeyPairsSslServerAPI.ImportSslServerKeyPairExecute(apiCreateKeyPairsSslServerImport)
 	if err != nil {
@@ -340,7 +339,7 @@ func (r *keyPairsSslServerImportResource) Read(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadKeyPairsSslServerImport, httpResp, err := r.apiClient.KeyPairsSslServerAPI.GetSslServerKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ImportId.ValueString()).Execute()
+	apiReadKeyPairsSslServerImport, httpResp, err := r.apiClient.KeyPairsSslServerAPI.GetSslServerKeyPair(config.AuthContext(ctx, r.providerConfig), state.ImportId.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -376,7 +375,7 @@ func (r *keyPairsSslServerImportResource) Delete(ctx context.Context, req resour
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.KeyPairsSslServerAPI.DeleteSslServerKeyPair(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ImportId.ValueString()).Execute()
+	httpResp, err := r.apiClient.KeyPairsSslServerAPI.DeleteSslServerKeyPair(config.AuthContext(ctx, r.providerConfig), state.ImportId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a KeyPair SSL Server Import", err, httpResp)
 	}

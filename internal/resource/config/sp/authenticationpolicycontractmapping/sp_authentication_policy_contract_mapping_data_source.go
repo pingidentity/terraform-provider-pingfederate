@@ -103,7 +103,7 @@ func (r *spAuthenticationPolicyContractMappingDataSource) Configure(_ context.Co
 
 func readSpAuthenticationPolicyContractMappingDataSourceResponse(ctx context.Context, r *client.ApcToSpAdapterMapping, state *spAuthenticationPolicyContractMappingDataSourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.AttributeSources, respDiags = attributesources.ToState(ctx, r.AttributeSources)
+	state.AttributeSources, respDiags = attributesources.ToState(ctx, r.AttributeSources, true)
 	diags.Append(respDiags...)
 	state.AttributeContractFulfillment, respDiags = attributecontractfulfillment.ToState(ctx, r.AttributeContractFulfillment)
 	diags.Append(respDiags...)
@@ -126,7 +126,7 @@ func (r *spAuthenticationPolicyContractMappingDataSource) Read(ctx context.Conte
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadSpAuthenticationPolicyContractMappingResource, httpResp, err := r.apiClient.SpAuthenticationPolicyContractMappingsAPI.GetApcToSpAdapterMappingById(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.MappingId.ValueString()).Execute()
+	apiReadSpAuthenticationPolicyContractMappingResource, httpResp, err := r.apiClient.SpAuthenticationPolicyContractMappingsAPI.GetApcToSpAdapterMappingById(config.AuthContext(ctx, r.providerConfig), state.MappingId.ValueString()).Execute()
 
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the SP Authentication Policy Contract Mapping Resource", err, httpResp)

@@ -20,8 +20,6 @@ import (
 func ConfigurationPreCheck(t *testing.T) {
 	envVars := []string{
 		"PINGFEDERATE_PROVIDER_HTTPS_HOST",
-		"PINGFEDERATE_PROVIDER_USERNAME",
-		"PINGFEDERATE_PROVIDER_PASSWORD",
 		"PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS",
 		"PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER",
 		"PINGFEDERATE_PROVIDER_PRODUCT_VERSION",
@@ -37,9 +35,9 @@ func ConfigurationPreCheck(t *testing.T) {
 
 	// Verify that the version supplied in the environment can be parsed
 	versionVar := os.Getenv("PINGFEDERATE_PROVIDER_PRODUCT_VERSION")
-	_, err := version.Parse(versionVar)
-	if err != nil {
-		t.Errorf("The '%s' value for the 'PINGFEDERATE_PROVIDER_PRODUCT_VERSION' environment variable is not a valid version: %s", versionVar, err.Error())
+	_, diags := version.Parse(versionVar)
+	if diags.HasError() {
+		t.Errorf("The '%s' value for the 'PINGFEDERATE_PROVIDER_PRODUCT_VERSION' environment variable is not a valid version", versionVar)
 		errorFound = true
 	}
 
@@ -48,30 +46,51 @@ func ConfigurationPreCheck(t *testing.T) {
 	}
 }
 
+func GetTransport() *http.Transport {
+	// Trusting all for the acceptance tests, since they run on localhost
+	// May want to incorporate actual trust here in the future.
+	//#nosec G402
+	return &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+}
+
 func TestClient() *client.APIClient {
 	httpsHost := os.Getenv("PINGFEDERATE_PROVIDER_HTTPS_HOST")
+	adminApiPath := os.Getenv("PINGFEDERATE_PROVIDER_ADMIN_API_PATH")
 	clientConfig := client.NewConfiguration()
 	clientConfig.DefaultHeader["X-Xsrf-Header"] = "PingFederate"
 	clientConfig.DefaultHeader["X-BypassExternalValidation"] = os.Getenv("PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER")
 	clientConfig.Servers = client.ServerConfigurations{
 		{
-			URL: httpsHost + "/pf-admin-api/v1",
+			URL: httpsHost + adminApiPath,
 		},
 	}
-	// Trusting all for the acceptance tests, since they run on localhost
-	// May want to incorporate actual trust here in the future.
-	//#nosec G402
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
-	httpClient := &http.Client{Transport: tr}
+
+	httpClient := &http.Client{Transport: GetTransport()}
 	clientConfig.HTTPClient = httpClient
 	return client.NewAPIClient(clientConfig)
+}
+
+// lintignore:AT008
+func TestAccessTokenContext(accessToken string) context.Context {
+	ctx := context.Background()
+	if accessToken == "" {
+		fmt.Println("No access token found in environment")
+		return nil
+	}
+
+	return config.AccessTokenContext(ctx, accessToken)
 }
 
 func TestBasicAuthContext() context.Context {
 	ctx := context.Background()
 	return config.BasicAuthContext(ctx, os.Getenv("PINGFEDERATE_PROVIDER_USERNAME"), os.Getenv("PINGFEDERATE_PROVIDER_PASSWORD"))
+}
+
+func TestOauth2Context() context.Context {
+	ctx := context.Background()
+	return config.OAuthContext(ctx, GetTransport(), os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL"), os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID"), os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET"), []string{os.Getenv("PINGFEDERATE_PROVIDER_OAUTH_SCOPES")})
 }
 
 // Convert a string slice to the format used in Terraform files
@@ -85,6 +104,17 @@ func StringSliceToTerraformString(values []string) string {
 		}
 	}
 	builder.WriteString("]")
+	return builder.String()
+}
+
+func StringSliceToString(values []string) string {
+	var builder strings.Builder
+	for i, str := range values {
+		builder.WriteString(fmt.Sprintf("\"%s\"", str))
+		if i < len(values)-1 {
+			builder.WriteString(",")
+		}
+	}
 	return builder.String()
 }
 
@@ -238,6 +268,13 @@ func missingAttributeError(resourceType string, resourceName *string, attributeN
 
 func missingAttributeErrorSingletonResource(resourceType, attributeName, expected string) error {
 	return fmt.Errorf("missing %s attribute for %s. expected '%s'", attributeName, resourceType, expected)
+}
+
+func AddIdHcl(idKey, id string) string {
+	if id != "" {
+		return fmt.Sprintf("%s = \"%s\"", idKey, id)
+	}
+	return ""
 }
 
 // Check that the version being tested is at least the given minimum version

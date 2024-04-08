@@ -11,6 +11,9 @@
             "env": {},
             "args": [
                 "-debug",
+            ],
+            "dlvFlags": [
+                "--check-go-version=false"
             ]
         }
     ]

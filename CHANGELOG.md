@@ -1,4 +1,79 @@
+# v0.9.0 March 29th, 2024
+### FEATURES
+* Resources that no longer incorrectly require a `<resource_type>_id` are listed here:
+  - `pingfederate_authentication_api_application`
+  - `pingfederate_authentication_policies_fragment`
+  - `pingfederate_authentication_policy_contract`
+  - `pingfederate_authentication_selector`
+  - `pingfederate_certificate_ca`
+  - `pingfederate_data_store`
+  - `pingfederate_idp_adapter`
+  - `pingfederate_idp_sp_connection`
+  - `pingfederate_kerberos_realm`
+  - `pingfederate_key_pair_signing_import`
+  - `pingfederate_key_pair_ssl_server_import`
+  - `pingfederate_local_identity_identity_profile`
+  - `pingfederate_oauth_access_token_manager`
+  - `pingfederate_oauth_issuer`
+  - `pingfederate_oauth_open_id_connect_policy`
+  - `pingfederate_password_credential_validator`
+
+### ENHANCEMENTS
+* Allow `product_version` values that are not explicitly supported as long as the major-minor version is supported. For example, version `11.3.10` would be allowed, but version `30.0.0` would not be allowed. (#223)
+* Added support for PingFederate patch versions `11.3.5` and `12.0.1` (#226)
+
+### BUG FIXES
+* `pingfederate_authentication_policy_contract` resource sends in required default value for `core_attributes` ([#224](https://github.com/pingidentity/terraform-provider-pingfederate/pull/224))
+* `pingfederate_oauth_client` resource has the following bugs resolved ([#221](https://github.com/pingidentity/terraform-provider-pingfederate/pull/221)):
+  - `client_id` now correctly forces the resource to be replaced when value is modified after creation.
+  - `client_auth.secret` corrected config validation when using a variable value
+  - `restrict_scopes` no longer returns an incorrect value error after apply
+  - `oidc_policy` child string attribute values no longer return incorrect value errors after apply
+
+# v0.8.0 March 14th, 2024
+### BUG FIXES
+* `pingfederate_oauth_access_token_mapping` resource, resolved "produced an unexpected new value: .attribute_contract_fulfillment["username"].value: was null, but now cty.StringVal("")" error([#215](https://github.com/pingidentity/terraform-provider-pingfederate/pull/215))
+* `pingfederate_oauth_auth_server_settings` resource, removed unnecessary requirement for `bypass_activation_code_confirmation`, `default_scope_description`, `device_polling_interval`, `pending_authorization_timeout`, `registered_authorization_path` properties([#216](https://github.com/pingidentity/terraform-provider-pingfederate/pull/216))
+* `pingfederate_oauth_client` resource, "Provider produced inconsistent result after apply" error when applying empty `extended_parameters` map value, require `values` property within to match product behavior. Fixed `logo_url` "Invalid URL Format" when empty string supplied. ([#204](https://github.com/pingidentity/terraform-provider-pingfederate/pull/204))([#214](https://github.com/pingidentity/terraform-provider-pingfederate/pull/214))([#217](https://github.com/pingidentity/terraform-provider-pingfederate/pull/217))
+
+# v0.7.1 February 29th, 2024
+### BUG FIXES
+* `pingfederate_oauth_access_token_manager` resource `attribute_contract.extended_attributes` Provider produced inconsistent result after apply ([#202](https://github.com/pingidentity/terraform-provider-pingfederate/pull/202))
+
+# v0.7.0 February 28th, 2024
+### DEPRECATED
+* `location` property in `resourceLink` object types for all Resources and DataSources. This property will be removed in a future release. ([#195](https://github.com/pingidentity/terraform-provider-pingfederate/pull/195))
+
+### Resources
+* **New Resource:** `pingfederate_authentication_selector ` ([#199](https://github.com/pingidentity/terraform-provider-pingfederate/pull/199))
+* **New Resource:** `pingfederate_incoming_proxy_settings` ([#190](https://github.com/pingidentity/terraform-provider-pingfederate/pull/190))
+* **New Resource:** `pingfederate_notification_publishers_settings` ([#187](https://github.com/pingidentity/terraform-provider-pingfederate/pull/187))
+* **New Resource:** `pingfederate_oauth_access_token_mapping` ([#195](https://github.com/pingidentity/terraform-provider-pingfederate/pull/195))
+* **New Resource:** `pingfederate_open_id_connect_settings` ([#196](https://github.com/pingidentity/terraform-provider-pingfederate/pull/196))
+
+# v0.6.0 February 9th, 2024
+### DEPRECATED
+* `inherited` property for all Resources and DataSources. This property will be removed in a future release.
+
+### FEATURES
+* Added support for PingFederate version `11.2.8` ([#168](https://github.com/pingidentity/terraform-provider-pingfederate/pull/168))
+* `admin_url_path` added to `provider` variables. This variable will allow end-users to set their own admin URL location, rather than being forced to use the hard-coded `/pf-admin-api/v1` suffix value. This variable value will default to `/pf-admin-api/v1` if no value is supplied. ([#170](https://github.com/pingidentity/terraform-provider-pingfederate/pull/170))
+* Added support for the `PINGFEDERATE_TF_APPEND_USER_AGENT` environment variable, used to append a custom suffix to the User-Agent header used by the provider when making HTTP requests. ([#171](https://github.com/pingidentity/terraform-provider-pingfederate/pull/171))
+* Added support for automatically retrying certain HTTP error codes. ([#171](https://github.com/pingidentity/terraform-provider-pingfederate/pull/171))
+* Added support for OAuth2 Client Credentials flow authentication, as well as supporting a supplied Access Token ([#183](https://github.com/pingidentity/terraform-provider-pingfederate/pull/183))
+
+#### Resources
+* **New Resource:** `pingfederate_extended_properties` ([#182](https://github.com/pingidentity/terraform-provider-pingfederate/pull/182))
+
+### BUG FIXES
+* Fixed provider not correctly comparing versions for PingFederate `11.2.6` and `11.2.7` ([#168](https://github.com/pingidentity/terraform-provider-pingfederate/pull/168))
+* Fixed provider errors when using strings with escaped quotes in certain attributes ([#178](https://github.com/pingidentity/terraform-provider-pingfederate/pull/178))
+* Fixed `pingfederate_oauth_client` resource incorrectly validating supplied `grant_types` ([#183](https://github.com/pingidentity/terraform-provider-pingfederate/pull/183))
+
 # v0.5.0 January 16th, 2024
+### BREAKING CHANGES
+* New *required* `product_version` provider attribute. This attribute is used to indicate the version of PingFederate that the provider is targeting. The attribute can also be specified by the `PINGFEDERATE_PROVIDER_PRODUCT_VERSION` environment variable. When upgrading to this provider version, this attribute will need to be configured.
+
 ### BUG FIXES
 * **Server Settings Log Settings Resource:** Fixed provider errors when not specifying all log categories in the server log settings ([#164](https://github.com/pingidentity/terraform-provider-pingfederate/pull/164))
 * **OAuth Client Resource:** Resolved issue where some property default values on the `pingfederate_oauth_client` resource resulted in an invalid apply ([#156](https://github.com/pingidentity/terraform-provider-pingfederate/pull/156)) 

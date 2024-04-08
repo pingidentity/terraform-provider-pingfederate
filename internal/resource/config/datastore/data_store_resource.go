@@ -56,6 +56,7 @@ func (r *dataStoreResource) Schema(ctx context.Context, req resource.SchemaReque
 	id.ToSchemaCustomId(&schema,
 		"data_store_id",
 		false,
+		false,
 		"The persistent, unique ID for the data store. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.")
 
 	resp.Schema = schema
@@ -366,7 +367,7 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 }
 
 func createDataStore(dataStore client.DataStoreAggregation, dsr *dataStoreResource, con context.Context, resp *resource.CreateResponse) (*client.DataStoreAggregation, *http.Response, error) {
-	apiCreateDataStore := dsr.apiClient.DataStoresAPI.CreateDataStore(config.ProviderBasicAuthContext(con, dsr.providerConfig))
+	apiCreateDataStore := dsr.apiClient.DataStoresAPI.CreateDataStore(config.AuthContext(con, dsr.providerConfig))
 	apiCreateDataStore = apiCreateDataStore.Body(dataStore)
 	return dsr.apiClient.DataStoresAPI.CreateDataStoreExecute(apiCreateDataStore)
 }
@@ -406,7 +407,7 @@ func (r *dataStoreResource) Read(ctx context.Context, req resource.ReadRequest, 
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	dataStoreGetReq, httpResp, err := r.apiClient.DataStoresAPI.GetDataStore(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	dataStoreGetReq, httpResp, err := r.apiClient.DataStoresAPI.GetDataStore(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the data store", err, httpResp)
@@ -443,7 +444,7 @@ func (r *dataStoreResource) Read(ctx context.Context, req resource.ReadRequest, 
 }
 
 func updateDataStore(dataStore client.DataStoreAggregation, dsr *dataStoreResource, con context.Context, resp *resource.UpdateResponse, id string) (*client.DataStoreAggregation, *http.Response, error) {
-	updateDataStore := dsr.apiClient.DataStoresAPI.UpdateDataStore(config.ProviderBasicAuthContext(con, dsr.providerConfig), id)
+	updateDataStore := dsr.apiClient.DataStoresAPI.UpdateDataStore(config.AuthContext(con, dsr.providerConfig), id)
 	updateDataStore = updateDataStore.Body(dataStore)
 	return dsr.apiClient.DataStoresAPI.UpdateDataStoreExecute(updateDataStore)
 }
@@ -485,7 +486,7 @@ func (r *dataStoreResource) Delete(ctx context.Context, req resource.DeleteReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.DataStoresAPI.DeleteDataStore(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	httpResp, err := r.apiClient.DataStoresAPI.DeleteDataStore(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a data store", err, httpResp)
 	}

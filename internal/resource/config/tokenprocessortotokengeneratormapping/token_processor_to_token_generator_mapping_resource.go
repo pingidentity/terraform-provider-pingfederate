@@ -40,8 +40,8 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Schema(ctx context.Conte
 	schema := schema.Schema{
 		Description: "Manages the mapping from token processor to a token generator.",
 		Attributes: map[string]schema.Attribute{
-			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
-			"attribute_sources":              attributesources.ToSchema(0),
+			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
+			"attribute_sources":              attributesources.ToSchema(0, false, true),
 			"default_target_resource": schema.StringAttribute{
 				Description: "Default target URL for this Token Processor to Token Generator mapping configuration.",
 				Optional:    true,
@@ -138,7 +138,7 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Create(ctx context.Conte
 		return
 	}
 
-	apiCreateTokenProcessorToTokenGeneratorMapping := r.apiClient.TokenProcessorToTokenGeneratorMappingsAPI.CreateTokenToTokenMapping(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateTokenProcessorToTokenGeneratorMapping := r.apiClient.TokenProcessorToTokenGeneratorMappingsAPI.CreateTokenToTokenMapping(config.AuthContext(ctx, r.providerConfig))
 	apiCreateTokenProcessorToTokenGeneratorMapping = apiCreateTokenProcessorToTokenGeneratorMapping.Body(*createTokenProcessorToTokenGeneratorMapping)
 	tokenProcessorToTokenGeneratorMappingsResponse, httpResp, err := r.apiClient.TokenProcessorToTokenGeneratorMappingsAPI.CreateTokenToTokenMappingExecute(apiCreateTokenProcessorToTokenGeneratorMapping)
 	if err != nil {
@@ -164,7 +164,7 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Read(ctx context.Context
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadTokenProcessorToTokenGeneratorMapping, httpResp, err := r.apiClient.TokenProcessorToTokenGeneratorMappingsAPI.GetTokenToTokenMappingById(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadTokenProcessorToTokenGeneratorMapping, httpResp, err := r.apiClient.TokenProcessorToTokenGeneratorMappingsAPI.GetTokenToTokenMappingById(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -201,7 +201,7 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Update(ctx context.Conte
 		resp.Diagnostics.AddError("Failed to build attribute contract fulfillment request object:", attributeContractFulfillmentErr.Error())
 		return
 	}
-	updateTokenProcessorToTokenGeneratorMapping := r.apiClient.TokenProcessorToTokenGeneratorMappingsAPI.UpdateTokenToTokenMappingById(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Id.ValueString())
+	updateTokenProcessorToTokenGeneratorMapping := r.apiClient.TokenProcessorToTokenGeneratorMappingsAPI.UpdateTokenToTokenMappingById(config.AuthContext(ctx, r.providerConfig), plan.Id.ValueString())
 	createUpdateRequest := client.NewTokenToTokenMapping(*attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
 	err := addOptionalTokenProcessorToTokenGeneratorMappingFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -234,7 +234,7 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Delete(ctx context.Conte
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.TokenProcessorToTokenGeneratorMappingsAPI.DeleteTokenToTokenMappingById(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	httpResp, err := r.apiClient.TokenProcessorToTokenGeneratorMappingsAPI.DeleteTokenToTokenMappingById(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a Token Processor to Token Generator Mapping", err, httpResp)
 	}

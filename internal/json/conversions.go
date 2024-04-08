@@ -17,7 +17,8 @@ func FromValue(value attr.Value, skipNullOrUnknownAttrs bool) string {
 	strvalue, ok := value.(basetypes.StringValue)
 	if ok {
 		jsonString.WriteRune('"')
-		jsonString.WriteString(strvalue.ValueString())
+		// Ensure any escaped quotes in the string are handled so that the resulting json includes a backslash
+		jsonString.WriteString(strings.ReplaceAll(strvalue.ValueString(), "\"", "\\\""))
 		jsonString.WriteRune('"')
 	}
 	boolvalue, ok := value.(basetypes.BoolValue)

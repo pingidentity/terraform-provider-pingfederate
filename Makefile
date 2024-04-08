@@ -19,15 +19,18 @@ fmt:
 vet:
 	go vet ./...
 
+define productversiondir
+ 	PRODUCT_VERSION_DIR=$$(echo "$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.1}" | cut -b 1-4)
+endef
+
 starttestcontainer:
-	docker run --name pingfederate_terraform_provider_container \
+	$(call productversiondir) && docker run --name pingfederate_terraform_provider_container \
 		-d -p 9031:9031 \
-		-d -p 9999:9999 \
+		-p 9999:9999 \
 		--env-file "${HOME}/.pingidentity/config" \
-		-e SERVER_PROFILE_URL=https://github.com/pingidentity/pingidentity-server-profiles.git \
-		-e SERVER_PROFILE_BRANCH=terraform-provider-pingfederate-1125 \
-		-e SERVER_PROFILE_PATH=terraform-provider-pingfederate/pingfederate \
-		pingidentity/pingfederate:$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.0}-latest
+		-v $$(pwd)/server-profiles/shared-profile:/opt/in \
+		-v $$(pwd)/server-profiles/$${PRODUCT_VERSION_DIR}/data.json.subst:/opt/in/instance/bulk-config/data.json.subst \
+		pingidentity/pingfederate:$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.1}-latest
 # Wait for the instance to become ready
 	sleep 1
 	duration=0
@@ -39,33 +42,50 @@ starttestcontainer:
 # Fail if the container didn't become ready in time
 	docker logs pingfederate_terraform_provider_container 2>&1 | grep -q "Removing Imported Bulk File" || \
 		{ echo "PingFederate container did not become ready in time or contains errors. Logs:"; docker logs pingfederate_terraform_provider_container; exit 1; }
-		
+
 removetestcontainer:
 	docker rm -f pingfederate_terraform_provider_container
 	
 spincontainer: removetestcontainer starttestcontainer
 
-define test_acc_env_vars
-	PINGFEDERATE_PROVIDER_HTTPS_HOST=https://localhost:9999 PINGFEDERATE_PROVIDER_USERNAME=administrator PINGFEDERATE_PROVIDER_PASSWORD=2FederateM0re PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER=true PINGFEDERATE_PROVIDER_PRODUCT_VERSION=$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0}
+define test_acc_common_env_vars
+	PINGFEDERATE_PROVIDER_HTTPS_HOST=https://localhost:9999 PINGFEDERATE_PROVIDER_ADMIN_API_PATH="/pf-admin-api/v1" PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER=true PINGFEDERATE_PROVIDER_PRODUCT_VERSION=$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0}
+endef
+
+define test_acc_basic_auth_env_vars
+	PINGFEDERATE_PROVIDER_USERNAME=administrator PINGFEDERATE_PROVIDER_PASSWORD=2FederateM0re
+endef
+
+define test_acc_oauth_env_vars
+	PINGFEDERATE_PROVIDER_OAUTH_CLIENT_ID=test PINGFEDERATE_PROVIDER_OAUTH_CLIENT_SECRET=2FederateM0re! PINGFEDERATE_PROVIDER_OAUTH_TOKEN_URL=https://localhost:9031/as/token.oauth2 PINGFEDERATE_PROVIDER_OAUTH_SCOPES=email
 endef
 
 # Set ACC_TEST_NAME to name of test in cli
 testoneacc:
-	$(call test_acc_env_vars) TF_ACC=1 go test ./internal/acctest/... -timeout 10m -run ${ACC_TEST_NAME} -v count=1
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/... -timeout 10m -run ${ACC_TEST_NAME} -v count=1
 
 testoneacccomplete: spincontainer testoneacc
 
 # Some tests can step on each other's toes so run those tests in single threaded mode. Run the rest in parallel
 testacc:
-	$(call test_acc_env_vars) TF_ACC=1 go test `go list ./internal/acctest/... | grep -v -e authenticationapiapplication -e authenticationapisettings -e oauthauthserversettingscopes -e oauthopenidconnectpolicy` -timeout 10m -v -p 4; \
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -v -e authenticationapi -e oauth/authserversettings/scopes -e oauth/openidconnect/policy -e oauth/openidconnect/settings` -timeout 10m -v -p 4; \
 	firstTestResult=$$?; \
-	$(call test_acc_env_vars) TF_ACC=1 go test `go list ./internal/acctest/... | grep -e authenticationapiapplication -e authenticationapisettings -e oauthauthserversettingscopes -e oauthopenidconnectpolicy` -timeout 10m -v -p 1; \
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test `go list ./internal/acctest/config... | grep -e authenticationapi -e oauth/authserversettings/scopes -e oauth/openidconnect/policy -e oauth/openidconnect/settings` -timeout 10m -v -p 1; \
 	secondTestResult=$$?; \
-	if test "$$firstTestResult" != "0" || test "$$secondTestResult" != "0" ; then \
+	if test "$$firstTestResult" != "0" || test "$$secondTestResult" != "0"; then \
 		false; \
 	fi
 
-testacccomplete: spincontainer testacc
+testauthacc:
+	$(call test_acc_common_env_vars) $(call test_acc_oauth_env_vars) TF_ACC=1 go test ./internal/acctest/authentication/oauth_test.go -timeout 5m -v; \
+	oauthResult=$$?; \
+	$(call test_acc_common_env_vars) $(call test_acc_oauth_env_vars) TF_ACC=1 go test ./internal/acctest/authentication/access_token_test.go -timeout 5m -v; \
+	atResult=$$?; \
+	if test "$$oauthResult" != 0 || test "$$atResult" != 0; then \
+		false; \
+	fi
+
+testacccomplete: spincontainer testauthacc testacc
 
 clearstates:
 	find . -name "*tfstate*" -delete
@@ -77,11 +97,11 @@ devchecknotest: verifycontent install golangcilint generate tfproviderlint tflin
 verifycontent:
 	python3 ./devcheck/verifyContent.py
 
-devcheck: devchecknotest kaboom testacc
+devcheck: devchecknotest kaboom testauthacc testacc
 
 generateresource:
-	PINGFEDERATE_GENERATED_ENDPOINT=serverSettings \
-	PINGFEDERATE_RESOURCE_DEFINITION_NAME=ServerSettings \
+	PINGFEDERATE_GENERATED_ENDPOINT=openIdConnectSettings \
+	PINGFEDERATE_RESOURCE_DEFINITION_NAME=OpenIdConnectSettings \
 	PINGFEDERATE_ALLOW_REQUIRED_BYPASS=False \
 	OVERWRITE_EXISTING_RESOURCE_FILE=False \
 	PINGFEDERATE_PUT_ONLY_RESOURCE=True \

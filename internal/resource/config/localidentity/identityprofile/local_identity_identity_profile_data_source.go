@@ -56,10 +56,11 @@ func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req
 						Computed:    true,
 					},
 					"location": schema.StringAttribute{
-						Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-						Required:    false,
-						Optional:    false,
-						Computed:    true,
+						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
+						Description:        "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
+						Required:           false,
+						Optional:           false,
+						Computed:           true,
 					},
 				},
 			},
@@ -148,10 +149,11 @@ func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req
 								Computed:    true,
 							},
 							"location": schema.StringAttribute{
-								Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-								Required:    false,
-								Optional:    false,
-								Computed:    true,
+								DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
+								Description:        "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
+								Required:           false,
+								Optional:           false,
+								Computed:           true,
 							},
 						},
 					},
@@ -192,10 +194,11 @@ func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req
 								Computed:    true,
 							},
 							"location": schema.StringAttribute{
-								Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-								Required:    false,
-								Optional:    false,
-								Computed:    true,
+								DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
+								Description:        "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
+								Required:           false,
+								Optional:           false,
+								Computed:           true,
 							},
 						},
 					},
@@ -391,10 +394,11 @@ func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req
 								Computed:    true,
 							},
 							"location": schema.StringAttribute{
-								Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-								Required:    false,
-								Optional:    false,
-								Computed:    true,
+								DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
+								Description:        "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
+								Required:           false,
+								Optional:           false,
+								Computed:           true,
 							},
 						},
 					},
@@ -443,10 +447,11 @@ func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req
 								Computed:    true,
 							},
 							"location": schema.StringAttribute{
-								Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-								Required:    false,
-								Optional:    false,
-								Computed:    true,
+								DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
+								Description:        "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
+								Required:           false,
+								Optional:           false,
+								Computed:           true,
 							},
 						},
 					},
@@ -610,7 +615,7 @@ func (r *localIdentityIdentityProfileDataSource) Read(ctx context.Context, req d
 		return
 	}
 
-	apiReadLocalIdentityIdentityProfile, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.GetIdentityProfile(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadLocalIdentityIdentityProfile, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.GetIdentityProfile(config.AuthContext(ctx, r.providerConfig), state.ProfileId.ValueString()).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the local identity profile", err, httpResp)
 		return

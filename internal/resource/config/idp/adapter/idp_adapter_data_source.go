@@ -125,9 +125,10 @@ func (r *idpAdapterDataSource) Schema(ctx context.Context, req datasource.Schema
 						Optional:    false,
 					},
 					"inherited": schema.BoolAttribute{
-						Description: "Whether this attribute contract is inherited from its parent instance.",
-						Computed:    true,
-						Optional:    false,
+						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
+						Description:        "Whether this attribute contract is inherited from its parent instance.",
+						Computed:           true,
+						Optional:           false,
 					},
 				},
 			},
@@ -140,9 +141,10 @@ func (r *idpAdapterDataSource) Schema(ctx context.Context, req datasource.Schema
 					"attribute_contract_fulfillment": attributecontractfulfillment.ToDataSourceSchema(),
 					"issuance_criteria":              issuancecriteria.ToDataSourceSchema(),
 					"inherited": schema.BoolAttribute{
-						Computed:    true,
-						Optional:    false,
-						Description: "Whether this attribute mapping is inherited from its parent instance.",
+						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
+						Computed:           true,
+						Optional:           false,
+						Description:        "Whether this attribute mapping is inherited from its parent instance.",
 					},
 				},
 			},
@@ -181,7 +183,7 @@ func (r *idpAdapterDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadIdpAdapter, httpResp, err := r.apiClient.IdpAdaptersAPI.GetIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.AdapterId.ValueString()).Execute()
+	apiReadIdpAdapter, httpResp, err := r.apiClient.IdpAdaptersAPI.GetIdpAdapter(config.AuthContext(ctx, r.providerConfig), state.AdapterId.ValueString()).Execute()
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an IdpAdapter", err, httpResp)
 	}

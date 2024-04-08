@@ -158,10 +158,11 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 						Default:     booldefault.StaticBool(false),
 					},
 					"inherited": schema.BoolAttribute{
-						Description: "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
-						Optional:    true,
-						Computed:    true,
-						Default:     booldefault.StaticBool(false),
+						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
+						Description:        "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
+						Optional:           true,
+						Computed:           true,
+						Default:            booldefault.StaticBool(false),
 					},
 				},
 			},
@@ -170,14 +171,15 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Optional:    true,
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
-					"attribute_sources":              attributesources.ToSchema(0),
-					"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(false, true),
+					"attribute_sources":              attributesources.ToSchema(0, false, true),
+					"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(false, true, true),
 					"issuance_criteria":              issuancecriteria.ToSchema(),
 					"inherited": schema.BoolAttribute{
-						Optional:    true,
-						Computed:    true,
-						Default:     booldefault.StaticBool(false),
-						Description: "Whether this attribute mapping is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
+						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
+						Optional:           true,
+						Computed:           true,
+						Default:            booldefault.StaticBool(false),
+						Description:        "Whether this attribute mapping is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
 					},
 				},
 			},
@@ -187,6 +189,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 	id.ToSchema(&schema)
 	id.ToSchemaCustomId(&schema,
 		"adapter_id",
+		true,
 		true,
 		"The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.")
 	resp.Schema = schema
@@ -304,7 +307,7 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	apiCreateIdpAdapter := r.apiClient.IdpAdaptersAPI.CreateIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateIdpAdapter := r.apiClient.IdpAdaptersAPI.CreateIdpAdapter(config.AuthContext(ctx, r.providerConfig))
 	apiCreateIdpAdapter = apiCreateIdpAdapter.Body(*createIdpAdapter)
 	idpAdapterResponse, httpResp, err := r.apiClient.IdpAdaptersAPI.CreateIdpAdapterExecute(apiCreateIdpAdapter)
 	if err != nil {
@@ -329,7 +332,7 @@ func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadIdpAdapter, httpResp, err := r.apiClient.IdpAdaptersAPI.GetIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.AdapterId.ValueString()).Execute()
+	apiReadIdpAdapter, httpResp, err := r.apiClient.IdpAdaptersAPI.GetIdpAdapter(config.AuthContext(ctx, r.providerConfig), state.AdapterId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an IdpAdapter", err, httpResp)
@@ -360,7 +363,7 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	updateIdpAdapter := r.apiClient.IdpAdaptersAPI.UpdateIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.AdapterId.ValueString())
+	updateIdpAdapter := r.apiClient.IdpAdaptersAPI.UpdateIdpAdapter(config.AuthContext(ctx, r.providerConfig), plan.AdapterId.ValueString())
 
 	var pluginDescriptorRef client.ResourceLink
 	err := json.Unmarshal([]byte(internaljson.FromValue(plan.PluginDescriptorRef, false)), &pluginDescriptorRef)
@@ -411,7 +414,7 @@ func (r *idpAdapterResource) Delete(ctx context.Context, req resource.DeleteRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.IdpAdaptersAPI.DeleteIdpAdapter(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.AdapterId.ValueString()).Execute()
+	httpResp, err := r.apiClient.IdpAdaptersAPI.DeleteIdpAdapter(config.AuthContext(ctx, r.providerConfig), state.AdapterId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the IdP adapter", err, httpResp)
 	}

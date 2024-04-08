@@ -231,7 +231,7 @@ var (
 				"configuration":         types.ObjectType{AttrTypes: pluginconfiguration.AttrType()},
 				"authn_ctx_class_ref":   types.StringType,
 				"attribute_mapping": types.ObjectType{AttrTypes: map[string]attr.Type{
-					"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
+					"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType(true)}},
 					"attribute_contract_fulfillment": attributeContractFulfillmentAttrType,
 					"issuance_criteria":              issuanceCriteriaAttrType,
 					"inherited":                      types.BoolType,
@@ -245,7 +245,7 @@ var (
 				}},
 			}},
 			"abort_sso_transaction_as_fail_safe": types.BoolType,
-			"attribute_sources":                  types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
+			"attribute_sources":                  types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType(true)}},
 			"attribute_contract_fulfillment":     attributeContractFulfillmentAttrType,
 			"issuance_criteria":                  issuanceCriteriaAttrType,
 		}}},
@@ -254,7 +254,7 @@ var (
 			"restrict_virtual_entity_ids":        types.BoolType,
 			"restricted_virtual_entity_ids":      types.ListType{ElemType: types.StringType},
 			"abort_sso_transaction_as_fail_safe": types.BoolType,
-			"attribute_sources":                  types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
+			"attribute_sources":                  types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType(true)}},
 			"attribute_contract_fulfillment":     attributeContractFulfillmentAttrType,
 			"issuance_criteria":                  issuanceCriteriaAttrType,
 		}}},
@@ -294,7 +294,7 @@ var (
 		"token_processor_mappings": types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
 			"idp_token_processor_ref":        resourceLinkObjectType,
 			"restricted_virtual_entity_ids":  types.ListType{ElemType: types.StringType},
-			"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
+			"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType(true)}},
 			"attribute_contract_fulfillment": attributeContractFulfillmentAttrType,
 			"issuance_criteria":              issuanceCriteriaAttrType,
 		}}},
@@ -651,8 +651,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 	outboundProvisionTargetSettingsNestedObject := schema.NestedAttributeObject{
 		Attributes: map[string]schema.Attribute{
 			"inherited": schema.BoolAttribute{
-				Optional:    true,
-				Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
+				DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
+				Optional:           true,
+				Description:        "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
 			},
 			"name": schema.StringAttribute{
 				Required:    true,
@@ -714,8 +715,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"attribute_query": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
-					"attribute_sources":              attributesources.ToSchema(1),
+					"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
+					"attribute_sources":              attributesources.ToSchema(1, false, true),
 					"attributes": schema.ListAttribute{
 						ElementType: types.StringType,
 						Required:    true,
@@ -1248,8 +1249,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													Description:  "A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them.",
 												},
 												"inherited": schema.BoolAttribute{
-													Optional:    true,
-													Description: "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
+													DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
+													Optional:           true,
+													Description:        "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
 												},
 												"mask_ognl_values": schema.BoolAttribute{
 													Optional:    true,
@@ -1265,11 +1267,12 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										},
 										"attribute_mapping": schema.SingleNestedAttribute{
 											Attributes: map[string]schema.Attribute{
-												"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
-												"attribute_sources":              attributesources.ToSchema(0),
+												"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
+												"attribute_sources":              attributesources.ToSchema(0, false, true),
 												"inherited": schema.BoolAttribute{
-													Optional:    true,
-													Description: "Whether this attribute mapping is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
+													DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
+													Optional:           true,
+													Description:        "Whether this attribute mapping is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
 												},
 												"issuance_criteria": issuancecriteria.ToSchema(),
 											},
@@ -1294,8 +1297,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									},
 									Optional: true,
 								},
-								"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
-								"attribute_sources":              attributesources.ToSchema(0),
+								"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
+								"attribute_sources":              attributesources.ToSchema(0, false, true),
 								"idp_adapter_ref":                resourcelink.CompleteSingleNestedAttribute(true, false, false, "Reference to the associated IdP adapter. Note: This is ignored if adapter overrides for this mapping exists. In this case, the override's parent adapter reference is used."),
 								"issuance_criteria":              issuancecriteria.ToSchema(),
 								"restrict_virtual_entity_ids": schema.BoolAttribute{
@@ -1383,8 +1386,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Optional:    true,
 									Description: "If set to true, SSO transaction will be aborted as a fail-safe when the data-store's attribute mappings fail to complete the attribute contract. Otherwise, the attribute contract with default values is used. By default, this value is false.",
 								},
-								"attribute_contract_fulfillment":     attributecontractfulfillment.ToSchema(true, false),
-								"attribute_sources":                  attributesources.ToSchema(0),
+								"attribute_contract_fulfillment":     attributecontractfulfillment.ToSchema(true, false, false),
+								"attribute_sources":                  attributesources.ToSchema(0, false, true),
 								"authentication_policy_contract_ref": resourcelink.CompleteSingleNestedAttribute(false, false, true, "Reference to the associated Authentication Policy Contract."),
 								"issuance_criteria":                  issuancecriteria.ToSchema(),
 								"restrict_virtual_entity_ids": schema.BoolAttribute{
@@ -1688,8 +1691,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					"token_processor_mappings": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
-								"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false),
-								"attribute_sources":              attributesources.ToSchema(0),
+								"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
+								"attribute_sources":              attributesources.ToSchema(0, false, true),
 								"idp_token_processor_ref":        resourcelink.CompleteSingleNestedAttribute(false, false, true, "Reference to the associated token processor."),
 								"issuance_criteria":              issuancecriteria.ToSchema(),
 								"restricted_virtual_entity_ids": schema.ListAttribute{
@@ -1713,6 +1716,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 	id.ToSchemaCustomId(&schema,
 		"connection_id",
 		true,
+		false,
 		"The persistent, unique ID for the connection. It can be any combination of [a-zA-Z0-9._-].")
 	resp.Schema = schema
 }
@@ -1972,7 +1976,7 @@ func readIdpSpconnectionResourceResponse(ctx context.Context, r *client.SpConnec
 		attributeQueryValues["policy"], respDiags = types.ObjectValueFrom(ctx, policyAttrTypes, r.AttributeQuery.Policy)
 		diags.Append(respDiags...)
 
-		attributeQueryValues["attribute_sources"], respDiags = attributesources.ToState(ctx, r.AttributeQuery.AttributeSources)
+		attributeQueryValues["attribute_sources"], respDiags = attributesources.ToState(ctx, r.AttributeQuery.AttributeSources, true)
 		diags.Append(respDiags...)
 
 		state.AttributeQuery, respDiags = types.ObjectValueFrom(ctx, attributeQueryAttrTypes, r.AttributeQuery)
@@ -2135,7 +2139,7 @@ func (r *idpSpConnectionResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	apiCreateIdpSpconnection := r.apiClient.IdpSpConnectionsAPI.CreateSpConnection(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateIdpSpconnection := r.apiClient.IdpSpConnectionsAPI.CreateSpConnection(config.AuthContext(ctx, r.providerConfig))
 	apiCreateIdpSpconnection = apiCreateIdpSpconnection.Body(*createIdpSpconnection)
 	idpSpconnectionResponse, httpResp, err := r.apiClient.IdpSpConnectionsAPI.CreateSpConnectionExecute(apiCreateIdpSpconnection)
 	if err != nil {
@@ -2160,7 +2164,7 @@ func (r *idpSpConnectionResource) Read(ctx context.Context, req resource.ReadReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadIdpSpconnection, httpResp, err := r.apiClient.IdpSpConnectionsAPI.GetSpConnection(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ConnectionId.ValueString()).Execute()
+	apiReadIdpSpconnection, httpResp, err := r.apiClient.IdpSpConnectionsAPI.GetSpConnection(config.AuthContext(ctx, r.providerConfig), state.ConnectionId.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -2190,7 +2194,7 @@ func (r *idpSpConnectionResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	updateIdpSpconnection := r.apiClient.IdpSpConnectionsAPI.UpdateSpConnection(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.ConnectionId.ValueString())
+	updateIdpSpconnection := r.apiClient.IdpSpConnectionsAPI.UpdateSpConnection(config.AuthContext(ctx, r.providerConfig), plan.ConnectionId.ValueString())
 	createUpdateRequest := client.NewSpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
 	err := addOptionalIdpSpconnectionFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -2223,7 +2227,7 @@ func (r *idpSpConnectionResource) Delete(ctx context.Context, req resource.Delet
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.IdpSpConnectionsAPI.DeleteSpConnection(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ConnectionId.ValueString()).Execute()
+	httpResp, err := r.apiClient.IdpSpConnectionsAPI.DeleteSpConnection(config.AuthContext(ctx, r.providerConfig), state.ConnectionId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the IdP SP Connection", err, httpResp)
 	}

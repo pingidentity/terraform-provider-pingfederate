@@ -25,11 +25,11 @@ resource "pingfederate_certificate_ca" "certificateCa" {
 
 ### Required
 
-- `ca_id` (String) The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-].
 - `file_data` (String) The certificate data in PEM format. New line characters should be omitted or encoded in this value.
 
 ### Optional
 
+- `ca_id` (String) The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-].
 - `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.
 
 ### Read-Only
