@@ -42,7 +42,6 @@ type pingOneConnectionResourceModel struct {
 	Description                      types.String `tfsdk:"description"`
 	Active                           types.Bool   `tfsdk:"active"`
 	Credential                       types.String `tfsdk:"credential"`
-	EncryptedCredential              types.String `tfsdk:"encrypted_credential"`
 	CredentialId                     types.String `tfsdk:"credential_id"`
 	PingOneConnectionId              types.String `tfsdk:"ping_one_connection_id"`
 	EnvironmentId                    types.String `tfsdk:"environment_id"`
@@ -79,12 +78,6 @@ func (r *pingOneConnectionResource) Schema(ctx context.Context, req resource.Sch
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
-			},
-			"encrypted_credential": schema.StringAttribute{
-				Description: "The encrypted credential for the PingOne connection.",
-				Sensitive:   true,
-				Optional:    false,
-				Computed:    true,
 			},
 			"credential_id": schema.StringAttribute{
 				Description: "The ID of the PingOne credential. This field is read only.",
@@ -142,7 +135,6 @@ func addOptionalPingOneConnectionFields(ctx context.Context, addRequest *client.
 	addRequest.Description = plan.Description.ValueStringPointer()
 	addRequest.Active = plan.Active.ValueBoolPointer()
 	addRequest.Credential = plan.Credential.ValueStringPointer()
-	addRequest.EncryptedCredential = plan.EncryptedCredential.ValueStringPointer()
 	addRequest.CredentialId = plan.CredentialId.ValueStringPointer()
 	addRequest.PingOneConnectionId = plan.PingOneConnectionId.ValueStringPointer()
 	addRequest.EnvironmentId = plan.EnvironmentId.ValueStringPointer()
@@ -180,7 +172,6 @@ func readPingOneConnectionResponse(ctx context.Context, r *client.PingOneConnect
 	} else {
 		state.Credential = types.StringValue("")
 	}
-	state.EncryptedCredential = types.StringPointerValue(r.EncryptedCredential)
 	state.CredentialId = types.StringPointerValue(r.CredentialId)
 	state.PingOneConnectionId = types.StringPointerValue(r.PingOneConnectionId)
 	state.EnvironmentId = types.StringPointerValue(r.EnvironmentId)
@@ -290,7 +281,6 @@ func (r *pingOneConnectionResource) Update(ctx context.Context, req resource.Upd
 	resp.Diagnostics.Append(diags...)
 }
 
-// This config object is edit-only, so Terraform can't delete it.
 func (r *pingOneConnectionResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
 	var state pingOneConnectionResourceModel

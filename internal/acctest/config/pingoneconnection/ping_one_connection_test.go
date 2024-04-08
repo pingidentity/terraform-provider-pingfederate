@@ -8,7 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
@@ -57,7 +60,15 @@ func TestAccPingOneConnection(t *testing.T) {
 			{
 				// Test updating some fields
 				Config: testAccPingOneConnection(resourceName, updatedResourceModel),
-				Check:  testAccCheckExpectedPingOneConnectionAttributes(updatedResourceModel),
+				Check:  resource.ComposeTestCheckFunc(testAccCheckExpectedPingOneConnectionAttributes(updatedResourceModel)),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_ping_one_connection.%s", resourceName), tfjsonpath.New("creation_date"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_ping_one_connection.%s", resourceName), tfjsonpath.New("credential_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_ping_one_connection.%s", resourceName), tfjsonpath.New("environment_id"), knownvalue.StringExact("f5901536-2b60-4d4a-a987-3d56aadad46d")),
+					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_ping_one_connection.%s", resourceName), tfjsonpath.New("region"), knownvalue.StringExact("North America")),
+					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_ping_one_connection.%s", resourceName), tfjsonpath.New("ping_one_authentication_api_endpoint"), knownvalue.StringExact("https://auth.pingone.com")),
+					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_ping_one_connection.%s", resourceName), tfjsonpath.New("ping_one_management_api_endpoint"), knownvalue.StringExact("https://api.pingone.com")),
+				},
 			},
 			{
 				// Test importing the resource
@@ -144,7 +155,6 @@ func testAccCheckExpectedPingOneConnectionAttributes(config pingOneConnectionRes
 				return err
 			}
 		}
-
 		return nil
 	}
 }

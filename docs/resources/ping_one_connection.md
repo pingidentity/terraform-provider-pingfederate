@@ -36,7 +36,6 @@ resource "pingfederate_ping_one_connection" "pingOneConnectionExample" {
 
 - `creation_date` (String) The creation date of the PingOne connection. This field is read only.
 - `credential_id` (String) The ID of the PingOne credential. This field is read only.
-- `encrypted_credential` (String, Sensitive) The encrypted credential for the PingOne connection.
 - `environment_id` (String) The ID of the environment of the PingOne credential. This field is read only.
 - `id` (String) The ID of this resource.
 - `organization_name` (String) The name of the organization associated with this PingOne connection. This field is read only.
