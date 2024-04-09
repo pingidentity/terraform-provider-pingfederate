@@ -19,6 +19,7 @@ import (
 var pingOneConnectionId = "myPingOneConnectionId"
 var pingOneConnectionName = "myPingOneConnectionName"
 var credentialData = os.Getenv("PF_TF_ACC_TEST_PING_ONE_CONNECTION_CREDENTIAL_DATA")
+var pingOneEnvironmentId = os.Getenv("PF_TF_P1_CONNECTION_ENV_ID")
 
 // Attributes to test with. Add optional properties to test here if desired.
 type pingOneConnectionResourceModel struct {
@@ -47,6 +48,9 @@ func TestAccPingOneConnection(t *testing.T) {
 			if credentialData == "" {
 				t.Fatal("PF_TF_ACC_TEST_PING_ONE_CONNECTION_CREDENTIAL_DATA must be set for acceptance tests")
 			}
+			if pingOneEnvironmentId == "" {
+				t.Fatal("PF_TF_P1_CONNECTION_ENV_ID must be set for acceptance tests")
+			}
 		},
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
@@ -64,7 +68,7 @@ func TestAccPingOneConnection(t *testing.T) {
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_ping_one_connection.%s", resourceName), tfjsonpath.New("creation_date"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_ping_one_connection.%s", resourceName), tfjsonpath.New("credential_id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_ping_one_connection.%s", resourceName), tfjsonpath.New("environment_id"), knownvalue.StringExact("f5901536-2b60-4d4a-a987-3d56aadad46d")),
+					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_ping_one_connection.%s", resourceName), tfjsonpath.New("environment_id"), knownvalue.StringExact(pingOneEnvironmentId)),
 					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_ping_one_connection.%s", resourceName), tfjsonpath.New("region"), knownvalue.StringExact("North America")),
 					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_ping_one_connection.%s", resourceName), tfjsonpath.New("ping_one_authentication_api_endpoint"), knownvalue.StringExact("https://auth.pingone.com")),
 					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_ping_one_connection.%s", resourceName), tfjsonpath.New("ping_one_management_api_endpoint"), knownvalue.StringExact("https://api.pingone.com")),
