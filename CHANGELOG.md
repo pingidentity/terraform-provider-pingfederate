@@ -1,3 +1,7 @@
+# v0.10.0 (Unreleased)
+### Resources
+* **New Resource:** `pingfederate_ping_one_connection ` ([#231](https://github.com/pingidentity/terraform-provider-pingfederate/pull/231))
+
 # v0.9.0 March 29th, 2024
 ### FEATURES
 * Resources that no longer incorrectly require a `<resource_type>_id` are listed here:
