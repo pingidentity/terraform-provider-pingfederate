@@ -26,7 +26,7 @@ func childrenDefault(depth int) types.List {
 	return resp
 }
 
-func Schema() schema.SingleNestedAttribute {
+func ToSchema() schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Attributes: map[string]schema.Attribute{
 			"action": policyaction.ToSchema(),

@@ -66,7 +66,7 @@ func (r *authenticationPoliciesFragmentResource) Schema(ctx context.Context, req
 				Optional:    true,
 				Description: "A reference to a resource.",
 			},
-			"root_node": authenticationpolicytreenode.Schema(),
+			"root_node": authenticationpolicytreenode.ToSchema(),
 		},
 	}
 	id.ToSchema(&schema)
@@ -103,7 +103,7 @@ func readAuthenticationPoliciesFragmentResponse(ctx context.Context, r *client.A
 	state.Outputs, respDiags = resourcelink.ToState(ctx, r.Outputs)
 	diags.Append(respDiags...)
 
-	state.RootNode, respDiags = authenticationpolicytreenode.State(ctx, r.RootNode)
+	state.RootNode, respDiags = authenticationpolicytreenode.ToState(ctx, r.RootNode, 1)
 	diags.Append(respDiags...)
 
 	return diags

@@ -66,7 +66,7 @@ func (r *authenticationPoliciesPolicyResource) Schema(ctx context.Context, req r
 				Default:     booldefault.StaticBool(true),
 				Description: "Whether or not this authentication policy tree is enabled. Default is true.",
 			},
-			"root_node": authenticationpolicytreenode.Schema(),
+			"root_node": authenticationpolicytreenode.ToSchema(),
 			"handle_failures_locally": schema.BoolAttribute{
 				Optional:    true,
 				Computed:    true,
@@ -76,7 +76,7 @@ func (r *authenticationPoliciesPolicyResource) Schema(ctx context.Context, req r
 		},
 	}
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, "policy_id", false, "The authentication policy ID. ID is unique.")
+	id.ToSchemaCustomId(&schema, "policy_id", false, false, "The authentication policy ID. ID is unique.")
 	resp.Schema = schema
 }
 
@@ -109,7 +109,7 @@ func readAuthenticationPolicyResponse(ctx context.Context, r *client.Authenticat
 	state.AuthenticationApiApplicationRef, respDiags = resourcelink.ToState(ctx, r.AuthenticationApiApplicationRef)
 	diags.Append(respDiags...)
 
-	state.RootNode, respDiags = authenticationpolicytreenode.State(ctx, r.RootNode)
+	state.RootNode, respDiags = authenticationpolicytreenode.ToState(ctx, r.RootNode, 1)
 	diags.Append(respDiags...)
 
 	return diags
@@ -250,5 +250,5 @@ func (r *authenticationPoliciesPolicyResource) Delete(ctx context.Context, req r
 
 func (r *authenticationPoliciesPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to policy_id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("policy_id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
