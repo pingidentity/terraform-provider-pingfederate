@@ -116,7 +116,6 @@ func readAuthenticationPolicyResponse(ctx context.Context, r *client.Authenticat
 }
 
 func addOptionalAuthenticationPolicyFields(ctx context.Context, addRequest *client.AuthenticationPolicyTree, plan authenticationPoliciesPolicyModel) error {
-	// We require policy_id in the provider, but to PF it is optional
 	addRequest.Id = plan.PolicyId.ValueStringPointer()
 	addRequest.Name = plan.Name.ValueStringPointer()
 	addRequest.Description = plan.Description.ValueStringPointer()

@@ -13,28 +13,10 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-//var pingOneConnection, pingOneEnvironment, pingOnePopulation string
-
 func TestAccAuthenticationPoliciesPolicy(t *testing.T) {
 	resourceName := "myAuthenticationPoliciesPolicy"
-
-	/*pingOneConnection = os.Getenv("PF_TF_P1_CONNECTION_ID")
-	pingOneEnvironment = os.Getenv("PF_TF_P1_CONNECTION_ENV_ID")
-	pingOnePopulation = os.Getenv("PF_TF_P1_POPULATION_ID")*/
-
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() {
-			acctest.ConfigurationPreCheck(t)
-			/*if pingOneConnection == "" {
-				t.Fatal("PF_TF_P1_CONNECTION_ID must be set for the TestAccAuthenticationPoliciesPolicy acceptance test")
-			}
-			if pingOneEnvironment == "" {
-				t.Fatal("PF_TF_P1_CONNECTION_ENV_ID must be set for the TestAccAuthenticationPoliciesPolicy acceptance test")
-			}
-			if pingOnePopulation == "" {
-				t.Fatal("PF_TF_P1_POPULATION_ID must be set for the TestAccAuthenticationPoliciesPolicy acceptance test")
-			}*/
-		},
+		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
@@ -45,7 +27,7 @@ func TestAccAuthenticationPoliciesPolicy(t *testing.T) {
 				Check:  testAccCheckExpectedAuthenticationPoliciesPolicyAttributes(resourceName, false),
 			},
 			// Test a more complex policy
-			/*{
+			{
 				Config: testAccAuthenticationPoliciesPolicyComplex(resourceName),
 				Check:  testAccCheckExpectedAuthenticationPoliciesPolicyAttributes(resourceName, true),
 			},
@@ -60,7 +42,7 @@ func TestAccAuthenticationPoliciesPolicy(t *testing.T) {
 				// Back to minimal model
 				Config: testAccAuthenticationPoliciesPolicySimple(resourceName),
 				Check:  testAccCheckExpectedAuthenticationPoliciesPolicyAttributes(resourceName, false),
-			},*/
+			},
 		},
 	})
 }
@@ -103,15 +85,34 @@ resource "pingfederate_authentication_policies_policy" "%[1]s" {
 data "pingfederate_authentication_policies_policy" "%[1]s" {
   policy_id = pingfederate_authentication_policies_policy.%[1]s.policy_id
 }
-
-%[2]s
 `, resourceName,
-		dependencyHcl(),
 	)
 }
 
-/*func testAccAuthenticationPoliciesPolicyComplex(resourceName string) string {
+func testAccAuthenticationPoliciesPolicyComplex(resourceName string) string {
 	return fmt.Sprintf(`
+resource "pingfederate_authentication_policy_contract" "myAuthenticationPolicyContract" {
+  contract_id = "myAuthenticationPolicyContract"
+  name = "example"
+  extended_attributes = [
+    {
+      name = "firstName"
+    },
+    {
+      name = "lastName"
+    },
+    {
+      name = "fullName"
+    },
+    {
+      name = "photo"
+    },
+    {
+      name = "username"
+    }
+  ] 
+}
+  
 resource "pingfederate_authentication_policies_policy" "%[1]s" {
   policy_id = "%[1]s"
   name        = "%[1]s"
@@ -122,7 +123,7 @@ resource "pingfederate_authentication_policies_policy" "%[1]s" {
         authentication_source = {
           type = "IDP_ADAPTER"
           source_ref = {
-            id = pingfederate_idp_adapter.myadapter.adapter_id
+            id = "OTIdPJava"
           }
         }
         input_user_id_mapping = {
@@ -148,7 +149,7 @@ resource "pingfederate_authentication_policies_policy" "%[1]s" {
           apc_mapping_policy_action = {
             context = "Success"
             authentication_policy_contract_ref = {
-              id = pingfederate_authentication_policy_contract.mycontract.contract_id
+              id = pingfederate_authentication_policy_contract.myAuthenticationPolicyContract.contract_id
             }
             attribute_mapping = {
               attribute_sources = []
@@ -156,21 +157,21 @@ resource "pingfederate_authentication_policies_policy" "%[1]s" {
                 "firstName" : {
                   source = {
                     type = "ADAPTER",
-                    id   = pingfederate_idp_adapter.myadapter.adapter_id
+                    id   = "OTIdPJava"
                   }
                   value = "firstName"
                 }
                 "lastName" : {
                   source = {
                     type = "ADAPTER",
-                    id   = pingfederate_idp_adapter.myadapter.adapter_id
+                    id   = "OTIdPJava"
                   }
                   value = "lastName"
                 }
                 "subject" : {
                   source = {
                     type = "ADAPTER",
-                    id   = pingfederate_idp_adapter.myadapter.adapter_id
+                    id   = "OTIdPJava"
                   }
                   value = "subject"
                 }
@@ -183,7 +184,7 @@ resource "pingfederate_authentication_policies_policy" "%[1]s" {
                 "photo" : {
                   source = {
                     type = "ADAPTER",
-                    id   = pingfederate_idp_adapter.myadapter.adapter_id
+                    id   = "OTIdPJava"
                   }
                   value = "photo"
                 }
@@ -201,30 +202,14 @@ resource "pingfederate_authentication_policies_policy" "%[1]s" {
       }
     ]
   }
-  inputs = {
-    id = pingfederate_authentication_policy_contract.mycontract.contract_id
-  }
-  outputs = {
-    id = pingfederate_authentication_policy_contract.mycontract.contract_id
-  }
-
 }
 
 data "pingfederate_authentication_policies_policy" "%[1]s" {
   policy_id = pingfederate_authentication_policies_policy.%[1]s.policy_id
 }
 
-%[2]s
 `, resourceName,
-		dependencyHcl(),
 	)
-}*/
-
-func dependencyHcl() string {
-	/*return fmt.Sprintf(`
-
-	}`, pingOneConnection, pingOneEnvironment, pingOnePopulation)*/
-	return ""
 }
 
 // Test that the expected attributes are set on the PingFederate server
