@@ -1,4 +1,4 @@
-# v0.10.0 (Unreleased)
+# v0.10.0 April 11th, 2024
 ### Resources
 * **New Resource:** `pingfederate_ping_one_connection ` ([#231](https://github.com/pingidentity/terraform-provider-pingfederate/pull/231))
 
