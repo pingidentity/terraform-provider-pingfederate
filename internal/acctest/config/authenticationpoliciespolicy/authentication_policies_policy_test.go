@@ -29,7 +29,25 @@ func TestAccAuthenticationPoliciesPolicy(t *testing.T) {
 			// Test a more complex policy
 			{
 				Config: testAccAuthenticationPoliciesPolicyComplex(resourceName),
-				Check:  testAccCheckExpectedAuthenticationPoliciesPolicyAttributes(resourceName, true),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedAuthenticationPoliciesPolicyAttributes(resourceName, true),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "enabled", "true"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "handle_failures_locally", "false"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.action.authn_source_policy_action.authentication_source.source_ref.id", "OTIdPJava"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.0.action.done_policy_action.context", "Fail"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.action.authn_source_policy_action.context", "Success"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.children.0.action.authn_source_policy_action.context", "Fail"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.children.0.children.0.action.done_policy_action.context", "Fail"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.children.0.children.1.action.done_policy_action.context", "Success"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.children.1.action.apc_mapping_policy_action.context", "Success"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.children.1.action.apc_mapping_policy_action.authentication_policy_contract_ref.id", "QGxlec5CX693lBQL"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.children.1.action.apc_mapping_policy_action.attribute_mapping.attribute_sources.0.jdbc_attribute_source.data_store_ref.id", "ProvisionerDS"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.children.1.action.apc_mapping_policy_action.attribute_mapping.attribute_sources.0.jdbc_attribute_source.id", "test"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.children.1.action.apc_mapping_policy_action.attribute_mapping.attribute_sources.0.jdbc_attribute_source.description", "test"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.children.1.action.apc_mapping_policy_action.attribute_mapping.attribute_sources.0.jdbc_attribute_source.schema", "INFORMATION_SCHEMA"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.children.1.action.apc_mapping_policy_action.attribute_mapping.attribute_sources.0.jdbc_attribute_source.table", "ADMINISTRABLE_ROLE_AUTHORIZATIONS"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.children.1.action.apc_mapping_policy_action.attribute_mapping.attribute_sources.0.jdbc_attribute_source.filter", "filter"),
+				),
 			},
 			{
 				// Test importing the resource
@@ -50,8 +68,8 @@ func TestAccAuthenticationPoliciesPolicy(t *testing.T) {
 func testAccAuthenticationPoliciesPolicySimple(resourceName string) string {
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_policies_policy" "%[1]s" {
+  name      = "%[1]s"
   policy_id = "%[1]s"
-  name        = "%[1]s"
   root_node = {
     action = {
       authn_source_policy_action = {
@@ -91,32 +109,11 @@ data "pingfederate_authentication_policies_policy" "%[1]s" {
 
 func testAccAuthenticationPoliciesPolicyComplex(resourceName string) string {
 	return fmt.Sprintf(`
-resource "pingfederate_authentication_policy_contract" "myAuthenticationPolicyContract" {
-  contract_id = "myAuthenticationPolicyContract"
-  name = "example"
-  extended_attributes = [
-    {
-      name = "firstName"
-    },
-    {
-      name = "lastName"
-    },
-    {
-      name = "fullName"
-    },
-    {
-      name = "photo"
-    },
-    {
-      name = "username"
-    }
-  ] 
-}
-  
 resource "pingfederate_authentication_policies_policy" "%[1]s" {
-  policy_id = "%[1]s"
-  name        = "%[1]s"
-  description = "Registration with PingOne Verify (GovID + Selfie)"
+  name                    = "%[1]s"
+  policy_id               = "%[1]s"
+  enabled                 = true
+  handle_failures_locally = false
   root_node = {
     action = {
       authn_source_policy_action = {
@@ -126,14 +123,6 @@ resource "pingfederate_authentication_policies_policy" "%[1]s" {
             id = "OTIdPJava"
           }
         }
-        input_user_id_mapping = {
-          source = {
-            type = "INPUTS"
-            id   = "Inputs"
-          }
-          value = "username"
-        }
-        user_id_authenticated = true
       }
     }
     children = [
@@ -146,67 +135,110 @@ resource "pingfederate_authentication_policies_policy" "%[1]s" {
       },
       {
         action = {
-          apc_mapping_policy_action = {
+          authn_source_policy_action = {
             context = "Success"
-            authentication_policy_contract_ref = {
-              id = pingfederate_authentication_policy_contract.myAuthenticationPolicyContract.contract_id
-            }
-            attribute_mapping = {
-              attribute_sources = []
-              attribute_contract_fulfillment = {
-                "firstName" : {
-                  source = {
-                    type = "ADAPTER",
-                    id   = "OTIdPJava"
-                  }
-                  value = "firstName"
-                }
-                "lastName" : {
-                  source = {
-                    type = "ADAPTER",
-                    id   = "OTIdPJava"
-                  }
-                  value = "lastName"
-                }
-                "subject" : {
-                  source = {
-                    type = "ADAPTER",
-                    id   = "OTIdPJava"
-                  }
-                  value = "subject"
-                }
-                "fullName" : {
-                  source = {
-                    type = "EXPRESSION"
-                  },
-                  value = "fullName"
-                }
-                "photo" : {
-                  source = {
-                    type = "ADAPTER",
-                    id   = "OTIdPJava"
-                  }
-                  value = "photo"
-                }
-                "username" : {
-                  source = {
-                    type = "INPUTS",
-                    id   = "inputs"
-                  }
-                  value = "username"
-                }
+            authentication_source = {
+              type = "IDP_ADAPTER"
+              source_ref = {
+                id = "OTIdPJava"
               }
             }
           }
         }
+        children = [
+          {
+            action = {
+              authn_source_policy_action = {
+                context = "Fail"
+                authentication_source = {
+                  type = "IDP_ADAPTER"
+                  source_ref = {
+                    id = "OTIdPJava"
+                  }
+                }
+              }
+            }
+            children = [
+              {
+                action = {
+                  done_policy_action = {
+                    context = "Fail"
+                  }
+                }
+              },
+              {
+                action = {
+                  done_policy_action = {
+                    context = "Success"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            action = {
+              apc_mapping_policy_action = {
+                context = "Success"
+                authentication_policy_contract_ref = {
+                  id = "QGxlec5CX693lBQL"
+                }
+                attribute_mapping = {
+                  attribute_sources = [
+                    {
+                      jdbc_attribute_source = {
+                        data_store_ref = {
+                          id = "ProvisionerDS"
+                        }
+                        id          = "test"
+                        description = "test"
+                        schema      = "INFORMATION_SCHEMA"
+                        table       = "ADMINISTRABLE_ROLE_AUTHORIZATIONS"
+                        filter      = "filter"
+                        column_names = [
+                          "GRANTEE",
+                          "IS_GRANTABLE",
+                          "ROLE_NAME"
+                        ]
+                      }
+                    }
+                  ]
+                  attribute_contract_fulfillment = {
+                    subject = {
+                      source = {
+                        type = "ADAPTER"
+                        id   = "OTIdPJava"
+                      }
+                      value = "subject"
+                    }
+                  }
+                  issuance_criteria = {
+                    conditional_criteria = [
+                      {
+                        error_result = "error"
+                        source = {
+                          type = "MAPPED_ATTRIBUTES"
+                        }
+                        attribute_name = "subject"
+                        condition      = "EQUALS"
+                        value          = "value"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        ]
       }
     ]
   }
 }
 
+
 data "pingfederate_authentication_policies_policy" "%[1]s" {
   policy_id = pingfederate_authentication_policies_policy.%[1]s.policy_id
 }
+
 
 `, resourceName,
 	)
@@ -249,7 +281,7 @@ func testAccCheckExpectedAuthenticationPoliciesPolicyAttributes(id string, isCom
 			return errors.New("Expected root node with second child being a DONE policy action")
 		}
 
-		if isComplex && response.RootNode.Children[1].Action.ApcMappingPolicyAction == nil {
+		if isComplex && response.RootNode.Children[1].Children[1].Action.ApcMappingPolicyAction == nil {
 			return errors.New("Expected root node with second child being an APC_MAPPING policy action")
 		}
 

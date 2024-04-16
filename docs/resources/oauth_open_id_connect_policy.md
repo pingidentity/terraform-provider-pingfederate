@@ -53,12 +53,12 @@ resource "pingfederate_oauth_open_id_connect_policy" "oauthOIDCPolicyExample" {
 
 - `access_token_manager_ref` (Attributes) The access token manager associated with this Open ID Connect policy. (see [below for nested schema](#nestedatt--access_token_manager_ref))
 - `attribute_contract` (Attributes) The list of attributes that will be returned to OAuth clients in response to requests received at the PingFederate UserInfo endpoint. (see [below for nested schema](#nestedatt--attribute_contract))
-- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--attribute_mapping))
 - `name` (String) The name used for display in UI screens.
 - `policy_id` (String) The policy ID used internally.
 
 ### Optional
 
+- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--attribute_mapping))
 - `id_token_lifetime` (Number) The ID Token Lifetime, in minutes. The default value is 5.
 - `id_token_typ_header_value` (String) ID Token Type (typ) Header Value. Supported in PF version 11.3 or later.
 - `include_s_hash_in_id_token` (Boolean) Determines whether the State Hash should be included in the ID token.

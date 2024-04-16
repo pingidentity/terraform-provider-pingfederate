@@ -115,7 +115,7 @@ func readAuthenticationPolicyResponse(ctx context.Context, r *client.Authenticat
 	return diags
 }
 
-func addOptionalAuthenticationPolicyFields(ctx context.Context, addRequest *client.AuthenticationPolicyTree, plan authenticationPoliciesPolicyModel) error {
+func addOptionalAuthenticationPolicyFields(addRequest *client.AuthenticationPolicyTree, plan authenticationPoliciesPolicyModel) error {
 	addRequest.Id = plan.PolicyId.ValueStringPointer()
 	addRequest.Name = plan.Name.ValueStringPointer()
 	addRequest.Description = plan.Description.ValueStringPointer()
@@ -148,7 +148,7 @@ func (r *authenticationPoliciesPolicyResource) Create(ctx context.Context, req r
 	}
 
 	newPolicyTree := client.NewAuthenticationPolicyTree()
-	err := addOptionalAuthenticationPolicyFields(ctx, newPolicyTree, plan)
+	err := addOptionalAuthenticationPolicyFields(newPolicyTree, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for the Authentication Policy", err.Error())
 		return
@@ -179,7 +179,7 @@ func (r *authenticationPoliciesPolicyResource) Read(ctx context.Context, req res
 		return
 	}
 
-	policyResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.GetPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.PolicyId.ValueString()).Execute()
+	policyResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.GetPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Policy", err, httpResp)
@@ -210,7 +210,7 @@ func (r *authenticationPoliciesPolicyResource) Update(ctx context.Context, req r
 
 	updatePolicyRequest := r.apiClient.AuthenticationPoliciesAPI.UpdatePolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.PolicyId.ValueString())
 	updatedPolicy := client.NewAuthenticationPolicyTree()
-	err := addOptionalAuthenticationPolicyFields(ctx, updatedPolicy, plan)
+	err := addOptionalAuthenticationPolicyFields(updatedPolicy, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for the Authentication Policy", err.Error())
 		return

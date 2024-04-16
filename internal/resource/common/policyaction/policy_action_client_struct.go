@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -22,6 +23,14 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 		err := json.Unmarshal([]byte(internaljson.FromValue(apcMappingPolicyAction, true)), &result.ApcMappingPolicyAction)
 		if err != nil {
 			return nil, err
+		}
+		attributeSources := apcMappingPolicyAction.(types.Object).Attributes()["attribute_mapping"].(types.Object).Attributes()["attribute_sources"]
+		if attributeSources != nil {
+			attributeSourceStruct, err := attributesources.ClientStruct(attributeSources.(types.List))
+			if err != nil {
+				return nil, err
+			}
+			result.ApcMappingPolicyAction.AttributeMapping.AttributeSources = attributeSourceStruct
 		}
 		result.ApcMappingPolicyAction.Type = "APC_MAPPING"
 		return &result, nil
@@ -68,6 +77,15 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 		if err != nil {
 			return nil, err
 		}
+
+		attributeSources := fragmentPolicyAction.(types.Object).Attributes()["fragment_mapping"].(types.Object).Attributes()["attribute_sources"]
+		if attributeSources != nil {
+			attributeSourceStruct, err := attributesources.ClientStruct(attributeSources.(types.List))
+			if err != nil {
+				return nil, err
+			}
+			result.FragmentPolicyAction.FragmentMapping.AttributeSources = attributeSourceStruct
+		}
 		result.FragmentPolicyAction.Type = "FRAGMENT"
 		return &result, nil
 	}
@@ -77,6 +95,24 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 		if err != nil {
 			return nil, err
 		}
+		outboundAttributeMappingAttributeSources := localIdentityMappingPolicyAction.(types.Object).Attributes()["outbound_attribute_mapping"].(types.Object).Attributes()["attribute_sources"]
+		if outboundAttributeMappingAttributeSources != nil {
+			attributeSourceStruct, err := attributesources.ClientStruct(outboundAttributeMappingAttributeSources.(types.List))
+			if err != nil {
+				return nil, err
+			}
+			result.LocalIdentityMappingPolicyAction.OutboundAttributeMapping.AttributeSources = attributeSourceStruct
+		}
+
+		inboundAttributeMappingAttributeSources := localIdentityMappingPolicyAction.(types.Object).Attributes()["inbound_mapping"].(types.Object).Attributes()["attribute_sources"]
+		if inboundAttributeMappingAttributeSources != nil {
+			attributeSourceStruct, err := attributesources.ClientStruct(inboundAttributeMappingAttributeSources.(types.List))
+			if err != nil {
+				return nil, err
+			}
+			result.LocalIdentityMappingPolicyAction.InboundMapping.AttributeSources = attributeSourceStruct
+		}
+
 		result.LocalIdentityMappingPolicyAction.Type = "LOCAL_IDENTITY_MAPPING"
 		return &result, nil
 	}
