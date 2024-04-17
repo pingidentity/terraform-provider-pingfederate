@@ -3,12 +3,10 @@ package authenticationpoliciespolicy
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/authenticationpolicytreenode"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -35,17 +33,6 @@ type authenticationPoliciesPolicyResource struct {
 	apiClient      *client.APIClient
 }
 
-type authenticationPoliciesPolicyModel struct {
-	Id                              types.String `tfsdk:"id"`
-	PolicyId                        types.String `tfsdk:"policy_id"`
-	Name                            types.String `tfsdk:"name"`
-	Description                     types.String `tfsdk:"description"`
-	AuthenticationApiApplicationRef types.Object `tfsdk:"authentication_api_application_ref"`
-	Enabled                         types.Bool   `tfsdk:"enabled"`
-	RootNode                        types.Object `tfsdk:"root_node"`
-	HandleFailuresLocally           types.Bool   `tfsdk:"handle_failures_locally"`
-}
-
 func (r *authenticationPoliciesPolicyResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
 		Description: "Manages an Authentication Policy",
@@ -66,7 +53,7 @@ func (r *authenticationPoliciesPolicyResource) Schema(ctx context.Context, req r
 				Default:     booldefault.StaticBool(true),
 				Description: "Whether or not this authentication policy tree is enabled. Default is true.",
 			},
-			"root_node": authenticationpolicytreenode.ToSchema(),
+			"root_node": authenticationpolicytreenode.ToSchema("A node inside the authentication policy tree."),
 			"handle_failures_locally": schema.BoolAttribute{
 				Optional:    true,
 				Computed:    true,
@@ -94,25 +81,6 @@ func (r *authenticationPoliciesPolicyResource) Configure(_ context.Context, req 
 	r.providerConfig = providerCfg.ProviderConfig
 	r.apiClient = providerCfg.ApiClient
 
-}
-
-func readAuthenticationPolicyResponse(ctx context.Context, r *client.AuthenticationPolicyTree, state *authenticationPoliciesPolicyModel) diag.Diagnostics {
-	var diags, respDiags diag.Diagnostics
-
-	state.Id = types.StringPointerValue(r.Id)
-	state.PolicyId = types.StringPointerValue(r.Id)
-	state.Name = types.StringPointerValue(r.Name)
-	state.Description = types.StringPointerValue(r.Description)
-	state.Enabled = types.BoolPointerValue(r.Enabled)
-	state.HandleFailuresLocally = types.BoolPointerValue(r.HandleFailuresLocally)
-
-	state.AuthenticationApiApplicationRef, respDiags = resourcelink.ToState(ctx, r.AuthenticationApiApplicationRef)
-	diags.Append(respDiags...)
-
-	state.RootNode, respDiags = authenticationpolicytreenode.ToState(ctx, r.RootNode, 1)
-	diags.Append(respDiags...)
-
-	return diags
 }
 
 func addOptionalAuthenticationPolicyFields(addRequest *client.AuthenticationPolicyTree, plan authenticationPoliciesPolicyModel) error {
@@ -179,7 +147,7 @@ func (r *authenticationPoliciesPolicyResource) Read(ctx context.Context, req res
 		return
 	}
 
-	policyResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.GetPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	policyResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.GetPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.PolicyId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Policy", err, httpResp)
@@ -248,5 +216,6 @@ func (r *authenticationPoliciesPolicyResource) Delete(ctx context.Context, req r
 }
 
 func (r *authenticationPoliciesPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// Retrieve import ID and save to policy_id attribute
+	resource.ImportStatePassthroughID(ctx, path.Root("policy_id"), req, resp)
 }

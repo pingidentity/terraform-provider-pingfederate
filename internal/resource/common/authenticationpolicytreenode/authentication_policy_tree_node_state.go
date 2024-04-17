@@ -44,8 +44,8 @@ func childrenAttrTypes(depth int) types.ListType {
 	return childrenAttrTypesByDepth[depth]
 }
 
-func ToState(ctx context.Context, node *client.AuthenticationPolicyTreeNode, depth int) (types.Object, diag.Diagnostics) {
-	return recursiveState(ctx, node, depth, getRootNodeAttrTypes())
+func ToState(ctx context.Context, node *client.AuthenticationPolicyTreeNode) (types.Object, diag.Diagnostics) {
+	return recursiveState(ctx, node, 1, getRootNodeAttrTypes())
 }
 
 func recursiveState(ctx context.Context, node *client.AuthenticationPolicyTreeNode, depth int, attrTypes map[string]attr.Type) (types.Object, diag.Diagnostics) {

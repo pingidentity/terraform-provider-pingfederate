@@ -155,7 +155,7 @@ func (r *oauthOpenIdConnectPolicyResource) Schema(ctx context.Context, req resou
 					},
 				},
 			},
-			"attribute_mapping": attributemapping.ToSchema(),
+			"attribute_mapping": attributemapping.ToSchema(true),
 			"scope_attribute_mappings": schema.MapNestedAttribute{
 				Description: "The attribute scope mappings from scopes to attribute names.",
 				Optional:    true,
@@ -231,7 +231,7 @@ func (r *oauthOpenIdConnectPolicyResource) ModifyPlan(ctx context.Context, req r
 	}
 }
 
-func addOptionalOauthOpenIdConnectPolicyFields(ctx context.Context, policy *client.OpenIdConnectPolicy, plan oauthOpenIdConnectPolicyModel) error {
+func addOptionalOauthOpenIdConnectPolicyFields(policy *client.OpenIdConnectPolicy, plan oauthOpenIdConnectPolicyModel) error {
 	policy.IdTokenLifetime = plan.IdTokenLifetime.ValueInt64Pointer()
 	policy.IncludeSriInIdToken = plan.IncludeSriInIdToken.ValueBoolPointer()
 	policy.IncludeUserInfoInIdToken = plan.IncludeUserInfoInIdToken.ValueBoolPointer()
@@ -328,7 +328,7 @@ func (r *oauthOpenIdConnectPolicyResource) Create(ctx context.Context, req resou
 	}
 
 	newOIDCPolicy := client.NewOpenIdConnectPolicy(plan.PolicyId.ValueString(), plan.Name.ValueString(), *accessTokenManagerRef, *attributeContract, *attributeMapping)
-	err := addOptionalOauthOpenIdConnectPolicyFields(ctx, newOIDCPolicy, plan)
+	err := addOptionalOauthOpenIdConnectPolicyFields(newOIDCPolicy, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OIDC Policy", err.Error())
 		return
@@ -398,7 +398,7 @@ func (r *oauthOpenIdConnectPolicyResource) Update(ctx context.Context, req resou
 	updatedPolicy := client.NewOpenIdConnectPolicy(plan.PolicyId.ValueString(), plan.Name.ValueString(),
 		*accessTokenManagerRef, *attributeContract, *attributeMapping)
 
-	err := addOptionalOauthOpenIdConnectPolicyFields(ctx, updatedPolicy, plan)
+	err := addOptionalOauthOpenIdConnectPolicyFields(updatedPolicy, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for the OIDC Policy", err.Error())
 		return

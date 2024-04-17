@@ -29,25 +29,7 @@ func TestAccAuthenticationPoliciesPolicy(t *testing.T) {
 			// Test a more complex policy
 			{
 				Config: testAccAuthenticationPoliciesPolicyComplex(resourceName),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckExpectedAuthenticationPoliciesPolicyAttributes(resourceName, true),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "enabled", "true"),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "handle_failures_locally", "false"),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.action.authn_source_policy_action.authentication_source.source_ref.id", "OTIdPJava"),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.0.action.done_policy_action.context", "Fail"),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.action.authn_source_policy_action.context", "Success"),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.children.0.action.authn_source_policy_action.context", "Fail"),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.children.0.children.0.action.done_policy_action.context", "Fail"),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.children.0.children.1.action.done_policy_action.context", "Success"),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.children.1.action.apc_mapping_policy_action.context", "Success"),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.children.1.action.apc_mapping_policy_action.authentication_policy_contract_ref.id", "QGxlec5CX693lBQL"),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.children.1.action.apc_mapping_policy_action.attribute_mapping.attribute_sources.0.jdbc_attribute_source.data_store_ref.id", "ProvisionerDS"),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.children.1.action.apc_mapping_policy_action.attribute_mapping.attribute_sources.0.jdbc_attribute_source.id", "test"),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.children.1.action.apc_mapping_policy_action.attribute_mapping.attribute_sources.0.jdbc_attribute_source.description", "test"),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.children.1.action.apc_mapping_policy_action.attribute_mapping.attribute_sources.0.jdbc_attribute_source.schema", "INFORMATION_SCHEMA"),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.children.1.action.apc_mapping_policy_action.attribute_mapping.attribute_sources.0.jdbc_attribute_source.table", "ADMINISTRABLE_ROLE_AUTHORIZATIONS"),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "root_node.children.1.children.1.action.apc_mapping_policy_action.attribute_mapping.attribute_sources.0.jdbc_attribute_source.filter", "filter"),
-				),
+				Check:  testAccCheckExpectedAuthenticationPoliciesPolicyAttributes(resourceName, true),
 			},
 			{
 				// Test importing the resource
@@ -55,6 +37,23 @@ func TestAccAuthenticationPoliciesPolicy(t *testing.T) {
 				ResourceName:      "pingfederate_authentication_policies_policy." + resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+			},
+			{
+				// Back to minimal model
+				Config: testAccAuthenticationPoliciesPolicySimple(resourceName),
+				Check:  testAccCheckExpectedAuthenticationPoliciesPolicyAttributes(resourceName, false),
+			},
+			{
+				PreConfig: func() {
+					testClient := acctest.TestClient()
+					ctx := acctest.TestBasicAuthContext()
+					_, err := testClient.AuthenticationPoliciesAPI.DeletePolicy(ctx, resourceName).Execute()
+					if err != nil {
+						t.Fatalf("Failed to delete config: %v", err)
+					}
+				},
+				RefreshState:       true,
+				ExpectNonEmptyPlan: true,
 			},
 			{
 				// Back to minimal model

@@ -17,7 +17,7 @@ Manages an Authentication Policy
 
 ### Required
 
-- `root_node` (Attributes) The beginning action for the authentication fragment policy. (see [below for nested schema](#nestedatt--root_node))
+- `root_node` (Attributes) A node inside the authentication policy tree. (see [below for nested schema](#nestedatt--root_node))
 
 ### Optional
 

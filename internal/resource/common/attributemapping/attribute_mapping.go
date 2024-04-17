@@ -31,15 +31,15 @@ func AttrTypes() map[string]attr.Type {
 	return attributeMappingAttrTypes
 }
 
-func ToSchema() schema.SingleNestedAttribute {
+func ToSchema(required bool) schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Attributes: map[string]schema.Attribute{
 			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, true),
 			"attribute_sources":              attributesources.ToSchema(0, false, true),
 			"issuance_criteria":              issuancecriteria.ToSchema(),
 		},
-		Required:    false,
-		Optional:    true,
+		Required:    required,
+		Optional:    !required,
 		Description: "A list of mappings from attribute sources to attribute targets.",
 	}
 }

@@ -24,8 +24,8 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 		if err != nil {
 			return nil, err
 		}
-		attributeSources := apcMappingPolicyAction.(types.Object).Attributes()["attribute_mapping"].(types.Object).Attributes()["attribute_sources"]
-		if attributeSources != nil {
+		attributeSources, ok := apcMappingPolicyAction.(types.Object).Attributes()["attribute_mapping"].(types.Object).Attributes()["attribute_sources"]
+		if ok {
 			attributeSourceStruct, err := attributesources.ClientStruct(attributeSources.(types.List))
 			if err != nil {
 				return nil, err
@@ -78,8 +78,8 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 			return nil, err
 		}
 
-		attributeSources := fragmentPolicyAction.(types.Object).Attributes()["fragment_mapping"].(types.Object).Attributes()["attribute_sources"]
-		if attributeSources != nil {
+		attributeSources, ok := fragmentPolicyAction.(types.Object).Attributes()["fragment_mapping"].(types.Object).Attributes()["attribute_sources"]
+		if ok {
 			attributeSourceStruct, err := attributesources.ClientStruct(attributeSources.(types.List))
 			if err != nil {
 				return nil, err
@@ -95,8 +95,8 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 		if err != nil {
 			return nil, err
 		}
-		outboundAttributeMappingAttributeSources := localIdentityMappingPolicyAction.(types.Object).Attributes()["outbound_attribute_mapping"].(types.Object).Attributes()["attribute_sources"]
-		if outboundAttributeMappingAttributeSources != nil {
+		outboundAttributeMappingAttributeSources, ok := localIdentityMappingPolicyAction.(types.Object).Attributes()["outbound_attribute_mapping"].(types.Object).Attributes()["attribute_sources"]
+		if ok {
 			attributeSourceStruct, err := attributesources.ClientStruct(outboundAttributeMappingAttributeSources.(types.List))
 			if err != nil {
 				return nil, err
@@ -104,8 +104,8 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 			result.LocalIdentityMappingPolicyAction.OutboundAttributeMapping.AttributeSources = attributeSourceStruct
 		}
 
-		inboundAttributeMappingAttributeSources := localIdentityMappingPolicyAction.(types.Object).Attributes()["inbound_mapping"].(types.Object).Attributes()["attribute_sources"]
-		if inboundAttributeMappingAttributeSources != nil {
+		inboundAttributeMappingAttributeSources, ok := localIdentityMappingPolicyAction.(types.Object).Attributes()["inbound_mapping"].(types.Object).Attributes()["attribute_sources"]
+		if ok {
 			attributeSourceStruct, err := attributesources.ClientStruct(inboundAttributeMappingAttributeSources.(types.List))
 			if err != nil {
 				return nil, err
