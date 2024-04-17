@@ -24,7 +24,11 @@ func TestAccAuthenticationPoliciesPolicy(t *testing.T) {
 			// Test simple policy
 			{
 				Config: testAccAuthenticationPoliciesPolicySimple(resourceName),
-				Check:  testAccCheckExpectedAuthenticationPoliciesPolicyAttributes(resourceName, false),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedAuthenticationPoliciesPolicyAttributes(resourceName, false),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "enabled", "true"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_authentication_policies_policy.%s", resourceName), "handle_failures_locally", "false"),
+				),
 			},
 			// Test a more complex policy
 			{
