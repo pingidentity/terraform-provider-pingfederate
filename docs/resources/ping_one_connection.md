@@ -23,13 +23,13 @@ resource "pingfederate_ping_one_connection" "pingOneConnectionExample" {
 
 ### Required
 
+- `credential` (String, Sensitive) The credential for the PingOne connection.
 - `name` (String) The name of the PingOne Connection
 
 ### Optional
 
 - `active` (Boolean) Whether the PingOne Connection is active. Defaults to true.
 - `connection_id` (String) The persistent, unique ID of the connection.
-- `credential` (String, Sensitive) The credential for the PingOne connection.
 - `description` (String) The description of the PingOne Connection
 
 ### Read-Only
