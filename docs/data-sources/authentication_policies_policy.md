@@ -68,24 +68,12 @@ Optional:
 
 Required:
 
+- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--action--apc_mapping_policy_action--attribute_mapping))
 - `authentication_policy_contract_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--action--apc_mapping_policy_action--authentication_policy_contract_ref))
 
 Optional:
 
-- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--action--apc_mapping_policy_action--attribute_mapping))
 - `context` (String) The result context.
-
-<a id="nestedatt--root_node--action--apc_mapping_policy_action--authentication_policy_contract_ref"></a>
-### Nested Schema for `root_node.action.apc_mapping_policy_action.context`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--action--apc_mapping_policy_action--attribute_mapping"></a>
 ### Nested Schema for `root_node.action.apc_mapping_policy_action.context`
@@ -364,6 +352,18 @@ Optional:
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
 
+
+
+<a id="nestedatt--root_node--action--apc_mapping_policy_action--authentication_policy_contract_ref"></a>
+### Nested Schema for `root_node.action.apc_mapping_policy_action.context`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -843,15 +843,15 @@ Optional:
 Required:
 
 - `local_identity_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--local_identity_ref))
+- `outbound_attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping))
 
 Optional:
 
 - `context` (String) The result context.
 - `inbound_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping))
-- `outbound_attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping))
 
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--local_identity_ref"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping`
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping`
 
 Required:
 
@@ -862,28 +862,28 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping`
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment))
 
 Optional:
 
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
-- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
+- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria))
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_contract_fulfillment`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_contract_fulfillment`
 
 Optional:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_contract_fulfillment.value`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_contract_fulfillment.value`
 
 Optional:
 
@@ -892,35 +892,35 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources`
 
 Optional:
 
-- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--custom_attribute_source))
-- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--jdbc_attribute_source))
-- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source))
+- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--custom_attribute_source))
+- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--jdbc_attribute_source))
+- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source))
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--custom_attribute_source"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--custom_attribute_source"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
@@ -931,19 +931,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type.value`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type.value`
 
 Required:
 
@@ -955,8 +955,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--filter_fields"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
@@ -968,18 +968,18 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--jdbc_attribute_source"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--jdbc_attribute_source"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -989,8 +989,8 @@ Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
@@ -1001,19 +1001,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type.value`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type.value`
 
 Required:
 
@@ -1026,28 +1026,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
 - `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
 - `search_scope` (String) Determines the node depth of the query.
 - `type` (String) The data store type of this attribute source.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--binary_attribute_settings))
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--binary_attribute_settings))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
 - `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.search_attributes`
 
 Required:
 
@@ -1058,19 +1058,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.search_attributes`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--search_attributes--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--search_attributes--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--search_attributes--source"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.search_attributes.value`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--search_attributes--source"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.search_attributes.value`
 
 Required:
 
@@ -1082,8 +1082,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--binary_attribute_settings"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.search_attributes`
 
 Optional:
 
@@ -1092,30 +1092,30 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The name of the attribute to use in this issuance criterion.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
 Optional:
 
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria.error_result`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.expression_criteria.error_result`
 
 Required:
 
@@ -1127,8 +1127,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
@@ -1141,28 +1141,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping`
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment))
 
 Optional:
 
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
-- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
+- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria))
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_contract_fulfillment`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_contract_fulfillment`
 
 Optional:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_contract_fulfillment.value`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_contract_fulfillment.value`
 
 Optional:
 
@@ -1171,35 +1171,35 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources`
 
 Optional:
 
-- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--custom_attribute_source))
-- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--jdbc_attribute_source))
-- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source))
+- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--custom_attribute_source))
+- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--jdbc_attribute_source))
+- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source))
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--custom_attribute_source"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--custom_attribute_source"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
@@ -1210,19 +1210,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type.value`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type.value`
 
 Required:
 
@@ -1234,8 +1234,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--filter_fields"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
@@ -1247,18 +1247,18 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--jdbc_attribute_source"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--jdbc_attribute_source"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -1268,8 +1268,8 @@ Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
@@ -1280,19 +1280,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type.value`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type.value`
 
 Required:
 
@@ -1305,28 +1305,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
 - `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
 - `search_scope` (String) Determines the node depth of the query.
 - `type` (String) The data store type of this attribute source.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--binary_attribute_settings))
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--binary_attribute_settings))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
 - `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.search_attributes`
 
 Required:
 
@@ -1337,19 +1337,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.search_attributes`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--search_attributes--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--search_attributes--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--search_attributes--source"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.search_attributes.value`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--search_attributes--source"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.search_attributes.value`
 
 Required:
 
@@ -1361,8 +1361,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--binary_attribute_settings"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.search_attributes`
 
 Optional:
 
@@ -1371,30 +1371,30 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The name of the attribute to use in this issuance criterion.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
 Optional:
 
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria.error_result`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.expression_criteria.error_result`
 
 Required:
 
@@ -1406,8 +1406,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria"></a>
-### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria"></a>
+### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
@@ -1460,24 +1460,12 @@ Optional:
 
 Required:
 
+- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--attribute_mapping))
 - `authentication_policy_contract_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--authentication_policy_contract_ref))
 
 Optional:
 
-- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--attribute_mapping))
 - `context` (String) The result context.
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--authentication_policy_contract_ref"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.authentication_policy_contract_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--attribute_mapping"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.attribute_mapping`
@@ -1756,6 +1744,18 @@ Optional:
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
 
+
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--authentication_policy_contract_ref"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.authentication_policy_contract_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -2235,12 +2235,12 @@ Optional:
 Required:
 
 - `local_identity_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--local_identity_ref))
+- `outbound_attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--outbound_attribute_mapping))
 
 Optional:
 
 - `context` (String) The result context.
 - `inbound_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping))
-- `outbound_attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--outbound_attribute_mapping))
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--local_identity_ref"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.local_identity_ref`
@@ -2252,285 +2252,6 @@ Required:
 Read-Only:
 
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping`
-
-Required:
-
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--attribute_contract_fulfillment))
-
-Optional:
-
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--attribute_sources))
-- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria))
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
-
-Optional:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--source))
-- `value` (String) The value for this attribute.
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--source"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.value`
-
-Optional:
-
-- `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
-- `type` (String) The source type of this key.
-
-
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--attribute_sources"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
-
-Optional:
-
-- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source))
-- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source))
-- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source))
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
-
-Required:
-
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
-
-Optional:
-
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
-- `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
-- `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
-
-Read-Only:
-
-- `type` (String) The data store type of this attribute source.
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
-
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
-
-Optional:
-
-- `value` (String) The value for this attribute.
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.source`
-
-Required:
-
-- `type` (String) The source type of this key.
-
-Optional:
-
-- `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
-
-
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
-
-Required:
-
-- `name` (String) The name of this field.
-
-Optional:
-
-- `value` (String) The value of this field. Whether or not the value is required will be determined by plugin validation checks.
-
-
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
-
-Required:
-
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
-- `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
-- `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
-
-Optional:
-
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
-- `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
-- `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
-- `schema` (String) Lists the table structure that stores information within a database. Some databases, such as Oracle, require a schema for a JDBC query. Other databases, such as MySQL, do not require a schema.
-
-Read-Only:
-
-- `type` (String) The data store type of this attribute source.
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
-
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
-
-Optional:
-
-- `value` (String) The value for this attribute.
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.source`
-
-Required:
-
-- `type` (String) The source type of this key.
-
-Optional:
-
-- `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
-
-
-
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
-
-Required:
-
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
-- `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
-- `search_scope` (String) Determines the node depth of the query.
-- `type` (String) The data store type of this attribute source.
-
-Optional:
-
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
-- `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
-- `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
-- `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
-- `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
-
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
-
-Optional:
-
-- `value` (String) The value for this attribute.
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes.source`
-
-Required:
-
-- `type` (String) The source type of this key.
-
-Optional:
-
-- `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
-
-
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
-
-Optional:
-
-- `binary_encoding` (String) Get the encoding type for this attribute. If not specified, the default is BASE64.
-
-
-
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
-
-Optional:
-
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
-
-Required:
-
-- `attribute_name` (String) The name of the attribute to use in this issuance criterion.
-- `condition` (String) The name of the attribute to use in this issuance criterion.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source))
-- `value` (String) The expected value of this issuance criterion.
-
-Optional:
-
-- `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria.error_result`
-
-Required:
-
-- `type` (String) The source type of this key.
-
-Optional:
-
-- `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
-
-
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
-
-Required:
-
-- `expression` (String) The OGNL expression to evaluate.
-
-Optional:
-
-- `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
-
-
 
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--outbound_attribute_mapping"></a>
@@ -2812,6 +2533,285 @@ Optional:
 
 
 
+<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping`
+
+Required:
+
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--attribute_contract_fulfillment))
+
+Optional:
+
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--attribute_sources))
+- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria))
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
+
+Optional:
+
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--source))
+- `value` (String) The value for this attribute.
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--source"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.value`
+
+Optional:
+
+- `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
+
+
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--attribute_sources"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
+
+Optional:
+
+- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source))
+- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source))
+- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source))
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
+
+Required:
+
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+
+Optional:
+
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
+- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
+- `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
+
+Read-Only:
+
+- `type` (String) The data store type of this attribute source.
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
+
+Required:
+
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
+
+Optional:
+
+- `value` (String) The value for this attribute.
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.source`
+
+Required:
+
+- `type` (String) The source type of this key.
+
+Optional:
+
+- `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+
+
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
+
+Required:
+
+- `name` (String) The name of this field.
+
+Optional:
+
+- `value` (String) The value of this field. Whether or not the value is required will be determined by plugin validation checks.
+
+
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
+
+Required:
+
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
+- `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
+
+Optional:
+
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
+- `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
+- `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
+- `schema` (String) Lists the table structure that stores information within a database. Some databases, such as Oracle, require a schema for a JDBC query. Other databases, such as MySQL, do not require a schema.
+
+Read-Only:
+
+- `type` (String) The data store type of this attribute source.
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
+
+Required:
+
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
+
+Optional:
+
+- `value` (String) The value for this attribute.
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.source`
+
+Required:
+
+- `type` (String) The source type of this key.
+
+Optional:
+
+- `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+
+
+
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
+
+Required:
+
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
+- `search_scope` (String) Determines the node depth of the query.
+- `type` (String) The data store type of this attribute source.
+
+Optional:
+
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
+- `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
+- `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
+- `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
+- `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+
+Required:
+
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
+
+Optional:
+
+- `value` (String) The value for this attribute.
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes.source`
+
+Required:
+
+- `type` (String) The source type of this key.
+
+Optional:
+
+- `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+
+
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+
+Optional:
+
+- `binary_encoding` (String) Get the encoding type for this attribute. If not specified, the default is BASE64.
+
+
+
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
+
+Optional:
+
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
+
+Required:
+
+- `attribute_name` (String) The name of the attribute to use in this issuance criterion.
+- `condition` (String) The name of the attribute to use in this issuance criterion.
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source))
+- `value` (String) The expected value of this issuance criterion.
+
+Optional:
+
+- `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria.error_result`
+
+Required:
+
+- `type` (String) The source type of this key.
+
+Optional:
+
+- `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+
+
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
+
+Required:
+
+- `expression` (String) The OGNL expression to evaluate.
+
+Optional:
+
+- `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
+
+
+
+
 
 <a id="nestedatt--root_node--children--action--restart_policy_action"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action`
@@ -2852,24 +2852,12 @@ Optional:
 
 Required:
 
+- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--apc_mapping_policy_action--attribute_mapping))
 - `authentication_policy_contract_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--apc_mapping_policy_action--authentication_policy_contract_ref))
 
 Optional:
 
-- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--apc_mapping_policy_action--attribute_mapping))
 - `context` (String) The result context.
-
-<a id="nestedatt--root_node--children--children--children--apc_mapping_policy_action--authentication_policy_contract_ref"></a>
-### Nested Schema for `root_node.children.children.children.apc_mapping_policy_action.context`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--apc_mapping_policy_action--attribute_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.apc_mapping_policy_action.context`
@@ -3148,6 +3136,18 @@ Optional:
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
 
+
+
+<a id="nestedatt--root_node--children--children--children--apc_mapping_policy_action--authentication_policy_contract_ref"></a>
+### Nested Schema for `root_node.children.children.children.apc_mapping_policy_action.context`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -3627,15 +3627,15 @@ Optional:
 Required:
 
 - `local_identity_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--local_identity_ref))
+- `outbound_attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping))
 
 Optional:
 
 - `context` (String) The result context.
 - `inbound_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping))
-- `outbound_attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping))
 
 <a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--local_identity_ref"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping`
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping`
 
 Required:
 
@@ -3646,28 +3646,28 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping`
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment))
 
 Optional:
 
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
-- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
+- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria))
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.value`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.value`
 
 Optional:
 
@@ -3676,35 +3676,35 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--attribute_sources"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source))
-- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source))
-- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source))
+- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source))
+- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source))
+- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source))
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
 
 Required:
 
@@ -3715,19 +3715,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
 
 Required:
 
@@ -3739,8 +3739,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.filter_fields`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.filter_fields`
 
 Required:
 
@@ -3752,18 +3752,18 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -3773,8 +3773,8 @@ Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
 
 Required:
 
@@ -3785,19 +3785,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
 
 Required:
 
@@ -3810,28 +3810,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
 - `search_scope` (String) Determines the node depth of the query.
 - `type` (String) The data store type of this attribute source.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
 - `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
 
 Required:
 
@@ -3842,19 +3842,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
 
 Required:
 
@@ -3866,8 +3866,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.binary_attribute_settings`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.binary_attribute_settings`
 
 Optional:
 
@@ -3876,30 +3876,30 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The name of the attribute to use in this issuance criterion.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
 Optional:
 
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria.source`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.expression_criteria.source`
 
 Required:
 
@@ -3911,8 +3911,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
@@ -3925,28 +3925,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping`
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment))
 
 Optional:
 
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
-- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
+- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria))
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.value`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.value`
 
 Optional:
 
@@ -3955,35 +3955,35 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--attribute_sources"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source))
-- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source))
-- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source))
+- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source))
+- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source))
+- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source))
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
 
 Required:
 
@@ -3994,19 +3994,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
 
 Required:
 
@@ -4018,8 +4018,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.filter_fields`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.filter_fields`
 
 Required:
 
@@ -4031,18 +4031,18 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -4052,8 +4052,8 @@ Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
 
 Required:
 
@@ -4064,19 +4064,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
 
 Required:
 
@@ -4089,28 +4089,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
 - `search_scope` (String) Determines the node depth of the query.
 - `type` (String) The data store type of this attribute source.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
 - `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
 
 Required:
 
@@ -4121,19 +4121,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
 
 Required:
 
@@ -4145,8 +4145,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.binary_attribute_settings`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.binary_attribute_settings`
 
 Optional:
 
@@ -4155,30 +4155,30 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The name of the attribute to use in this issuance criterion.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
 Optional:
 
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria.source`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.expression_criteria.source`
 
 Required:
 
@@ -4190,8 +4190,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria"></a>
-### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria"></a>
+### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
@@ -4244,24 +4244,12 @@ Optional:
 
 Required:
 
+- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--attribute_mapping))
 - `authentication_policy_contract_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--authentication_policy_contract_ref))
 
 Optional:
 
-- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--attribute_mapping))
 - `context` (String) The result context.
-
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--authentication_policy_contract_ref"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.context`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--attribute_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action.context`
@@ -4540,6 +4528,18 @@ Optional:
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
 
+
+
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--authentication_policy_contract_ref"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.context`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -5019,15 +5019,15 @@ Optional:
 Required:
 
 - `local_identity_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--local_identity_ref))
+- `outbound_attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping))
 
 Optional:
 
 - `context` (String) The result context.
 - `inbound_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping))
-- `outbound_attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping))
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--local_identity_ref"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping`
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping`
 
 Required:
 
@@ -5038,28 +5038,28 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping`
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--attribute_contract_fulfillment))
 
 Optional:
 
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_sources))
-- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--attribute_sources))
+- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria))
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.source`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.source`
 
 Optional:
 
@@ -5068,35 +5068,35 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_sources"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--attribute_sources"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source))
-- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source))
-- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source))
+- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source))
+- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source))
+- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source))
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.custom_attribute_source`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.custom_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source--data_store_ref))
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source--filter_fields))
+- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.custom_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.custom_attribute_source.type`
 
 Required:
 
@@ -5107,19 +5107,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.custom_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.custom_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.custom_attribute_source.type.value`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.custom_attribute_source.type.value`
 
 Required:
 
@@ -5131,8 +5131,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source--filter_fields"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.custom_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source--filter_fields"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.custom_attribute_source.type`
 
 Required:
 
@@ -5144,18 +5144,18 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.jdbc_attribute_source`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.jdbc_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source--data_store_ref))
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -5165,8 +5165,8 @@ Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.jdbc_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.jdbc_attribute_source.type`
 
 Required:
 
@@ -5177,19 +5177,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.jdbc_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.jdbc_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.jdbc_attribute_source.type.value`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.jdbc_attribute_source.type.value`
 
 Required:
 
@@ -5202,28 +5202,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
 - `search_scope` (String) Determines the node depth of the query.
 - `type` (String) The data store type of this attribute source.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
 - `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Required:
 
@@ -5234,19 +5234,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes.value`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes.value`
 
 Required:
 
@@ -5258,8 +5258,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Optional:
 
@@ -5268,30 +5268,30 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.conditional_criteria`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.conditional_criteria`
 
 Required:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The name of the attribute to use in this issuance criterion.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
 Optional:
 
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.conditional_criteria.error_result`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.conditional_criteria.error_result`
 
 Required:
 
@@ -5303,8 +5303,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
@@ -5317,28 +5317,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping`
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--attribute_contract_fulfillment))
 
 Optional:
 
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_sources))
-- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--attribute_sources))
+- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria))
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.source`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.source`
 
 Optional:
 
@@ -5347,35 +5347,35 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_sources"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--attribute_sources"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source))
-- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source))
-- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source))
+- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source))
+- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source))
+- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source))
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.custom_attribute_source`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.custom_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source--data_store_ref))
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source--filter_fields))
+- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.custom_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.custom_attribute_source.type`
 
 Required:
 
@@ -5386,19 +5386,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.custom_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.custom_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.custom_attribute_source.type.value`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.custom_attribute_source.type.value`
 
 Required:
 
@@ -5410,8 +5410,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source--filter_fields"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.custom_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source--filter_fields"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.custom_attribute_source.type`
 
 Required:
 
@@ -5423,18 +5423,18 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.jdbc_attribute_source`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.jdbc_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source--data_store_ref))
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -5444,8 +5444,8 @@ Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.jdbc_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.jdbc_attribute_source.type`
 
 Required:
 
@@ -5456,19 +5456,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.jdbc_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.jdbc_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.jdbc_attribute_source.type.value`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.jdbc_attribute_source.type.value`
 
 Required:
 
@@ -5481,28 +5481,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
 - `search_scope` (String) Determines the node depth of the query.
 - `type` (String) The data store type of this attribute source.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
 - `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Required:
 
@@ -5513,19 +5513,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes.value`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes.value`
 
 Required:
 
@@ -5537,8 +5537,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Optional:
 
@@ -5547,30 +5547,30 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.conditional_criteria`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.conditional_criteria`
 
 Required:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The name of the attribute to use in this issuance criterion.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
 Optional:
 
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.conditional_criteria.error_result`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.conditional_criteria.error_result`
 
 Required:
 
@@ -5582,8 +5582,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
@@ -5636,24 +5636,12 @@ Optional:
 
 Required:
 
+- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--attribute_mapping))
 - `authentication_policy_contract_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--authentication_policy_contract_ref))
 
 Optional:
 
-- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--attribute_mapping))
 - `context` (String) The result context.
-
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--authentication_policy_contract_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.context`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--attribute_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.context`
@@ -5932,6 +5920,18 @@ Optional:
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
 
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--authentication_policy_contract_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.context`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -6411,15 +6411,15 @@ Optional:
 Required:
 
 - `local_identity_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--local_identity_ref))
+- `outbound_attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping))
 
 Optional:
 
 - `context` (String) The result context.
 - `inbound_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping))
-- `outbound_attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping))
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--local_identity_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping`
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping`
 
 Required:
 
@@ -6430,28 +6430,28 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping`
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_contract_fulfillment))
 
 Optional:
 
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources))
-- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources))
+- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_contract_fulfillment`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_contract_fulfillment`
 
 Optional:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_contract_fulfillment.value`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_contract_fulfillment.value`
 
 Optional:
 
@@ -6460,35 +6460,35 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources`
 
 Optional:
 
-- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--custom_attribute_source))
-- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--jdbc_attribute_source))
-- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source))
+- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--custom_attribute_source))
+- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--jdbc_attribute_source))
+- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source))
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--custom_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--custom_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
@@ -6499,19 +6499,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type.value`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type.value`
 
 Required:
 
@@ -6523,8 +6523,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--filter_fields"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
@@ -6536,18 +6536,18 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--jdbc_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--jdbc_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -6557,8 +6557,8 @@ Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
@@ -6569,19 +6569,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type.value`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type.value`
 
 Required:
 
@@ -6594,28 +6594,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
 - `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
 - `search_scope` (String) Determines the node depth of the query.
 - `type` (String) The data store type of this attribute source.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--binary_attribute_settings))
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--binary_attribute_settings))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
 - `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.search_attributes`
 
 Required:
 
@@ -6626,19 +6626,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.search_attributes`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--search_attributes--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--search_attributes--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--search_attributes--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.search_attributes.value`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--search_attributes--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.search_attributes.value`
 
 Required:
 
@@ -6650,8 +6650,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--binary_attribute_settings"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.search_attributes`
 
 Optional:
 
@@ -6660,30 +6660,30 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The name of the attribute to use in this issuance criterion.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
 Optional:
 
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria.error_result`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria.error_result`
 
 Required:
 
@@ -6695,8 +6695,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
@@ -6709,28 +6709,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping`
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_contract_fulfillment))
 
 Optional:
 
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources))
-- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources))
+- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_contract_fulfillment`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_contract_fulfillment`
 
 Optional:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_contract_fulfillment--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_contract_fulfillment.value`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_contract_fulfillment.value`
 
 Optional:
 
@@ -6739,35 +6739,35 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources`
 
 Optional:
 
-- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--custom_attribute_source))
-- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--jdbc_attribute_source))
-- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source))
+- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--custom_attribute_source))
+- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--jdbc_attribute_source))
+- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source))
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--custom_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--custom_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
@@ -6778,19 +6778,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type.value`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type.value`
 
 Required:
 
@@ -6802,8 +6802,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--filter_fields"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
@@ -6815,18 +6815,18 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--jdbc_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--jdbc_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -6836,8 +6836,8 @@ Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
@@ -6848,19 +6848,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.type.value`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.type.value`
 
 Required:
 
@@ -6873,28 +6873,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref))
 - `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
 - `search_scope` (String) Determines the node depth of the query.
 - `type` (String) The data store type of this attribute source.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--binary_attribute_settings))
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--binary_attribute_settings))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
 - `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.search_attributes`
 
 Required:
 
@@ -6905,19 +6905,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.search_attributes`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--search_attributes--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--search_attributes--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--search_attributes--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.search_attributes.value`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--search_attributes--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.search_attributes.value`
 
 Required:
 
@@ -6929,8 +6929,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.attribute_sources.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--binary_attribute_settings"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.search_attributes`
 
 Optional:
 
@@ -6939,30 +6939,30 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The name of the attribute to use in this issuance criterion.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
 Optional:
 
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria.error_result`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria.error_result`
 
 Required:
 
@@ -6974,8 +6974,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
@@ -7028,24 +7028,12 @@ Optional:
 
 Required:
 
+- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--attribute_mapping))
 - `authentication_policy_contract_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--authentication_policy_contract_ref))
 
 Optional:
 
-- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--attribute_mapping))
 - `context` (String) The result context.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--authentication_policy_contract_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.authentication_policy_contract_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--attribute_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.attribute_mapping`
@@ -7324,6 +7312,18 @@ Optional:
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
 
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--authentication_policy_contract_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.authentication_policy_contract_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -7803,12 +7803,12 @@ Optional:
 Required:
 
 - `local_identity_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--local_identity_ref))
+- `outbound_attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping))
 
 Optional:
 
 - `context` (String) The result context.
 - `inbound_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping))
-- `outbound_attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--local_identity_ref"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.local_identity_ref`
@@ -7820,285 +7820,6 @@ Required:
 Read-Only:
 
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping`
-
-Required:
-
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_contract_fulfillment))
-
-Optional:
-
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources))
-- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria))
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria`
-
-Optional:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--source))
-- `value` (String) The value for this attribute.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.value`
-
-Optional:
-
-- `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
-- `type` (String) The source type of this key.
-
-
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria`
-
-Optional:
-
-- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source))
-- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source))
-- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source))
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
-
-Required:
-
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
-
-Optional:
-
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
-- `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
-- `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
-
-Read-Only:
-
-- `type` (String) The data store type of this attribute source.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
-
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
-
-Optional:
-
-- `value` (String) The value for this attribute.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.value`
-
-Required:
-
-- `type` (String) The source type of this key.
-
-Optional:
-
-- `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
-
-
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
-
-Required:
-
-- `name` (String) The name of this field.
-
-Optional:
-
-- `value` (String) The value of this field. Whether or not the value is required will be determined by plugin validation checks.
-
-
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
-
-Required:
-
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
-- `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
-- `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
-
-Optional:
-
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
-- `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
-- `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
-- `schema` (String) Lists the table structure that stores information within a database. Some databases, such as Oracle, require a schema for a JDBC query. Other databases, such as MySQL, do not require a schema.
-
-Read-Only:
-
-- `type` (String) The data store type of this attribute source.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
-
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
-
-Optional:
-
-- `value` (String) The value for this attribute.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.value`
-
-Required:
-
-- `type` (String) The source type of this key.
-
-Optional:
-
-- `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
-
-
-
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
-
-Required:
-
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
-- `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
-- `search_scope` (String) Determines the node depth of the query.
-- `type` (String) The data store type of this attribute source.
-
-Optional:
-
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
-- `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
-- `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
-- `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
-- `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
-
-Required:
-
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
-
-Optional:
-
-- `value` (String) The value for this attribute.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes.value`
-
-Required:
-
-- `type` (String) The source type of this key.
-
-Optional:
-
-- `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
-
-
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
-
-Optional:
-
-- `binary_encoding` (String) Get the encoding type for this attribute. If not specified, the default is BASE64.
-
-
-
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria`
-
-Optional:
-
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
-
-Required:
-
-- `attribute_name` (String) The name of the attribute to use in this issuance criterion.
-- `condition` (String) The name of the attribute to use in this issuance criterion.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source))
-- `value` (String) The expected value of this issuance criterion.
-
-Optional:
-
-- `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria.error_result`
-
-Required:
-
-- `type` (String) The source type of this key.
-
-Optional:
-
-- `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
-
-
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
-
-Required:
-
-- `expression` (String) The OGNL expression to evaluate.
-
-Optional:
-
-- `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
-
-
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping"></a>
@@ -8380,6 +8101,285 @@ Optional:
 
 
 
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping`
+
+Required:
+
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_contract_fulfillment))
+
+Optional:
+
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources))
+- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria))
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria`
+
+Optional:
+
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--source))
+- `value` (String) The value for this attribute.
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.value`
+
+Optional:
+
+- `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+- `type` (String) The source type of this key.
+
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria`
+
+Optional:
+
+- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source))
+- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source))
+- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source))
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
+
+Required:
+
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+
+Optional:
+
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
+- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
+- `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
+
+Read-Only:
+
+- `type` (String) The data store type of this attribute source.
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
+
+Required:
+
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
+
+Optional:
+
+- `value` (String) The value for this attribute.
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.value`
+
+Required:
+
+- `type` (String) The source type of this key.
+
+Optional:
+
+- `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
+
+Required:
+
+- `name` (String) The name of this field.
+
+Optional:
+
+- `value` (String) The value of this field. Whether or not the value is required will be determined by plugin validation checks.
+
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
+
+Required:
+
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
+- `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
+
+Optional:
+
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
+- `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
+- `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
+- `schema` (String) Lists the table structure that stores information within a database. Some databases, such as Oracle, require a schema for a JDBC query. Other databases, such as MySQL, do not require a schema.
+
+Read-Only:
+
+- `type` (String) The data store type of this attribute source.
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
+
+Required:
+
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
+
+Optional:
+
+- `value` (String) The value for this attribute.
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.value`
+
+Required:
+
+- `type` (String) The source type of this key.
+
+Optional:
+
+- `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+
+
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
+
+Required:
+
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
+- `search_scope` (String) Determines the node depth of the query.
+- `type` (String) The data store type of this attribute source.
+
+Optional:
+
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
+- `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
+- `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
+- `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
+- `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+
+Required:
+
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
+
+Optional:
+
+- `value` (String) The value for this attribute.
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes.value`
+
+Required:
+
+- `type` (String) The source type of this key.
+
+Optional:
+
+- `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+
+Optional:
+
+- `binary_encoding` (String) Get the encoding type for this attribute. If not specified, the default is BASE64.
+
+
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria`
+
+Optional:
+
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
+
+Required:
+
+- `attribute_name` (String) The name of the attribute to use in this issuance criterion.
+- `condition` (String) The name of the attribute to use in this issuance criterion.
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source))
+- `value` (String) The expected value of this issuance criterion.
+
+Optional:
+
+- `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria.error_result`
+
+Required:
+
+- `type` (String) The source type of this key.
+
+Optional:
+
+- `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
+
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
+
+Required:
+
+- `expression` (String) The OGNL expression to evaluate.
+
+Optional:
+
+- `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
+
+
+
+
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action`
@@ -8420,24 +8420,12 @@ Optional:
 
 Required:
 
+- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--apc_mapping_policy_action--attribute_mapping))
 - `authentication_policy_contract_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--apc_mapping_policy_action--authentication_policy_contract_ref))
 
 Optional:
 
-- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--apc_mapping_policy_action--attribute_mapping))
 - `context` (String) The result context.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--apc_mapping_policy_action--authentication_policy_contract_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.apc_mapping_policy_action.context`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--apc_mapping_policy_action--attribute_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.apc_mapping_policy_action.context`
@@ -8716,6 +8704,18 @@ Optional:
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
 
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--apc_mapping_policy_action--authentication_policy_contract_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.apc_mapping_policy_action.context`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -9195,15 +9195,15 @@ Optional:
 Required:
 
 - `local_identity_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--local_identity_ref))
+- `outbound_attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping))
 
 Optional:
 
 - `context` (String) The result context.
 - `inbound_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping))
-- `outbound_attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--local_identity_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping`
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping`
 
 Required:
 
@@ -9214,28 +9214,28 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping`
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment))
 
 Optional:
 
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
-- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
+- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.value`
 
 Optional:
 
@@ -9244,35 +9244,35 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--attribute_sources"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source))
-- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source))
-- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source))
+- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source))
+- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source))
+- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -9283,19 +9283,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.value`
 
 Required:
 
@@ -9307,8 +9307,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -9320,18 +9320,18 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -9341,8 +9341,8 @@ Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -9353,19 +9353,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.value`
 
 Required:
 
@@ -9378,28 +9378,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
 - `search_scope` (String) Determines the node depth of the query.
 - `type` (String) The data store type of this attribute source.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
 - `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Required:
 
@@ -9410,19 +9410,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes.value`
 
 Required:
 
@@ -9434,8 +9434,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Optional:
 
@@ -9444,30 +9444,30 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The name of the attribute to use in this issuance criterion.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
 Optional:
 
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria.error_result`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.expression_criteria.error_result`
 
 Required:
 
@@ -9479,8 +9479,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
@@ -9493,28 +9493,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping`
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment))
 
 Optional:
 
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources))
-- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--attribute_sources))
+- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.value`
 
 Optional:
 
@@ -9523,35 +9523,35 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--attribute_sources"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--attribute_sources"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source))
-- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source))
-- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source))
+- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source))
+- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source))
+- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -9562,19 +9562,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.value`
 
 Required:
 
@@ -9586,8 +9586,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -9599,18 +9599,18 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -9620,8 +9620,8 @@ Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -9632,19 +9632,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.value`
 
 Required:
 
@@ -9657,28 +9657,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
 - `search_scope` (String) Determines the node depth of the query.
 - `type` (String) The data store type of this attribute source.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
 - `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Required:
 
@@ -9689,19 +9689,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes.value`
 
 Required:
 
@@ -9713,8 +9713,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Optional:
 
@@ -9723,30 +9723,30 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The name of the attribute to use in this issuance criterion.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
 Optional:
 
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria.error_result`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.expression_criteria.error_result`
 
 Required:
 
@@ -9758,8 +9758,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--expression_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
@@ -9812,24 +9812,12 @@ Optional:
 
 Required:
 
+- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--attribute_mapping))
 - `authentication_policy_contract_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--authentication_policy_contract_ref))
 
 Optional:
 
-- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--attribute_mapping))
 - `context` (String) The result context.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--authentication_policy_contract_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.context`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--attribute_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.context`
@@ -10108,6 +10096,18 @@ Optional:
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
 
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--authentication_policy_contract_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.context`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -10587,15 +10587,15 @@ Optional:
 Required:
 
 - `local_identity_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--local_identity_ref))
+- `outbound_attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping))
 
 Optional:
 
 - `context` (String) The result context.
 - `inbound_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping))
-- `outbound_attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--local_identity_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping`
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping`
 
 Required:
 
@@ -10606,28 +10606,28 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping`
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--attribute_contract_fulfillment))
 
 Optional:
 
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_sources))
-- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--attribute_sources))
+- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.value`
 
 Optional:
 
@@ -10636,35 +10636,35 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_sources"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--attribute_sources"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source))
-- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source))
-- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source))
+- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source))
+- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source))
+- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -10675,19 +10675,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.value`
 
 Required:
 
@@ -10699,8 +10699,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -10712,18 +10712,18 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -10733,8 +10733,8 @@ Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -10745,19 +10745,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.value`
 
 Required:
 
@@ -10770,28 +10770,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
 - `search_scope` (String) Determines the node depth of the query.
 - `type` (String) The data store type of this attribute source.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
 - `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Required:
 
@@ -10802,19 +10802,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes.value`
 
 Required:
 
@@ -10826,8 +10826,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Optional:
 
@@ -10836,30 +10836,30 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The name of the attribute to use in this issuance criterion.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
 Optional:
 
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria.error_result`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria.error_result`
 
 Required:
 
@@ -10871,8 +10871,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
@@ -10885,28 +10885,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping`
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--attribute_contract_fulfillment))
 
 Optional:
 
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_sources))
-- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--attribute_sources))
+- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.value`
 
 Optional:
 
@@ -10915,35 +10915,35 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_sources"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--attribute_sources"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source))
-- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source))
-- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source))
+- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source))
+- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source))
+- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -10954,19 +10954,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.value`
 
 Required:
 
@@ -10978,8 +10978,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -10991,18 +10991,18 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -11012,8 +11012,8 @@ Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -11024,19 +11024,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.value`
 
 Required:
 
@@ -11049,28 +11049,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
 - `search_scope` (String) Determines the node depth of the query.
 - `type` (String) The data store type of this attribute source.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
 - `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Required:
 
@@ -11081,19 +11081,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes.value`
 
 Required:
 
@@ -11105,8 +11105,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Optional:
 
@@ -11115,30 +11115,30 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The name of the attribute to use in this issuance criterion.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
 Optional:
 
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria.error_result`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria.error_result`
 
 Required:
 
@@ -11150,8 +11150,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
@@ -11204,24 +11204,12 @@ Optional:
 
 Required:
 
+- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--attribute_mapping))
 - `authentication_policy_contract_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--authentication_policy_contract_ref))
 
 Optional:
 
-- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--attribute_mapping))
 - `context` (String) The result context.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--authentication_policy_contract_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.context`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--attribute_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.context`
@@ -11500,6 +11488,18 @@ Optional:
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
 
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--authentication_policy_contract_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.context`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -11979,15 +11979,15 @@ Optional:
 Required:
 
 - `local_identity_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--local_identity_ref))
+- `outbound_attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping))
 
 Optional:
 
 - `context` (String) The result context.
 - `inbound_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping))
-- `outbound_attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--local_identity_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping`
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping`
 
 Required:
 
@@ -11998,28 +11998,28 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping`
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_contract_fulfillment))
 
 Optional:
 
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources))
-- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources))
+- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.value`
 
 Optional:
 
@@ -12028,35 +12028,35 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source))
-- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source))
-- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source))
+- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source))
+- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source))
+- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -12067,19 +12067,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.value`
 
 Required:
 
@@ -12091,8 +12091,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -12104,18 +12104,18 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -12125,8 +12125,8 @@ Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -12137,19 +12137,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.value`
 
 Required:
 
@@ -12162,28 +12162,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
 - `search_scope` (String) Determines the node depth of the query.
 - `type` (String) The data store type of this attribute source.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
 - `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Required:
 
@@ -12194,19 +12194,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes.value`
 
 Required:
 
@@ -12218,8 +12218,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Optional:
 
@@ -12228,30 +12228,30 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The name of the attribute to use in this issuance criterion.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
 Optional:
 
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria.error_result`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria.error_result`
 
 Required:
 
@@ -12263,8 +12263,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
@@ -12277,28 +12277,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping`
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_contract_fulfillment))
 
 Optional:
 
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources))
-- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources))
+- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.value`
 
 Optional:
 
@@ -12307,35 +12307,35 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source))
-- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source))
-- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source))
+- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source))
+- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source))
+- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -12346,19 +12346,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.value`
 
 Required:
 
@@ -12370,8 +12370,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -12383,18 +12383,18 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -12404,8 +12404,8 @@ Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -12416,19 +12416,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.value`
 
 Required:
 
@@ -12441,28 +12441,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
 - `search_scope` (String) Determines the node depth of the query.
 - `type` (String) The data store type of this attribute source.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
 - `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Required:
 
@@ -12473,19 +12473,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes.value`
 
 Required:
 
@@ -12497,8 +12497,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Optional:
 
@@ -12507,30 +12507,30 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The name of the attribute to use in this issuance criterion.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
 Optional:
 
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria.error_result`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria.error_result`
 
 Required:
 
@@ -12542,8 +12542,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
@@ -12596,24 +12596,12 @@ Optional:
 
 Required:
 
+- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--attribute_mapping))
 - `authentication_policy_contract_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--authentication_policy_contract_ref))
 
 Optional:
 
-- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--attribute_mapping))
 - `context` (String) The result context.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--authentication_policy_contract_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.context`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--attribute_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.context`
@@ -12892,6 +12880,18 @@ Optional:
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
 
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--authentication_policy_contract_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.context`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -13371,15 +13371,15 @@ Optional:
 Required:
 
 - `local_identity_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--local_identity_ref))
+- `outbound_attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping))
 
 Optional:
 
 - `context` (String) The result context.
 - `inbound_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping))
-- `outbound_attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--local_identity_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping`
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping`
 
 Required:
 
@@ -13390,28 +13390,28 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping`
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_contract_fulfillment))
 
 Optional:
 
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources))
-- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources))
+- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.value`
 
 Optional:
 
@@ -13420,35 +13420,35 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source))
-- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source))
-- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source))
+- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source))
+- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source))
+- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -13459,19 +13459,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type.source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.source`
 
 Required:
 
@@ -13483,8 +13483,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -13496,18 +13496,18 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -13517,8 +13517,8 @@ Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -13529,19 +13529,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type.source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.source`
 
 Required:
 
@@ -13554,28 +13554,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
 - `search_scope` (String) Determines the node depth of the query.
 - `type` (String) The data store type of this attribute source.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
 - `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Required:
 
@@ -13586,19 +13586,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes.source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes.source`
 
 Required:
 
@@ -13610,8 +13610,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Optional:
 
@@ -13620,30 +13620,30 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The name of the attribute to use in this issuance criterion.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
 Optional:
 
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria.error_result`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria.error_result`
 
 Required:
 
@@ -13655,8 +13655,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
@@ -13669,28 +13669,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping`
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_contract_fulfillment))
 
 Optional:
 
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources))
-- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources))
+- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.value`
 
 Optional:
 
@@ -13699,35 +13699,35 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--attribute_sources"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source))
-- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source))
-- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source))
+- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source))
+- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source))
+- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -13738,19 +13738,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type.source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.source`
 
 Required:
 
@@ -13762,8 +13762,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -13775,18 +13775,18 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -13796,8 +13796,8 @@ Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
@@ -13808,19 +13808,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.type.source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--type--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.type.source`
 
 Required:
 
@@ -13833,28 +13833,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
 - `search_scope` (String) Determines the node depth of the query.
 - `type` (String) The data store type of this attribute source.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
 - `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Required:
 
@@ -13865,19 +13865,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes.source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--search_attributes--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes.source`
 
 Required:
 
@@ -13889,8 +13889,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.search_attributes`
 
 Optional:
 
@@ -13899,30 +13899,30 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The name of the attribute to use in this issuance criterion.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
 Optional:
 
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria.error_result`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria.error_result`
 
 Required:
 
@@ -13934,8 +13934,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
@@ -13984,24 +13984,12 @@ Optional:
 
 Required:
 
+- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--attribute_mapping))
 - `authentication_policy_contract_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--authentication_policy_contract_ref))
 
 Optional:
 
-- `attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--attribute_mapping))
 - `context` (String) The result context.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--authentication_policy_contract_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.context`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--attribute_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.context`
@@ -14280,6 +14268,18 @@ Optional:
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
 
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--authentication_policy_contract_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.context`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -14759,15 +14759,15 @@ Optional:
 Required:
 
 - `local_identity_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--local_identity_ref))
+- `outbound_attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping))
 
 Optional:
 
 - `context` (String) The result context.
 - `inbound_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping))
-- `outbound_attribute_mapping` (Attributes) A list of mappings from attribute sources to attribute targets. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--local_identity_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping`
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping`
 
 Required:
 
@@ -14778,28 +14778,28 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping`
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--attribute_contract_fulfillment))
 
 Optional:
 
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_sources))
-- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--attribute_sources))
+- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.value`
 
 Optional:
 
@@ -14808,35 +14808,35 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_sources"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--attribute_sources"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source))
-- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source))
-- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source))
+- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source))
+- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source))
+- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
 
 Required:
 
@@ -14847,19 +14847,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
 
 Required:
 
@@ -14871,8 +14871,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.filter_fields`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.filter_fields`
 
 Required:
 
@@ -14884,18 +14884,18 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -14905,8 +14905,8 @@ Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
 
 Required:
 
@@ -14917,19 +14917,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
 
 Required:
 
@@ -14942,28 +14942,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
 - `search_scope` (String) Determines the node depth of the query.
 - `type` (String) The data store type of this attribute source.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
 - `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
 
 Required:
 
@@ -14974,19 +14974,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
 
 Required:
 
@@ -14998,8 +14998,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.binary_attribute_settings`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.binary_attribute_settings`
 
 Optional:
 
@@ -15008,30 +15008,30 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The name of the attribute to use in this issuance criterion.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
 Optional:
 
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria.source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria.source`
 
 Required:
 
@@ -15043,8 +15043,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
@@ -15057,28 +15057,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping`
 
 Required:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--attribute_contract_fulfillment))
 
 Optional:
 
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_sources))
-- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria))
+- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--attribute_sources))
+- `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--source))
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.value`
 
 Optional:
 
@@ -15087,35 +15087,35 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--attribute_sources"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--attribute_sources"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source))
-- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source))
-- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source))
+- `custom_attribute_source` (Attributes) The configured settings used to look up attributes from a custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source))
+- `jdbc_attribute_source` (Attributes) The configured settings used to look up attributes from a JDBC data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source))
+- `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--custom_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
 
 Required:
 
@@ -15126,19 +15126,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
 
 Required:
 
@@ -15150,8 +15150,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.filter_fields`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--filter_fields"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.filter_fields`
 
 Required:
 
@@ -15163,18 +15163,18 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--jdbc_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `filter` (String) The JDBC WHERE clause used to query your data store to locate a user record.
 - `table` (String) The name of the database table. The name is used to construct the SQL query to retrieve data from the data store.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `column_names` (List of String) A list of column names used to construct the SQL query to retrieve data from the specified table in the datastore.
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
@@ -15184,8 +15184,8 @@ Read-Only:
 
 - `type` (String) The data store type of this attribute source.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
 
 Required:
 
@@ -15196,19 +15196,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
 
 Required:
 
@@ -15221,28 +15221,28 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source`
 
 Required:
 
-- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
+- `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref))
 - `search_filter` (String) The LDAP filter that will be used to lookup the objects from the directory.
 - `search_scope` (String) Determines the node depth of the query.
 - `type` (String) The data store type of this attribute source.
 
 Optional:
 
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment))
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
+- `binary_attribute_settings` (Attributes Map) The advanced settings for binary LDAP attributes. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
 - `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--data_store_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.data_store_ref`
 
 Required:
 
@@ -15253,19 +15253,19 @@ Read-Only:
 - `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
 
 Required:
 
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source))
 
 Optional:
 
 - `value` (String) The value for this attribute.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment.value`
 
 Required:
 
@@ -15277,8 +15277,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.binary_attribute_settings`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--binary_attribute_settings"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.binary_attribute_settings`
 
 Optional:
 
@@ -15287,30 +15287,30 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria`
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria))
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--conditional_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
 - `condition` (String) The name of the attribute to use in this issuance criterion.
-- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source))
+- `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
 
 Optional:
 
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria.source`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria--source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria.source`
 
 Required:
 
@@ -15322,8 +15322,8 @@ Optional:
 
 
 
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--expression_criteria"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.expression_criteria`
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--expression_criteria"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.expression_criteria`
 
 Required:
 
