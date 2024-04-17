@@ -73,7 +73,7 @@ func (r *pingOneConnectionResource) Schema(ctx context.Context, req resource.Sch
 			},
 			"credential": schema.StringAttribute{
 				Description: "The credential for the PingOne connection.",
-				Optional:    true,
+				Required:    true,
 				Sensitive:   true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),

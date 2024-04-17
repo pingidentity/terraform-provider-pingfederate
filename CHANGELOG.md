@@ -1,4 +1,7 @@
 # v0.11.0 (Unreleased)
+### BUG FIXES
+* `pingfederate_ping_one_connection` resource correctly requires `credential` value ([#233](https://github.com/pingidentity/terraform-provider-pingfederate/pull/233))
+
 ### Resources
 * **New Resource:** `pingfederate_authentication_policies_policy ` ([#232](https://github.com/pingidentity/terraform-provider-pingfederate/pull/232))
 
