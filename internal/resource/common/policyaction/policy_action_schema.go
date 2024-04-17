@@ -81,7 +81,7 @@ func commonAttributeRulesAttr() schema.Attribute {
 
 func apcMappingPolicyActionSchema() schema.SingleNestedAttribute {
 	attrs := commonPolicyActionSchema()
-	attrs["attribute_mapping"] = attributemapping.ToSchema()
+	attrs["attribute_mapping"] = attributemapping.ToSchema(true)
 	attrs["authentication_policy_contract_ref"] = schema.SingleNestedAttribute{
 		Attributes:  resourcelink.ToSchema(),
 		Required:    true,
@@ -178,7 +178,7 @@ func fragmentPolicyActionSchema() schema.SingleNestedAttribute {
 		Required:    true,
 		Description: "A reference to a resource.",
 	}
-	attrs["fragment_mapping"] = attributemapping.ToSchema()
+	attrs["fragment_mapping"] = attributemapping.ToSchema(false)
 	return schema.SingleNestedAttribute{
 		Attributes:  attrs,
 		Optional:    true,
@@ -188,13 +188,13 @@ func fragmentPolicyActionSchema() schema.SingleNestedAttribute {
 
 func localIdentityMappingPolicyActionSchema() schema.SingleNestedAttribute {
 	attrs := commonPolicyActionSchema()
-	attrs["inbound_mapping"] = attributemapping.ToSchema()
+	attrs["inbound_mapping"] = attributemapping.ToSchema(false)
 	attrs["local_identity_ref"] = schema.SingleNestedAttribute{
 		Attributes:  resourcelink.ToSchema(),
 		Required:    true,
 		Description: "A reference to a resource.",
 	}
-	attrs["outbound_attribute_mapping"] = attributemapping.ToSchema()
+	attrs["outbound_attribute_mapping"] = attributemapping.ToSchema(true)
 	return schema.SingleNestedAttribute{
 		Attributes:  attrs,
 		Optional:    true,

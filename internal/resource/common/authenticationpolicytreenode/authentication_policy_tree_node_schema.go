@@ -26,7 +26,7 @@ func childrenDefault(depth int) types.List {
 	return resp
 }
 
-func Schema() schema.SingleNestedAttribute {
+func ToSchema(description string) schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Attributes: map[string]schema.Attribute{
 			"action": policyaction.ToSchema(),
@@ -39,7 +39,7 @@ func Schema() schema.SingleNestedAttribute {
 			},
 		},
 		Required:    true,
-		Description: "The beginning action for the authentication fragment policy.",
+		Description: description,
 	}
 }
 

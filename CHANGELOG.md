@@ -1,3 +1,10 @@
+# v0.11.0 (Unreleased)
+### Resources
+* **New Resource:** `pingfederate_authentication_policies_policy ` ([#232](https://github.com/pingidentity/terraform-provider-pingfederate/pull/232))
+
+### Data Sources
+* **New Data Source:** `pingfederate_authentication_policies_policy ` ([#232](https://github.com/pingidentity/terraform-provider-pingfederate/pull/232))
+
 # v0.10.0 April 11th, 2024
 ### Resources
 * **New Resource:** `pingfederate_ping_one_connection ` ([#231](https://github.com/pingidentity/terraform-provider-pingfederate/pull/231))

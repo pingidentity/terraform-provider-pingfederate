@@ -27,6 +27,7 @@ import (
 	authenticationapiapplication "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi/application"
 	authenticationapisettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationapi/settings"
 	authenticationpoliciesfragments "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicies/fragments"
+	authenticationpoliciespolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicies/policy"
 	authenticationpoliciessettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicies/settings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicycontract"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationselector"
@@ -664,6 +665,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		authenticationapiapplication.AuthenticationApiApplicationDataSource,
 		authenticationapisettings.AuthenticationApiSettingsDataSource,
 		authenticationpoliciesfragments.AuthenticationPoliciesFragmentDataSource,
+		authenticationpoliciespolicy.AuthenticationPoliciesPolicyDataSource,
 		authenticationpoliciessettings.AuthenticationPoliciesSettingsDataSource,
 		authenticationpolicycontract.AuthenticationPolicyContractDataSource,
 		certificate.CertificateDataSource,
@@ -707,6 +709,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		authenticationapiapplication.AuthenticationApiApplicationResource,
 		authenticationapisettings.AuthenticationApiSettingsResource,
 		authenticationpoliciesfragments.AuthenticationPoliciesFragmentResource,
+		authenticationpoliciespolicy.AuthenticationPoliciesPolicyResource,
 		authenticationpoliciessettings.AuthenticationPoliciesSettingsResource,
 		authenticationpolicycontract.AuthenticationPolicyContractResource,
 		authenticationselector.AuthenticationSelectorsResource,
