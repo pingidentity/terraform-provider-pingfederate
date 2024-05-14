@@ -433,11 +433,15 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 					},
 					"create_pattern": schema.StringAttribute{
 						Description: "The Relative DN Pattern that will be used to create objects in the directory.",
-						Required:    true,
+						Computed:    true,
+						Optional:    true,
+						Default:     stringdefault.StaticString(""),
 					},
 					"object_class": schema.StringAttribute{
 						Description: "The Object Class used by the new objects stored in the LDAP data store.",
-						Required:    true,
+						Computed:    true,
+						Optional:    true,
+						Default:     stringdefault.StaticString(""),
 					},
 					"auxiliary_object_classes": schema.SetAttribute{
 						Description: "The Auxiliary Object Classes used by the new objects stored in the LDAP data store.",

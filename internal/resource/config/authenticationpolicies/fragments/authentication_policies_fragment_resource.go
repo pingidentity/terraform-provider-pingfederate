@@ -109,7 +109,7 @@ func readAuthenticationPoliciesFragmentResponse(ctx context.Context, r *client.A
 	return diags
 }
 
-func addOptionalAuthenticationPoliciesFragmentFields(ctx context.Context, addRequest *client.AuthenticationPolicyFragment, plan authenticationPoliciesFragmentModel) error {
+func addOptionalAuthenticationPoliciesFragmentFields(addRequest *client.AuthenticationPolicyFragment, plan authenticationPoliciesFragmentModel) error {
 	addRequest.Id = plan.FragmentId.ValueStringPointer()
 	addRequest.Name = plan.Name.ValueStringPointer()
 	addRequest.Description = plan.Description.ValueStringPointer()
@@ -142,7 +142,7 @@ func (r *authenticationPoliciesFragmentResource) Create(ctx context.Context, req
 	}
 
 	newPolicyFragment := client.NewAuthenticationPolicyFragment()
-	err := addOptionalAuthenticationPoliciesFragmentFields(ctx, newPolicyFragment, plan)
+	err := addOptionalAuthenticationPoliciesFragmentFields(newPolicyFragment, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for the Authentication Policy Fragment", err.Error())
 		return
@@ -204,7 +204,7 @@ func (r *authenticationPoliciesFragmentResource) Update(ctx context.Context, req
 
 	updateFragmentRequest := r.apiClient.AuthenticationPoliciesAPI.UpdateFragment(config.AuthContext(ctx, r.providerConfig), plan.FragmentId.ValueString())
 	updatedFragment := client.NewAuthenticationPolicyFragment()
-	err := addOptionalAuthenticationPoliciesFragmentFields(ctx, updatedFragment, plan)
+	err := addOptionalAuthenticationPoliciesFragmentFields(updatedFragment, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for the Authentication Policy Fragment", err.Error())
 		return

@@ -28,7 +28,7 @@ var (
 	_ resource.ResourceWithImportState = &authenticationSelectorResource{}
 
 	attributeContractAttrType = map[string]attr.Type{
-		"extended_attributes": types.ListType{ElemType: types.ObjectType{
+		"extended_attributes": types.SetType{ElemType: types.ObjectType{
 			AttrTypes: map[string]attr.Type{
 				"name": types.StringType,
 			}}},
@@ -77,8 +77,8 @@ func (r *authenticationSelectorResource) Schema(ctx context.Context, req resourc
 				Description: "The list of attributes that the Authentication Selector provides.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
-					"extended_attributes": schema.ListNestedAttribute{
-						Description: "A list of additional attributes that can be returned by the Authentication Selector. The extended attributes are only used if the Authentication Selector supports them.",
+					"extended_attributes": schema.SetNestedAttribute{
+						Description: "A set of additional attributes that can be returned by the Authentication Selector. The extended attributes are only used if the Authentication Selector supports them.",
 						Optional:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{

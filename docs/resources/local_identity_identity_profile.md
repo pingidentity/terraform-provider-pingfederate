@@ -214,15 +214,15 @@ Optional:
 Required:
 
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `create_pattern` (String) The Relative DN Pattern that will be used to create objects in the directory.
 - `data_store_mapping` (Attributes Map) The data store mapping. (see [below for nested schema](#nestedatt--data_store_config--data_store_mapping))
 - `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--data_store_config--data_store_ref))
-- `object_class` (String) The Object Class used by the new objects stored in the LDAP data store.
 - `type` (String) The data store config type.
 
 Optional:
 
 - `auxiliary_object_classes` (Set of String) The Auxiliary Object Classes used by the new objects stored in the LDAP data store.
+- `create_pattern` (String) The Relative DN Pattern that will be used to create objects in the directory.
+- `object_class` (String) The Object Class used by the new objects stored in the LDAP data store.
 
 <a id="nestedatt--data_store_config--data_store_mapping"></a>
 ### Nested Schema for `data_store_config.data_store_mapping`

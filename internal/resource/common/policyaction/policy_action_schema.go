@@ -129,7 +129,7 @@ func authnSourcePolicyActionSchema() schema.SingleNestedAttribute {
 				},
 			},
 		},
-		Required:    true,
+		Optional:    true,
 		Description: "An authentication source (IdP adapter or IdP connection).",
 	}
 	attrs["input_user_id_mapping"] = schema.SingleNestedAttribute{

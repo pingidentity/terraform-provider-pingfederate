@@ -14,7 +14,7 @@ var rootNodeAttrTypes map[string]attr.Type
 var rootNodeAttrTypesBuilt = false
 var childrenAttrTypesByDepth = map[int]types.ListType{}
 
-func getRootNodeAttrTypes() map[string]attr.Type {
+func GetRootNodeAttrTypes() map[string]attr.Type {
 	if rootNodeAttrTypesBuilt {
 		return rootNodeAttrTypes
 	}
@@ -45,7 +45,7 @@ func childrenAttrTypes(depth int) types.ListType {
 }
 
 func ToState(ctx context.Context, node *client.AuthenticationPolicyTreeNode) (types.Object, diag.Diagnostics) {
-	return recursiveState(ctx, node, 1, getRootNodeAttrTypes())
+	return recursiveState(ctx, node, 1, GetRootNodeAttrTypes())
 }
 
 func recursiveState(ctx context.Context, node *client.AuthenticationPolicyTreeNode, depth int, attrTypes map[string]attr.Type) (types.Object, diag.Diagnostics) {

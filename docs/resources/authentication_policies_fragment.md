@@ -484,37 +484,13 @@ Read-Only:
 <a id="nestedatt--root_node--action--authn_source_policy_action"></a>
 ### Nested Schema for `root_node.action.authn_source_policy_action`
 
-Required:
-
-- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--action--authn_source_policy_action--authentication_source))
-
 Optional:
 
 - `attribute_rules` (Attributes) A collection of attribute rules (see [below for nested schema](#nestedatt--root_node--action--authn_source_policy_action--attribute_rules))
+- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--action--authn_source_policy_action--authentication_source))
 - `context` (String) The result context.
 - `input_user_id_mapping` (Attributes) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--action--authn_source_policy_action--input_user_id_mapping))
 - `user_id_authenticated` (Boolean) Indicates whether the user ID obtained by the user ID mapping is authenticated.
-
-<a id="nestedatt--root_node--action--authn_source_policy_action--authentication_source"></a>
-### Nested Schema for `root_node.action.authn_source_policy_action.user_id_authenticated`
-
-Required:
-
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--action--authn_source_policy_action--user_id_authenticated--source_ref))
-- `type` (String) The type of this authentication source.
-
-<a id="nestedatt--root_node--action--authn_source_policy_action--user_id_authenticated--source_ref"></a>
-### Nested Schema for `root_node.action.authn_source_policy_action.user_id_authenticated.source_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 
 <a id="nestedatt--root_node--action--authn_source_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.action.authn_source_policy_action.user_id_authenticated`
@@ -547,6 +523,27 @@ Optional:
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 - `type` (String) The source type of this key.
 
+
+
+
+<a id="nestedatt--root_node--action--authn_source_policy_action--authentication_source"></a>
+### Nested Schema for `root_node.action.authn_source_policy_action.user_id_authenticated`
+
+Required:
+
+- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--action--authn_source_policy_action--user_id_authenticated--source_ref))
+- `type` (String) The type of this authentication source.
+
+<a id="nestedatt--root_node--action--authn_source_policy_action--user_id_authenticated--source_ref"></a>
+### Nested Schema for `root_node.action.authn_source_policy_action.user_id_authenticated.source_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -1873,37 +1870,13 @@ Read-Only:
 <a id="nestedatt--root_node--children--action--authn_source_policy_action"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action`
 
-Required:
-
-- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--authentication_source))
-
 Optional:
 
 - `attribute_rules` (Attributes) A collection of attribute rules (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--attribute_rules))
+- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--authentication_source))
 - `context` (String) The result context.
 - `input_user_id_mapping` (Attributes) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--input_user_id_mapping))
 - `user_id_authenticated` (Boolean) Indicates whether the user ID obtained by the user ID mapping is authenticated.
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--authentication_source"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.authentication_source`
-
-Required:
-
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--authentication_source--source_ref))
-- `type` (String) The type of this authentication source.
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--authentication_source--source_ref"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.authentication_source.type`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.attribute_rules`
@@ -1936,6 +1909,27 @@ Optional:
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 - `type` (String) The source type of this key.
 
+
+
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--authentication_source"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.authentication_source`
+
+Required:
+
+- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--authentication_source--source_ref))
+- `type` (String) The type of this authentication source.
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--authentication_source--source_ref"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.authentication_source.type`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -3262,37 +3256,13 @@ Read-Only:
 <a id="nestedatt--root_node--children--children--children--authn_source_policy_action"></a>
 ### Nested Schema for `root_node.children.children.children.authn_source_policy_action`
 
-Required:
-
-- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--authn_source_policy_action--authentication_source))
-
 Optional:
 
 - `attribute_rules` (Attributes) A collection of attribute rules (see [below for nested schema](#nestedatt--root_node--children--children--children--authn_source_policy_action--attribute_rules))
+- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--authn_source_policy_action--authentication_source))
 - `context` (String) The result context.
 - `input_user_id_mapping` (Attributes) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--authn_source_policy_action--input_user_id_mapping))
 - `user_id_authenticated` (Boolean) Indicates whether the user ID obtained by the user ID mapping is authenticated.
-
-<a id="nestedatt--root_node--children--children--children--authn_source_policy_action--authentication_source"></a>
-### Nested Schema for `root_node.children.children.children.authn_source_policy_action.user_id_authenticated`
-
-Required:
-
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--authn_source_policy_action--user_id_authenticated--source_ref))
-- `type` (String) The type of this authentication source.
-
-<a id="nestedatt--root_node--children--children--children--authn_source_policy_action--user_id_authenticated--source_ref"></a>
-### Nested Schema for `root_node.children.children.children.authn_source_policy_action.user_id_authenticated.type`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 
 <a id="nestedatt--root_node--children--children--children--authn_source_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.authn_source_policy_action.user_id_authenticated`
@@ -3325,6 +3295,27 @@ Optional:
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 - `type` (String) The source type of this key.
 
+
+
+
+<a id="nestedatt--root_node--children--children--children--authn_source_policy_action--authentication_source"></a>
+### Nested Schema for `root_node.children.children.children.authn_source_policy_action.user_id_authenticated`
+
+Required:
+
+- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--authn_source_policy_action--user_id_authenticated--source_ref))
+- `type` (String) The type of this authentication source.
+
+<a id="nestedatt--root_node--children--children--children--authn_source_policy_action--user_id_authenticated--source_ref"></a>
+### Nested Schema for `root_node.children.children.children.authn_source_policy_action.user_id_authenticated.type`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -4651,37 +4642,13 @@ Read-Only:
 <a id="nestedatt--root_node--children--children--children--action--authn_source_policy_action"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action`
 
-Required:
-
-- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--authentication_source))
-
 Optional:
 
 - `attribute_rules` (Attributes) A collection of attribute rules (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--attribute_rules))
+- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--authentication_source))
 - `context` (String) The result context.
 - `input_user_id_mapping` (Attributes) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--input_user_id_mapping))
 - `user_id_authenticated` (Boolean) Indicates whether the user ID obtained by the user ID mapping is authenticated.
-
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--authentication_source"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.user_id_authenticated`
-
-Required:
-
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref))
-- `type` (String) The type of this authentication source.
-
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.user_id_authenticated.type`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action.user_id_authenticated`
@@ -4714,6 +4681,27 @@ Optional:
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 - `type` (String) The source type of this key.
 
+
+
+
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--authentication_source"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.user_id_authenticated`
+
+Required:
+
+- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref))
+- `type` (String) The type of this authentication source.
+
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.user_id_authenticated.type`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -6040,37 +6028,13 @@ Read-Only:
 <a id="nestedatt--root_node--children--children--children--children--children--authn_source_policy_action"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action`
 
-Required:
-
-- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--authentication_source))
-
 Optional:
 
 - `attribute_rules` (Attributes) A collection of attribute rules (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--attribute_rules))
+- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--authentication_source))
 - `context` (String) The result context.
 - `input_user_id_mapping` (Attributes) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--input_user_id_mapping))
 - `user_id_authenticated` (Boolean) Indicates whether the user ID obtained by the user ID mapping is authenticated.
-
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--authentication_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.user_id_authenticated`
-
-Required:
-
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref))
-- `type` (String) The type of this authentication source.
-
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.user_id_authenticated.source_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.user_id_authenticated`
@@ -6103,6 +6067,27 @@ Optional:
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 - `type` (String) The source type of this key.
 
+
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--authentication_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.user_id_authenticated`
+
+Required:
+
+- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref))
+- `type` (String) The type of this authentication source.
+
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.user_id_authenticated.source_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -7429,37 +7414,13 @@ Read-Only:
 <a id="nestedatt--root_node--children--children--children--children--children--children--authn_source_policy_action"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action`
 
-Required:
-
-- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--authentication_source))
-
 Optional:
 
 - `attribute_rules` (Attributes) A collection of attribute rules (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--attribute_rules))
+- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--authentication_source))
 - `context` (String) The result context.
 - `input_user_id_mapping` (Attributes) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--input_user_id_mapping))
 - `user_id_authenticated` (Boolean) Indicates whether the user ID obtained by the user ID mapping is authenticated.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--authentication_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.authentication_source`
-
-Required:
-
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--authentication_source--source_ref))
-- `type` (String) The type of this authentication source.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--authentication_source--source_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.authentication_source.type`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.attribute_rules`
@@ -7492,6 +7453,27 @@ Optional:
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 - `type` (String) The source type of this key.
 
+
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--authentication_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.authentication_source`
+
+Required:
+
+- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--authentication_source--source_ref))
+- `type` (String) The type of this authentication source.
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--authentication_source--source_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.authentication_source.type`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -8818,37 +8800,13 @@ Read-Only:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.authn_source_policy_action`
 
-Required:
-
-- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action--authentication_source))
-
 Optional:
 
 - `attribute_rules` (Attributes) A collection of attribute rules (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action--attribute_rules))
+- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action--authentication_source))
 - `context` (String) The result context.
 - `input_user_id_mapping` (Attributes) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action--input_user_id_mapping))
 - `user_id_authenticated` (Boolean) Indicates whether the user ID obtained by the user ID mapping is authenticated.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action--authentication_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.authn_source_policy_action.user_id_authenticated`
-
-Required:
-
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action--user_id_authenticated--source_ref))
-- `type` (String) The type of this authentication source.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action--user_id_authenticated--source_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.authn_source_policy_action.user_id_authenticated.type`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.authn_source_policy_action.user_id_authenticated`
@@ -8881,6 +8839,27 @@ Optional:
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 - `type` (String) The source type of this key.
 
+
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action--authentication_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.authn_source_policy_action.user_id_authenticated`
+
+Required:
+
+- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action--user_id_authenticated--source_ref))
+- `type` (String) The type of this authentication source.
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action--user_id_authenticated--source_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.authn_source_policy_action.user_id_authenticated.type`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -10207,37 +10186,13 @@ Read-Only:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--authn_source_policy_action"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action`
 
-Required:
-
-- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--authentication_source))
-
 Optional:
 
 - `attribute_rules` (Attributes) A collection of attribute rules (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--attribute_rules))
+- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--authentication_source))
 - `context` (String) The result context.
 - `input_user_id_mapping` (Attributes) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--input_user_id_mapping))
 - `user_id_authenticated` (Boolean) Indicates whether the user ID obtained by the user ID mapping is authenticated.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--authentication_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.user_id_authenticated`
-
-Required:
-
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref))
-- `type` (String) The type of this authentication source.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.user_id_authenticated.type`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.user_id_authenticated`
@@ -10270,6 +10225,27 @@ Optional:
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 - `type` (String) The source type of this key.
 
+
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--authentication_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.user_id_authenticated`
+
+Required:
+
+- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref))
+- `type` (String) The type of this authentication source.
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.user_id_authenticated.type`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -11596,37 +11572,13 @@ Read-Only:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--authn_source_policy_action"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action`
 
-Required:
-
-- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--authentication_source))
-
 Optional:
 
 - `attribute_rules` (Attributes) A collection of attribute rules (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--attribute_rules))
+- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--authentication_source))
 - `context` (String) The result context.
 - `input_user_id_mapping` (Attributes) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--input_user_id_mapping))
 - `user_id_authenticated` (Boolean) Indicates whether the user ID obtained by the user ID mapping is authenticated.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--authentication_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.user_id_authenticated`
-
-Required:
-
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref))
-- `type` (String) The type of this authentication source.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.user_id_authenticated.type`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.user_id_authenticated`
@@ -11659,6 +11611,27 @@ Optional:
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 - `type` (String) The source type of this key.
 
+
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--authentication_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.user_id_authenticated`
+
+Required:
+
+- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref))
+- `type` (String) The type of this authentication source.
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.user_id_authenticated.type`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -12985,37 +12958,13 @@ Read-Only:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--authn_source_policy_action"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action`
 
-Required:
-
-- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--authentication_source))
-
 Optional:
 
 - `attribute_rules` (Attributes) A collection of attribute rules (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--attribute_rules))
+- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--authentication_source))
 - `context` (String) The result context.
 - `input_user_id_mapping` (Attributes) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--input_user_id_mapping))
 - `user_id_authenticated` (Boolean) Indicates whether the user ID obtained by the user ID mapping is authenticated.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--authentication_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.user_id_authenticated`
-
-Required:
-
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref))
-- `type` (String) The type of this authentication source.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.user_id_authenticated.type`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.user_id_authenticated`
@@ -13048,6 +12997,27 @@ Optional:
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 - `type` (String) The source type of this key.
 
+
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--authentication_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.user_id_authenticated`
+
+Required:
+
+- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref))
+- `type` (String) The type of this authentication source.
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.user_id_authenticated.type`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -14373,37 +14343,13 @@ Read-Only:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--authn_source_policy_action"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action`
 
-Required:
-
-- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--authentication_source))
-
 Optional:
 
 - `attribute_rules` (Attributes) A collection of attribute rules (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--attribute_rules))
+- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--authentication_source))
 - `context` (String) The result context.
 - `input_user_id_mapping` (Attributes) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--input_user_id_mapping))
 - `user_id_authenticated` (Boolean) Indicates whether the user ID obtained by the user ID mapping is authenticated.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--authentication_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.user_id_authenticated`
-
-Required:
-
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref))
-- `type` (String) The type of this authentication source.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.user_id_authenticated.type`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.user_id_authenticated`
@@ -14436,6 +14382,27 @@ Optional:
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 - `type` (String) The source type of this key.
 
+
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--authentication_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.user_id_authenticated`
+
+Required:
+
+- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref))
+- `type` (String) The type of this authentication source.
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.user_id_authenticated.type`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
+Read-Only:
+
+- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 

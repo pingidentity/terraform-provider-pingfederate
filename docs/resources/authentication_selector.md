@@ -191,7 +191,7 @@ Required:
 
 Optional:
 
-- `extended_attributes` (Attributes List) A list of additional attributes that can be returned by the Authentication Selector. The extended attributes are only used if the Authentication Selector supports them. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
+- `extended_attributes` (Attributes Set) A set of additional attributes that can be returned by the Authentication Selector. The extended attributes are only used if the Authentication Selector supports them. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
 
 <a id="nestedatt--attribute_contract--extended_attributes"></a>
 ### Nested Schema for `attribute_contract.extended_attributes`
