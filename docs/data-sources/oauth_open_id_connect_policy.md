@@ -137,7 +137,7 @@ Read-Only:
 - `type` (String) The data store type of this attribute source.
 
 <a id="nestedatt--attribute_mapping--attribute_sources--custom_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `attribute_mapping.attribute_sources.custom_attribute_source.type`
+### Nested Schema for `attribute_mapping.attribute_sources.custom_attribute_source.attribute_contract_fulfillment`
 
 Read-Only:
 
@@ -155,7 +155,7 @@ Read-Only:
 
 
 <a id="nestedatt--attribute_mapping--attribute_sources--custom_attribute_source--data_store_ref"></a>
-### Nested Schema for `attribute_mapping.attribute_sources.custom_attribute_source.type`
+### Nested Schema for `attribute_mapping.attribute_sources.custom_attribute_source.data_store_ref`
 
 Read-Only:
 
@@ -164,7 +164,7 @@ Read-Only:
 
 
 <a id="nestedatt--attribute_mapping--attribute_sources--custom_attribute_source--filter_fields"></a>
-### Nested Schema for `attribute_mapping.attribute_sources.custom_attribute_source.type`
+### Nested Schema for `attribute_mapping.attribute_sources.custom_attribute_source.filter_fields`
 
 Read-Only:
 
@@ -189,7 +189,7 @@ Read-Only:
 - `type` (String) The data store type of this attribute source.
 
 <a id="nestedatt--attribute_mapping--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `attribute_mapping.attribute_sources.jdbc_attribute_source.type`
+### Nested Schema for `attribute_mapping.attribute_sources.jdbc_attribute_source.attribute_contract_fulfillment`
 
 Read-Only:
 
@@ -207,7 +207,7 @@ Read-Only:
 
 
 <a id="nestedatt--attribute_mapping--attribute_sources--jdbc_attribute_source--data_store_ref"></a>
-### Nested Schema for `attribute_mapping.attribute_sources.jdbc_attribute_source.type`
+### Nested Schema for `attribute_mapping.attribute_sources.jdbc_attribute_source.data_store_ref`
 
 Read-Only:
 
@@ -237,7 +237,7 @@ Read-Only:
 - `type` (String) The data store type of this attribute source.
 
 <a id="nestedatt--attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `attribute_mapping.attribute_sources.ldap_attribute_source.type`
+### Nested Schema for `attribute_mapping.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
 
 Read-Only:
 
@@ -255,7 +255,7 @@ Read-Only:
 
 
 <a id="nestedatt--attribute_mapping--attribute_sources--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `attribute_mapping.attribute_sources.ldap_attribute_source.type`
+### Nested Schema for `attribute_mapping.attribute_sources.ldap_attribute_source.binary_attribute_settings`
 
 Read-Only:
 
@@ -263,7 +263,7 @@ Read-Only:
 
 
 <a id="nestedatt--attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `attribute_mapping.attribute_sources.ldap_attribute_source.type`
+### Nested Schema for `attribute_mapping.attribute_sources.ldap_attribute_source.data_store_ref`
 
 Read-Only:
 
@@ -293,7 +293,7 @@ Read-Only:
 - `value` (String) The expected value of this issuance criterion.
 
 <a id="nestedatt--attribute_mapping--issuance_criteria--conditional_criteria--source"></a>
-### Nested Schema for `attribute_mapping.issuance_criteria.conditional_criteria.value`
+### Nested Schema for `attribute_mapping.issuance_criteria.conditional_criteria.source`
 
 Read-Only:
 
