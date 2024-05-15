@@ -157,7 +157,7 @@ Optional:
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--attribute_sources--custom_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `attribute_sources.custom_attribute_source.attribute_contract_fulfillment.value`
+### Nested Schema for `attribute_sources.custom_attribute_source.attribute_contract_fulfillment.source`
 
 Required:
 
@@ -227,7 +227,7 @@ Optional:
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `attribute_sources.jdbc_attribute_source.attribute_contract_fulfillment.value`
+### Nested Schema for `attribute_sources.jdbc_attribute_source.attribute_contract_fulfillment.source`
 
 Required:
 
@@ -284,7 +284,7 @@ Optional:
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.value`
+### Nested Schema for `attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.source`
 
 Required:
 
