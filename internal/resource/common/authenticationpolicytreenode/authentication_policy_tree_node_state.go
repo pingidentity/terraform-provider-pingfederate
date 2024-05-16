@@ -10,27 +10,28 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/policyaction"
 )
 
-var rootNodeAttrTypes map[string]attr.Type
-var rootNodeAttrTypesBuilt = false
-var childrenAttrTypesByDepth = map[int]types.ListType{}
+// var rootNodeAttrTypes map[string]attr.Type
+
+// var rootNodeAttrTypesBuilt = false
+// var childrenAttrTypesByDepth = map[int]types.ListType{}
 
 func GetRootNodeAttrTypes() map[string]attr.Type {
-	if rootNodeAttrTypesBuilt {
-		return rootNodeAttrTypes
-	}
-	rootNodeAttrTypes = map[string]attr.Type{
+	// if rootNodeAttrTypesBuilt {
+	// 	return rootNodeAttrTypes
+	// }
+	return map[string]attr.Type{
 		"action":   types.ObjectType{AttrTypes: policyaction.AttrTypes()},
 		"children": childrenAttrTypes(1),
 	}
-	rootNodeAttrTypesBuilt = true
-	return rootNodeAttrTypes
+	// rootNodeAttrTypesBuilt = true
+	// return rootNodeAttrTypes
 }
 
 func childrenAttrTypes(depth int) types.ListType {
-	childrenTypes, ok := childrenAttrTypesByDepth[depth]
-	if ok {
-		return childrenTypes
-	}
+	// childrenTypes, ok := childrenAttrTypesByDepth[depth]
+	// if ok {
+	// 	return childrenTypes
+	// }
 
 	attrs := map[string]attr.Type{
 		"action": types.ObjectType{AttrTypes: policyaction.AttrTypes()},
@@ -38,10 +39,10 @@ func childrenAttrTypes(depth int) types.ListType {
 	if depth < MaxPolicyNodeRecursiveDepth {
 		attrs["children"] = childrenAttrTypes(depth + 1)
 	}
-	childrenAttrTypesByDepth[depth] = types.ListType{
+	return types.ListType{
 		ElemType: types.ObjectType{AttrTypes: attrs},
 	}
-	return childrenAttrTypesByDepth[depth]
+	// return childrenAttrTypesByDepth[depth]
 }
 
 func ToState(ctx context.Context, node *client.AuthenticationPolicyTreeNode) (types.Object, diag.Diagnostics) {

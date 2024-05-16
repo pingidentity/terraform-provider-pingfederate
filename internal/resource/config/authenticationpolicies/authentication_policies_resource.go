@@ -319,7 +319,7 @@ func (r *authenticationPoliciesResource) Create(ctx context.Context, req resourc
 }
 
 func (r *authenticationPoliciesResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state, updatedState authenticationPoliciesModel
+	var state authenticationPoliciesModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -344,11 +344,11 @@ func (r *authenticationPoliciesResource) Read(ctx context.Context, req resource.
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	diags = readAuthenticationPoliciesResponse(ctx, policyResponse, &updatedState, id)
+	diags = readAuthenticationPoliciesResponse(ctx, policyResponse, &state, id)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
-	diags = resp.State.Set(ctx, &updatedState)
+	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 }
 
