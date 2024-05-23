@@ -218,7 +218,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--extended_parameters"></a>
@@ -297,7 +296,6 @@ RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -307,7 +305,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--token_exchange_processor_policy_ref"></a>
@@ -316,4 +313,3 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.

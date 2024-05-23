@@ -10,6 +10,7 @@ install:
 
 generate:
 	go generate ./...
+	python3 ./dev-scripts/markdownDocFormatting.py authentication_policies.md authentication_policies_fragment.md
 	go fmt ./...
 	go vet ./...
 
@@ -95,7 +96,7 @@ kaboom: clearstates spincontainer install
 devchecknotest: verifycontent install golangcilint generate tfproviderlint tflint terrafmtlint importfmtlint
 
 verifycontent:
-	python3 ./devcheck/verifyContent.py
+	python3 ./dev-scripts/verifyContent.py
 
 devcheck: devchecknotest kaboom testauthacc testacc
 

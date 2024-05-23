@@ -67,7 +67,7 @@ func (r *authenticationSelectorResource) Schema(ctx context.Context, req resourc
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
 				Required:    true,
 				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created.",
-				Attributes:  resourcelink.ToSchemaNoLocation(),
+				Attributes:  resourcelink.ToSchema(),
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.RequiresReplace(),
 				},
@@ -99,8 +99,7 @@ func (r *authenticationSelectorResource) Schema(ctx context.Context, req resourc
 	resp.Schema = schema
 }
 
-func addOptionalAuthenticationSelectorsFields(ctx context.Context, addRequest *client.AuthenticationSelector, plan authenticationSelectorResourceModel) error {
-
+func addOptionalAuthenticationSelectorsFields(addRequest *client.AuthenticationSelector, plan authenticationSelectorResourceModel) error {
 	if internaltypes.IsDefined(plan.AttributeContract) {
 		addRequest.AttributeContract = &client.AuthenticationSelectorAttributeContract{}
 		err := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContract, true)), addRequest.AttributeContract)
@@ -153,7 +152,7 @@ func readAuthenticationSelectorsResponse(ctx context.Context, r *client.Authenti
 	state.SelectorId = types.StringValue(r.Id)
 	state.Id = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
-	state.PluginDescriptorRef, objDiags = resourcelink.ToStateNoLocation(&r.PluginDescriptorRef)
+	state.PluginDescriptorRef, objDiags = resourcelink.ToState(ctx, &r.PluginDescriptorRef)
 	diags = append(diags, objDiags...)
 	diags = append(diags, objDiags...)
 	state.Configuration, objDiags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration)
@@ -195,7 +194,7 @@ func (r *authenticationSelectorResource) Create(ctx context.Context, req resourc
 	}
 
 	createAuthenticationSelectors := client.NewAuthenticationSelector(plan.SelectorId.ValueString(), plan.Name.ValueString(), *pluginDescriptorRef, configuration)
-	err = addOptionalAuthenticationSelectorsFields(ctx, createAuthenticationSelectors, plan)
+	err = addOptionalAuthenticationSelectorsFields(createAuthenticationSelectors, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for an Authentication Selector", err.Error())
 		return
@@ -281,7 +280,7 @@ func (r *authenticationSelectorResource) Update(ctx context.Context, req resourc
 
 	updateAuthenticationSelectors := r.apiClient.AuthenticationSelectorsAPI.UpdateAuthenticationSelector(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.SelectorId.ValueString())
 	createUpdateRequest := client.NewAuthenticationSelector(plan.SelectorId.ValueString(), plan.Name.ValueString(), *pluginDescriptorRef, configuration)
-	err = addOptionalAuthenticationSelectorsFields(ctx, createUpdateRequest, plan)
+	err = addOptionalAuthenticationSelectorsFields(createUpdateRequest, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for an Authentication Selector", err.Error())
 		return

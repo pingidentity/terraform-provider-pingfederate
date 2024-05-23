@@ -8,7 +8,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/policyaction"
 )
 
-const MaxPolicyNodeRecursiveDepth = 5
+const MaxPolicyNodeRecursiveDepth = 10
 
 var (
 	childrenDescription = "The nodes inside the authentication policy tree node of type AuthenticationPolicyTreeNode."

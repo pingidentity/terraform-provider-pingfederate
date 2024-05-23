@@ -12,22 +12,18 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 )
 
-func CommonAttributeSourceAttrType(includeDataStoreRefResourceLinkLocation bool) map[string]attr.Type {
+func CommonAttributeSourceAttrType() map[string]attr.Type {
 	commonAttrSourceAttrType := map[string]attr.Type{}
 	commonAttrSourceAttrType["type"] = types.StringType
-	if includeDataStoreRefResourceLinkLocation {
-		commonAttrSourceAttrType["data_store_ref"] = types.ObjectType{AttrTypes: resourcelink.AttrType()}
-	} else {
-		commonAttrSourceAttrType["data_store_ref"] = types.ObjectType{AttrTypes: resourcelink.AttrTypeNoLocation()}
-	}
+	commonAttrSourceAttrType["data_store_ref"] = types.ObjectType{AttrTypes: resourcelink.AttrType()}
 	commonAttrSourceAttrType["id"] = types.StringType
 	commonAttrSourceAttrType["description"] = types.StringType
 	commonAttrSourceAttrType["attribute_contract_fulfillment"] = attributecontractfulfillment.MapType()
 	return commonAttrSourceAttrType
 }
 
-func CustomAttributeSourceAttrType(includeDataStoreRefResourceLinkLocation bool) map[string]attr.Type {
-	customAttrSourceAttrType := CommonAttributeSourceAttrType(includeDataStoreRefResourceLinkLocation)
+func CustomAttributeSourceAttrType() map[string]attr.Type {
+	customAttrSourceAttrType := CommonAttributeSourceAttrType()
 	customAttrSourceAttrType["filter_fields"] = types.ListType{ElemType: types.ObjectType{
 		AttrTypes: map[string]attr.Type{
 			"value": types.StringType,
@@ -37,8 +33,8 @@ func CustomAttributeSourceAttrType(includeDataStoreRefResourceLinkLocation bool)
 	return customAttrSourceAttrType
 }
 
-func JdbcAttributeSourceAttrType(includeDataStoreRefResourceLinkLocation bool) map[string]attr.Type {
-	jdbcAttributeSourceAttrType := CommonAttributeSourceAttrType(includeDataStoreRefResourceLinkLocation)
+func JdbcAttributeSourceAttrType() map[string]attr.Type {
+	jdbcAttributeSourceAttrType := CommonAttributeSourceAttrType()
 	jdbcAttributeSourceAttrType["schema"] = types.StringType
 	jdbcAttributeSourceAttrType["table"] = types.StringType
 	jdbcAttributeSourceAttrType["column_names"] = types.ListType{ElemType: types.StringType}
@@ -46,8 +42,8 @@ func JdbcAttributeSourceAttrType(includeDataStoreRefResourceLinkLocation bool) m
 	return jdbcAttributeSourceAttrType
 }
 
-func LdapAttributeSourceAttrType(includeDataStoreRefResourceLinkLocation bool) map[string]attr.Type {
-	ldapAttrSourceAttrType := CommonAttributeSourceAttrType(includeDataStoreRefResourceLinkLocation)
+func LdapAttributeSourceAttrType() map[string]attr.Type {
+	ldapAttrSourceAttrType := CommonAttributeSourceAttrType()
 	ldapAttrSourceAttrType["base_dn"] = types.StringType
 	ldapAttrSourceAttrType["search_scope"] = types.StringType
 	ldapAttrSourceAttrType["search_filter"] = types.StringType
@@ -63,35 +59,35 @@ func LdapAttributeSourceAttrType(includeDataStoreRefResourceLinkLocation bool) m
 	return ldapAttrSourceAttrType
 }
 
-func AttrType(includeDataStoreRefResourceLinkLocation bool) map[string]attr.Type {
+func AttrType() map[string]attr.Type {
 	return map[string]attr.Type{
 		"attribute_sources": types.ListType{
 			ElemType: types.ObjectType{
-				AttrTypes: ElemAttrType(includeDataStoreRefResourceLinkLocation),
+				AttrTypes: ElemAttrType(),
 			},
 		},
 	}
 }
 
-func ElemAttrType(includeDataStoreRefResourceLinkLocation bool) map[string]attr.Type {
+func ElemAttrType() map[string]attr.Type {
 	return map[string]attr.Type{
 		"custom_attribute_source": types.ObjectType{
-			AttrTypes: CustomAttributeSourceAttrType(includeDataStoreRefResourceLinkLocation),
+			AttrTypes: CustomAttributeSourceAttrType(),
 		},
 		"jdbc_attribute_source": types.ObjectType{
-			AttrTypes: JdbcAttributeSourceAttrType(includeDataStoreRefResourceLinkLocation),
+			AttrTypes: JdbcAttributeSourceAttrType(),
 		},
 		"ldap_attribute_source": types.ObjectType{
-			AttrTypes: LdapAttributeSourceAttrType(includeDataStoreRefResourceLinkLocation),
+			AttrTypes: LdapAttributeSourceAttrType(),
 		},
 	}
 }
 
-func ToState(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation, includeDataStoreRefResourceLinkLocation bool) (basetypes.ListValue, diag.Diagnostics) {
+func ToState(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation) (basetypes.ListValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	var customAttrSourceAttrTypes = CustomAttributeSourceAttrType(includeDataStoreRefResourceLinkLocation)
-	var jdbcAttrSourceAttrTypes = JdbcAttributeSourceAttrType(includeDataStoreRefResourceLinkLocation)
-	var ldapAttrSourceAttrTypes = LdapAttributeSourceAttrType(includeDataStoreRefResourceLinkLocation)
+	var customAttrSourceAttrTypes = CustomAttributeSourceAttrType()
+	var jdbcAttrSourceAttrTypes = JdbcAttributeSourceAttrType()
+	var ldapAttrSourceAttrTypes = LdapAttributeSourceAttrType()
 	var valueFromDiags diag.Diagnostics
 
 	// Build attribute_sources value
@@ -105,14 +101,7 @@ func ToState(con context.Context, attributeSourcesFromClient []client.AttributeS
 			diags.Append(valueFromDiags...)
 
 			customAttrSourceValues["type"] = types.StringValue("CUSTOM")
-			if includeDataStoreRefResourceLinkLocation {
-				customAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValueFrom(con, resourcelink.AttrType(), attrSource.CustomAttributeSource.DataStoreRef)
-			} else {
-				customDataStoreRefAttrValue := map[string]attr.Value{
-					"id": types.StringValue(attrSource.CustomAttributeSource.DataStoreRef.Id),
-				}
-				customAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValue(resourcelink.AttrTypeNoLocation(), customDataStoreRefAttrValue)
-			}
+			customAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValueFrom(con, resourcelink.AttrType(), attrSource.CustomAttributeSource.DataStoreRef)
 			diags.Append(valueFromDiags...)
 			customAttrSourceValues["id"] = types.StringPointerValue(attrSource.CustomAttributeSource.Id)
 			customAttrSourceValues["description"] = types.StringPointerValue(attrSource.CustomAttributeSource.Description)
@@ -131,14 +120,7 @@ func ToState(con context.Context, attributeSourcesFromClient []client.AttributeS
 			diags.Append(valueFromDiags...)
 			jdbcAttrSourceValues["filter"] = types.StringValue(attrSource.JdbcAttributeSource.Filter)
 			jdbcAttrSourceValues["type"] = types.StringValue("JDBC")
-			if includeDataStoreRefResourceLinkLocation {
-				jdbcAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValueFrom(con, resourcelink.AttrType(), attrSource.JdbcAttributeSource.DataStoreRef)
-			} else {
-				jdbcDataStoreRefAttrValue := map[string]attr.Value{
-					"id": types.StringValue(attrSource.JdbcAttributeSource.DataStoreRef.Id),
-				}
-				jdbcAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValue(resourcelink.AttrTypeNoLocation(), jdbcDataStoreRefAttrValue)
-			}
+			jdbcAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValueFrom(con, resourcelink.AttrType(), attrSource.JdbcAttributeSource.DataStoreRef)
 			diags.Append(valueFromDiags...)
 			jdbcAttrSourceValues["id"] = types.StringPointerValue(attrSource.JdbcAttributeSource.Id)
 			jdbcAttrSourceValues["description"] = types.StringPointerValue(attrSource.JdbcAttributeSource.Description)
@@ -164,14 +146,7 @@ func ToState(con context.Context, attributeSourcesFromClient []client.AttributeS
 			}
 			ldapAttrSourceValues["member_of_nested_group"] = types.BoolPointerValue(attrSource.LdapAttributeSource.MemberOfNestedGroup)
 			ldapAttrSourceValues["type"] = types.StringValue(attrSource.LdapAttributeSource.Type)
-			if includeDataStoreRefResourceLinkLocation {
-				ldapAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValueFrom(con, resourcelink.AttrType(), attrSource.LdapAttributeSource.DataStoreRef)
-			} else {
-				ldapDataStoreRefAttrValue := map[string]attr.Value{
-					"id": types.StringValue(attrSource.LdapAttributeSource.DataStoreRef.Id),
-				}
-				ldapAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValue(resourcelink.AttrTypeNoLocation(), ldapDataStoreRefAttrValue)
-			}
+			ldapAttrSourceValues["data_store_ref"], valueFromDiags = types.ObjectValueFrom(con, resourcelink.AttrType(), attrSource.LdapAttributeSource.DataStoreRef)
 			diags.Append(valueFromDiags...)
 			ldapAttrSourceValues["id"] = types.StringPointerValue(attrSource.LdapAttributeSource.Id)
 			ldapAttrSourceValues["description"] = types.StringPointerValue(attrSource.LdapAttributeSource.Description)
@@ -182,11 +157,11 @@ func ToState(con context.Context, attributeSourcesFromClient []client.AttributeS
 		} else {
 			attrSourceValues["ldap_attribute_source"] = types.ObjectNull(ldapAttrSourceAttrTypes)
 		}
-		attrSourceElement, valueFromDiags := types.ObjectValue(ElemAttrType(includeDataStoreRefResourceLinkLocation), attrSourceValues)
+		attrSourceElement, valueFromDiags := types.ObjectValue(ElemAttrType(), attrSourceValues)
 		diags.Append(valueFromDiags...)
 		attrSourceElements = append(attrSourceElements, attrSourceElement)
 	}
-	attrToState, valueFromDiags := types.ListValue(types.ObjectType{AttrTypes: ElemAttrType(includeDataStoreRefResourceLinkLocation)}, attrSourceElements)
+	attrToState, valueFromDiags := types.ListValue(types.ObjectType{AttrTypes: ElemAttrType()}, attrSourceElements)
 	diags.Append(valueFromDiags...)
 	return attrToState, diags
 }

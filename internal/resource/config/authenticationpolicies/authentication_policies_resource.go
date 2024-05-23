@@ -13,6 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
@@ -34,7 +37,7 @@ var (
 		"id":                                 types.StringType,
 		"name":                               types.StringType,
 		"description":                        types.StringType,
-		"authentication_api_application_ref": types.ObjectType{AttrTypes: resourcelink.AttrTypeNoLocation()},
+		"authentication_api_application_ref": types.ObjectType{AttrTypes: resourcelink.AttrType()},
 		"enabled":                            types.BoolType,
 		"root_node":                          types.ObjectType{AttrTypes: authenticationpolicytreenode.GetRootNodeAttrTypes()},
 		"handle_failures_locally":            types.BoolType,
@@ -42,12 +45,12 @@ var (
 
 	defaultAuthenticationSourcesAttrTypes = map[string]attr.Type{
 		"type":       types.StringType,
-		"source_ref": types.ObjectType{AttrTypes: resourcelink.AttrTypeNoLocation()},
+		"source_ref": types.ObjectType{AttrTypes: resourcelink.AttrType()},
 	}
 
 	defaultAuthenticationSourcesEmptyList, _ = types.ListValue(types.ObjectType{AttrTypes: defaultAuthenticationSourcesAttrTypes}, []attr.Value{})
 
-	emptyStringList, _ = types.ListValue(types.StringType, []attr.Value{})
+	emptyStringList, _ = types.SetValue(types.StringType, []attr.Value{})
 )
 
 type authenticationPoliciesModel struct {
@@ -55,7 +58,7 @@ type authenticationPoliciesModel struct {
 	AuthnSelectionTrees          types.List   `tfsdk:"authn_selection_trees"`
 	DefaultAuthenticationSources types.List   `tfsdk:"default_authentication_sources"`
 	FailIfNoSelection            types.Bool   `tfsdk:"fail_if_no_selection"`
-	TrackedHttpParameters        types.List   `tfsdk:"tracked_http_parameters"`
+	TrackedHttpParameters        types.Set    `tfsdk:"tracked_http_parameters"`
 }
 
 // authenticationPoliciesResource is a helper function to simplify the provider implementation.
@@ -74,7 +77,7 @@ func (r *authenticationPoliciesResource) Schema(ctx context.Context, req resourc
 		Description: "Manages Authentication Policies",
 		Attributes: map[string]schema.Attribute{
 			"authn_selection_trees": schema.ListNestedAttribute{
-				Optional:    true,
+				Required:    true,
 				Description: "The list of authentication policy trees.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -82,6 +85,9 @@ func (r *authenticationPoliciesResource) Schema(ctx context.Context, req resourc
 							Optional:    true,
 							Computed:    true,
 							Description: "The authentication policy tree id. ID is unique.",
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.UseStateForUnknown(),
+							},
 						},
 						"name": schema.StringAttribute{
 							Optional:    true,
@@ -94,7 +100,7 @@ func (r *authenticationPoliciesResource) Schema(ctx context.Context, req resourc
 						"authentication_api_application_ref": schema.SingleNestedAttribute{
 							Optional:    true,
 							Description: "Authentication API Application Id to be used in this policy branch. If the value is not specified, no Authentication API Application will be used.",
-							Attributes:  resourcelink.ToSchemaNoLocation(),
+							Attributes:  resourcelink.ToSchema(),
 						},
 						"enabled": schema.BoolAttribute{
 							Optional:    true,
@@ -128,7 +134,7 @@ func (r *authenticationPoliciesResource) Schema(ctx context.Context, req resourc
 						},
 						"source_ref": schema.SingleNestedAttribute{
 							Required:    true,
-							Attributes:  resourcelink.ToSchemaNoLocation(),
+							Attributes:  resourcelink.ToSchema(),
 							Description: "A reference to the authentication source.",
 						},
 					},
@@ -140,10 +146,10 @@ func (r *authenticationPoliciesResource) Schema(ctx context.Context, req resourc
 				Default:     booldefault.StaticBool(false),
 				Description: "Fail if policy finds no authentication source.",
 			},
-			"tracked_http_parameters": schema.ListAttribute{
+			"tracked_http_parameters": schema.SetAttribute{
 				Optional:    true,
 				Computed:    true,
-				Default:     listdefault.StaticValue(emptyStringList),
+				Default:     setdefault.StaticValue(emptyStringList),
 				Description: "The HTTP request parameters to track and make available to authentication sources, selectors, and contract mappings throughout the authentication policy.",
 				ElementType: types.StringType,
 			},
@@ -179,7 +185,20 @@ func readAuthenticationPoliciesResponse(ctx context.Context, r *client.Authentic
 
 	state.FailIfNoSelection = types.BoolPointerValue(r.FailIfNoSelection)
 
-	state.DefaultAuthenticationSources, respDiags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: defaultAuthenticationSourcesAttrTypes}, r.DefaultAuthenticationSources)
+	defaultAuthenticationSourcesAttrValues := []attr.Value{}
+	for _, defaultAuthenticationSource := range r.DefaultAuthenticationSources {
+		// #nosec G601
+		sourceRef, respDiags := resourcelink.ToState(ctx, &defaultAuthenticationSource.SourceRef)
+		diags.Append(respDiags...)
+		defaultAuthenticationSourceAttrValues := map[string]attr.Value{
+			"type":       types.StringValue(defaultAuthenticationSource.Type),
+			"source_ref": sourceRef,
+		}
+		defaultAuthenticationSourceToState, respDiags := types.ObjectValue(defaultAuthenticationSourcesAttrTypes, defaultAuthenticationSourceAttrValues)
+		diags.Append(respDiags...)
+		defaultAuthenticationSourcesAttrValues = append(defaultAuthenticationSourcesAttrValues, defaultAuthenticationSourceToState)
+	}
+	state.DefaultAuthenticationSources, respDiags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: defaultAuthenticationSourcesAttrTypes}, defaultAuthenticationSourcesAttrValues)
 	diags.Append(respDiags...)
 
 	if r.AuthnSelectionTrees != nil {
@@ -187,7 +206,7 @@ func readAuthenticationPoliciesResponse(ctx context.Context, r *client.Authentic
 
 		for _, authnSelectionTree := range r.AuthnSelectionTrees {
 
-			authenticationApiApplicationRef, respDiags := resourcelink.ToStateNoLocation(authnSelectionTree.AuthenticationApiApplicationRef)
+			authenticationApiApplicationRef, respDiags := resourcelink.ToState(ctx, authnSelectionTree.AuthenticationApiApplicationRef)
 			diags.Append(respDiags...)
 
 			rootNode, respDiags := authenticationpolicytreenode.ToState(ctx, authnSelectionTree.RootNode)
@@ -215,7 +234,7 @@ func readAuthenticationPoliciesResponse(ctx context.Context, r *client.Authentic
 		state.AuthnSelectionTrees = types.ListNull(types.ObjectType{AttrTypes: authnSelectionTreesAttrTypes})
 	}
 
-	state.TrackedHttpParameters = internaltypes.GetStringList(r.TrackedHttpParameters)
+	state.TrackedHttpParameters = internaltypes.GetStringSet(r.TrackedHttpParameters)
 
 	return diags
 }
@@ -223,50 +242,48 @@ func readAuthenticationPoliciesResponse(ctx context.Context, r *client.Authentic
 func addOptionalAuthenticationPolicyFields(addRequest *client.AuthenticationPolicy, plan authenticationPoliciesModel) error {
 	addRequest.FailIfNoSelection = plan.FailIfNoSelection.ValueBoolPointer()
 
-	if internaltypes.IsDefined(plan.AuthnSelectionTrees) {
-		addRequest.AuthnSelectionTrees = []client.AuthenticationPolicyTree{}
-		for _, authnSelectionTree := range plan.AuthnSelectionTrees.Elements() {
-			authnSelectionTreeObj, ok := authnSelectionTree.(types.Object)
-			if !ok {
-				return fmt.Errorf("authn_selection_trees must be a list of objects")
-			}
-			authenticationPolicyTree := client.AuthenticationPolicyTree{}
-			authnSelectionTreeObjElements := authnSelectionTreeObj.Attributes()
-			if id, ok := authnSelectionTreeObjElements["id"]; ok {
-				authenticationPolicyTree.Id = id.(types.String).ValueStringPointer()
-			}
-			if name, ok := authnSelectionTreeObjElements["name"]; ok {
-				authenticationPolicyTree.Name = name.(types.String).ValueStringPointer()
-			}
-			if description, ok := authnSelectionTreeObjElements["description"]; ok {
-				authenticationPolicyTree.Description = description.(types.String).ValueStringPointer()
-			}
-			if authenticationApiApplicationRef, ok := authnSelectionTreeObjElements["authentication_api_application_ref"]; ok {
-				authenticationApiApplicationRefObj, ok := authenticationApiApplicationRef.(types.Object)
-				if !ok {
-					return fmt.Errorf("authentication_api_application_ref must be an object")
-				}
-				authenticationApiApplicationRef, err := resourcelink.ClientStruct(authenticationApiApplicationRefObj)
-				if err != nil {
-					return err
-				}
-				authenticationPolicyTree.AuthenticationApiApplicationRef = authenticationApiApplicationRef
-			}
-			if enabled, ok := authnSelectionTreeObjElements["enabled"]; ok {
-				authenticationPolicyTree.Enabled = enabled.(types.Bool).ValueBoolPointer()
-			}
-			if rootNode, ok := authnSelectionTreeObjElements["root_node"]; ok {
-				rootNodeObj, err := authenticationpolicytreenode.ClientStruct(rootNode.(types.Object))
-				if err != nil {
-					return err
-				}
-				authenticationPolicyTree.RootNode = rootNodeObj
-			}
-			if handleFailuresLocally, ok := authnSelectionTreeObjElements["handle_failures_locally"]; ok {
-				authenticationPolicyTree.HandleFailuresLocally = handleFailuresLocally.(types.Bool).ValueBoolPointer()
-			}
-			addRequest.AuthnSelectionTrees = append(addRequest.AuthnSelectionTrees, authenticationPolicyTree)
+	addRequest.AuthnSelectionTrees = []client.AuthenticationPolicyTree{}
+	for _, authnSelectionTree := range plan.AuthnSelectionTrees.Elements() {
+		authnSelectionTreeObj, ok := authnSelectionTree.(types.Object)
+		if !ok {
+			return fmt.Errorf("authn_selection_trees must be a list of objects")
 		}
+		authenticationPolicyTree := client.AuthenticationPolicyTree{}
+		authnSelectionTreeObjElements := authnSelectionTreeObj.Attributes()
+		if id, ok := authnSelectionTreeObjElements["id"]; ok {
+			authenticationPolicyTree.Id = id.(types.String).ValueStringPointer()
+		}
+		if name, ok := authnSelectionTreeObjElements["name"]; ok {
+			authenticationPolicyTree.Name = name.(types.String).ValueStringPointer()
+		}
+		if description, ok := authnSelectionTreeObjElements["description"]; ok {
+			authenticationPolicyTree.Description = description.(types.String).ValueStringPointer()
+		}
+		if authenticationApiApplicationRef, ok := authnSelectionTreeObjElements["authentication_api_application_ref"]; ok {
+			authenticationApiApplicationRefObj, ok := authenticationApiApplicationRef.(types.Object)
+			if !ok {
+				return fmt.Errorf("authentication_api_application_ref must be an object")
+			}
+			authenticationApiApplicationRef, err := resourcelink.ClientStruct(authenticationApiApplicationRefObj)
+			if err != nil {
+				return err
+			}
+			authenticationPolicyTree.AuthenticationApiApplicationRef = authenticationApiApplicationRef
+		}
+		if enabled, ok := authnSelectionTreeObjElements["enabled"]; ok {
+			authenticationPolicyTree.Enabled = enabled.(types.Bool).ValueBoolPointer()
+		}
+		if rootNode, ok := authnSelectionTreeObjElements["root_node"]; ok {
+			rootNodeObj, err := authenticationpolicytreenode.ClientStruct(rootNode.(types.Object))
+			if err != nil {
+				return err
+			}
+			authenticationPolicyTree.RootNode = rootNodeObj
+		}
+		if handleFailuresLocally, ok := authnSelectionTreeObjElements["handle_failures_locally"]; ok {
+			authenticationPolicyTree.HandleFailuresLocally = handleFailuresLocally.(types.Bool).ValueBoolPointer()
+		}
+		addRequest.AuthnSelectionTrees = append(addRequest.AuthnSelectionTrees, authenticationPolicyTree)
 	}
 
 	if internaltypes.IsDefined(plan.DefaultAuthenticationSources) {

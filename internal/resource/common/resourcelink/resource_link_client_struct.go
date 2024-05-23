@@ -22,11 +22,5 @@ func ClientStruct(planObj basetypes.ObjectValue) (*client.ResourceLink, error) {
 	idStrValue := objId.(basetypes.StringValue)
 	newLink.SetId(idStrValue.ValueString())
 
-	objLoc, ok := objValues["location"]
-	if ok {
-		locStrValue := objLoc.(basetypes.StringValue)
-		newLink.SetLocation(locStrValue.ValueString())
-	}
-
 	return newLink, nil
 }

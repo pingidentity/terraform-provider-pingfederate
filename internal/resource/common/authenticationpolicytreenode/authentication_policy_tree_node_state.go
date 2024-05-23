@@ -10,29 +10,14 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/policyaction"
 )
 
-// var rootNodeAttrTypes map[string]attr.Type
-
-// var rootNodeAttrTypesBuilt = false
-// var childrenAttrTypesByDepth = map[int]types.ListType{}
-
 func GetRootNodeAttrTypes() map[string]attr.Type {
-	// if rootNodeAttrTypesBuilt {
-	// 	return rootNodeAttrTypes
-	// }
 	return map[string]attr.Type{
 		"action":   types.ObjectType{AttrTypes: policyaction.AttrTypes()},
 		"children": childrenAttrTypes(1),
 	}
-	// rootNodeAttrTypesBuilt = true
-	// return rootNodeAttrTypes
 }
 
 func childrenAttrTypes(depth int) types.ListType {
-	// childrenTypes, ok := childrenAttrTypesByDepth[depth]
-	// if ok {
-	// 	return childrenTypes
-	// }
-
 	attrs := map[string]attr.Type{
 		"action": types.ObjectType{AttrTypes: policyaction.AttrTypes()},
 	}
@@ -42,7 +27,6 @@ func childrenAttrTypes(depth int) types.ListType {
 	return types.ListType{
 		ElemType: types.ObjectType{AttrTypes: attrs},
 	}
-	// return childrenAttrTypesByDepth[depth]
 }
 
 func ToState(ctx context.Context, node *client.AuthenticationPolicyTreeNode) (types.Object, diag.Diagnostics) {

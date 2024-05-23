@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
+	datasourceresourcelink "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -48,21 +49,7 @@ func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
-				Attributes: map[string]schema.Attribute{
-					"id": schema.StringAttribute{
-						Description: "The ID of the resource.",
-						Required:    false,
-						Optional:    false,
-						Computed:    true,
-					},
-					"location": schema.StringAttribute{
-						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
-						Description:        "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-						Required:           false,
-						Optional:           false,
-						Computed:           true,
-					},
-				},
+				Attributes:  datasourceresourcelink.ToDataSourceSchema(),
 			},
 			"auth_sources": schema.ListNestedAttribute{
 				Description: "The local identity authentication sources. Sources are unique.",
@@ -148,13 +135,6 @@ func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req
 								Optional:    false,
 								Computed:    true,
 							},
-							"location": schema.StringAttribute{
-								DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
-								Description:        "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-								Required:           false,
-								Optional:           false,
-								Computed:           true,
-							},
 						},
 					},
 					"template_name": schema.StringAttribute{
@@ -192,13 +172,6 @@ func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req
 								Required:    false,
 								Optional:    false,
 								Computed:    true,
-							},
-							"location": schema.StringAttribute{
-								DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
-								Description:        "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-								Required:           false,
-								Optional:           false,
-								Computed:           true,
 							},
 						},
 					},
@@ -393,13 +366,6 @@ func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req
 								Optional:    false,
 								Computed:    true,
 							},
-							"location": schema.StringAttribute{
-								DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
-								Description:        "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-								Required:           false,
-								Optional:           false,
-								Computed:           true,
-							},
 						},
 					},
 					"require_verified_email": schema.BoolAttribute{
@@ -445,13 +411,6 @@ func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req
 								Required:    false,
 								Optional:    false,
 								Computed:    true,
-							},
-							"location": schema.StringAttribute{
-								DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
-								Description:        "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-								Required:           false,
-								Optional:           false,
-								Computed:           true,
 							},
 						},
 					},

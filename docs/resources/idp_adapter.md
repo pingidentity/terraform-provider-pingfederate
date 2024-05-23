@@ -420,10 +420,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--attribute_contract"></a>
 ### Nested Schema for `attribute_contract`
@@ -542,10 +538,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--attribute_mapping--attribute_sources--custom_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `attribute_mapping.attribute_sources.custom_attribute_source.type`
@@ -612,10 +604,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--attribute_mapping--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `attribute_mapping.attribute_sources.jdbc_attribute_source.type`
@@ -668,10 +656,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -763,10 +747,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 ## Import
 
