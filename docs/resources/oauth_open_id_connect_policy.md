@@ -179,7 +179,7 @@ Read-Only:
 - `type` (String) The data store type of this attribute source.
 
 <a id="nestedatt--attribute_mapping--attribute_sources--custom_attribute_source--data_store_ref"></a>
-### Nested Schema for `attribute_mapping.attribute_sources.custom_attribute_source.type`
+### Nested Schema for `attribute_mapping.attribute_sources.custom_attribute_source.data_store_ref`
 
 Required:
 
@@ -187,7 +187,7 @@ Required:
 
 
 <a id="nestedatt--attribute_mapping--attribute_sources--custom_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `attribute_mapping.attribute_sources.custom_attribute_source.type`
+### Nested Schema for `attribute_mapping.attribute_sources.custom_attribute_source.attribute_contract_fulfillment`
 
 Required:
 
@@ -211,7 +211,7 @@ Optional:
 
 
 <a id="nestedatt--attribute_mapping--attribute_sources--custom_attribute_source--filter_fields"></a>
-### Nested Schema for `attribute_mapping.attribute_sources.custom_attribute_source.type`
+### Nested Schema for `attribute_mapping.attribute_sources.custom_attribute_source.filter_fields`
 
 Required:
 
@@ -245,7 +245,7 @@ Read-Only:
 - `type` (String) The data store type of this attribute source.
 
 <a id="nestedatt--attribute_mapping--attribute_sources--jdbc_attribute_source--data_store_ref"></a>
-### Nested Schema for `attribute_mapping.attribute_sources.jdbc_attribute_source.type`
+### Nested Schema for `attribute_mapping.attribute_sources.jdbc_attribute_source.data_store_ref`
 
 Required:
 
@@ -253,7 +253,7 @@ Required:
 
 
 <a id="nestedatt--attribute_mapping--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `attribute_mapping.attribute_sources.jdbc_attribute_source.type`
+### Nested Schema for `attribute_mapping.attribute_sources.jdbc_attribute_source.attribute_contract_fulfillment`
 
 Required:
 
@@ -298,7 +298,7 @@ Optional:
 - `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
 
 <a id="nestedatt--attribute_mapping--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `attribute_mapping.attribute_sources.ldap_attribute_source.search_attributes`
+### Nested Schema for `attribute_mapping.attribute_sources.ldap_attribute_source.data_store_ref`
 
 Required:
 
@@ -306,7 +306,7 @@ Required:
 
 
 <a id="nestedatt--attribute_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `attribute_mapping.attribute_sources.ldap_attribute_source.search_attributes`
+### Nested Schema for `attribute_mapping.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
 
 Required:
 
@@ -330,7 +330,7 @@ Optional:
 
 
 <a id="nestedatt--attribute_mapping--attribute_sources--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `attribute_mapping.attribute_sources.ldap_attribute_source.search_attributes`
+### Nested Schema for `attribute_mapping.attribute_sources.ldap_attribute_source.binary_attribute_settings`
 
 Optional:
 
@@ -362,7 +362,7 @@ Optional:
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 
 <a id="nestedatt--attribute_mapping--issuance_criteria--conditional_criteria--source"></a>
-### Nested Schema for `attribute_mapping.issuance_criteria.conditional_criteria.error_result`
+### Nested Schema for `attribute_mapping.issuance_criteria.conditional_criteria.source`
 
 Required:
 
