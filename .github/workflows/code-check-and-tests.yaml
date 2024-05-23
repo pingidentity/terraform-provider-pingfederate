@@ -86,6 +86,7 @@ jobs:
       # Use git add -N . to ensure that new files are listed in the git diff check
       - run: |
           go generate ./...
+          python3 ./dev-scripts/markdownDocFormatting.py authentication_policies.md authentication_policies_fragment.md
           git add -N .
           git diff --exit-code || \
             (echo; echo "Unexpected difference after code generation. Run 'make generate' command and commit."; exit 1)
