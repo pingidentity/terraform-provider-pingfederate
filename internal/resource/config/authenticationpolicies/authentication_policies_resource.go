@@ -3,7 +3,6 @@ package authenticationpolicies
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -186,12 +185,11 @@ func readAuthenticationPoliciesResponse(ctx context.Context, r *client.Authentic
 	state.FailIfNoSelection = types.BoolPointerValue(r.FailIfNoSelection)
 
 	defaultAuthenticationSourcesAttrValues := []attr.Value{}
-	for _, defaultAuthenticationSource := range r.DefaultAuthenticationSources {
-		// #nosec G601
-		sourceRef, respDiags := resourcelink.ToState(ctx, &defaultAuthenticationSource.SourceRef)
+	for i := range r.DefaultAuthenticationSources {
+		sourceRef, respDiags := resourcelink.ToState(ctx, &r.DefaultAuthenticationSources[i].SourceRef)
 		diags.Append(respDiags...)
 		defaultAuthenticationSourceAttrValues := map[string]attr.Value{
-			"type":       types.StringValue(defaultAuthenticationSource.Type),
+			"type":       types.StringValue(r.DefaultAuthenticationSources[i].Type),
 			"source_ref": sourceRef,
 		}
 		defaultAuthenticationSourceToState, respDiags := types.ObjectValue(defaultAuthenticationSourcesAttrTypes, defaultAuthenticationSourceAttrValues)
@@ -244,12 +242,8 @@ func addOptionalAuthenticationPolicyFields(addRequest *client.AuthenticationPoli
 
 	addRequest.AuthnSelectionTrees = []client.AuthenticationPolicyTree{}
 	for _, authnSelectionTree := range plan.AuthnSelectionTrees.Elements() {
-		authnSelectionTreeObj, ok := authnSelectionTree.(types.Object)
-		if !ok {
-			return fmt.Errorf("authn_selection_trees must be a list of objects")
-		}
 		authenticationPolicyTree := client.AuthenticationPolicyTree{}
-		authnSelectionTreeObjElements := authnSelectionTreeObj.Attributes()
+		authnSelectionTreeObjElements := authnSelectionTree.(types.Object).Attributes()
 		if id, ok := authnSelectionTreeObjElements["id"]; ok {
 			authenticationPolicyTree.Id = id.(types.String).ValueStringPointer()
 		}
@@ -260,11 +254,7 @@ func addOptionalAuthenticationPolicyFields(addRequest *client.AuthenticationPoli
 			authenticationPolicyTree.Description = description.(types.String).ValueStringPointer()
 		}
 		if authenticationApiApplicationRef, ok := authnSelectionTreeObjElements["authentication_api_application_ref"]; ok {
-			authenticationApiApplicationRefObj, ok := authenticationApiApplicationRef.(types.Object)
-			if !ok {
-				return fmt.Errorf("authentication_api_application_ref must be an object")
-			}
-			authenticationApiApplicationRef, err := resourcelink.ClientStruct(authenticationApiApplicationRefObj)
+			authenticationApiApplicationRef, err := resourcelink.ClientStruct(authenticationApiApplicationRef.(types.Object))
 			if err != nil {
 				return err
 			}
@@ -317,7 +307,7 @@ func (r *authenticationPoliciesResource) Create(ctx context.Context, req resourc
 	newPolicy := client.NewAuthenticationPolicy()
 	err := addOptionalAuthenticationPolicyFields(newPolicy, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Authentication Policies", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to update request for Authentication Policies", err.Error())
 		return
 	}
 
@@ -382,7 +372,7 @@ func (r *authenticationPoliciesResource) Update(ctx context.Context, req resourc
 	updatedPolicies := client.NewAuthenticationPolicy()
 	err := addOptionalAuthenticationPolicyFields(updatedPolicies, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the Authentication Policies", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to update request for the Authentication Policies", err.Error())
 		return
 	}
 

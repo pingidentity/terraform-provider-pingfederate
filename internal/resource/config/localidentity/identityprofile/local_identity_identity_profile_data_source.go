@@ -128,14 +128,7 @@ func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req
 						Required:    false,
 						Optional:    false,
 						Computed:    true,
-						Attributes: map[string]schema.Attribute{
-							"id": schema.StringAttribute{
-								Description: "The ID of the resource.",
-								Required:    false,
-								Optional:    false,
-								Computed:    true,
-							},
-						},
+						Attributes:  datasourceresourcelink.ToDataSourceSchema(),
 					},
 					"template_name": schema.StringAttribute{
 						Description: "The template name for the registration configuration.",
@@ -166,14 +159,7 @@ func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req
 						Required:    false,
 						Optional:    false,
 						Computed:    true,
-						Attributes: map[string]schema.Attribute{
-							"id": schema.StringAttribute{
-								Description: "The ID of the resource.",
-								Required:    false,
-								Optional:    false,
-								Computed:    true,
-							},
-						},
+						Attributes:  datasourceresourcelink.ToDataSourceSchema(),
 					},
 					"execute_workflow": schema.StringAttribute{
 						Description: "This setting indicates whether PingFederate should execute the workflow before or after account creation. The default is to run the registration workflow after account creation.",
@@ -359,14 +345,7 @@ func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req
 						Required:    false,
 						Optional:    false,
 						Computed:    true,
-						Attributes: map[string]schema.Attribute{
-							"id": schema.StringAttribute{
-								Description: "The ID of the resource.",
-								Required:    false,
-								Optional:    false,
-								Computed:    true,
-							},
-						},
+						Attributes:  datasourceresourcelink.ToDataSourceSchema(),
 					},
 					"require_verified_email": schema.BoolAttribute{
 						Description: "Whether the user must verify their email address before they can complete a single sign-on transaction. The default is false.",
@@ -405,14 +384,7 @@ func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req
 						Required:    false,
 						Optional:    false,
 						Computed:    true,
-						Attributes: map[string]schema.Attribute{
-							"id": schema.StringAttribute{
-								Description: "The ID of the resource.",
-								Required:    false,
-								Optional:    false,
-								Computed:    true,
-							},
-						},
+						Attributes:  datasourceresourcelink.ToDataSourceSchema(),
 					},
 					"data_store_mapping": schema.MapNestedAttribute{
 						Description: "The data store mapping.",

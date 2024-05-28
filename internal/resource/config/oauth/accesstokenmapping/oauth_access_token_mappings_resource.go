@@ -69,7 +69,6 @@ func (r *oauthAccessTokenMappingsResource) Schema(ctx context.Context, req resou
 				Required:    true,
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.RequiresReplace(),
-					objectplanmodifier.UseStateForUnknown(),
 				},
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{
@@ -165,7 +164,7 @@ func readOauthAccessTokenMappingsResponse(ctx context.Context, r *client.AccessT
 	return diags
 }
 
-func addOptionalOauthAccessTokenMappingsFields(ctx context.Context, addRequest *client.AccessTokenMapping, plan oauthAccessTokenMappingsResourceModel) error {
+func addOptionalOauthAccessTokenMappingsFields(addRequest *client.AccessTokenMapping, plan oauthAccessTokenMappingsResourceModel) error {
 	var err error
 	if internaltypes.IsDefined(plan.AttributeSources) {
 		addRequest.AttributeSources = []client.AttributeSourceAggregation{}
@@ -236,7 +235,7 @@ func (r *oauthAccessTokenMappingsResource) Create(ctx context.Context, req resou
 
 	createOauthAccessTokenMappings := client.NewAccessTokenMapping(*accessTokenMappingContext, *accessTokenManagerRef, attributeContractFulfillment)
 
-	err = addOptionalOauthAccessTokenMappingsFields(ctx, createOauthAccessTokenMappings, plan)
+	err = addOptionalOauthAccessTokenMappingsFields(createOauthAccessTokenMappings, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Mapping", err.Error())
 		return
@@ -325,7 +324,7 @@ func (r *oauthAccessTokenMappingsResource) Update(ctx context.Context, req resou
 	}
 	updateOauthAccessTokenMappings := client.NewAccessTokenMapping(*accessTokenMappingContext, *accessTokenManagerRef, attributeContractFulfillment)
 
-	err = addOptionalOauthAccessTokenMappingsFields(ctx, updateOauthAccessTokenMappings, plan)
+	err = addOptionalOauthAccessTokenMappingsFields(updateOauthAccessTokenMappings, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Mapping", err.Error())
 		return

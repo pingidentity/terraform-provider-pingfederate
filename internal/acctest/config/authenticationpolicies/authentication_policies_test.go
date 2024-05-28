@@ -257,6 +257,104 @@ resource "pingfederate_authentication_policies" "%[1]s" {
       name        = "Fallback Policy"
       description = "Used to perform authentication if other Policies are not invoked"
       enabled     = true
+    },
+    {
+      root_node = {
+        action = {
+          fragment_policy_action = {
+            fragment = {
+              id = "FirstFactor"
+            },
+            fragment_mapping = {
+              attribute_sources = []
+              attribute_contract_fulfillment = {
+                "subject" = {
+                  source = {
+                    type = "NO_MAPPING"
+                  }
+                }
+              }
+              issuance_criteria = {
+                conditional_criteria = []
+              }
+            }
+          }
+        },
+        children = [
+          {
+            action = {
+              restart_policy_action = {
+                context = "Fail"
+              }
+            }
+          },
+          {
+            action = {
+              local_identity_mapping_policy_action = {
+                context = "Success"
+                local_identity_ref = {
+                  id = "adminIdentityProfile"
+                }
+                inbound_mapping = {
+                  attribute_sources = []
+                  attribute_contract_fulfillment = {
+                    "pf.local.identity.unique.id" = {
+                      source = {
+                        type = "TEXT"
+                      }
+                      value = "test"
+                    }
+                  }
+                  issuance_criteria = {
+                    conditional_criteria = []
+                  }
+                }
+                outbound_attribute_mapping = {
+                  attribute_sources = []
+                  attribute_contract_fulfillment = {
+                    "firstName" = {
+                      source = {
+                        type = "NO_MAPPING"
+                      }
+                    },
+                    "lastName" = {
+                      source = {
+                        type = "NO_MAPPING"
+                      }
+                    },
+                    "ImmutableID" = {
+                      source = {
+                        type = "NO_MAPPING"
+                      }
+                    },
+                    "mail" = {
+                      source = {
+                        type = "NO_MAPPING"
+                      }
+                    },
+                    "subject" = {
+                      source = {
+                        type = "NO_MAPPING"
+                      }
+                    },
+                    "SAML_AUTHN_CTX" = {
+                      source = {
+                        type = "NO_MAPPING"
+                      }
+                    }
+                  }
+                  issuance_criteria = {
+                    conditional_criteria = []
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+      name                    = "Coverage For Testing"
+      enabled                 = true
+      handle_failures_locally = false
     }
   ]
 }
@@ -422,6 +520,14 @@ func testAccCheckExpectedAuthenticationPoliciesAttributes(id, description string
 				return err
 			}
 
+			err = acctest.TestAttributesMatchBool(resourceType, nil,
+				"enabled",
+				true,
+				*failbackPolicy.Enabled)
+			if err != nil {
+				return err
+			}
+
 			err = acctest.TestAttributesMatchStringPointer(resourceType, nil,
 				"description",
 				"Used to perform authentication if other Policies are not invoked",
@@ -458,6 +564,120 @@ func testAccCheckExpectedAuthenticationPoliciesAttributes(id, description string
 				"context",
 				"Success",
 				failbackPolicy.RootNode.Children[1].Action.DonePolicyAction.Context)
+			if err != nil {
+				return err
+			}
+
+			//  check coverage for testing policy
+			coverageForTestingPolicy := response.AuthnSelectionTrees[2]
+			err = acctest.TestAttributesMatchStringPointer(resourceType, nil,
+				"name",
+				"Coverage For Testing",
+				coverageForTestingPolicy.Name)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, nil,
+				"id",
+				"FirstFactor",
+				coverageForTestingPolicy.RootNode.Action.FragmentPolicyAction.Fragment.Id)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, nil,
+				"type",
+				"NO_MAPPING",
+				coverageForTestingPolicy.RootNode.Action.FragmentPolicyAction.FragmentMapping.AttributeContractFulfillment["subject"].Source.Type)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchStringPointer(resourceType, nil,
+				"context",
+				"Fail",
+				coverageForTestingPolicy.RootNode.Children[0].Action.RestartPolicyAction.Context)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchStringPointer(resourceType, nil,
+				"context",
+				"Success",
+				coverageForTestingPolicy.RootNode.Children[1].Action.LocalIdentityMappingPolicyAction.Context)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, nil,
+				"id",
+				"adminIdentityProfile",
+				coverageForTestingPolicy.RootNode.Children[1].Action.LocalIdentityMappingPolicyAction.LocalIdentityRef.Id)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, nil,
+				"type",
+				"TEXT",
+				coverageForTestingPolicy.RootNode.Children[1].Action.LocalIdentityMappingPolicyAction.InboundMapping.AttributeContractFulfillment["pf.local.identity.unique.id"].Source.Type)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, nil,
+				"value",
+				"test",
+				coverageForTestingPolicy.RootNode.Children[1].Action.LocalIdentityMappingPolicyAction.InboundMapping.AttributeContractFulfillment["pf.local.identity.unique.id"].Value)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, nil,
+				"type",
+				"NO_MAPPING",
+				coverageForTestingPolicy.RootNode.Children[1].Action.LocalIdentityMappingPolicyAction.OutboundAttributeMapping.AttributeContractFulfillment["firstName"].Source.Type)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, nil,
+				"type",
+				"NO_MAPPING",
+				coverageForTestingPolicy.RootNode.Children[1].Action.LocalIdentityMappingPolicyAction.OutboundAttributeMapping.AttributeContractFulfillment["lastName"].Source.Type)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, nil,
+				"type",
+				"NO_MAPPING",
+				coverageForTestingPolicy.RootNode.Children[1].Action.LocalIdentityMappingPolicyAction.OutboundAttributeMapping.AttributeContractFulfillment["ImmutableID"].Source.Type)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, nil,
+				"type",
+				"NO_MAPPING",
+				coverageForTestingPolicy.RootNode.Children[1].Action.LocalIdentityMappingPolicyAction.OutboundAttributeMapping.AttributeContractFulfillment["mail"].Source.Type)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, nil,
+				"type",
+				"NO_MAPPING",
+				coverageForTestingPolicy.RootNode.Children[1].Action.LocalIdentityMappingPolicyAction.OutboundAttributeMapping.AttributeContractFulfillment["subject"].Source.Type)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, nil,
+				"type",
+				"NO_MAPPING",
+				coverageForTestingPolicy.RootNode.Children[1].Action.LocalIdentityMappingPolicyAction.OutboundAttributeMapping.AttributeContractFulfillment["SAML_AUTHN_CTX"].Source.Type)
 			if err != nil {
 				return err
 			}
