@@ -34,7 +34,7 @@ terraform.rc
 terraform
 
 *.DS_Store*
-scripts/*
+dev/*
 scratch/*
 *__debug_bin*
 server-profiles/shared-profile/instance/bulk-config/data.json.subst

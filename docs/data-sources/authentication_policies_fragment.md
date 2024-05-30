@@ -34,7 +34,6 @@ Describes an Authentication Policy Fragment
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--outputs"></a>
@@ -43,7 +42,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node"></a>
@@ -147,10 +145,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--action--apc_mapping_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.action.apc_mapping_policy_action.context.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
@@ -217,10 +211,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--action--apc_mapping_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.action.apc_mapping_policy_action.context.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
@@ -273,10 +263,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--action--apc_mapping_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -369,10 +355,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--root_node--action--authn_selector_policy_action"></a>
@@ -393,46 +375,18 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--root_node--action--authn_source_policy_action"></a>
 ### Nested Schema for `root_node.action.authn_source_policy_action`
 
-Required:
-
-- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--action--authn_source_policy_action--authentication_source))
-
 Optional:
 
 - `attribute_rules` (Attributes) A collection of attribute rules (see [below for nested schema](#nestedatt--root_node--action--authn_source_policy_action--attribute_rules))
+- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--action--authn_source_policy_action--authentication_source))
 - `context` (String) The result context.
 - `input_user_id_mapping` (Attributes) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--action--authn_source_policy_action--input_user_id_mapping))
 - `user_id_authenticated` (Boolean) Indicates whether the user ID obtained by the user ID mapping is authenticated.
-
-<a id="nestedatt--root_node--action--authn_source_policy_action--authentication_source"></a>
-### Nested Schema for `root_node.action.authn_source_policy_action.authentication_source`
-
-Required:
-
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--action--authn_source_policy_action--user_id_authenticated--source_ref))
-- `type` (String) The type of this authentication source.
-
-<a id="nestedatt--root_node--action--authn_source_policy_action--user_id_authenticated--source_ref"></a>
-### Nested Schema for `root_node.action.authn_source_policy_action.user_id_authenticated.source_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 
 <a id="nestedatt--root_node--action--authn_source_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.action.authn_source_policy_action.attribute_rules`
@@ -465,6 +419,23 @@ Optional:
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 - `type` (String) The source type of this key.
 
+
+
+
+<a id="nestedatt--root_node--action--authn_source_policy_action--authentication_source"></a>
+### Nested Schema for `root_node.action.authn_source_policy_action.authentication_source`
+
+Required:
+
+- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--action--authn_source_policy_action--user_id_authenticated--source_ref))
+- `type` (String) The type of this authentication source.
+
+<a id="nestedatt--root_node--action--authn_source_policy_action--user_id_authenticated--source_ref"></a>
+### Nested Schema for `root_node.action.authn_source_policy_action.user_id_authenticated.source_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
 
 
 
@@ -526,10 +497,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--action--fragment_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.action.fragment_policy_action.attribute_rules`
@@ -568,30 +535,33 @@ Optional:
 <a id="nestedatt--root_node--action--fragment_policy_action--fragment_mapping"></a>
 ### Nested Schema for `root_node.action.fragment_policy_action.fragment_mapping`
 
-Required:
-
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment))
-
 Optional:
 
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment))
 - `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--action--fragment_policy_action--fragment_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--action--fragment_policy_action--fragment_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.action.fragment_policy_action.fragment_mapping.attribute_contract_fulfillment`
 
-Optional:
+Required:
 
 - `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment--source))
+
+Optional:
+
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--action--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment--source"></a>
 ### Nested Schema for `root_node.action.fragment_policy_action.fragment_mapping.attribute_contract_fulfillment.source`
 
+Required:
+
+- `type` (String) The source type of this key.
+
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
-- `type` (String) The source type of this key.
 
 
 
@@ -628,10 +598,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--action--fragment_policy_action--fragment_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -699,10 +665,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--action--fragment_policy_action--fragment_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.action.fragment_policy_action.fragment_mapping.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
@@ -755,10 +717,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--action--fragment_policy_action--fragment_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -865,10 +823,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--outbound_attribute_mapping"></a>
 ### Nested Schema for `root_node.action.local_identity_mapping_policy_action.outbound_attribute_mapping`
@@ -933,10 +887,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -1004,10 +954,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
@@ -1060,10 +1006,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -1213,10 +1155,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
@@ -1283,10 +1221,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.action.local_identity_mapping_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
@@ -1339,10 +1273,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--action--local_identity_mapping_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -1539,10 +1469,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -1609,10 +1535,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -1665,10 +1587,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -1761,10 +1679,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--root_node--children--action--authn_selector_policy_action"></a>
@@ -1785,46 +1699,18 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--root_node--children--action--authn_source_policy_action"></a>
 ### Nested Schema for `root_node.children.action.authn_source_policy_action`
 
-Required:
-
-- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--authentication_source))
-
 Optional:
 
 - `attribute_rules` (Attributes) A collection of attribute rules (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--attribute_rules))
+- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--authentication_source))
 - `context` (String) The result context.
 - `input_user_id_mapping` (Attributes) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--input_user_id_mapping))
 - `user_id_authenticated` (Boolean) Indicates whether the user ID obtained by the user ID mapping is authenticated.
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--authentication_source"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.authentication_source`
-
-Required:
-
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--authentication_source--source_ref))
-- `type` (String) The type of this authentication source.
-
-<a id="nestedatt--root_node--children--action--restart_policy_action--authentication_source--source_ref"></a>
-### Nested Schema for `root_node.children.action.restart_policy_action.authentication_source.source_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.attribute_rules`
@@ -1857,6 +1743,23 @@ Optional:
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 - `type` (String) The source type of this key.
 
+
+
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--authentication_source"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.authentication_source`
+
+Required:
+
+- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--authentication_source--source_ref))
+- `type` (String) The type of this authentication source.
+
+<a id="nestedatt--root_node--children--action--restart_policy_action--authentication_source--source_ref"></a>
+### Nested Schema for `root_node.children.action.restart_policy_action.authentication_source.source_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
 
 
 
@@ -1918,10 +1821,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.attribute_rules`
@@ -1960,30 +1859,33 @@ Optional:
 <a id="nestedatt--root_node--children--action--restart_policy_action--fragment_mapping"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.fragment_mapping`
 
-Required:
-
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--fragment_mapping--attribute_contract_fulfillment))
-
 Optional:
 
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--fragment_mapping--attribute_contract_fulfillment))
 - `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--fragment_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--fragment_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.fragment_mapping.attribute_contract_fulfillment`
 
-Optional:
+Required:
 
 - `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--action--restart_policy_action--fragment_mapping--issuance_criteria--source))
+
+Optional:
+
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--fragment_mapping--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.fragment_mapping.issuance_criteria.source`
 
+Required:
+
+- `type` (String) The source type of this key.
+
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
-- `type` (String) The source type of this key.
 
 
 
@@ -2020,10 +1922,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -2091,10 +1989,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.fragment_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -2147,10 +2041,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -2257,10 +2147,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--outbound_attribute_mapping"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.outbound_attribute_mapping`
@@ -2325,10 +2211,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -2396,10 +2278,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -2452,10 +2330,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -2605,10 +2479,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -2675,10 +2545,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -2731,10 +2597,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -2931,10 +2793,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--apc_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.apc_mapping_policy_action.context.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -3001,10 +2859,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--apc_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.apc_mapping_policy_action.context.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -3057,10 +2911,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--apc_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -3153,10 +3003,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--root_node--children--children--children--authn_selector_policy_action"></a>
@@ -3177,46 +3023,18 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--root_node--children--children--children--authn_source_policy_action"></a>
 ### Nested Schema for `root_node.children.children.children.authn_source_policy_action`
 
-Required:
-
-- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--authn_source_policy_action--authentication_source))
-
 Optional:
 
 - `attribute_rules` (Attributes) A collection of attribute rules (see [below for nested schema](#nestedatt--root_node--children--children--children--authn_source_policy_action--attribute_rules))
+- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--authn_source_policy_action--authentication_source))
 - `context` (String) The result context.
 - `input_user_id_mapping` (Attributes) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--authn_source_policy_action--input_user_id_mapping))
 - `user_id_authenticated` (Boolean) Indicates whether the user ID obtained by the user ID mapping is authenticated.
-
-<a id="nestedatt--root_node--children--children--children--authn_source_policy_action--authentication_source"></a>
-### Nested Schema for `root_node.children.children.children.authn_source_policy_action.authentication_source`
-
-Required:
-
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--authn_source_policy_action--user_id_authenticated--source_ref))
-- `type` (String) The type of this authentication source.
-
-<a id="nestedatt--root_node--children--children--children--authn_source_policy_action--user_id_authenticated--source_ref"></a>
-### Nested Schema for `root_node.children.children.children.authn_source_policy_action.user_id_authenticated.source_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 
 <a id="nestedatt--root_node--children--children--children--authn_source_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.authn_source_policy_action.attribute_rules`
@@ -3249,6 +3067,23 @@ Optional:
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 - `type` (String) The source type of this key.
 
+
+
+
+<a id="nestedatt--root_node--children--children--children--authn_source_policy_action--authentication_source"></a>
+### Nested Schema for `root_node.children.children.children.authn_source_policy_action.authentication_source`
+
+Required:
+
+- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--authn_source_policy_action--user_id_authenticated--source_ref))
+- `type` (String) The type of this authentication source.
+
+<a id="nestedatt--root_node--children--children--children--authn_source_policy_action--user_id_authenticated--source_ref"></a>
+### Nested Schema for `root_node.children.children.children.authn_source_policy_action.user_id_authenticated.source_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
 
 
 
@@ -3310,10 +3145,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--fragment_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.fragment_policy_action.attribute_rules`
@@ -3352,30 +3183,33 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--fragment_policy_action--fragment_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.fragment_policy_action.fragment_mapping`
 
-Required:
-
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment))
-
 Optional:
 
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment))
 - `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--fragment_policy_action--fragment_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--fragment_policy_action--fragment_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.fragment_policy_action.fragment_mapping.attribute_contract_fulfillment`
 
-Optional:
+Required:
 
 - `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--fragment_policy_action--fragment_mapping--issuance_criteria--source))
+
+Optional:
+
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--fragment_policy_action--fragment_mapping--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.fragment_policy_action.fragment_mapping.issuance_criteria.source`
 
+Required:
+
+- `type` (String) The source type of this key.
+
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
-- `type` (String) The source type of this key.
 
 
 
@@ -3412,10 +3246,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--fragment_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -3483,10 +3313,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--fragment_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.fragment_policy_action.fragment_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -3539,10 +3365,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--fragment_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -3649,10 +3471,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping`
@@ -3717,10 +3535,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -3788,10 +3602,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -3844,10 +3654,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -3997,10 +3803,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -4067,10 +3869,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -4123,10 +3921,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -4323,10 +4117,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--custom_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action.context.issuance_criteria.custom_attribute_source.attribute_contract_fulfillment`
@@ -4393,10 +4183,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--jdbc_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action.context.issuance_criteria.jdbc_attribute_source.attribute_contract_fulfillment`
@@ -4449,10 +4235,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -4545,10 +4327,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--root_node--children--children--children--action--authn_selector_policy_action"></a>
@@ -4569,46 +4347,18 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--root_node--children--children--children--action--authn_source_policy_action"></a>
 ### Nested Schema for `root_node.children.children.children.action.authn_source_policy_action`
 
-Required:
-
-- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--authentication_source))
-
 Optional:
 
 - `attribute_rules` (Attributes) A collection of attribute rules (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--attribute_rules))
+- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--authentication_source))
 - `context` (String) The result context.
 - `input_user_id_mapping` (Attributes) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--input_user_id_mapping))
 - `user_id_authenticated` (Boolean) Indicates whether the user ID obtained by the user ID mapping is authenticated.
-
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--authentication_source"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.authentication_source`
-
-Required:
-
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref))
-- `type` (String) The type of this authentication source.
-
-<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref"></a>
-### Nested Schema for `root_node.children.children.children.action.restart_policy_action.user_id_authenticated.source_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action.attribute_rules`
@@ -4641,6 +4391,23 @@ Optional:
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 - `type` (String) The source type of this key.
 
+
+
+
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--authentication_source"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.authentication_source`
+
+Required:
+
+- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref))
+- `type` (String) The type of this authentication source.
+
+<a id="nestedatt--root_node--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref"></a>
+### Nested Schema for `root_node.children.children.children.action.restart_policy_action.user_id_authenticated.source_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
 
 
 
@@ -4702,10 +4469,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action.attribute_rules`
@@ -4744,30 +4507,33 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--fragment_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action.fragment_mapping`
 
-Required:
-
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--fragment_mapping--attribute_contract_fulfillment))
-
 Optional:
 
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--fragment_mapping--attribute_contract_fulfillment))
 - `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--fragment_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--fragment_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action.fragment_mapping.attribute_contract_fulfillment`
 
-Optional:
+Required:
 
 - `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--action--restart_policy_action--fragment_mapping--issuance_criteria--source))
+
+Optional:
+
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--fragment_mapping--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action.fragment_mapping.issuance_criteria.source`
 
+Required:
+
+- `type` (String) The source type of this key.
+
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
-- `type` (String) The source type of this key.
 
 
 
@@ -4804,10 +4570,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--fragment_mapping--issuance_criteria--custom_attribute_source--attribute_contract_fulfillment"></a>
@@ -4875,10 +4637,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--fragment_mapping--issuance_criteria--jdbc_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action.fragment_mapping.issuance_criteria.jdbc_attribute_source.attribute_contract_fulfillment`
@@ -4931,10 +4689,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -5041,10 +4795,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--outbound_attribute_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action.outbound_attribute_mapping`
@@ -5109,10 +4859,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source--attribute_contract_fulfillment"></a>
@@ -5180,10 +4926,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.jdbc_attribute_source.attribute_contract_fulfillment`
@@ -5236,10 +4978,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -5389,10 +5127,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--custom_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.custom_attribute_source.attribute_contract_fulfillment`
@@ -5459,10 +5193,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--jdbc_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.jdbc_attribute_source.attribute_contract_fulfillment`
@@ -5515,10 +5245,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -5715,10 +5441,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.context.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
@@ -5785,10 +5507,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.context.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
@@ -5841,10 +5559,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--context--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -5937,10 +5651,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--authn_selector_policy_action"></a>
@@ -5961,46 +5671,18 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--authn_source_policy_action"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.authn_source_policy_action`
 
-Required:
-
-- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--authentication_source))
-
 Optional:
 
 - `attribute_rules` (Attributes) A collection of attribute rules (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--attribute_rules))
+- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--authentication_source))
 - `context` (String) The result context.
 - `input_user_id_mapping` (Attributes) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--input_user_id_mapping))
 - `user_id_authenticated` (Boolean) Indicates whether the user ID obtained by the user ID mapping is authenticated.
-
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--authentication_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.authentication_source`
-
-Required:
-
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref))
-- `type` (String) The type of this authentication source.
-
-<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.user_id_authenticated.source_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.attribute_rules`
@@ -6033,6 +5715,23 @@ Optional:
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 - `type` (String) The source type of this key.
 
+
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--authentication_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.authentication_source`
+
+Required:
+
+- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref))
+- `type` (String) The type of this authentication source.
+
+<a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.user_id_authenticated.source_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
 
 
 
@@ -6094,10 +5793,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.attribute_rules`
@@ -6136,30 +5831,33 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--fragment_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.fragment_mapping`
 
-Required:
-
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--fragment_mapping--attribute_contract_fulfillment))
-
 Optional:
 
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--fragment_mapping--attribute_contract_fulfillment))
 - `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--fragment_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.fragment_mapping.attribute_contract_fulfillment`
 
-Optional:
+Required:
 
 - `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--restart_policy_action--fragment_mapping--attribute_contract_fulfillment--source))
+
+Optional:
+
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--fragment_mapping--attribute_contract_fulfillment--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.fragment_mapping.attribute_contract_fulfillment.source`
 
+Required:
+
+- `type` (String) The source type of this key.
+
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
-- `type` (String) The source type of this key.
 
 
 
@@ -6196,10 +5894,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--fragment_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -6267,10 +5961,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--fragment_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.fragment_mapping.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
@@ -6323,10 +6013,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--fragment_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -6433,10 +6119,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping`
@@ -6501,10 +6183,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -6572,10 +6250,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
@@ -6628,10 +6302,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -6781,10 +6451,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
@@ -6851,10 +6517,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.restart_policy_action.inbound_mapping.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
@@ -6907,10 +6569,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--restart_policy_action--inbound_mapping--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -7107,10 +6765,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -7177,10 +6831,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -7233,10 +6883,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -7329,10 +6975,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--authn_selector_policy_action"></a>
@@ -7353,46 +6995,18 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--authn_source_policy_action"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.authn_source_policy_action`
 
-Required:
-
-- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--authentication_source))
-
 Optional:
 
 - `attribute_rules` (Attributes) A collection of attribute rules (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--attribute_rules))
+- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--authentication_source))
 - `context` (String) The result context.
 - `input_user_id_mapping` (Attributes) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--input_user_id_mapping))
 - `user_id_authenticated` (Boolean) Indicates whether the user ID obtained by the user ID mapping is authenticated.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--authentication_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.authentication_source`
-
-Required:
-
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--authentication_source--source_ref))
-- `type` (String) The type of this authentication source.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--authentication_source--source_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.authentication_source.source_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.attribute_rules`
@@ -7425,6 +7039,23 @@ Optional:
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 - `type` (String) The source type of this key.
 
+
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--authentication_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.authentication_source`
+
+Required:
+
+- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--authentication_source--source_ref))
+- `type` (String) The type of this authentication source.
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--authentication_source--source_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.authentication_source.source_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
 
 
 
@@ -7486,10 +7117,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.attribute_rules`
@@ -7528,30 +7155,33 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--fragment_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.fragment_mapping`
 
-Required:
-
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--fragment_mapping--attribute_contract_fulfillment))
-
 Optional:
 
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--fragment_mapping--attribute_contract_fulfillment))
 - `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--fragment_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.fragment_mapping.attribute_contract_fulfillment`
 
-Optional:
+Required:
 
 - `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria--source))
+
+Optional:
+
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.fragment_mapping.issuance_criteria.source`
 
+Required:
+
+- `type` (String) The source type of this key.
+
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
-- `type` (String) The source type of this key.
 
 
 
@@ -7588,10 +7218,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -7659,10 +7285,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.fragment_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -7715,10 +7337,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -7825,10 +7443,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping`
@@ -7893,10 +7507,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -7964,10 +7574,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -8020,10 +7626,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -8173,10 +7775,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -8243,10 +7841,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -8299,10 +7893,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -8499,10 +8089,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--apc_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.apc_mapping_policy_action.context.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -8569,10 +8155,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--apc_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.apc_mapping_policy_action.context.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -8625,10 +8207,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--apc_mapping_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -8721,10 +8299,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--authn_selector_policy_action"></a>
@@ -8745,46 +8319,18 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.authn_source_policy_action`
 
-Required:
-
-- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action--authentication_source))
-
 Optional:
 
 - `attribute_rules` (Attributes) A collection of attribute rules (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action--attribute_rules))
+- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action--authentication_source))
 - `context` (String) The result context.
 - `input_user_id_mapping` (Attributes) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action--input_user_id_mapping))
 - `user_id_authenticated` (Boolean) Indicates whether the user ID obtained by the user ID mapping is authenticated.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action--authentication_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.authn_source_policy_action.authentication_source`
-
-Required:
-
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action--user_id_authenticated--source_ref))
-- `type` (String) The type of this authentication source.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action--user_id_authenticated--source_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.authn_source_policy_action.user_id_authenticated.source_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.authn_source_policy_action.attribute_rules`
@@ -8817,6 +8363,23 @@ Optional:
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 - `type` (String) The source type of this key.
 
+
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action--authentication_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.authn_source_policy_action.authentication_source`
+
+Required:
+
+- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action--user_id_authenticated--source_ref))
+- `type` (String) The type of this authentication source.
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--authn_source_policy_action--user_id_authenticated--source_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.authn_source_policy_action.user_id_authenticated.source_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
 
 
 
@@ -8878,10 +8441,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--fragment_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.fragment_policy_action.attribute_rules`
@@ -8920,30 +8479,33 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--fragment_policy_action--fragment_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.fragment_policy_action.fragment_mapping`
 
-Required:
-
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment))
-
 Optional:
 
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment))
 - `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--fragment_policy_action--fragment_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--fragment_policy_action--fragment_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--fragment_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.fragment_policy_action.fragment_mapping.attribute_contract_fulfillment`
 
-Optional:
+Required:
 
 - `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--fragment_policy_action--fragment_mapping--issuance_criteria--source))
+
+Optional:
+
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--fragment_policy_action--fragment_mapping--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.fragment_policy_action.fragment_mapping.issuance_criteria.source`
 
+Required:
+
+- `type` (String) The source type of this key.
+
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
-- `type` (String) The source type of this key.
 
 
 
@@ -8980,10 +8542,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--fragment_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -9051,10 +8609,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--fragment_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.fragment_policy_action.fragment_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -9107,10 +8661,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--fragment_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -9217,10 +8767,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--outbound_attribute_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.outbound_attribute_mapping`
@@ -9285,10 +8831,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -9356,10 +8898,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -9412,10 +8950,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -9565,10 +9099,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -9635,10 +9165,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.local_identity_mapping_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -9691,10 +9217,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--local_identity_mapping_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -9891,10 +9413,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.context.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -9961,10 +9479,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.context.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -10017,10 +9531,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -10113,10 +9623,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--authn_selector_policy_action"></a>
@@ -10137,46 +9643,18 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--authn_source_policy_action"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.authn_source_policy_action`
 
-Required:
-
-- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--authentication_source))
-
 Optional:
 
 - `attribute_rules` (Attributes) A collection of attribute rules (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--attribute_rules))
+- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--authentication_source))
 - `context` (String) The result context.
 - `input_user_id_mapping` (Attributes) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--input_user_id_mapping))
 - `user_id_authenticated` (Boolean) Indicates whether the user ID obtained by the user ID mapping is authenticated.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--authentication_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.authentication_source`
-
-Required:
-
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref))
-- `type` (String) The type of this authentication source.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.user_id_authenticated.source_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.attribute_rules`
@@ -10209,6 +9687,23 @@ Optional:
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 - `type` (String) The source type of this key.
 
+
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--authentication_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.authentication_source`
+
+Required:
+
+- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref))
+- `type` (String) The type of this authentication source.
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.user_id_authenticated.source_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
 
 
 
@@ -10270,10 +9765,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.attribute_rules`
@@ -10312,30 +9803,33 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.fragment_mapping`
 
-Required:
-
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping--attribute_contract_fulfillment))
-
 Optional:
 
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping--attribute_contract_fulfillment))
 - `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.fragment_mapping.attribute_contract_fulfillment`
 
-Optional:
+Required:
 
 - `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping--issuance_criteria--source))
+
+Optional:
+
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.fragment_mapping.issuance_criteria.source`
 
+Required:
+
+- `type` (String) The source type of this key.
+
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
-- `type` (String) The source type of this key.
 
 
 
@@ -10372,10 +9866,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -10443,10 +9933,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.fragment_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -10499,10 +9985,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -10609,10 +10091,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping`
@@ -10677,10 +10155,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -10748,10 +10222,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -10804,10 +10274,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -10957,10 +10423,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -11027,10 +10489,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -11083,10 +10541,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -11283,10 +10737,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.context.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -11353,10 +10803,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.context.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -11409,10 +10855,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -11505,10 +10947,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--authn_selector_policy_action"></a>
@@ -11529,46 +10967,18 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--authn_source_policy_action"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.authn_source_policy_action`
 
-Required:
-
-- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--authentication_source))
-
 Optional:
 
 - `attribute_rules` (Attributes) A collection of attribute rules (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--attribute_rules))
+- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--authentication_source))
 - `context` (String) The result context.
 - `input_user_id_mapping` (Attributes) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--input_user_id_mapping))
 - `user_id_authenticated` (Boolean) Indicates whether the user ID obtained by the user ID mapping is authenticated.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--authentication_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.authentication_source`
-
-Required:
-
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref))
-- `type` (String) The type of this authentication source.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.user_id_authenticated.source_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.attribute_rules`
@@ -11601,6 +11011,23 @@ Optional:
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 - `type` (String) The source type of this key.
 
+
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--authentication_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.authentication_source`
+
+Required:
+
+- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref))
+- `type` (String) The type of this authentication source.
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.user_id_authenticated.source_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
 
 
 
@@ -11662,10 +11089,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.attribute_rules`
@@ -11704,30 +11127,33 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.fragment_mapping`
 
-Required:
-
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping--attribute_contract_fulfillment))
-
 Optional:
 
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping--attribute_contract_fulfillment))
 - `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.fragment_mapping.attribute_contract_fulfillment`
 
-Optional:
+Required:
 
 - `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria--source))
+
+Optional:
+
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.fragment_mapping.issuance_criteria.source`
 
+Required:
+
+- `type` (String) The source type of this key.
+
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
-- `type` (String) The source type of this key.
 
 
 
@@ -11764,10 +11190,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -11835,10 +11257,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.fragment_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -11891,10 +11309,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -12001,10 +11415,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping`
@@ -12069,10 +11479,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -12140,10 +11546,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -12196,10 +11598,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -12349,10 +11747,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -12419,10 +11813,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -12475,10 +11865,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -12675,10 +12061,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.context.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -12745,10 +12127,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.context.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -12801,10 +12179,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -12897,10 +12271,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--authn_selector_policy_action"></a>
@@ -12921,46 +12291,18 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--authn_source_policy_action"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.authn_source_policy_action`
 
-Required:
-
-- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--authentication_source))
-
 Optional:
 
 - `attribute_rules` (Attributes) A collection of attribute rules (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--attribute_rules))
+- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--authentication_source))
 - `context` (String) The result context.
 - `input_user_id_mapping` (Attributes) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--input_user_id_mapping))
 - `user_id_authenticated` (Boolean) Indicates whether the user ID obtained by the user ID mapping is authenticated.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--authentication_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.authentication_source`
-
-Required:
-
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref))
-- `type` (String) The type of this authentication source.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.user_id_authenticated.source_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.attribute_rules`
@@ -12993,6 +12335,23 @@ Optional:
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 - `type` (String) The source type of this key.
 
+
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--authentication_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.authentication_source`
+
+Required:
+
+- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref))
+- `type` (String) The type of this authentication source.
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--user_id_authenticated--source_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.user_id_authenticated.source_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
 
 
 
@@ -13054,10 +12413,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.attribute_rules`
@@ -13096,30 +12451,33 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.fragment_mapping`
 
-Required:
-
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping--attribute_contract_fulfillment))
-
 Optional:
 
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping--attribute_contract_fulfillment))
 - `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.fragment_mapping.attribute_contract_fulfillment`
 
-Optional:
+Required:
 
 - `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria--source))
+
+Optional:
+
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.fragment_mapping.issuance_criteria.source`
 
+Required:
+
+- `type` (String) The source type of this key.
+
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
-- `type` (String) The source type of this key.
 
 
 
@@ -13156,10 +12514,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -13227,10 +12581,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.fragment_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -13283,10 +12633,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -13393,10 +12739,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--outbound_attribute_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.outbound_attribute_mapping`
@@ -13461,10 +12803,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -13532,10 +12870,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -13588,10 +12922,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -13741,10 +13071,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -13811,10 +13137,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -13867,10 +13189,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -14063,10 +13381,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.context.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -14133,10 +13447,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.context.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -14189,10 +13499,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--context--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -14285,10 +13591,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--authn_selector_policy_action"></a>
@@ -14309,46 +13611,18 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--authn_source_policy_action"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.authn_source_policy_action`
 
-Required:
-
-- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--authentication_source))
-
 Optional:
 
 - `attribute_rules` (Attributes) A collection of attribute rules (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--attribute_rules))
+- `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--authentication_source))
 - `context` (String) The result context.
 - `input_user_id_mapping` (Attributes) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--input_user_id_mapping))
 - `user_id_authenticated` (Boolean) Indicates whether the user ID obtained by the user ID mapping is authenticated.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--authentication_source"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.authentication_source`
-
-Required:
-
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref))
-- `type` (String) The type of this authentication source.
-
-<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref"></a>
-### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.user_id_authenticated.source_ref`
-
-Required:
-
-- `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.attribute_rules`
@@ -14381,6 +13655,23 @@ Optional:
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
 - `type` (String) The source type of this key.
 
+
+
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--authentication_source"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.authentication_source`
+
+Required:
+
+- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref))
+- `type` (String) The type of this authentication source.
+
+<a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--user_id_authenticated--source_ref"></a>
+### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.user_id_authenticated.source_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
 
 
 
@@ -14442,10 +13733,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--attribute_rules"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.attribute_rules`
@@ -14484,30 +13771,33 @@ Optional:
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.fragment_mapping`
 
-Required:
-
-- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping--attribute_contract_fulfillment))
-
 Optional:
 
+- `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping--attribute_contract_fulfillment))
 - `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping--issuance_criteria))
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.fragment_mapping.attribute_contract_fulfillment`
 
-Optional:
+Required:
 
 - `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping--issuance_criteria--source))
+
+Optional:
+
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping--issuance_criteria--source"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.fragment_mapping.issuance_criteria.source`
 
+Required:
+
+- `type` (String) The source type of this key.
+
 Optional:
 
 - `id` (String) The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.
-- `type` (String) The source type of this key.
 
 
 
@@ -14544,10 +13834,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -14615,10 +13901,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.fragment_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -14671,10 +13953,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--fragment_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -14781,10 +14059,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--outbound_attribute_mapping"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.outbound_attribute_mapping`
@@ -14849,10 +14123,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -14920,10 +14190,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -14976,10 +14242,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -15129,10 +14391,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -15199,10 +14457,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `root_node.children.children.children.children.children.children.children.children.children.children.action.restart_policy_action.inbound_mapping.issuance_criteria.ldap_attribute_source.attribute_contract_fulfillment`
@@ -15255,10 +14509,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--root_node--children--children--children--children--children--children--children--children--children--children--action--restart_policy_action--inbound_mapping--issuance_criteria--ldap_attribute_source--attribute_contract_fulfillment"></a>

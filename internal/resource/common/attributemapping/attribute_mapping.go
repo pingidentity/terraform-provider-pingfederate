@@ -17,7 +17,7 @@ var (
 	attributeMappingAttrTypes = map[string]attr.Type{
 		"attribute_sources": types.ListType{
 			ElemType: types.ObjectType{
-				AttrTypes: attributesources.ElemAttrType(true),
+				AttrTypes: attributesources.ElemAttrType(),
 			},
 		},
 		"attribute_contract_fulfillment": attributecontractfulfillment.MapType(),
@@ -35,7 +35,7 @@ func ToSchema(required bool) schema.SingleNestedAttribute {
 	return schema.SingleNestedAttribute{
 		Attributes: map[string]schema.Attribute{
 			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, true),
-			"attribute_sources":              attributesources.ToSchema(0, false, true),
+			"attribute_sources":              attributesources.ToSchema(0, false),
 			"issuance_criteria":              issuancecriteria.ToSchema(),
 		},
 		Required:    required,
@@ -44,7 +44,7 @@ func ToSchema(required bool) schema.SingleNestedAttribute {
 	}
 }
 
-func ToState(con context.Context, attributeMappingFromClient *configurationapi.AttributeMapping, includeDataStoreRefResourceLinkLocation bool) (types.Object, diag.Diagnostics) {
+func ToState(con context.Context, attributeMappingFromClient *configurationapi.AttributeMapping) (types.Object, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	if attributeMappingFromClient == nil {
@@ -56,7 +56,7 @@ func ToState(con context.Context, attributeMappingFromClient *configurationapi.A
 	attributeContractFulfillment, objDiags := attributecontractfulfillment.ToState(con, attributeMappingFromClient.AttributeContractFulfillment)
 	diags = append(diags, objDiags...)
 
-	attributeSources, objDiags := attributesources.ToState(con, attributeMappingFromClient.AttributeSources, includeDataStoreRefResourceLinkLocation)
+	attributeSources, objDiags := attributesources.ToState(con, attributeMappingFromClient.AttributeSources)
 	diags = append(diags, objDiags...)
 
 	issuanceCriteria, objDiags := issuancecriteria.ToState(con, attributeMappingFromClient.IssuanceCriteria)

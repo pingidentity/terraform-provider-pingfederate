@@ -3,8 +3,12 @@ package policyaction
 import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributemapping"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 )
@@ -81,7 +85,15 @@ func commonAttributeRulesAttr() schema.Attribute {
 
 func apcMappingPolicyActionSchema() schema.SingleNestedAttribute {
 	attrs := commonPolicyActionSchema()
-	attrs["attribute_mapping"] = attributemapping.ToSchema(true)
+	attrs["attribute_mapping"] = schema.SingleNestedAttribute{
+		Attributes: map[string]schema.Attribute{
+			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, true),
+			"attribute_sources":              attributesources.ToSchema(0, false),
+			"issuance_criteria":              issuancecriteria.ToSchema(),
+		},
+		Required:    true,
+		Description: "A list of mappings from attribute sources to attribute targets.",
+	}
 	attrs["authentication_policy_contract_ref"] = schema.SingleNestedAttribute{
 		Attributes:  resourcelink.ToSchema(),
 		Required:    true,
@@ -129,7 +141,7 @@ func authnSourcePolicyActionSchema() schema.SingleNestedAttribute {
 				},
 			},
 		},
-		Required:    true,
+		Optional:    true,
 		Description: "An authentication source (IdP adapter or IdP connection).",
 	}
 	attrs["input_user_id_mapping"] = schema.SingleNestedAttribute{
@@ -178,7 +190,32 @@ func fragmentPolicyActionSchema() schema.SingleNestedAttribute {
 		Required:    true,
 		Description: "A reference to a resource.",
 	}
-	attrs["fragment_mapping"] = attributemapping.ToSchema(false)
+	attrs["fragment_mapping"] = schema.SingleNestedAttribute{
+		Attributes: map[string]schema.Attribute{
+			"attribute_contract_fulfillment": schema.MapNestedAttribute{
+				Description: "Defines how an attribute in an attribute contract should be populated.",
+				Required:    false,
+				Optional:    true,
+				Computed:    false,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"source": sourcetypeidkey.ToSchema(false),
+						"value": schema.StringAttribute{
+							Optional:    true,
+							Computed:    true,
+							Default:     stringdefault.StaticString(""),
+							Description: "The value for this attribute.",
+						},
+					},
+				},
+			},
+			"attribute_sources": attributesources.ToSchema(0, false),
+			"issuance_criteria": issuancecriteria.ToSchema(),
+		},
+		Required:    false,
+		Optional:    true,
+		Description: "A list of mappings from attribute sources to attribute targets.",
+	}
 	return schema.SingleNestedAttribute{
 		Attributes:  attrs,
 		Optional:    true,
@@ -194,7 +231,15 @@ func localIdentityMappingPolicyActionSchema() schema.SingleNestedAttribute {
 		Required:    true,
 		Description: "A reference to a resource.",
 	}
-	attrs["outbound_attribute_mapping"] = attributemapping.ToSchema(true)
+	attrs["outbound_attribute_mapping"] = schema.SingleNestedAttribute{
+		Attributes: map[string]schema.Attribute{
+			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, true),
+			"attribute_sources":              attributesources.ToSchema(0, false),
+			"issuance_criteria":              issuancecriteria.ToSchema(),
+		},
+		Required:    true,
+		Description: "A list of mappings from attribute sources to attribute targets.",
+	}
 	return schema.SingleNestedAttribute{
 		Attributes:  attrs,
 		Optional:    true,

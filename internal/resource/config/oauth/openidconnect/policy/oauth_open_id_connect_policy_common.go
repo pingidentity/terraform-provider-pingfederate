@@ -93,7 +93,7 @@ func readOauthOpenIdConnectPolicyResponse(ctx context.Context, response *client.
 	respDiags.Append(diags...)
 
 	// Build attribute_sources value
-	attributeMappingValues["attribute_sources"], diags = attributesources.ToState(ctx, response.AttributeMapping.AttributeSources, true)
+	attributeMappingValues["attribute_sources"], diags = attributesources.ToState(ctx, response.AttributeMapping.AttributeSources)
 	respDiags.Append(diags...)
 
 	// Build complete attribute mapping value

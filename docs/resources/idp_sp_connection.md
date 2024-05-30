@@ -450,10 +450,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--attribute_query--attribute_sources--custom_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `attribute_query.attribute_sources.custom_attribute_source.attribute_contract_fulfillment`
@@ -520,10 +516,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--attribute_query--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `attribute_query.attribute_sources.jdbc_attribute_source.attribute_contract_fulfillment`
@@ -576,10 +568,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--attribute_query--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -763,10 +751,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--credentials--inbound_back_channel_auth"></a>
 ### Nested Schema for `credentials.inbound_back_channel_auth`
@@ -877,10 +861,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--credentials--secondary_decryption_key_pair_ref"></a>
@@ -889,10 +869,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--credentials--signing_settings"></a>
@@ -913,10 +889,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--credentials--signing_settings--signing_key_pair_ref"></a>
 ### Nested Schema for `credentials.signing_settings.signing_key_pair_ref`
@@ -924,10 +896,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -954,10 +922,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -1080,10 +1044,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--outbound_provision--channels--channel_source--group_membership_detection"></a>
@@ -1401,10 +1361,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_contract"></a>
 ### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_contract`
@@ -1518,10 +1474,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
@@ -1588,10 +1540,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
@@ -1644,10 +1592,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -1740,10 +1684,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources"></a>
@@ -1779,10 +1719,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -1850,10 +1786,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
@@ -1907,10 +1839,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
@@ -1952,10 +1880,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--issuance_criteria"></a>
@@ -2132,10 +2056,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources"></a>
 ### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources`
@@ -2170,10 +2090,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -2241,10 +2157,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
@@ -2297,10 +2209,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -2530,10 +2438,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources"></a>
 ### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources`
@@ -2568,10 +2472,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -2639,10 +2539,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
@@ -2695,10 +2591,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
@@ -2799,10 +2691,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 ## Import
 

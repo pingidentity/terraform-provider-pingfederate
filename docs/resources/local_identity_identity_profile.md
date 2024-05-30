@@ -180,10 +180,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--auth_source_update_policy"></a>
 ### Nested Schema for `auth_source_update_policy`
@@ -214,15 +210,15 @@ Optional:
 Required:
 
 - `base_dn` (String) The base DN to search from. If not specified, the search will start at the LDAP's root.
-- `create_pattern` (String) The Relative DN Pattern that will be used to create objects in the directory.
 - `data_store_mapping` (Attributes Map) The data store mapping. (see [below for nested schema](#nestedatt--data_store_config--data_store_mapping))
 - `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--data_store_config--data_store_ref))
-- `object_class` (String) The Object Class used by the new objects stored in the LDAP data store.
 - `type` (String) The data store config type.
 
 Optional:
 
 - `auxiliary_object_classes` (Set of String) The Auxiliary Object Classes used by the new objects stored in the LDAP data store.
+- `create_pattern` (String) The Relative DN Pattern that will be used to create objects in the directory.
+- `object_class` (String) The Object Class used by the new objects stored in the LDAP data store.
 
 <a id="nestedatt--data_store_config--data_store_mapping"></a>
 ### Nested Schema for `data_store_config.data_store_mapping`
@@ -243,10 +239,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -279,10 +271,6 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -347,10 +335,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--registration_config--registration_workflow"></a>
 ### Nested Schema for `registration_config.registration_workflow`
@@ -358,10 +342,6 @@ Read-Only:
 Required:
 
 - `id` (String) The ID of the resource.
-
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 ## Import
 

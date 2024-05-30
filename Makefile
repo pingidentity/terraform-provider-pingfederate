@@ -95,7 +95,7 @@ kaboom: clearstates spincontainer install
 devchecknotest: verifycontent install golangcilint generate tfproviderlint tflint terrafmtlint importfmtlint
 
 verifycontent:
-	python3 ./devcheck/verifyContent.py
+	python3 ./scripts/verifyContent.py
 
 devcheck: devchecknotest kaboom testauthacc testacc
 
@@ -106,7 +106,7 @@ generateresource:
 	OVERWRITE_EXISTING_RESOURCE_FILE=False \
 	PINGFEDERATE_PUT_ONLY_RESOURCE=True \
 	GENERATE_SCHEMA=True \
-	python3 scripts/generate_resource.py
+	python3 dev/generate_resource.py
 	make fmt
 	
 openlocalwebapi:
