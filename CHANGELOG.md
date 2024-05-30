@@ -1,4 +1,4 @@
-# v0.11.0 (Unreleased)
+# v0.11.0 May 30th, 2024
 ### DEPRECATED
 * `location` property in resource reference object types for all Resources and DataSources removed ([#249](https://github.com/pingidentity/terraform-provider-pingfederate/pull/249))
 
