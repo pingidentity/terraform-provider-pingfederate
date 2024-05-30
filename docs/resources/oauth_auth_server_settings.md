@@ -154,10 +154,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--exclusive_scope_groups"></a>
 ### Nested Schema for `exclusive_scope_groups`

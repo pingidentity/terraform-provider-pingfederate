@@ -17,6 +17,9 @@ import (
 // Run the docs generation tool
 //go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 
+// Generate docs
+//go:generate python3 ./scripts/markdownDocFormatting.py authentication_policies.md authentication_policies_fragment.md
+
 var (
 	// these will be set by the goreleaser configuration
 	// to appropriate values for the compiled binary

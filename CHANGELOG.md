@@ -1,12 +1,14 @@
-# v0.11.0 (Unreleased)
+# v0.11.0 May 30th, 2024
+### DEPRECATED
+* `location` property in resource reference object types for all Resources and DataSources removed ([#249](https://github.com/pingidentity/terraform-provider-pingfederate/pull/249))
+
 ### BUG FIXES
+* `pingfederate_authentication_selector` resource `extended_attributes` unexpected new value ([#249](https://github.com/pingidentity/terraform-provider-pingfederate/pull/249))
+* `pingfederate_local_identity_identity_profile` resource `data_store_config` attributes unexpected new value ([#249](https://github.com/pingidentity/terraform-provider-pingfederate/pull/249))
 * `pingfederate_ping_one_connection` resource correctly requires `credential` value ([#233](https://github.com/pingidentity/terraform-provider-pingfederate/pull/233))
 
 ### Resources
-* **New Resource:** `pingfederate_authentication_policies_policy ` ([#232](https://github.com/pingidentity/terraform-provider-pingfederate/pull/232))
-
-### Data Sources
-* **New Data Source:** `pingfederate_authentication_policies_policy ` ([#232](https://github.com/pingidentity/terraform-provider-pingfederate/pull/232))
+* **New Resource:** `pingfederate_authentication_policies ` ([#249](https://github.com/pingidentity/terraform-provider-pingfederate/pull/249))
 
 # v0.10.0 April 11th, 2024
 ### Resources

@@ -11,11 +11,6 @@ func ToDataSourceSchema() map[string]datasourceschema.Attribute {
 			Optional:    false,
 			Computed:    true,
 		},
-		"location": datasourceschema.StringAttribute{
-			Description: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-			Computed:    true,
-			Optional:    false,
-		},
 	}
 }
 

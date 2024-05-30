@@ -103,7 +103,7 @@ func (r *spAuthenticationPolicyContractMappingDataSource) Configure(_ context.Co
 
 func readSpAuthenticationPolicyContractMappingDataSourceResponse(ctx context.Context, r *client.ApcToSpAdapterMapping, state *spAuthenticationPolicyContractMappingDataSourceModel) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	state.AttributeSources, respDiags = attributesources.ToState(ctx, r.AttributeSources, true)
+	state.AttributeSources, respDiags = attributesources.ToState(ctx, r.AttributeSources)
 	diags.Append(respDiags...)
 	state.AttributeContractFulfillment, respDiags = attributecontractfulfillment.ToState(ctx, r.AttributeContractFulfillment)
 	diags.Append(respDiags...)

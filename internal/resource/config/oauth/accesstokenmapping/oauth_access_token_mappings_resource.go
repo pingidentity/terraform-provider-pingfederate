@@ -35,7 +35,7 @@ var (
 
 	accessTokenMappingContext = map[string]attr.Type{
 		"type":        types.StringType,
-		"context_ref": types.ObjectType{AttrTypes: resourcelink.AttrTypeNoLocation()},
+		"context_ref": types.ObjectType{AttrTypes: resourcelink.AttrType()},
 	}
 )
 
@@ -82,7 +82,10 @@ func (r *oauthAccessTokenMappingsResource) Schema(ctx context.Context, req resou
 						Description: "Reference to the associated Access Token Mapping Context instance.",
 						Computed:    true,
 						Optional:    true,
-						Attributes:  resourcelink.ToSchemaNoLocation(),
+						Attributes:  resourcelink.ToSchema(),
+						PlanModifiers: []planmodifier.Object{
+							objectplanmodifier.UseStateForUnknown(),
+						},
 					},
 				},
 			},
@@ -92,9 +95,9 @@ func (r *oauthAccessTokenMappingsResource) Schema(ctx context.Context, req resou
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.RequiresReplace(),
 				},
-				Attributes: resourcelink.ToSchemaNoLocation(),
+				Attributes: resourcelink.ToSchema(),
 			},
-			"attribute_sources": attributesources.ToSchema(0, true, false),
+			"attribute_sources": attributesources.ToSchema(0, true),
 			"attribute_contract_fulfillment": schema.MapNestedAttribute{
 				Description: "Defines how an attribute in an attribute contract should be populated.",
 				Required:    true,
@@ -102,7 +105,7 @@ func (r *oauthAccessTokenMappingsResource) Schema(ctx context.Context, req resou
 				Computed:    false,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"source": sourcetypeidkey.ToSchema(true),
+						"source": sourcetypeidkey.ToSchema(false),
 						"value": schema.StringAttribute{
 							Optional:    true,
 							Computed:    true,
@@ -140,7 +143,7 @@ func readOauthAccessTokenMappingsResponse(ctx context.Context, r *client.AccessT
 
 	state.Id = types.StringPointerValue(r.Id)
 
-	contextRefObjValue, objDiags := resourcelink.ToStateNoLocation(&r.Context.ContextRef)
+	contextRefObjValue, objDiags := resourcelink.ToState(ctx, &r.Context.ContextRef)
 	diags.Append(objDiags...)
 	contextAttrValue := map[string]attr.Value{
 		"type":        types.StringValue(r.Context.Type),
@@ -148,9 +151,9 @@ func readOauthAccessTokenMappingsResponse(ctx context.Context, r *client.AccessT
 	}
 	state.Context, objDiags = types.ObjectValue(accessTokenMappingContext, contextAttrValue)
 	diags.Append(objDiags...)
-	state.AccessTokenManagerRef, objDiags = resourcelink.ToStateNoLocation(&r.AccessTokenManagerRef)
+	state.AccessTokenManagerRef, objDiags = resourcelink.ToState(ctx, &r.AccessTokenManagerRef)
 	diags.Append(objDiags...)
-	state.AttributeSources, objDiags = attributesources.ToState(ctx, r.AttributeSources, false)
+	state.AttributeSources, objDiags = attributesources.ToState(ctx, r.AttributeSources)
 	diags.Append(objDiags...)
 	state.AttributeContractFulfillment, objDiags = attributecontractfulfillment.ToState(ctx, r.AttributeContractFulfillment)
 	diags.Append(objDiags...)
@@ -161,7 +164,7 @@ func readOauthAccessTokenMappingsResponse(ctx context.Context, r *client.AccessT
 	return diags
 }
 
-func addOptionalOauthAccessTokenMappingsFields(ctx context.Context, addRequest *client.AccessTokenMapping, plan oauthAccessTokenMappingsResourceModel) error {
+func addOptionalOauthAccessTokenMappingsFields(addRequest *client.AccessTokenMapping, plan oauthAccessTokenMappingsResourceModel) error {
 	var err error
 	if internaltypes.IsDefined(plan.AttributeSources) {
 		addRequest.AttributeSources = []client.AttributeSourceAggregation{}
@@ -232,7 +235,7 @@ func (r *oauthAccessTokenMappingsResource) Create(ctx context.Context, req resou
 
 	createOauthAccessTokenMappings := client.NewAccessTokenMapping(*accessTokenMappingContext, *accessTokenManagerRef, attributeContractFulfillment)
 
-	err = addOptionalOauthAccessTokenMappingsFields(ctx, createOauthAccessTokenMappings, plan)
+	err = addOptionalOauthAccessTokenMappingsFields(createOauthAccessTokenMappings, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Mapping", err.Error())
 		return
@@ -321,7 +324,7 @@ func (r *oauthAccessTokenMappingsResource) Update(ctx context.Context, req resou
 	}
 	updateOauthAccessTokenMappings := client.NewAccessTokenMapping(*accessTokenMappingContext, *accessTokenManagerRef, attributeContractFulfillment)
 
-	err = addOptionalOauthAccessTokenMappingsFields(ctx, updateOauthAccessTokenMappings, plan)
+	err = addOptionalOauthAccessTokenMappingsFields(updateOauthAccessTokenMappings, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Mapping", err.Error())
 		return

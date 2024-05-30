@@ -121,7 +121,7 @@ Read-Only:
 - `type` (String) The data store type of this attribute source.
 
 <a id="nestedatt--attribute_query--attribute_sources--custom_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `attribute_query.attribute_sources.custom_attribute_source.type`
+### Nested Schema for `attribute_query.attribute_sources.custom_attribute_source.attribute_contract_fulfillment`
 
 Read-Only:
 
@@ -139,16 +139,15 @@ Read-Only:
 
 
 <a id="nestedatt--attribute_query--attribute_sources--custom_attribute_source--data_store_ref"></a>
-### Nested Schema for `attribute_query.attribute_sources.custom_attribute_source.type`
+### Nested Schema for `attribute_query.attribute_sources.custom_attribute_source.data_store_ref`
 
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--attribute_query--attribute_sources--custom_attribute_source--filter_fields"></a>
-### Nested Schema for `attribute_query.attribute_sources.custom_attribute_source.type`
+### Nested Schema for `attribute_query.attribute_sources.custom_attribute_source.filter_fields`
 
 Read-Only:
 
@@ -173,7 +172,7 @@ Read-Only:
 - `type` (String) The data store type of this attribute source.
 
 <a id="nestedatt--attribute_query--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `attribute_query.attribute_sources.jdbc_attribute_source.type`
+### Nested Schema for `attribute_query.attribute_sources.jdbc_attribute_source.attribute_contract_fulfillment`
 
 Read-Only:
 
@@ -191,12 +190,11 @@ Read-Only:
 
 
 <a id="nestedatt--attribute_query--attribute_sources--jdbc_attribute_source--data_store_ref"></a>
-### Nested Schema for `attribute_query.attribute_sources.jdbc_attribute_source.type`
+### Nested Schema for `attribute_query.attribute_sources.jdbc_attribute_source.data_store_ref`
 
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -221,7 +219,7 @@ Read-Only:
 - `type` (String) The data store type of this attribute source.
 
 <a id="nestedatt--attribute_query--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `attribute_query.attribute_sources.ldap_attribute_source.type`
+### Nested Schema for `attribute_query.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
 
 Read-Only:
 
@@ -239,7 +237,7 @@ Read-Only:
 
 
 <a id="nestedatt--attribute_query--attribute_sources--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `attribute_query.attribute_sources.ldap_attribute_source.type`
+### Nested Schema for `attribute_query.attribute_sources.ldap_attribute_source.binary_attribute_settings`
 
 Read-Only:
 
@@ -247,12 +245,11 @@ Read-Only:
 
 
 <a id="nestedatt--attribute_query--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `attribute_query.attribute_sources.ldap_attribute_source.type`
+### Nested Schema for `attribute_query.attribute_sources.ldap_attribute_source.data_store_ref`
 
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -277,7 +274,7 @@ Read-Only:
 - `value` (String) The expected value of this issuance criterion.
 
 <a id="nestedatt--attribute_query--issuance_criteria--conditional_criteria--source"></a>
-### Nested Schema for `attribute_query.issuance_criteria.conditional_criteria.value`
+### Nested Schema for `attribute_query.issuance_criteria.conditional_criteria.source`
 
 Read-Only:
 
@@ -347,10 +344,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--credentials--outbound_back_channel_auth"></a>
 ### Nested Schema for `credentials.outbound_back_channel_auth`
@@ -379,7 +372,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -454,7 +446,7 @@ Read-Only:
 - `x509file` (Attributes) Encoded certificate data. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs--x509file))
 
 <a id="nestedatt--credentials--inbound_back_channel_auth--certs--cert_view"></a>
-### Nested Schema for `credentials.inbound_back_channel_auth.certs.x509file`
+### Nested Schema for `credentials.inbound_back_channel_auth.certs.cert_view`
 
 Read-Only:
 
@@ -503,7 +495,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--credentials--signing_settings"></a>
@@ -523,7 +514,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--credentials--signing_settings--signing_key_pair_ref"></a>
@@ -532,7 +522,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -559,7 +548,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -628,7 +616,7 @@ Read-Only:
 - `user_source_location` (Attributes) The location settings that includes a DN and a LDAP filter. (see [below for nested schema](#nestedatt--outbound_provision--channels--channel_source--user_source_location))
 
 <a id="nestedatt--outbound_provision--channels--channel_source--account_management_settings"></a>
-### Nested Schema for `outbound_provision.channels.channel_source.user_source_location`
+### Nested Schema for `outbound_provision.channels.channel_source.account_management_settings`
 
 Read-Only:
 
@@ -640,7 +628,7 @@ Read-Only:
 
 
 <a id="nestedatt--outbound_provision--channels--channel_source--change_detection_settings"></a>
-### Nested Schema for `outbound_provision.channels.channel_source.user_source_location`
+### Nested Schema for `outbound_provision.channels.channel_source.change_detection_settings`
 
 Read-Only:
 
@@ -655,16 +643,15 @@ TIMESTAMP_NO_NEGATION - Queries for timestamps on user records that are newer th
 
 
 <a id="nestedatt--outbound_provision--channels--channel_source--data_source"></a>
-### Nested Schema for `outbound_provision.channels.channel_source.user_source_location`
+### Nested Schema for `outbound_provision.channels.channel_source.data_source`
 
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--outbound_provision--channels--channel_source--group_membership_detection"></a>
-### Nested Schema for `outbound_provision.channels.channel_source.user_source_location`
+### Nested Schema for `outbound_provision.channels.channel_source.group_membership_detection`
 
 Read-Only:
 
@@ -673,7 +660,7 @@ Read-Only:
 
 
 <a id="nestedatt--outbound_provision--channels--channel_source--group_source_location"></a>
-### Nested Schema for `outbound_provision.channels.channel_source.user_source_location`
+### Nested Schema for `outbound_provision.channels.channel_source.group_source_location`
 
 Read-Only:
 
@@ -787,7 +774,7 @@ Read-Only:
 - `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref))
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.configuration`
 
 Optional:
 
@@ -897,7 +884,7 @@ Optional:
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_contract"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_contract`
 
 Read-Only:
 
@@ -929,7 +916,7 @@ Read-Only:
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.attribute_mapping`
 
 Read-Only:
 
@@ -947,7 +934,7 @@ Read-Only:
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_contract_fulfillment.value`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -966,7 +953,7 @@ Read-Only:
 - `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source))
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--custom_attribute_source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.custom_attribute_source`
 
 Read-Only:
 
@@ -978,7 +965,7 @@ Read-Only:
 - `type` (String) The data store type of this attribute source.
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
 
 Read-Only:
 
@@ -986,7 +973,7 @@ Read-Only:
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--type--source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type.value`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type.source`
 
 Read-Only:
 
@@ -996,16 +983,15 @@ Read-Only:
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.data_store_ref`
 
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--filter_fields"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.filter_fields`
 
 Read-Only:
 
@@ -1015,7 +1001,7 @@ Read-Only:
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--jdbc_attribute_source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.jdbc_attribute_source`
 
 Read-Only:
 
@@ -1030,7 +1016,7 @@ Read-Only:
 - `type` (String) The data store type of this attribute source.
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
 
 Read-Only:
 
@@ -1038,7 +1024,7 @@ Read-Only:
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--type--source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type.value`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type.source`
 
 Read-Only:
 
@@ -1048,12 +1034,11 @@ Read-Only:
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.data_store_ref`
 
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -1078,7 +1063,7 @@ Read-Only:
 - `type` (String) The data store type of this attribute source.
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
 
 Read-Only:
 
@@ -1086,7 +1071,7 @@ Read-Only:
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--type--source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type.value`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type.source`
 
 Read-Only:
 
@@ -1096,7 +1081,7 @@ Read-Only:
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--binary_attribute_settings"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.binary_attribute_settings`
 
 Read-Only:
 
@@ -1104,12 +1089,11 @@ Read-Only:
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources--ldap_attribute_source--data_store_ref"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.type`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.attribute_sources.ldap_attribute_source.data_store_ref`
 
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -1123,7 +1107,7 @@ Read-Only:
 - `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.issuance_criteria.expression_criteria`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.issuance_criteria.conditional_criteria`
 
 Read-Only:
 
@@ -1134,7 +1118,7 @@ Read-Only:
 - `value` (String) The expected value of this issuance criterion.
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--issuance_criteria--expression_criteria--source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.issuance_criteria.expression_criteria.value`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.issuance_criteria.expression_criteria.source`
 
 Read-Only:
 
@@ -1155,12 +1139,11 @@ Read-Only:
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref`
+### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref`
 
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref"></a>
@@ -1169,7 +1152,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -1182,7 +1164,7 @@ Read-Only:
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_contract_fulfillment.value`
+### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -1201,7 +1183,7 @@ Read-Only:
 - `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source))
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--custom_attribute_source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.ldap_attribute_source`
+### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.custom_attribute_source`
 
 Read-Only:
 
@@ -1221,7 +1203,7 @@ Read-Only:
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.value`
+### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -1236,7 +1218,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--filter_fields"></a>
@@ -1250,7 +1231,7 @@ Read-Only:
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--jdbc_attribute_source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.ldap_attribute_source`
+### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.jdbc_attribute_source`
 
 Read-Only:
 
@@ -1273,7 +1254,7 @@ Read-Only:
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.value`
+### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -1288,7 +1269,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -1321,7 +1301,7 @@ Read-Only:
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.value`
+### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -1344,7 +1324,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -1355,7 +1334,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--issuance_criteria"></a>
@@ -1367,7 +1345,7 @@ Read-Only:
 - `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `sp_browser_sso.adapter_mappings.issuance_criteria.expression_criteria`
+### Nested Schema for `sp_browser_sso.adapter_mappings.issuance_criteria.conditional_criteria`
 
 Read-Only:
 
@@ -1475,7 +1453,7 @@ Read-Only:
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_contract_fulfillment.value`
+### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -1494,7 +1472,7 @@ Read-Only:
 - `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source))
 
 <a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--custom_attribute_source"></a>
-### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.ldap_attribute_source`
+### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.custom_attribute_source`
 
 Read-Only:
 
@@ -1514,7 +1492,7 @@ Read-Only:
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.value`
+### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -1529,7 +1507,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--filter_fields"></a>
@@ -1543,7 +1520,7 @@ Read-Only:
 
 
 <a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--jdbc_attribute_source"></a>
-### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.ldap_attribute_source`
+### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.jdbc_attribute_source`
 
 Read-Only:
 
@@ -1566,7 +1543,7 @@ Read-Only:
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.value`
+### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -1581,7 +1558,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -1614,7 +1590,7 @@ Read-Only:
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.value`
+### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -1637,7 +1613,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -1648,7 +1623,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--issuance_criteria"></a>
@@ -1660,7 +1634,7 @@ Read-Only:
 - `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.issuance_criteria.expression_criteria`
+### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.issuance_criteria.conditional_criteria`
 
 Read-Only:
 
@@ -1804,7 +1778,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--ws_trust--token_processor_mappings"></a>
@@ -1827,7 +1800,7 @@ Read-Only:
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--ws_trust--token_processor_mappings--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `ws_trust.token_processor_mappings.attribute_contract_fulfillment.value`
+### Nested Schema for `ws_trust.token_processor_mappings.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -1846,7 +1819,7 @@ Read-Only:
 - `ldap_attribute_source` (Attributes) The configured settings used to look up attributes from a LDAP data store. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source))
 
 <a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--custom_attribute_source"></a>
-### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.ldap_attribute_source`
+### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.custom_attribute_source`
 
 Read-Only:
 
@@ -1866,7 +1839,7 @@ Read-Only:
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.value`
+### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -1881,7 +1854,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--filter_fields"></a>
@@ -1895,7 +1867,7 @@ Read-Only:
 
 
 <a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--jdbc_attribute_source"></a>
-### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.ldap_attribute_source`
+### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.jdbc_attribute_source`
 
 Read-Only:
 
@@ -1918,7 +1890,7 @@ Read-Only:
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.value`
+### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -1933,7 +1905,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -1966,7 +1937,7 @@ Read-Only:
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.value`
+### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.source`
 
 Read-Only:
 
@@ -1989,7 +1960,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -2000,7 +1970,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--ws_trust--token_processor_mappings--issuance_criteria"></a>
@@ -2012,7 +1981,7 @@ Read-Only:
 - `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--ws_trust--token_processor_mappings--issuance_criteria--conditional_criteria"></a>
-### Nested Schema for `ws_trust.token_processor_mappings.issuance_criteria.expression_criteria`
+### Nested Schema for `ws_trust.token_processor_mappings.issuance_criteria.conditional_criteria`
 
 Read-Only:
 

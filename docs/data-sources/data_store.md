@@ -101,7 +101,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--custom_data_store--plugin_descriptor_ref"></a>
@@ -110,7 +109,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 
@@ -185,7 +183,6 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
 
 
 <a id="nestedatt--ldap_data_store--hostnames_tags"></a>
@@ -219,4 +216,3 @@ Read-Only:
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.

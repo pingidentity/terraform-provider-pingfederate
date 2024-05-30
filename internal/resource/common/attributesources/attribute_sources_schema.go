@@ -17,20 +17,12 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 )
 
-func CommonAttributeSourceSchema(optionalAndComputedNestedAttributeContractFulfillment, includeDataStoreRefResourceLinkLocation bool) map[string]schema.Attribute {
+func CommonAttributeSourceSchema(optionalAndComputedNestedAttributeContractFulfillment bool) map[string]schema.Attribute {
 	commonAttributeSourceSchema := map[string]schema.Attribute{}
-
-	var resourceLinkAttributes map[string]schema.Attribute
-	if includeDataStoreRefResourceLinkLocation {
-		resourceLinkAttributes = resourcelink.ToSchema()
-	} else {
-		resourceLinkAttributes = resourcelink.ToSchemaNoLocation()
-	}
-
 	commonAttributeSourceSchema["data_store_ref"] = schema.SingleNestedAttribute{
 		Required:    true,
 		Description: "Reference to the associated data store.",
-		Attributes:  resourceLinkAttributes,
+		Attributes:  resourcelink.ToSchema(),
 	}
 	commonAttributeSourceSchema["id"] = schema.StringAttribute{
 		Optional:    true,
@@ -48,8 +40,8 @@ func CommonAttributeSourceSchema(optionalAndComputedNestedAttributeContractFulfi
 	return commonAttributeSourceSchema
 }
 
-func CustomAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment, includeDataStoreRefResourceLinkLocation bool) map[string]schema.Attribute {
-	customAttributeSourceSchema := CommonAttributeSourceSchema(optionalAndComputedNestedAttributeContractFulfillment, includeDataStoreRefResourceLinkLocation)
+func CustomAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment bool) map[string]schema.Attribute {
+	customAttributeSourceSchema := CommonAttributeSourceSchema(optionalAndComputedNestedAttributeContractFulfillment)
 	customAttributeSourceSchema["type"] = schema.StringAttribute{
 		Computed:    true,
 		Optional:    false,
@@ -75,8 +67,8 @@ func CustomAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeCon
 	return customAttributeSourceSchema
 }
 
-func JdbcAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment, includeDataStoreRefResourceLinkLocation bool) map[string]schema.Attribute {
-	jdbcAttributeSourceSchema := CommonAttributeSourceSchema(optionalAndComputedNestedAttributeContractFulfillment, includeDataStoreRefResourceLinkLocation)
+func JdbcAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment bool) map[string]schema.Attribute {
+	jdbcAttributeSourceSchema := CommonAttributeSourceSchema(optionalAndComputedNestedAttributeContractFulfillment)
 	jdbcAttributeSourceSchema["type"] = schema.StringAttribute{
 		Computed:    true,
 		Optional:    false,
@@ -103,8 +95,8 @@ func JdbcAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContr
 	return jdbcAttributeSourceSchema
 }
 
-func LdapAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment, includeDataStoreRefResourceLinkLocation bool) map[string]schema.Attribute {
-	ldapAttributeSourceSchema := CommonAttributeSourceSchema(optionalAndComputedNestedAttributeContractFulfillment, includeDataStoreRefResourceLinkLocation)
+func LdapAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment bool) map[string]schema.Attribute {
+	ldapAttributeSourceSchema := CommonAttributeSourceSchema(optionalAndComputedNestedAttributeContractFulfillment)
 	ldapAttributeSourceSchema["type"] = schema.StringAttribute{
 		Required:    true,
 		Description: "The data store type of this attribute source.",
@@ -159,8 +151,8 @@ func LdapAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContr
 	return ldapAttributeSourceSchema
 }
 
-func ToSchema(sizeAtLeast int, optionalAndComputedNestedAttributeContractFulfillment, includeDataStoreRefResourceLinkLocation bool) schema.ListNestedAttribute {
-	attributeSourcesDefault, _ := types.ListValue(types.ObjectType{AttrTypes: ElemAttrType(includeDataStoreRefResourceLinkLocation)}, nil)
+func ToSchema(sizeAtLeast int, optionalAndComputedNestedAttributeContractFulfillment bool) schema.ListNestedAttribute {
+	attributeSourcesDefault, _ := types.ListValue(types.ObjectType{AttrTypes: ElemAttrType()}, nil)
 	validators := []validator.List{}
 	if sizeAtLeast > 0 {
 		validators = append(validators, listvalidator.SizeAtLeast(sizeAtLeast))
@@ -176,7 +168,7 @@ func ToSchema(sizeAtLeast int, optionalAndComputedNestedAttributeContractFulfill
 				"custom_attribute_source": schema.SingleNestedAttribute{
 					Description: "The configured settings used to look up attributes from a custom data store.",
 					Optional:    true,
-					Attributes:  CustomAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment, includeDataStoreRefResourceLinkLocation),
+					Attributes:  CustomAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment),
 					Validators: []validator.Object{
 						objectvalidator.ExactlyOneOf(
 							path.MatchRelative().AtParent().AtName("jdbc_attribute_source"),
@@ -187,7 +179,7 @@ func ToSchema(sizeAtLeast int, optionalAndComputedNestedAttributeContractFulfill
 				"jdbc_attribute_source": schema.SingleNestedAttribute{
 					Description: "The configured settings used to look up attributes from a JDBC data store.",
 					Optional:    true,
-					Attributes:  JdbcAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment, includeDataStoreRefResourceLinkLocation),
+					Attributes:  JdbcAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment),
 					Validators: []validator.Object{
 						objectvalidator.ExactlyOneOf(
 							path.MatchRelative().AtParent().AtName("custom_attribute_source"),
@@ -198,7 +190,7 @@ func ToSchema(sizeAtLeast int, optionalAndComputedNestedAttributeContractFulfill
 				"ldap_attribute_source": schema.SingleNestedAttribute{
 					Description: "The configured settings used to look up attributes from a LDAP data store.",
 					Optional:    true,
-					Attributes:  LdapAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment, includeDataStoreRefResourceLinkLocation),
+					Attributes:  LdapAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContractFulfillment),
 					Validators: []validator.Object{
 						objectvalidator.ExactlyOneOf(
 							path.MatchRelative().AtParent().AtName("custom_attribute_source"),

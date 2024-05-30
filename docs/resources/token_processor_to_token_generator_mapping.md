@@ -134,10 +134,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--attribute_sources--custom_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `attribute_sources.custom_attribute_source.attribute_contract_fulfillment`
@@ -151,7 +147,7 @@ Optional:
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--attribute_sources--custom_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `attribute_sources.custom_attribute_source.attribute_contract_fulfillment.value`
+### Nested Schema for `attribute_sources.custom_attribute_source.attribute_contract_fulfillment.source`
 
 Required:
 
@@ -204,10 +200,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `attribute_sources.jdbc_attribute_source.attribute_contract_fulfillment`
@@ -221,7 +213,7 @@ Optional:
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--attribute_sources--jdbc_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `attribute_sources.jdbc_attribute_source.attribute_contract_fulfillment.value`
+### Nested Schema for `attribute_sources.jdbc_attribute_source.attribute_contract_fulfillment.source`
 
 Required:
 
@@ -261,10 +253,6 @@ Required:
 
 - `id` (String) The ID of the resource.
 
-Read-Only:
-
-- `location` (String, Deprecated) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
-
 
 <a id="nestedatt--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment"></a>
 ### Nested Schema for `attribute_sources.ldap_attribute_source.attribute_contract_fulfillment`
@@ -278,7 +266,7 @@ Optional:
 - `value` (String) The value for this attribute.
 
 <a id="nestedatt--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment--source"></a>
-### Nested Schema for `attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.value`
+### Nested Schema for `attribute_sources.ldap_attribute_source.attribute_contract_fulfillment.source`
 
 Required:
 

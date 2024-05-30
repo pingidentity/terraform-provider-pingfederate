@@ -35,4 +35,3 @@ data "pingfederate_authentication_api_settings" "myAuthenticationApiSettings" {
 Read-Only:
 
 - `id` (String) The ID of the resource.
-- `location` (String) A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.
