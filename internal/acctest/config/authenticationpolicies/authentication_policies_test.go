@@ -283,34 +283,101 @@ resource "pingfederate_authentication_policies" "%[1]s" {
         children = [
           {
             action = {
-              restart_policy_action = {
-                context = "Fail"
+              authn_selector_policy_action = {
+                context = "Fail",
+                authentication_selector_ref = {
+                  id = "authnExp",
+                }
               }
             }
+            children = [
+              {
+                action = {
+                  restart_policy_action = {
+                    context = "Internal"
+                  }
+                }
+              },
+              {
+                action = {
+                  fragment_policy_action = {
+                    context = "Single_Factor"
+                    fragment = {
+                      id = "FirstFactor"
+                    },
+                    fragment_mapping = {
+                      attribute_sources = []
+                      attribute_contract_fulfillment = {
+                        "subject" = {
+                          source = {
+                            type = "NO_MAPPING"
+                          }
+                        }
+                      }
+                      issuance_criteria = {
+                        conditional_criteria = []
+                      }
+                    }
+                  }
+                },
+                children = [
+                  {
+                    action = {
+                      done_policy_action = {
+                        context = "Fail"
+                      }
+                    }
+                  },
+                  {
+                    action = {
+                      apc_mapping_policy_action = {
+                        context = "Success"
+                        authentication_policy_contract_ref = {
+                          id = "QGxlec5CX693lBQL"
+                        },
+                        attribute_mapping = {
+                          attribute_sources = []
+                          attribute_contract_fulfillment = {
+                            "subject" = {
+                              source = {
+                                type = "NO_MAPPING"
+                              }
+                            }
+                          },
+                          issuance_criteria = {
+                            conditional_criteria = []
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
           },
           {
             action = {
               local_identity_mapping_policy_action = {
-                context = "Success"
+                context = "Success",
                 local_identity_ref = {
-                  id = "adminIdentityProfile"
-                }
+                  id = "adminIdentityProfile",
+                },
                 inbound_mapping = {
-                  attribute_sources = []
+                  attribute_sources = [],
                   attribute_contract_fulfillment = {
                     "pf.local.identity.unique.id" = {
                       source = {
                         type = "TEXT"
-                      }
+                      },
                       value = "test"
                     }
-                  }
+                  },
                   issuance_criteria = {
                     conditional_criteria = []
                   }
-                }
+                },
                 outbound_attribute_mapping = {
-                  attribute_sources = []
+                  attribute_sources = [],
                   attribute_contract_fulfillment = {
                     "firstName" = {
                       source = {
@@ -342,7 +409,7 @@ resource "pingfederate_authentication_policies" "%[1]s" {
                         type = "NO_MAPPING"
                       }
                     }
-                  }
+                  },
                   issuance_criteria = {
                     conditional_criteria = []
                   }
@@ -352,8 +419,8 @@ resource "pingfederate_authentication_policies" "%[1]s" {
           }
         ]
       }
-      name                    = "Coverage For Testing"
-      enabled                 = true
+      name                    = "Coverage For Testing",
+      enabled                 = true,
       handle_failures_locally = false
     }
   ]
@@ -578,10 +645,34 @@ func testAccCheckExpectedAuthenticationPoliciesAttributes(id, description string
 				return err
 			}
 
+			err = acctest.TestAttributesMatchBool(resourceType, nil,
+				"enabled",
+				true,
+				*coverageForTestingPolicy.Enabled)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchBool(resourceType, nil,
+				"handle_failures_locally",
+				false,
+				*coverageForTestingPolicy.HandleFailuresLocally)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, nil,
+				"id",
+				"authnExp",
+				coverageForTestingPolicy.RootNode.Children[0].Action.AuthnSelectorPolicyAction.AuthenticationSelectorRef.Id)
+			if err != nil {
+				return err
+			}
+
 			err = acctest.TestAttributesMatchString(resourceType, nil,
 				"id",
 				"FirstFactor",
-				coverageForTestingPolicy.RootNode.Action.FragmentPolicyAction.Fragment.Id)
+				coverageForTestingPolicy.RootNode.Children[0].Children[1].Action.FragmentPolicyAction.Fragment.Id)
 			if err != nil {
 				return err
 			}
@@ -589,7 +680,7 @@ func testAccCheckExpectedAuthenticationPoliciesAttributes(id, description string
 			err = acctest.TestAttributesMatchString(resourceType, nil,
 				"type",
 				"NO_MAPPING",
-				coverageForTestingPolicy.RootNode.Action.FragmentPolicyAction.FragmentMapping.AttributeContractFulfillment["subject"].Source.Type)
+				coverageForTestingPolicy.RootNode.Children[0].Children[1].Action.FragmentPolicyAction.FragmentMapping.AttributeContractFulfillment["subject"].Source.Type)
 			if err != nil {
 				return err
 			}
@@ -597,7 +688,23 @@ func testAccCheckExpectedAuthenticationPoliciesAttributes(id, description string
 			err = acctest.TestAttributesMatchStringPointer(resourceType, nil,
 				"context",
 				"Fail",
-				coverageForTestingPolicy.RootNode.Children[0].Action.RestartPolicyAction.Context)
+				coverageForTestingPolicy.RootNode.Children[0].Children[1].Children[0].Action.DonePolicyAction.Context)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, nil,
+				"id",
+				"QGxlec5CX693lBQL",
+				coverageForTestingPolicy.RootNode.Children[0].Children[1].Children[1].Action.ApcMappingPolicyAction.AuthenticationPolicyContractRef.Id)
+			if err != nil {
+				return err
+			}
+
+			err = acctest.TestAttributesMatchString(resourceType, nil,
+				"type",
+				"NO_MAPPING",
+				coverageForTestingPolicy.RootNode.Children[0].Children[1].Children[1].Action.ApcMappingPolicyAction.AttributeMapping.AttributeContractFulfillment["subject"].Source.Type)
 			if err != nil {
 				return err
 			}
@@ -605,7 +712,7 @@ func testAccCheckExpectedAuthenticationPoliciesAttributes(id, description string
 			err = acctest.TestAttributesMatchStringPointer(resourceType, nil,
 				"context",
 				"Success",
-				coverageForTestingPolicy.RootNode.Children[1].Action.LocalIdentityMappingPolicyAction.Context)
+				coverageForTestingPolicy.RootNode.Children[0].Children[1].Children[1].Action.ApcMappingPolicyAction.Context)
 			if err != nil {
 				return err
 			}
@@ -637,47 +744,15 @@ func testAccCheckExpectedAuthenticationPoliciesAttributes(id, description string
 			err = acctest.TestAttributesMatchString(resourceType, nil,
 				"type",
 				"NO_MAPPING",
-				coverageForTestingPolicy.RootNode.Children[1].Action.LocalIdentityMappingPolicyAction.OutboundAttributeMapping.AttributeContractFulfillment["firstName"].Source.Type)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.TestAttributesMatchString(resourceType, nil,
-				"type",
-				"NO_MAPPING",
-				coverageForTestingPolicy.RootNode.Children[1].Action.LocalIdentityMappingPolicyAction.OutboundAttributeMapping.AttributeContractFulfillment["lastName"].Source.Type)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.TestAttributesMatchString(resourceType, nil,
-				"type",
-				"NO_MAPPING",
-				coverageForTestingPolicy.RootNode.Children[1].Action.LocalIdentityMappingPolicyAction.OutboundAttributeMapping.AttributeContractFulfillment["ImmutableID"].Source.Type)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.TestAttributesMatchString(resourceType, nil,
-				"type",
-				"NO_MAPPING",
-				coverageForTestingPolicy.RootNode.Children[1].Action.LocalIdentityMappingPolicyAction.OutboundAttributeMapping.AttributeContractFulfillment["mail"].Source.Type)
-			if err != nil {
-				return err
-			}
-
-			err = acctest.TestAttributesMatchString(resourceType, nil,
-				"type",
-				"NO_MAPPING",
 				coverageForTestingPolicy.RootNode.Children[1].Action.LocalIdentityMappingPolicyAction.OutboundAttributeMapping.AttributeContractFulfillment["subject"].Source.Type)
 			if err != nil {
 				return err
 			}
 
-			err = acctest.TestAttributesMatchString(resourceType, nil,
-				"type",
-				"NO_MAPPING",
-				coverageForTestingPolicy.RootNode.Children[1].Action.LocalIdentityMappingPolicyAction.OutboundAttributeMapping.AttributeContractFulfillment["SAML_AUTHN_CTX"].Source.Type)
+			err = acctest.TestAttributesMatchStringPointer(resourceType, nil,
+				"context",
+				"Success",
+				coverageForTestingPolicy.RootNode.Children[1].Action.LocalIdentityMappingPolicyAction.Context)
 			if err != nil {
 				return err
 			}
