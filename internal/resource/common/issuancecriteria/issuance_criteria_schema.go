@@ -13,7 +13,7 @@ import (
 
 func ToSchema() schema.SingleNestedAttribute {
 	conditionalCriteriaDefault, _ := types.ListValue(ConditionalCriteriaElemType(), nil)
-	issuanceCriteriaDefault, _ := types.ObjectValue(AttrType(), map[string]attr.Value{
+	issuanceCriteriaDefault, _ := types.ObjectValue(AttrTypes(), map[string]attr.Value{
 		"conditional_criteria": conditionalCriteriaDefault,
 		"expression_criteria":  types.ListNull(ExpressionCriteriaElemType()),
 	})

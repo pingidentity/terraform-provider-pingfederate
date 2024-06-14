@@ -33,7 +33,7 @@ var (
 		"parent_ref":            types.ObjectType{AttrTypes: resourcelink.AttrType()},
 	}
 
-	customDataStoreAttrType                = internaltypes.AddKeyValToMapStringAttrType(customDataStoreCommonAttrType, "configuration", types.ObjectType{AttrTypes: pluginconfiguration.AttrType()})
+	customDataStoreAttrType                = internaltypes.AddKeyValToMapStringAttrType(customDataStoreCommonAttrType, "configuration", types.ObjectType{AttrTypes: pluginconfiguration.AttrTypes()})
 	customDataStoreEmptyStateObj           = types.ObjectNull(customDataStoreAttrType)
 	customDataStoreDataSourceAttrType      = internaltypes.AddKeyValToMapStringAttrType(customDataStoreCommonAttrType, "configuration", types.ObjectType{AttrTypes: datasourcepluginconfiguration.AttrType()})
 	customDataStoreEmptyDataSourceStateObj = types.ObjectNull(customDataStoreDataSourceAttrType)
@@ -141,7 +141,7 @@ func toStateCustomDataStore(con context.Context, clientValue *client.DataStoreAg
 			configurationObject, diags = pluginconfiguration.ToState(planConfiguration.(types.Object), &customDataStore.Configuration)
 			allDiags = append(allDiags, diags...)
 		} else {
-			configurationObject, diags = pluginconfiguration.ToState(types.ObjectNull(pluginconfiguration.AttrType()), &customDataStore.Configuration)
+			configurationObject, diags = pluginconfiguration.ToState(types.ObjectNull(pluginconfiguration.AttrTypes()), &customDataStore.Configuration)
 			allDiags = append(allDiags, diags...)
 		}
 		customDataStoreVal["configuration"] = configurationObject

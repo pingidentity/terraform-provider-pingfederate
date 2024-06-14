@@ -10,23 +10,26 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 )
 
-func AttrType() map[string]attr.Type {
+func AttrTypes() map[string]attr.Type {
 	attributeContractFulfillmentAttrType := map[string]attr.Type{}
-	attributeContractFulfillmentAttrType["source"] = types.ObjectType{AttrTypes: sourcetypeidkey.AttrType()}
+	attributeContractFulfillmentAttrType["source"] = types.ObjectType{AttrTypes: sourcetypeidkey.AttrTypes()}
 	attributeContractFulfillmentAttrType["value"] = types.StringType
 	return attributeContractFulfillmentAttrType
 }
 
 func ObjType() types.ObjectType {
 	return types.ObjectType{
-		AttrTypes: AttrType(),
+		AttrTypes: AttrTypes(),
 	}
 }
 
 func MapType() types.MapType {
-	return types.MapType{ElemType: types.ObjectType{AttrTypes: AttrType()}}
+	return types.MapType{ElemType: types.ObjectType{AttrTypes: AttrTypes()}}
 }
 
-func ToState(con context.Context, attributeContractFulfillmentFromClient map[string]client.AttributeFulfillmentValue) (types.Map, diag.Diagnostics) {
+func ToState(con context.Context, attributeContractFulfillmentFromClient *map[string]client.AttributeFulfillmentValue) (types.Map, diag.Diagnostics) {
+	if attributeContractFulfillmentFromClient == nil {
+		return types.MapNull(ObjType()), nil
+	}
 	return types.MapValueFrom(con, ObjType(), attributeContractFulfillmentFromClient)
 }

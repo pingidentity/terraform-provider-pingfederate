@@ -42,3 +42,5 @@ server-profiles/shared-profile/instance/bulk-config/data.json.subst
 # Ignore for local development
 vendor
 terraform-provider-pingfederate
+provider_code_spec.json
+generator-config.yml

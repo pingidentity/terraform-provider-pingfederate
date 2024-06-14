@@ -17,12 +17,12 @@ var (
 	attributeMappingAttrTypes = map[string]attr.Type{
 		"attribute_sources": types.ListType{
 			ElemType: types.ObjectType{
-				AttrTypes: attributesources.ElemAttrType(),
+				AttrTypes: attributesources.AttrTypes(),
 			},
 		},
 		"attribute_contract_fulfillment": attributecontractfulfillment.MapType(),
 		"issuance_criteria": types.ObjectType{
-			AttrTypes: issuancecriteria.AttrType(),
+			AttrTypes: issuancecriteria.AttrTypes(),
 		},
 	}
 )
@@ -53,7 +53,7 @@ func ToState(con context.Context, attributeMappingFromClient *configurationapi.A
 
 	attributeMappingState := map[string]attr.Value{}
 
-	attributeContractFulfillment, objDiags := attributecontractfulfillment.ToState(con, attributeMappingFromClient.AttributeContractFulfillment)
+	attributeContractFulfillment, objDiags := attributecontractfulfillment.ToState(con, &attributeMappingFromClient.AttributeContractFulfillment)
 	diags = append(diags, objDiags...)
 
 	attributeSources, objDiags := attributesources.ToState(con, attributeMappingFromClient.AttributeSources)

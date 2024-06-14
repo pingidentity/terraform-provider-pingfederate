@@ -34,7 +34,7 @@ var (
 	}
 )
 
-func AttrType() map[string]attr.Type {
+func AttrTypes() map[string]attr.Type {
 	return configurationAttrTypes
 }
 

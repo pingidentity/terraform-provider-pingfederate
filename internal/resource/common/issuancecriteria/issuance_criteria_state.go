@@ -14,7 +14,7 @@ func ConditionalCriteriaElemType() types.ObjectType {
 	return types.ObjectType{
 		AttrTypes: map[string]attr.Type{
 			"source": types.ObjectType{
-				AttrTypes: sourcetypeidkey.AttrType(),
+				AttrTypes: sourcetypeidkey.AttrTypes(),
 			},
 			"attribute_name": types.StringType,
 			"condition":      types.StringType,
@@ -33,7 +33,7 @@ func ExpressionCriteriaElemType() types.ObjectType {
 	}
 }
 
-func AttrType() map[string]attr.Type {
+func AttrTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"conditional_criteria": types.ListType{
 			ElemType: ConditionalCriteriaElemType(),
@@ -45,5 +45,5 @@ func AttrType() map[string]attr.Type {
 }
 
 func ToState(con context.Context, issuanceCriteriaFromClient *client.IssuanceCriteria) (types.Object, diag.Diagnostics) {
-	return types.ObjectValueFrom(con, AttrType(), issuanceCriteriaFromClient)
+	return types.ObjectValueFrom(con, AttrTypes(), issuanceCriteriaFromClient)
 }

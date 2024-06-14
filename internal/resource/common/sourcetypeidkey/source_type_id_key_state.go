@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func AttrType() map[string]attr.Type {
+func AttrTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"type": types.StringType,
 		"id":   types.StringType,
@@ -16,5 +16,5 @@ func AttrType() map[string]attr.Type {
 }
 
 func AttrVal(con context.Context, attrVal attr.Value) (types.Object, diag.Diagnostics) {
-	return types.ObjectValueFrom(con, AttrType(), attrVal)
+	return types.ObjectValueFrom(con, AttrTypes(), attrVal)
 }

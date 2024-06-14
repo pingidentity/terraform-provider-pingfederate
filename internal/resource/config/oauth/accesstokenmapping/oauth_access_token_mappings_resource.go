@@ -155,7 +155,7 @@ func readOauthAccessTokenMappingsResponse(ctx context.Context, r *client.AccessT
 	diags.Append(objDiags...)
 	state.AttributeSources, objDiags = attributesources.ToState(ctx, r.AttributeSources)
 	diags.Append(objDiags...)
-	state.AttributeContractFulfillment, objDiags = attributecontractfulfillment.ToState(ctx, r.AttributeContractFulfillment)
+	state.AttributeContractFulfillment, objDiags = attributecontractfulfillment.ToState(ctx, &r.AttributeContractFulfillment)
 	diags.Append(objDiags...)
 	state.IssuanceCriteria, objDiags = issuancecriteria.ToState(ctx, r.IssuanceCriteria)
 	diags.Append(objDiags...)
