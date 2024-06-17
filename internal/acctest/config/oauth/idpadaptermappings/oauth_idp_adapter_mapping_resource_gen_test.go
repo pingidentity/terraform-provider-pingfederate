@@ -17,7 +17,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const oauthIdpAdapterMappingMappingId = "oauthIdpAdapterTestAdapter"
+const oauthIdpAdapterMappingMappingId = "IDFirst"
 
 func TestAccOauthIdpAdapterMapping_RemovalDrift(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -89,30 +89,27 @@ func TestAccOauthIdpAdapterMapping_MinimalMaximal(t *testing.T) {
 	})
 }
 
-func oauthAuthenticationPolicyContractMapping_DependencyHCL() string {
-	return fmt.Sprintf(`
-//TODO`)
-}
-
 // Minimal HCL with only required values set
 func oauthIdpAdapterMapping_MinimalHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_oauth_idp_adapter_mapping" "example" {
   mapping_id = "%s"
-  // TODO set values for minimal fields
   attribute_contract_fulfillment = {
-    "example" = {
+    "USER_NAME" = {
       source = {
-        id = //TODO
-        type = //TODO
+        type = "ADAPTER"
       }
-      value = //TODO
+      value = "subject"
+    }
+    "USER_KEY" = {
+      source = {
+        type = "ADAPTER"
+      }
+      value = "uid"
     }
   }
 }
-%s
-`, oauthIdpAdapterMappingMappingId,
-		oauthAuthenticationPolicyContractMapping_DependencyHCL())
+`, oauthIdpAdapterMappingMappingId)
 }
 
 // Maximal HCL with all values set where possible
@@ -121,12 +118,17 @@ func oauthIdpAdapterMapping_CompleteHCL() string {
 resource "pingfederate_oauth_idp_adapter_mapping" "example" {
   mapping_id = "%s"
   attribute_contract_fulfillment = {
-    "example" = {
+    "USER_NAME" = {
       source = {
-        id = //TODO
-        type = //TODO
+        type = "ADAPTER"
       }
-      value = //TODO
+      value = "subject"
+    }
+    "USER_KEY" = {
+      source = {
+        type = "ADAPTER"
+      }
+      value = "uid"
     }
   }
   // attribute_sources
@@ -134,11 +136,9 @@ resource "pingfederate_oauth_idp_adapter_mapping" "example" {
   // issuance_criteria
   %s
 }
-%s
 `, oauthIdpAdapterMappingMappingId,
 		attributesources.Hcl(nil, attributesources.LdapClientStruct("(cn=Example)", "SUBTREE", *client.NewResourceLink("pingdirectory"))),
-		issuancecriteria.Hcl(issuancecriteria.ConditionalCriteria()),
-		oauthAuthenticationPolicyContractMapping_DependencyHCL())
+		issuancecriteria.Hcl(issuancecriteria.ConditionalCriteria()))
 }
 
 // Validate any computed values when applying minimal HCL

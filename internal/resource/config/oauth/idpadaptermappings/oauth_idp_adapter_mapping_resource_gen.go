@@ -70,9 +70,8 @@ func (r *oauthIdpAdapterMappingResource) Schema(ctx context.Context, req resourc
 						Description: "The ID of the resource.",
 					},
 				},
-				Optional: false,
-				Computed: true,
-				//TODO modifyplan to set default based on mapping_id, put in separate file
+				Optional:    false,
+				Computed:    true,
 				Description: "A reference to a resource.",
 			},
 			"issuance_criteria": issuancecriteria.ToSchema(),
@@ -103,14 +102,6 @@ func (model *oauthIdpAdapterMappingResourceModel) buildClientStruct() (*client.I
 		return nil, err
 	}
 
-	// idp_adapter_ref
-	if !model.IdpAdapterRef.IsNull() {
-		idpAdapterRefValue := &client.ResourceLink{}
-		idpAdapterRefAttrs := model.IdpAdapterRef.Attributes()
-		idpAdapterRefValue.Id = idpAdapterRefAttrs["id"].(types.String).ValueString()
-		result.IdpAdapterRef = idpAdapterRefValue
-	}
-
 	// issuance_criteria
 	result.IssuanceCriteria, err = issuancecriteria.ClientStruct(model.IssuanceCriteria)
 	if err != nil {
@@ -125,12 +116,12 @@ func (model *oauthIdpAdapterMappingResourceModel) buildClientStruct() (*client.I
 func (state *oauthIdpAdapterMappingResourceModel) readClientResponse(response *client.IdpAdapterMapping) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
 	// attribute_contract_fulfillment
-	attributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.TODO(), &response.AttributeContractFulfillment)
+	attributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &response.AttributeContractFulfillment)
 	respDiags.Append(diags...)
 
 	state.AttributeContractFulfillment = attributeContractFulfillmentValue
 	// attribute_sources
-	attributeSourcesValue, diags := attributesources.ToState(context.TODO(), response.AttributeSources)
+	attributeSourcesValue, diags := attributesources.ToState(context.Background(), response.AttributeSources)
 	respDiags.Append(diags...)
 
 	state.AttributeSources = attributeSourcesValue
@@ -150,7 +141,7 @@ func (state *oauthIdpAdapterMappingResourceModel) readClientResponse(response *c
 
 	state.IdpAdapterRef = idpAdapterRefValue
 	// issuance_criteria
-	issuanceCriteriaValue, diags := issuancecriteria.ToState(context.TODO(), response.IssuanceCriteria)
+	issuanceCriteriaValue, diags := issuancecriteria.ToState(context.Background(), response.IssuanceCriteria)
 	respDiags.Append(diags...)
 
 	state.IssuanceCriteria = issuanceCriteriaValue
