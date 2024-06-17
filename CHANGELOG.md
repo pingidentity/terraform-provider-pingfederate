@@ -1,3 +1,7 @@
+# v0.12.0 (Unreleased)
+### Resources
+* **New Resource:** `pingfederate_sp_default_urls` ([#260]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/260)))
+
 # v0.11.0 May 30th, 2024
 ### DEPRECATED
 * `location` property in resource reference object types for all Resources and DataSources removed ([#249](https://github.com/pingidentity/terraform-provider-pingfederate/pull/249))
