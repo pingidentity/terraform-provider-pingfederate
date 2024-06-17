@@ -93,8 +93,8 @@ resource "pingfederate_session_authentication_policy" "example" {
   policy_id = "%s"
   authentication_source = {
     source_ref = {
-                id = "OTIdPJava"
-              }
+      id = "OTIdPJava"
+    }
     type = "IDP_ADAPTER"
   }
   enable_sessions = false
@@ -109,17 +109,17 @@ resource "pingfederate_session_authentication_policy" "example" {
   policy_id = "%s"
   authentication_source = {
     source_ref = {
-                id = "OTIdPJava"
-              }
+      id = "OTIdPJava"
+    }
     type = "IDP_ADAPTER"
   }
   authn_context_sensitive = true
-  enable_sessions = true
-  idle_timeout_mins = 60
-  max_timeout_mins = 480
-  persistent = true
-  timeout_display_unit = "HOURS"
-  user_device_type = "ANY"
+  enable_sessions         = true
+  idle_timeout_mins       = 60
+  max_timeout_mins        = 480
+  persistent              = true
+  timeout_display_unit    = "HOURS"
+  user_device_type        = "ANY"
 }
 `, sessionAuthenticationPolicyPolicyId)
 }
