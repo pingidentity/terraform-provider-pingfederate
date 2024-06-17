@@ -91,9 +91,9 @@ func TestAccOauthAuthenticationPolicyContractMapping_MinimalMaximal(t *testing.T
 
 func oauthAuthenticationPolicyContractMapping_DependencyHCL() string {
 	return fmt.Sprintf(`
-resource "pingfederate_authentication_policy_contract" "mycontract" {
+resource "pingfederate_authentication_policy_contract" "oauth_auth_policy_mapping_contract" {
   contract_id = "oauthAuthPolicyTestContract"
-  name        = "Test Contract"
+  name        = "OAuth Auth Policy Test Contract"
   extended_attributes = [
     {
       name = "ImmutableID"
@@ -121,7 +121,7 @@ resource "pingfederate_oauth_authentication_policy_contract_mapping" "example" {
     }
   }
   authentication_policy_contract_ref = {
-    id = pingfederate_authentication_policy_contract.mycontract.contract_id
+    id = pingfederate_authentication_policy_contract.oauth_auth_policy_mapping_contract.contract_id
   }
 }
 %s
@@ -149,7 +149,7 @@ resource "pingfederate_oauth_authentication_policy_contract_mapping" "example" {
   // attribute_sources
   %s
   authentication_policy_contract_ref = {
-    id = pingfederate_authentication_policy_contract.mycontract.contract_id
+    id = pingfederate_authentication_policy_contract.oauth_auth_policy_mapping_contract.contract_id
   }
   // issuance_criteria
   %s
