@@ -72,7 +72,7 @@ func (r *oauthIdpAdapterMappingResource) Schema(ctx context.Context, req resourc
 				},
 				Optional:    false,
 				Computed:    true,
-				Description: "A reference to a resource.",
+				Description: "Read only reference to the associated IdP adapter.",
 			},
 			"issuance_criteria": issuancecriteria.ToSchema(),
 			"mapping_id": schema.StringAttribute{

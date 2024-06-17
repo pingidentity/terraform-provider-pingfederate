@@ -46,7 +46,7 @@ resource "pingfederate_oauth_idp_adapter_mapping" "oauthIdpAdapterMapping" {
 
 ### Read-Only
 
-- `idp_adapter_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--idp_adapter_ref))
+- `idp_adapter_ref` (Attributes) Read only reference to the associated IdP adapter. (see [below for nested schema](#nestedatt--idp_adapter_ref))
 
 <a id="nestedatt--attribute_contract_fulfillment"></a>
 ### Nested Schema for `attribute_contract_fulfillment`
