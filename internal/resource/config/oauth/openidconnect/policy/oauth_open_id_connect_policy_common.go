@@ -85,7 +85,7 @@ func readOauthOpenIdConnectPolicyResponse(ctx context.Context, response *client.
 	attributeMappingValues := map[string]attr.Value{}
 
 	// Build attribute_contract_fulfillment value
-	attributeMappingValues["attribute_contract_fulfillment"], diags = attributecontractfulfillment.ToState(ctx, response.AttributeMapping.AttributeContractFulfillment)
+	attributeMappingValues["attribute_contract_fulfillment"], diags = attributecontractfulfillment.ToState(ctx, &response.AttributeMapping.AttributeContractFulfillment)
 	respDiags.Append(diags...)
 
 	// Build issuance_criteria value

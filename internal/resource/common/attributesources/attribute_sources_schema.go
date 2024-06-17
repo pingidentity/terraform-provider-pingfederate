@@ -152,7 +152,7 @@ func LdapAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContr
 }
 
 func ToSchema(sizeAtLeast int, optionalAndComputedNestedAttributeContractFulfillment bool) schema.ListNestedAttribute {
-	attributeSourcesDefault, _ := types.ListValue(types.ObjectType{AttrTypes: ElemAttrType()}, nil)
+	attributeSourcesDefault, _ := types.ListValue(types.ObjectType{AttrTypes: AttrTypes()}, nil)
 	validators := []validator.List{}
 	if sizeAtLeast > 0 {
 		validators = append(validators, listvalidator.SizeAtLeast(sizeAtLeast))

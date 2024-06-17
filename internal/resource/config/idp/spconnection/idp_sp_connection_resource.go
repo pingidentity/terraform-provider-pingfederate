@@ -151,14 +151,14 @@ var (
 		},
 	}
 	attributeContractFulfillmentElemAttrType = types.ObjectType{AttrTypes: map[string]attr.Type{
-		"source": types.ObjectType{AttrTypes: sourcetypeidkey.AttrType()},
+		"source": types.ObjectType{AttrTypes: sourcetypeidkey.AttrTypes()},
 		"value":  types.StringType,
 	}}
 	attributeContractFulfillmentAttrType = types.MapType{
 		ElemType: attributeContractFulfillmentElemAttrType,
 	}
 	issuanceCriteriaAttrType = types.ObjectType{
-		AttrTypes: issuancecriteria.AttrType(),
+		AttrTypes: issuancecriteria.AttrTypes(),
 	}
 	idpAdapterAttributeAttrType = types.ObjectType{
 		AttrTypes: map[string]attr.Type{
@@ -228,10 +228,10 @@ var (
 				"name":                  types.StringType,
 				"plugin_descriptor_ref": resourceLinkObjectType,
 				"parent_ref":            resourceLinkObjectType,
-				"configuration":         types.ObjectType{AttrTypes: pluginconfiguration.AttrType()},
+				"configuration":         types.ObjectType{AttrTypes: pluginconfiguration.AttrTypes()},
 				"authn_ctx_class_ref":   types.StringType,
 				"attribute_mapping": types.ObjectType{AttrTypes: map[string]attr.Type{
-					"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
+					"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
 					"attribute_contract_fulfillment": attributeContractFulfillmentAttrType,
 					"issuance_criteria":              issuanceCriteriaAttrType,
 					"inherited":                      types.BoolType,
@@ -245,7 +245,7 @@ var (
 				}},
 			}},
 			"abort_sso_transaction_as_fail_safe": types.BoolType,
-			"attribute_sources":                  types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
+			"attribute_sources":                  types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
 			"attribute_contract_fulfillment":     attributeContractFulfillmentAttrType,
 			"issuance_criteria":                  issuanceCriteriaAttrType,
 		}}},
@@ -254,7 +254,7 @@ var (
 			"restrict_virtual_entity_ids":        types.BoolType,
 			"restricted_virtual_entity_ids":      types.ListType{ElemType: types.StringType},
 			"abort_sso_transaction_as_fail_safe": types.BoolType,
-			"attribute_sources":                  types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
+			"attribute_sources":                  types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
 			"attribute_contract_fulfillment":     attributeContractFulfillmentAttrType,
 			"issuance_criteria":                  issuanceCriteriaAttrType,
 		}}},
@@ -294,7 +294,7 @@ var (
 		"token_processor_mappings": types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
 			"idp_token_processor_ref":        resourceLinkObjectType,
 			"restricted_virtual_entity_ids":  types.ListType{ElemType: types.StringType},
-			"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
+			"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
 			"attribute_contract_fulfillment": attributeContractFulfillmentAttrType,
 			"issuance_criteria":              issuanceCriteriaAttrType,
 		}}},

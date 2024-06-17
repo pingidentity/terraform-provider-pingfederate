@@ -117,7 +117,7 @@ func readOauthTokenExchangeTokenGeneratorMappingResourceResponse(ctx context.Con
 	var diags, respDiags diag.Diagnostics
 	state.AttributeSources, respDiags = attributesources.ToState(ctx, r.AttributeSources)
 	diags.Append(respDiags...)
-	state.AttributeContractFulfillment, respDiags = attributecontractfulfillment.ToState(ctx, r.AttributeContractFulfillment)
+	state.AttributeContractFulfillment, respDiags = attributecontractfulfillment.ToState(ctx, &r.AttributeContractFulfillment)
 	diags.Append(respDiags...)
 	state.IssuanceCriteria, respDiags = issuancecriteria.ToState(ctx, r.IssuanceCriteria)
 	diags.Append(respDiags...)

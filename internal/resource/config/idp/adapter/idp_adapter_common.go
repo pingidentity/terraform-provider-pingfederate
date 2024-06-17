@@ -65,12 +65,12 @@ var (
 	attributeMappingAttrTypes = map[string]attr.Type{
 		"attribute_sources": types.ListType{
 			ElemType: types.ObjectType{
-				AttrTypes: attributesources.ElemAttrType(),
+				AttrTypes: attributesources.AttrTypes(),
 			},
 		},
 		"attribute_contract_fulfillment": attributecontractfulfillment.MapType(),
 		"issuance_criteria": types.ObjectType{
-			AttrTypes: issuancecriteria.AttrType(),
+			AttrTypes: issuancecriteria.AttrTypes(),
 		},
 		"inherited": types.BoolType,
 	}
@@ -169,7 +169,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 		}
 
 		// Build attribute_contract_fulfillment value
-		attributeMappingValues["attribute_contract_fulfillment"], diags = attributecontractfulfillment.ToState(ctx, r.AttributeMapping.AttributeContractFulfillment)
+		attributeMappingValues["attribute_contract_fulfillment"], diags = attributecontractfulfillment.ToState(ctx, &r.AttributeMapping.AttributeContractFulfillment)
 		respDiags.Append(diags...)
 
 		// Build issuance_criteria value
