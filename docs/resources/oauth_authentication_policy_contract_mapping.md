@@ -39,7 +39,7 @@ resource "pingfederate_oauth_authentication_policy_contract_mapping" "oauthAuthe
 ### Required
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--attribute_contract_fulfillment))
-- `authentication_policy_contract_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--authentication_policy_contract_ref))
+- `authentication_policy_contract_ref` (Attributes) Reference to the associated authentication policy contract. The reference cannot be changed after the mapping has been created. (see [below for nested schema](#nestedatt--authentication_policy_contract_ref))
 
 ### Optional
 
