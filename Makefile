@@ -62,7 +62,7 @@ endef
 
 # Set ACC_TEST_NAME to name of test in cli
 testoneacc:
-	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/config/oauth/idpadaptermappings/... -timeout 10m -v count=1
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/... -timeout 10m -run ${ACC_TEST_NAME} -v count=1
 
 testoneacccomplete: spincontainer testoneacc
 
