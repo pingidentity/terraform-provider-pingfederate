@@ -13,22 +13,23 @@ func ObjType() types.ObjectType {
 
 func AttrTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"cert": types.ObjectType{
+		"cert_view": types.ObjectType{
 			AttrTypes: map[string]attr.Type{
-				"id":                        types.StringType,
-				"serial_number":             types.StringType,
-				"subject_dn":                types.StringType,
-				"subject_alternative_names": types.SetType{ElemType: types.StringType},
-				"issuer_dn":                 types.StringType,
-				"valid_from":                types.StringType,
+				"crypto_provider":           types.StringType,
 				"expires":                   types.StringType,
+				"id":                        types.StringType,
+				"issuer_dn":                 types.StringType,
 				"key_algorithm":             types.StringType,
 				"key_size":                  types.Int64Type,
-				"signature_algorithm":       types.StringType,
-				"version":                   types.Int64Type,
+				"serial_number":             types.StringType,
 				"sha1_fingerprint":          types.StringType,
 				"sha256_fingerprint":        types.StringType,
+				"signature_algorithm":       types.StringType,
 				"status":                    types.StringType,
+				"subject_alternative_names": types.SetType{ElemType: types.StringType},
+				"subject_dn":                types.StringType,
+				"valid_from":                types.StringType,
+				"version":                   types.Int64Type,
 			},
 		},
 		"x509_file": types.ObjectType{

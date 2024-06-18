@@ -10,7 +10,6 @@ var (
 		"name":            types.StringType,
 		"value":           types.StringType,
 		"encrypted_value": types.StringType,
-		"inherited":       types.BoolType,
 	}
 
 	rowAttrTypes = map[string]attr.Type{
@@ -19,9 +18,8 @@ var (
 	}
 
 	tableAttrTypes = map[string]attr.Type{
-		"name":      types.StringType,
-		"rows":      types.ListType{ElemType: types.ObjectType{AttrTypes: rowAttrTypes}},
-		"inherited": types.BoolType,
+		"name": types.StringType,
+		"rows": types.ListType{ElemType: types.ObjectType{AttrTypes: rowAttrTypes}},
 	}
 
 	configurationAttrTypes = map[string]attr.Type{

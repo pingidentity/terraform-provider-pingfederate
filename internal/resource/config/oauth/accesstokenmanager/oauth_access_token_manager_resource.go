@@ -45,23 +45,19 @@ var (
 	attributeContractTypes = map[string]attr.Type{
 		"core_attributes":           types.SetType{ElemType: types.ObjectType{AttrTypes: attrType}},
 		"extended_attributes":       types.SetType{ElemType: types.ObjectType{AttrTypes: attrType}},
-		"inherited":                 types.BoolType,
 		"default_subject_attribute": types.StringType,
 	}
 
 	selectionSettingsAttrType = map[string]attr.Type{
-		"inherited":     types.BoolType,
 		"resource_uris": types.ListType{ElemType: types.StringType},
 	}
 
 	accessControlSettingsAttrType = map[string]attr.Type{
-		"inherited":        types.BoolType,
 		"restrict_clients": types.BoolType,
 		"allowed_clients":  types.ListType{ElemType: types.ObjectType{AttrTypes: resourcelink.AttrType()}},
 	}
 
 	sessionValidationSettingsAttrType = map[string]attr.Type{
-		"inherited":                       types.BoolType,
 		"include_session_id":              types.BoolType,
 		"check_valid_authn_session":       types.BoolType,
 		"check_session_revocation_status": types.BoolType,
@@ -70,19 +66,16 @@ var (
 
 	resourceUrisDefault, _      = types.ListValue(types.StringType, nil)
 	selectionSettingsDefault, _ = types.ObjectValue(selectionSettingsAttrType, map[string]attr.Value{
-		"inherited":     types.BoolValue(false),
 		"resource_uris": resourceUrisDefault,
 	})
 
 	allowedClientsDefault, _        = types.ListValue(types.ObjectType{AttrTypes: resourcelink.AttrType()}, nil)
 	accessControlSettingsDefault, _ = types.ObjectValue(accessControlSettingsAttrType, map[string]attr.Value{
-		"inherited":        types.BoolValue(false),
 		"restrict_clients": types.BoolValue(false),
 		"allowed_clients":  allowedClientsDefault,
 	})
 
 	sessionValidationSettingsDefault, _ = types.ObjectValue(sessionValidationSettingsAttrType, map[string]attr.Value{
-		"inherited":                       types.BoolValue(false),
 		"include_session_id":              types.BoolValue(false),
 		"check_valid_authn_session":       types.BoolValue(false),
 		"check_session_revocation_status": types.BoolValue(false),
@@ -195,13 +188,6 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 							},
 						},
 					},
-					"inherited": schema.BoolAttribute{
-						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
-						Description:        "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
-						Optional:           true,
-						Computed:           true,
-						Default:            booldefault.StaticBool(false),
-					},
 					"default_subject_attribute": schema.StringAttribute{
 						Description: "Default subject attribute to use for audit logging when validating the access token. Blank value means to use USER_KEY attribute value after grant lookup.",
 						Optional:    true,
@@ -214,13 +200,6 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				Optional:    true,
 				Default:     objectdefault.StaticValue(selectionSettingsDefault),
 				Attributes: map[string]schema.Attribute{
-					"inherited": schema.BoolAttribute{
-						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
-						Description:        "If this token manager has a parent, this flag determines whether selection settings, such as resource URI's, are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
-						Optional:           true,
-						Computed:           true,
-						Default:            booldefault.StaticBool(false),
-					},
 					"resource_uris": schema.ListAttribute{
 						Description: "The list of base resource URI's which map to this token manager. A resource URI, specified via the 'aud' parameter, can be used to select a specific token manager for an OAuth request.",
 						Optional:    true,
@@ -236,13 +215,6 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				Optional:    true,
 				Default:     objectdefault.StaticValue(accessControlSettingsDefault),
 				Attributes: map[string]schema.Attribute{
-					"inherited": schema.BoolAttribute{
-						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
-						Description:        "If this token manager has a parent, this flag determines whether access control settings are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
-						Optional:           true,
-						Computed:           true,
-						Default:            booldefault.StaticBool(false),
-					},
 					"restrict_clients": schema.BoolAttribute{
 						Description: "Determines whether access to this token manager is restricted to specific OAuth clients. If false, the 'allowedClients' field is ignored. The default value is false.",
 						Computed:    true,
@@ -266,13 +238,6 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 				Optional:    true,
 				Default:     objectdefault.StaticValue(sessionValidationSettingsDefault),
 				Attributes: map[string]schema.Attribute{
-					"inherited": schema.BoolAttribute{
-						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
-						Description:        "If this token manager has a parent, this flag determines whether session validation settings, such as checkValidAuthnSession, are inherited from the parent. When set to true, the other fields in this model become read-only. The default value is false.",
-						Optional:           true,
-						Computed:           true,
-						Default:            booldefault.StaticBool(false),
-					},
 					"include_session_id": schema.BoolAttribute{
 						Description: "Include the session identifier in the access token. Note that if any of the session validation features is enabled, the session identifier will already be included in the access tokens.",
 						Computed:    true,
@@ -446,14 +411,9 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 		attributeContractExtendedAttributes, respDiags := types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attrType}, extdAttrs)
 		diags.Append(respDiags...)
 
-		inherited := false
-		if attrContract.Inherited != nil {
-			inherited = *attrContract.Inherited
-		}
 		attributeContractValues := map[string]attr.Value{
 			"core_attributes":           attributeContractCoreAttributes,
 			"extended_attributes":       attributeContractExtendedAttributes,
-			"inherited":                 types.BoolValue(inherited),
 			"default_subject_attribute": types.StringPointerValue(attrContract.DefaultSubjectAttribute),
 		}
 		state.AttributeContract, respDiags = types.ObjectValue(attributeContractTypes, attributeContractValues)
@@ -467,15 +427,8 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 		resourceUris, respDiags := types.ListValueFrom(ctx, types.StringType, r.SelectionSettings.ResourceUris)
 		diags.Append(respDiags...)
 
-		// The PF API returns false as empty for inherited in some cases
-		inherited := false
-		if r.SelectionSettings.Inherited != nil {
-			inherited = *r.SelectionSettings.Inherited
-		}
-
 		state.SelectionSettings, respDiags = types.ObjectValue(selectionSettingsAttrType, map[string]attr.Value{
 			"resource_uris": resourceUris,
-			"inherited":     types.BoolValue(inherited),
 		})
 		diags.Append(respDiags...)
 	}
@@ -484,17 +437,10 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 	if r.AccessControlSettings == nil {
 		state.AccessControlSettings = types.ObjectNull(accessControlSettingsAttrType)
 	} else {
-		// The PF API returns false as empty for inherited in some cases
-		inherited := false
-		if r.AccessControlSettings.Inherited != nil {
-			inherited = *r.AccessControlSettings.Inherited
-		}
-
 		allowedClients, respDiags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: resourcelink.AttrType()}, r.AccessControlSettings.AllowedClients)
 		diags.Append(respDiags...)
 
 		state.AccessControlSettings, respDiags = types.ObjectValue(accessControlSettingsAttrType, map[string]attr.Value{
-			"inherited":        types.BoolValue(inherited),
 			"restrict_clients": types.BoolPointerValue(r.AccessControlSettings.RestrictClients),
 			"allowed_clients":  allowedClients,
 		})
@@ -505,14 +451,7 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 	if r.SessionValidationSettings == nil {
 		state.SessionValidationSettings = types.ObjectNull(sessionValidationSettingsAttrType)
 	} else {
-		// The PF API returns false as empty for inherited in some cases
-		inherited := false
-		if r.SessionValidationSettings.Inherited != nil {
-			inherited = *r.SessionValidationSettings.Inherited
-		}
-
 		state.SessionValidationSettings, respDiags = types.ObjectValue(sessionValidationSettingsAttrType, map[string]attr.Value{
-			"inherited":                       types.BoolValue(inherited),
 			"include_session_id":              types.BoolPointerValue(r.SessionValidationSettings.IncludeSessionId),
 			"check_valid_authn_session":       types.BoolPointerValue(r.SessionValidationSettings.CheckValidAuthnSession),
 			"check_session_revocation_status": types.BoolPointerValue(r.SessionValidationSettings.CheckSessionRevocationStatus),

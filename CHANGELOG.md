@@ -1,3 +1,10 @@
+# v0.12.0 (Unreleased)
+### DEPRECATED
+* `inherited` property for all Resources and DataSources removed ([#259](https://github.com/pingidentity/terraform-provider-pingfederate/pull/259))
+
+### Resources
+* **New Resource:** `pingfederate_sp_idp_connection ` ([#259](https://github.com/pingidentity/terraform-provider-pingfederate/pull/259))
+
 # v0.11.0 May 30th, 2024
 ### DEPRECATED
 * `location` property in resource reference object types for all Resources and DataSources removed ([#249](https://github.com/pingidentity/terraform-provider-pingfederate/pull/249))

@@ -96,7 +96,6 @@ func testAccPasswordCredentialValidators(resourceName string, resourceModel simp
 		optionalHcl = `
 		attribute_contract = {
 			extended_attributes = []
-			inherited = false
 		}
 		`
 	}

@@ -157,13 +157,6 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
 					},
-					"inherited": schema.BoolAttribute{
-						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
-						Description:        "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
-						Optional:           true,
-						Computed:           true,
-						Default:            booldefault.StaticBool(false),
-					},
 				},
 			},
 			"attribute_mapping": schema.SingleNestedAttribute{
@@ -174,13 +167,6 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 					"attribute_sources":              attributesources.ToSchema(0, false),
 					"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(false, true, true),
 					"issuance_criteria":              issuancecriteria.ToSchema(),
-					"inherited": schema.BoolAttribute{
-						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
-						Optional:           true,
-						Computed:           true,
-						Default:            booldefault.StaticBool(false),
-						Description:        "Whether this attribute mapping is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
-					},
 				},
 			},
 		},
@@ -211,9 +197,6 @@ func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdap
 	if internaltypes.IsDefined(plan.AttributeMapping) {
 		addRequest.AttributeMapping = &client.IdpAdapterContractMapping{}
 		planAttrs := plan.AttributeMapping.Attributes()
-
-		addRequest.AttributeMapping.Inherited = planAttrs["inherited"].(types.Bool).ValueBoolPointer()
-
 		attrContractFulfillmentAttr := planAttrs["attribute_contract_fulfillment"].(types.Map)
 		addRequest.AttributeMapping.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(attrContractFulfillmentAttr)
 		if err != nil {

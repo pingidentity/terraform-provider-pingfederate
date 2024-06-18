@@ -17,8 +17,7 @@ func AttrType(key string) map[string]attr.Type {
 
 func JdbcDataStoreRepositoryAttrType() map[string]attr.Type {
 	return map[string]attr.Type{
-		"type":                             types.StringType,
-		"data_store_ref":                   types.ObjectType{AttrTypes: resourcelink.AttrTypeNoLocation()},
+		"data_store_ref":                   types.ObjectType{AttrTypes: resourcelink.AttrType()},
 		"jit_repository_attribute_mapping": attributecontractfulfillment.MapType(),
 		"sql_method": types.ObjectType{
 			AttrTypes: map[string]attr.Type{
@@ -43,8 +42,7 @@ func JdbcDataStoreRepositoryAttrType() map[string]attr.Type {
 
 func LdapDataStoreRepositoryAttrType() map[string]attr.Type {
 	return map[string]attr.Type{
-		"type":                             types.StringType,
-		"data_store_ref":                   types.ObjectType{AttrTypes: resourcelink.AttrTypeNoLocation()},
+		"data_store_ref":                   types.ObjectType{AttrTypes: resourcelink.AttrType()},
 		"jit_repository_attribute_mapping": attributecontractfulfillment.MapType(),
 		"base_dn":                          types.StringType,
 		"unique_user_id_filter":            types.StringType,
@@ -53,10 +51,10 @@ func LdapDataStoreRepositoryAttrType() map[string]attr.Type {
 
 func ElemAttrType() map[string]attr.Type {
 	return map[string]attr.Type{
-		"jdbc_data_store_repository": types.ObjectType{
+		"jdbc": types.ObjectType{
 			AttrTypes: JdbcDataStoreRepositoryAttrType(),
 		},
-		"ldap_data_store_repository": types.ObjectType{
+		"ldap": types.ObjectType{
 			AttrTypes: LdapDataStoreRepositoryAttrType(),
 		},
 	}

@@ -57,7 +57,6 @@ func updatedAttributeContract() *client.IdpAdapterAttributeContract {
 		Masked:    pointers.Bool(false),
 	})
 	contract.UniqueUserKeyAttribute = pointers.String("username")
-	contract.Inherited = pointers.Bool(false)
 	return contract
 }
 
@@ -88,8 +87,6 @@ func updatedAttributeMapping() *client.IdpAdapterContractMapping {
 			Value: "another",
 		},
 	})
-	attributeMapping.Inherited = pointers.Bool(false)
-
 	attributeMapping.AttributeSources = []client.AttributeSourceAggregation{
 		{
 			JdbcAttributeSource: attributesources.JdbcClientStruct("CHANNEL_GROUP", "$${SAML_SUBJECT}", "JDBC", *client.NewResourceLink("ProvisionerDS")),
@@ -223,11 +220,6 @@ func attributeContractHclBlock(attributeContract client.IdpAdapterAttributeContr
 		builder.WriteString(strconv.FormatBool(*attributeContract.MaskOgnlValues))
 		builder.WriteRune('\n')
 	}
-	if attributeContract.Inherited != nil {
-		builder.WriteString("    inherited = ")
-		builder.WriteString(strconv.FormatBool(*attributeContract.Inherited))
-		builder.WriteRune('\n')
-	}
 	if attributeContract.UniqueUserKeyAttribute != nil {
 		builder.WriteString("    unique_user_key_attribute = \"")
 		builder.WriteString(*attributeContract.UniqueUserKeyAttribute)
@@ -301,11 +293,6 @@ func attributeMappingHclBlock(attributeMapping *client.IdpAdapterContractMapping
 	if attributeMapping.IssuanceCriteria != nil && len(attributeMapping.IssuanceCriteria.ConditionalCriteria) > 0 {
 		// Onlye have logic for one conditional criteria right now
 		builder.WriteString(issuancecriteria.Hcl(&attributeMapping.IssuanceCriteria.ConditionalCriteria[0]))
-	}
-	if attributeMapping.Inherited != nil {
-		builder.WriteString("    inherited = ")
-		builder.WriteString(strconv.FormatBool(*attributeMapping.Inherited))
-		builder.WriteRune('\n')
 	}
 	builder.WriteString("}\n")
 	return builder.String()

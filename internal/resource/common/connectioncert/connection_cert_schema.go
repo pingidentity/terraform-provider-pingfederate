@@ -9,8 +9,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func ToSchema(description string, required, computed bool) schema.SetNestedAttribute {
-	return schema.SetNestedAttribute{
+func ToSchema(description string, required, computed bool) schema.ListNestedAttribute {
+	return schema.ListNestedAttribute{
 		Description:         description,
 		MarkdownDescription: description,
 		Required:            required,
@@ -24,77 +24,76 @@ func ToSchema(description string, required, computed bool) schema.SetNestedAttri
 
 func ToSchemaAttributes() map[string]schema.Attribute {
 	return map[string]schema.Attribute{
-		"cert_view": schema.SetNestedAttribute{
+		"cert_view": schema.SingleNestedAttribute{
 			Description: "A certificate used for signature verification or XML encryption.",
-			Required:    true,
-			NestedObject: schema.NestedAttributeObject{
-				Attributes: map[string]schema.Attribute{
-					"id": schema.StringAttribute{
-						Description: "The persistent, unique ID for the certificate.",
-						Optional:    true,
+			Optional:    true,
+			Attributes: map[string]schema.Attribute{
+				"id": schema.StringAttribute{
+					Description: "The persistent, unique ID for the certificate.",
+					Optional:    true,
+				},
+				"serial_number": schema.StringAttribute{
+					Description: "The serial number assigned by the CA.",
+					Optional:    true,
+				},
+				"subject_dn": schema.StringAttribute{
+					Description: "The subject's distinguished name.",
+					Optional:    true,
+				},
+				"subject_alternative_names": schema.SetAttribute{
+					ElementType: types.StringType,
+					Description: "The subject alternative names (SAN).",
+					Optional:    true,
+				},
+				"issuer_dn": schema.StringAttribute{
+					Description: "The issuer's distinguished name.",
+					Optional:    true,
+				},
+				"valid_from": schema.StringAttribute{
+					Description: "The start date from which the item is valid, in ISO 8601 format (UTC).",
+					Optional:    true,
+				},
+				"expires": schema.StringAttribute{
+					Description: "The end date up until which the item is valid, in ISO 8601 format (UTC).",
+					Optional:    true,
+				},
+				"key_algorithm": schema.StringAttribute{
+					Description: "The public key algorithm.",
+					Optional:    true,
+				},
+				"key_size": schema.Int64Attribute{
+					Description: "The public key size.",
+					Optional:    true,
+				},
+				"signature_algorithm": schema.StringAttribute{
+					Description: "The signature algorithm.",
+					Optional:    true,
+				},
+				"version": schema.Int64Attribute{
+					Description: "The X.509 version to which the item conforms.",
+					Optional:    true,
+				},
+				"sha1_fingerprint": schema.StringAttribute{
+					Description: "SHA-1 fingerprint in Hex encoding.",
+					Optional:    true,
+				},
+				"sha256_fingerprint": schema.StringAttribute{
+					Description: "SHA-256 fingerprint in Hex encoding.",
+					Optional:    true,
+				},
+				"status": schema.StringAttribute{
+					Description: "Status of the item.",
+					Optional:    true,
+					Validators: []validator.String{
+						stringvalidator.OneOf("VALID", "EXPIRED", "NOT_YET_VALID", "REVOKED"),
 					},
-					"serial_number": schema.StringAttribute{
-						Description: "The serial number assigned by the CA.",
-						Optional:    true,
-					},
-					"subject_dn": schema.StringAttribute{
-						Description: "The subject's distinguished name.",
-						Optional:    true,
-					},
-					"subject_alternative_names": schema.SetAttribute{
-						ElementType: types.StringType,
-						Description: "The subject alternative names (SAN).",
-						Optional:    true,
-					},
-					"issuer_dn": schema.StringAttribute{
-						Description: "The issuer's distinguished name.",
-						Optional:    true,
-					},
-					"valid_from": schema.StringAttribute{
-						Description: "The start date from which the item is valid, in ISO 8601 format (UTC).",
-						Optional:    true,
-					},
-					"expires": schema.StringAttribute{
-						Description: "The end date up until which the item is valid, in ISO 8601 format (UTC).",
-						Optional:    true,
-					},
-					"key_algorithm": schema.StringAttribute{
-						Description: "The public key algorithm.",
-						Optional:    true,
-					},
-					"key_size": schema.Int64Attribute{
-						Description: "The public key size.",
-						Optional:    true,
-					},
-					"signature_algorithm": schema.StringAttribute{
-						Description: "The signature algorithm.",
-						Optional:    true,
-					},
-					"version": schema.Int64Attribute{
-						Description: "The X.509 version to which the item conforms.",
-						Optional:    true,
-					},
-					"sha1_fingerprint": schema.StringAttribute{
-						Description: "SHA-1 fingerprint in Hex encoding.",
-						Optional:    true,
-					},
-					"sha256_fingerprint": schema.StringAttribute{
-						Description: "SHA-256 fingerprint in Hex encoding.",
-						Optional:    true,
-					},
-					"status": schema.StringAttribute{
-						Description: "Status of the item.",
-						Optional:    true,
-						Validators: []validator.String{
-							stringvalidator.OneOf("VALID", "EXPIRED", "NOT_YET_VALID", "REVOKED"),
-						},
-					},
-					"crypto_provider": schema.StringAttribute{
-						Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
-						Optional:    true,
-						Validators: []validator.String{
-							stringvalidator.OneOf("HSM", "LOCAL"),
-						},
+				},
+				"crypto_provider": schema.StringAttribute{
+					Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
+					Optional:    true,
+					Computed:    true,
+					Validators: []validator.String{
+						stringvalidator.OneOf("HSM", "LOCAL"),
 					},
 				},
 			},

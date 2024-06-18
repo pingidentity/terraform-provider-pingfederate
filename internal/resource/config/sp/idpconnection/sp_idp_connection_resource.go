@@ -3,6 +3,8 @@ package spidpconnection
 import (
 	"context"
 	"encoding/json"
+	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
@@ -19,9 +21,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/pluginconfiguration"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
@@ -30,10 +30,11 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/inboundprovisioninguserrepository"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -43,7 +44,7 @@ var (
 	_ resource.ResourceWithImportState = &spIdpConnectionResource{}
 
 	metadataReloadSettingsAttrTypes = map[string]attr.Type{
-		"metadata_url_ref":            types.ObjectType{AttrTypes: resourcelink.AttrTypeNoLocation()},
+		"metadata_url_ref":            types.ObjectType{AttrTypes: resourcelink.AttrType()},
 		"enable_auto_metadata_update": types.BoolType,
 	}
 
@@ -52,95 +53,115 @@ var (
 		"client_secret": types.StringType,
 	}
 
-	certViewAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"id":                        types.StringType,
-			"serial_number":             types.StringType,
-			"subject_dn":                types.StringType,
-			"subject_alternative_names": types.SetType{ElemType: types.StringType},
-			"issuer_dn":                 types.StringType,
-			"valid_from":                types.StringType,
-			"expires":                   types.StringType,
-			"key_algorithm":             types.StringType,
-			"key_size":                  types.Int64Type,
-			"signature_algorithm":       types.StringType,
-			"version":                   types.Int64Type,
-			"sha1_fingerprint":          types.StringType,
-			"sha256_fingerprint":        types.StringType,
-			"status":                    types.StringType,
-			"crypto_provider":           types.StringType,
-		},
+	credentialsCertsCertViewAttrTypes = map[string]attr.Type{
+		"crypto_provider":           types.StringType,
+		"expires":                   types.StringType,
+		"id":                        types.StringType,
+		"issuer_dn":                 types.StringType,
+		"key_algorithm":             types.StringType,
+		"key_size":                  types.Int64Type,
+		"serial_number":             types.StringType,
+		"sha1_fingerprint":          types.StringType,
+		"sha256_fingerprint":        types.StringType,
+		"signature_algorithm":       types.StringType,
+		"status":                    types.StringType,
+		"subject_alternative_names": types.SetType{ElemType: types.StringType},
+		"subject_dn":                types.StringType,
+		"valid_from":                types.StringType,
+		"version":                   types.Int64Type,
+	}
+	credentialsCertsX509fileAttrTypes = map[string]attr.Type{
+		"crypto_provider": types.StringType,
+		"file_data":       types.StringType,
+		"id":              types.StringType,
+	}
+	credentialsCertsAttrTypes = map[string]attr.Type{
+		"active_verification_cert":    types.BoolType,
+		"cert_view":                   types.ObjectType{AttrTypes: credentialsCertsCertViewAttrTypes},
+		"encryption_cert":             types.BoolType,
+		"primary_verification_cert":   types.BoolType,
+		"secondary_verification_cert": types.BoolType,
+		"x509_file":                   types.ObjectType{AttrTypes: credentialsCertsX509fileAttrTypes},
+	}
+	credentialsCertsElementType = types.ObjectType{AttrTypes: credentialsCertsAttrTypes}
+
+	credentialsInboundBackChannelAuthCertsCertViewAttrTypes = map[string]attr.Type{
+		"crypto_provider":           types.StringType,
+		"expires":                   types.StringType,
+		"id":                        types.StringType,
+		"issuer_dn":                 types.StringType,
+		"key_algorithm":             types.StringType,
+		"key_size":                  types.Int64Type,
+		"serial_number":             types.StringType,
+		"sha1_fingerprint":          types.StringType,
+		"sha256_fingerprint":        types.StringType,
+		"signature_algorithm":       types.StringType,
+		"status":                    types.StringType,
+		"subject_alternative_names": types.SetType{ElemType: types.StringType},
+		"subject_dn":                types.StringType,
+		"valid_from":                types.StringType,
+		"version":                   types.Int64Type,
+	}
+	credentialsInboundBackChannelAuthCertsX509fileAttrTypes = map[string]attr.Type{
+		"crypto_provider": types.StringType,
+		"file_data":       types.StringType,
+		"id":              types.StringType,
+	}
+	credentialsInboundBackChannelAuthCertsAttrTypes = map[string]attr.Type{
+		"active_verification_cert":    types.BoolType,
+		"cert_view":                   types.ObjectType{AttrTypes: credentialsInboundBackChannelAuthCertsCertViewAttrTypes},
+		"encryption_cert":             types.BoolType,
+		"primary_verification_cert":   types.BoolType,
+		"secondary_verification_cert": types.BoolType,
+		"x509_file":                   types.ObjectType{AttrTypes: credentialsInboundBackChannelAuthCertsX509fileAttrTypes},
+	}
+	credentialsInboundBackChannelAuthCertsElementType              = types.ObjectType{AttrTypes: credentialsInboundBackChannelAuthCertsAttrTypes}
+	credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes = map[string]attr.Type{
+		"password": types.StringType,
+		"username": types.StringType,
+	}
+	credentialsInboundBackChannelAuthAttrTypes = map[string]attr.Type{
+		"certs":                   types.ListType{ElemType: credentialsInboundBackChannelAuthCertsElementType},
+		"digital_signature":       types.BoolType,
+		"http_basic_credentials":  types.ObjectType{AttrTypes: credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes},
+		"require_ssl":             types.BoolType,
+		"type":                    types.StringType,
+		"verification_issuer_dn":  types.StringType,
+		"verification_subject_dn": types.StringType,
+	}
+	credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes = map[string]attr.Type{
+		"password": types.StringType,
+		"username": types.StringType,
 	}
 
-	x509fileAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"id":              types.StringType,
-			"file_data":       types.StringType,
-			"crypto_provider": types.StringType,
-		},
+	credentialsOutboundBackChannelAuthAttrTypes = map[string]attr.Type{
+		"digital_signature":      types.BoolType,
+		"http_basic_credentials": types.ObjectType{AttrTypes: credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes},
+		"ssl_auth_key_pair_ref":  types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"type":                   types.StringType,
+		"validate_partner_cert":  types.BoolType,
 	}
 
-	connectionCertAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"cert_view":                   types.SetType{ElemType: certViewAttrTypes},
-			"x509_file":                   x509fileAttrTypes,
-			"active_verification_cert":    types.BoolType,
-			"primary_verification_cert":   types.BoolType,
-			"secondary_verification_cert": types.BoolType,
-			"encryption_cert":             types.BoolType,
-		},
-	}
+	credentialsSigningSettingsAlternativeSigningKeyPairRefsElementType = types.ObjectType{AttrTypes: resourcelink.AttrType()}
 
-	signingSettingsAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"signing_pair_key_ref":         types.ObjectType{AttrTypes: resourcelink.AttrTypeNoLocation()},
-			"active_signing_key_pair_refs": types.ListType{ElemType: types.ObjectType{AttrTypes: resourcelink.AttrTypeNoLocation()}},
-			"algorithm":                    types.StringType,
-			"include_cert_in_signature":    types.BoolType,
-			"include_raw_key_in_signature": types.BoolType,
-		},
+	credentialsSigningSettingsAttrTypes = map[string]attr.Type{
+		"algorithm":                         types.StringType,
+		"alternative_signing_key_pair_refs": types.ListType{ElemType: credentialsSigningSettingsAlternativeSigningKeyPairRefsElementType},
+		"include_cert_in_signature":         types.BoolType,
+		"include_raw_key_in_signature":      types.BoolType,
+		"signing_key_pair_ref":              types.ObjectType{AttrTypes: resourcelink.AttrType()},
 	}
-
-	usernamePasswordCredentialsAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"username": types.StringType,
-			"password": types.StringType,
-		},
-	}
-
-	outboundBackChannelAuthAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"type":                   types.StringType,
-			"http_basic_credentials": usernamePasswordCredentialsAttrTypes,
-			"digital_signature":      types.BoolType,
-			"ssl_auth_key_pair_ref":  types.ObjectType{AttrTypes: resourcelink.AttrTypeNoLocation()},
-			"validate_partner_cert":  types.BoolType,
-		},
-	}
-
-	inboundBackChannelAuthAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"type":                    types.StringType,
-			"http_basic_credentials":  usernamePasswordCredentialsAttrTypes,
-			"digital_signature":       types.BoolType,
-			"verification_subject_dn": types.StringType,
-			"verification_issuer_dn":  types.StringType,
-			"certs":                   types.SetType{ElemType: connectionCertAttrTypes},
-			"require_ssl":             types.BoolType,
-		},
-	}
-
 	credentialsAttrTypes = map[string]attr.Type{
-		"verification_subject_dn":           types.StringType,
-		"verification_issuer_dn":            types.StringType,
-		"certs":                             types.SetType{ElemType: connectionCertAttrTypes},
 		"block_encryption_algorithm":        types.StringType,
+		"certs":                             types.ListType{ElemType: credentialsCertsElementType},
+		"decryption_key_pair_ref":           types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"inbound_back_channel_auth":         types.ObjectType{AttrTypes: credentialsInboundBackChannelAuthAttrTypes},
 		"key_transport_algorithm":           types.StringType,
-		"signing_settings":                  signingSettingsAttrTypes,
-		"decryption_key_pair_ref":           types.ObjectType{AttrTypes: resourcelink.AttrTypeNoLocation()},
-		"secondary_decryption_key_pair_ref": types.ObjectType{AttrTypes: resourcelink.AttrTypeNoLocation()},
-		"outbound_back_channel_auth":        outboundBackChannelAuthAttrTypes,
-		"inbound_back_channel_auth":         inboundBackChannelAuthAttrTypes,
+		"outbound_back_channel_auth":        types.ObjectType{AttrTypes: credentialsOutboundBackChannelAuthAttrTypes},
+		"secondary_decryption_key_pair_ref": types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"signing_settings":                  types.ObjectType{AttrTypes: credentialsSigningSettingsAttrTypes},
+		"verification_issuer_dn":            types.StringType,
+		"verification_subject_dn":           types.StringType,
 	}
 
 	contactInfoAttrTypes = map[string]attr.Type{
@@ -168,215 +189,261 @@ var (
 		"values": types.ListType{ElemType: types.StringType},
 	}
 
-	oidcRequestParameterAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"name":                          types.StringType,
-			"attribute_value":               types.ObjectType{AttrTypes: sourcetypeidkey.AttrType()},
-			"value":                         types.StringType,
-			"application_endpoint_override": types.BoolType,
-		},
+	// idp_browser_sso
+	idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesAttrTypes = map[string]attr.Type{
+		"name": types.StringType,
+	}
+	idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesElementType   = types.ObjectType{AttrTypes: idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesAttrTypes}
+	idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesAttrTypes = map[string]attr.Type{
+		"name": types.StringType,
+	}
+	idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesElementType = types.ObjectType{AttrTypes: idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesAttrTypes}
+	idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractAttrTypes                     = map[string]attr.Type{
+		"core_attributes":     types.ListType{ElemType: idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractCoreAttributesElementType},
+		"extended_attributes": types.ListType{ElemType: idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractExtendedAttributesElementType},
 	}
 
-	oidcProviderSettingsAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"scopes":                                types.StringType,
-			"authorization_endpoint":                types.StringType,
-			"pushed_authorization_request_endpoint": types.StringType,
-			"login_type":                            types.StringType,
-			"authentication_scheme":                 types.StringType,
-			"authentication_signing_algorithm":      types.StringType,
-			"request_signing_algorithm":             types.StringType,
-			"enable_pkce":                           types.BoolType,
-			"token_endpoint":                        types.StringType,
-			"user_info_endpoint":                    types.StringType,
-			"logout_endpoint":                       types.StringType,
-			"jwks_url":                              types.StringType,
-			"track_user_sessions_for_logout":        types.BoolType,
-			"request_parameters":                    types.ListType{ElemType: oidcRequestParameterAttrTypes},
-			"redirect_uri":                          types.StringType,
-			"back_channel_logout_uri":               types.StringType,
-			"front_channel_logout_uri":              types.StringType,
-			"post_logout_redirect_uri":              types.StringType,
-		},
+	idpBrowserSsoAdapterMappingsAdapterOverrideSettingsTargetApplicationInfoAttrTypes = map[string]attr.Type{
+		"application_icon_url": types.StringType,
+		"application_name":     types.StringType,
 	}
 
-	protocolMessageCustomizationAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"context_name":       types.StringType,
-			"message_expression": types.StringType,
-		},
+	idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttrTypes = map[string]attr.Type{
+		"attribute_contract":      types.ObjectType{AttrTypes: idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractAttrTypes},
+		"configuration":           types.ObjectType{AttrTypes: pluginconfiguration.AttrType()},
+		"id":                      types.StringType,
+		"name":                    types.StringType,
+		"parent_ref":              types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"plugin_descriptor_ref":   types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"target_application_info": types.ObjectType{AttrTypes: idpBrowserSsoAdapterMappingsAdapterOverrideSettingsTargetApplicationInfoAttrTypes},
 	}
 
-	urlWhitelistEntryAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"valid_domain":             types.StringType,
-			"valid_path":               types.StringType,
-			"allow_query_and_fragment": types.BoolType,
-			"require_https":            types.BoolType,
-		},
+	idpBrowserSsoAdapterMappingsAttrTypes = map[string]attr.Type{
+		"adapter_override_settings":      types.ObjectType{AttrTypes: idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttrTypes},
+		"attribute_contract_fulfillment": attributecontractfulfillment.MapType(),
+		"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
+		"issuance_criteria":              types.ObjectType{AttrTypes: issuancecriteria.AttrType()},
+		"restrict_virtual_entity_ids":    types.BoolType,
+		"restricted_virtual_entity_ids":  types.ListType{ElemType: types.StringType},
+		"sp_adapter_ref":                 types.ObjectType{AttrTypes: resourcelink.AttrType()},
+	}
+	idpBrowserSsoAdapterMappingsElementType         = types.ObjectType{AttrTypes: idpBrowserSsoAdapterMappingsAttrTypes}
+	idpBrowserSsoArtifactResolverLocationsAttrTypes = map[string]attr.Type{
+		"index": types.Int64Type,
+		"url":   types.StringType,
+	}
+	idpBrowserSsoArtifactResolverLocationsElementType = types.ObjectType{AttrTypes: idpBrowserSsoArtifactResolverLocationsAttrTypes}
+	idpBrowserSsoArtifactAttrTypes                    = map[string]attr.Type{
+		"lifetime":           types.Int64Type,
+		"resolver_locations": types.ListType{ElemType: idpBrowserSsoArtifactResolverLocationsElementType},
+		"source_id":          types.StringType,
+	}
+	idpBrowserSsoAttributeContractCoreAttributesAttrTypes = map[string]attr.Type{
+		"masked": types.BoolType,
+		"name":   types.StringType,
+	}
+	idpBrowserSsoAttributeContractCoreAttributesElementType   = types.ObjectType{AttrTypes: idpBrowserSsoAttributeContractCoreAttributesAttrTypes}
+	idpBrowserSsoAttributeContractExtendedAttributesAttrTypes = map[string]attr.Type{
+		"masked": types.BoolType,
+		"name":   types.StringType,
+	}
+	idpBrowserSsoAttributeContractExtendedAttributesElementType = types.ObjectType{AttrTypes: idpBrowserSsoAttributeContractExtendedAttributesAttrTypes}
+	idpBrowserSsoAttributeContractAttrTypes                     = map[string]attr.Type{
+		"core_attributes":     types.ListType{ElemType: idpBrowserSsoAttributeContractCoreAttributesElementType},
+		"extended_attributes": types.ListType{ElemType: idpBrowserSsoAttributeContractExtendedAttributesElementType},
+	}
+	idpBrowserSsoAuthenticationPolicyContractMappingsAttributeContractFulfillmentSourceAttrTypes = map[string]attr.Type{
+		"id":   types.StringType,
+		"type": types.StringType,
+	}
+	idpBrowserSsoAuthenticationPolicyContractMappingsAttributeContractFulfillmentAttrTypes = map[string]attr.Type{
+		"source": types.ObjectType{AttrTypes: idpBrowserSsoAuthenticationPolicyContractMappingsAttributeContractFulfillmentSourceAttrTypes},
+		"value":  types.StringType,
+	}
+	idpBrowserSsoAuthenticationPolicyContractMappingsAttributeContractFulfillmentElementType = types.ObjectType{AttrTypes: idpBrowserSsoAuthenticationPolicyContractMappingsAttributeContractFulfillmentAttrTypes}
+
+	idpBrowserSsoAuthenticationPolicyContractMappingsAuthenticationPolicyContractRefAttrTypes = map[string]attr.Type{
+		"id": types.StringType,
+	}
+	idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaConditionalCriteriaSourceAttrTypes = map[string]attr.Type{
+		"id":   types.StringType,
+		"type": types.StringType,
+	}
+	idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaConditionalCriteriaAttrTypes = map[string]attr.Type{
+		"attribute_name": types.StringType,
+		"condition":      types.StringType,
+		"error_result":   types.StringType,
+		"source":         types.ObjectType{AttrTypes: idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaConditionalCriteriaSourceAttrTypes},
+		"value":          types.StringType,
+	}
+	idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaConditionalCriteriaElementType = types.ObjectType{AttrTypes: idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaConditionalCriteriaAttrTypes}
+	idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaExpressionCriteriaAttrTypes    = map[string]attr.Type{
+		"error_result": types.StringType,
+		"expression":   types.StringType,
+	}
+	idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaExpressionCriteriaElementType = types.ObjectType{AttrTypes: idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaExpressionCriteriaAttrTypes}
+	idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaAttrTypes                     = map[string]attr.Type{
+		"conditional_criteria": types.ListType{ElemType: idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaConditionalCriteriaElementType},
+		"expression_criteria":  types.ListType{ElemType: idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaExpressionCriteriaElementType},
+	}
+	idpBrowserSsoAuthenticationPolicyContractMappingsAttrTypes = map[string]attr.Type{
+		"attribute_contract_fulfillment":     types.MapType{ElemType: idpBrowserSsoAuthenticationPolicyContractMappingsAttributeContractFulfillmentElementType},
+		"attribute_sources":                  types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
+		"authentication_policy_contract_ref": types.ObjectType{AttrTypes: idpBrowserSsoAuthenticationPolicyContractMappingsAuthenticationPolicyContractRefAttrTypes},
+		"issuance_criteria":                  types.ObjectType{AttrTypes: idpBrowserSsoAuthenticationPolicyContractMappingsIssuanceCriteriaAttrTypes},
+		"restrict_virtual_server_ids":        types.BoolType,
+		"restricted_virtual_server_ids":      types.ListType{ElemType: types.StringType},
+	}
+	idpBrowserSsoAuthenticationPolicyContractMappingsElementType = types.ObjectType{AttrTypes: idpBrowserSsoAuthenticationPolicyContractMappingsAttrTypes}
+	idpBrowserSsoAuthnContextMappingsAttrTypes                   = map[string]attr.Type{
+		"local":  types.StringType,
+		"remote": types.StringType,
+	}
+	idpBrowserSsoAuthnContextMappingsElementType = types.ObjectType{AttrTypes: idpBrowserSsoAuthnContextMappingsAttrTypes}
+	idpBrowserSsoDecryptionPolicyAttrTypes       = map[string]attr.Type{
+		"assertion_encrypted":           types.BoolType,
+		"attributes_encrypted":          types.BoolType,
+		"slo_encrypt_subject_name_id":   types.BoolType,
+		"slo_subject_name_id_encrypted": types.BoolType,
+		"subject_name_id_encrypted":     types.BoolType,
+	}
+	idpBrowserSsoJitProvisioningUserAttributesAttributeContractAttrTypes = map[string]attr.Type{
+		"masked": types.BoolType,
+		"name":   types.StringType,
+	}
+	idpBrowserSsoJitProvisioningUserAttributesAttributeContractElementType = types.ObjectType{AttrTypes: idpBrowserSsoJitProvisioningUserAttributesAttributeContractAttrTypes}
+	idpBrowserSsoJitProvisioningUserAttributesAttrTypes                    = map[string]attr.Type{
+		"attribute_contract": types.ListType{ElemType: idpBrowserSsoJitProvisioningUserAttributesAttributeContractElementType},
+		"do_attribute_query": types.BoolType,
 	}
 
-	artifactResolverLocationsAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"index": types.Int64Type,
-			"url":   types.StringType,
-		},
+	idpBrowserSsoJitProvisioningAttrTypes = map[string]attr.Type{
+		"error_handling":  types.StringType,
+		"event_trigger":   types.StringType,
+		"user_attributes": types.ObjectType{AttrTypes: idpBrowserSsoJitProvisioningUserAttributesAttrTypes},
+		"user_repository": types.ObjectType{AttrTypes: datastorerepository.ElemAttrType()},
 	}
-
-	artifactSettingsAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"lifetime":           types.Int64Type,
-			"resolver_locations": types.ListType{ElemType: artifactResolverLocationsAttrTypes},
-			"source_id":          types.StringType,
-		},
+	idpBrowserSsoMessageCustomizationsAttrTypes = map[string]attr.Type{
+		"context_name":       types.StringType,
+		"message_expression": types.StringType,
 	}
-
-	sloServiceEndPointAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"binding":      types.StringType,
-			"url":          types.StringType,
-			"response_url": types.StringType,
-		},
+	idpBrowserSsoMessageCustomizationsElementType              = types.ObjectType{AttrTypes: idpBrowserSsoMessageCustomizationsAttrTypes}
+	idpBrowserSsoOauthAuthenticationPolicyContractRefAttrTypes = map[string]attr.Type{
+		"id": types.StringType,
 	}
-
-	idpSSOServiceEndpointAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"binding": types.StringType,
-			"url":     types.StringType,
-		},
+	idpBrowserSsoOidcProviderSettingsRequestParametersAttributeValueSourceAttrTypes = map[string]attr.Type{
+		"id":   types.StringType,
+		"type": types.StringType,
 	}
-
-	authnContextMappingAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"local":  types.StringType,
-			"remote": types.StringType,
-		},
+	idpBrowserSsoOidcProviderSettingsRequestParametersAttributeValueAttrTypes = map[string]attr.Type{
+		"source": types.ObjectType{AttrTypes: idpBrowserSsoOidcProviderSettingsRequestParametersAttributeValueSourceAttrTypes},
+		"value":  types.StringType,
 	}
-
-	decryptonPolicyAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"assertion_encrypted":           types.BoolType,
-			"attributes_encrypted":          types.BoolType,
-			"subject_name_id_encrypted":     types.BoolType,
-			"slo_encrypt_subject_name_id":   types.BoolType,
-			"slo_subject_name_id_encrypted": types.BoolType,
-		},
+	idpBrowserSsoOidcProviderSettingsRequestParametersAttrTypes = map[string]attr.Type{
+		"application_endpoint_override": types.BoolType,
+		"attribute_value":               types.ObjectType{AttrTypes: idpBrowserSsoOidcProviderSettingsRequestParametersAttributeValueAttrTypes},
+		"name":                          types.StringType,
+		"value":                         types.StringType,
 	}
-
-	idpBrowserSSOAttributeAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"name":   types.StringType,
-			"masked": types.BoolType,
-		},
+	idpBrowserSsoOidcProviderSettingsRequestParametersElementType = types.ObjectType{AttrTypes: idpBrowserSsoOidcProviderSettingsRequestParametersAttrTypes}
+	idpBrowserSsoOidcProviderSettingsAttrTypes                    = map[string]attr.Type{
+		"authentication_scheme":                 types.StringType,
+		"authentication_signing_algorithm":      types.StringType,
+		"authorization_endpoint":                types.StringType,
+		"back_channel_logout_uri":               types.StringType,
+		"enable_pkce":                           types.BoolType,
+		"front_channel_logout_uri":              types.StringType,
+		"jwks_url":                              types.StringType,
+		"login_type":                            types.StringType,
+		"logout_endpoint":                       types.StringType,
+		"post_logout_redirect_uri":              types.StringType,
+		"pushed_authorization_request_endpoint": types.StringType,
+		"redirect_uri":                          types.StringType,
+		"request_parameters":                    types.ListType{ElemType: idpBrowserSsoOidcProviderSettingsRequestParametersElementType},
+		"request_signing_algorithm":             types.StringType,
+		"scopes":                                types.StringType,
+		"token_endpoint":                        types.StringType,
+		"track_user_sessions_for_logout":        types.BoolType,
+		"user_info_endpoint":                    types.StringType,
 	}
-
-	coreAndExtendedAttributesAttrTypes = map[string]attr.Type{
-		"core_attributes":     types.ListType{ElemType: idpBrowserSSOAttributeAttrTypes},
-		"extended_attributes": types.ListType{ElemType: idpBrowserSSOAttributeAttrTypes},
+	idpBrowserSsoSloServiceEndpointsAttrTypes = map[string]attr.Type{
+		"binding":      types.StringType,
+		"response_url": types.StringType,
+		"url":          types.StringType,
 	}
-
-	idpBrowserSSOAttributeContractAttrTypes = types.ObjectType{
-		AttrTypes: coreAndExtendedAttributesAttrTypes,
+	idpBrowserSsoSloServiceEndpointsElementType                             = types.ObjectType{AttrTypes: idpBrowserSsoSloServiceEndpointsAttrTypes}
+	idpBrowserSsoSsoOauthMappingAttributeContractFulfillmentSourceAttrTypes = map[string]attr.Type{
+		"id":   types.StringType,
+		"type": types.StringType,
 	}
-
-	spAdapterAttributeAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"name": types.StringType,
-		},
+	idpBrowserSsoSsoOauthMappingAttributeContractFulfillmentAttrTypes = map[string]attr.Type{
+		"source": types.ObjectType{AttrTypes: idpBrowserSsoSsoOauthMappingAttributeContractFulfillmentSourceAttrTypes},
+		"value":  types.StringType,
 	}
+	idpBrowserSsoSsoOauthMappingAttributeContractFulfillmentElementType = types.ObjectType{AttrTypes: idpBrowserSsoSsoOauthMappingAttributeContractFulfillmentAttrTypes}
 
-	spAdapterAttributeContractAttrTypes = types.ObjectType{
-		AttrTypes: coreAndExtendedAttributesAttrTypes,
+	idpBrowserSsoSsoOauthMappingIssuanceCriteriaConditionalCriteriaSourceAttrTypes = map[string]attr.Type{
+		"id":   types.StringType,
+		"type": types.StringType,
 	}
-
-	spAdapterTargetApplicationInfoAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"application_name":     types.StringType,
-			"application_icon_url": types.StringType,
-		},
+	idpBrowserSsoSsoOauthMappingIssuanceCriteriaConditionalCriteriaAttrTypes = map[string]attr.Type{
+		"attribute_name": types.StringType,
+		"condition":      types.StringType,
+		"error_result":   types.StringType,
+		"source":         types.ObjectType{AttrTypes: idpBrowserSsoSsoOauthMappingIssuanceCriteriaConditionalCriteriaSourceAttrTypes},
+		"value":          types.StringType,
 	}
-
-	spAdapterAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"id":                      types.StringType,
-			"name":                    types.StringType,
-			"plugin_descriptor_ref":   types.ObjectType{AttrTypes: resourcelink.AttrTypeNoLocation()},
-			"parent_ref":              types.ObjectType{AttrTypes: resourcelink.AttrTypeNoLocation()},
-			"configuration":           types.ObjectType{AttrTypes: pluginconfiguration.AttrType()},
-			"attribute_contract":      spAdapterAttributeContractAttrTypes,
-			"target_application_info": spAdapterTargetApplicationInfoAttrTypes,
-		},
+	idpBrowserSsoSsoOauthMappingIssuanceCriteriaConditionalCriteriaElementType = types.ObjectType{AttrTypes: idpBrowserSsoSsoOauthMappingIssuanceCriteriaConditionalCriteriaAttrTypes}
+	idpBrowserSsoSsoOauthMappingIssuanceCriteriaExpressionCriteriaAttrTypes    = map[string]attr.Type{
+		"error_result": types.StringType,
+		"expression":   types.StringType,
 	}
-
-	spAdapterMappingAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"sp_adapter_ref":                types.ObjectType{AttrTypes: resourcelink.AttrTypeNoLocation()},
-			"restrict_virtual_entity_ids":   types.BoolType,
-			"restricted_virtual_entity_ids": types.ListType{ElemType: types.StringType},
-			"restrict_virtual_entity_id":    types.BoolType,
-			"adapter_override_settings":     spAdapterAttrTypes,
-		},
+	idpBrowserSsoSsoOauthMappingIssuanceCriteriaExpressionCriteriaElementType = types.ObjectType{AttrTypes: idpBrowserSsoSsoOauthMappingIssuanceCriteriaExpressionCriteriaAttrTypes}
+	idpBrowserSsoSsoOauthMappingIssuanceCriteriaAttrTypes                     = map[string]attr.Type{
+		"conditional_criteria": types.ListType{ElemType: idpBrowserSsoSsoOauthMappingIssuanceCriteriaConditionalCriteriaElementType},
+		"expression_criteria":  types.ListType{ElemType: idpBrowserSsoSsoOauthMappingIssuanceCriteriaExpressionCriteriaElementType},
 	}
-
-	authenticationPolicyContractMappingAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"authentication_policy_contract_ref": types.ObjectType{AttrTypes: resourcelink.AttrTypeNoLocation()},
-			"restrict_virtual_server_ids":        types.BoolType,
-			"restricted_virtual_server_ids":      types.ListType{ElemType: types.StringType},
-			"attribute_sources":                  types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrType(false)}},
-			"attribute_contract_fulfillment":     attributecontractfulfillment.MapType(),
-			"issuance_criteria":                  types.ObjectType{AttrTypes: issuancecriteria.AttrType()},
-		},
+	idpBrowserSsoSsoOauthMappingAttrTypes = map[string]attr.Type{
+		"attribute_contract_fulfillment": types.MapType{ElemType: idpBrowserSsoSsoOauthMappingAttributeContractFulfillmentElementType},
+		"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
+		"issuance_criteria":              types.ObjectType{AttrTypes: idpBrowserSsoSsoOauthMappingIssuanceCriteriaAttrTypes},
 	}
-
-	ssoOAuthMappingAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrType(false)}},
-			"attribute_contract_fulfillment": attributecontractfulfillment.MapType(),
-			"issuance_criteria":              types.ObjectType{AttrTypes: issuancecriteria.AttrType()},
-		},
+	idpBrowserSsoSsoServiceEndpointsAttrTypes = map[string]attr.Type{
+		"binding": types.StringType,
+		"url":     types.StringType,
 	}
-
-	jitProvisioningUserAttributesAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"attribute_contract": types.ListType{ElemType: idpBrowserSSOAttributeAttrTypes},
-			"do_attribute_query": types.BoolType,
-		},
+	idpBrowserSsoSsoServiceEndpointsElementType = types.ObjectType{AttrTypes: idpBrowserSsoSsoServiceEndpointsAttrTypes}
+	idpBrowserSsoUrlWhitelistEntriesAttrTypes   = map[string]attr.Type{
+		"allow_query_and_fragment": types.BoolType,
+		"require_https":            types.BoolType,
+		"valid_domain":             types.StringType,
+		"valid_path":               types.StringType,
 	}
-
-	jitProvisioningAttrTypes = types.ObjectType{
-		AttrTypes: map[string]attr.Type{
-			"user_attributes": jitProvisioningUserAttributesAttrTypes,
-			"user_repository": types.ObjectType{AttrTypes: datastorerepository.ElemAttrType()},
-			"event_trigger":   types.StringType,
-			"error_handling":  types.StringType,
-		},
-	}
-
-	idpBrowserSsoAttrTypes = map[string]attr.Type{
-		"protocol":                                 types.StringType,
-		"oidc_provider_settings":                   oidcProviderSettingsAttrTypes,
-		"enabled_profiles":                         types.ListType{ElemType: types.StringType},
-		"incoming_bindings":                        types.ListType{ElemType: types.StringType},
-		"message_customizations":                   types.ListType{ElemType: protocolMessageCustomizationAttrTypes},
-		"url_whitelist_entries":                    types.ListType{ElemType: urlWhitelistEntryAttrTypes},
-		"artifact":                                 artifactSettingsAttrTypes,
-		"slo_service_endpoints":                    types.ListType{ElemType: sloServiceEndPointAttrTypes},
+	idpBrowserSsoUrlWhitelistEntriesElementType = types.ObjectType{AttrTypes: idpBrowserSsoUrlWhitelistEntriesAttrTypes}
+	idpBrowserSsoAttrTypes                      = map[string]attr.Type{
+		"adapter_mappings":                         types.ListType{ElemType: idpBrowserSsoAdapterMappingsElementType},
 		"always_sign_artifact_response":            types.BoolType,
-		"sso_application_endpoint":                 types.StringType,
-		"sso_service_endpoints":                    types.ListType{ElemType: idpSSOServiceEndpointAttrTypes},
-		"default_target_url":                       types.StringType,
-		"authn_context_mappings":                   types.ListType{ElemType: authnContextMappingAttrTypes},
+		"artifact":                                 types.ObjectType{AttrTypes: idpBrowserSsoArtifactAttrTypes},
 		"assertions_signed":                        types.BoolType,
-		"sign_authn_requests":                      types.BoolType,
-		"decryption_policy":                        decryptonPolicyAttrTypes,
+		"attribute_contract":                       types.ObjectType{AttrTypes: idpBrowserSsoAttributeContractAttrTypes},
+		"authentication_policy_contract_mappings":  types.ListType{ElemType: idpBrowserSsoAuthenticationPolicyContractMappingsElementType},
+		"authn_context_mappings":                   types.ListType{ElemType: idpBrowserSsoAuthnContextMappingsElementType},
+		"decryption_policy":                        types.ObjectType{AttrTypes: idpBrowserSsoDecryptionPolicyAttrTypes},
+		"default_target_url":                       types.StringType,
+		"enabled_profiles":                         types.ListType{ElemType: types.StringType},
 		"idp_identity_mapping":                     types.StringType,
-		"attribute_contract":                       idpBrowserSSOAttributeContractAttrTypes,
-		"adapter_mapings":                          types.ListType{ElemType: spAdapterMappingAttrTypes},
-		"authentication_policy_contract_mappings":  types.ListType{ElemType: authenticationPolicyContractMappingAttrTypes},
-		"sso_oauth_mapping":                        ssoOAuthMappingAttrTypes,
-		"oauth_authentication_policy_contract_ref": types.ObjectType{AttrTypes: resourcelink.AttrTypeNoLocation()},
-		"jit_provisioning":                         jitProvisioningAttrTypes,
+		"incoming_bindings":                        types.ListType{ElemType: types.StringType},
+		"jit_provisioning":                         types.ObjectType{AttrTypes: idpBrowserSsoJitProvisioningAttrTypes},
+		"message_customizations":                   types.ListType{ElemType: idpBrowserSsoMessageCustomizationsElementType},
+		"oauth_authentication_policy_contract_ref": types.ObjectType{AttrTypes: idpBrowserSsoOauthAuthenticationPolicyContractRefAttrTypes},
+		"oidc_provider_settings":                   types.ObjectType{AttrTypes: idpBrowserSsoOidcProviderSettingsAttrTypes},
+		"protocol":                                 types.StringType,
+		"sign_authn_requests":                      types.BoolType,
+		"slo_service_endpoints":                    types.ListType{ElemType: idpBrowserSsoSloServiceEndpointsElementType},
+		"sso_application_endpoint":                 types.StringType,
+		"sso_oauth_mapping":                        types.ObjectType{AttrTypes: idpBrowserSsoSsoOauthMappingAttrTypes},
+		"sso_service_endpoints":                    types.ListType{ElemType: idpBrowserSsoSsoServiceEndpointsElementType},
+		"url_whitelist_entries":                    types.ListType{ElemType: idpBrowserSsoUrlWhitelistEntriesElementType},
 	}
 
 	attributeQueryNameMappingAttrTypes = types.ObjectType{
@@ -404,92 +471,179 @@ var (
 	}
 
 	accessTokenManagerMappingAttrTypes = map[string]attr.Type{
-		"access_token_manager_ref":       types.ObjectType{AttrTypes: resourcelink.AttrTypeNoLocation()},
-		"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrType(false)}},
+		"access_token_manager_ref":       types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
 		"attribute_contract_fulfillment": attributecontractfulfillment.MapType(),
 		"issuance_criteria":              types.ObjectType{AttrTypes: issuancecriteria.AttrType()},
 	}
 
 	idpOAuthGrantAttributeMappingAttrTypes = map[string]attr.Type{
 		"access_token_manager_mappings": types.ListType{ElemType: types.ObjectType{AttrTypes: accessTokenManagerMappingAttrTypes}},
-		"idp_oauth_attribute_contract":  idpBrowserSSOAttributeContractAttrTypes,
+		"idp_oauth_attribute_contract": types.ObjectType{AttrTypes: map[string]attr.Type{
+			"core_attributes": types.ListType{ElemType: types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"name":   types.StringType,
+					"masked": types.BoolType,
+				},
+			}},
+			"extended_attributes": types.ListType{ElemType: types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"name":   types.StringType,
+					"masked": types.BoolType,
+				},
+			}},
+		}},
 	}
 
 	spTokenGeneratorMappingAttrTypes = map[string]attr.Type{
-		"sp_token_generator_ref":         types.ObjectType{AttrTypes: resourcelink.AttrTypeNoLocation()},
+		"sp_token_generator_ref":         types.ObjectType{AttrTypes: resourcelink.AttrType()},
 		"restricted_virtual_entity_ids":  types.ListType{ElemType: types.StringType},
 		"default_mapping":                types.BoolType,
-		"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrType(false)}},
+		"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
 		"attribute_contract_fulfillment": attributecontractfulfillment.MapType(),
 		"issuance_criteria":              types.ObjectType{AttrTypes: issuancecriteria.AttrType()},
 	}
 
 	wsTrustAttrTypes = map[string]attr.Type{
-		"attribute_contract":       types.ObjectType{AttrTypes: accessTokenManagerMappingAttrTypes},
+		"attribute_contract": types.ObjectType{AttrTypes: map[string]attr.Type{
+			"core_attributes": types.ListType{ElemType: types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"name":   types.StringType,
+					"masked": types.BoolType,
+				},
+			}},
+			"extended_attributes": types.ListType{ElemType: types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"name":   types.StringType,
+					"masked": types.BoolType,
+				},
+			}},
+		}},
 		"generate_local_token":     types.BoolType,
 		"token_generator_mappings": types.ListType{ElemType: types.ObjectType{AttrTypes: spTokenGeneratorMappingAttrTypes}},
 	}
 
-	schemaAttributeAttrTypes = map[string]attr.Type{
-		"name":           types.StringType,
+	// inbound_provisioning
+	inboundProvisioningCustomSchemaAttributesAttrTypes = map[string]attr.Type{
 		"multi_valued":   types.BoolType,
-		"types":          types.ListType{ElemType: types.StringType},
+		"name":           types.StringType,
 		"sub_attributes": types.ListType{ElemType: types.StringType},
+		"types":          types.ListType{ElemType: types.StringType},
 	}
-
-	customSchemaAttrTypes = map[string]attr.Type{
+	inboundProvisioningCustomSchemaAttributesElementType = types.ObjectType{AttrTypes: inboundProvisioningCustomSchemaAttributesAttrTypes}
+	inboundProvisioningCustomSchemaAttrTypes             = map[string]attr.Type{
+		"attributes": types.ListType{ElemType: inboundProvisioningCustomSchemaAttributesElementType},
 		"namespace":  types.StringType,
-		"attributes": types.ListType{ElemType: types.ObjectType{AttrTypes: schemaAttributeAttrTypes}},
+	}
+	inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesAttrTypes = map[string]attr.Type{
+		"masked": types.BoolType,
+		"name":   types.StringType,
+	}
+	inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesElementType   = types.ObjectType{AttrTypes: inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesAttrTypes}
+	inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesAttrTypes = map[string]attr.Type{
+		"masked": types.BoolType,
+		"name":   types.StringType,
+	}
+	inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesElementType = types.ObjectType{AttrTypes: inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesAttrTypes}
+	inboundProvisioningGroupsReadGroupsAttributeContractAttrTypes                     = map[string]attr.Type{
+		"core_attributes":     types.ListType{ElemType: inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesElementType},
+		"extended_attributes": types.ListType{ElemType: inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesElementType},
+	}
+	inboundProvisioningGroupsReadGroupsAttributeFulfillmentSourceAttrTypes = map[string]attr.Type{
+		"id":   types.StringType,
+		"type": types.StringType,
+	}
+	inboundProvisioningGroupsReadGroupsAttributeFulfillmentAttrTypes = map[string]attr.Type{
+		"source": types.ObjectType{AttrTypes: inboundProvisioningGroupsReadGroupsAttributeFulfillmentSourceAttrTypes},
+		"value":  types.StringType,
+	}
+	inboundProvisioningGroupsReadGroupsAttributeFulfillmentElementType = types.ObjectType{AttrTypes: inboundProvisioningGroupsReadGroupsAttributeFulfillmentAttrTypes}
+	inboundProvisioningGroupsReadGroupsAttributesAttrTypes             = map[string]attr.Type{
+		"name": types.StringType,
+	}
+	inboundProvisioningGroupsReadGroupsAttributesElementType = types.ObjectType{AttrTypes: inboundProvisioningGroupsReadGroupsAttributesAttrTypes}
+	inboundProvisioningGroupsReadGroupsAttrTypes             = map[string]attr.Type{
+		"attribute_contract":    types.ObjectType{AttrTypes: inboundProvisioningGroupsReadGroupsAttributeContractAttrTypes},
+		"attribute_fulfillment": types.MapType{ElemType: inboundProvisioningGroupsReadGroupsAttributeFulfillmentElementType},
+		"attributes":            types.ListType{ElemType: inboundProvisioningGroupsReadGroupsAttributesElementType},
+	}
+	inboundProvisioningGroupsWriteGroupsAttributeFulfillmentSourceAttrTypes = map[string]attr.Type{
+		"id":   types.StringType,
+		"type": types.StringType,
+	}
+	inboundProvisioningGroupsWriteGroupsAttributeFulfillmentAttrTypes = map[string]attr.Type{
+		"source": types.ObjectType{AttrTypes: inboundProvisioningGroupsWriteGroupsAttributeFulfillmentSourceAttrTypes},
+		"value":  types.StringType,
+	}
+	inboundProvisioningGroupsWriteGroupsAttributeFulfillmentElementType = types.ObjectType{AttrTypes: inboundProvisioningGroupsWriteGroupsAttributeFulfillmentAttrTypes}
+	inboundProvisioningGroupsWriteGroupsAttrTypes                       = map[string]attr.Type{
+		"attribute_fulfillment": types.MapType{ElemType: inboundProvisioningGroupsWriteGroupsAttributeFulfillmentElementType},
+	}
+	inboundProvisioningGroupsAttrTypes = map[string]attr.Type{
+		"read_groups":  types.ObjectType{AttrTypes: inboundProvisioningGroupsReadGroupsAttrTypes},
+		"write_groups": types.ObjectType{AttrTypes: inboundProvisioningGroupsWriteGroupsAttrTypes},
 	}
 
-	usersAttrTypes = map[string]attr.Type{
-		"write_users": types.ObjectType{
-			AttrTypes: map[string]attr.Type{
-				"attribute_fulfillment": attributecontractfulfillment.MapType(),
-			},
-		},
-		"read_users": types.ObjectType{
-			AttrTypes: map[string]attr.Type{
-				"attribute_contract": types.ObjectType{
-					AttrTypes: map[string]attr.Type{
-						"core_attributes":     types.ListType{ElemType: idpBrowserSSOAttributeAttrTypes},
-						"extended_attributes": types.ListType{ElemType: idpBrowserSSOAttributeAttrTypes},
-					},
-				},
-				"attributes":            types.ListType{ElemType: spAdapterAttributeAttrTypes},
-				"attribute_fulfillment": attributecontractfulfillment.MapType(),
-			},
-		},
+	inboundProvisioningUsersReadUsersAttributeContractCoreAttributesAttrTypes = map[string]attr.Type{
+		"masked": types.BoolType,
+		"name":   types.StringType,
 	}
-
-	groupsAttrTypes = map[string]attr.Type{
-		"write_groups": attributecontractfulfillment.ObjType(),
-		"read_groups": types.ObjectType{
-			AttrTypes: map[string]attr.Type{
-				"attribute_contract": types.ObjectType{
-					AttrTypes: map[string]attr.Type{
-						"core_attributes":     types.ListType{ElemType: idpBrowserSSOAttributeAttrTypes},
-						"extended_attributes": types.ListType{ElemType: idpBrowserSSOAttributeAttrTypes},
-					},
-				},
-				"attributes":            types.ListType{ElemType: spAdapterAttributeAttrTypes},
-				"attribute_fulfillment": attributecontractfulfillment.MapType(),
-			},
-		},
+	inboundProvisioningUsersReadUsersAttributeContractCoreAttributesElementType   = types.ObjectType{AttrTypes: inboundProvisioningUsersReadUsersAttributeContractCoreAttributesAttrTypes}
+	inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesAttrTypes = map[string]attr.Type{
+		"masked": types.BoolType,
+		"name":   types.StringType,
 	}
-
+	inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesElementType = types.ObjectType{AttrTypes: inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesAttrTypes}
+	inboundProvisioningUsersReadUsersAttributeContractAttrTypes                     = map[string]attr.Type{
+		"core_attributes":     types.ListType{ElemType: inboundProvisioningUsersReadUsersAttributeContractCoreAttributesElementType},
+		"extended_attributes": types.ListType{ElemType: inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesElementType},
+	}
+	inboundProvisioningUsersReadUsersAttributeFulfillmentSourceAttrTypes = map[string]attr.Type{
+		"id":   types.StringType,
+		"type": types.StringType,
+	}
+	inboundProvisioningUsersReadUsersAttributeFulfillmentAttrTypes = map[string]attr.Type{
+		"source": types.ObjectType{AttrTypes: inboundProvisioningUsersReadUsersAttributeFulfillmentSourceAttrTypes},
+		"value":  types.StringType,
+	}
+	inboundProvisioningUsersReadUsersAttributeFulfillmentElementType = types.ObjectType{AttrTypes: inboundProvisioningUsersReadUsersAttributeFulfillmentAttrTypes}
+	inboundProvisioningUsersReadUsersAttributesAttrTypes             = map[string]attr.Type{
+		"name": types.StringType,
+	}
+	inboundProvisioningUsersReadUsersAttributesElementType = types.ObjectType{AttrTypes: inboundProvisioningUsersReadUsersAttributesAttrTypes}
+	inboundProvisioningUsersReadUsersAttrTypes             = map[string]attr.Type{
+		"attribute_contract":    types.ObjectType{AttrTypes: inboundProvisioningUsersReadUsersAttributeContractAttrTypes},
+		"attribute_fulfillment": types.MapType{ElemType: inboundProvisioningUsersReadUsersAttributeFulfillmentElementType},
+		"attributes":            types.ListType{ElemType: inboundProvisioningUsersReadUsersAttributesElementType},
+	}
+	inboundProvisioningUsersWriteUsersAttributeFulfillmentSourceAttrTypes = map[string]attr.Type{
+		"id":   types.StringType,
+		"type": types.StringType,
+	}
+	inboundProvisioningUsersWriteUsersAttributeFulfillmentAttrTypes = map[string]attr.Type{
+		"source": types.ObjectType{AttrTypes: inboundProvisioningUsersWriteUsersAttributeFulfillmentSourceAttrTypes},
+		"value":  types.StringType,
+	}
+	inboundProvisioningUsersWriteUsersAttributeFulfillmentElementType = types.ObjectType{AttrTypes: inboundProvisioningUsersWriteUsersAttributeFulfillmentAttrTypes}
+	inboundProvisioningUsersWriteUsersAttrTypes                       = map[string]attr.Type{
+		"attribute_fulfillment": types.MapType{ElemType: inboundProvisioningUsersWriteUsersAttributeFulfillmentElementType},
+	}
+	inboundProvisioningUsersAttrTypes = map[string]attr.Type{
+		"read_users":  types.ObjectType{AttrTypes: inboundProvisioningUsersReadUsersAttrTypes},
+		"write_users": types.ObjectType{AttrTypes: inboundProvisioningUsersWriteUsersAttrTypes},
+	}
 	inboundProvisioningAttrTypes = map[string]attr.Type{
-		"group_support":    types.BoolType,
-		"user_repository":  types.ObjectType{AttrTypes: inboundprovisioninguserrepository.ElemAttrType()},
-		"custom_schema":    types.ObjectType{AttrTypes: customSchemaAttrTypes},
-		"users":            types.ObjectType{AttrTypes: usersAttrTypes},
-		"groups":           types.ObjectType{AttrTypes: groupsAttrTypes},
 		"action_on_delete": types.StringType,
+		"custom_schema":    types.ObjectType{AttrTypes: inboundProvisioningCustomSchemaAttrTypes},
+		"group_support":    types.BoolType,
+		"groups":           types.ObjectType{AttrTypes: inboundProvisioningGroupsAttrTypes},
+		"user_repository":  types.ObjectType{AttrTypes: inboundprovisioninguserrepository.ElemAttrType()},
+		"users":            types.ObjectType{AttrTypes: inboundProvisioningUsersAttrTypes},
 	}
 
 	tokenGeneratorAttrTypes = map[string]attr.Type{
-		"sp_token_generator_ref":         types.ObjectType{AttrTypes: resourcelink.AttrTypeNoLocation()},
-		"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType(false)}},
+		"sp_token_generator_ref":         types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
 		"default_mapping":                types.BoolType,
 		"attribute_contract_fulfillment": attributecontractfulfillment.MapType(),
 		"issuance_criteria":              types.ObjectType{AttrTypes: issuancecriteria.AttrType()},
@@ -531,6 +685,41 @@ type spIdpConnectionResourceModel struct {
 	Type                                   types.String `tfsdk:"type"`
 	VirtualEntityIds                       types.Set    `tfsdk:"virtual_entity_ids"`
 	WsTrust                                types.Object `tfsdk:"ws_trust"`
+}
+
+func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	// Compare to version 12.0.0 of PF
+	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast1200 := compare >= 0
+	var plan spIdpConnectionResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	// If any of these fields are set by the user and the PF version is not new enough, throw an error
+	if !pfVersionAtLeast1200 {
+		if internaltypes.IsDefined(plan.IdpBrowserSso) {
+			oidcProviderSettings := plan.IdpBrowserSso.Attributes()["oidc_provider_settings"]
+			if internaltypes.IsDefined(oidcProviderSettings) {
+				frontChannelLogoutUri := oidcProviderSettings.(types.Object).Attributes()["front_channel_logout_uri"]
+				if internaltypes.IsDefined(frontChannelLogoutUri) {
+					version.AddUnsupportedAttributeError("idp_browser_sso.oidc_provider_settings.front_channel_logout_uri",
+						r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
+				}
+				logoutEndpoint := oidcProviderSettings.(types.Object).Attributes()["logout_endpoint"]
+				if internaltypes.IsDefined(logoutEndpoint) {
+					version.AddUnsupportedAttributeError("idp_browser_sso.oidc_provider_settings.logout_endpoint",
+						r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
+				}
+				postLogoutRedirectUri := oidcProviderSettings.(types.Object).Attributes()["post_logout_redirect_uri"]
+				if internaltypes.IsDefined(postLogoutRedirectUri) {
+					version.AddUnsupportedAttributeError("idp_browser_sso.oidc_provider_settings.post_logout_redirect_uri",
+						r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
+				}
+			}
+		}
+	}
 }
 
 // GetSchema defines the schema for the resource.
@@ -624,8 +813,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"require_signed_response": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "Require signed response.",
-								MarkdownDescription: "Require signed response.",
+								Description:         "Require signed r.",
+								MarkdownDescription: "Require signed r.",
 							},
 							"sign_attribute_query": schema.BoolAttribute{
 								Optional:            true,
@@ -651,7 +840,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						path.Empty().Expression().AtName("attribute_query"),
 						path.Empty().Expression().AtName("idp_browser_sso"),
 						path.Empty().Expression().AtName("idp_oauth_grant_attribute_mapping"),
-						path.Empty().Expression().AtName("inbound_provisioning"),
+						// path.Empty().Expression().AtName("inbound_provisioning"),
 						path.Empty().Expression().AtName("ws_trust"),
 					),
 				},
@@ -712,89 +901,72 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					),
 					"block_encryption_algorithm": schema.StringAttribute{
 						Optional:            true,
-						Description:         "",
-						MarkdownDescription: "",
+						Description:         "The algorithm used to encrypt assertions sent to this partner. AES_128, AES_256, AES_128_GCM, AES_192_GCM, AES_256_GCM and Triple_DES are supported.",
+						MarkdownDescription: "The algorithm used to encrypt assertions sent to this partner. AES_128, AES_256, AES_128_GCM, AES_192_GCM, AES_256_GCM and Triple_DES are supported.",
+						Validators: []validator.String{
+							stringvalidator.OneOf("AES_128", "AES_256", "AES_128_GCM", "AES_192_GCM", "AES_256_GCM", "Triple_DES"),
+						},
 					},
 					"key_transport_algorithm": schema.StringAttribute{
 						Optional:            true,
-						Description:         "",
-						MarkdownDescription: "",
+						Description:         "The algorithm used to transport keys to this partner. RSA_OAEP, RSA_OAEP_256 and RSA_v15 are supported.",
+						MarkdownDescription: "The algorithm used to transport keys to this partner. RSA_OAEP, RSA_OAEP_256 and RSA_v15 are supported.",
+						Validators: []validator.String{
+							stringvalidator.OneOf("RSA_OAEP", "RSA_OAEP_256", "RSA_v15"),
+						},
 					},
 					"signing_settings": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
-							"signing_pair_key_ref": schema.SingleNestedAttribute{
-								Attributes: map[string]schema.Attribute{
-									"id": schema.StringAttribute{
-										Required:            true,
-										Description:         "",
-										MarkdownDescription: "",
-									},
-									"type": schema.StringAttribute{
-										Optional:            true,
-										Description:         "",
-										MarkdownDescription: "",
-									},
-								},
+							"signing_key_pair_ref": schema.SingleNestedAttribute{
+								Attributes:          resourcelink.ToSchema(),
 								Optional:            true,
-								Description:         "",
-								MarkdownDescription: "",
+								Description:         "A reference to a resource.",
+								MarkdownDescription: "A reference to a resource.",
 							},
-							"active_signing_key_pair_refs": schema.SetAttribute{
-								ElementType:         types.ObjectType{AttrTypes: resourcelink.AttrTypeNoLocation()},
+							"alternative_signing_key_pair_refs": schema.ListAttribute{
+								ElementType:         types.ObjectType{AttrTypes: resourcelink.AttrType()},
 								Optional:            true,
-								Description:         "",
-								MarkdownDescription: "",
+								Description:         "The list of IDs of alternative key pairs used to sign messages sent to this partner. The ID of the key pair is also known as the alias and can be found by viewing the corresponding certificate under 'Signing & Decryption Keys & Certificates' in the PingFederate admin console.",
+								MarkdownDescription: "The list of IDs of alternative key pairs used to sign messages sent to this partner. The ID of the key pair is also known as the alias and can be found by viewing the corresponding certificate under 'Signing & Decryption Keys & Certificates' in the PingFederate admin console.",
 							},
 							"algorithm": schema.StringAttribute{
 								Optional:            true,
-								Description:         "",
-								MarkdownDescription: "",
+								Description:         "The algorithm used to sign messages sent to this partner. The default is SHA1withDSA for DSA certs, SHA256withRSA for RSA certs, and SHA256withECDSA for EC certs. For RSA certs, SHA1withRSA, SHA384withRSA, SHA512withRSA, SHA256withRSAandMGF1, SHA384withRSAandMGF1 and SHA512withRSAandMGF1 are also supported. For EC certs, SHA384withECDSA and SHA512withECDSA are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512",
+								MarkdownDescription: "The algorithm used to sign messages sent to this partner. The default is SHA1withDSA for DSA certs, SHA256withRSA for RSA certs, and SHA256withECDSA for EC certs. For RSA certs, SHA1withRSA, SHA384withRSA, SHA512withRSA, SHA256withRSAandMGF1, SHA384withRSAandMGF1 and SHA512withRSAandMGF1 are also supported. For EC certs, SHA384withECDSA and SHA512withECDSA are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512",
 							},
 							"include_cert_in_signature": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "",
-								MarkdownDescription: "",
+								Description:         "Determines whether the signing certificate is included in the signature element.",
+								MarkdownDescription: "Determines whether the signing certificate is included in the signature element.",
 							},
 							"include_raw_key_in_signature": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "",
-								MarkdownDescription: "",
+								Description:         "Determines whether the element with the raw public key is included in the signature element.",
+								MarkdownDescription: "Determines whether the element with the raw public key is included in the signature element.",
 							},
 						},
 						Optional:            true,
-						Description:         "",
-						MarkdownDescription: "",
+						Description:         "Settings related to signing messages sent to this partner.",
+						MarkdownDescription: "Settings related to signing messages sent to this partner.",
 					},
 					"decryption_key_pair_ref": schema.SingleNestedAttribute{
-						Attributes: map[string]schema.Attribute{
-							"id": schema.StringAttribute{
-								Optional:            true,
-								Description:         "",
-								MarkdownDescription: "",
-							},
-						},
+						Attributes:          resourcelink.ToSchema(),
 						Optional:            true,
-						Description:         "",
-						MarkdownDescription: "",
+						Description:         "A reference to a resource.",
+						MarkdownDescription: "A reference to a resource.",
 					},
 					"secondary_decryption_key_pair_ref": schema.SingleNestedAttribute{
-						Attributes: map[string]schema.Attribute{
-							"id": schema.StringAttribute{
-								Required:            true,
-								Description:         "",
-								MarkdownDescription: "",
-							},
-						},
+						Attributes:          resourcelink.ToSchema(),
 						Optional:            true,
-						Description:         "",
-						MarkdownDescription: "",
+						Description:         "A reference to a resource.",
+						MarkdownDescription: "A reference to a resource.",
 					},
 					"outbound_back_channel_auth": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
 							"type": schema.StringAttribute{
 								Required:            true,
-								Description:         "",
-								MarkdownDescription: "",
+								Description:         "The back channel authentication type.",
+								MarkdownDescription: "The back channel authentication type.",
 								Validators: []validator.String{
 									stringvalidator.OneOf("INBOUND", "OUTBOUND"),
 								},
@@ -803,58 +975,49 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Attributes: map[string]schema.Attribute{
 									"username": schema.StringAttribute{
 										Optional:            true,
-										Description:         "",
-										MarkdownDescription: "",
+										Description:         "The username.",
+										MarkdownDescription: "The username.",
 									},
 									"password": schema.StringAttribute{
 										Optional:            true,
 										Sensitive:           true,
-										Description:         "",
-										MarkdownDescription: "",
-										PlanModifiers: []planmodifier.String{
-											stringplanmodifier.RequiresReplace(),
-										},
+										Description:         "User password. To update the password, specify the plaintext value in this field.",
+										MarkdownDescription: "User password. To update the password, specify the plaintext value in this field.",
 									},
 								},
 								Optional:            true,
-								Description:         "",
-								MarkdownDescription: "",
+								Description:         "Username and password credentials.",
+								MarkdownDescription: "Username and password credentials.",
 							},
 							"digital_signature": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "",
-								MarkdownDescription: "",
+								Description:         "If incoming or outgoing messages must be signed.",
+								MarkdownDescription: "If incoming or outgoing messages must be signed.",
 							},
 							"ssl_auth_key_pair_ref": schema.SingleNestedAttribute{
-								Attributes: map[string]schema.Attribute{
-									"id": schema.StringAttribute{
-										Required:            true,
-										Description:         "",
-										MarkdownDescription: "",
-									},
-								},
+								Attributes:          resourcelink.ToSchema(),
 								Optional:            true,
-								Description:         "",
-								MarkdownDescription: "",
+								Description:         "A reference to a resource.",
+								MarkdownDescription: "A reference to a resource.",
 							},
 							"validate_partner_cert": schema.BoolAttribute{
 								Optional:            true,
 								Computed:            true,
-								Description:         "",
-								MarkdownDescription: "",
+								Description:         "Validate the partner server certificate. Default is true.",
+								MarkdownDescription: "Validate the partner server certificate. Default is true.",
 								Default:             booldefault.StaticBool(true),
 							},
 						},
 						Optional:            true,
-						Description:         "",
-						MarkdownDescription: "",
+						Description:         "The SOAP authentication methods when sending or receiving a message using SOAP back channel.",
+						MarkdownDescription: "The SOAP authentication methods when sending or receiving a message using SOAP back channel.",
 					},
 					"inbound_back_channel_auth": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
 							"type": schema.StringAttribute{
 								Required:            true,
-								Description:         "",
-								MarkdownDescription: "",
+								Description:         "The back channel authentication type.",
+								MarkdownDescription: "The back channel authentication type.",
 								Validators: []validator.String{
 									stringvalidator.OneOf("INBOUND", "OUTBOUND"),
 								},
@@ -862,28 +1025,25 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							"http_basic_credentials": schema.SingleNestedAttribute{
 								Attributes: map[string]schema.Attribute{
 									"username": schema.StringAttribute{
-										Required:            true,
-										Description:         "",
-										MarkdownDescription: "",
+										Optional:            true,
+										Description:         "The username.",
+										MarkdownDescription: "The username.",
 									},
 									"password": schema.StringAttribute{
-										Required:            true,
+										Optional:            true,
 										Sensitive:           true,
-										Description:         "",
-										MarkdownDescription: "",
-										PlanModifiers: []planmodifier.String{
-											stringplanmodifier.RequiresReplace(),
-										},
+										Description:         "User password. To update the password, specify the plaintext value in this field.",
+										MarkdownDescription: "User password. To update the password, specify the plaintext value in this field.",
 									},
 								},
 								Optional:            true,
-								Description:         "",
-								MarkdownDescription: "",
+								Description:         "Username and password credentials.",
+								MarkdownDescription: "Username and password credentials.",
 							},
 							"digital_signature": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "",
-								MarkdownDescription: "",
+								Description:         "If incoming or outgoing messages must be signed.",
+								MarkdownDescription: "If incoming or outgoing messages must be signed.",
 							},
 							"verification_subject_dn": schema.StringAttribute{
 								Optional:            true,
@@ -895,26 +1055,25 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Description:         "",
 								MarkdownDescription: "",
 							},
-							"certs": schema.SetAttribute{
-								ElementType:         connectionCertAttrTypes,
-								Optional:            true,
-								Description:         "",
-								MarkdownDescription: "",
-							},
+							"certs": connectioncert.ToSchema(
+								"The certificates used for signature verification and XML encryption.",
+								false,
+								false,
+							),
 							"require_ssl": schema.BoolAttribute{
 								Optional:            true,
-								Description:         "",
-								MarkdownDescription: "",
+								Description:         "Incoming HTTP transmissions must use a secure channel.",
+								MarkdownDescription: "Incoming HTTP transmissions must use a secure channel.",
 							},
 						},
 						Optional:            true,
-						Description:         "",
-						MarkdownDescription: "",
+						Description:         "The SOAP authentication methods when sending or receiving a message using SOAP back channel.",
+						MarkdownDescription: "The SOAP authentication methods when sending or receiving a message using SOAP back channel.",
 					},
 				},
 				Optional:            true,
-				Description:         "",
-				MarkdownDescription: "",
+				Description:         "The certificates and settings for encryption, signing, and signature verification.",
+				MarkdownDescription: "The certificates and settings for encryption, signing, and signature verification.",
 			},
 			"default_virtual_entity_id": schema.StringAttribute{
 				Optional:            true,
@@ -949,210 +1108,89 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					"adapter_mappings": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
-								"adapter_override_settings": schema.StringAttribute{
+								"adapter_override_settings": schema.SingleNestedAttribute{
 									Optional:            true,
 									Description:         "An SP adapter instance.",
 									MarkdownDescription: "An SP adapter instance.",
-								},
-								"attribute_contract_fulfillment": schema.MapNestedAttribute{
-									NestedObject: schema.NestedAttributeObject{
-										Attributes: map[string]schema.Attribute{
-											"source": schema.SingleNestedAttribute{
-												Attributes: map[string]schema.Attribute{
-													"id": schema.StringAttribute{
-														Optional:            true,
-														Description:         "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-														MarkdownDescription: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-													},
-													"type": schema.StringAttribute{
-														Required:            true,
-														Description:         "The source type of this key.",
-														MarkdownDescription: "The source type of this key.",
-														Validators: []validator.String{
-															stringvalidator.OneOf(
-																"TOKEN_EXCHANGE_PROCESSOR_POLICY",
-																"ACCOUNT_LINK",
-																"ADAPTER",
-																"ASSERTION",
-																"CONTEXT",
-																"CUSTOM_DATA_STORE",
-																"EXPRESSION",
-																"JDBC_DATA_STORE",
-																"LDAP_DATA_STORE",
-																"PING_ONE_LDAP_GATEWAY_DATA_STORE",
-																"MAPPED_ATTRIBUTES",
-																"NO_MAPPING",
-																"TEXT",
-																"TOKEN",
-																"REQUEST",
-																"OAUTH_PERSISTENT_GRANT",
-																"SUBJECT_TOKEN",
-																"ACTOR_TOKEN",
-																"PASSWORD_CREDENTIAL_VALIDATOR",
-																"IDP_CONNECTION",
-																"AUTHENTICATION_POLICY_CONTRACT",
-																"CLAIMS",
-																"LOCAL_IDENTITY_PROFILE",
-																"EXTENDED_CLIENT_METADATA",
-																"EXTENDED_PROPERTIES",
-																"TRACKED_HTTP_PARAMS",
-																"FRAGMENT",
-																"INPUTS",
-																"ATTRIBUTE_QUERY",
-																"IDENTITY_STORE_USER",
-																"IDENTITY_STORE_GROUP",
-																"SCIM_USER",
-																"SCIM_GROUP",
-															),
-														},
-													},
-												},
-												Required:            true,
-												Description:         "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
-												MarkdownDescription: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
-											},
-											"value": schema.StringAttribute{
-												Required:            true,
-												Description:         "The value for this attribute.",
-												MarkdownDescription: "The value for this attribute.",
-											},
-										},
-									},
-									Required:            true,
-									Description:         "A list of mappings from attribute names to their fulfillment values.",
-									MarkdownDescription: "A list of mappings from attribute names to their fulfillment values.",
-								},
-								"attribute_sources": schema.ListAttribute{
-									ElementType:         types.StringType,
-									Optional:            true,
-									Description:         "A list of configured data stores to look up attributes from.",
-									MarkdownDescription: "A list of configured data stores to look up attributes from.",
-								},
-								"issuance_criteria": schema.SingleNestedAttribute{
 									Attributes: map[string]schema.Attribute{
-										"conditional_criteria": schema.ListNestedAttribute{
-											NestedObject: schema.NestedAttributeObject{
-												Attributes: map[string]schema.Attribute{
-													"attribute_name": schema.StringAttribute{
-														Required:            true,
-														Description:         "The name of the attribute to use in this issuance criterion.",
-														MarkdownDescription: "The name of the attribute to use in this issuance criterion.",
-													},
-													"condition": schema.StringAttribute{
-														Required:            true,
-														Description:         "The condition that will be applied to the source attribute's value and the expected value.",
-														MarkdownDescription: "The condition that will be applied to the source attribute's value and the expected value.",
-														Validators: []validator.String{
-															stringvalidator.OneOf(
-																"EQUALS",
-																"EQUALS_CASE_INSENSITIVE",
-																"EQUALS_DN",
-																"NOT_EQUAL",
-																"NOT_EQUAL_CASE_INSENSITIVE",
-																"NOT_EQUAL_DN",
-																"MULTIVALUE_CONTAINS",
-																"MULTIVALUE_CONTAINS_CASE_INSENSITIVE",
-																"MULTIVALUE_CONTAINS_DN",
-																"MULTIVALUE_DOES_NOT_CONTAIN",
-																"MULTIVALUE_DOES_NOT_CONTAIN_CASE_INSENSITIVE",
-																"MULTIVALUE_DOES_NOT_CONTAIN_DN",
-															),
-														},
-													},
-													"error_result": schema.StringAttribute{
-														Optional:            true,
-														Description:         "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-														MarkdownDescription: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-													},
-													"source": schema.SingleNestedAttribute{
-														Attributes: map[string]schema.Attribute{
-															"id": schema.StringAttribute{
-																Optional:            true,
-																Description:         "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-																MarkdownDescription: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-															},
-															"type": schema.StringAttribute{
-																Required:            true,
-																Description:         "The source type of this key.",
-																MarkdownDescription: "The source type of this key.",
-																Validators: []validator.String{
-																	stringvalidator.OneOf(
-																		"TOKEN_EXCHANGE_PROCESSOR_POLICY",
-																		"ACCOUNT_LINK",
-																		"ADAPTER",
-																		"ASSERTION",
-																		"CONTEXT",
-																		"CUSTOM_DATA_STORE",
-																		"EXPRESSION",
-																		"JDBC_DATA_STORE",
-																		"LDAP_DATA_STORE",
-																		"PING_ONE_LDAP_GATEWAY_DATA_STORE",
-																		"MAPPED_ATTRIBUTES",
-																		"NO_MAPPING",
-																		"TEXT",
-																		"TOKEN",
-																		"REQUEST",
-																		"OAUTH_PERSISTENT_GRANT",
-																		"SUBJECT_TOKEN",
-																		"ACTOR_TOKEN",
-																		"PASSWORD_CREDENTIAL_VALIDATOR",
-																		"IDP_CONNECTION",
-																		"AUTHENTICATION_POLICY_CONTRACT",
-																		"CLAIMS",
-																		"LOCAL_IDENTITY_PROFILE",
-																		"EXTENDED_CLIENT_METADATA",
-																		"EXTENDED_PROPERTIES",
-																		"TRACKED_HTTP_PARAMS",
-																		"FRAGMENT",
-																		"INPUTS",
-																		"ATTRIBUTE_QUERY",
-																		"IDENTITY_STORE_USER",
-																		"IDENTITY_STORE_GROUP",
-																		"SCIM_USER",
-																		"SCIM_GROUP",
-																	),
-																},
-															},
-														},
-														Required:            true,
-														Description:         "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
-														MarkdownDescription: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
-													},
-													"value": schema.StringAttribute{
-														Required:            true,
-														Description:         "The expected value of this issuance criterion.",
-														MarkdownDescription: "The expected value of this issuance criterion.",
-													},
-												},
-											},
-											Optional:            true,
-											Description:         "A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue.",
-											MarkdownDescription: "A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue.",
+										"id": schema.StringAttribute{
+											Required:            true,
+											Description:         "The ID of the plugin instance. The ID cannot be modified once the instance is created.",
+											MarkdownDescription: "The ID of the plugin instance. The ID cannot be modified once the instance is created.",
 										},
-										"expression_criteria": schema.ListNestedAttribute{
-											NestedObject: schema.NestedAttributeObject{
-												Attributes: map[string]schema.Attribute{
-													"error_result": schema.StringAttribute{
-														Optional:            true,
-														Description:         "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-														MarkdownDescription: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
+										"name": schema.StringAttribute{
+											Required:            true,
+											Description:         "The plugin instance name.",
+											MarkdownDescription: "The plugin instance name.",
+										},
+										"plugin_descriptor_ref": schema.SingleNestedAttribute{
+											Attributes:          resourcelink.ToSchema(),
+											Required:            true,
+											Description:         "Reference to the plugin descriptor for this instance.",
+											MarkdownDescription: "Reference to the plugin descriptor for this instance.",
+										},
+										"parent_ref": schema.SingleNestedAttribute{
+											Attributes:          resourcelink.ToSchema(),
+											Optional:            true,
+											Description:         "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances.",
+											MarkdownDescription: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances.",
+										},
+										"configuration": pluginconfiguration.ToSchema(),
+										"attribute_contract": schema.SingleNestedAttribute{
+											Optional: true,
+											Attributes: map[string]schema.Attribute{
+												"core_attributes": schema.ListNestedAttribute{
+													NestedObject: schema.NestedAttributeObject{
+														Attributes: map[string]schema.Attribute{
+															"name": schema.StringAttribute{
+																Optional:            false,
+																Computed:            true,
+																Description:         "The name of this attribute.",
+																MarkdownDescription: "The name of this attribute.",
+															},
+														},
 													},
-													"expression": schema.StringAttribute{
-														Required:            true,
-														Description:         "The OGNL expression to evaluate.",
-														MarkdownDescription: "The OGNL expression to evaluate.",
+													Optional:            false,
+													Computed:            true,
+													Description:         "A list of read-only assertion attributes that are automatically populated by the SP adapter descriptor.",
+													MarkdownDescription: "A list of read-only assertion attributes that are automatically populated by the SP adapter descriptor.",
+												},
+												"extended_attributes": schema.ListNestedAttribute{
+													NestedObject: schema.NestedAttributeObject{
+														Attributes: map[string]schema.Attribute{
+															"name": schema.StringAttribute{
+																Required:            true,
+																Description:         "The name of this attribute.",
+																MarkdownDescription: "The name of this attribute.",
+															},
+														},
 													},
+													Optional:            true,
+													Description:         "A list of additional attributes that can be returned by the SP adapter.",
+													MarkdownDescription: "A list of additional attributes that can be returned by the SP adapter.",
 												},
 											},
-											Optional:            true,
-											Description:         "A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue.",
-											MarkdownDescription: "A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue.",
+										},
+										"target_application_info": schema.SingleNestedAttribute{
+											Optional: true,
+											Attributes: map[string]schema.Attribute{
+												"application_name": schema.StringAttribute{
+													Optional:            true,
+													Description:         "The application name.",
+													MarkdownDescription: "The application name.",
+												},
+												"application_icon_url": schema.StringAttribute{
+													Optional:            true,
+													Description:         "The application icon URL.",
+													MarkdownDescription: "The application icon URL.",
+												},
+											},
 										},
 									},
-									Optional:            true,
-									Description:         "A list of criteria that determines whether a transaction (usually a SSO transaction) is continued. All criteria must pass in order for the transaction to continue.",
-									MarkdownDescription: "A list of criteria that determines whether a transaction (usually a SSO transaction) is continued. All criteria must pass in order for the transaction to continue.",
 								},
+								"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, true),
+								"attribute_sources":              attributesources.ToSchema(0, false),
+								"issuance_criteria":              issuancecriteria.ToSchema(),
 								"restrict_virtual_entity_ids": schema.BoolAttribute{
 									Optional: true,
 
@@ -1167,18 +1205,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									MarkdownDescription: "The list of virtual server IDs that this mapping is restricted to.",
 								},
 								"sp_adapter_ref": schema.SingleNestedAttribute{
-									Attributes: map[string]schema.Attribute{
-										"id": schema.StringAttribute{
-											Required:            true,
-											Description:         "The ID of the resource.",
-											MarkdownDescription: "The ID of the resource.",
-										},
-										"location": schema.StringAttribute{
-											Optional:            true,
-											Description:         "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-											MarkdownDescription: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-										},
-									},
+									Attributes:          resourcelink.ToSchema(),
 									Required:            true,
 									Description:         "A reference to a resource.",
 									MarkdownDescription: "A reference to a resource.",
@@ -1190,14 +1217,16 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						MarkdownDescription: "A list of adapters that map to incoming assertions.",
 					},
 					"always_sign_artifact_response": schema.BoolAttribute{
+						Computed:            true,
 						Optional:            true,
+						Default:             booldefault.StaticBool(false),
 						Description:         "Specify to always sign the SAML ArtifactResponse.",
 						MarkdownDescription: "Specify to always sign the SAML ArtifactResponse.",
 					},
 					"artifact": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
 							"lifetime": schema.Int64Attribute{
-								Required:            true,
+								Optional:            true,
 								Description:         "The lifetime of the artifact in seconds.",
 								MarkdownDescription: "The lifetime of the artifact in seconds.",
 							},
@@ -1252,7 +1281,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										},
 									},
 								},
-								Optional:            true,
+								Optional:            false,
+								Computed:            true,
 								Description:         "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 								MarkdownDescription: "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 							},
@@ -1351,25 +1381,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Description:         "A list of mappings from attribute names to their fulfillment values.",
 									MarkdownDescription: "A list of mappings from attribute names to their fulfillment values.",
 								},
-								"attribute_sources": schema.ListAttribute{
-									ElementType:         types.StringType,
-									Optional:            true,
-									Description:         "A list of configured data stores to look up attributes from.",
-									MarkdownDescription: "A list of configured data stores to look up attributes from.",
-								},
+								"attribute_sources": attributesources.ToSchema(0, false),
 								"authentication_policy_contract_ref": schema.SingleNestedAttribute{
-									Attributes: map[string]schema.Attribute{
-										"id": schema.StringAttribute{
-											Required:            true,
-											Description:         "The ID of the resource.",
-											MarkdownDescription: "The ID of the resource.",
-										},
-										"location": schema.StringAttribute{
-											Optional:            true,
-											Description:         "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-											MarkdownDescription: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-										},
-									},
+									Attributes:          resourcelink.ToSchema(),
 									Required:            true,
 									Description:         "A reference to a resource.",
 									MarkdownDescription: "A reference to a resource.",
@@ -1553,7 +1567,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Description:         "Encrypt the Subject Name ID in SLO messages to the IdP.",
 								MarkdownDescription: "Encrypt the Subject Name ID in SLO messages to the IdP.",
 							},
-							"slo_subject_name_idencrypted": schema.BoolAttribute{
+							"slo_subject_name_id_encrypted": schema.BoolAttribute{
 								Optional:            true,
 								Description:         "Allow encrypted Subject Name ID in SLO messages from the IdP.",
 								MarkdownDescription: "Allow encrypted Subject Name ID in SLO messages from the IdP.",
@@ -1658,99 +1672,224 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"user_repository": schema.SingleNestedAttribute{
 								Attributes: map[string]schema.Attribute{
-									"data_store_ref": schema.SingleNestedAttribute{
+									"jdbc": schema.SingleNestedAttribute{
 										Attributes: map[string]schema.Attribute{
-											"id": schema.StringAttribute{
+											"data_store_ref": schema.SingleNestedAttribute{
+												Attributes:          resourcelink.ToSchema(),
 												Required:            true,
-												Description:         "The ID of the resource.",
-												MarkdownDescription: "The ID of the resource.",
+												Description:         "Reference to the associated data store.",
+												MarkdownDescription: "Reference to the associated data store.",
 											},
-											"location": schema.StringAttribute{
-												Optional:            true,
-												Description:         "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-												MarkdownDescription: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-											},
-										},
-										Required:            true,
-										Description:         "A reference to a resource.",
-										MarkdownDescription: "A reference to a resource.",
-									},
-									"jit_repository_attribute_mapping": schema.MapNestedAttribute{
-										NestedObject: schema.NestedAttributeObject{
-											Attributes: map[string]schema.Attribute{
-												"source": schema.SingleNestedAttribute{
+											"jit_repository_attribute_mapping": schema.MapNestedAttribute{
+												NestedObject: schema.NestedAttributeObject{
 													Attributes: map[string]schema.Attribute{
-														"id": schema.StringAttribute{
-															Optional:            true,
-															Description:         "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-															MarkdownDescription: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-														},
-														"type": schema.StringAttribute{
+														"source": schema.SingleNestedAttribute{
+															Attributes: map[string]schema.Attribute{
+																"id": schema.StringAttribute{
+																	Optional:            true,
+																	Description:         "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+																	MarkdownDescription: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+																},
+																"type": schema.StringAttribute{
+																	Required:            true,
+																	Description:         "The source type of this key.",
+																	MarkdownDescription: "The source type of this key.",
+																	Validators: []validator.String{
+																		stringvalidator.OneOf(
+																			"TOKEN_EXCHANGE_PROCESSOR_POLICY",
+																			"ACCOUNT_LINK",
+																			"ADAPTER",
+																			"ASSERTION",
+																			"CONTEXT",
+																			"CUSTOM_DATA_STORE",
+																			"EXPRESSION",
+																			"JDBC_DATA_STORE",
+																			"LDAP_DATA_STORE",
+																			"PING_ONE_LDAP_GATEWAY_DATA_STORE",
+																			"MAPPED_ATTRIBUTES",
+																			"NO_MAPPING",
+																			"TEXT",
+																			"TOKEN",
+																			"REQUEST",
+																			"OAUTH_PERSISTENT_GRANT",
+																			"SUBJECT_TOKEN",
+																			"ACTOR_TOKEN",
+																			"PASSWORD_CREDENTIAL_VALIDATOR",
+																			"IDP_CONNECTION",
+																			"AUTHENTICATION_POLICY_CONTRACT",
+																			"CLAIMS",
+																			"LOCAL_IDENTITY_PROFILE",
+																			"EXTENDED_CLIENT_METADATA",
+																			"EXTENDED_PROPERTIES",
+																			"TRACKED_HTTP_PARAMS",
+																			"FRAGMENT",
+																			"INPUTS",
+																			"ATTRIBUTE_QUERY",
+																			"IDENTITY_STORE_USER",
+																			"IDENTITY_STORE_GROUP",
+																			"SCIM_USER",
+																			"SCIM_GROUP",
+																		),
+																	},
+																},
+															},
 															Required:            true,
-															Description:         "The source type of this key.",
-															MarkdownDescription: "The source type of this key.",
-															Validators: []validator.String{
-																stringvalidator.OneOf(
-																	"TOKEN_EXCHANGE_PROCESSOR_POLICY",
-																	"ACCOUNT_LINK",
-																	"ADAPTER",
-																	"ASSERTION",
-																	"CONTEXT",
-																	"CUSTOM_DATA_STORE",
-																	"EXPRESSION",
-																	"JDBC_DATA_STORE",
-																	"LDAP_DATA_STORE",
-																	"PING_ONE_LDAP_GATEWAY_DATA_STORE",
-																	"MAPPED_ATTRIBUTES",
-																	"NO_MAPPING",
-																	"TEXT",
-																	"TOKEN",
-																	"REQUEST",
-																	"OAUTH_PERSISTENT_GRANT",
-																	"SUBJECT_TOKEN",
-																	"ACTOR_TOKEN",
-																	"PASSWORD_CREDENTIAL_VALIDATOR",
-																	"IDP_CONNECTION",
-																	"AUTHENTICATION_POLICY_CONTRACT",
-																	"CLAIMS",
-																	"LOCAL_IDENTITY_PROFILE",
-																	"EXTENDED_CLIENT_METADATA",
-																	"EXTENDED_PROPERTIES",
-																	"TRACKED_HTTP_PARAMS",
-																	"FRAGMENT",
-																	"INPUTS",
-																	"ATTRIBUTE_QUERY",
-																	"IDENTITY_STORE_USER",
-																	"IDENTITY_STORE_GROUP",
-																	"SCIM_USER",
-																	"SCIM_GROUP",
-																),
+															Description:         "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
+															MarkdownDescription: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
+														},
+														"value": schema.StringAttribute{
+															Required:            true,
+															Description:         "The value for this attribute.",
+															MarkdownDescription: "The value for this attribute.",
+														},
+													},
+												},
+												Required:            true,
+												Description:         "The user repository attribute mapping.",
+												MarkdownDescription: "The user repository attribute mapping.",
+											},
+											"sql_method": schema.SingleNestedAttribute{
+												Description:         "The method to map attributes from the assertion directly to database table columns or to stored-procedure parameters.",
+												MarkdownDescription: "The method to map attributes from the assertion directly to database table columns or to stored-procedure parameters.",
+												Required:            true,
+												Attributes: map[string]schema.Attribute{
+													"table": schema.SingleNestedAttribute{
+														Optional:            true,
+														Description:         "The Table SQL method.",
+														MarkdownDescription: "The Table SQL method.",
+														Attributes: map[string]schema.Attribute{
+															"schema": schema.StringAttribute{
+																Required:            true,
+																Description:         "Lists the table structure that stores information within a database.",
+																MarkdownDescription: "Lists the table structure that stores information within a database.",
+															},
+															"table_name": schema.StringAttribute{
+																Required:            true,
+																Description:         "The name of the database table.",
+																MarkdownDescription: "The name of the database table.",
+															},
+															"unique_id_column": schema.StringAttribute{
+																Required:            true,
+																Description:         "The database column that uniquely identifies the provisioned user on the SP side.",
+																MarkdownDescription: "The database column that uniquely identifies the provisioned user on the SP side.",
 															},
 														},
 													},
-													Required:            true,
-													Description:         "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
-													MarkdownDescription: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
-												},
-												"value": schema.StringAttribute{
-													Required:            true,
-													Description:         "The value for this attribute.",
-													MarkdownDescription: "The value for this attribute.",
+													"stored_procedure": schema.SingleNestedAttribute{
+														Description: "The Stored Procedure SQL method. The procedure is always called for all SSO tokens and \"eventTrigger\" will always be 'ALL_SAML_ASSERTIONS'.",
+														Optional:    true,
+														Attributes: map[string]schema.Attribute{
+															"schema": schema.StringAttribute{
+																Required:            true,
+																Description:         "Lists the table structure that stores information within a database.",
+																MarkdownDescription: "Lists the table structure that stores information within a database.",
+															},
+															"stored_procedure": schema.StringAttribute{
+																Required:            true,
+																Description:         "The name of the database stored procedure.",
+																MarkdownDescription: "The name of the database stored procedure.",
+															},
+														},
+													},
 												},
 											},
 										},
-										Required:            true,
-										Description:         "The user repository attribute mapping.",
-										MarkdownDescription: "The user repository attribute mapping.",
+										Optional:            true,
+										Description:         "JDBC data store user repository.",
+										MarkdownDescription: "JDBC data store user repository.",
 									},
-									"type": schema.StringAttribute{
-										Required:            true,
-										Description:         "The data store repository type.",
-										MarkdownDescription: "The data store repository type.",
-										Validators: []validator.String{
-											stringvalidator.OneOf(
-												"LDAP",
-												"JDBC",
+									"ldap": schema.SingleNestedAttribute{
+										Attributes: map[string]schema.Attribute{
+											"data_store_ref": schema.SingleNestedAttribute{
+												Attributes:          resourcelink.ToSchema(),
+												Description:         "Reference to the associated data store.",
+												MarkdownDescription: "Reference to the associated data store.",
+												Required:            true,
+											},
+											"jit_repository_attribute_mapping": schema.MapNestedAttribute{
+												NestedObject: schema.NestedAttributeObject{
+													Attributes: map[string]schema.Attribute{
+														"source": schema.SingleNestedAttribute{
+															Attributes: map[string]schema.Attribute{
+																"id": schema.StringAttribute{
+																	Optional:            true,
+																	Description:         "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+																	MarkdownDescription: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+																},
+																"type": schema.StringAttribute{
+																	Required:            true,
+																	Description:         "The source type of this key.",
+																	MarkdownDescription: "The source type of this key.",
+																	Validators: []validator.String{
+																		stringvalidator.OneOf(
+																			"TOKEN_EXCHANGE_PROCESSOR_POLICY",
+																			"ACCOUNT_LINK",
+																			"ADAPTER",
+																			"ASSERTION",
+																			"CONTEXT",
+																			"CUSTOM_DATA_STORE",
+																			"EXPRESSION",
+																			"JDBC_DATA_STORE",
+																			"LDAP_DATA_STORE",
+																			"PING_ONE_LDAP_GATEWAY_DATA_STORE",
+																			"MAPPED_ATTRIBUTES",
+																			"NO_MAPPING",
+																			"TEXT",
+																			"TOKEN",
+																			"REQUEST",
+																			"OAUTH_PERSISTENT_GRANT",
+																			"SUBJECT_TOKEN",
+																			"ACTOR_TOKEN",
+																			"PASSWORD_CREDENTIAL_VALIDATOR",
+																			"IDP_CONNECTION",
+																			"AUTHENTICATION_POLICY_CONTRACT",
+																			"CLAIMS",
+																			"LOCAL_IDENTITY_PROFILE",
+																			"EXTENDED_CLIENT_METADATA",
+																			"EXTENDED_PROPERTIES",
+																			"TRACKED_HTTP_PARAMS",
+																			"FRAGMENT",
+																			"INPUTS",
+																			"ATTRIBUTE_QUERY",
+																			"IDENTITY_STORE_USER",
+																			"IDENTITY_STORE_GROUP",
+																			"SCIM_USER",
+																			"SCIM_GROUP",
+																		),
+																	},
+																},
+															},
+															Required:            true,
+															Description:         "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
+															MarkdownDescription: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
+														},
+														"value": schema.StringAttribute{
+															Required:            true,
+															Description:         "The value for this attribute.",
+															MarkdownDescription: "The value for this attribute.",
+														},
+													},
+												},
+												Required:            true,
+												Description:         "The user repository attribute mapping.",
+												MarkdownDescription: "The user repository attribute mapping.",
+											},
+											"base_dn": schema.StringAttribute{
+												Optional:            true,
+												Description:         "The base DN to search from. If not specified, the search will start at the LDAP's root.",
+												MarkdownDescription: "The base DN to search from. If not specified, the search will start at the LDAP's root.",
+											},
+											"unique_user_id_filter": schema.StringAttribute{
+												Required:            true,
+												Description:         "The expression that results in a unique user identifier, when combined with the Base DN.",
+												MarkdownDescription: "The expression that results in a unique user identifier, when combined with the Base DN.",
+											},
+										},
+										Optional: true,
+										Validators: []validator.Object{
+											objectvalidator.ExactlyOneOf(
+												path.MatchRelative().AtParent().AtName("jdbc"),
+												path.MatchRelative().AtParent().AtName("ldap"),
 											),
 										},
 									},
@@ -1784,19 +1923,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						MarkdownDescription: "The message customizations for browser-based SSO. Depending on server settings, connection type, and protocol this may or may not be supported.",
 					},
 					"oauth_authentication_policy_contract_ref": schema.SingleNestedAttribute{
-						Attributes: map[string]schema.Attribute{
-							"id": schema.StringAttribute{
-								Required:            true,
-								Description:         "The ID of the resource.",
-								MarkdownDescription: "The ID of the resource.",
-							},
-							"location": schema.StringAttribute{
-								Optional: true,
-
-								Description:         "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-								MarkdownDescription: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-							},
-						},
+						Attributes:          resourcelink.ToSchema(),
 						Optional:            true,
 						Description:         "A reference to a resource.",
 						MarkdownDescription: "A reference to a resource.",
@@ -2159,12 +2286,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Description:         "A list of mappings from attribute names to their fulfillment values.",
 								MarkdownDescription: "A list of mappings from attribute names to their fulfillment values.",
 							},
-							"attribute_sources": schema.ListAttribute{
-								ElementType:         types.StringType,
-								Optional:            true,
-								Description:         "A list of configured data stores to look up attributes from.",
-								MarkdownDescription: "A list of configured data stores to look up attributes from.",
-							},
+							"attribute_sources": attributesources.ToSchema(0, false),
 							"issuance_criteria": schema.SingleNestedAttribute{
 								Attributes: map[string]schema.Attribute{
 									"conditional_criteria": schema.ListNestedAttribute{
@@ -2362,18 +2484,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"access_token_manager_ref": schema.SingleNestedAttribute{
-									Attributes: map[string]schema.Attribute{
-										"id": schema.StringAttribute{
-											Required:            true,
-											Description:         "The ID of the resource.",
-											MarkdownDescription: "The ID of the resource.",
-										},
-										"location": schema.StringAttribute{
-											Optional:            true,
-											Description:         "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-											MarkdownDescription: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-										},
-									},
+									Attributes:          resourcelink.ToSchema(),
 									Optional:            true,
 									Description:         "A reference to a resource.",
 									MarkdownDescription: "A reference to a resource.",
@@ -2446,12 +2557,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Description:         "A list of mappings from attribute names to their fulfillment values.",
 									MarkdownDescription: "A list of mappings from attribute names to their fulfillment values.",
 								},
-								"attribute_sources": schema.ListAttribute{
-									ElementType:         types.StringType,
-									Optional:            true,
-									Description:         "A list of configured data stores to look up attributes from.",
-									MarkdownDescription: "A list of configured data stores to look up attributes from.",
-								},
+								"attribute_sources": attributesources.ToSchema(0, false),
 								"issuance_criteria": schema.SingleNestedAttribute{
 									Attributes: map[string]schema.Attribute{
 										"conditional_criteria": schema.ListNestedAttribute{
@@ -2601,7 +2707,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										},
 									},
 								},
-								Optional:            true,
+								Optional:            false,
+								Computed:            true,
 								Description:         "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 								MarkdownDescription: "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 							},
@@ -2714,7 +2821,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 														},
 													},
 												},
-												Optional:            true,
+												Optional:            false,
+												Computed:            true,
 												Description:         "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 												MarkdownDescription: "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 											},
@@ -2734,13 +2842,13 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													},
 												},
 												Optional:            true,
-												Description:         "A list of additional attributes that are added to the SCIM response.",
-												MarkdownDescription: "A list of additional attributes that are added to the SCIM response.",
+												Description:         "A list of additional attributes that are added to the SCIM r.",
+												MarkdownDescription: "A list of additional attributes that are added to the SCIM r.",
 											},
 										},
 										Required:            true,
-										Description:         "A set of user attributes that the IdP sends in the SCIM response.",
-										MarkdownDescription: "A set of user attributes that the IdP sends in the SCIM response.",
+										Description:         "A set of user attributes that the IdP sends in the SCIM r.",
+										MarkdownDescription: "A set of user attributes that the IdP sends in the SCIM r.",
 									},
 									"attribute_fulfillment": schema.MapNestedAttribute{
 										NestedObject: schema.NestedAttributeObject{
@@ -2911,21 +3019,57 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"user_repository": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
-							"type": schema.StringAttribute{
-								Required:            true,
-								Description:         "The user repository type.",
-								MarkdownDescription: "The user repository type.",
-								Validators: []validator.String{
-									stringvalidator.OneOf(
-										"LDAP",
-										"IDENTITY_STORE",
-									),
+							"identity_store": schema.SingleNestedAttribute{
+								Optional:            true,
+								Description:         "Identity Store Provisioner data store user repository.",
+								MarkdownDescription: "Identity Store Provisioner data store user repository.",
+								Attributes: map[string]schema.Attribute{
+									"identity_store_provisioner_ref": schema.SingleNestedAttribute{
+										Attributes:          resourcelink.ToSchema(),
+										Required:            true,
+										Description:         "Identity Store Provisioner data store user repository.",
+										MarkdownDescription: "Identity Store Provisioner data store user repository.",
+									},
+								},
+							},
+							"ldap": schema.SingleNestedAttribute{
+								Description:         "LDAP Active Directory data store user repository.",
+								MarkdownDescription: "LDAP Active Directory data store user repository.",
+								Optional:            true,
+								Attributes: map[string]schema.Attribute{
+									"data_store_ref": schema.SingleNestedAttribute{
+										Attributes:          resourcelink.ToSchema(),
+										Required:            true,
+										Description:         "Reference to the associated data store.",
+										MarkdownDescription: "Reference to the associated data store.",
+									},
+									"base_dn": schema.StringAttribute{
+										Optional:            true,
+										Description:         "The base DN to search from. If not specified, the search will start at the LDAP's root.",
+										MarkdownDescription: "The base DN to search from. If not specified, the search will start at the LDAP's root.",
+									},
+									"unique_user_id_filter": schema.StringAttribute{
+										Required:            true,
+										Description:         "The expression that results in a unique user identifier, when combined with the Base DN.",
+										MarkdownDescription: "The expression that results in a unique user identifier, when combined with the Base DN.",
+									},
+									"unique_group_id_filter": schema.StringAttribute{
+										Required:            true,
+										Description:         "The expression that results in a unique group identifier, when combined with the Base DN.",
+										MarkdownDescription: "The expression that results in a unique group identifier, when combined with the Base DN.",
+									},
 								},
 							},
 						},
 						Required:            true,
 						Description:         "SCIM Inbound Provisioning user repository.",
 						MarkdownDescription: "SCIM Inbound Provisioning user repository.",
+						Validators: []validator.Object{
+							objectvalidator.ExactlyOneOf(
+								path.MatchRelative().AtParent().AtName("identity_store"),
+								path.MatchRelative().AtParent().AtName("ldap"),
+							),
+						},
 					},
 					"users": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
@@ -2948,7 +3092,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 														},
 													},
 												},
-												Optional:            true,
+												Optional:            false,
+												Computed:            true,
 												Description:         "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 												MarkdownDescription: "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 											},
@@ -2968,13 +3113,13 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													},
 												},
 												Optional:            true,
-												Description:         "A list of additional attributes that are added to the SCIM response.",
-												MarkdownDescription: "A list of additional attributes that are added to the SCIM response.",
+												Description:         "A list of additional attributes that are added to the SCIM r.",
+												MarkdownDescription: "A list of additional attributes that are added to the SCIM r.",
 											},
 										},
 										Required:            true,
-										Description:         "A set of user attributes that the IdP sends in the SCIM response.",
-										MarkdownDescription: "A set of user attributes that the IdP sends in the SCIM response.",
+										Description:         "A set of user attributes that the IdP sends in the SCIM r.",
+										MarkdownDescription: "A set of user attributes that the IdP sends in the SCIM r.",
 									},
 									"attribute_fulfillment": schema.MapNestedAttribute{
 										NestedObject: schema.NestedAttributeObject{
@@ -3177,7 +3322,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Required:            true,
 						Description:         "A reference to a resource.",
 						MarkdownDescription: "A reference to a resource.",
-						Attributes:          resourcelink.ToSchemaNoLocation(),
+						Attributes:          resourcelink.ToSchema(),
 					},
 					"enable_auto_metadata_update": schema.BoolAttribute{
 						Optional:            true,
@@ -3243,7 +3388,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										},
 									},
 								},
-								Optional:            true,
+								Optional:            false,
+								Computed:            true,
 								Description:         "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 								MarkdownDescription: "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 							},
@@ -3348,12 +3494,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Description:         "A list of mappings from attribute names to their fulfillment values.",
 									MarkdownDescription: "A list of mappings from attribute names to their fulfillment values.",
 								},
-								"attribute_sources": schema.ListAttribute{
-									ElementType:         types.StringType,
-									Optional:            true,
-									Description:         "A list of configured data stores to look up attributes from.",
-									MarkdownDescription: "A list of configured data stores to look up attributes from.",
-								},
+								"attribute_sources": attributesources.ToSchema(0, false),
 								"default_mapping": schema.BoolAttribute{
 									Optional:            true,
 									Description:         "Indicates whether the token generator mapping is the default mapping. The default value is false.",
@@ -3491,18 +3632,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									MarkdownDescription: "The list of virtual server IDs that this mapping is restricted to.",
 								},
 								"sp_token_generator_ref": schema.SingleNestedAttribute{
-									Attributes: map[string]schema.Attribute{
-										"id": schema.StringAttribute{
-											Required:            true,
-											Description:         "The ID of the resource.",
-											MarkdownDescription: "The ID of the resource.",
-										},
-										"location": schema.StringAttribute{
-											Optional:            true,
-											Description:         "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-											MarkdownDescription: "A read-only URL that references the resource. If the resource is not currently URL-accessible, this property will be null.",
-										},
-									},
+									Attributes:          resourcelink.ToSchema(),
 									Required:            true,
 									Description:         "A reference to a resource.",
 									MarkdownDescription: "A reference to a resource.",
@@ -3533,7 +3663,11 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 	addRequest.Active = plan.Active.ValueBoolPointer()
 	addRequest.BaseUrl = plan.BaseUrl.ValueStringPointer()
 	addRequest.DefaultVirtualEntityId = plan.DefaultVirtualEntityId.ValueStringPointer()
-	addRequest.LicenseConnectionGroup = plan.LicenseConnectionGroup.ValueStringPointer()
+
+	if plan.LicenseConnectionGroup.ValueString() != "" {
+		addRequest.LicenseConnectionGroup = plan.LicenseConnectionGroup.ValueStringPointer()
+	}
+
 	addRequest.LoggingMode = plan.LoggingMode.ValueStringPointer()
 
 	var virtualIdentitySlice []string
@@ -3590,7 +3724,26 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 
 	if internaltypes.IsDefined(plan.IdpBrowserSso) {
 		addRequest.IdpBrowserSso = &client.IdpBrowserSso{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.IdpBrowserSso, false)), addRequest.IdpBrowserSso)
+		userRepository := plan.IdpBrowserSso.Attributes()["jit_provisioning"].(types.Object).Attributes()["user_repository"]
+		if userRepository != nil {
+			jdbcDataStoreRepository := plan.IdpBrowserSso.Attributes()["jit_provisioning"].(types.Object).Attributes()["user_repository"].(types.Object).Attributes()["jdbc"]
+			ldapDataStoreRepository := plan.IdpBrowserSso.Attributes()["jit_provisioning"].(types.Object).Attributes()["user_repository"].(types.Object).Attributes()["ldap"]
+			if jdbcDataStoreRepository != nil {
+				addRequest.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository = &client.JdbcDataStoreRepository{}
+				err := json.Unmarshal([]byte(internaljson.FromValue(jdbcDataStoreRepository, false)), addRequest.IdpBrowserSso.JitProvisioning.UserRepository.JdbcDataStoreRepository)
+				if err != nil {
+					return err
+				}
+			} else if ldapDataStoreRepository != nil {
+				addRequest.IdpBrowserSso.JitProvisioning.UserRepository.LdapDataStoreRepository = &client.LdapDataStoreRepository{}
+				err := json.Unmarshal([]byte(internaljson.FromValue(ldapDataStoreRepository, false)), addRequest.IdpBrowserSso.JitProvisioning.UserRepository.LdapDataStoreRepository)
+				if err != nil {
+					return err
+				}
+			}
+		}
+
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.IdpBrowserSso, true)), addRequest.IdpBrowserSso)
 		if err != nil {
 			return err
 		}
@@ -3622,7 +3775,7 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 
 	if internaltypes.IsDefined(plan.InboundProvisioning) {
 		addRequest.InboundProvisioning = &client.IdpInboundProvisioning{}
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.InboundProvisioning, false)), addRequest.InboundProvisioning)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.InboundProvisioning, true)), addRequest.InboundProvisioning)
 		if err != nil {
 			return err
 		}
@@ -3651,6 +3804,255 @@ func (r *spIdpConnectionResource) Configure(_ context.Context, req resource.Conf
 func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, plan, state *spIdpConnectionResourceModel) diag.Diagnostics {
 	var diags, objDiags diag.Diagnostics
 
+	state.Active = types.BoolPointerValue(r.Active)
+	state.AdditionalAllowedEntitiesConfiguration, objDiags = types.ObjectValueFrom(ctx, additionalAllowedEntitiesConfigurationAttrTypes, r.AdditionalAllowedEntitiesConfiguration)
+	diags.Append(objDiags...)
+	state.AttributeQuery, objDiags = types.ObjectValueFrom(ctx, attributeQueryAttrTypes, r.AttributeQuery)
+	diags.Append(objDiags...)
+	state.ConnectionId = types.StringPointerValue(r.Id)
+	state.ContactInfo, objDiags = types.ObjectValueFrom(ctx, contactInfoAttrTypes, r.ContactInfo)
+	diags.Append(objDiags...)
+	state.DefaultVirtualEntityId = types.StringPointerValue(r.DefaultVirtualEntityId)
+	state.EntityId = types.StringValue(r.EntityId)
+	state.ErrorPageMsgId = types.StringPointerValue(r.ErrorPageMsgId)
+	state.ExtendedProperties, objDiags = types.MapValueFrom(ctx, types.ObjectType{AttrTypes: extendedPropertiesElemAttrTypes}, r.ExtendedProperties)
+	diags.Append(objDiags...)
+	state.Id = types.StringPointerValue(r.Id)
+	state.LoggingMode = types.StringPointerValue(r.LoggingMode)
+	state.MetadataReloadSettings, objDiags = types.ObjectValueFrom(ctx, metadataReloadSettingsAttrTypes, r.MetadataReloadSettings)
+	diags.Append(objDiags...)
+	state.Name = types.StringValue(r.Name)
+	state.OidcClientCredentials = types.ObjectNull(oidcClientCredentialsAttrTypes)
+	state.Type = types.StringPointerValue(r.Type)
+	state.VirtualEntityIds = internaltypes.GetStringSet(r.VirtualEntityIds)
+
+	// LicenseConnectionGroup
+	if r.LicenseConnectionGroup == nil {
+		state.LicenseConnectionGroup = types.StringValue("")
+	} else {
+		state.LicenseConnectionGroup = types.StringPointerValue(r.LicenseConnectionGroup)
+	}
+
+	// Credentials
+	var credentialsValue types.Object
+	if r.Credentials == nil {
+		credentialsValue = types.ObjectNull(credentialsAttrTypes)
+	} else {
+		var credentialsCertsValues []attr.Value
+		for _, credentialsCertsResponseValue := range r.Credentials.Certs {
+			var credentialsCertsCertViewValue types.Object
+			if credentialsCertsResponseValue.CertView == nil {
+				credentialsCertsCertViewValue = types.ObjectNull(credentialsCertsCertViewAttrTypes)
+			} else {
+				credentialsCertsCertViewSubjectAlternativeNamesValue, objDiags := types.SetValueFrom(ctx, types.StringType, credentialsCertsResponseValue.CertView.SubjectAlternativeNames)
+				diags.Append(objDiags...)
+
+				crentialsCertsCertViewAttrValues := map[string]attr.Value{
+					"crypto_provider":           types.StringPointerValue(credentialsCertsResponseValue.CertView.CryptoProvider),
+					"expires":                   types.StringValue(credentialsCertsResponseValue.CertView.Expires.Format(time.RFC3339)),
+					"id":                        types.StringPointerValue(credentialsCertsResponseValue.CertView.Id),
+					"issuer_dn":                 types.StringPointerValue(credentialsCertsResponseValue.CertView.IssuerDN),
+					"key_algorithm":             types.StringPointerValue(credentialsCertsResponseValue.CertView.KeyAlgorithm),
+					"key_size":                  types.Int64PointerValue(credentialsCertsResponseValue.CertView.KeySize),
+					"serial_number":             types.StringPointerValue(credentialsCertsResponseValue.CertView.SerialNumber),
+					"sha1_fingerprint":          types.StringPointerValue(credentialsCertsResponseValue.CertView.Sha1Fingerprint),
+					"sha256_fingerprint":        types.StringPointerValue(credentialsCertsResponseValue.CertView.Sha256Fingerprint),
+					"signature_algorithm":       types.StringPointerValue(credentialsCertsResponseValue.CertView.SignatureAlgorithm),
+					"status":                    types.StringPointerValue(credentialsCertsResponseValue.CertView.Status),
+					"subject_alternative_names": credentialsCertsCertViewSubjectAlternativeNamesValue,
+					"subject_dn":                types.StringPointerValue(credentialsCertsResponseValue.CertView.SubjectDN),
+					"valid_from":                types.StringValue(credentialsCertsResponseValue.CertView.ValidFrom.Format(time.RFC3339)),
+					"version":                   types.Int64PointerValue(credentialsCertsResponseValue.CertView.Version),
+				}
+
+				credentialsCertsCertViewValue, objDiags = types.ObjectValue(credentialsCertsCertViewAttrTypes, crentialsCertsCertViewAttrValues)
+				diags.Append(objDiags...)
+			}
+
+			fileData := strings.Replace(credentialsCertsResponseValue.X509File.FileData, "\n", "\\n", -1)
+
+			credentialsCertsX509fileValue, objDiags := types.ObjectValue(credentialsCertsX509fileAttrTypes, map[string]attr.Value{
+				"crypto_provider": types.StringPointerValue(credentialsCertsResponseValue.X509File.CryptoProvider),
+				"file_data":       types.StringValue(fileData),
+				"id":              types.StringPointerValue(credentialsCertsResponseValue.X509File.Id),
+			})
+			diags.Append(objDiags...)
+			credentialsCertsValue, objDiags := types.ObjectValue(credentialsCertsAttrTypes, map[string]attr.Value{
+				"active_verification_cert":    types.BoolPointerValue(credentialsCertsResponseValue.ActiveVerificationCert),
+				"cert_view":                   credentialsCertsCertViewValue,
+				"encryption_cert":             types.BoolPointerValue(credentialsCertsResponseValue.EncryptionCert),
+				"primary_verification_cert":   types.BoolPointerValue(credentialsCertsResponseValue.PrimaryVerificationCert),
+				"secondary_verification_cert": types.BoolPointerValue(credentialsCertsResponseValue.SecondaryVerificationCert),
+				"x509_file":                   credentialsCertsX509fileValue,
+			})
+			diags.Append(objDiags...)
+			credentialsCertsValues = append(credentialsCertsValues, credentialsCertsValue)
+		}
+		credentialsCertsValue, objDiags := types.ListValue(credentialsCertsElementType, credentialsCertsValues)
+		diags.Append(objDiags...)
+		var credentialsDecryptionKeyPairRefValue types.Object
+		if r.Credentials.DecryptionKeyPairRef == nil {
+			credentialsDecryptionKeyPairRefValue = types.ObjectNull(resourcelink.AttrType())
+		} else {
+			credentialsDecryptionKeyPairRefValue, objDiags = resourcelink.ToState(ctx, r.Credentials.DecryptionKeyPairRef)
+			diags.Append(objDiags...)
+		}
+		var credentialsInboundBackChannelAuthValue types.Object
+		if r.Credentials.InboundBackChannelAuth == nil {
+			credentialsInboundBackChannelAuthValue = types.ObjectNull(credentialsInboundBackChannelAuthAttrTypes)
+		} else {
+			var credentialsInboundBackChannelAuthCertsValues []attr.Value
+			for _, credentialsInboundBackChannelAuthCertsResponseValue := range r.Credentials.InboundBackChannelAuth.Certs {
+				var credentialsInboundBackChannelAuthCertsCertViewValue types.Object
+				if credentialsInboundBackChannelAuthCertsResponseValue.CertView == nil {
+					credentialsInboundBackChannelAuthCertsCertViewValue = types.ObjectNull(credentialsInboundBackChannelAuthCertsCertViewAttrTypes)
+				} else {
+					credentialsInboundBackChannelAuthCertsCertViewSubjectAlternativeNamesValue, objDiags := types.SetValueFrom(ctx, types.StringType, credentialsInboundBackChannelAuthCertsResponseValue.CertView.SubjectAlternativeNames)
+					diags.Append(objDiags...)
+					credentialsInboundBackChannelAuthCertsCertViewValue, objDiags = types.ObjectValue(credentialsInboundBackChannelAuthCertsCertViewAttrTypes, map[string]attr.Value{
+						"crypto_provider":           types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.CryptoProvider),
+						"expires":                   types.StringValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Expires.Format(time.RFC3339)),
+						"id":                        types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Id),
+						"issuer_dn":                 types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.IssuerDN),
+						"key_algorithm":             types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.KeyAlgorithm),
+						"key_size":                  types.Int64PointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.KeySize),
+						"serial_number":             types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.SerialNumber),
+						"sha1_fingerprint":          types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Sha1Fingerprint),
+						"sha256_fingerprint":        types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Sha256Fingerprint),
+						"signature_algorithm":       types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.SignatureAlgorithm),
+						"status":                    types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Status),
+						"subject_alternative_names": credentialsInboundBackChannelAuthCertsCertViewSubjectAlternativeNamesValue,
+						"subject_dn":                types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.SubjectDN),
+						"valid_from":                types.StringValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.ValidFrom.Format(time.RFC3339)),
+						"version":                   types.Int64PointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Version),
+					})
+					diags.Append(objDiags...)
+				}
+				credentialsInboundBackChannelAuthCertsX509fileValue, objDiags := types.ObjectValue(credentialsInboundBackChannelAuthCertsX509fileAttrTypes, map[string]attr.Value{
+					"crypto_provider": types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.X509File.CryptoProvider),
+					"file_data":       types.StringValue(credentialsInboundBackChannelAuthCertsResponseValue.X509File.FileData),
+					"id":              types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.X509File.Id),
+				})
+				diags.Append(objDiags...)
+				credentialsInboundBackChannelAuthCertsValue, objDiags := types.ObjectValue(credentialsInboundBackChannelAuthCertsAttrTypes, map[string]attr.Value{
+					"active_verification_cert":    types.BoolPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.ActiveVerificationCert),
+					"cert_view":                   credentialsInboundBackChannelAuthCertsCertViewValue,
+					"encryption_cert":             types.BoolPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.EncryptionCert),
+					"primary_verification_cert":   types.BoolPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.PrimaryVerificationCert),
+					"secondary_verification_cert": types.BoolPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.SecondaryVerificationCert),
+					"x509_file":                   credentialsInboundBackChannelAuthCertsX509fileValue,
+				})
+				diags.Append(objDiags...)
+				credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, credentialsInboundBackChannelAuthCertsValue)
+			}
+			credentialsInboundBackChannelAuthCertsValue, objDiags := types.ListValue(credentialsInboundBackChannelAuthCertsElementType, credentialsInboundBackChannelAuthCertsValues)
+			diags.Append(objDiags...)
+			var credentialsInboundBackChannelAuthHttpBasicCredentialsValue types.Object
+			if r.Credentials.InboundBackChannelAuth.HttpBasicCredentials == nil {
+				credentialsInboundBackChannelAuthHttpBasicCredentialsValue = types.ObjectNull(credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes)
+			} else {
+				credentialsInboundBackChannelAuthHttpBasicCredentialsValue, objDiags = types.ObjectValue(credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes, map[string]attr.Value{
+					"password": types.StringPointerValue(r.Credentials.InboundBackChannelAuth.HttpBasicCredentials.Password),
+					"username": types.StringPointerValue(r.Credentials.InboundBackChannelAuth.HttpBasicCredentials.Username),
+				})
+				diags.Append(objDiags...)
+			}
+			credentialsInboundBackChannelAuthValue, objDiags = types.ObjectValue(credentialsInboundBackChannelAuthAttrTypes, map[string]attr.Value{
+				"certs":                   credentialsInboundBackChannelAuthCertsValue,
+				"digital_signature":       types.BoolPointerValue(r.Credentials.InboundBackChannelAuth.DigitalSignature),
+				"http_basic_credentials":  credentialsInboundBackChannelAuthHttpBasicCredentialsValue,
+				"require_ssl":             types.BoolPointerValue(r.Credentials.InboundBackChannelAuth.RequireSsl),
+				"type":                    types.StringValue(r.Credentials.InboundBackChannelAuth.Type),
+				"verification_issuer_dn":  types.StringPointerValue(r.Credentials.InboundBackChannelAuth.VerificationIssuerDN),
+				"verification_subject_dn": types.StringPointerValue(r.Credentials.InboundBackChannelAuth.VerificationSubjectDN),
+			})
+			diags.Append(objDiags...)
+		}
+		var credentialsOutboundBackChannelAuthValue types.Object
+		if r.Credentials.OutboundBackChannelAuth == nil {
+			credentialsOutboundBackChannelAuthValue = types.ObjectNull(credentialsOutboundBackChannelAuthAttrTypes)
+		} else {
+			var credentialsOutboundBackChannelAuthHttpBasicCredentialsValue types.Object
+			if r.Credentials.OutboundBackChannelAuth.HttpBasicCredentials == nil {
+				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue = types.ObjectNull(credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes)
+			} else {
+				var password string
+				if plan.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"] != nil {
+					password = plan.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
+				} else {
+					password = *r.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.Password
+				}
+
+				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue, objDiags = types.ObjectValue(credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes, map[string]attr.Value{
+					"password": types.StringPointerValue(&password),
+					"username": types.StringPointerValue(r.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.Username),
+				})
+				diags.Append(objDiags...)
+			}
+			var credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue types.Object
+			if r.Credentials.OutboundBackChannelAuth.SslAuthKeyPairRef == nil {
+				credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue = types.ObjectNull(resourcelink.AttrType())
+			} else {
+				credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue, objDiags = resourcelink.ToState(ctx, r.Credentials.OutboundBackChannelAuth.SslAuthKeyPairRef)
+				diags.Append(objDiags...)
+			}
+			credentialsOutboundBackChannelAuthValue, objDiags = types.ObjectValue(credentialsOutboundBackChannelAuthAttrTypes, map[string]attr.Value{
+				"digital_signature":      types.BoolPointerValue(r.Credentials.OutboundBackChannelAuth.DigitalSignature),
+				"http_basic_credentials": credentialsOutboundBackChannelAuthHttpBasicCredentialsValue,
+				"ssl_auth_key_pair_ref":  credentialsOutboundBackChannelAuthSslAuthKeyPairRefValue,
+				"type":                   types.StringValue(r.Credentials.OutboundBackChannelAuth.Type),
+				"validate_partner_cert":  types.BoolPointerValue(r.Credentials.OutboundBackChannelAuth.ValidatePartnerCert),
+			})
+			diags.Append(objDiags...)
+		}
+		var credentialsSecondaryDecryptionKeyPairRefValue types.Object
+		if r.Credentials.SecondaryDecryptionKeyPairRef == nil {
+			credentialsSecondaryDecryptionKeyPairRefValue = types.ObjectNull(resourcelink.AttrType())
+		} else {
+			credentialsSecondaryDecryptionKeyPairRefValue, objDiags = resourcelink.ToState(ctx, r.Credentials.SecondaryDecryptionKeyPairRef)
+			diags.Append(objDiags...)
+		}
+		var credentialsSigningSettingsValue types.Object
+		if r.Credentials.SigningSettings == nil {
+			credentialsSigningSettingsValue = types.ObjectNull(credentialsSigningSettingsAttrTypes)
+		} else {
+			var credentialsSigningSettingsAlternativeSigningKeyPairRefsValues []attr.Value
+			for _, credentialsSigningSettingsAlternativeSigningKeyPairRefsResponseValue := range r.Credentials.SigningSettings.AlternativeSigningKeyPairRefs {
+				credentialsSigningSettingsAlternativeSigningKeyPairRefsValue, objDiags := resourcelink.ToState(ctx, &credentialsSigningSettingsAlternativeSigningKeyPairRefsResponseValue)
+				diags.Append(objDiags...)
+				credentialsSigningSettingsAlternativeSigningKeyPairRefsValues = append(credentialsSigningSettingsAlternativeSigningKeyPairRefsValues, credentialsSigningSettingsAlternativeSigningKeyPairRefsValue)
+			}
+			credentialsSigningSettingsAlternativeSigningKeyPairRefsValue, objDiags := types.ListValue(credentialsSigningSettingsAlternativeSigningKeyPairRefsElementType, credentialsSigningSettingsAlternativeSigningKeyPairRefsValues)
+			diags.Append(objDiags...)
+			credentialsSigningSettingsSigningKeyPairRefValue, objDiags := resourcelink.ToState(ctx, &r.Credentials.SigningSettings.SigningKeyPairRef)
+			diags.Append(objDiags...)
+			credentialsSigningSettingsValue, objDiags = types.ObjectValue(credentialsSigningSettingsAttrTypes, map[string]attr.Value{
+				"algorithm":                         types.StringPointerValue(r.Credentials.SigningSettings.Algorithm),
+				"alternative_signing_key_pair_refs": credentialsSigningSettingsAlternativeSigningKeyPairRefsValue,
+				"include_cert_in_signature":         types.BoolPointerValue(r.Credentials.SigningSettings.IncludeCertInSignature),
+				"include_raw_key_in_signature":      types.BoolPointerValue(r.Credentials.SigningSettings.IncludeRawKeyInSignature),
+				"signing_key_pair_ref":              credentialsSigningSettingsSigningKeyPairRefValue,
+			})
+			diags.Append(objDiags...)
+		}
+		credentialsValue, objDiags = types.ObjectValue(credentialsAttrTypes, map[string]attr.Value{
+			"block_encryption_algorithm":        types.StringPointerValue(r.Credentials.BlockEncryptionAlgorithm),
+			"certs":                             credentialsCertsValue,
+			"decryption_key_pair_ref":           credentialsDecryptionKeyPairRefValue,
+			"inbound_back_channel_auth":         credentialsInboundBackChannelAuthValue,
+			"key_transport_algorithm":           types.StringPointerValue(r.Credentials.KeyTransportAlgorithm),
+			"outbound_back_channel_auth":        credentialsOutboundBackChannelAuthValue,
+			"secondary_decryption_key_pair_ref": credentialsSecondaryDecryptionKeyPairRefValue,
+			"signing_settings":                  credentialsSigningSettingsValue,
+			"verification_issuer_dn":            types.StringPointerValue(r.Credentials.VerificationIssuerDN),
+			"verification_subject_dn":           types.StringPointerValue(r.Credentials.VerificationSubjectDN),
+		})
+		diags.Append(objDiags...)
+	}
+
+	state.Credentials = credentialsValue
+
+	// OidcClientCredentials
 	if r.OidcClientCredentials != nil {
 		var oidcClientCredentialsAttrValues map[string]attr.Value
 		var clientSecret string = ""
@@ -3668,44 +4070,412 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		state.OidcClientCredentials = types.ObjectNull(oidcClientCredentialsAttrTypes)
 	}
 
-	state.AdditionalAllowedEntitiesConfiguration, objDiags = types.ObjectValueFrom(ctx, additionalAllowedEntitiesConfigurationAttrTypes, r.AdditionalAllowedEntitiesConfiguration)
-	diags.Append(objDiags...)
-	state.AttributeQuery, objDiags = types.ObjectValueFrom(ctx, attributeQueryAttrTypes, r.AttributeQuery)
-	diags.Append(objDiags...)
-	state.ContactInfo, objDiags = types.ObjectValueFrom(ctx, contactInfoAttrTypes, r.ContactInfo)
-	diags.Append(objDiags...)
-	state.Credentials, objDiags = types.ObjectValueFrom(ctx, credentialsAttrTypes, r.Credentials)
-	diags.Append(objDiags...)
-	state.DefaultVirtualEntityId = types.StringPointerValue(r.DefaultVirtualEntityId)
-	state.EntityId = types.StringValue(r.EntityId)
-	state.ErrorPageMsgId = types.StringPointerValue(r.ErrorPageMsgId)
-	state.ExtendedProperties, objDiags = types.MapValueFrom(ctx, types.ObjectType{AttrTypes: extendedPropertiesElemAttrTypes}, r.ExtendedProperties)
-	diags.Append(objDiags...)
-	state.Id = types.StringPointerValue(r.Id)
-	state.IdpBrowserSso, objDiags = types.ObjectValueFrom(ctx, idpBrowserSsoAttrTypes, r.IdpBrowserSso)
-	diags.Append(objDiags...)
+	// IdpBrowserSso
+	var idpBrowserSsoValue types.Object
+	if r.IdpBrowserSso == nil {
+		idpBrowserSsoValue = types.ObjectNull(idpBrowserSsoAttrTypes)
+	} else {
+		var idpBrowserSsoAdapterMappingsValues []attr.Value
+		for _, idpBrowserSsoAdapterMappingsResponseValue := range r.IdpBrowserSso.AdapterMappings {
+			var idpBrowserSsoAdapterMappingsResponseValueAdapterOverrideSettingsId, idpBrowserSsoAdapterMappingsResponseValueAdapterOverrideSettingsName basetypes.StringValue
+
+			var idpBrowserSsoAdapterMappingsAdapterOverrideSettings basetypes.ObjectValue
+
+			if idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings != nil {
+				idpBrowserSsoAdapterMappingsResponseValueAdapterOverrideSettingsId = types.StringValue(idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.Id)
+				idpBrowserSsoAdapterMappingsResponseValueAdapterOverrideSettingsName = types.StringValue(idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.Name)
+
+				idpBrowserSsoAdapterMappingsResponseValueAdapterOverrideSettingsPluginDescriptorRef, objDiags := resourcelink.ToState(ctx, &idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.PluginDescriptorRef)
+				diags.Append(objDiags...)
+
+				idpBrowserSsoAdapterMappingsResponseValueAdapterOverrideSettingsParentRef, objDiags := resourcelink.ToState(ctx, idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.ParentRef)
+				diags.Append(objDiags...)
+
+				idpBrowserSsoAdapterMappingsResponseValueAdapterOverrideSettingsConfigurationPlan := plan.IdpBrowserSso.Attributes()["adapter_mappings"].(types.Object).Attributes()["adapter_override_settings"].(types.Object).Attributes()["configuration"].(types.Object)
+				idpBrowserSsoAdapterMappingsResponseValueAdapterOverrideSettingsConfiguration, objDiags := pluginconfiguration.ToState(idpBrowserSsoAdapterMappingsResponseValueAdapterOverrideSettingsConfigurationPlan, &idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.Configuration)
+				diags.Append(objDiags...)
+
+				idpBrowserSsoAdapterMappingsResponseValueAdapterOverrideSettingsAttributeContract, objDiags := types.ObjectValueFrom(ctx, idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeContractAttrTypes, idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.AttributeContract)
+				diags.Append(objDiags...)
+
+				idpBrowserSsoAdapterMappingsAdapterOverrideSettingsTargetApplicationInfoValue, objDiags := types.ObjectValueFrom(ctx, idpBrowserSsoAdapterMappingsAdapterOverrideSettingsTargetApplicationInfoAttrTypes, idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.TargetApplicationInfo)
+				diags.Append(objDiags...)
+				idpBrowserSsoAdapterMappingsResponseValueAdapterOverrideSettings := map[string]attr.Value{
+					"attribute_contract":      idpBrowserSsoAdapterMappingsResponseValueAdapterOverrideSettingsAttributeContract,
+					"configuration":           idpBrowserSsoAdapterMappingsResponseValueAdapterOverrideSettingsConfiguration,
+					"id":                      idpBrowserSsoAdapterMappingsResponseValueAdapterOverrideSettingsId,
+					"name":                    idpBrowserSsoAdapterMappingsResponseValueAdapterOverrideSettingsName,
+					"parent_ref":              idpBrowserSsoAdapterMappingsResponseValueAdapterOverrideSettingsParentRef,
+					"plugin_descriptor_ref":   idpBrowserSsoAdapterMappingsResponseValueAdapterOverrideSettingsPluginDescriptorRef,
+					"target_application_info": idpBrowserSsoAdapterMappingsAdapterOverrideSettingsTargetApplicationInfoValue,
+				}
+				idpBrowserSsoAdapterMappingsAdapterOverrideSettings, objDiags = types.ObjectValue(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttrTypes, idpBrowserSsoAdapterMappingsResponseValueAdapterOverrideSettings)
+				diags.Append(objDiags...)
+			} else {
+				idpBrowserSsoAdapterMappingsAdapterOverrideSettings = types.ObjectNull(idpBrowserSsoAdapterMappingsAdapterOverrideSettingsAttrTypes)
+			}
+
+			idpBrowserSsoAdapterMappingsSpAdapterRef, objDiags := resourcelink.ToState(ctx, &idpBrowserSsoAdapterMappingsResponseValue.SpAdapterRef)
+			diags.Append(objDiags...)
+
+			idpBrowserSsoAdapterMappingsRestrictedVirtualEntityIds, objDiags := types.ListValueFrom(ctx, types.StringType, idpBrowserSsoAdapterMappingsResponseValue.RestrictedVirtualEntityIds)
+			diags.Append(objDiags...)
+
+			idpBrowserSsoAdapterMappingsAttributeSources, objDiags := attributesources.ToState(ctx, idpBrowserSsoAdapterMappingsResponseValue.AttributeSources)
+			diags.Append(objDiags...)
+
+			idpBrowserSsoAdapterMappingsAttributeContractFulfillment, objDiags := attributecontractfulfillment.ToState(ctx, idpBrowserSsoAdapterMappingsResponseValue.AttributeContractFulfillment)
+			diags.Append(objDiags...)
+
+			idpBrowserSsoAdapterMappingsIssuanceCriteria, objDiags := issuancecriteria.ToState(ctx, idpBrowserSsoAdapterMappingsResponseValue.IssuanceCriteria)
+			diags.Append(objDiags...)
+
+			idpBrowserSsoAdapterMappingsValue, objDiags := types.ObjectValue(idpBrowserSsoAdapterMappingsAttrTypes, map[string]attr.Value{
+				"adapter_override_settings":      idpBrowserSsoAdapterMappingsAdapterOverrideSettings,
+				"attribute_contract_fulfillment": idpBrowserSsoAdapterMappingsAttributeContractFulfillment,
+				"attribute_sources":              idpBrowserSsoAdapterMappingsAttributeSources,
+				"issuance_criteria":              idpBrowserSsoAdapterMappingsIssuanceCriteria,
+				"restrict_virtual_entity_ids":    types.BoolPointerValue(idpBrowserSsoAdapterMappingsResponseValue.RestrictVirtualEntityIds),
+				"restricted_virtual_entity_ids":  idpBrowserSsoAdapterMappingsRestrictedVirtualEntityIds,
+				"sp_adapter_ref":                 idpBrowserSsoAdapterMappingsSpAdapterRef,
+			})
+			diags.Append(objDiags...)
+			idpBrowserSsoAdapterMappingsValues = append(idpBrowserSsoAdapterMappingsValues, idpBrowserSsoAdapterMappingsValue)
+		}
+		idpBrowserSsoAdapterMappingsValue, objDiags := types.ListValue(idpBrowserSsoAdapterMappingsElementType, idpBrowserSsoAdapterMappingsValues)
+		diags.Append(objDiags...)
+
+		// IdpBrowserSSO Always Sign Artifact Response
+		var idpBrowserSsoAlwaysSignArtifactResponse types.Bool
+		if r.IdpBrowserSso.AlwaysSignArtifactResponse == nil {
+			idpBrowserSsoAlwaysSignArtifactResponse = types.BoolValue(false)
+		} else {
+			idpBrowserSsoAlwaysSignArtifactResponse = types.BoolPointerValue(r.IdpBrowserSso.AlwaysSignArtifactResponse)
+		}
+
+		// IdpBrowserSSO Artifact
+		idpBrowserSsoArtifactValue, objDiags := types.ObjectValueFrom(ctx, idpBrowserSsoArtifactAttrTypes, r.IdpBrowserSso.Artifact)
+		diags.Append(objDiags...)
+
+		// IdpBrowserSSO Attribute Contract
+		idpBrowserSsoAttributeContractValue, objDiags := types.ObjectValueFrom(ctx, idpBrowserSsoAttributeContractAttrTypes, r.IdpBrowserSso.AttributeContract)
+		diags.Append(objDiags...)
+
+		// IdpBrowserSSO Authentication Policy Contract Mappings
+		idpBrowserSsoAuthenticationPolicyContractMappingsValue, objDiags := types.ListValueFrom(ctx, idpBrowserSsoAuthenticationPolicyContractMappingsElementType, r.IdpBrowserSso.AuthenticationPolicyContractMappings)
+		diags.Append(objDiags...)
+
+		// IdpBrowserSSO AuthnContextMappings
+		idpBrowserSsoAuthnContextMappingsValue, objDiags := types.ListValueFrom(ctx, idpBrowserSsoAuthnContextMappingsElementType, r.IdpBrowserSso.AuthnContextMappings)
+		diags.Append(objDiags...)
+
+		// IdpBrowserSSO Decryption Policy
+		idpBrowserSsoDecryptionPolicyValue, objDiags := types.ObjectValueFrom(ctx, idpBrowserSsoDecryptionPolicyAttrTypes, r.IdpBrowserSso.DecryptionPolicy)
+		diags.Append(objDiags...)
+
+		// IdpBrowserSSO Enabled Profiles
+		idpBrowserSsoEnabledProfilesValue, objDiags := types.ListValueFrom(ctx, types.StringType, r.IdpBrowserSso.EnabledProfiles)
+		diags.Append(objDiags...)
+
+		// IdpBrowserSSO Incoming Bindings
+		idpBrowserSsoIncomingBindingsValue, objDiags := types.ListValueFrom(ctx, types.StringType, r.IdpBrowserSso.IncomingBindings)
+		diags.Append(objDiags...)
+
+		// IdpBrowserSSO JIT Provisioning
+		var idpBrowserSsoJitProvisioningValue types.Object
+		if r.IdpBrowserSso.JitProvisioning == nil {
+			idpBrowserSsoJitProvisioningValue = types.ObjectNull(idpBrowserSsoJitProvisioningAttrTypes)
+		} else {
+			idpBrowserSsoJitProvisioningValue, objDiags = types.ObjectValueFrom(ctx, idpBrowserSsoJitProvisioningAttrTypes, r.IdpBrowserSso.JitProvisioning)
+			diags.Append(objDiags...)
+		}
+
+		// IdpBrowserSSO Message Customizations
+		idpBrowserSsoMessageCustomizationsValue, objDiags := types.ListValueFrom(ctx, idpBrowserSsoMessageCustomizationsElementType, r.IdpBrowserSso.MessageCustomizations)
+		diags.Append(objDiags...)
+
+		// IdpBrowserSSO OAuth Authentication Policy Contract Ref
+		idpBrowserSsoOauthAuthenticationPolicyContractRefValue, objDiags := resourcelink.ToState(ctx, r.IdpBrowserSso.OauthAuthenticationPolicyContractRef)
+		diags.Append(objDiags...)
+
+		// IdpBrowserSSO OIDC Provider Settings
+		idpBrowserSsoOidcProviderSettingsValue, objDiags := types.ObjectValueFrom(ctx, idpBrowserSsoOidcProviderSettingsAttrTypes, r.IdpBrowserSso.OidcProviderSettings)
+		diags.Append(objDiags...)
+
+		// IdpBrowserSSO SLO Service Endpoints
+		idpBrowserSsoSloServiceEndpointsValue, objDiags := types.ListValueFrom(ctx, idpBrowserSsoSloServiceEndpointsElementType, r.IdpBrowserSso.SloServiceEndpoints)
+		diags.Append(objDiags...)
+
+		// IdpBrowserSSO SSO Service Endpoints
+		idpBrowserSsoSsoServiceEndpointsValue, objDiags := types.ListValueFrom(ctx, idpBrowserSsoSsoServiceEndpointsElementType, r.IdpBrowserSso.SsoServiceEndpoints)
+		diags.Append(objDiags...)
+
+		// IdpBrowserSSO URL Whitelist Entries
+		idpBrowserSsoUrlWhitelistEntriesValue, objDiags := types.ListValueFrom(ctx, idpBrowserSsoUrlWhitelistEntriesElementType, r.IdpBrowserSso.UrlWhitelistEntries)
+		diags.Append(objDiags...)
+
+		// IdpBrowserSSO SSO OAuth Mapping
+		idpBrowserSsoSsoOauthMappingValue, objDiags := types.ObjectValueFrom(ctx, idpBrowserSsoSsoOauthMappingAttrTypes, r.IdpBrowserSso.SsoOAuthMapping)
+		diags.Append(objDiags...)
+
+		idpBrowserSsoValue, diags = types.ObjectValue(idpBrowserSsoAttrTypes, map[string]attr.Value{
+			"adapter_mappings":                         idpBrowserSsoAdapterMappingsValue,
+			"always_sign_artifact_response":            idpBrowserSsoAlwaysSignArtifactResponse,
+			"artifact":                                 idpBrowserSsoArtifactValue,
+			"assertions_signed":                        types.BoolPointerValue(r.IdpBrowserSso.AssertionsSigned),
+			"attribute_contract":                       idpBrowserSsoAttributeContractValue,
+			"authentication_policy_contract_mappings":  idpBrowserSsoAuthenticationPolicyContractMappingsValue,
+			"authn_context_mappings":                   idpBrowserSsoAuthnContextMappingsValue,
+			"decryption_policy":                        idpBrowserSsoDecryptionPolicyValue,
+			"default_target_url":                       types.StringPointerValue(r.IdpBrowserSso.DefaultTargetUrl),
+			"enabled_profiles":                         idpBrowserSsoEnabledProfilesValue,
+			"idp_identity_mapping":                     types.StringValue(r.IdpBrowserSso.IdpIdentityMapping),
+			"incoming_bindings":                        idpBrowserSsoIncomingBindingsValue,
+			"jit_provisioning":                         idpBrowserSsoJitProvisioningValue,
+			"message_customizations":                   idpBrowserSsoMessageCustomizationsValue,
+			"oauth_authentication_policy_contract_ref": idpBrowserSsoOauthAuthenticationPolicyContractRefValue,
+			"oidc_provider_settings":                   idpBrowserSsoOidcProviderSettingsValue,
+			"protocol":                                 types.StringValue(r.IdpBrowserSso.Protocol),
+			"sign_authn_requests":                      types.BoolPointerValue(r.IdpBrowserSso.SignAuthnRequests),
+			"slo_service_endpoints":                    idpBrowserSsoSloServiceEndpointsValue,
+			"sso_application_endpoint":                 types.StringPointerValue(r.IdpBrowserSso.SsoApplicationEndpoint),
+			"sso_oauth_mapping":                        idpBrowserSsoSsoOauthMappingValue,
+			"sso_service_endpoints":                    idpBrowserSsoSsoServiceEndpointsValue,
+			"url_whitelist_entries":                    idpBrowserSsoUrlWhitelistEntriesValue,
+		})
+		diags.Append(objDiags...)
+	}
+	state.IdpBrowserSso = idpBrowserSsoValue
+
+	// IdpOAuthGrantAttributeMapping
 	state.IdpOAuthGrantAttributeMapping, objDiags = types.ObjectValueFrom(ctx, idpOAuthGrantAttributeMappingAttrTypes, r.IdpOAuthGrantAttributeMapping)
 	diags.Append(objDiags...)
-	state.InboundProvisioning, objDiags = types.ObjectValueFrom(ctx, inboundProvisioningAttrTypes, r.InboundProvisioning)
-	diags.Append(objDiags...)
-	state.LicenseConnectionGroup = types.StringPointerValue(r.LicenseConnectionGroup)
-	state.LoggingMode = types.StringPointerValue(r.LoggingMode)
-	state.MetadataReloadSettings, objDiags = types.ObjectValueFrom(ctx, metadataReloadSettingsAttrTypes, r.MetadataReloadSettings)
-	diags.Append(objDiags...)
-	state.Name = types.StringValue(r.Name)
-	state.OidcClientCredentials = types.ObjectNull(oidcClientCredentialsAttrTypes)
-	state.Type = types.StringPointerValue(r.Type)
-	state.VirtualEntityIds = internaltypes.GetStringSet(r.VirtualEntityIds)
+	var inboundProvisioningValue types.Object
 
+	// InboundProvisioning
+	if r.InboundProvisioning == nil {
+		inboundProvisioningValue = types.ObjectNull(inboundProvisioningAttrTypes)
+	} else {
+		var inboundProvisioningCustomSchemaAttributesValues []attr.Value
+		for _, inboundProvisioningCustomSchemaAttributesResponseValue := range r.InboundProvisioning.CustomSchema.Attributes {
+			inboundProvisioningCustomSchemaAttributesSubAttributesValue, objDiags := types.ListValueFrom(ctx, types.StringType, inboundProvisioningCustomSchemaAttributesResponseValue.SubAttributes)
+			diags.Append(objDiags...)
+			inboundProvisioningCustomSchemaAttributesTypesValue, objDiags := types.ListValueFrom(ctx, types.StringType, inboundProvisioningCustomSchemaAttributesResponseValue.Types)
+			diags.Append(objDiags...)
+			inboundProvisioningCustomSchemaAttributesValue, objDiags := types.ObjectValue(inboundProvisioningCustomSchemaAttributesAttrTypes, map[string]attr.Value{
+				"multi_valued":   types.BoolPointerValue(inboundProvisioningCustomSchemaAttributesResponseValue.MultiValued),
+				"name":           types.StringPointerValue(inboundProvisioningCustomSchemaAttributesResponseValue.Name),
+				"sub_attributes": inboundProvisioningCustomSchemaAttributesSubAttributesValue,
+				"types":          inboundProvisioningCustomSchemaAttributesTypesValue,
+			})
+			diags.Append(objDiags...)
+			inboundProvisioningCustomSchemaAttributesValues = append(inboundProvisioningCustomSchemaAttributesValues, inboundProvisioningCustomSchemaAttributesValue)
+		}
+		inboundProvisioningCustomSchemaAttributesValue, objDiags := types.ListValue(inboundProvisioningCustomSchemaAttributesElementType, inboundProvisioningCustomSchemaAttributesValues)
+		diags.Append(objDiags...)
+		inboundProvisioningCustomSchemaValue, objDiags := types.ObjectValue(inboundProvisioningCustomSchemaAttrTypes, map[string]attr.Value{
+			"attributes": inboundProvisioningCustomSchemaAttributesValue,
+			"namespace":  types.StringPointerValue(r.InboundProvisioning.CustomSchema.Namespace),
+		})
+		diags.Append(objDiags...)
+		var inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValues []attr.Value
+		for _, inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesResponseValue := range r.InboundProvisioning.Groups.ReadGroups.AttributeContract.CoreAttributes {
+			inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValue, objDiags := types.ObjectValue(inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesAttrTypes, map[string]attr.Value{
+				"masked": types.BoolPointerValue(inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesResponseValue.Masked),
+				"name":   types.StringValue(inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesResponseValue.Name),
+			})
+			diags.Append(objDiags...)
+			inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValues = append(inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValues, inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValue)
+		}
+		inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValue, objDiags := types.ListValue(inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesElementType, inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValues)
+		diags.Append(objDiags...)
+		var inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValues []attr.Value
+		for _, inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesResponseValue := range r.InboundProvisioning.Groups.ReadGroups.AttributeContract.ExtendedAttributes {
+			inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValue, objDiags := types.ObjectValue(inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesAttrTypes, map[string]attr.Value{
+				"masked": types.BoolPointerValue(inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesResponseValue.Masked),
+				"name":   types.StringValue(inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesResponseValue.Name),
+			})
+			diags.Append(objDiags...)
+			inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValues = append(inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValues, inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValue)
+		}
+		inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValue, objDiags := types.ListValue(inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesElementType, inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValues)
+		diags.Append(objDiags...)
+		inboundProvisioningGroupsReadGroupsAttributeContractValue, objDiags := types.ObjectValue(inboundProvisioningGroupsReadGroupsAttributeContractAttrTypes, map[string]attr.Value{
+			"core_attributes":     inboundProvisioningGroupsReadGroupsAttributeContractCoreAttributesValue,
+			"extended_attributes": inboundProvisioningGroupsReadGroupsAttributeContractExtendedAttributesValue,
+		})
+		diags.Append(objDiags...)
+		inboundProvisioningGroupsReadGroupsAttributeFulfillmentValues := make(map[string]attr.Value)
+		for key, inboundProvisioningGroupsReadGroupsAttributeFulfillmentResponseValue := range r.InboundProvisioning.Groups.ReadGroups.AttributeFulfillment {
+			inboundProvisioningGroupsReadGroupsAttributeFulfillmentSourceValue, objDiags := types.ObjectValue(inboundProvisioningGroupsReadGroupsAttributeFulfillmentSourceAttrTypes, map[string]attr.Value{
+				"id":   types.StringPointerValue(inboundProvisioningGroupsReadGroupsAttributeFulfillmentResponseValue.Source.Id),
+				"type": types.StringValue(inboundProvisioningGroupsReadGroupsAttributeFulfillmentResponseValue.Source.Type),
+			})
+			diags.Append(objDiags...)
+			inboundProvisioningGroupsReadGroupsAttributeFulfillmentValue, objDiags := types.ObjectValue(inboundProvisioningGroupsReadGroupsAttributeFulfillmentAttrTypes, map[string]attr.Value{
+				"source": inboundProvisioningGroupsReadGroupsAttributeFulfillmentSourceValue,
+				"value":  types.StringValue(inboundProvisioningGroupsReadGroupsAttributeFulfillmentResponseValue.Value),
+			})
+			diags.Append(objDiags...)
+			inboundProvisioningGroupsReadGroupsAttributeFulfillmentValues[key] = inboundProvisioningGroupsReadGroupsAttributeFulfillmentValue
+		}
+		inboundProvisioningGroupsReadGroupsAttributeFulfillmentValue, objDiags := types.MapValue(inboundProvisioningGroupsReadGroupsAttributeFulfillmentElementType, inboundProvisioningGroupsReadGroupsAttributeFulfillmentValues)
+		diags.Append(objDiags...)
+		var inboundProvisioningGroupsReadGroupsAttributesValues []attr.Value
+		for _, inboundProvisioningGroupsReadGroupsAttributesResponseValue := range r.InboundProvisioning.Groups.ReadGroups.Attributes {
+			inboundProvisioningGroupsReadGroupsAttributesValue, objDiags := types.ObjectValue(inboundProvisioningGroupsReadGroupsAttributesAttrTypes, map[string]attr.Value{
+				"name": types.StringValue(inboundProvisioningGroupsReadGroupsAttributesResponseValue.Name),
+			})
+			diags.Append(objDiags...)
+			inboundProvisioningGroupsReadGroupsAttributesValues = append(inboundProvisioningGroupsReadGroupsAttributesValues, inboundProvisioningGroupsReadGroupsAttributesValue)
+		}
+		inboundProvisioningGroupsReadGroupsAttributesValue, objDiags := types.ListValue(inboundProvisioningGroupsReadGroupsAttributesElementType, inboundProvisioningGroupsReadGroupsAttributesValues)
+		diags.Append(objDiags...)
+		inboundProvisioningGroupsReadGroupsValue, objDiags := types.ObjectValue(inboundProvisioningGroupsReadGroupsAttrTypes, map[string]attr.Value{
+			"attribute_contract":    inboundProvisioningGroupsReadGroupsAttributeContractValue,
+			"attribute_fulfillment": inboundProvisioningGroupsReadGroupsAttributeFulfillmentValue,
+			"attributes":            inboundProvisioningGroupsReadGroupsAttributesValue,
+		})
+		diags.Append(objDiags...)
+		inboundProvisioningGroupsWriteGroupsAttributeFulfillmentValues := make(map[string]attr.Value)
+		for key, inboundProvisioningGroupsWriteGroupsAttributeFulfillmentResponseValue := range r.InboundProvisioning.Groups.WriteGroups.AttributeFulfillment {
+			inboundProvisioningGroupsWriteGroupsAttributeFulfillmentSourceValue, objDiags := types.ObjectValue(inboundProvisioningGroupsWriteGroupsAttributeFulfillmentSourceAttrTypes, map[string]attr.Value{
+				"id":   types.StringPointerValue(inboundProvisioningGroupsWriteGroupsAttributeFulfillmentResponseValue.Source.Id),
+				"type": types.StringValue(inboundProvisioningGroupsWriteGroupsAttributeFulfillmentResponseValue.Source.Type),
+			})
+			diags.Append(objDiags...)
+			inboundProvisioningGroupsWriteGroupsAttributeFulfillmentValue, objDiags := types.ObjectValue(inboundProvisioningGroupsWriteGroupsAttributeFulfillmentAttrTypes, map[string]attr.Value{
+				"source": inboundProvisioningGroupsWriteGroupsAttributeFulfillmentSourceValue,
+				"value":  types.StringValue(inboundProvisioningGroupsWriteGroupsAttributeFulfillmentResponseValue.Value),
+			})
+			diags.Append(objDiags...)
+			inboundProvisioningGroupsWriteGroupsAttributeFulfillmentValues[key] = inboundProvisioningGroupsWriteGroupsAttributeFulfillmentValue
+		}
+		inboundProvisioningGroupsWriteGroupsAttributeFulfillmentValue, objDiags := types.MapValue(inboundProvisioningGroupsWriteGroupsAttributeFulfillmentElementType, inboundProvisioningGroupsWriteGroupsAttributeFulfillmentValues)
+		diags.Append(objDiags...)
+		inboundProvisioningGroupsWriteGroupsValue, objDiags := types.ObjectValue(inboundProvisioningGroupsWriteGroupsAttrTypes, map[string]attr.Value{
+			"attribute_fulfillment": inboundProvisioningGroupsWriteGroupsAttributeFulfillmentValue,
+		})
+		diags.Append(objDiags...)
+		inboundProvisioningGroupsValue, objDiags := types.ObjectValue(inboundProvisioningGroupsAttrTypes, map[string]attr.Value{
+			"read_groups":  inboundProvisioningGroupsReadGroupsValue,
+			"write_groups": inboundProvisioningGroupsWriteGroupsValue,
+		})
+		diags.Append(objDiags...)
+
+		var inboundProvisioningUserRepositoryValue basetypes.ObjectValue
+		if r.InboundProvisioning.UserRepository.IdentityStoreInboundProvisioningUserRepository != nil {
+			identityStoreProvisionerRef, objDiags := resourcelink.ToState(ctx, &r.InboundProvisioning.UserRepository.IdentityStoreInboundProvisioningUserRepository.IdentityStoreProvisionerRef)
+			diags.Append(objDiags...)
+			inboundProvisioningUserRepositoryValue, objDiags = types.ObjectValue(inboundprovisioninguserrepository.IdentityStoreInboundProvisioningUserRepositoryAttrType(), map[string]attr.Value{
+				"type":                           types.StringValue("IDENTITY_STORE"),
+				"identity_store_provisioner_ref": identityStoreProvisionerRef,
+			})
+			diags.Append(objDiags...)
+		} else if r.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository != nil {
+			dataStoreRef, objDiags := resourcelink.ToState(ctx, &r.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository.DataStoreRef)
+			diags.Append(objDiags...)
+			inboundProvisioningUserRepositoryValue, objDiags = types.ObjectValue(inboundprovisioninguserrepository.LdapInboundProvisioningUserRepositoryAttrType(), map[string]attr.Value{
+				"type":                   types.StringValue("LDAP"),
+				"base_dn":                types.StringPointerValue(r.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository.BaseDn),
+				"data_store_ref":         dataStoreRef,
+				"unique_user_id_filter":  types.StringValue(r.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository.UniqueUserIdFilter),
+				"unique_group_id_filter": types.StringValue(r.InboundProvisioning.UserRepository.LdapInboundProvisioningUserRepository.UniqueGroupIdFilter),
+			})
+			diags.Append(objDiags...)
+		}
+		var inboundProvisioningUsersReadUsersAttributeContractCoreAttributesValues []attr.Value
+		for _, inboundProvisioningUsersReadUsersAttributeContractCoreAttributesResponseValue := range r.InboundProvisioning.Users.ReadUsers.AttributeContract.CoreAttributes {
+			inboundProvisioningUsersReadUsersAttributeContractCoreAttributesValue, objDiags := types.ObjectValue(inboundProvisioningUsersReadUsersAttributeContractCoreAttributesAttrTypes, map[string]attr.Value{
+				"masked": types.BoolPointerValue(inboundProvisioningUsersReadUsersAttributeContractCoreAttributesResponseValue.Masked),
+				"name":   types.StringValue(inboundProvisioningUsersReadUsersAttributeContractCoreAttributesResponseValue.Name),
+			})
+			diags.Append(objDiags...)
+			inboundProvisioningUsersReadUsersAttributeContractCoreAttributesValues = append(inboundProvisioningUsersReadUsersAttributeContractCoreAttributesValues, inboundProvisioningUsersReadUsersAttributeContractCoreAttributesValue)
+		}
+		inboundProvisioningUsersReadUsersAttributeContractCoreAttributesValue, objDiags := types.ListValue(inboundProvisioningUsersReadUsersAttributeContractCoreAttributesElementType, inboundProvisioningUsersReadUsersAttributeContractCoreAttributesValues)
+		diags.Append(objDiags...)
+		var inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValues []attr.Value
+		for _, inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesResponseValue := range r.InboundProvisioning.Users.ReadUsers.AttributeContract.ExtendedAttributes {
+			inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValue, objDiags := types.ObjectValue(inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesAttrTypes, map[string]attr.Value{
+				"masked": types.BoolPointerValue(inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesResponseValue.Masked),
+				"name":   types.StringValue(inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesResponseValue.Name),
+			})
+			diags.Append(objDiags...)
+			inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValues = append(inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValues, inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValue)
+		}
+		inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValue, objDiags := types.ListValue(inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesElementType, inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValues)
+		diags.Append(objDiags...)
+		inboundProvisioningUsersReadUsersAttributeContractValue, objDiags := types.ObjectValue(inboundProvisioningUsersReadUsersAttributeContractAttrTypes, map[string]attr.Value{
+			"core_attributes":     inboundProvisioningUsersReadUsersAttributeContractCoreAttributesValue,
+			"extended_attributes": inboundProvisioningUsersReadUsersAttributeContractExtendedAttributesValue,
+		})
+		diags.Append(objDiags...)
+		inboundProvisioningUsersReadUsersAttributeFulfillmentValues := make(map[string]attr.Value)
+		for key, inboundProvisioningUsersReadUsersAttributeFulfillmentResponseValue := range r.InboundProvisioning.Users.ReadUsers.AttributeFulfillment {
+			inboundProvisioningUsersReadUsersAttributeFulfillmentSourceValue, objDiags := types.ObjectValue(inboundProvisioningUsersReadUsersAttributeFulfillmentSourceAttrTypes, map[string]attr.Value{
+				"id":   types.StringPointerValue(inboundProvisioningUsersReadUsersAttributeFulfillmentResponseValue.Source.Id),
+				"type": types.StringValue(inboundProvisioningUsersReadUsersAttributeFulfillmentResponseValue.Source.Type),
+			})
+			diags.Append(objDiags...)
+			inboundProvisioningUsersReadUsersAttributeFulfillmentValue, objDiags := types.ObjectValue(inboundProvisioningUsersReadUsersAttributeFulfillmentAttrTypes, map[string]attr.Value{
+				"source": inboundProvisioningUsersReadUsersAttributeFulfillmentSourceValue,
+				"value":  types.StringValue(inboundProvisioningUsersReadUsersAttributeFulfillmentResponseValue.Value),
+			})
+			diags.Append(objDiags...)
+			inboundProvisioningUsersReadUsersAttributeFulfillmentValues[key] = inboundProvisioningUsersReadUsersAttributeFulfillmentValue
+		}
+		inboundProvisioningUsersReadUsersAttributeFulfillmentValue, objDiags := types.MapValue(inboundProvisioningUsersReadUsersAttributeFulfillmentElementType, inboundProvisioningUsersReadUsersAttributeFulfillmentValues)
+		diags.Append(objDiags...)
+		var inboundProvisioningUsersReadUsersAttributesValues []attr.Value
+		for _, inboundProvisioningUsersReadUsersAttributesResponseValue := range r.InboundProvisioning.Users.ReadUsers.Attributes {
+			inboundProvisioningUsersReadUsersAttributesValue, objDiags := types.ObjectValue(inboundProvisioningUsersReadUsersAttributesAttrTypes, map[string]attr.Value{
+				"name": types.StringValue(inboundProvisioningUsersReadUsersAttributesResponseValue.Name),
+			})
+			diags.Append(objDiags...)
+			inboundProvisioningUsersReadUsersAttributesValues = append(inboundProvisioningUsersReadUsersAttributesValues, inboundProvisioningUsersReadUsersAttributesValue)
+		}
+		inboundProvisioningUsersReadUsersAttributesValue, objDiags := types.ListValue(inboundProvisioningUsersReadUsersAttributesElementType, inboundProvisioningUsersReadUsersAttributesValues)
+		diags.Append(objDiags...)
+		inboundProvisioningUsersReadUsersValue, objDiags := types.ObjectValue(inboundProvisioningUsersReadUsersAttrTypes, map[string]attr.Value{
+			"attribute_contract":    inboundProvisioningUsersReadUsersAttributeContractValue,
+			"attribute_fulfillment": inboundProvisioningUsersReadUsersAttributeFulfillmentValue,
+			"attributes":            inboundProvisioningUsersReadUsersAttributesValue,
+		})
+		diags.Append(objDiags...)
+
+		inboundProvisioningUsersWriteUsersAttributeFulfillmentValue, objDiags := attributecontractfulfillment.ToState(ctx, r.InboundProvisioning.Users.WriteUsers.AttributeFulfillment)
+		diags.Append(objDiags...)
+		inboundProvisioningUsersWriteUsersValue, objDiags := types.ObjectValue(inboundProvisioningUsersWriteUsersAttrTypes, map[string]attr.Value{
+			"attribute_fulfillment": inboundProvisioningUsersWriteUsersAttributeFulfillmentValue,
+		})
+		diags.Append(objDiags...)
+		inboundProvisioningUsersValue, objDiags := types.ObjectValue(inboundProvisioningUsersAttrTypes, map[string]attr.Value{
+			"read_users":  inboundProvisioningUsersReadUsersValue,
+			"write_users": inboundProvisioningUsersWriteUsersValue,
+		})
+		diags.Append(objDiags...)
+		inboundProvisioningValue, objDiags = types.ObjectValue(inboundProvisioningAttrTypes, map[string]attr.Value{
+			"action_on_delete": types.StringPointerValue(r.InboundProvisioning.ActionOnDelete),
+			"custom_schema":    inboundProvisioningCustomSchemaValue,
+			"group_support":    types.BoolValue(r.InboundProvisioning.GroupSupport),
+			"groups":           inboundProvisioningGroupsValue,
+			"user_repository":  inboundProvisioningUserRepositoryValue,
+			"users":            inboundProvisioningUsersValue,
+		})
+		diags.Append(objDiags...)
+	}
+	state.InboundProvisioning = inboundProvisioningValue
+
+	// WsTrust
 	if r.WsTrust != nil {
-
 		var tokenGeneratorMappings []basetypes.ObjectValue
 		for _, tokenGeneratorMapping := range r.WsTrust.TokenGeneratorMappings {
-			spTokenGeneratorRef, objDiags := resourcelink.ToStateNoLocation(&tokenGeneratorMapping.SpTokenGeneratorRef)
+			spTokenGeneratorRef, objDiags := resourcelink.ToState(ctx, &tokenGeneratorMapping.SpTokenGeneratorRef)
 			diags.Append(objDiags...)
 
 			var attributeSources basetypes.ListValue
-			attributeSources, objDiags = attributesources.ToState(ctx, tokenGeneratorMapping.AttributeSources, false)
+			attributeSources, objDiags = attributesources.ToState(ctx, tokenGeneratorMapping.AttributeSources)
 			diags.Append(objDiags...)
 
 			attributeContractFulfillment, objDiags := attributecontractfulfillment.ToState(ctx, tokenGeneratorMapping.AttributeContractFulfillment)
@@ -3727,7 +4497,20 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			tokenGeneratorMappings = append(tokenGeneratorMappings, tokenGeneratorMappingState)
 		}
 
-		attributeContract, objDiags := types.ObjectValueFrom(ctx, coreAndExtendedAttributesAttrTypes, r.WsTrust.AttributeContract)
+		attributeContract, objDiags := types.ObjectValueFrom(ctx, map[string]attr.Type{
+			"core_attributes": types.ListType{ElemType: types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"name":   types.StringType,
+					"masked": types.BoolType,
+				},
+			}},
+			"extended_attributes": types.ListType{ElemType: types.ObjectType{
+				AttrTypes: map[string]attr.Type{
+					"name":   types.StringType,
+					"masked": types.BoolType,
+				},
+			}},
+		}, r.WsTrust.AttributeContract)
 		diags.Append(objDiags...)
 
 		tokenGeneratorMappingsList, objDiags := types.ListValueFrom(ctx, types.ListType{ElemType: types.ObjectType{AttrTypes: tokenGeneratorAttrTypes}}, tokenGeneratorMappings)
@@ -3749,7 +4532,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 }
 
 func (r *spIdpConnectionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan spIdpConnectionResourceModel
+	var plan, state spIdpConnectionResourceModel
 
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -3764,11 +4547,6 @@ func (r *spIdpConnectionResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	requestJson, err := createSpIdpConnection.MarshalJSON()
-	if err == nil {
-		tflog.Debug(ctx, "Add request: "+string(requestJson))
-	}
-
 	apiCreateSpIdpConnection := r.apiClient.SpIdpConnectionsAPI.CreateConnection(config.ProviderBasicAuthContext(ctx, r.providerConfig))
 	apiCreateSpIdpConnection = apiCreateSpIdpConnection.Body(*createSpIdpConnection)
 	spIdpConnectionResponse, httpResp, err := r.apiClient.SpIdpConnectionsAPI.CreateConnectionExecute(apiCreateSpIdpConnection)
@@ -3776,9 +4554,6 @@ func (r *spIdpConnectionResource) Create(ctx context.Context, req resource.Creat
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the SpIdpConnection", err, httpResp)
 		return
 	}
-
-	// Read the response into the state
-	var state spIdpConnectionResourceModel
 
 	diags = readSpIdpConnectionResponse(ctx, spIdpConnectionResponse, &plan, &state)
 	resp.Diagnostics.Append(diags...)
