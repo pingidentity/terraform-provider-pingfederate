@@ -14,7 +14,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const spAdapterAdapterId = "sp_adapterAdapterId"
+const spAdapterAdapterId = "spAdapterAdapterId"
 
 func TestAccSpAdapter_RemovalDrift(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -81,6 +81,9 @@ func TestAccSpAdapter_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "adapter_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
+				// Can't verify tables and fields because the computed ones from the server will go into the
+				// corresponding tables_all and fields_all attributes
+				ImportStateVerifyIgnore: []string{"configuration.tables", "configuration.fields"},
 			},
 		},
 	})
@@ -91,12 +94,21 @@ func spAdapter_MinimalHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_sp_adapter" "example" {
   adapter_id = "%s"
-  // TODO set values for minimal fields
   configuration = {
+    fields = [
+      {
+        "name" : "Password",
+        "value" : "2FederateM0re"
+      },
+      {
+        "name" : "Confirm Password",
+        "value" : "2FederateM0re"
+      },
+    ]
   }
-  name = //TODO
+  name = "My sp adapter"
   plugin_descriptor_ref = {
-    id = //TODO
+    id = "com.pingidentity.adapters.opentoken.SpAuthnAdapter"
   }
 }
 `, spAdapterAdapterId)
@@ -107,79 +119,146 @@ func spAdapter_CompleteHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_sp_adapter" "example" {
   adapter_id = "%s"
-  // TODO set values for complete fields
   attribute_contract = {
     extended_attributes = [
       {
-        name = //TODO
+        name = "My extended attribute"
       }
     ]
   }
   configuration = {
     fields = [
       {
-        name = //TODO
-        value = //TODO
-      }
-    ]
-    tables = [
+        "name" : "Password",
+        "value" : "2FederateM0re"
+      },
       {
-        name = //TODO
-        rows = [
-          {
-            default_row = //TODO
-            fields = [
-              {
-                name = //TODO
-                value = //TODO
-              }
-            ]
-          }
-        ]
-      }
+        "name" : "Confirm Password",
+        "value" : "2FederateM0re"
+      },
+      {
+        "name" : "Transport Mode",
+        "value" : "2"
+      },
+      {
+        "name" : "Token Name",
+        "value" : "opentoken"
+      },
+      {
+        "name" : "Cipher Suite",
+        "value" : "2"
+      },
+      {
+        "name" : "Authentication Service",
+        "value" : ""
+      },
+      {
+        "name" : "Account Link Service",
+        "value" : ""
+      },
+      {
+        "name" : "Logout Service",
+        "value" : ""
+      },
+      {
+        "name" : "SameSite Cookie",
+        "value" : "3"
+      },
+      {
+        "name" : "Cookie Domain",
+        "value" : ""
+      },
+      {
+        "name" : "Cookie Path",
+        "value" : "/"
+      },
+      {
+        "name" : "Token Lifetime",
+        "value" : "300"
+      },
+      {
+        "name" : "Session Lifetime",
+        "value" : "43200"
+      },
+      {
+        "name" : "Not Before Tolerance",
+        "value" : "0"
+      },
+      {
+        "name" : "Force SunJCE Provider",
+        "value" : "false"
+      },
+      {
+        "name" : "Use Verbose Error Messages",
+        "value" : "false"
+      },
+      {
+        "name" : "Obfuscate Password",
+        "value" : "true"
+      },
+      {
+        "name" : "Session Cookie",
+        "value" : "false"
+      },
+      {
+        "name" : "Secure Cookie",
+        "value" : "true"
+      },
+      {
+        "name" : "HTTP Only Flag",
+        "value" : "true"
+      },
+      {
+        "name" : "Send Subject as Query Parameter",
+        "value" : "false"
+      },
+      {
+        "name" : "Subject Query Parameter                 ",
+        "value" : ""
+      },
+      {
+        "name" : "Send Extended Attributes",
+        "value" : ""
+      },
+      {
+        "name" : "Skip Trimming of Trailing Backslashes",
+        "value" : "false"
+      },
+      {
+        "name" : "URL Encode Cookie Values",
+        "value" : "true"
+      },
     ]
+    tables = []
   }
-  name = //TODO
-  parent_ref = {
-    id = //TODO
-  }
+  name = "My sp adapter"
   plugin_descriptor_ref = {
-    id = //TODO
+    id = "com.pingidentity.adapters.opentoken.SpAuthnAdapter"
   }
   target_application_info = {
-    application_icon_url = //TODO
-    application_name = //TODO
+    application_icon_url = "https://www.example.com/icon.png"
+    application_name     = "My application name"
   }
 }
 `, spAdapterAdapterId)
 }
 
 // Validate any computed values when applying minimal HCL
-// TODO remove any values that are not computed from this check
-// TODO set expected values
 func spAdapter_CheckComputedValuesMinimal() resource.TestCheckFunc {
-	//TODO core_attributes
 	return resource.ComposeTestCheckFunc(
-		resource.TestCheckResourceAttr("pingfederate_sp_adapter.example", "configuration.fields.0.value", "expected_value"),
-		resource.TestCheckResourceAttr("pingfederate_sp_adapter.example", "configuration.tables.0.rows.0.default_row", "expected_value"),
-		resource.TestCheckResourceAttr("pingfederate_sp_adapter.example", "configuration.tables.0.rows.0.fields.0.value", "expected_value"),
-		resource.TestCheckResourceAttr("pingfederate_sp_adapter.example", "target_application_info.application_icon_url", "expected_value"),
-		resource.TestCheckResourceAttr("pingfederate_sp_adapter.example", "target_application_info.application_name", "expected_value"),
+		resource.TestCheckResourceAttr("pingfederate_sp_adapter.example", "attribute_contract.core_attributes.#", "1"),
+		resource.TestCheckResourceAttr("pingfederate_sp_adapter.example", "attribute_contract.core_attributes.0.name", "subject"),
+		resource.TestCheckResourceAttr("pingfederate_sp_adapter.example", "attribute_contract.extended_attributes.#", "0"),
+		resource.TestCheckNoResourceAttr("pingfederate_sp_adapter.example", "target_application_info.application_icon_url"),
+		resource.TestCheckNoResourceAttr("pingfederate_sp_adapter.example", "target_application_info.application_name"),
 	)
 }
 
 // Validate any computed values when applying complete HCL
-// TODO This may not be needed as a separate function from minimal HCL if the expected values match
-// TODO remove any values that are not computed from this check
-// TODO set expected values
 func spAdapter_CheckComputedValuesComplete() resource.TestCheckFunc {
-	//TODO core_attributes
 	return resource.ComposeTestCheckFunc(
-		resource.TestCheckResourceAttr("pingfederate_sp_adapter.example", "configuration.fields.0.value", "expected_value"),
-		resource.TestCheckResourceAttr("pingfederate_sp_adapter.example", "configuration.tables.0.rows.0.default_row", "expected_value"),
-		resource.TestCheckResourceAttr("pingfederate_sp_adapter.example", "configuration.tables.0.rows.0.fields.0.value", "expected_value"),
-		resource.TestCheckResourceAttr("pingfederate_sp_adapter.example", "target_application_info.application_icon_url", "expected_value"),
-		resource.TestCheckResourceAttr("pingfederate_sp_adapter.example", "target_application_info.application_name", "expected_value"),
+		resource.TestCheckResourceAttr("pingfederate_sp_adapter.example", "attribute_contract.core_attributes.#", "1"),
+		resource.TestCheckResourceAttr("pingfederate_sp_adapter.example", "attribute_contract.core_attributes.0.name", "subject"),
 	)
 }
 

@@ -10,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -83,6 +85,7 @@ func (r *spAdapterResource) Schema(ctx context.Context, req resource.SchemaReque
 						},
 						Optional:    false,
 						Computed:    true,
+						Default:     listdefault.StaticValue(coreAttributesDefault),
 						Description: "A list of read-only attributes that are automatically populated by the SP adapter descriptor.",
 					},
 					"extended_attributes": schema.ListNestedAttribute{
@@ -95,10 +98,14 @@ func (r *spAdapterResource) Schema(ctx context.Context, req resource.SchemaReque
 							},
 						},
 						Optional:    true,
+						Computed:    true,
+						Default:     listdefault.StaticValue(extendedAttributesDefault),
 						Description: "A list of additional attributes that can be returned by the SP adapter. The extended attributes are only used if the adapter supports them.",
 					},
 				},
 				Optional:    true,
+				Computed:    true,
+				Default:     objectdefault.StaticValue(attributeContractDefault),
 				Description: "A set of attributes exposed by an SP adapter.",
 			},
 			"configuration": pluginconfiguration.ToSchema(),
@@ -144,6 +151,8 @@ func (r *spAdapterResource) Schema(ctx context.Context, req resource.SchemaReque
 					},
 				},
 				Optional:    true,
+				Computed:    true,
+				Default:     objectdefault.StaticValue(targetApplicationInfoDefault),
 				Description: "Target Application Information exposed by an SP adapter.",
 			},
 		},
@@ -159,13 +168,6 @@ func (model *spAdapterResourceModel) buildClientStruct() (*client.SpAdapter, err
 	if !model.AttributeContract.IsNull() {
 		attributeContractValue := &client.SpAdapterAttributeContract{}
 		attributeContractAttrs := model.AttributeContract.Attributes()
-		attributeContractValue.CoreAttributes = []client.SpAdapterAttribute{}
-		for _, coreAttributesElement := range attributeContractAttrs["core_attributes"].(types.List).Elements() {
-			coreAttributesValue := client.SpAdapterAttribute{}
-			coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
-			coreAttributesValue.Name = coreAttributesAttrs["name"].(types.String).ValueString()
-			attributeContractValue.CoreAttributes = append(attributeContractValue.CoreAttributes, coreAttributesValue)
-		}
 		attributeContractValue.ExtendedAttributes = []client.SpAdapterAttribute{}
 		for _, extendedAttributesElement := range attributeContractAttrs["extended_attributes"].(types.List).Elements() {
 			extendedAttributesValue := client.SpAdapterAttribute{}
