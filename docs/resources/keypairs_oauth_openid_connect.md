@@ -39,36 +39,36 @@ resource "pingfederate_keypairs_oauth_openid_connect" "keypairsOAuthOpenIDConnec
 
 ### Optional
 
-- `p256active_cert_ref` (Attributes) Reference to the P-256 key currently active. (see [below for nested schema](#nestedatt--p256active_cert_ref))
-- `p256active_key_id` (String) Key Id for currently active P-256 key.
-- `p256decryption_active_cert_ref` (Attributes) Reference to the P-256 decryption key currently active. (see [below for nested schema](#nestedatt--p256decryption_active_cert_ref))
-- `p256decryption_active_key_id` (String) Key Id for currently active P-256 decryption key.
-- `p256decryption_previous_cert_ref` (Attributes) Reference to the P-256 decryption key previously active. (see [below for nested schema](#nestedatt--p256decryption_previous_cert_ref))
-- `p256decryption_previous_key_id` (String) Key Id for previously active P-256 decryption key.
-- `p256decryption_publish_x5c_parameter` (Boolean) Enable publishing of the P-256 certificate chain associated with the active key.
-- `p256previous_cert_ref` (Attributes) Reference to the P-256 key previously active. (see [below for nested schema](#nestedatt--p256previous_cert_ref))
-- `p256previous_key_id` (String) Key Id for previously active P-256 key.
-- `p256publish_x5c_parameter` (Boolean) Enable publishing of the P-256 certificate chain associated with the active key.
-- `p384active_cert_ref` (Attributes) Reference to the P-384 key currently active. (see [below for nested schema](#nestedatt--p384active_cert_ref))
-- `p384active_key_id` (String) Key Id for currently active P-384 key.
-- `p384decryption_active_cert_ref` (Attributes) Reference to the P-384 decryption key currently active. (see [below for nested schema](#nestedatt--p384decryption_active_cert_ref))
-- `p384decryption_active_key_id` (String) Key Id for currently active P-384 decryption key.
-- `p384decryption_previous_cert_ref` (Attributes) Reference to the P-384 decryption key previously active. (see [below for nested schema](#nestedatt--p384decryption_previous_cert_ref))
-- `p384decryption_previous_key_id` (String) Key Id for previously active P-384 decryption key.
-- `p384decryption_publish_x5c_parameter` (Boolean) Enable publishing of the P-384 certificate chain associated with the active key.
-- `p384previous_cert_ref` (Attributes) Reference to the P-384 key previously active. (see [below for nested schema](#nestedatt--p384previous_cert_ref))
-- `p384previous_key_id` (String) Key Id for previously active P-384 key.
-- `p384publish_x5c_parameter` (Boolean) Enable publishing of the P-384 certificate chain associated with the active key.
-- `p521active_cert_ref` (Attributes) Reference to the P-521 key currently active. (see [below for nested schema](#nestedatt--p521active_cert_ref))
-- `p521active_key_id` (String) Key Id for currently active P-521 key.
-- `p521decryption_active_cert_ref` (Attributes) Reference to the P-521 decryption key currently active. (see [below for nested schema](#nestedatt--p521decryption_active_cert_ref))
-- `p521decryption_active_key_id` (String) Key Id for currently active P-521 decryption key.
-- `p521decryption_previous_cert_ref` (Attributes) Reference to the P-521 decryption key previously active. (see [below for nested schema](#nestedatt--p521decryption_previous_cert_ref))
-- `p521decryption_previous_key_id` (String) Key Id for previously active P-521 decryption key.
-- `p521decryption_publish_x5c_parameter` (Boolean) Enable publishing of the P-521 certificate chain associated with the active key.
-- `p521previous_cert_ref` (Attributes) Reference to the P-521 key previously active. (see [below for nested schema](#nestedatt--p521previous_cert_ref))
-- `p521previous_key_id` (String) Key Id for previously active P-521 key.
-- `p521publish_x5c_parameter` (Boolean) Enable publishing of the P-521 certificate chain associated with the active key.
+- `p256_active_cert_ref` (Attributes) Reference to the P-256 key currently active. (see [below for nested schema](#nestedatt--p256_active_cert_ref))
+- `p256_active_key_id` (String) Key Id for currently active P-256 key.
+- `p256_decryption_active_cert_ref` (Attributes) Reference to the P-256 decryption key currently active. (see [below for nested schema](#nestedatt--p256_decryption_active_cert_ref))
+- `p256_decryption_active_key_id` (String) Key Id for currently active P-256 decryption key.
+- `p256_decryption_previous_cert_ref` (Attributes) Reference to the P-256 decryption key previously active. (see [below for nested schema](#nestedatt--p256_decryption_previous_cert_ref))
+- `p256_decryption_previous_key_id` (String) Key Id for previously active P-256 decryption key.
+- `p256_decryption_publish_x5c_parameter` (Boolean) Enable publishing of the P-256 certificate chain associated with the active key.
+- `p256_previous_cert_ref` (Attributes) Reference to the P-256 key previously active. (see [below for nested schema](#nestedatt--p256_previous_cert_ref))
+- `p256_previous_key_id` (String) Key Id for previously active P-256 key.
+- `p256_publish_x5c_parameter` (Boolean) Enable publishing of the P-256 certificate chain associated with the active key.
+- `p384_active_cert_ref` (Attributes) Reference to the P-384 key currently active. (see [below for nested schema](#nestedatt--p384_active_cert_ref))
+- `p384_active_key_id` (String) Key Id for currently active P-384 key.
+- `p384_decryption_active_cert_ref` (Attributes) Reference to the P-384 decryption key currently active. (see [below for nested schema](#nestedatt--p384_decryption_active_cert_ref))
+- `p384_decryption_active_key_id` (String) Key Id for currently active P-384 decryption key.
+- `p384_decryption_previous_cert_ref` (Attributes) Reference to the P-384 decryption key previously active. (see [below for nested schema](#nestedatt--p384_decryption_previous_cert_ref))
+- `p384_decryption_previous_key_id` (String) Key Id for previously active P-384 decryption key.
+- `p384_decryption_publish_x5c_parameter` (Boolean) Enable publishing of the P-384 certificate chain associated with the active key.
+- `p384_previous_cert_ref` (Attributes) Reference to the P-384 key previously active. (see [below for nested schema](#nestedatt--p384_previous_cert_ref))
+- `p384_previous_key_id` (String) Key Id for previously active P-384 key.
+- `p384_publish_x5c_parameter` (Boolean) Enable publishing of the P-384 certificate chain associated with the active key.
+- `p521_active_cert_ref` (Attributes) Reference to the P-521 key currently active. (see [below for nested schema](#nestedatt--p521_active_cert_ref))
+- `p521_active_key_id` (String) Key Id for currently active P-521 key.
+- `p521_decryption_active_cert_ref` (Attributes) Reference to the P-521 decryption key currently active. (see [below for nested schema](#nestedatt--p521_decryption_active_cert_ref))
+- `p521_decryption_active_key_id` (String) Key Id for currently active P-521 decryption key.
+- `p521_decryption_previous_cert_ref` (Attributes) Reference to the P-521 decryption key previously active. (see [below for nested schema](#nestedatt--p521_decryption_previous_cert_ref))
+- `p521_decryption_previous_key_id` (String) Key Id for previously active P-521 decryption key.
+- `p521_decryption_publish_x5c_parameter` (Boolean) Enable publishing of the P-521 certificate chain associated with the active key.
+- `p521_previous_cert_ref` (Attributes) Reference to the P-521 key previously active. (see [below for nested schema](#nestedatt--p521_previous_cert_ref))
+- `p521_previous_key_id` (String) Key Id for previously active P-521 key.
+- `p521_publish_x5c_parameter` (Boolean) Enable publishing of the P-521 certificate chain associated with the active key.
 - `rsa_active_cert_ref` (Attributes) Reference to the RSA key currently active. (see [below for nested schema](#nestedatt--rsa_active_cert_ref))
 - `rsa_active_key_id` (String) Key Id for currently active RSA key.
 - `rsa_algorithm_active_key_ids` (Attributes List) PingFederate uses the same RSA key for all RSA signing algorithms. To enable active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (RS256, RS384, RS512, PS256, PS384 and PS512). (see [below for nested schema](#nestedatt--rsa_algorithm_active_key_ids))
@@ -82,96 +82,96 @@ resource "pingfederate_keypairs_oauth_openid_connect" "keypairsOAuthOpenIDConnec
 - `rsa_previous_key_id` (String) Key Id for previously active RSA key.
 - `rsa_publish_x5c_parameter` (Boolean) Enable publishing of the RSA certificate chain associated with the active key.
 
-<a id="nestedatt--p256active_cert_ref"></a>
-### Nested Schema for `p256active_cert_ref`
+<a id="nestedatt--p256_active_cert_ref"></a>
+### Nested Schema for `p256_active_cert_ref`
 
 Required:
 
 - `id` (String) The ID of the resource.
 
 
-<a id="nestedatt--p256decryption_active_cert_ref"></a>
-### Nested Schema for `p256decryption_active_cert_ref`
+<a id="nestedatt--p256_decryption_active_cert_ref"></a>
+### Nested Schema for `p256_decryption_active_cert_ref`
 
 Required:
 
 - `id` (String) The ID of the resource.
 
 
-<a id="nestedatt--p256decryption_previous_cert_ref"></a>
-### Nested Schema for `p256decryption_previous_cert_ref`
+<a id="nestedatt--p256_decryption_previous_cert_ref"></a>
+### Nested Schema for `p256_decryption_previous_cert_ref`
 
 Required:
 
 - `id` (String) The ID of the resource.
 
 
-<a id="nestedatt--p256previous_cert_ref"></a>
-### Nested Schema for `p256previous_cert_ref`
+<a id="nestedatt--p256_previous_cert_ref"></a>
+### Nested Schema for `p256_previous_cert_ref`
 
 Required:
 
 - `id` (String) The ID of the resource.
 
 
-<a id="nestedatt--p384active_cert_ref"></a>
-### Nested Schema for `p384active_cert_ref`
+<a id="nestedatt--p384_active_cert_ref"></a>
+### Nested Schema for `p384_active_cert_ref`
 
 Required:
 
 - `id` (String) The ID of the resource.
 
 
-<a id="nestedatt--p384decryption_active_cert_ref"></a>
-### Nested Schema for `p384decryption_active_cert_ref`
+<a id="nestedatt--p384_decryption_active_cert_ref"></a>
+### Nested Schema for `p384_decryption_active_cert_ref`
 
 Required:
 
 - `id` (String) The ID of the resource.
 
 
-<a id="nestedatt--p384decryption_previous_cert_ref"></a>
-### Nested Schema for `p384decryption_previous_cert_ref`
+<a id="nestedatt--p384_decryption_previous_cert_ref"></a>
+### Nested Schema for `p384_decryption_previous_cert_ref`
 
 Required:
 
 - `id` (String) The ID of the resource.
 
 
-<a id="nestedatt--p384previous_cert_ref"></a>
-### Nested Schema for `p384previous_cert_ref`
+<a id="nestedatt--p384_previous_cert_ref"></a>
+### Nested Schema for `p384_previous_cert_ref`
 
 Required:
 
 - `id` (String) The ID of the resource.
 
 
-<a id="nestedatt--p521active_cert_ref"></a>
-### Nested Schema for `p521active_cert_ref`
+<a id="nestedatt--p521_active_cert_ref"></a>
+### Nested Schema for `p521_active_cert_ref`
 
 Required:
 
 - `id` (String) The ID of the resource.
 
 
-<a id="nestedatt--p521decryption_active_cert_ref"></a>
-### Nested Schema for `p521decryption_active_cert_ref`
+<a id="nestedatt--p521_decryption_active_cert_ref"></a>
+### Nested Schema for `p521_decryption_active_cert_ref`
 
 Required:
 
 - `id` (String) The ID of the resource.
 
 
-<a id="nestedatt--p521decryption_previous_cert_ref"></a>
-### Nested Schema for `p521decryption_previous_cert_ref`
+<a id="nestedatt--p521_decryption_previous_cert_ref"></a>
+### Nested Schema for `p521_decryption_previous_cert_ref`
 
 Required:
 
 - `id` (String) The ID of the resource.
 
 
-<a id="nestedatt--p521previous_cert_ref"></a>
-### Nested Schema for `p521previous_cert_ref`
+<a id="nestedatt--p521_previous_cert_ref"></a>
+### Nested Schema for `p521_previous_cert_ref`
 
 Required:
 

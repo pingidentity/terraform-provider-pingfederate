@@ -51,18 +51,18 @@ func TestAccKeypairsOauthOpenidConnect_MinimalMaximal(t *testing.T) {
 func keyspairsOauthOpenidConnect_VersionRestrictedHCL() string {
 	if acctest.VersionAtLeast(version.PingFederate1201) {
 		return `
-  p256active_key_id = "ec256active"
-  p256decryption_active_key_id = "ec256decryptactive"
-  p256decryption_previous_key_id = "ec256decryptprevious"
-  p256previous_key_id = "ec256previous"
-  p384active_key_id = "ec384active"
-  p384decryption_active_key_id = "ec384decryptactive"
-  p384decryption_previous_key_id = "ec384decryptprevious"
-  p384previous_key_id = "ec384previous"
-  p521active_key_id = "ec521active"
-  p521decryption_active_key_id = "ec521decryptactive"
-  p521decryption_previous_key_id = "ec521decryptprevious"
-  p521previous_key_id = "ec521previous"
+  p256_active_key_id = "ec256active"
+  p256_decryption_active_key_id = "ec256decryptactive"
+  p256_decryption_previous_key_id = "ec256decryptprevious"
+  p256_previous_key_id = "ec256previous"
+  p384_active_key_id = "ec384active"
+  p384_decryption_active_key_id = "ec384decryptactive"
+  p384_decryption_previous_key_id = "ec384decryptprevious"
+  p384_previous_key_id = "ec384previous"
+  p521_active_key_id = "ec521active"
+  p521_decryption_active_key_id = "ec521decryptactive"
+  p521_decryption_previous_key_id = "ec521decryptprevious"
+  p521_previous_key_id = "ec521previous"
   rsa_active_key_id = "rsaactive"
   rsa_decryption_active_key_id = "rsadecryptactive"
   rsa_decryption_previous_key_id = "rsadecryptprevious"
@@ -85,45 +85,45 @@ resource "pingfederate_keypairs_oauth_openid_connect" "example" {
 func keypairsOauthOpenidConnect_CompleteHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_keypairs_oauth_openid_connect" "example" {
-  p256active_cert_ref = {
+  p256_active_cert_ref = {
     id = "ec256active"
   }
-  p256decryption_active_cert_ref = {
+  p256_decryption_active_cert_ref = {
     id = "ec256active"
   }
-  p256decryption_previous_cert_ref = {
+  p256_decryption_previous_cert_ref = {
     id = "ec256previous"
   }
-  p256decryption_publish_x5c_parameter = true
-  p256previous_cert_ref = {
+  p256_decryption_publish_x5c_parameter = true
+  p256_previous_cert_ref = {
     id = "ec256previous"
   }
-  p384active_cert_ref = {
+  p384_active_cert_ref = {
     id = "ec384active"
   }
-  p384decryption_active_cert_ref = {
+  p384_decryption_active_cert_ref = {
     id = "ec384active"
   }
-  p384decryption_previous_cert_ref = {
+  p384_decryption_previous_cert_ref = {
     id = "ec384previous"
   }
-  p384decryption_publish_x5c_parameter = true
-  p384previous_cert_ref = {
+  p384_decryption_publish_x5c_parameter = true
+  p384_previous_cert_ref = {
     id = "ec384previous"
   }
-  p521active_cert_ref = {
+  p521_active_cert_ref = {
     id = "ec521active"
   }
-  p521decryption_active_cert_ref = {
+  p521_decryption_active_cert_ref = {
     id = "ec521active"
   }
-  p521decryption_previous_cert_ref = {
+  p521_decryption_previous_cert_ref = {
     id = "ec521previous"
   }
-  p521previous_cert_ref = {
+  p521_previous_cert_ref = {
     id = "ec521previous"
   }
-  p521publish_x5c_parameter = true
+  p521_publish_x5c_parameter = true
   rsa_active_cert_ref = {
     id = "419x9yg43rlawqwq9v6az997k"
   }
@@ -177,9 +177,9 @@ func keypairsOauthOpenidConnect_CheckComputedValuesMinimal() resource.TestCheckF
 func keypairsOauthOpenidConnect_CheckComputedValuesComplete() resource.TestCheckFunc {
 	if acctest.VersionAtLeast(version.PingFederate1201) {
 		return resource.ComposeTestCheckFunc(
-			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "p256publish_x5c_parameter", "false"),
-			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "p384publish_x5c_parameter", "false"),
-			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "p521decryption_publish_x5c_parameter", "false"),
+			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "p256_publish_x5c_parameter", "false"),
+			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "p384_publish_x5c_parameter", "false"),
+			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "p521_decryption_publish_x5c_parameter", "false"),
 			resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "rsa_decryption_publish_x5c_parameter", "false"),
 		)
 	}

@@ -48,36 +48,36 @@ func (r *keypairsOauthOpenidConnectResource) Configure(_ context.Context, req re
 }
 
 type keypairsOauthOpenidConnectResourceModel struct {
-	P256activeCertRef                 types.Object `tfsdk:"p256active_cert_ref"`
-	P256activeKeyId                   types.String `tfsdk:"p256active_key_id"`
-	P256decryptionActiveCertRef       types.Object `tfsdk:"p256decryption_active_cert_ref"`
-	P256decryptionActiveKeyId         types.String `tfsdk:"p256decryption_active_key_id"`
-	P256decryptionPreviousCertRef     types.Object `tfsdk:"p256decryption_previous_cert_ref"`
-	P256decryptionPreviousKeyId       types.String `tfsdk:"p256decryption_previous_key_id"`
-	P256decryptionPublishX5cParameter types.Bool   `tfsdk:"p256decryption_publish_x5c_parameter"`
-	P256previousCertRef               types.Object `tfsdk:"p256previous_cert_ref"`
-	P256previousKeyId                 types.String `tfsdk:"p256previous_key_id"`
-	P256publishX5cParameter           types.Bool   `tfsdk:"p256publish_x5c_parameter"`
-	P384activeCertRef                 types.Object `tfsdk:"p384active_cert_ref"`
-	P384activeKeyId                   types.String `tfsdk:"p384active_key_id"`
-	P384decryptionActiveCertRef       types.Object `tfsdk:"p384decryption_active_cert_ref"`
-	P384decryptionActiveKeyId         types.String `tfsdk:"p384decryption_active_key_id"`
-	P384decryptionPreviousCertRef     types.Object `tfsdk:"p384decryption_previous_cert_ref"`
-	P384decryptionPreviousKeyId       types.String `tfsdk:"p384decryption_previous_key_id"`
-	P384decryptionPublishX5cParameter types.Bool   `tfsdk:"p384decryption_publish_x5c_parameter"`
-	P384previousCertRef               types.Object `tfsdk:"p384previous_cert_ref"`
-	P384previousKeyId                 types.String `tfsdk:"p384previous_key_id"`
-	P384publishX5cParameter           types.Bool   `tfsdk:"p384publish_x5c_parameter"`
-	P521activeCertRef                 types.Object `tfsdk:"p521active_cert_ref"`
-	P521activeKeyId                   types.String `tfsdk:"p521active_key_id"`
-	P521decryptionActiveCertRef       types.Object `tfsdk:"p521decryption_active_cert_ref"`
-	P521decryptionActiveKeyId         types.String `tfsdk:"p521decryption_active_key_id"`
-	P521decryptionPreviousCertRef     types.Object `tfsdk:"p521decryption_previous_cert_ref"`
-	P521decryptionPreviousKeyId       types.String `tfsdk:"p521decryption_previous_key_id"`
-	P521decryptionPublishX5cParameter types.Bool   `tfsdk:"p521decryption_publish_x5c_parameter"`
-	P521previousCertRef               types.Object `tfsdk:"p521previous_cert_ref"`
-	P521previousKeyId                 types.String `tfsdk:"p521previous_key_id"`
-	P521publishX5cParameter           types.Bool   `tfsdk:"p521publish_x5c_parameter"`
+	P256activeCertRef                 types.Object `tfsdk:"p256_active_cert_ref"`
+	P256activeKeyId                   types.String `tfsdk:"p256_active_key_id"`
+	P256decryptionActiveCertRef       types.Object `tfsdk:"p256_decryption_active_cert_ref"`
+	P256decryptionActiveKeyId         types.String `tfsdk:"p256_decryption_active_key_id"`
+	P256decryptionPreviousCertRef     types.Object `tfsdk:"p256_decryption_previous_cert_ref"`
+	P256decryptionPreviousKeyId       types.String `tfsdk:"p256_decryption_previous_key_id"`
+	P256decryptionPublishX5cParameter types.Bool   `tfsdk:"p256_decryption_publish_x5c_parameter"`
+	P256previousCertRef               types.Object `tfsdk:"p256_previous_cert_ref"`
+	P256previousKeyId                 types.String `tfsdk:"p256_previous_key_id"`
+	P256publishX5cParameter           types.Bool   `tfsdk:"p256_publish_x5c_parameter"`
+	P384activeCertRef                 types.Object `tfsdk:"p384_active_cert_ref"`
+	P384activeKeyId                   types.String `tfsdk:"p384_active_key_id"`
+	P384decryptionActiveCertRef       types.Object `tfsdk:"p384_decryption_active_cert_ref"`
+	P384decryptionActiveKeyId         types.String `tfsdk:"p384_decryption_active_key_id"`
+	P384decryptionPreviousCertRef     types.Object `tfsdk:"p384_decryption_previous_cert_ref"`
+	P384decryptionPreviousKeyId       types.String `tfsdk:"p384_decryption_previous_key_id"`
+	P384decryptionPublishX5cParameter types.Bool   `tfsdk:"p384_decryption_publish_x5c_parameter"`
+	P384previousCertRef               types.Object `tfsdk:"p384_previous_cert_ref"`
+	P384previousKeyId                 types.String `tfsdk:"p384_previous_key_id"`
+	P384publishX5cParameter           types.Bool   `tfsdk:"p384_publish_x5c_parameter"`
+	P521activeCertRef                 types.Object `tfsdk:"p521_active_cert_ref"`
+	P521activeKeyId                   types.String `tfsdk:"p521_active_key_id"`
+	P521decryptionActiveCertRef       types.Object `tfsdk:"p521_decryption_active_cert_ref"`
+	P521decryptionActiveKeyId         types.String `tfsdk:"p521_decryption_active_key_id"`
+	P521decryptionPreviousCertRef     types.Object `tfsdk:"p521_decryption_previous_cert_ref"`
+	P521decryptionPreviousKeyId       types.String `tfsdk:"p521_decryption_previous_key_id"`
+	P521decryptionPublishX5cParameter types.Bool   `tfsdk:"p521_decryption_publish_x5c_parameter"`
+	P521previousCertRef               types.Object `tfsdk:"p521_previous_cert_ref"`
+	P521previousKeyId                 types.String `tfsdk:"p521_previous_key_id"`
+	P521publishX5cParameter           types.Bool   `tfsdk:"p521_publish_x5c_parameter"`
 	RsaActiveCertRef                  types.Object `tfsdk:"rsa_active_cert_ref"`
 	RsaActiveKeyId                    types.String `tfsdk:"rsa_active_key_id"`
 	RsaAlgorithmActiveKeyIds          types.List   `tfsdk:"rsa_algorithm_active_key_ids"`
@@ -96,7 +96,7 @@ type keypairsOauthOpenidConnectResourceModel struct {
 func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"p256active_cert_ref": schema.SingleNestedAttribute{
+			"p256_active_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Required:    true,
@@ -106,11 +106,11 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 				Optional:    true,
 				Description: "Reference to the P-256 key currently active.",
 			},
-			"p256active_key_id": schema.StringAttribute{
+			"p256_active_key_id": schema.StringAttribute{
 				Optional:    true,
 				Description: "Key Id for currently active P-256 key.",
 			},
-			"p256decryption_active_cert_ref": schema.SingleNestedAttribute{
+			"p256_decryption_active_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Required:    true,
@@ -120,11 +120,11 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 				Optional:    true,
 				Description: "Reference to the P-256 decryption key currently active.",
 			},
-			"p256decryption_active_key_id": schema.StringAttribute{
+			"p256_decryption_active_key_id": schema.StringAttribute{
 				Optional:    true,
 				Description: "Key Id for currently active P-256 decryption key.",
 			},
-			"p256decryption_previous_cert_ref": schema.SingleNestedAttribute{
+			"p256_decryption_previous_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Required:    true,
@@ -134,16 +134,16 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 				Optional:    true,
 				Description: "Reference to the P-256 decryption key previously active.",
 			},
-			"p256decryption_previous_key_id": schema.StringAttribute{
+			"p256_decryption_previous_key_id": schema.StringAttribute{
 				Optional:    true,
 				Description: "Key Id for previously active P-256 decryption key.",
 			},
-			"p256decryption_publish_x5c_parameter": schema.BoolAttribute{
+			"p256_decryption_publish_x5c_parameter": schema.BoolAttribute{
 				Optional:    true,
 				Computed:    true,
 				Description: "Enable publishing of the P-256 certificate chain associated with the active key.",
 			},
-			"p256previous_cert_ref": schema.SingleNestedAttribute{
+			"p256_previous_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Required:    true,
@@ -153,16 +153,16 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 				Optional:    true,
 				Description: "Reference to the P-256 key previously active.",
 			},
-			"p256previous_key_id": schema.StringAttribute{
+			"p256_previous_key_id": schema.StringAttribute{
 				Optional:    true,
 				Description: "Key Id for previously active P-256 key.",
 			},
-			"p256publish_x5c_parameter": schema.BoolAttribute{
+			"p256_publish_x5c_parameter": schema.BoolAttribute{
 				Optional:    true,
 				Computed:    true,
 				Description: "Enable publishing of the P-256 certificate chain associated with the active key.",
 			},
-			"p384active_cert_ref": schema.SingleNestedAttribute{
+			"p384_active_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Required:    true,
@@ -172,11 +172,11 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 				Optional:    true,
 				Description: "Reference to the P-384 key currently active.",
 			},
-			"p384active_key_id": schema.StringAttribute{
+			"p384_active_key_id": schema.StringAttribute{
 				Optional:    true,
 				Description: "Key Id for currently active P-384 key.",
 			},
-			"p384decryption_active_cert_ref": schema.SingleNestedAttribute{
+			"p384_decryption_active_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Required:    true,
@@ -186,11 +186,11 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 				Optional:    true,
 				Description: "Reference to the P-384 decryption key currently active.",
 			},
-			"p384decryption_active_key_id": schema.StringAttribute{
+			"p384_decryption_active_key_id": schema.StringAttribute{
 				Optional:    true,
 				Description: "Key Id for currently active P-384 decryption key.",
 			},
-			"p384decryption_previous_cert_ref": schema.SingleNestedAttribute{
+			"p384_decryption_previous_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Required:    true,
@@ -200,16 +200,16 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 				Optional:    true,
 				Description: "Reference to the P-384 decryption key previously active.",
 			},
-			"p384decryption_previous_key_id": schema.StringAttribute{
+			"p384_decryption_previous_key_id": schema.StringAttribute{
 				Optional:    true,
 				Description: "Key Id for previously active P-384 decryption key.",
 			},
-			"p384decryption_publish_x5c_parameter": schema.BoolAttribute{
+			"p384_decryption_publish_x5c_parameter": schema.BoolAttribute{
 				Optional:    true,
 				Computed:    true,
 				Description: "Enable publishing of the P-384 certificate chain associated with the active key.",
 			},
-			"p384previous_cert_ref": schema.SingleNestedAttribute{
+			"p384_previous_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Required:    true,
@@ -219,16 +219,16 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 				Optional:    true,
 				Description: "Reference to the P-384 key previously active.",
 			},
-			"p384previous_key_id": schema.StringAttribute{
+			"p384_previous_key_id": schema.StringAttribute{
 				Optional:    true,
 				Description: "Key Id for previously active P-384 key.",
 			},
-			"p384publish_x5c_parameter": schema.BoolAttribute{
+			"p384_publish_x5c_parameter": schema.BoolAttribute{
 				Optional:    true,
 				Computed:    true,
 				Description: "Enable publishing of the P-384 certificate chain associated with the active key.",
 			},
-			"p521active_cert_ref": schema.SingleNestedAttribute{
+			"p521_active_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Required:    true,
@@ -238,11 +238,11 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 				Optional:    true,
 				Description: "Reference to the P-521 key currently active.",
 			},
-			"p521active_key_id": schema.StringAttribute{
+			"p521_active_key_id": schema.StringAttribute{
 				Optional:    true,
 				Description: "Key Id for currently active P-521 key.",
 			},
-			"p521decryption_active_cert_ref": schema.SingleNestedAttribute{
+			"p521_decryption_active_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Required:    true,
@@ -252,11 +252,11 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 				Optional:    true,
 				Description: "Reference to the P-521 decryption key currently active.",
 			},
-			"p521decryption_active_key_id": schema.StringAttribute{
+			"p521_decryption_active_key_id": schema.StringAttribute{
 				Optional:    true,
 				Description: "Key Id for currently active P-521 decryption key.",
 			},
-			"p521decryption_previous_cert_ref": schema.SingleNestedAttribute{
+			"p521_decryption_previous_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Required:    true,
@@ -266,16 +266,16 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 				Optional:    true,
 				Description: "Reference to the P-521 decryption key previously active.",
 			},
-			"p521decryption_previous_key_id": schema.StringAttribute{
+			"p521_decryption_previous_key_id": schema.StringAttribute{
 				Optional:    true,
 				Description: "Key Id for previously active P-521 decryption key.",
 			},
-			"p521decryption_publish_x5c_parameter": schema.BoolAttribute{
+			"p521_decryption_publish_x5c_parameter": schema.BoolAttribute{
 				Optional:    true,
 				Computed:    true,
 				Description: "Enable publishing of the P-521 certificate chain associated with the active key.",
 			},
-			"p521previous_cert_ref": schema.SingleNestedAttribute{
+			"p521_previous_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Required:    true,
@@ -285,11 +285,11 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 				Optional:    true,
 				Description: "Reference to the P-521 key previously active.",
 			},
-			"p521previous_key_id": schema.StringAttribute{
+			"p521_previous_key_id": schema.StringAttribute{
 				Optional:    true,
 				Description: "Key Id for previously active P-521 key.",
 			},
-			"p521publish_x5c_parameter": schema.BoolAttribute{
+			"p521_publish_x5c_parameter": schema.BoolAttribute{
 				Optional:    true,
 				Computed:    true,
 				Description: "Enable publishing of the P-521 certificate chain associated with the active key.",
@@ -424,51 +424,51 @@ func (r *keypairsOauthOpenidConnectResource) ModifyPlan(ctx context.Context, req
 	// If any of these fields are set by the user and the PF version is not new enough, throw an error
 	if !pfVersionAtLeast1201 {
 		if internaltypes.IsDefined(plan.P256activeKeyId) {
-			version.AddUnsupportedAttributeError("p256active_key_id",
+			version.AddUnsupportedAttributeError("p256_active_key_id",
 				r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
 		}
 		if internaltypes.IsDefined(plan.P256decryptionActiveKeyId) {
-			version.AddUnsupportedAttributeError("p256decryption_active_key_id",
+			version.AddUnsupportedAttributeError("p256_decryption_active_key_id",
 				r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
 		}
 		if internaltypes.IsDefined(plan.P256decryptionPreviousKeyId) {
-			version.AddUnsupportedAttributeError("p256decryption_previous_key_id",
+			version.AddUnsupportedAttributeError("p256_decryption_previous_key_id",
 				r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
 		}
 		if internaltypes.IsDefined(plan.P256previousKeyId) {
-			version.AddUnsupportedAttributeError("p256previous_key_id",
+			version.AddUnsupportedAttributeError("p256_previous_key_id",
 				r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
 		}
 		if internaltypes.IsDefined(plan.P384activeKeyId) {
-			version.AddUnsupportedAttributeError("p384active_key_id",
+			version.AddUnsupportedAttributeError("p384_active_key_id",
 				r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
 		}
 		if internaltypes.IsDefined(plan.P384decryptionActiveKeyId) {
-			version.AddUnsupportedAttributeError("p384decryption_active_key_id",
+			version.AddUnsupportedAttributeError("p384_decryption_active_key_id",
 				r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
 		}
 		if internaltypes.IsDefined(plan.P384decryptionPreviousKeyId) {
-			version.AddUnsupportedAttributeError("p384decryption_previous_key_id",
+			version.AddUnsupportedAttributeError("p384_decryption_previous_key_id",
 				r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
 		}
 		if internaltypes.IsDefined(plan.P384previousKeyId) {
-			version.AddUnsupportedAttributeError("p384previous_key_id",
+			version.AddUnsupportedAttributeError("p384_previous_key_id",
 				r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
 		}
 		if internaltypes.IsDefined(plan.P521activeKeyId) {
-			version.AddUnsupportedAttributeError("p521active_key_id",
+			version.AddUnsupportedAttributeError("p521_active_key_id",
 				r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
 		}
 		if internaltypes.IsDefined(plan.P521decryptionActiveKeyId) {
-			version.AddUnsupportedAttributeError("p521decryption_active_key_id",
+			version.AddUnsupportedAttributeError("p521_decryption_active_key_id",
 				r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
 		}
 		if internaltypes.IsDefined(plan.P521decryptionPreviousKeyId) {
-			version.AddUnsupportedAttributeError("p521decryption_previous_key_id",
+			version.AddUnsupportedAttributeError("p521_decryption_previous_key_id",
 				r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
 		}
 		if internaltypes.IsDefined(plan.P521previousKeyId) {
-			version.AddUnsupportedAttributeError("p521previous_key_id",
+			version.AddUnsupportedAttributeError("p521_previous_key_id",
 				r.providerConfig.ProductVersion, version.PingFederate1201, &resp.Diagnostics)
 		}
 		if internaltypes.IsDefined(plan.RsaActiveKeyId) {
@@ -502,137 +502,137 @@ func (r *keypairsOauthOpenidConnectResource) ModifyPlan(ctx context.Context, req
 
 func (model *keypairsOauthOpenidConnectResourceModel) buildClientStruct(versionAtLeast1201 bool) *client.OAuthOidcKeysSettings {
 	result := &client.OAuthOidcKeysSettings{}
-	// p256active_cert_ref
+	// p256_active_cert_ref
 	if !model.P256activeCertRef.IsNull() {
-		p256activeCertRefValue := &client.ResourceLink{}
-		p256activeCertRefAttrs := model.P256activeCertRef.Attributes()
-		p256activeCertRefValue.Id = p256activeCertRefAttrs["id"].(types.String).ValueString()
-		result.P256ActiveCertRef = p256activeCertRefValue
+		p256ActiveCertRefValue := &client.ResourceLink{}
+		p256ActiveCertRefAttrs := model.P256activeCertRef.Attributes()
+		p256ActiveCertRefValue.Id = p256ActiveCertRefAttrs["id"].(types.String).ValueString()
+		result.P256ActiveCertRef = p256ActiveCertRefValue
 	}
 
-	// p256active_key_id
+	// p256_active_key_id
 	result.P256ActiveKeyId = model.P256activeKeyId.ValueStringPointer()
-	// p256decryption_active_cert_ref
+	// p256_decryption_active_cert_ref
 	if !model.P256decryptionActiveCertRef.IsNull() {
-		p256decryptionActiveCertRefValue := &client.ResourceLink{}
-		p256decryptionActiveCertRefAttrs := model.P256decryptionActiveCertRef.Attributes()
-		p256decryptionActiveCertRefValue.Id = p256decryptionActiveCertRefAttrs["id"].(types.String).ValueString()
-		result.P256DecryptionActiveCertRef = p256decryptionActiveCertRefValue
+		p256DecryptionActiveCertRefValue := &client.ResourceLink{}
+		p256DecryptionActiveCertRefAttrs := model.P256decryptionActiveCertRef.Attributes()
+		p256DecryptionActiveCertRefValue.Id = p256DecryptionActiveCertRefAttrs["id"].(types.String).ValueString()
+		result.P256DecryptionActiveCertRef = p256DecryptionActiveCertRefValue
 	}
 
-	// p256decryption_active_key_id
+	// p256_decryption_active_key_id
 	result.P256DecryptionActiveKeyId = model.P256decryptionActiveKeyId.ValueStringPointer()
-	// p256decryption_previous_cert_ref
+	// p256_decryption_previous_cert_ref
 	if !model.P256decryptionPreviousCertRef.IsNull() {
-		p256decryptionPreviousCertRefValue := &client.ResourceLink{}
-		p256decryptionPreviousCertRefAttrs := model.P256decryptionPreviousCertRef.Attributes()
-		p256decryptionPreviousCertRefValue.Id = p256decryptionPreviousCertRefAttrs["id"].(types.String).ValueString()
-		result.P256DecryptionPreviousCertRef = p256decryptionPreviousCertRefValue
+		p256DecryptionPreviousCertRefValue := &client.ResourceLink{}
+		p256DecryptionPreviousCertRefAttrs := model.P256decryptionPreviousCertRef.Attributes()
+		p256DecryptionPreviousCertRefValue.Id = p256DecryptionPreviousCertRefAttrs["id"].(types.String).ValueString()
+		result.P256DecryptionPreviousCertRef = p256DecryptionPreviousCertRefValue
 	}
 
-	// p256decryption_previous_key_id
+	// p256_decryption_previous_key_id
 	result.P256DecryptionPreviousKeyId = model.P256decryptionPreviousKeyId.ValueStringPointer()
-	// p256decryption_publish_x5c_parameter
+	// p256_decryption_publish_x5c_parameter
 	result.P256DecryptionPublishX5cParameter = model.P256decryptionPublishX5cParameter.ValueBoolPointer()
-	// p256previous_cert_ref
+	// p256_previous_cert_ref
 	if !model.P256previousCertRef.IsNull() {
-		p256previousCertRefValue := &client.ResourceLink{}
-		p256previousCertRefAttrs := model.P256previousCertRef.Attributes()
-		p256previousCertRefValue.Id = p256previousCertRefAttrs["id"].(types.String).ValueString()
-		result.P256PreviousCertRef = p256previousCertRefValue
+		p256PreviousCertRefValue := &client.ResourceLink{}
+		p256PreviousCertRefAttrs := model.P256previousCertRef.Attributes()
+		p256PreviousCertRefValue.Id = p256PreviousCertRefAttrs["id"].(types.String).ValueString()
+		result.P256PreviousCertRef = p256PreviousCertRefValue
 	}
 
-	// p256previous_key_id
+	// p256_previous_key_id
 	result.P256PreviousKeyId = model.P256previousKeyId.ValueStringPointer()
-	// p256publish_x5c_parameter
+	// p256_publish_x5c_parameter
 	result.P256PublishX5cParameter = model.P256publishX5cParameter.ValueBoolPointer()
-	// p384active_cert_ref
+	// p384_active_cert_ref
 	if !model.P384activeCertRef.IsNull() {
-		p384activeCertRefValue := &client.ResourceLink{}
-		p384activeCertRefAttrs := model.P384activeCertRef.Attributes()
-		p384activeCertRefValue.Id = p384activeCertRefAttrs["id"].(types.String).ValueString()
-		result.P384ActiveCertRef = p384activeCertRefValue
+		p384ActiveCertRefValue := &client.ResourceLink{}
+		p384ActiveCertRefAttrrs := model.P384activeCertRef.Attributes()
+		p384ActiveCertRefValue.Id = p384ActiveCertRefAttrrs["id"].(types.String).ValueString()
+		result.P384ActiveCertRef = p384ActiveCertRefValue
 	}
 
-	// p384active_key_id
+	// p384_active_key_id
 	result.P384ActiveKeyId = model.P384activeKeyId.ValueStringPointer()
-	// p384decryption_active_cert_ref
+	// p384_decryption_active_cert_ref
 	if !model.P384decryptionActiveCertRef.IsNull() {
-		p384decryptionActiveCertRefValue := &client.ResourceLink{}
-		p384decryptionActiveCertRefAttrs := model.P384decryptionActiveCertRef.Attributes()
-		p384decryptionActiveCertRefValue.Id = p384decryptionActiveCertRefAttrs["id"].(types.String).ValueString()
-		result.P384DecryptionActiveCertRef = p384decryptionActiveCertRefValue
+		p384DecryptionActiveCertRefValue := &client.ResourceLink{}
+		p384DecryptionActiveCertRefAttrs := model.P384decryptionActiveCertRef.Attributes()
+		p384DecryptionActiveCertRefValue.Id = p384DecryptionActiveCertRefAttrs["id"].(types.String).ValueString()
+		result.P384DecryptionActiveCertRef = p384DecryptionActiveCertRefValue
 	}
 
-	// p384decryption_active_key_id
+	// p384_decryption_active_key_id
 	result.P384DecryptionActiveKeyId = model.P384decryptionActiveKeyId.ValueStringPointer()
-	// p384decryption_previous_cert_ref
+	// p384_decryption_previous_cert_ref
 	if !model.P384decryptionPreviousCertRef.IsNull() {
-		p384decryptionPreviousCertRefValue := &client.ResourceLink{}
-		p384decryptionPreviousCertRefAttrs := model.P384decryptionPreviousCertRef.Attributes()
-		p384decryptionPreviousCertRefValue.Id = p384decryptionPreviousCertRefAttrs["id"].(types.String).ValueString()
-		result.P384DecryptionPreviousCertRef = p384decryptionPreviousCertRefValue
+		p384DecryptionPreviousCertRefValue := &client.ResourceLink{}
+		p384DecryptionPreviousCertRefAttrs := model.P384decryptionPreviousCertRef.Attributes()
+		p384DecryptionPreviousCertRefValue.Id = p384DecryptionPreviousCertRefAttrs["id"].(types.String).ValueString()
+		result.P384DecryptionPreviousCertRef = p384DecryptionPreviousCertRefValue
 	}
 
-	// p384decryption_previous_key_id
+	// p384_decryption_previous_key_id
 	result.P384DecryptionPreviousKeyId = model.P384decryptionPreviousKeyId.ValueStringPointer()
-	// p384decryption_publish_x5c_parameter
+	// p384_decryption_publish_x5c_parameter
 	result.P384DecryptionPublishX5cParameter = model.P384decryptionPublishX5cParameter.ValueBoolPointer()
-	// p384previous_cert_ref
+	// p384_previous_cert_ref
 	if !model.P384previousCertRef.IsNull() {
-		p384previousCertRefValue := &client.ResourceLink{}
-		p384previousCertRefAttrs := model.P384previousCertRef.Attributes()
-		p384previousCertRefValue.Id = p384previousCertRefAttrs["id"].(types.String).ValueString()
-		result.P384PreviousCertRef = p384previousCertRefValue
+		p384PreviousCertRefValue := &client.ResourceLink{}
+		p384PreviousCertRefAttrs := model.P384previousCertRef.Attributes()
+		p384PreviousCertRefValue.Id = p384PreviousCertRefAttrs["id"].(types.String).ValueString()
+		result.P384PreviousCertRef = p384PreviousCertRefValue
 	}
 
-	// p384previous_key_id
+	// p384_previous_key_id
 	result.P384PreviousKeyId = model.P384previousKeyId.ValueStringPointer()
-	// p384publish_x5c_parameter
+	// p384_publish_x5c_parameter
 	result.P384PublishX5cParameter = model.P384publishX5cParameter.ValueBoolPointer()
-	// p521active_cert_ref
+	// p521_active_cert_ref
 	if !model.P521activeCertRef.IsNull() {
-		p521activeCertRefValue := &client.ResourceLink{}
-		p521activeCertRefAttrs := model.P521activeCertRef.Attributes()
-		p521activeCertRefValue.Id = p521activeCertRefAttrs["id"].(types.String).ValueString()
-		result.P521ActiveCertRef = p521activeCertRefValue
+		p521ActiveCertRefValue := &client.ResourceLink{}
+		p521ActiveCertRefAttrrs := model.P521activeCertRef.Attributes()
+		p521ActiveCertRefValue.Id = p521ActiveCertRefAttrrs["id"].(types.String).ValueString()
+		result.P521ActiveCertRef = p521ActiveCertRefValue
 	}
 
-	// p521active_key_id
+	// p521_active_key_id
 	result.P521ActiveKeyId = model.P521activeKeyId.ValueStringPointer()
-	// p521decryption_active_cert_ref
+	// p521_decryption_active_cert_ref
 	if !model.P521decryptionActiveCertRef.IsNull() {
-		p521decryptionActiveCertRefValue := &client.ResourceLink{}
-		p521decryptionActiveCertRefAttrs := model.P521decryptionActiveCertRef.Attributes()
-		p521decryptionActiveCertRefValue.Id = p521decryptionActiveCertRefAttrs["id"].(types.String).ValueString()
-		result.P521DecryptionActiveCertRef = p521decryptionActiveCertRefValue
+		p521DecryptionActiveCertRefValue := &client.ResourceLink{}
+		p521DecryptionActiveCertRefAttrs := model.P521decryptionActiveCertRef.Attributes()
+		p521DecryptionActiveCertRefValue.Id = p521DecryptionActiveCertRefAttrs["id"].(types.String).ValueString()
+		result.P521DecryptionActiveCertRef = p521DecryptionActiveCertRefValue
 	}
 
-	// p521decryption_active_key_id
+	// p521_decryption_active_key_id
 	result.P521DecryptionActiveKeyId = model.P521decryptionActiveKeyId.ValueStringPointer()
-	// p521decryption_previous_cert_ref
+	// p521_decryption_previous_cert_ref
 	if !model.P521decryptionPreviousCertRef.IsNull() {
-		p521decryptionPreviousCertRefValue := &client.ResourceLink{}
-		p521decryptionPreviousCertRefAttrs := model.P521decryptionPreviousCertRef.Attributes()
-		p521decryptionPreviousCertRefValue.Id = p521decryptionPreviousCertRefAttrs["id"].(types.String).ValueString()
-		result.P521DecryptionPreviousCertRef = p521decryptionPreviousCertRefValue
+		p521DecryptionPreviousCertRefValue := &client.ResourceLink{}
+		p521DecryptionPreviousCertRefAttrs := model.P521decryptionPreviousCertRef.Attributes()
+		p521DecryptionPreviousCertRefValue.Id = p521DecryptionPreviousCertRefAttrs["id"].(types.String).ValueString()
+		result.P521DecryptionPreviousCertRef = p521DecryptionPreviousCertRefValue
 	}
 
-	// p521decryption_previous_key_id
+	// p521_decryption_previous_key_id
 	result.P521DecryptionPreviousKeyId = model.P521decryptionPreviousKeyId.ValueStringPointer()
-	// p521decryption_publish_x5c_parameter
+	// p521_decryption_publish_x5c_parameter
 	result.P521DecryptionPublishX5cParameter = model.P521decryptionPublishX5cParameter.ValueBoolPointer()
-	// p521previous_cert_ref
+	// p521_previous_cert_ref
 	if !model.P521previousCertRef.IsNull() {
-		p521previousCertRefValue := &client.ResourceLink{}
-		p521previousCertRefAttrs := model.P521previousCertRef.Attributes()
-		p521previousCertRefValue.Id = p521previousCertRefAttrs["id"].(types.String).ValueString()
-		result.P521PreviousCertRef = p521previousCertRefValue
+		p521PreviousCertRefValue := &client.ResourceLink{}
+		p521PreviousCertRefAttrs := model.P521previousCertRef.Attributes()
+		p521PreviousCertRefValue.Id = p521PreviousCertRefAttrs["id"].(types.String).ValueString()
+		result.P521PreviousCertRef = p521PreviousCertRefValue
 	}
 
-	// p521previous_key_id
+	// p521_previous_key_id
 	result.P521PreviousKeyId = model.P521previousKeyId.ValueStringPointer()
-	// p521publish_x5c_parameter
+	// p521_publish_x5c_parameter
 	result.P521PublishX5cParameter = model.P521publishX5cParameter.ValueBoolPointer()
 	// rsa_active_cert_ref
 	if !model.RsaActiveCertRef.IsNull() {
@@ -708,221 +708,221 @@ func (model *keypairsOauthOpenidConnectResourceModel) buildClientStruct(versionA
 
 func (state *keypairsOauthOpenidConnectResourceModel) readClientResponse(response *client.OAuthOidcKeysSettings, versionAtLeast1201 bool) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
-	// p256active_cert_ref
-	p256activeCertRefAttrTypes := map[string]attr.Type{
+	// p256_active_cert_ref
+	p256ActiveCertRefAttrrTypes := map[string]attr.Type{
 		"id": types.StringType,
 	}
-	var p256activeCertRefValue types.Object
+	var p256ActiveCertRefValue types.Object
 	if response.P256ActiveCertRef == nil {
-		p256activeCertRefValue = types.ObjectNull(p256activeCertRefAttrTypes)
+		p256ActiveCertRefValue = types.ObjectNull(p256ActiveCertRefAttrrTypes)
 	} else {
-		p256activeCertRefValue, diags = types.ObjectValue(p256activeCertRefAttrTypes, map[string]attr.Value{
+		p256ActiveCertRefValue, diags = types.ObjectValue(p256ActiveCertRefAttrrTypes, map[string]attr.Value{
 			"id": types.StringValue(response.P256ActiveCertRef.Id),
 		})
 		respDiags.Append(diags...)
 	}
 
-	state.P256activeCertRef = p256activeCertRefValue
-	// p256active_key_id
+	state.P256activeCertRef = p256ActiveCertRefValue
+	// p256_active_key_id
 	state.P256activeKeyId = types.StringPointerValue(response.P256ActiveKeyId)
-	// p256decryption_active_cert_ref
-	p256decryptionActiveCertRefAttrTypes := map[string]attr.Type{
+	// p256_decryption_active_cert_ref
+	p256DecryptionActiveCertRefAttrTypes := map[string]attr.Type{
 		"id": types.StringType,
 	}
-	var p256decryptionActiveCertRefValue types.Object
+	var p256DecryptionActiveCertRefValue types.Object
 	if response.P256DecryptionActiveCertRef == nil {
-		p256decryptionActiveCertRefValue = types.ObjectNull(p256decryptionActiveCertRefAttrTypes)
+		p256DecryptionActiveCertRefValue = types.ObjectNull(p256DecryptionActiveCertRefAttrTypes)
 	} else {
-		p256decryptionActiveCertRefValue, diags = types.ObjectValue(p256decryptionActiveCertRefAttrTypes, map[string]attr.Value{
+		p256DecryptionActiveCertRefValue, diags = types.ObjectValue(p256DecryptionActiveCertRefAttrTypes, map[string]attr.Value{
 			"id": types.StringValue(response.P256DecryptionActiveCertRef.Id),
 		})
 		respDiags.Append(diags...)
 	}
 
-	state.P256decryptionActiveCertRef = p256decryptionActiveCertRefValue
-	// p256decryption_active_key_id
+	state.P256decryptionActiveCertRef = p256DecryptionActiveCertRefValue
+	// p256_decryption_active_key_id
 	state.P256decryptionActiveKeyId = types.StringPointerValue(response.P256DecryptionActiveKeyId)
-	// p256decryption_previous_cert_ref
-	p256decryptionPreviousCertRefAttrTypes := map[string]attr.Type{
+	// p256_decryption_previous_cert_ref
+	p256DecryptionPreviousCertRefAttrTypes := map[string]attr.Type{
 		"id": types.StringType,
 	}
-	var p256decryptionPreviousCertRefValue types.Object
+	var p256DecryptionPreviousCertRefValue types.Object
 	if response.P256DecryptionPreviousCertRef == nil {
-		p256decryptionPreviousCertRefValue = types.ObjectNull(p256decryptionPreviousCertRefAttrTypes)
+		p256DecryptionPreviousCertRefValue = types.ObjectNull(p256DecryptionPreviousCertRefAttrTypes)
 	} else {
-		p256decryptionPreviousCertRefValue, diags = types.ObjectValue(p256decryptionPreviousCertRefAttrTypes, map[string]attr.Value{
+		p256DecryptionPreviousCertRefValue, diags = types.ObjectValue(p256DecryptionPreviousCertRefAttrTypes, map[string]attr.Value{
 			"id": types.StringValue(response.P256DecryptionPreviousCertRef.Id),
 		})
 		respDiags.Append(diags...)
 	}
 
-	state.P256decryptionPreviousCertRef = p256decryptionPreviousCertRefValue
-	// p256decryption_previous_key_id
+	state.P256decryptionPreviousCertRef = p256DecryptionPreviousCertRefValue
+	// p256_decryption_previous_key_id
 	state.P256decryptionPreviousKeyId = types.StringPointerValue(response.P256DecryptionPreviousKeyId)
-	// p256decryption_publish_x5c_parameter
+	// p256_decryption_publish_x5c_parameter
 	state.P256decryptionPublishX5cParameter = types.BoolPointerValue(response.P256DecryptionPublishX5cParameter)
-	// p256previous_cert_ref
-	p256previousCertRefAttrTypes := map[string]attr.Type{
+	// p256_previous_cert_ref
+	p256PreviousCertRefAttrTypes := map[string]attr.Type{
 		"id": types.StringType,
 	}
-	var p256previousCertRefValue types.Object
+	var p256PreviousCertRefValue types.Object
 	if response.P256PreviousCertRef == nil {
-		p256previousCertRefValue = types.ObjectNull(p256previousCertRefAttrTypes)
+		p256PreviousCertRefValue = types.ObjectNull(p256PreviousCertRefAttrTypes)
 	} else {
-		p256previousCertRefValue, diags = types.ObjectValue(p256previousCertRefAttrTypes, map[string]attr.Value{
+		p256PreviousCertRefValue, diags = types.ObjectValue(p256PreviousCertRefAttrTypes, map[string]attr.Value{
 			"id": types.StringValue(response.P256PreviousCertRef.Id),
 		})
 		respDiags.Append(diags...)
 	}
 
-	state.P256previousCertRef = p256previousCertRefValue
-	// p256previous_key_id
+	state.P256previousCertRef = p256PreviousCertRefValue
+	// p256_previous_key_id
 	state.P256previousKeyId = types.StringPointerValue(response.P256PreviousKeyId)
-	// p256publish_x5c_parameter
+	// p256_publish_x5c_parameter
 	state.P256publishX5cParameter = types.BoolPointerValue(response.P256PublishX5cParameter)
-	// p384active_cert_ref
-	p384activeCertRefAttrTypes := map[string]attr.Type{
+	// p384_active_cert_ref
+	p384ActiveCertRefAttrrTypes := map[string]attr.Type{
 		"id": types.StringType,
 	}
-	var p384activeCertRefValue types.Object
+	var p384ActiveCertRefValue types.Object
 	if response.P384ActiveCertRef == nil {
-		p384activeCertRefValue = types.ObjectNull(p384activeCertRefAttrTypes)
+		p384ActiveCertRefValue = types.ObjectNull(p384ActiveCertRefAttrrTypes)
 	} else {
-		p384activeCertRefValue, diags = types.ObjectValue(p384activeCertRefAttrTypes, map[string]attr.Value{
+		p384ActiveCertRefValue, diags = types.ObjectValue(p384ActiveCertRefAttrrTypes, map[string]attr.Value{
 			"id": types.StringValue(response.P384ActiveCertRef.Id),
 		})
 		respDiags.Append(diags...)
 	}
 
-	state.P384activeCertRef = p384activeCertRefValue
-	// p384active_key_id
+	state.P384activeCertRef = p384ActiveCertRefValue
+	// p384_active_key_id
 	state.P384activeKeyId = types.StringPointerValue(response.P384ActiveKeyId)
-	// p384decryption_active_cert_ref
-	p384decryptionActiveCertRefAttrTypes := map[string]attr.Type{
+	// p384_decryption_active_cert_ref
+	p384DecryptionActiveCertRefAttrTypes := map[string]attr.Type{
 		"id": types.StringType,
 	}
-	var p384decryptionActiveCertRefValue types.Object
+	var p384DecryptionActiveCertRefValue types.Object
 	if response.P384DecryptionActiveCertRef == nil {
-		p384decryptionActiveCertRefValue = types.ObjectNull(p384decryptionActiveCertRefAttrTypes)
+		p384DecryptionActiveCertRefValue = types.ObjectNull(p384DecryptionActiveCertRefAttrTypes)
 	} else {
-		p384decryptionActiveCertRefValue, diags = types.ObjectValue(p384decryptionActiveCertRefAttrTypes, map[string]attr.Value{
+		p384DecryptionActiveCertRefValue, diags = types.ObjectValue(p384DecryptionActiveCertRefAttrTypes, map[string]attr.Value{
 			"id": types.StringValue(response.P384DecryptionActiveCertRef.Id),
 		})
 		respDiags.Append(diags...)
 	}
 
-	state.P384decryptionActiveCertRef = p384decryptionActiveCertRefValue
-	// p384decryption_active_key_id
+	state.P384decryptionActiveCertRef = p384DecryptionActiveCertRefValue
+	// p384_decryption_active_key_id
 	state.P384decryptionActiveKeyId = types.StringPointerValue(response.P384DecryptionActiveKeyId)
-	// p384decryption_previous_cert_ref
-	p384decryptionPreviousCertRefAttrTypes := map[string]attr.Type{
+	// p384_decryption_previous_cert_ref
+	p384DecryptionPreviousCertRefAttrTypes := map[string]attr.Type{
 		"id": types.StringType,
 	}
-	var p384decryptionPreviousCertRefValue types.Object
+	var p384DecryptionPreviousCertRefValue types.Object
 	if response.P384DecryptionPreviousCertRef == nil {
-		p384decryptionPreviousCertRefValue = types.ObjectNull(p384decryptionPreviousCertRefAttrTypes)
+		p384DecryptionPreviousCertRefValue = types.ObjectNull(p384DecryptionPreviousCertRefAttrTypes)
 	} else {
-		p384decryptionPreviousCertRefValue, diags = types.ObjectValue(p384decryptionPreviousCertRefAttrTypes, map[string]attr.Value{
+		p384DecryptionPreviousCertRefValue, diags = types.ObjectValue(p384DecryptionPreviousCertRefAttrTypes, map[string]attr.Value{
 			"id": types.StringValue(response.P384DecryptionPreviousCertRef.Id),
 		})
 		respDiags.Append(diags...)
 	}
 
-	state.P384decryptionPreviousCertRef = p384decryptionPreviousCertRefValue
-	// p384decryption_previous_key_id
+	state.P384decryptionPreviousCertRef = p384DecryptionPreviousCertRefValue
+	// p384_decryption_previous_key_id
 	state.P384decryptionPreviousKeyId = types.StringPointerValue(response.P384DecryptionPreviousKeyId)
-	// p384decryption_publish_x5c_parameter
+	// p384_decryption_publish_x5c_parameter
 	state.P384decryptionPublishX5cParameter = types.BoolPointerValue(response.P384DecryptionPublishX5cParameter)
-	// p384previous_cert_ref
-	p384previousCertRefAttrTypes := map[string]attr.Type{
+	// p384_previous_cert_ref
+	p384PreviousCertRefAttrTypes := map[string]attr.Type{
 		"id": types.StringType,
 	}
-	var p384previousCertRefValue types.Object
+	var p384PreviousCertRefValue types.Object
 	if response.P384PreviousCertRef == nil {
-		p384previousCertRefValue = types.ObjectNull(p384previousCertRefAttrTypes)
+		p384PreviousCertRefValue = types.ObjectNull(p384PreviousCertRefAttrTypes)
 	} else {
-		p384previousCertRefValue, diags = types.ObjectValue(p384previousCertRefAttrTypes, map[string]attr.Value{
+		p384PreviousCertRefValue, diags = types.ObjectValue(p384PreviousCertRefAttrTypes, map[string]attr.Value{
 			"id": types.StringValue(response.P384PreviousCertRef.Id),
 		})
 		respDiags.Append(diags...)
 	}
 
-	state.P384previousCertRef = p384previousCertRefValue
-	// p384previous_key_id
+	state.P384previousCertRef = p384PreviousCertRefValue
+	// p384_previous_key_id
 	state.P384previousKeyId = types.StringPointerValue(response.P384PreviousKeyId)
-	// p384publish_x5c_parameter
+	// p384_publish_x5c_parameter
 	state.P384publishX5cParameter = types.BoolPointerValue(response.P384PublishX5cParameter)
-	// p521active_cert_ref
-	p521activeCertRefAttrTypes := map[string]attr.Type{
+	// p521_active_cert_ref
+	p521ActiveCertRefAttrrTypes := map[string]attr.Type{
 		"id": types.StringType,
 	}
-	var p521activeCertRefValue types.Object
+	var p521ActiveCertRefValue types.Object
 	if response.P521ActiveCertRef == nil {
-		p521activeCertRefValue = types.ObjectNull(p521activeCertRefAttrTypes)
+		p521ActiveCertRefValue = types.ObjectNull(p521ActiveCertRefAttrrTypes)
 	} else {
-		p521activeCertRefValue, diags = types.ObjectValue(p521activeCertRefAttrTypes, map[string]attr.Value{
+		p521ActiveCertRefValue, diags = types.ObjectValue(p521ActiveCertRefAttrrTypes, map[string]attr.Value{
 			"id": types.StringValue(response.P521ActiveCertRef.Id),
 		})
 		respDiags.Append(diags...)
 	}
 
-	state.P521activeCertRef = p521activeCertRefValue
-	// p521active_key_id
+	state.P521activeCertRef = p521ActiveCertRefValue
+	// p521_active_key_id
 	state.P521activeKeyId = types.StringPointerValue(response.P521ActiveKeyId)
-	// p521decryption_active_cert_ref
-	p521decryptionActiveCertRefAttrTypes := map[string]attr.Type{
+	// p521_decryption_active_cert_ref
+	p521DecryptionActiveCertRefAttrTypes := map[string]attr.Type{
 		"id": types.StringType,
 	}
-	var p521decryptionActiveCertRefValue types.Object
+	var p521DecryptionActiveCertRefValue types.Object
 	if response.P521DecryptionActiveCertRef == nil {
-		p521decryptionActiveCertRefValue = types.ObjectNull(p521decryptionActiveCertRefAttrTypes)
+		p521DecryptionActiveCertRefValue = types.ObjectNull(p521DecryptionActiveCertRefAttrTypes)
 	} else {
-		p521decryptionActiveCertRefValue, diags = types.ObjectValue(p521decryptionActiveCertRefAttrTypes, map[string]attr.Value{
+		p521DecryptionActiveCertRefValue, diags = types.ObjectValue(p521DecryptionActiveCertRefAttrTypes, map[string]attr.Value{
 			"id": types.StringValue(response.P521DecryptionActiveCertRef.Id),
 		})
 		respDiags.Append(diags...)
 	}
 
-	state.P521decryptionActiveCertRef = p521decryptionActiveCertRefValue
-	// p521decryption_active_key_id
+	state.P521decryptionActiveCertRef = p521DecryptionActiveCertRefValue
+	// p521_decryption_active_key_id
 	state.P521decryptionActiveKeyId = types.StringPointerValue(response.P521DecryptionActiveKeyId)
-	// p521decryption_previous_cert_ref
-	p521decryptionPreviousCertRefAttrTypes := map[string]attr.Type{
+	// p521_decryption_previous_cert_ref
+	p521DecryptionPreviousCertRefAttrTypes := map[string]attr.Type{
 		"id": types.StringType,
 	}
-	var p521decryptionPreviousCertRefValue types.Object
+	var p521DecryptionPreviousCertRefValue types.Object
 	if response.P521DecryptionPreviousCertRef == nil {
-		p521decryptionPreviousCertRefValue = types.ObjectNull(p521decryptionPreviousCertRefAttrTypes)
+		p521DecryptionPreviousCertRefValue = types.ObjectNull(p521DecryptionPreviousCertRefAttrTypes)
 	} else {
-		p521decryptionPreviousCertRefValue, diags = types.ObjectValue(p521decryptionPreviousCertRefAttrTypes, map[string]attr.Value{
+		p521DecryptionPreviousCertRefValue, diags = types.ObjectValue(p521DecryptionPreviousCertRefAttrTypes, map[string]attr.Value{
 			"id": types.StringValue(response.P521DecryptionPreviousCertRef.Id),
 		})
 		respDiags.Append(diags...)
 	}
 
-	state.P521decryptionPreviousCertRef = p521decryptionPreviousCertRefValue
-	// p521decryption_previous_key_id
+	state.P521decryptionPreviousCertRef = p521DecryptionPreviousCertRefValue
+	// p521_decryption_previous_key_id
 	state.P521decryptionPreviousKeyId = types.StringPointerValue(response.P521DecryptionPreviousKeyId)
-	// p521decryption_publish_x5c_parameter
+	// p521_decryption_publish_x5c_parameter
 	state.P521decryptionPublishX5cParameter = types.BoolPointerValue(response.P521DecryptionPublishX5cParameter)
-	// p521previous_cert_ref
-	p521previousCertRefAttrTypes := map[string]attr.Type{
+	// p521_previous_cert_ref
+	p521PreviousCertRefAttrTypes := map[string]attr.Type{
 		"id": types.StringType,
 	}
-	var p521previousCertRefValue types.Object
+	var p521PreviousCertRefValue types.Object
 	if response.P521PreviousCertRef == nil {
-		p521previousCertRefValue = types.ObjectNull(p521previousCertRefAttrTypes)
+		p521PreviousCertRefValue = types.ObjectNull(p521PreviousCertRefAttrTypes)
 	} else {
-		p521previousCertRefValue, diags = types.ObjectValue(p521previousCertRefAttrTypes, map[string]attr.Value{
+		p521PreviousCertRefValue, diags = types.ObjectValue(p521PreviousCertRefAttrTypes, map[string]attr.Value{
 			"id": types.StringValue(response.P521PreviousCertRef.Id),
 		})
 		respDiags.Append(diags...)
 	}
 
-	state.P521previousCertRef = p521previousCertRefValue
-	// p521previous_key_id
+	state.P521previousCertRef = p521PreviousCertRefValue
+	// p521_previous_key_id
 	state.P521previousKeyId = types.StringPointerValue(response.P521PreviousKeyId)
-	// p521publish_x5c_parameter
+	// p521_publish_x5c_parameter
 	state.P521publishX5cParameter = types.BoolPointerValue(response.P521PublishX5cParameter)
 	// rsa_active_cert_ref
 	rsaActiveCertRefAttrTypes := map[string]attr.Type{
