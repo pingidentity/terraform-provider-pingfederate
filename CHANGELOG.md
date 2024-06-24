@@ -1,3 +1,7 @@
+# v0.12.0 (Unreleased)
+### Resources
+* **New Resource:** `pingfederate_keypairs_oauth_openid_connect` ([#267]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/267)))
+
 # v0.11.0 May 30th, 2024
 ### DEPRECATED
 * `location` property in resource reference object types for all Resources and DataSources removed ([#249](https://github.com/pingidentity/terraform-provider-pingfederate/pull/249))

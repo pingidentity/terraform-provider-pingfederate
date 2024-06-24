@@ -49,7 +49,7 @@ removetestcontainer:
 spincontainer: removetestcontainer starttestcontainer
 
 define test_acc_common_env_vars
-	PINGFEDERATE_PROVIDER_HTTPS_HOST=https://localhost:9999 PINGFEDERATE_PROVIDER_ADMIN_API_PATH="/pf-admin-api/v1" PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER=true PINGFEDERATE_PROVIDER_PRODUCT_VERSION=$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0}
+	PINGFEDERATE_PROVIDER_HTTPS_HOST=https://localhost:9999 PINGFEDERATE_PROVIDER_ADMIN_API_PATH="/pf-admin-api/v1" PINGFEDERATE_PROVIDER_INSECURE_TRUST_ALL_TLS=true PINGFEDERATE_PROVIDER_X_BYPASS_EXTERNAL_VALIDATION_HEADER=true PINGFEDERATE_PROVIDER_PRODUCT_VERSION=$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.0.1}
 endef
 
 define test_acc_basic_auth_env_vars
@@ -63,6 +63,9 @@ endef
 # Set ACC_TEST_NAME to name of test in cli
 testoneacc:
 	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/... -timeout 10m -run ${ACC_TEST_NAME} -v count=1
+
+testaccfolder:
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/config/${ACC_TEST_FOLDER}... -timeout 10m -v count=1
 
 testoneacccomplete: spincontainer testoneacc
 
