@@ -359,10 +359,6 @@ Required:
 - `name` (String) The name of the configuration field.
 - `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
 
-Optional:
-
-- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
-
 
 <a id="nestedatt--custom_data_store--configuration--tables"></a>
 ### Nested Schema for `custom_data_store.configuration.tables`
@@ -373,7 +369,6 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean, Deprecated) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
 - `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables--rows))
 
 <a id="nestedatt--custom_data_store--configuration--tables--rows"></a>
@@ -392,10 +387,6 @@ Required:
 - `name` (String) The name of the configuration field.
 - `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
 
-Optional:
-
-- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
-
 
 
 
@@ -407,10 +398,6 @@ Required:
 - `name` (String) The name of the configuration field.
 - `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
 
-Optional:
-
-- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
-
 
 <a id="nestedatt--custom_data_store--configuration--tables_all"></a>
 ### Nested Schema for `custom_data_store.configuration.tables_all`
@@ -421,7 +408,6 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean, Deprecated) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
 - `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables_all--rows))
 
 <a id="nestedatt--custom_data_store--configuration--tables_all--rows"></a>
@@ -439,10 +425,6 @@ Required:
 
 - `name` (String) The name of the configuration field.
 - `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
-
-Optional:
-
-- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 
 
 

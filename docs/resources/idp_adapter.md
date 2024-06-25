@@ -324,10 +324,6 @@ Required:
 - `name` (String) The name of the configuration field.
 - `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
 
-Optional:
-
-- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
-
 
 <a id="nestedatt--configuration--tables"></a>
 ### Nested Schema for `configuration.tables`
@@ -338,7 +334,6 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean, Deprecated) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
 - `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--configuration--tables--rows))
 
 <a id="nestedatt--configuration--tables--rows"></a>
@@ -357,10 +352,6 @@ Required:
 - `name` (String) The name of the configuration field.
 - `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
 
-Optional:
-
-- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
-
 
 
 
@@ -372,10 +363,6 @@ Required:
 - `name` (String) The name of the configuration field.
 - `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
 
-Optional:
-
-- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
-
 
 <a id="nestedatt--configuration--tables_all"></a>
 ### Nested Schema for `configuration.tables_all`
@@ -386,7 +373,6 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean, Deprecated) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
 - `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--configuration--tables_all--rows))
 
 <a id="nestedatt--configuration--tables_all--rows"></a>
@@ -404,10 +390,6 @@ Required:
 
 - `name` (String) The name of the configuration field.
 - `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
-
-Optional:
-
-- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 
 
 
@@ -431,7 +413,6 @@ Required:
 Optional:
 
 - `extended_attributes` (Attributes Set) A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
-- `inherited` (Boolean, Deprecated) Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.
 - `mask_ognl_values` (Boolean) Whether or not all OGNL expressions used to fulfill an outgoing assertion contract should be masked in the logs. Defaults to false.
 - `unique_user_key_attribute` (String) The attribute to use for uniquely identify a user's authentication sessions.
 
@@ -483,7 +464,6 @@ Optional:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--attribute_mapping--attribute_contract_fulfillment))
 - `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--attribute_mapping--attribute_sources))
-- `inherited` (Boolean, Deprecated) Whether this attribute mapping is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--attribute_mapping--attribute_contract_fulfillment"></a>
