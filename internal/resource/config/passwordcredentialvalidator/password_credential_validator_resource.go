@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
@@ -104,13 +103,6 @@ func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req re
 								},
 							},
 						},
-					},
-					"inherited": schema.BoolAttribute{
-						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
-						Description:        "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
-						Optional:           true,
-						Computed:           true,
-						Default:            booldefault.StaticBool(false),
 					},
 				},
 			},
