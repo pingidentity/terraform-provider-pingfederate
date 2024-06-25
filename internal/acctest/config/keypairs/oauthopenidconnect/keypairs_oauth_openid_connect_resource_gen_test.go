@@ -184,6 +184,10 @@ func keypairsOauthOpenidConnect_CheckComputedValuesComplete() resource.TestCheck
 		)
 	}
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "p256_publish_x5c_parameter", "false"),
+		resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "p384_publish_x5c_parameter", "false"),
+		resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "p521_decryption_publish_x5c_parameter", "false"),
+		resource.TestCheckResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "rsa_decryption_publish_x5c_parameter", "false"),
 		resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "rsa_algorithm_active_key_ids"),
 		resource.TestCheckNoResourceAttr("pingfederate_keypairs_oauth_openid_connect.example", "rsa_algorithm_previous_key_ids"),
 	)
