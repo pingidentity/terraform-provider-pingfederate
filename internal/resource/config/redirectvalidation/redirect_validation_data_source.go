@@ -108,6 +108,45 @@ func (r *redirectValidationDataSource) Schema(ctx context.Context, req datasourc
 							},
 						},
 					},
+					"uri_allow_list": schema.ListNestedAttribute{
+						Description: "List of URIs that are designated as valid target resources.",
+						Computed:    true,
+						Optional:    false,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"target_resource_sso": schema.BoolAttribute{
+									Description: "Enable this target resource for SSO redirect validation.",
+									Computed:    true,
+									Optional:    false,
+								},
+								"target_resource_slo": schema.BoolAttribute{
+									Description: "Enable this target resource for SLO redirect validation.",
+									Computed:    true,
+									Optional:    false,
+								},
+								"in_error_resource": schema.BoolAttribute{
+									Description: "Enable this target resource for in error resource validation.",
+									Computed:    true,
+									Optional:    false,
+								},
+								"idp_discovery": schema.BoolAttribute{
+									Description: "Enable this target resource for IdP discovery validation.",
+									Computed:    true,
+									Optional:    false,
+								},
+								"allow_query_and_fragment": schema.BoolAttribute{
+									Description: "Allow any query parameters and fragment in the resource.",
+									Computed:    true,
+									Optional:    false,
+								},
+								"valid_uri": schema.StringAttribute{
+									Description: "URI of a valid resource.",
+									Computed:    true,
+									Optional:    false,
+								},
+							},
+						},
+					},
 				},
 			},
 			"redirect_validation_partner_settings": schema.SingleNestedAttribute{
