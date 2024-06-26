@@ -171,6 +171,7 @@ Read-Only:
 - `type` (String) The data store type.
 - `use_dns_srv_records` (Boolean) Use DNS SRV Records to discover LDAP server information.
 - `use_ssl` (Boolean) Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS).
+- `use_start_tls` (Boolean) Connects to the LDAP data store using secure StartTLS encryption. The default value is false.
 - `user_dn` (String) The username credential required to access the data store. If specified, no other authentication fields should be provided.
 - `verify_host` (Boolean) Verifies that the presented server certificate includes the address to which the client intended to establish a connection.
 
@@ -206,6 +207,7 @@ Read-Only:
 - `ping_one_ldap_gateway_id` (String) The ID of the PingOne LDAP Gateway this data store uses.
 - `type` (String) The data store type.
 - `use_ssl` (Boolean) Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS).
+- `use_start_tls` (Boolean) Connects to the LDAP data store using StartTLS. The default value is false. The value is validated against the LDAP gateway configuration in PingOne unless the header 'X-BypassExternalValidation' is set to true.
 
 <a id="nestedatt--ping_one_ldap_gateway_data_store--ping_one_connection_ref"></a>
 ### Nested Schema for `ping_one_ldap_gateway_data_store.ping_one_connection_ref`

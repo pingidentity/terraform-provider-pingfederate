@@ -457,12 +457,12 @@ Required:
 Optional:
 
 - `allow_multi_value_attributes` (Boolean) Indicates that this data store can select more than one record from a column and return the results as a multi-value attribute.
-- `blocking_timeout` (Number) The amount of time in milliseconds a request waits to get a connection from the connection pool before it fails. Omitting this attribute will set the value to the connection pool default.
+- `blocking_timeout` (Number) The amount of time in milliseconds a request waits to get a connection from the connection pool before it fails. Omitting this attribute will set the value to the connection pool default. The default value is 5000 milliseconds.
 - `connection_url` (String) The default location of the JDBC database. This field is required if no mapping for JDBC database location and tags is specified.
 - `connection_url_tags` (Attributes Set) The set of connection URLs and associated tags for this JDBC data store. This is required if 'connectionUrl' is not provided. (see [below for nested schema](#nestedatt--jdbc_data_store--connection_url_tags))
-- `idle_timeout` (Number) The length of time in minutes the connection can be idle in the pool before it is closed. Omitting this attribute will set the value to the connection pool default.
-- `max_pool_size` (Number) The largest number of database connections in the connection pool for the given data store. Omitting this attribute will set the value to the connection pool default.
-- `min_pool_size` (Number) The smallest number of database connections in the connection pool for the given data store. Omitting this attribute will set the value to the connection pool default.
+- `idle_timeout` (Number) The length of time in minutes the connection can be idle in the pool before it is closed. Omitting this attribute will set the value to the connection pool default. The default value is 5 minutes.
+- `max_pool_size` (Number) The largest number of database connections in the connection pool for the given data store. Omitting this attribute will set the value to the connection pool default. The default value is 100.
+- `min_pool_size` (Number) The smallest number of database connections in the connection pool for the given data store. Omitting this attribute will set the value to the connection pool default. The default value is 10.
 - `name` (String) The data store name with a unique value across all data sources. Omitting this attribute will set the value to a combination of the connection url and the username.
 - `password` (String, Sensitive) The password needed to access the database. GETs will not return this attribute. To update this field, specify the new value in this attribute.
 - `user_name` (String) The name that identifies the user when connecting to the database.
@@ -518,6 +518,7 @@ Optional:
 - `time_between_evictions` (Number) The frequency, in milliseconds, that the evictor cleans up the connections in the pool. A value of -1 disables the evictor. Omitting this attribute will set the value to the default value.
 - `use_dns_srv_records` (Boolean) Use DNS SRV Records to discover LDAP server information. The default value is false.
 - `use_ssl` (Boolean) Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS). The default value is false.
+- `use_start_tls` (Boolean) Connects to the LDAP data store using secure StartTLS encryption. The default value is false.
 - `verify_host` (Boolean) Verifies that the presented server certificate includes the address to which the client intended to establish a connection. Omitting this attribute will set the value to true.
 
 Read-Only:
@@ -561,6 +562,7 @@ Optional:
 - `binary_attributes` (Set of String) A list of LDAP attributes to be handled as binary data.
 - `name` (String) The data store name with a unique value across all data sources. Omitting this attribute will set the value to a combination of the hostname(s) and the principal.
 - `use_ssl` (Boolean) Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS). The default value is false. The value is validated against the LDAP gateway configuration in PingOne unless the header 'X-BypassExternalValidation' is set to true.
+- `use_start_tls` (Boolean) Connects to the LDAP data store using StartTLS. The default value is false. The value is validated against the LDAP gateway configuration in PingOne unless the header 'X-BypassExternalValidation' is set to true.
 
 Read-Only:
 

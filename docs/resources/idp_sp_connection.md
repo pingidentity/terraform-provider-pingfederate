@@ -1049,12 +1049,9 @@ Required:
 <a id="nestedatt--outbound_provision--channels--channel_source--group_membership_detection"></a>
 ### Nested Schema for `outbound_provision.channels.channel_source.group_membership_detection`
 
-Required:
-
-- `group_member_attribute_name` (String) The name of the attribute that represents group members in a group, also known as group member attribute.
-
 Optional:
 
+- `group_member_attribute_name` (String) The name of the attribute that represents group members in a group, also known as group member attribute.
 - `member_of_group_attribute_name` (String) The name of the attribute that indicates the entity is a member of a group, also known as member of attribute.
 
 
