@@ -1,9 +1,9 @@
 # v0.12.0 (Unreleased)
 ### BREAKING CHANGES
-* Removed deprecated `inherited` attribute from various resources and data sources. ([#270]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/270)))
+* Removed deprecated `inherited` attribute from various resources and data sources. ([#268]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/268)))
 
 ### FEATURES
-* Added support for PingFederate `12.1.0` and implemented new attributes for the new version. Added support for latest PF patch releases to `11.2`, `11.3`, and `12.0`. ([#270]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/270)))
+* Added support for PingFederate `12.1.0` and implemented new attributes for the new version. Added support for latest PF patch releases to `11.2`, `11.3`, and `12.0`. ([#268]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/268)))
 
 # v0.11.0 May 30th, 2024
 ### DEPRECATED
