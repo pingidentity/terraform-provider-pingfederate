@@ -3,6 +3,7 @@ package oauthclient
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
@@ -173,8 +174,16 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"refresh_token_rolling_interval": schema.Int64Attribute{
-				Description: "The minimum interval to roll refresh tokens, in hours. This value will override the Refresh Token Rolling Interval Value on the Authorization Server Settings.",
+				Description: "The minimum interval to roll refresh tokens. This value will override the Refresh Token Rolling Interval Value on the Authorization Server Settings.",
 				Optional:    true,
+			},
+			"refresh_token_rolling_interval_time_unit": schema.StringAttribute{
+				Description: "The refresh token rolling interval time unit. Defaults to HOURS.",
+				Computed:    true,
+				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOf("MINUTES", "HOURS", "DAYS"),
+				},
 			},
 			"persistent_grant_expiration_type": schema.StringAttribute{
 				Description: "Allows an administrator to override the Persistent Grant Lifetime set globally for the OAuth AS. Defaults to SERVER_DEFAULT.",
@@ -254,6 +263,11 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
+			},
+			"enable_cookieless_authentication_api": schema.BoolAttribute{
+				Description: "Set to true to allow the authentication API redirectless flow to function without requiring any cookies.",
+				Optional:    true,
+				Computed:    true,
 			},
 			"bypass_approval_page": schema.BoolAttribute{
 				Description: "Use this setting, for example, when you want to deploy a trusted application and authenticate end users via an IdP adapter or IdP connection.",
@@ -829,6 +843,30 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Computed:            true,
 				// Default set when appropriate in ModifyPlan before
 			},
+			"require_offline_access_scope_to_issue_refresh_tokens": schema.StringAttribute{
+				Description: "Determines whether offline_access scope is required to issue refresh tokens by this client or not. 'SERVER_DEFAULT' is the default value.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						"SERVER_DEFAULT",
+						"NO",
+						"YES",
+					),
+				},
+			},
+			"offline_access_require_consent_prompt": schema.StringAttribute{
+				Description: "Determines whether offline_access requires the prompt parameter value to be set to 'consent' by this client or not. The value will be reset to default if the 'requireOfflineAccessScopeToIssueRefreshTokens' attribute is set to 'SERVER_DEFAULT' or 'false'. 'SERVER_DEFAULT' is the default value.",
+				Optional:    true,
+				Computed:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						"SERVER_DEFAULT",
+						"NO",
+						"YES",
+					),
+				},
+			},
 		},
 	}
 
@@ -862,7 +900,16 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 	}
 
 	// Refresh Token Rolling Validation
-	if (model.RefreshTokenRollingIntervalType.ValueString() == "OVERRIDE_SERVER_DEFAULT") != internaltypes.IsDefined(model.RefreshTokenRollingInterval) {
+	if !internaltypes.IsDefined(model.RefreshTokenRollingIntervalType) || model.RefreshTokenRollingIntervalType.ValueString() == "SERVER_DEFAULT" {
+		// The refresh_token_rolling_interval and refresh_token_rolling_interval_time_unit value can't be
+		// configured with a non-default value when refresh_token_rolling_interval_type is set to "SERVER_DEFAULT"
+		if internaltypes.IsDefined(model.RefreshTokenRollingInterval) {
+			resp.Diagnostics.AddError("refresh_token_rolling_interval can only be configured if refresh_token_rolling_interval_type is set to \"OVERRIDE_SERVER_DEFAULT\".", "")
+		}
+		if internaltypes.IsDefined(model.RefreshTokenRollingIntervalTimeUnit) && model.RefreshTokenRollingIntervalTimeUnit.ValueString() != "HOURS" {
+			resp.Diagnostics.AddError("refresh_token_rolling_interval_time_unit can only be configured if refresh_token_rolling_interval_type is \"OVERRIDE_SERVER_DEFAULT\".", "")
+		}
+	} else if model.RefreshTokenRollingIntervalType.ValueString() == "OVERRIDE_SERVER_DEFAULT" && !internaltypes.IsDefined(model.RefreshTokenRollingInterval) {
 		resp.Diagnostics.AddError("refresh_token_rolling_interval must be configured when refresh_token_rolling_interval_type is \"OVERRIDE_SERVER_DEFAULT\".", "")
 	}
 
@@ -978,6 +1025,12 @@ func (r *oauthClientResource) ValidateConfig(ctx context.Context, req resource.V
 			resp.Diagnostics.AddError("require_signed_requests must be false when jwks_settings is not configured.", "")
 		}
 	}
+
+	// offline_access_require_consent_prompt can only be configured if require_offline_access_scope_to_issue_refresh_tokens is set to "YES"
+	if internaltypes.IsDefined(model.RequireOfflineAccessScopeToIssueRefreshTokens) && model.RequireOfflineAccessScopeToIssueRefreshTokens.ValueString() != "YES" &&
+		internaltypes.IsDefined(model.OfflineAccessRequireConsentPrompt) && model.OfflineAccessRequireConsentPrompt.ValueString() != "SERVER_DEFAULT" {
+		resp.Diagnostics.AddError("offline_access_require_consent_prompt can only be configured if require_offline_access_scope_to_issue_refresh_tokens is set to \"YES\"", fmt.Sprintf("require_offline_access_scope_to_issue_refresh_tokens: %s, offline_access_require_consent_prompt: %s", model.RequireOfflineAccessScopeToIssueRefreshTokens.ValueString(), model.OfflineAccessRequireConsentPrompt.ValueString()))
+	}
 }
 
 func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -994,6 +1047,12 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		return
 	}
 	pfVersionAtLeast120 := compare >= 0
+	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast121 := compare >= 0
 	var plan, state oauthClientModel
 	var diags diag.Diagnostics
 	req.Plan.Get(ctx, &plan)
@@ -1050,6 +1109,55 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 		}
 	}
 
+	// Version checking and default settings for attrs added in PF 12.1
+	if !pfVersionAtLeast121 {
+		planModified = true
+		if internaltypes.IsDefined(plan.EnableCookielessAuthenticationApi) {
+			version.AddUnsupportedAttributeError("enable_cookieless_authentication_api",
+				r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
+		} else {
+			plan.EnableCookielessAuthenticationApi = types.BoolNull()
+		}
+
+		if internaltypes.IsDefined(plan.RefreshTokenRollingIntervalTimeUnit) {
+			version.AddUnsupportedAttributeError("refresh_token_rolling_interval_time_unit",
+				r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
+		} else {
+			plan.RefreshTokenRollingIntervalTimeUnit = types.StringNull()
+		}
+
+		if internaltypes.IsDefined(plan.RequireOfflineAccessScopeToIssueRefreshTokens) {
+			version.AddUnsupportedAttributeError("require_offline_access_scope_to_issue_refresh_tokens",
+				r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
+		} else {
+			plan.RequireOfflineAccessScopeToIssueRefreshTokens = types.StringNull()
+		}
+
+		if internaltypes.IsDefined(plan.OfflineAccessRequireConsentPrompt) {
+			version.AddUnsupportedAttributeError("offline_access_require_consent_prompt",
+				r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
+		} else {
+			plan.OfflineAccessRequireConsentPrompt = types.StringNull()
+		}
+	} else {
+		if plan.EnableCookielessAuthenticationApi.IsUnknown() {
+			plan.EnableCookielessAuthenticationApi = types.BoolValue(false)
+			planModified = true
+		}
+		if plan.RefreshTokenRollingIntervalTimeUnit.IsUnknown() {
+			plan.RefreshTokenRollingIntervalTimeUnit = types.StringValue("HOURS")
+			planModified = true
+		}
+		if plan.RequireOfflineAccessScopeToIssueRefreshTokens.IsUnknown() {
+			plan.RequireOfflineAccessScopeToIssueRefreshTokens = types.StringValue("SERVER_DEFAULT")
+			planModified = true
+		}
+		if plan.OfflineAccessRequireConsentPrompt.IsUnknown() {
+			plan.OfflineAccessRequireConsentPrompt = types.StringValue("SERVER_DEFAULT")
+			planModified = true
+		}
+	}
+
 	if plan.AllowAuthenticationApiInit.ValueBool() && plan.RestrictScopes.IsUnknown() {
 		plan.RestrictScopes = types.BoolValue(true)
 		planModified = true
@@ -1069,9 +1177,9 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 	}
 }
 
-func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state *oauthClientModel) diag.Diagnostics {
+func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state *oauthClientModel, productVersion version.SupportedVersion) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	diags = readOauthClientResponseCommon(ctx, r, state, plan)
+	diags = readOauthClientResponseCommon(ctx, r, state, plan, productVersion)
 
 	// state.ClientAuth
 	var clientAuthToState types.Object
@@ -1133,6 +1241,7 @@ func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client
 	addRequest.RefreshRolling = plan.RefreshRolling.ValueStringPointer()
 	addRequest.RefreshTokenRollingIntervalType = plan.RefreshTokenRollingIntervalType.ValueStringPointer()
 	addRequest.RefreshTokenRollingInterval = plan.RefreshTokenRollingInterval.ValueInt64Pointer()
+	addRequest.RefreshTokenRollingIntervalTimeUnit = plan.RefreshTokenRollingIntervalTimeUnit.ValueStringPointer()
 	addRequest.PersistentGrantExpirationType = plan.PersistentGrantExpirationType.ValueStringPointer()
 	addRequest.PersistentGrantExpirationTime = plan.PersistentGrantExpirationTime.ValueInt64Pointer()
 	addRequest.PersistentGrantExpirationTimeUnit = plan.PersistentGrantExpirationTimeUnit.ValueStringPointer()
@@ -1141,6 +1250,7 @@ func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client
 	addRequest.PersistentGrantIdleTimeoutTimeUnit = plan.PersistentGrantIdleTimeoutTimeUnit.ValueStringPointer()
 	addRequest.PersistentGrantReuseType = plan.PersistentGrantReuseType.ValueStringPointer()
 	addRequest.AllowAuthenticationApiInit = plan.AllowAuthenticationApiInit.ValueBoolPointer()
+	addRequest.EnableCookielessAuthenticationApi = plan.EnableCookielessAuthenticationApi.ValueBoolPointer()
 	addRequest.BypassApprovalPage = plan.BypassApprovalPage.ValueBoolPointer()
 	addRequest.RequirePushedAuthorizationRequests = plan.RequirePushedAuthorizationRequests.ValueBoolPointer()
 	addRequest.RequireJwtSecuredAuthorizationResponseMode = plan.RequireJwtSecuredAuthorizationResponseMode.ValueBoolPointer()
@@ -1170,6 +1280,8 @@ func addOptionalOauthClientFields(ctx context.Context, addRequest *client.Client
 	addRequest.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm = plan.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm.ValueStringPointer()
 	addRequest.RequireDpop = plan.RequireDpop.ValueBoolPointer()
 	addRequest.RestrictScopes = plan.RestrictScopes.ValueBoolPointer()
+	addRequest.RequireOfflineAccessScopeToIssueRefreshTokens = plan.RequireOfflineAccessScopeToIssueRefreshTokens.ValueStringPointer()
+	addRequest.OfflineAccessRequireConsentPrompt = plan.OfflineAccessRequireConsentPrompt.ValueStringPointer()
 
 	// addRequest.RestrictedScopes
 	var restrictedScopes []string
@@ -1294,7 +1406,7 @@ func (r *oauthClientResource) Create(ctx context.Context, req resource.CreateReq
 	// Read the response into the state
 	var state oauthClientModel
 
-	diags = readOauthClientResponse(ctx, oauthClientResponse, &plan, &state)
+	diags = readOauthClientResponse(ctx, oauthClientResponse, &plan, &state, r.providerConfig.ProductVersion)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -1321,7 +1433,7 @@ func (r *oauthClientResource) Read(ctx context.Context, req resource.ReadRequest
 	}
 
 	// Read the response into the state
-	diags = readOauthClientResponse(ctx, apiReadOauthClient, &state, &state)
+	diags = readOauthClientResponse(ctx, apiReadOauthClient, &state, &state, r.providerConfig.ProductVersion)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -1356,7 +1468,7 @@ func (r *oauthClientResource) Update(ctx context.Context, req resource.UpdateReq
 
 	// Read the response
 	var state oauthClientModel
-	diags = readOauthClientResponse(ctx, updateOauthClientResponse, &plan, &state)
+	diags = readOauthClientResponse(ctx, updateOauthClientResponse, &plan, &state, r.providerConfig.ProductVersion)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values

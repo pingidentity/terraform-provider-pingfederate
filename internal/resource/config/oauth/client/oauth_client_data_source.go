@@ -14,6 +14,7 @@ import (
 	resourcelinkdatasource "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -128,7 +129,12 @@ func (r *oauthClientDataSource) Schema(ctx context.Context, req datasource.Schem
 				Computed:    true,
 			},
 			"refresh_token_rolling_interval": schema.Int64Attribute{
-				Description: "The minimum interval to roll refresh tokens, in hours. This value will override the Refresh Token Rolling Interval Value on the Authorization Server Settings.",
+				Description: "The minimum interval to roll refresh tokens. This value will override the Refresh Token Rolling Interval Value on the Authorization Server Settings.",
+				Optional:    false,
+				Computed:    true,
+			},
+			"refresh_token_rolling_interval_time_unit": schema.StringAttribute{
+				Description: "The refresh token rolling interval time unit. Defaults to HOURS.",
 				Optional:    false,
 				Computed:    true,
 			},
@@ -175,6 +181,11 @@ func (r *oauthClientDataSource) Schema(ctx context.Context, req datasource.Schem
 			},
 			"allow_authentication_api_init": schema.BoolAttribute{
 				Description: "Set to true to allow this client to initiate the authentication API redirectless flow.",
+				Optional:    false,
+				Computed:    true,
+			},
+			"enable_cookieless_authentication_api": schema.BoolAttribute{
+				Description: "Set to true to allow the authentication API redirectless flow to function without requiring any cookies.",
 				Optional:    false,
 				Computed:    true,
 			},
@@ -540,6 +551,16 @@ func (r *oauthClientDataSource) Schema(ctx context.Context, req datasource.Schem
 				Optional:            false,
 				Computed:            true,
 			},
+			"require_offline_access_scope_to_issue_refresh_tokens": schema.StringAttribute{
+				Description: "Determines whether offline_access scope is required to issue refresh tokens by this client or not. 'SERVER_DEFAULT' is the default value.",
+				Optional:    false,
+				Computed:    true,
+			},
+			"offline_access_require_consent_prompt": schema.StringAttribute{
+				Description: "Determines whether offline_access requires the prompt parameter value to be set to 'consent' by this client or not. The value will be reset to default if the 'requireOfflineAccessScopeToIssueRefreshTokens' attribute is set to 'SERVER_DEFAULT' or 'false'. 'SERVER_DEFAULT' is the default value.",
+				Optional:    false,
+				Computed:    true,
+			},
 		},
 	}
 	id.ToDataSourceSchema(&schemaDef)
@@ -563,9 +584,9 @@ func (r *oauthClientDataSource) Configure(_ context.Context, req datasource.Conf
 }
 
 // Read a OauthClientResponse object into the model struct
-func readOauthClientResponseDataSource(ctx context.Context, r *client.Client, state *oauthClientModel) diag.Diagnostics {
+func readOauthClientResponseDataSource(ctx context.Context, r *client.Client, state *oauthClientModel, productVersion version.SupportedVersion) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	diags = readOauthClientResponseCommon(ctx, r, state, nil)
+	diags = readOauthClientResponseCommon(ctx, r, state, nil, productVersion)
 
 	// state.ClientAuth
 	var secondarySecretsSetSlice []attr.Value
@@ -614,7 +635,7 @@ func (r *oauthClientDataSource) Read(ctx context.Context, req datasource.ReadReq
 	}
 
 	// Read the response into the state
-	diags = readOauthClientResponseDataSource(ctx, apiReadOauthClient, &state)
+	diags = readOauthClientResponseDataSource(ctx, apiReadOauthClient, &state, r.providerConfig.ProductVersion)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
