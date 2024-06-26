@@ -1075,7 +1075,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										"group_membership_detection": schema.SingleNestedAttribute{
 											Attributes: map[string]schema.Attribute{
 												"group_member_attribute_name": schema.StringAttribute{
-													Required:    true,
+													Optional:    true,
 													Description: "The name of the attribute that represents group members in a group, also known as group member attribute.",
 												},
 												"member_of_group_attribute_name": schema.StringAttribute{
