@@ -192,6 +192,18 @@ func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req data
 				Optional:    false,
 				Computed:    true,
 			},
+			"require_offline_access_scope_to_issue_refresh_tokens": schema.BoolAttribute{
+				Description: "Determines whether offline_access scope is required to issue refresh tokens or not. The default value is false.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"offline_access_require_consent_prompt": schema.BoolAttribute{
+				Description: "Determines whether offline_access requires the prompt parameter value be 'consent' or not. The value will be reset to default if the 'requireOfflineAccessScopeToIssueRefreshTokens' attribute is set to false. The default value is false.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
 			"persistent_grant_lifetime": schema.Int64Attribute{
 				Description: "The persistent grant lifetime. The default value is indefinite. -1 indicates an indefinite amount of time.",
 				Required:    false,
@@ -235,7 +247,13 @@ func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req data
 				Computed:    true,
 			},
 			"refresh_rolling_interval": schema.Int64Attribute{
-				Description: "The minimum interval to roll refresh tokens, in hours.",
+				Description: "The minimum interval to roll refresh tokens.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"refresh_rolling_interval_time_unit": schema.StringAttribute{
+				Description: "The refresh token rolling interval time unit. The default unit is HOURS.",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
@@ -344,13 +362,13 @@ func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req data
 				Computed:    true,
 			},
 			"pending_authorization_timeout": schema.Int64Attribute{
-				Description: "The 'device_code' and 'user_code' timeout, in seconds.",
+				Description: "The 'device_code' and 'user_code' timeout, in seconds. The default is 600 seconds.",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
 			},
 			"device_polling_interval": schema.Int64Attribute{
-				Description: "The amount of time client should wait between polling requests, in seconds.",
+				Description: "The amount of time client should wait between polling requests, in seconds. The default is 5 seconds.",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
@@ -362,7 +380,13 @@ func (r *oauthAuthServerSettingsDataSource) Schema(ctx context.Context, req data
 				Computed:    true,
 			},
 			"bypass_activation_code_confirmation": schema.BoolAttribute{
-				Description: "Indicates if the Activation Code Confirmation page should be bypassed if 'verification_url_complete' is used by the end user to authorize a device.",
+				Description: "Indicates if the Activation Code Confirmation page should be bypassed if 'verification_url_complete' is used by the end user to authorize a device. The default is false.",
+				Required:    false,
+				Optional:    false,
+				Computed:    true,
+			},
+			"enable_cookieless_user_authorization_authentication_api": schema.BoolAttribute{
+				Description: "Indicates if cookies should be used for state tracking when the user authorization endpoint is operating in authentication API redirectless mode",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,

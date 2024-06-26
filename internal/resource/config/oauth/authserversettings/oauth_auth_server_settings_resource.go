@@ -232,6 +232,16 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Optional:    true,
 				Default:     stringdefault.StaticString(""),
 			},
+			"require_offline_access_scope_to_issue_refresh_tokens": schema.BoolAttribute{
+				Description: "Determines whether offline_access scope is required to issue refresh tokens or not. The default value is false.",
+				Computed:    true,
+				Optional:    true,
+			},
+			"offline_access_require_consent_prompt": schema.BoolAttribute{
+				Description: "Determines whether offline_access requires the prompt parameter value be 'consent' or not. The value will be reset to default if the 'requireOfflineAccessScopeToIssueRefreshTokens' attribute is set to false. The default value is false.",
+				Computed:    true,
+				Optional:    true,
+			},
 			"persistent_grant_lifetime": schema.Int64Attribute{
 				Description: "The persistent grant lifetime. The default value is indefinite. -1 indicates an indefinite amount of time.",
 				Computed:    true,
@@ -279,8 +289,20 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Default:     int64default.StaticInt64(60),
 			},
 			"refresh_rolling_interval": schema.Int64Attribute{
-				Description: "The minimum interval to roll refresh tokens, in hours.",
+				Description: "The minimum interval to roll refresh tokens.",
 				Required:    true,
+			},
+			"refresh_rolling_interval_time_unit": schema.StringAttribute{
+				Description: "The refresh token rolling interval time unit. The default unit is HOURS.",
+				Computed:    true,
+				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						"SECONDS",
+						"MINUTES",
+						"HOURS",
+					),
+				},
 			},
 			"persistent_grant_reuse_grant_types": schema.SetAttribute{
 				Description: "The grant types that the OAuth AS can reuse rather than creating a new grant for each request. Only 'IMPLICIT' or 'AUTHORIZATION_CODE' or 'RESOURCE_OWNER_CREDENTIALS' are valid grant types.",
@@ -399,13 +421,13 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				},
 			},
 			"pending_authorization_timeout": schema.Int64Attribute{
-				Description: "The 'device_code' and 'user_code' timeout, in seconds.",
+				Description: "The 'device_code' and 'user_code' timeout, in seconds. The default is 600 seconds.",
 				Optional:    true,
 				Computed:    true,
 				Default:     int64default.StaticInt64(600),
 			},
 			"device_polling_interval": schema.Int64Attribute{
-				Description: "The amount of time client should wait between polling requests, in seconds.",
+				Description: "The amount of time client should wait between polling requests, in seconds. The default is 5 seconds.",
 				Optional:    true,
 				Computed:    true,
 				Default:     int64default.StaticInt64(5),
@@ -420,10 +442,15 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				},
 			},
 			"bypass_activation_code_confirmation": schema.BoolAttribute{
-				Description: "Indicates if the Activation Code Confirmation page should be bypassed if 'verification_url_complete' is used by the end user to authorize a device.",
+				Description: "Indicates if the Activation Code Confirmation page should be bypassed if 'verification_url_complete' is used by the end user to authorize a device. The default is false.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
+			},
+			"enable_cookieless_user_authorization_authentication_api": schema.BoolAttribute{
+				Description: "Indicates if cookies should be used for state tracking when the user authorization endpoint is operating in authentication API redirectless mode",
+				Optional:    true,
+				Computed:    true,
 			},
 			"user_authorization_consent_page_setting": schema.StringAttribute{
 				Description: "User Authorization Consent Page setting to use PingFederate's internal consent page or an external system",
@@ -517,7 +544,6 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 }
 
 func (r *oauthAuthServerSettingsResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-
 	var model oauthAuthServerSettingsModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
 
@@ -561,10 +587,15 @@ func (r *oauthAuthServerSettingsResource) ValidateConfig(ctx context.Context, re
 	if matchVal != nil {
 		resp.Diagnostics.AddError("Scope name conflict!", fmt.Sprintf("The scope name \"%s\" is already defined in another scope list", *matchVal))
 	}
+
+	// offline_access_require_consent_prompt can't be true if require_offline_access_scope_to_issue_refresh_tokens is false
+	if model.OfflineAccessRequireConsentPrompt.ValueBool() && !model.RequireOfflineAccessScopeToIssueRefreshTokens.ValueBool() {
+		resp.Diagnostics.AddError("require_offline_access_scope_to_issue_refresh_tokens must be set to true to set offline_access_require_consent_prompt to true", "")
+	}
 }
 
 func (r *oauthAuthServerSettingsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Compare to version 11.3 of PF
+	// Compare to versions 11.3, 12.0, and 12.1 of PF
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
 	if err != nil {
 		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
@@ -577,6 +608,12 @@ func (r *oauthAuthServerSettingsResource) ModifyPlan(ctx context.Context, req re
 		return
 	}
 	pfVersionAtLeast120 := compare >= 0
+	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast121 := compare >= 0
 	var plan oauthAuthServerSettingsModel
 	req.Plan.Get(ctx, &plan)
 	// If any of these fields are set by the user and the PF version is not new enough, throw an error
@@ -640,6 +677,50 @@ func (r *oauthAuthServerSettingsResource) ModifyPlan(ctx context.Context, req re
 		}
 	}
 
+	// Similar logic for PF 12.1
+	if !pfVersionAtLeast121 {
+		if internaltypes.IsDefined(plan.RequireOfflineAccessScopeToIssueRefreshTokens) {
+			version.AddUnsupportedAttributeError("require_offline_access_scope_to_issue_refresh_tokens",
+				r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
+		} else if plan.RequireOfflineAccessScopeToIssueRefreshTokens.IsUnknown() {
+			plan.RequireOfflineAccessScopeToIssueRefreshTokens = types.BoolNull()
+		}
+
+		if internaltypes.IsDefined(plan.OfflineAccessRequireConsentPrompt) {
+			version.AddUnsupportedAttributeError("offline_access_require_consent_prompt",
+				r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
+		} else if plan.OfflineAccessRequireConsentPrompt.IsUnknown() {
+			plan.OfflineAccessRequireConsentPrompt = types.BoolNull()
+		}
+
+		if internaltypes.IsDefined(plan.RefreshRollingIntervalTimeUnit) {
+			version.AddUnsupportedAttributeError("refresh_rolling_interval_time_unit",
+				r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
+		} else if plan.RefreshRollingIntervalTimeUnit.IsUnknown() {
+			plan.RefreshRollingIntervalTimeUnit = types.StringNull()
+		}
+
+		if internaltypes.IsDefined(plan.EnableCookielessUserAuthorizationAuthenticationApi) {
+			version.AddUnsupportedAttributeError("enable_cookieless_user_authorization_authentication_api",
+				r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
+		} else if plan.EnableCookielessUserAuthorizationAuthenticationApi.IsUnknown() {
+			plan.EnableCookielessUserAuthorizationAuthenticationApi = types.BoolNull()
+		}
+	} else {
+		if plan.RequireOfflineAccessScopeToIssueRefreshTokens.IsUnknown() {
+			plan.RequireOfflineAccessScopeToIssueRefreshTokens = types.BoolValue(false)
+		}
+		if plan.OfflineAccessRequireConsentPrompt.IsUnknown() {
+			plan.OfflineAccessRequireConsentPrompt = types.BoolValue(false)
+		}
+		if plan.RefreshRollingIntervalTimeUnit.IsUnknown() {
+			plan.RefreshRollingIntervalTimeUnit = types.StringValue("HOURS")
+		}
+		if plan.EnableCookielessUserAuthorizationAuthenticationApi.IsUnknown() {
+			plan.EnableCookielessUserAuthorizationAuthenticationApi = types.BoolValue(false)
+		}
+	}
+
 	if !resp.Diagnostics.HasError() {
 		resp.Plan.Set(ctx, &plan)
 	}
@@ -683,12 +764,15 @@ func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *c
 	addRequest.IncludeIssuerInAuthorizationResponse = plan.IncludeIssuerInAuthorizationResponse.ValueBoolPointer()
 	addRequest.TrackUserSessionsForLogout = plan.TrackUserSessionsForLogout.ValueBoolPointer()
 	addRequest.TokenEndpointBaseUrl = plan.TokenEndpointBaseUrl.ValueStringPointer()
+	addRequest.RequireOfflineAccessScopeToIssueRefreshTokens = plan.RequireOfflineAccessScopeToIssueRefreshTokens.ValueBoolPointer()
+	addRequest.OfflineAccessRequireConsentPrompt = plan.OfflineAccessRequireConsentPrompt.ValueBoolPointer()
 	addRequest.PersistentGrantLifetime = plan.PersistentGrantLifetime.ValueInt64Pointer()
 	addRequest.PersistentGrantLifetimeUnit = plan.PersistentGrantLifetimeUnit.ValueStringPointer()
 	addRequest.PersistentGrantIdleTimeout = plan.PersistentGrantIdleTimeout.ValueInt64Pointer()
 	addRequest.PersistentGrantIdleTimeoutTimeUnit = plan.PersistentGrantIdleTimeoutTimeUnit.ValueStringPointer()
 	addRequest.RollRefreshTokenValues = plan.RollRefreshTokenValues.ValueBoolPointer()
 	addRequest.RefreshTokenRollingGracePeriod = plan.RefreshTokenRollingGracePeriod.ValueInt64Pointer()
+	addRequest.RefreshRollingIntervalTimeUnit = plan.RefreshRollingIntervalTimeUnit.ValueStringPointer()
 	var persistentGrantReuseTypes []string
 	plan.PersistentGrantReuseGrantTypes.ElementsAs(ctx, &persistentGrantReuseTypes, false)
 	addRequest.PersistentGrantReuseGrantTypes = persistentGrantReuseTypes
@@ -701,6 +785,7 @@ func addOptionalOauthAuthServerSettingsFields(ctx context.Context, addRequest *c
 		}
 	}
 	addRequest.BypassAuthorizationForApprovedGrants = plan.BypassAuthorizationForApprovedGrants.ValueBoolPointer()
+	addRequest.EnableCookielessUserAuthorizationAuthenticationApi = plan.EnableCookielessUserAuthorizationAuthenticationApi.ValueBoolPointer()
 	addRequest.AllowUnidentifiedClientROCreds = plan.AllowUnidentifiedClientROCreds.ValueBoolPointer()
 	addRequest.AllowUnidentifiedClientExtensionGrants = plan.AllowUnidentifiedClientExtensionGrants.ValueBoolPointer()
 
