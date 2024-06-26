@@ -80,16 +80,16 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 			Optional:    true,
 		},
 		"min_pool_size": schema.Int64Attribute{
-			Description: "The smallest number of database connections in the connection pool for the given data store. Omitting this attribute will set the value to the connection pool default.",
+			Description: "The smallest number of database connections in the connection pool for the given data store. Omitting this attribute will set the value to the connection pool default. The default value is 10.",
 			Computed:    true,
 			Optional:    true,
-			Default:     int64default.StaticInt64(0),
+			Default:     int64default.StaticInt64(10),
 		},
 		"max_pool_size": schema.Int64Attribute{
-			Description: "The largest number of database connections in the connection pool for the given data store. Omitting this attribute will set the value to the connection pool default.",
+			Description: "The largest number of database connections in the connection pool for the given data store. Omitting this attribute will set the value to the connection pool default. The default value is 100.",
 			Computed:    true,
 			Optional:    true,
-			Default:     int64default.StaticInt64(0),
+			Default:     int64default.StaticInt64(100),
 		},
 		"connection_url_tags": schema.SetNestedAttribute{
 			Description: "The set of connection URLs and associated tags for this JDBC data store. This is required if 'connectionUrl' is not provided.",
@@ -125,16 +125,16 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 			},
 		},
 		"blocking_timeout": schema.Int64Attribute{
-			Description: "The amount of time in milliseconds a request waits to get a connection from the connection pool before it fails. Omitting this attribute will set the value to the connection pool default.",
+			Description: "The amount of time in milliseconds a request waits to get a connection from the connection pool before it fails. Omitting this attribute will set the value to the connection pool default. The default value is 5000 milliseconds.",
 			Computed:    true,
 			Optional:    true,
-			Default:     int64default.StaticInt64(0),
+			Default:     int64default.StaticInt64(5000),
 		},
 		"idle_timeout": schema.Int64Attribute{
-			Description: "The length of time in minutes the connection can be idle in the pool before it is closed. Omitting this attribute will set the value to the connection pool default.",
+			Description: "The length of time in minutes the connection can be idle in the pool before it is closed. Omitting this attribute will set the value to the connection pool default. The default value is 5 minutes.",
 			Computed:    true,
 			Optional:    true,
-			Default:     int64default.StaticInt64(0),
+			Default:     int64default.StaticInt64(5),
 		},
 		"driver_class": schema.StringAttribute{
 			Description: "The name of the driver class used to communicate with the source database.",

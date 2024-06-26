@@ -27,7 +27,8 @@ const userDn = "cn=userDN"
 const passwordVal = "password"
 
 type ldapDataStoreResourceModel struct {
-	dataStore *client.LdapDataStore
+	dataStore             *client.LdapDataStore
+	includeOptionalFields bool
 }
 
 func initialLdapDataStore() *client.LdapDataStore {
@@ -55,7 +56,7 @@ func updatedLdapDataStore() *client.LdapDataStore {
 	updatedLdapDataStore.Hostnames = []string{hostnames}
 	updatedLdapDataStore.VerifyHost = pointers.Bool(verifyHost)
 	updatedLdapDataStore.MaskAttributeValues = pointers.Bool(true)
-	updatedLdapDataStore.UseSsl = pointers.Bool(true)
+	updatedLdapDataStore.UseSsl = pointers.Bool(false)
 	updatedLdapDataStore.UseDnsSrvRecords = pointers.Bool(true)
 	updatedLdapDataStore.TestOnBorrow = pointers.Bool(true)
 	updatedLdapDataStore.TestOnReturn = pointers.Bool(true)
@@ -80,7 +81,8 @@ func TestAccLdapDataStore(t *testing.T) {
 	}
 
 	updatedResourceModel := ldapDataStoreResourceModel{
-		dataStore: updatedLdapDataStore(),
+		dataStore:             updatedLdapDataStore(),
+		includeOptionalFields: true,
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -93,7 +95,10 @@ func TestAccLdapDataStore(t *testing.T) {
 			{
 				// Minimal model
 				Config: testAccLdapDataStore(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedLdapDataStoreAttributes(initialResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedLdapDataStoreAttributes(initialResourceModel),
+					checkLdapPf121ComputedAttrs(resourceName),
+				),
 			},
 			{
 				// Test updating some fields
@@ -112,7 +117,10 @@ func TestAccLdapDataStore(t *testing.T) {
 			{
 				// Back to the initial minimal model
 				Config: testAccLdapDataStore(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedLdapDataStoreAttributes(initialResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedLdapDataStoreAttributes(initialResourceModel),
+					checkLdapPf121ComputedAttrs(resourceName),
+				),
 			},
 			{
 				PreConfig: func() {
@@ -129,13 +137,27 @@ func TestAccLdapDataStore(t *testing.T) {
 			{
 				// Minimal model
 				Config: testAccLdapDataStore(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedLdapDataStoreAttributes(initialResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedLdapDataStoreAttributes(initialResourceModel),
+					checkLdapPf121ComputedAttrs(resourceName),
+				),
 			},
 		},
 	})
 }
 
-func hcl(lds *client.LdapDataStore) string {
+func checkLdapPf121ComputedAttrs(resourceName string) resource.TestCheckFunc {
+	if acctest.VersionAtLeast(version.PingFederate1210) {
+		return resource.ComposeTestCheckFunc(
+			resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "ldap_data_store.use_start_tls", "false"),
+		)
+	}
+	return resource.ComposeTestCheckFunc(
+		resource.TestCheckNoResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "ldap_data_store.use_start_tls"),
+	)
+}
+
+func hcl(lds *client.LdapDataStore, includeOptionalFields bool) string {
 	var builder strings.Builder
 	if lds == nil {
 		return ""
@@ -145,6 +167,11 @@ func hcl(lds *client.LdapDataStore) string {
 		if acctest.VersionAtLeast(version.PingFederate1130) {
 			versionedHcl += `
 			retry_failed_operations = true
+			`
+		}
+		if includeOptionalFields && acctest.VersionAtLeast(version.PingFederate1210) {
+			versionedHcl += `
+			use_start_tls = true
 			`
 		}
 
@@ -235,7 +262,7 @@ resource "pingfederate_data_store" "%[1]s" {
 data "pingfederate_data_store" "%[1]s" {
   data_store_id = pingfederate_data_store.%[1]s.id
 }`, resourceName,
-		hcl(ldapDataStore.dataStore),
+		hcl(ldapDataStore.dataStore, ldapDataStore.includeOptionalFields),
 	)
 }
 

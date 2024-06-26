@@ -95,6 +95,12 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 		return
 	}
 	pfVersionAtLeast113 := compare >= 0
+	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast121 := compare >= 0
 
 	if !pfVersionAtLeast113 {
 		// Prior to 11.3, the user_name field is required for jdbc data stores
@@ -114,6 +120,21 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 			retryFailedOperations := ldapDataStoreAttrs["retry_failed_operations"].(types.Bool)
 			if internaltypes.IsDefined(retryFailedOperations) {
 				resp.Diagnostics.AddError("Attribute 'retry_failed_operations' not supported for LDAP data stores by PingFederate version "+string(r.providerConfig.ProductVersion), "PF 11.3 or later required")
+			}
+		}
+	}
+
+	if !pfVersionAtLeast121 {
+		if internaltypes.IsDefined(plan.LdapDataStore) {
+			useStartTls := plan.LdapDataStore.Attributes()["use_start_tls"]
+			if internaltypes.IsDefined(useStartTls) {
+				resp.Diagnostics.AddError("Attribute 'use_start_tls' not supported for LDAP data stores by PingFederate version "+string(r.providerConfig.ProductVersion), "PF 12.1 or later required")
+			}
+		}
+		if internaltypes.IsDefined(plan.PingOneLdapGatewayDataStore) {
+			useStartTls := plan.PingOneLdapGatewayDataStore.Attributes()["use_start_tls"]
+			if internaltypes.IsDefined(useStartTls) {
+				resp.Diagnostics.AddError("Attribute 'use_start_tls' not supported for LDAP gateway data stores by PingFederate version "+string(r.providerConfig.ProductVersion), "PF 12.1 or later required")
 			}
 		}
 	}
@@ -333,6 +354,15 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 			}
 		}
 
+		// use_start_tls attribute added in PF version 12.1
+		if ldapDataStore["use_start_tls"].IsUnknown() {
+			if pfVersionAtLeast121 {
+				ldapDataStore["use_start_tls"] = types.BoolValue(false)
+			} else {
+				ldapDataStore["use_start_tls"] = types.BoolNull()
+			}
+		}
+
 		plan.LdapDataStore, respDiags = types.ObjectValue(ldapDataStoreAttrType, ldapDataStore)
 		resp.Diagnostics.Append(respDiags...)
 	}
@@ -345,6 +375,16 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 			pingOneLdapGatewayId := pingOneLdapGatewayDataStore["ping_one_ldap_gateway_id"].(types.String).ValueString()
 			pingOneLdapGatewayDataStore["name"] = types.StringValue(pingOneConnectionRefId + ":" + pingOneEnvironmentId + ":" + pingOneLdapGatewayId)
 		}
+
+		// use_start_tls attribute added in PF version 12.1
+		if pingOneLdapGatewayDataStore["use_start_tls"].IsUnknown() {
+			if pfVersionAtLeast121 {
+				pingOneLdapGatewayDataStore["use_start_tls"] = types.BoolValue(false)
+			} else {
+				pingOneLdapGatewayDataStore["use_start_tls"] = types.BoolNull()
+			}
+		}
+
 		plan.PingOneLdapGatewayDataStore, respDiags = types.ObjectValue(pingOneLdapGatewayDataStoreAttrType, pingOneLdapGatewayDataStore)
 		resp.Diagnostics.Append(respDiags...)
 	}
