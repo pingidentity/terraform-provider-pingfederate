@@ -41,6 +41,13 @@ var (
 		"notification_mode":          types.StringType,
 	}
 
+	bulkheadAlertNotificationSettingsAttrType = map[string]attr.Type{
+		"email_address":              types.StringType,
+		"notification_publisher_ref": types.ObjectType{AttrTypes: resourcelink.AttrType()},
+		"notification_mode":          types.StringType,
+		"thread_dump_enabled":        types.BoolType,
+	}
+
 	notificationsAttrType = map[string]attr.Type{
 		"license_events":                                           types.ObjectType{AttrTypes: notificationSettingsAttrType},
 		"certificate_expirations":                                  types.ObjectType{AttrTypes: certificateExpirationsAttrType},
@@ -50,6 +57,7 @@ var (
 		"expired_certificate_administrative_console_warning_days":  types.Int64Type,
 		"expiring_certificate_administrative_console_warning_days": types.Int64Type,
 		"thread_pool_exhaustion_notification_settings":             types.ObjectType{AttrTypes: threadPoolExhaustionNotificationSettingsAttrType},
+		"bulkhead_alert_notification_settings":                     types.ObjectType{AttrTypes: bulkheadAlertNotificationSettingsAttrType},
 	}
 
 	oauthRoleAttrType = map[string]attr.Type{
@@ -144,6 +152,7 @@ var (
 		"expired_certificate_administrative_console_warning_days":  types.Int64Unknown(),
 		"expiring_certificate_administrative_console_warning_days": types.Int64Unknown(),
 		"thread_pool_exhaustion_notification_settings":             types.ObjectNull(threadPoolExhaustionNotificationSettingsAttrType),
+		"bulkhead_alert_notification_settings":                     types.ObjectNull(bulkheadAlertNotificationSettingsAttrType),
 	})
 
 	oauthRoleDefault, _ = types.ObjectValue(oauthRoleAttrType, map[string]attr.Value{
