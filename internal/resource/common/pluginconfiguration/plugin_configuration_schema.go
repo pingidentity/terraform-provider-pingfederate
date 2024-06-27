@@ -23,11 +23,6 @@ func ToSchema() schema.SingleNestedAttribute {
 				Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
 				Required:    true,
 			},
-			"inherited": schema.BoolAttribute{
-				DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
-				Description:        "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-				Optional:           true,
-			},
 		},
 	}
 	tablesNestedObject := schema.NestedAttributeObject{
@@ -54,14 +49,6 @@ func ToSchema() schema.SingleNestedAttribute {
 										Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
 										Required:    true,
 									},
-									"inherited": schema.BoolAttribute{
-										DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
-										Description:        "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-										Optional:           true,
-										PlanModifiers: []planmodifier.Bool{
-											boolplanmodifier.UseStateForUnknown(),
-										},
-									},
 								},
 							},
 						},
@@ -76,11 +63,6 @@ func ToSchema() schema.SingleNestedAttribute {
 						},
 					},
 				},
-			},
-			"inherited": schema.BoolAttribute{
-				DeprecationMessage: "This field is now deprecated and will be removed in the next release.",
-				Description:        "Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.",
-				Optional:           true,
 			},
 		},
 	}

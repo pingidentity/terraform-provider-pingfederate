@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
@@ -172,7 +172,7 @@ func testAccServerSettingsComplete(resourceName string, resourceModel serverSett
 		`
 	}
 	if acctest.VersionAtLeast(version.PingFederate1200) {
-		versionedHcl = `
+		versionedHcl += `
 	  expired_certificate_administrative_console_warning_days = 10
 	  expiring_certificate_administrative_console_warning_days = 11
 	  thread_pool_exhaustion_notification_settings = {
@@ -181,6 +181,19 @@ func testAccServerSettingsComplete(resourceName string, resourceModel serverSett
 			id = "exampleSmtpPublisher"
 		}
 		notification_mode = "LOGGING_ONLY"
+	  }
+		`
+	}
+	notificationsVersionedHcl := ""
+	if acctest.VersionAtLeast(version.PingFederate1210) {
+		notificationsVersionedHcl = `
+	  bulkhead_alert_notification_settings = {
+	    email_address = "example@example.com"
+		thread_dump_enabled = false
+		notification_publisher_ref = {
+			id = "exampleSmtpPublisher"
+		}
+		notification_mode = "NOTIFICATION_PUBLISHER"
 	  }
 		`
 	}
@@ -238,6 +251,7 @@ resource "pingfederate_server_settings" "%[1]s" {
         id = "%[29]s"
       }
     }
+	%[32]s
   }
 
   captcha_settings = {
@@ -278,6 +292,7 @@ data "pingfederate_server_settings" "%[1]s" {
 		resourceModel.notifications.MetadataNotificationSettings.NotificationPublisherRef.Id,
 		*resourceModel.captchaSettings.SiteKey,
 		*resourceModel.captchaSettings.SecretKey,
+		notificationsVersionedHcl,
 	)
 }
 

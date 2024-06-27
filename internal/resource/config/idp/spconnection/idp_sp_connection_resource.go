@@ -23,7 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
@@ -234,14 +234,12 @@ var (
 					"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
 					"attribute_contract_fulfillment": attributeContractFulfillmentAttrType,
 					"issuance_criteria":              issuanceCriteriaAttrType,
-					"inherited":                      types.BoolType,
 				}},
 				"attribute_contract": types.ObjectType{AttrTypes: map[string]attr.Type{
 					"core_attributes":           types.ListType{ElemType: idpAdapterAttributeAttrType},
 					"extended_attributes":       types.ListType{ElemType: idpAdapterAttributeAttrType},
 					"unique_user_key_attribute": types.StringType,
 					"mask_ognl_values":          types.BoolType,
-					"inherited":                 types.BoolType,
 				}},
 			}},
 			"abort_sso_transaction_as_fail_safe": types.BoolType,
@@ -314,9 +312,8 @@ var (
 		},
 	}
 	targetSettingsElemAttrType = types.ObjectType{AttrTypes: map[string]attr.Type{
-		"name":      types.StringType,
-		"value":     types.StringType,
-		"inherited": types.BoolType,
+		"name":  types.StringType,
+		"value": types.StringType,
 	}}
 
 	channelsElemAttrType = types.ObjectType{AttrTypes: map[string]attr.Type{
@@ -650,11 +647,6 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 
 	outboundProvisionTargetSettingsNestedObject := schema.NestedAttributeObject{
 		Attributes: map[string]schema.Attribute{
-			"inherited": schema.BoolAttribute{
-				DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
-				Optional:           true,
-				Description:        "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-			},
 			"name": schema.StringAttribute{
 				Required:    true,
 				Description: "The name of the configuration field.",
@@ -1083,7 +1075,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										"group_membership_detection": schema.SingleNestedAttribute{
 											Attributes: map[string]schema.Attribute{
 												"group_member_attribute_name": schema.StringAttribute{
-													Required:    true,
+													Optional:    true,
 													Description: "The name of the attribute that represents group members in a group, also known as group member attribute.",
 												},
 												"member_of_group_attribute_name": schema.StringAttribute{
@@ -1248,11 +1240,6 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													Optional:     true,
 													Description:  "A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them.",
 												},
-												"inherited": schema.BoolAttribute{
-													DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
-													Optional:           true,
-													Description:        "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
-												},
 												"mask_ognl_values": schema.BoolAttribute{
 													Optional:    true,
 													Description: "Whether or not all OGNL expressions used to fulfill an outgoing assertion contract should be masked in the logs. Defaults to false.",
@@ -1269,12 +1256,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Attributes: map[string]schema.Attribute{
 												"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
 												"attribute_sources":              attributesources.ToSchema(0, false),
-												"inherited": schema.BoolAttribute{
-													DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
-													Optional:           true,
-													Description:        "Whether this attribute mapping is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
-												},
-												"issuance_criteria": issuancecriteria.ToSchema(),
+												"issuance_criteria":              issuancecriteria.ToSchema(),
 											},
 											Optional:    true,
 											Description: "An IdP Adapter Contract Mapping.",
@@ -2025,9 +2007,8 @@ func readIdpSpconnectionResourceResponse(ctx context.Context, r *client.SpConnec
 				}
 			}
 			targetSettingsObj, respDiags := types.ObjectValue(targetSettingsElemAttrType.AttrTypes, map[string]attr.Value{
-				"name":      types.StringValue(targetSettings.Name),
-				"value":     value,
-				"inherited": types.BoolPointerValue(targetSettings.Inherited),
+				"name":  types.StringValue(targetSettings.Name),
+				"value": value,
 			})
 			diags.Append(respDiags...)
 			if inPlan {
