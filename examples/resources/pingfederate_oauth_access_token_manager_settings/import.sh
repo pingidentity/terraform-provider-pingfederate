@@ -1,0 +1,1 @@
+terraform import pingfederate_oath_access_token_managers_settings.oauthTokenManagersSettings id
