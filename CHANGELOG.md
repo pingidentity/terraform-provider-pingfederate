@@ -1,8 +1,12 @@
-# v0.12.0 (Unreleased)
+# v0.13.0 (Unreleased)
+### Resources
+* **New Resource:** `pingfederate_captcha_providers` ([#275]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/275)))
+* 
+# v0.12.0 June 27th, 2024
 ### BREAKING CHANGES
 * Removed deprecated `inherited` attribute from various resources and data sources. ([#268]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/268)))
 
-### FEATURES
+### ENHANCEMENTS
 * Added support for PingFederate `12.1.0` and implemented new attributes for the new version. Added support for latest PF patch releases to `11.2`, `11.3`, and `12.0`. ([#268]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/268)))
 
 # v0.11.0 May 30th, 2024
