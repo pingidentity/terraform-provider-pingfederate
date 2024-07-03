@@ -23,13 +23,12 @@ func TestAccConnectionMetadataExport(t *testing.T) {
 			{
 				// Run the export and validate the results
 				Config: connectionMetadataExport_MinimalHCL(),
-				Check:  connectionMetadataExport_CheckComputedValuesMinimal(),
+				Check:  connectionMetadataExport_CheckComputedValues(),
 			},
 			{
 				// Run a more complete export and validate the results
 				Config: connectionMetadataExport_CompleteHCL(),
-				//TODO
-				Check: connectionMetadataExport_CheckComputedValuesMinimal(),
+				Check:  connectionMetadataExport_CheckComputedValues(),
 			},
 		},
 	})
@@ -136,8 +135,8 @@ data "pingfederate_connection_metadata_export" "example" {
 `, spConnectionHcl())
 }
 
-// Validate any computed values when applying minimal HCL
-func connectionMetadataExport_CheckComputedValuesMinimal() resource.TestCheckFunc {
+// Validate any computed values when applying HCL
+func connectionMetadataExport_CheckComputedValues() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttrSet("data.pingfederate_connection_metadata_export.example", "exported_connection_metadata"),
 	)
