@@ -12,9 +12,9 @@ description: |-
 ## Example Usage
 
 ```terraform
-resource "pingfederate_captcha_providers" "captchaProviderExample" {
-  providers_id = "myCaptchaProviderId"
-  name         = "My Captcha Provider"
+resource "pingfederate_captcha_provider" "captchaProviderExample" {
+  provider_id = "myCaptchaProviderId"
+  name        = "My Captcha Provider"
   configuration = {
     tables = [],
     fields = [
@@ -164,5 +164,5 @@ Import is supported using the following syntax:
 ~> "myCaptchaProviderId" should be the id of the Captcha provider to be imported
 
 ```shell
-terraform import pingfederate_captcha_providers.captchaProviderExample myCaptchaProviderId
+terraform import pingfederate_captcha_provider.captchaProviderExample myCaptchaProviderId
 ```

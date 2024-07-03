@@ -1,6 +1,6 @@
 # v0.13.0 (Unreleased)
 ### Resources
-* **New Resource:** `pingfederate_captcha_providers` ([#275]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/275)))
+* **New Resource:** `pingfederate_captcha_provider` ([#275]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/275)))
 
 # v0.12.0 June 27th, 2024
 ### BREAKING CHANGES
