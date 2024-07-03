@@ -20,25 +20,25 @@ import (
 )
 
 var (
-	_ resource.Resource                = &captchaProvidersResource{}
-	_ resource.ResourceWithConfigure   = &captchaProvidersResource{}
-	_ resource.ResourceWithImportState = &captchaProvidersResource{}
+	_ resource.Resource                = &captchaProviderResource{}
+	_ resource.ResourceWithConfigure   = &captchaProviderResource{}
+	_ resource.ResourceWithImportState = &captchaProviderResource{}
 )
 
-func CaptchaProvidersResource() resource.Resource {
-	return &captchaProvidersResource{}
+func CaptchaProviderResource() resource.Resource {
+	return &captchaProviderResource{}
 }
 
-type captchaProvidersResource struct {
+type captchaProviderResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
 }
 
-func (r *captchaProvidersResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_captcha_providers"
+func (r *captchaProviderResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_captcha_provider"
 }
 
-func (r *captchaProvidersResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
+func (r *captchaProviderResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -48,15 +48,15 @@ func (r *captchaProvidersResource) Configure(_ context.Context, req resource.Con
 	r.apiClient = providerCfg.ApiClient
 }
 
-type captchaProvidersResourceModel struct {
+type captchaProviderResourceModel struct {
 	Configuration       types.Object `tfsdk:"configuration"`
 	Name                types.String `tfsdk:"name"`
 	ParentRef           types.Object `tfsdk:"parent_ref"`
 	PluginDescriptorRef types.Object `tfsdk:"plugin_descriptor_ref"`
-	ProvidersId         types.String `tfsdk:"providers_id"`
+	ProviderId          types.String `tfsdk:"provider_id"`
 }
 
-func (r *captchaProvidersResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *captchaProviderResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"configuration": pluginconfiguration.ToSchema(),
@@ -87,7 +87,7 @@ func (r *captchaProvidersResource) Schema(ctx context.Context, req resource.Sche
 				Required:    true,
 				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 			},
-			"providers_id": schema.StringAttribute{
+			"provider_id": schema.StringAttribute{
 				Required:    true,
 				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.",
 				PlanModifiers: []planmodifier.String{
@@ -99,33 +99,35 @@ func (r *captchaProvidersResource) Schema(ctx context.Context, req resource.Sche
 	}
 }
 
-func (r *captchaProvidersResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	var plan *captchaProvidersResourceModel
+func (r *captchaProviderResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	var plan *captchaProviderResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if plan == nil {
 		return
 	}
-	var state *captchaProvidersResourceModel
+	var state *captchaProviderResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if state == nil {
 		return
 	}
 
-	var respDiags diag.Diagnostics // Declare respDiags variable
+	var respDiags diag.Diagnostics
 	plan.Configuration, respDiags = pluginconfiguration.MarkComputedAttrsUnknownOnChange(plan.Configuration, state.Configuration)
 	resp.Diagnostics.Append(respDiags...)
 	resp.Plan.Set(ctx, plan)
 }
 
-func (model *captchaProvidersResourceModel) buildClientStruct() (*client.CaptchaProvider, error) {
+func (model *captchaProviderResourceModel) buildClientStruct() (*client.CaptchaProvider, diag.Diagnostics) {
 	result := &client.CaptchaProvider{}
+	var respDiags diag.Diagnostics
 	var err error
 	// configuration
 	configurationValue, err := pluginconfiguration.ClientStruct(model.Configuration)
 	if err != nil {
-		return nil, err
+		respDiags.AddError("Error building client struct for configuration", err.Error())
+	} else {
+		result.Configuration = *configurationValue
 	}
-	result.Configuration = *configurationValue
 
 	// name
 	result.Name = model.Name.ValueString()
@@ -143,12 +145,12 @@ func (model *captchaProvidersResourceModel) buildClientStruct() (*client.Captcha
 	pluginDescriptorRefValue.Id = pluginDescriptorRefAttrs["id"].(types.String).ValueString()
 	result.PluginDescriptorRef = pluginDescriptorRefValue
 
-	// providers_id
-	result.Id = model.ProvidersId.ValueString()
-	return result, nil
+	// provider_id
+	result.Id = model.ProviderId.ValueString()
+	return result, respDiags
 }
 
-func (state *captchaProvidersResourceModel) readClientResponse(response *client.CaptchaProvider) diag.Diagnostics {
+func (state *captchaProviderResourceModel) readClientResponse(response *client.CaptchaProvider) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
 	// configuration
 	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration)
@@ -182,13 +184,13 @@ func (state *captchaProvidersResourceModel) readClientResponse(response *client.
 	respDiags.Append(diags...)
 
 	state.PluginDescriptorRef = pluginDescriptorRefValue
-	// providers_id
-	state.ProvidersId = types.StringValue(response.Id)
+	// provider_id
+	state.ProviderId = types.StringValue(response.Id)
 	return respDiags
 }
 
-func (r *captchaProvidersResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data captchaProvidersResourceModel
+func (r *captchaProviderResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data captchaProviderResourceModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -198,16 +200,13 @@ func (r *captchaProvidersResource) Create(ctx context.Context, req resource.Crea
 	}
 
 	// Create API call logic
-	clientData, err := data.buildClientStruct()
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to build client struct for the captchaProviders", err.Error())
-		return
-	}
+	clientData, diags := data.buildClientStruct()
+	resp.Diagnostics.Append(diags...)
 	apiCreateRequest := r.apiClient.CaptchaProvidersAPI.CreateCaptchaProvider(config.AuthContext(ctx, r.providerConfig))
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.CaptchaProvidersAPI.CreateCaptchaProviderExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the captchaProviders", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the captchaProvider", err, httpResp)
 		return
 	}
 
@@ -218,8 +217,8 @@ func (r *captchaProvidersResource) Create(ctx context.Context, req resource.Crea
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *captchaProvidersResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data captchaProvidersResourceModel
+func (r *captchaProviderResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data captchaProviderResourceModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -229,13 +228,13 @@ func (r *captchaProvidersResource) Read(ctx context.Context, req resource.ReadRe
 	}
 
 	// Read API call logic
-	responseData, httpResp, err := r.apiClient.CaptchaProvidersAPI.GetCaptchaProvider(config.AuthContext(ctx, r.providerConfig), data.ProvidersId.ValueString()).Execute()
+	responseData, httpResp, err := r.apiClient.CaptchaProvidersAPI.GetCaptchaProvider(config.AuthContext(ctx, r.providerConfig), data.ProviderId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the captchaProviders", err, httpResp)
+			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the captchaProvider", err, httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the captchaProviders", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the captchaProvider", err, httpResp)
 		}
 		return
 	}
@@ -247,8 +246,8 @@ func (r *captchaProvidersResource) Read(ctx context.Context, req resource.ReadRe
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *captchaProvidersResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data captchaProvidersResourceModel
+func (r *captchaProviderResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data captchaProviderResourceModel
 
 	// Read Terraform plan data into the model
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
@@ -258,16 +257,13 @@ func (r *captchaProvidersResource) Update(ctx context.Context, req resource.Upda
 	}
 
 	// Update API call logic
-	clientData, err := data.buildClientStruct()
-	if err != nil {
-		resp.Diagnostics.AddError("Failed to build client struct for the captchaProviders", err.Error())
-		return
-	}
-	apiUpdateRequest := r.apiClient.CaptchaProvidersAPI.UpdateCaptchaProvider(config.AuthContext(ctx, r.providerConfig), data.ProvidersId.ValueString())
+	clientData, diags := data.buildClientStruct()
+	resp.Diagnostics.Append(diags...)
+	apiUpdateRequest := r.apiClient.CaptchaProvidersAPI.UpdateCaptchaProvider(config.AuthContext(ctx, r.providerConfig), data.ProviderId.ValueString())
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.CaptchaProvidersAPI.UpdateCaptchaProviderExecute(apiUpdateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the captchaProviders", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the captchaProvider", err, httpResp)
 		return
 	}
 
@@ -278,8 +274,8 @@ func (r *captchaProvidersResource) Update(ctx context.Context, req resource.Upda
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *captchaProvidersResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data captchaProvidersResourceModel
+func (r *captchaProviderResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data captchaProviderResourceModel
 
 	// Read Terraform prior state data into the model
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
@@ -289,13 +285,13 @@ func (r *captchaProvidersResource) Delete(ctx context.Context, req resource.Dele
 	}
 
 	// Delete API call logic
-	httpResp, err := r.apiClient.CaptchaProvidersAPI.DeleteCaptchaProvider(config.AuthContext(ctx, r.providerConfig), data.ProvidersId.ValueString()).Execute()
+	httpResp, err := r.apiClient.CaptchaProvidersAPI.DeleteCaptchaProvider(config.AuthContext(ctx, r.providerConfig), data.ProviderId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the captchaProviders", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the captchaProvider", err, httpResp)
 	}
 }
 
-func (r *captchaProvidersResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to providers_id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("providers_id"), req, resp)
+func (r *captchaProviderResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	// Retrieve import ID and save to provider_id attribute
+	resource.ImportStatePassthroughID(ctx, path.Root("provider_id"), req, resp)
 }

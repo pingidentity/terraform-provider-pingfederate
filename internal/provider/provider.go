@@ -713,7 +713,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		authenticationpoliciessettings.AuthenticationPoliciesSettingsResource,
 		authenticationpolicycontract.AuthenticationPolicyContractResource,
 		authenticationselector.AuthenticationSelectorsResource,
-		captchaproviders.CaptchaProvidersResource,
+		captchaproviders.CaptchaProviderResource,
 		certificate.CertificateCAResource,
 		extendedproperties.ExtendedPropertiesResource,
 		idpadapter.IdpAdapterResource,

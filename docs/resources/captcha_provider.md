@@ -1,19 +1,19 @@
 ---
-page_title: "pingfederate_captcha_providers Resource - terraform-provider-pingfederate"
+page_title: "pingfederate_captcha_provider Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
   
 ---
 
-# pingfederate_captcha_providers (Resource)
+# pingfederate_captcha_provider (Resource)
 
 
 
 ## Example Usage
 
 ```terraform
-resource "pingfederate_captcha_providers" "captchaProvidersExample" {
-  providers_id = "myCaptchaProvider"
+resource "pingfederate_captcha_providers" "captchaProviderExample" {
+  providers_id = "myCaptchaProviderId"
   name         = "My Captcha Provider"
   configuration = {
     tables = [],
@@ -44,7 +44,7 @@ resource "pingfederate_captcha_providers" "captchaProvidersExample" {
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--configuration))
 - `name` (String) The plugin instance name. The name can be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.
 - `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
-- `providers_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.
+- `provider_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.
 
 ### Optional
 
@@ -161,8 +161,8 @@ Required:
 
 Import is supported using the following syntax:
 
-~> "captchaProvidersExample" should be the id of the Captcha provider to be imported
+~> "myCaptchaProviderId" should be the id of the Captcha provider to be imported
 
 ```shell
-terraform import pingfederate_captcha_providers.captchaProvider captchaProvidersExample
+terraform import pingfederate_captcha_providers.captchaProviderExample myCaptchaProviderId
 ```
