@@ -1,5 +1,5 @@
-resource "pingfederate_captcha_providers" "captchaProviderExample" {
-  providers_id = "myCaptchaProviderId"
+resource "pingfederate_captcha_provider" "captchaProviderExample" {
+  provider_id = "myCaptchaProviderId"
   name         = "My Captcha Provider"
   configuration = {
     tables = [],

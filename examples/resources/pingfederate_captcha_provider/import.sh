@@ -1,1 +1,1 @@
-terraform import pingfederate_captcha_providers.captchaProviderExample myCaptchaProviderId
+terraform import pingfederate_captcha_provider.captchaProviderExample myCaptchaProviderId

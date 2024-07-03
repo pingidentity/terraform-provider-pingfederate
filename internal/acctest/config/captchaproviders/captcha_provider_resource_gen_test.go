@@ -153,8 +153,6 @@ resource "pingfederate_captcha_provider" "example" {
 }
 
 // Validate any computed values when applying minimal HCL
-// TODO remove any values that are not computed from this check
-// TODO set expected values
 func captchaProvider_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.fields_all.2.value", "recaptcha-v2-invisible.js"),
@@ -164,9 +162,6 @@ func captchaProvider_CheckComputedValuesMinimal() resource.TestCheckFunc {
 }
 
 // Validate any computed values when applying complete HCL
-// TODO This may not be needed as a separate function from minimal HCL if the expected values match
-// TODO remove any values that are not computed from this check
-// TODO set expected values
 func captchaProvider_CheckComputedValuesComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.tables_all.#", "0"),
