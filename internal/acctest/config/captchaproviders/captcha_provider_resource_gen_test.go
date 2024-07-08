@@ -17,16 +17,20 @@ import (
 
 const captchaProviderProviderId = "captchaProviderProviderId"
 
-var testEnvId = ""
+var testEnvConnId = ""
 
 func TestAccCaptchaProvider_RemovalDrift(t *testing.T) {
+	connId := os.Getenv("PF_TF_P1_CONNECTION_ID")
 	envId := os.Getenv("PF_TF_P1_CONNECTION_ENV_ID")
-	testEnvId = envId
+	testEnvConnId = connId + "|" + envId
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.ConfigurationPreCheck(t)
+			if connId == "" {
+				t.Fatal("PF_TF_P1_CONNECTION_ID must be set for the Captcha Provider acceptance test")
+			}
 			if envId == "" {
-				t.Fatal("PF_TF_P1_CONNECTION_ENV_ID must be set")
+				t.Fatal("PF_TF_P1_CONNECTION_ENV_ID must be set for the Captcha Provider acceptance test")
 			}
 		},
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
@@ -149,7 +153,7 @@ resource "pingfederate_captcha_provider" "example" {
     id = "com.pingidentity.adapters.pingone.protect.PingOneProtectProvider"
   }
 }
-`, captchaProviderProviderId, captchaProviderProviderId, testEnvId)
+`, captchaProviderProviderId, captchaProviderProviderId, testEnvConnId)
 }
 
 // Validate any computed values when applying minimal HCL
