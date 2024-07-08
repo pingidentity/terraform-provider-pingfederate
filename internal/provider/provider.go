@@ -31,7 +31,8 @@ import (
 	authenticationpoliciessettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicies/settings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicycontract"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationselector"
-	certificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificate/ca"
+	certificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificates/ca"
+	certificatesrevocationocspcertificates "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificates/revocation/ocspcertificates"
 	datastore "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/datastore"
 	extendedproperties "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/extendedproperties"
 	idpadapter "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/adapter"
@@ -713,6 +714,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		authenticationpolicycontract.AuthenticationPolicyContractResource,
 		authenticationselector.AuthenticationSelectorsResource,
 		certificate.CertificateCAResource,
+		certificatesrevocationocspcertificates.CertificatesRevocationOcspCertificateResource,
 		extendedproperties.ExtendedPropertiesResource,
 		idpadapter.IdpAdapterResource,
 		idpdefaulturls.IdpDefaultUrlsResource,
