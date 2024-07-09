@@ -74,6 +74,7 @@ func (r *certificatesRevocationOcspCertificateResource) Schema(ctx context.Conte
 		Attributes: map[string]schema.Attribute{
 			"certificate_id": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
