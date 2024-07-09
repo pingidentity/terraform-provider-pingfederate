@@ -200,7 +200,6 @@ func (r *captchaProviderSettingsResource) Delete(ctx context.Context, req resour
 
 func (r *captchaProviderSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
-	var emptyState captchaProviderSettingsResourceModel
-	emptyState.setNullObjectValues()
+	emptyState := r.emptyModel()
 	resp.Diagnostics.Append(resp.State.Set(ctx, &emptyState)...)
 }
