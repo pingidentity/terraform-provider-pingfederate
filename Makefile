@@ -23,7 +23,6 @@ define productversiondir
  	PRODUCT_VERSION_DIR=$$(echo "$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.1.0}" | cut -b 1-4)
 endef
 
-#TODO: replace `edge` with `latest` here once a sprint release is available for PF 12.1
 starttestcontainer:
 	$(call productversiondir) && docker run --name pingfederate_terraform_provider_container \
 		-d -p 9031:9031 \
@@ -31,7 +30,7 @@ starttestcontainer:
 		--env-file "${HOME}/.pingidentity/config" \
 		-v $$(pwd)/server-profiles/shared-profile:/opt/in \
 		-v $$(pwd)/server-profiles/$${PRODUCT_VERSION_DIR}/data.json.subst:/opt/in/instance/bulk-config/data.json.subst \
-		pingidentity/pingfederate:$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.1.0}-edge
+		pingidentity/pingfederate:$${PINGFEDERATE_PROVIDER_PRODUCT_VERSION:-12.1.0}-latest
 # Wait for the instance to become ready
 	sleep 1
 	duration=0
@@ -64,6 +63,9 @@ endef
 # Set ACC_TEST_NAME to name of test in cli
 testoneacc:
 	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/... -timeout 10m -run ${ACC_TEST_NAME} -v count=1
+
+testaccfolder:
+	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/config/${ACC_TEST_FOLDER}... -timeout 10m -v count=1
 
 testoneacccomplete: spincontainer testoneacc
 
