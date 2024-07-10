@@ -1,12 +1,39 @@
 package metadataurls
 
 import (
+	"context"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
+
+func (r *metadataUrlResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	// Handle drift detection for the x509_file.file_data valud changing outside of terraform
+	if !req.Plan.Raw.IsNull() && !req.State.Raw.IsNull() {
+		var plan, state metadataUrlResourceModel
+		req.Plan.Get(ctx, &plan)
+		req.State.Get(ctx, &state)
+		if internaltypes.IsDefined(plan.X509File) && internaltypes.IsDefined(state.X509File) {
+			planX509Attrs := plan.X509File.Attributes()
+			planFileData := planX509Attrs["file_data"].(types.String).ValueString()
+			stateFormattedFileData := state.X509File.Attributes()["formatted_file_data"].(types.String).ValueString()
+			// If the single-line file_data values don't match, need to re-apply the resource
+			if strings.ReplaceAll(planFileData, "\n", "") != strings.ReplaceAll(stateFormattedFileData, "\n", "") {
+				planX509Attrs["formatted_file_data"] = types.StringUnknown()
+				var diags diag.Diagnostics
+				plan.X509File, diags = types.ObjectValue(plan.X509File.AttributeTypes(ctx), planX509Attrs)
+				resp.Diagnostics.Append(diags...)
+				plan.CertView = types.ObjectUnknown(plan.CertView.AttributeTypes(ctx))
+				resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
+			}
+		}
+	}
+}
 
 func (state *metadataUrlResourceModel) readClientResponseX509File(response *client.MetadataUrl) diag.Diagnostics {
 	var diags diag.Diagnostics
