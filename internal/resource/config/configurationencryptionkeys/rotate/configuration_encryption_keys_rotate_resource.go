@@ -77,7 +77,7 @@ func (r *configurationEncryptionKeysRotateResource) Schema(ctx context.Context, 
 				},
 			},
 			"rotation_trigger_values": schema.MapAttribute{
-				Description: "A meta-argument map of values that, if any values are changed, will force regeneration of the resource secret. Adding values to and removing values from the map will not trigger a secret regeneration. This parameter can be used to control time-based rotation using Terraform.",
+				Description: "A meta-argument map of values that, if any values are changed, will force rotation of the encryption keys. Adding values to and removing values from the map will not trigger a rotation. This parameter can be used to control time-based rotation using Terraform.",
 				Optional:    true,
 				ElementType: types.StringType,
 			},

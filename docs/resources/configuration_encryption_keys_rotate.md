@@ -29,7 +29,7 @@ resource "pingfederate_configuration_encryption_keys_rotate" "encryptionKeysRota
 
 ### Optional
 
-- `rotation_trigger_values` (Map of String) A meta-argument map of values that, if any values are changed, will force regeneration of the resource secret. Adding values to and removing values from the map will not trigger a secret regeneration. This parameter can be used to control time-based rotation using Terraform.
+- `rotation_trigger_values` (Map of String) A meta-argument map of values that, if any values are changed, will force rotation of the encryption keys. Adding values to and removing values from the map will not trigger a rotation. This parameter can be used to control time-based rotation using Terraform.
 
 ### Read-Only
 
