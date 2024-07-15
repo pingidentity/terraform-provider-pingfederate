@@ -60,6 +60,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/passwordcredentialvalidator"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/pingoneconnection"
 	protocolmetadatalifetimesettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/protocolmetadata/lifetimesettings"
+	protocolmetadatasigningsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/protocolmetadata/signingsettings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/redirectvalidation"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings"
 	serversettingsgeneralsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/generalsettings"
@@ -741,6 +742,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		passwordcredentialvalidator.PasswordCredentialValidatorResource,
 		pingoneconnection.PingOneConnectionResource,
 		protocolmetadatalifetimesettings.ProtocolMetadataLifetimeSettingsResource,
+		protocolmetadatasigningsettings.ProtocolMetadataSigningSettingsResource,
 		redirectvalidation.RedirectValidationResource,
 		serversettings.ServerSettingsResource,
 		serversettingsgeneralsettings.ServerSettingsGeneralSettingsResource,
