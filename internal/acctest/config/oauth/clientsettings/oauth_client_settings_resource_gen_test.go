@@ -58,6 +58,46 @@ resource "pingfederate_oauth_auth_server_settings_scopes_exclusive_scope" "exclu
   description = "desc"
   name        = "myexclusivescope"
 }
+
+resource "pingfederate_oauth_access_token_manager" "accessTokenManager" {
+  manager_id = "accessTokenManager"
+  name       = "accessTokenManager"
+  plugin_descriptor_ref = {
+	id = "org.sourceid.oauth20.token.plugin.impl.ReferenceBearerAccessTokenManagementPlugin"
+  }
+  configuration = {
+  }
+  attribute_contract = {
+	coreAttributes = []
+	extended_attributes = [
+	  {
+		name         = "extended_contract"
+		multi_valued = true
+	  }
+	]
+  }
+}
+
+resource "pingfederate_oauth_open_id_connect_policy" "oidcPolicy" {
+  policy_id = "oidcPolicy"
+  name      = "oidcPolicy"
+  access_token_manager_ref = {
+	id = pingfederate_oauth_access_token_manager.accessTokenManager.manager_id
+  }
+  attribute_contract = {
+    extended_attributes = []
+  }
+	attribute_mapping = {
+		attribute_contract_fulfillment = {
+		  "sub" = {
+		     source = {
+			   type = "TEXT"
+			 } 
+			 value = "sub"
+		  }
+		}
+	}
+}
 `
 }
 
@@ -104,6 +144,7 @@ func oauthClientSettings_CompleteHCL() string {
 resource "pingfederate_oauth_client_settings" "example" {
   depends_on = [
     pingfederate_oauth_auth_server_settings_scopes_exclusive_scope.exclusiveScope,
+	pingfederate_oauth_open_id_connect_policy.oidcPolicy
   ]
   client_metadata = [
     {
