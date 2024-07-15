@@ -1,3 +1,7 @@
+# v0.13.0 (Unreleased)
+### Resources
+* **New Resource:** `pingfederate_server_settings_system_keys_rotate` ([#292](https://github.com/pingidentity/terraform-provider-pingfederate/pull/292))
+
 # v0.12.0 June 27th, 2024
 ### BREAKING CHANGES
 * Removed deprecated `inherited` attribute from various resources and data sources. ([#268]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/268)))
