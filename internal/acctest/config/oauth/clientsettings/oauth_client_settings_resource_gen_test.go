@@ -59,6 +59,11 @@ resource "pingfederate_oauth_auth_server_settings_scopes_exclusive_scope" "exclu
   name        = "myexclusivescope"
 }
 
+resource "pingfederate_oauth_auth_server_settings_scopes_common_scope" "commonScope" {
+  description = "desc"
+  name        = "mycommonscope"
+}
+
 resource "pingfederate_oauth_access_token_manager" "accessTokenManager" {
   manager_id = "accessTokenManager"
   name       = "accessTokenManager"
@@ -177,7 +182,7 @@ resource "pingfederate_oauth_client_settings" "example" {
     device_polling_interval_override   = 5
     disable_registration_access_tokens = false
     enforce_replay_prevention          = true
-    initial_access_token_scope         = "email"
+    initial_access_token_scope         = pingfederate_oauth_auth_server_settings_scopes_common_scope.commonScope.name
     oidc_policy = {
       id_token_signing_algorithm = "ES256"
       policy_group = {
@@ -209,7 +214,7 @@ resource "pingfederate_oauth_client_settings" "example" {
     require_signed_requests                         = true
     restrict_common_scopes                          = true
     restrict_to_default_access_token_manager        = true
-    restricted_common_scopes                        = ["email"]
+    restricted_common_scopes                        = [pingfederate_oauth_auth_server_settings_scopes_common_scope.commonScope.name]
     retain_client_secret                            = true
     rotate_client_secret                            = false
     rotate_registration_access_token                = false
