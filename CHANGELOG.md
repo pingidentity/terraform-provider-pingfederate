@@ -1,3 +1,7 @@
+# v0.13.0 (Unreleased)
+### Resources
+* **New Resource:** `pingfederate_server_settings_ws_trust_sts_settings_issuer_certificate` ([#293]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/293)))
+
 # v0.12.0 June 27th, 2024
 ### BREAKING CHANGES
 * Removed deprecated `inherited` attribute from various resources and data sources. ([#268]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/268)))
