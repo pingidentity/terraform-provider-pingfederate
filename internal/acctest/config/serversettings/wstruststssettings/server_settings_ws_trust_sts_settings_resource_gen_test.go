@@ -4,18 +4,30 @@ package serversettingswstruststssettings_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
+var issuerCertFileData string
+var issuerCertId = "mytestissuercert"
+
 func TestAccServerSettingsWsTrustStsSettings_MinimalMaximal(t *testing.T) {
+	issuerCertFileData = os.Getenv("PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_1")
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
+		PreCheck: func() {
+			acctest.ConfigurationPreCheck(t)
+			if issuerCertFileData == "" {
+				t.Fatal("PF_TF_ACC_TEST_CERTIFICATE_CA_FILE_DATA_1 must be set for TestAccServerSettingsWsTrustStsSettings_MinimalMaximal")
+			}
+			serverSettingsWsTrustStsSettings_createIssuerCert(t)
+		},
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
@@ -37,6 +49,8 @@ func TestAccServerSettingsWsTrustStsSettings_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "basic_authn_enabled",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
+				// Passwords cannot be imported
+				ImportStateVerifyIgnore: []string{"users.0.password"},
 			},
 			{
 				// Back to minimal model
@@ -47,28 +61,45 @@ func TestAccServerSettingsWsTrustStsSettings_MinimalMaximal(t *testing.T) {
 	})
 }
 
+func serverSettingsWsTrustStsSettings_createIssuerCert(t *testing.T) {
+	testClient := acctest.TestClient()
+	// Check if the issuer cert already exists - if not, then create it
+	_, _, err := testClient.ServerSettingsAPI.GetCert(acctest.TestBasicAuthContext(), issuerCertId).Execute()
+	if err != nil {
+		// Cert wasn't found, so create it
+		fileData := client.X509File{
+			FileData: issuerCertFileData,
+			Id:       &issuerCertId,
+		}
+		_, _, err = testClient.ServerSettingsAPI.ImportCertificate(acctest.TestBasicAuthContext()).Body(fileData).Execute()
+		if err != nil {
+			t.Fatalf("Failed to create issuer cert for ws trust sts settings test: %s", err.Error())
+		}
+	}
+}
+
 // Minimal HCL with only required values set
 func serverSettingsWsTrustStsSettings_MinimalHCL() string {
-	return fmt.Sprintf(`
+	return `
 resource "pingfederate_server_settings_ws_trust_sts_settings" "example" {
 }
-`)
+`
 }
 
 // Maximal HCL with all values set where possible
 func serverSettingsWsTrustStsSettings_CompleteHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_server_settings_ws_trust_sts_settings" "example" {
-  basic_authn_enabled = true
+  basic_authn_enabled       = true
   client_cert_authn_enabled = true
   issuer_certs = [
     {
-      id = //TODO
+      id = "%s"
     }
   ]
   restrict_by_issuer_cert = true
-  restrict_by_subject_dn = true
-  subject_dns = ["cn=test"]
+  restrict_by_subject_dn  = true
+  subject_dns             = ["cn=test"]
   users = [
     {
       password = "2FederateM0re"
@@ -76,7 +107,7 @@ resource "pingfederate_server_settings_ws_trust_sts_settings" "example" {
     }
   ]
 }
-`)
+`, issuerCertId)
 }
 
 // Validate any computed values when applying minimal HCL

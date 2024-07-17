@@ -1,6 +1,6 @@
 # v0.13.0 (Unreleased)
 ### Resources
-* **New Resource:** `pingfederate_server_settings_ws_trust_sts_settings` ([#293](https://github.com/pingidentity/terraform-provider-pingfederate/pull/293))
+* **New Resource:** `pingfederate_server_settings_ws_trust_sts_settings` ([#294](https://github.com/pingidentity/terraform-provider-pingfederate/pull/294))
 
 # v0.12.0 June 27th, 2024
 ### BREAKING CHANGES

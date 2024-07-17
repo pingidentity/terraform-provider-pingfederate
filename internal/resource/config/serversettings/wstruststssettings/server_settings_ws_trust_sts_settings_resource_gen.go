@@ -203,24 +203,7 @@ func (state *serverSettingsWsTrustStsSettingsResourceModel) readClientResponse(r
 	state.SubjectDns, diags = types.ListValueFrom(context.Background(), types.StringType, response.SubjectDns)
 	respDiags.Append(diags...)
 	// users
-	usersAttrTypes := map[string]attr.Type{
-		"password": types.StringType,
-		"username": types.StringType,
-	}
-	usersElementType := types.ObjectType{AttrTypes: usersAttrTypes}
-	var usersValues []attr.Value
-	for _, usersResponseValue := range response.Users {
-		usersValue, diags := types.ObjectValue(usersAttrTypes, map[string]attr.Value{
-			"password": types.StringPointerValue(usersResponseValue.Password),
-			"username": types.StringPointerValue(usersResponseValue.Username),
-		})
-		respDiags.Append(diags...)
-		usersValues = append(usersValues, usersValue)
-	}
-	usersValue, diags := types.ListValue(usersElementType, usersValues)
-	respDiags.Append(diags...)
-
-	state.Users = usersValue
+	respDiags.Append(state.readClientResponseUsers(response)...)
 	return respDiags
 }
 
@@ -240,6 +223,8 @@ func (r *serverSettingsWsTrustStsSettingsResource) emptyModel() serverSettingsWs
 	}
 	usersElementType := types.ObjectType{AttrTypes: usersAttrTypes}
 	model.Users = types.ListNull(usersElementType)
+	// subject_dns
+	model.SubjectDns = types.ListNull(types.StringType)
 	return model
 }
 

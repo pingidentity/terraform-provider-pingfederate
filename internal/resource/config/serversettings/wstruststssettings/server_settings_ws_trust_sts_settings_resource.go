@@ -4,7 +4,9 @@ package serversettingswstruststssettings
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 )
 
 var (
@@ -21,3 +23,39 @@ var (
 		},
 	}, nil)
 )
+
+func (state *serverSettingsWsTrustStsSettingsResourceModel) readClientResponseUsers(response *client.WsTrustStsSettings) diag.Diagnostics {
+	var respDiags diag.Diagnostics
+	usersAttrTypes := map[string]attr.Type{
+		"password": types.StringType,
+		"username": types.StringType,
+	}
+	usersElementType := types.ObjectType{AttrTypes: usersAttrTypes}
+	var usersValues []attr.Value
+	for _, usersResponseValue := range response.Users {
+		var userPassword *string
+		// Get password value from state, if it is set, since the PF API won't return the password
+		if !state.Users.IsNull() && !state.Users.IsUnknown() {
+			// Find the corresponding user in state, if it exists
+			for _, user := range state.Users.Elements() {
+				userAttrs := user.(types.Object).Attributes()
+				password, ok := userAttrs["password"]
+				if ok {
+					userPassword = password.(types.String).ValueStringPointer()
+					break
+				}
+			}
+		}
+		usersValue, diags := types.ObjectValue(usersAttrTypes, map[string]attr.Value{
+			"password": types.StringPointerValue(userPassword),
+			"username": types.StringPointerValue(usersResponseValue.Username),
+		})
+		respDiags.Append(diags...)
+		usersValues = append(usersValues, usersValue)
+	}
+	usersValue, diags := types.ListValue(usersElementType, usersValues)
+	respDiags.Append(diags...)
+
+	state.Users = usersValue
+	return respDiags
+}
