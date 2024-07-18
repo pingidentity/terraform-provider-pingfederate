@@ -1,3 +1,7 @@
+# v0.13.0 (Unreleased)
+### Data Sources
+* **New Data Source:** `pingfederate_cluster_status` ([#297](https://github.com/pingidentity/terraform-provider-pingfederate/pull/297))
+
 # v0.12.0 June 27th, 2024
 ### BREAKING CHANGES
 * Removed deprecated `inherited` attribute from various resources and data sources. ([#268]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/268)))

@@ -20,6 +20,7 @@ export serverSettings_systemKeys_items_pending_keyData="7ZuraJ9Iz9H0tczsx4Ta2YOP
 export PING_IDENTITY_PASSWORD=${PING_IDENTITY_PASSWORD:=2FederateM0re}
 export PD_ENGINE_PRIVATE_HOSTNAME=${PD_ENGINE_PRIVATE_HOSTNAME:=pingdirectory}
 export PD_ENGINE_PRIVATE_PORT_LDAP=${PD_ENGINE_PRIVATE_PORT_LDAP:=1389}
+export DNS_QUERY_LOCATION=${DNS_QUERY_LOCATION:=localhost}
 
 ## Variables for PF Bulk JSON
 export dataStores_pingdirectory_password="2FederateM0re"
