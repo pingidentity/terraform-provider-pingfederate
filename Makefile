@@ -91,7 +91,7 @@ testauthacc:
 	fi
 
 testaccclustered:
-	$(call test_acc_common_env_vars) $(call test_acc_oauth_env_vars) TF_ACC=1 go test ./internal/acctest/cluster/... -timeout 5m -v
+	$(call test_acc_common_env_vars) $(call test_acc_oauth_env_vars) TF_ACC=1 go test ./internal/acctest/config/cluster/... -timeout 5m -v
 
 testacccomplete: spincontainer testauthacc testacc
 
