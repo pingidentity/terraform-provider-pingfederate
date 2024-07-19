@@ -62,6 +62,7 @@ func (r *serviceAuthenticationResource) Schema(ctx context.Context, req resource
 					},
 					"shared_secret": schema.StringAttribute{
 						Optional:    true,
+						Sensitive:   true,
 						Description: "Shared secret for the service.",
 					},
 				},
@@ -76,6 +77,7 @@ func (r *serviceAuthenticationResource) Schema(ctx context.Context, req resource
 					},
 					"shared_secret": schema.StringAttribute{
 						Optional:    true,
+						Sensitive:   true,
 						Description: "Shared secret for the service.",
 					},
 				},
@@ -90,6 +92,7 @@ func (r *serviceAuthenticationResource) Schema(ctx context.Context, req resource
 					},
 					"shared_secret": schema.StringAttribute{
 						Optional:    true,
+						Sensitive:   true,
 						Description: "Shared secret for the service.",
 					},
 				},
@@ -104,6 +107,7 @@ func (r *serviceAuthenticationResource) Schema(ctx context.Context, req resource
 					},
 					"shared_secret": schema.StringAttribute{
 						Optional:    true,
+						Sensitive:   true,
 						Description: "Shared secret for the service.",
 					},
 				},

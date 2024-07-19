@@ -40,7 +40,7 @@ resource "pingfederate_service_authentication" "serviceAuthentication" {
 Optional:
 
 - `id` (String) Id of the service.
-- `shared_secret` (String) Shared secret for the service.
+- `shared_secret` (String, Sensitive) Shared secret for the service.
 
 
 <a id="nestedatt--connection_management"></a>
@@ -49,7 +49,7 @@ Optional:
 Optional:
 
 - `id` (String) Id of the service.
-- `shared_secret` (String) Shared secret for the service.
+- `shared_secret` (String, Sensitive) Shared secret for the service.
 
 
 <a id="nestedatt--jmx"></a>
@@ -58,7 +58,7 @@ Optional:
 Optional:
 
 - `id` (String) Id of the service.
-- `shared_secret` (String) Shared secret for the service.
+- `shared_secret` (String, Sensitive) Shared secret for the service.
 
 
 <a id="nestedatt--sso_directory_service"></a>
@@ -67,7 +67,7 @@ Optional:
 Optional:
 
 - `id` (String) Id of the service.
-- `shared_secret` (String) Shared secret for the service.
+- `shared_secret` (String, Sensitive) Shared secret for the service.
 
 ## Import
 
