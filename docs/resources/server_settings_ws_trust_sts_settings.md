@@ -49,7 +49,7 @@ Required:
 
 Optional:
 
-- `password` (String) User password.  To update the password, specify the plaintext value in this field.  This field will not be populated for GET requests.
+- `password` (String, Sensitive) User password.  To update the password, specify the plaintext value in this field.  This field will not be populated for GET requests.
 - `username` (String) The username.
 
 ## Import

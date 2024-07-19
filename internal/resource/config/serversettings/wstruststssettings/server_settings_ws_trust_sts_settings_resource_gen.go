@@ -60,17 +60,15 @@ func (r *serverSettingsWsTrustStsSettingsResource) Schema(ctx context.Context, r
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"basic_authn_enabled": schema.BoolAttribute{
-				Optional: true,
-				Computed: true,
-				Default:  booldefault.StaticBool(false),
-				//TODO validateconfig
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 				Description: "Require the use of HTTP Basic Authentication to access WS-Trust STS endpoints. Requires users be populated.",
 			},
 			"client_cert_authn_enabled": schema.BoolAttribute{
-				Optional: true,
-				Computed: true,
-				Default:  booldefault.StaticBool(false),
-				//TODO validateconfig
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 				Description: "Require the use of Client Cert Authentication to access WS-Trust STS endpoints. Requires either restrictBySubjectDn and/or restrictByIssuerCert be enabled.",
 			},
 			"issuer_certs": schema.ListNestedAttribute{
@@ -82,17 +80,15 @@ func (r *serverSettingsWsTrustStsSettingsResource) Schema(ctx context.Context, r
 						},
 					},
 				},
-				Optional: true,
-				Computed: true,
-				Default:  listdefault.StaticValue(resourceLinkListDefault),
-				//TODO validateconfig
+				Optional:    true,
+				Computed:    true,
+				Default:     listdefault.StaticValue(resourceLinkListDefault),
 				Description: "List of certificate Issuers that are used to validate certificates for access to the WS-Trust STS endpoints. Required if restrictByIssuerCert is enabled.",
 			},
 			"restrict_by_issuer_cert": schema.BoolAttribute{
-				Optional: true,
-				Computed: true,
-				Default:  booldefault.StaticBool(false),
-				//TODO validateconfig
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 				Description: "Restrict Access by Issuer Certificate. Ignored if clientCertAuthnEnabled is disabled.",
 			},
 			"restrict_by_subject_dn": schema.BoolAttribute{
@@ -106,7 +102,6 @@ func (r *serverSettingsWsTrustStsSettingsResource) Schema(ctx context.Context, r
 				Optional:    true,
 				Computed:    true,
 				Default:     listdefault.StaticValue(emptyStringListDefault),
-				//TODO validateconfig
 				Description: "List of Subject DNs for certificates that are allowed to authenticate to WS-Trust STS endpoints. Required if restrictBySubjectDn is enabled.",
 			},
 			"users": schema.ListNestedAttribute{
@@ -114,6 +109,7 @@ func (r *serverSettingsWsTrustStsSettingsResource) Schema(ctx context.Context, r
 					Attributes: map[string]schema.Attribute{
 						"password": schema.StringAttribute{
 							Optional:    true,
+							Sensitive:   true,
 							Description: "User password.  To update the password, specify the plaintext value in this field.  This field will not be populated for GET requests.",
 						},
 						"username": schema.StringAttribute{
@@ -122,10 +118,9 @@ func (r *serverSettingsWsTrustStsSettingsResource) Schema(ctx context.Context, r
 						},
 					},
 				},
-				Optional: true,
-				Computed: true,
-				Default:  listdefault.StaticValue(usersListDefault),
-				//TODO validateconfig
+				Optional:    true,
+				Computed:    true,
+				Default:     listdefault.StaticValue(usersListDefault),
 				Description: "List of users authorized to access WS-Trust STS endpoints when basicAuthnEnabled is enabled. At least one users entry is required if basicAuthnEnabled is enabled.",
 			},
 		},

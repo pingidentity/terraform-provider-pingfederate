@@ -38,9 +38,8 @@ func TestAccServerSettingsWsTrustStsSettings_MinimalMaximal(t *testing.T) {
 				Check:  serverSettingsWsTrustStsSettings_CheckComputedValuesMinimal(),
 			},
 			{
-				// Update to a complete model
+				// Update to a complete model. No computed values to check.
 				Config: serverSettingsWsTrustStsSettings_CompleteHCL(),
-				Check:  serverSettingsWsTrustStsSettings_CheckComputedValuesComplete(),
 			},
 			{
 				// Test importing the resource
@@ -120,21 +119,5 @@ func serverSettingsWsTrustStsSettings_CheckComputedValuesMinimal() resource.Test
 		resource.TestCheckResourceAttr("pingfederate_server_settings_ws_trust_sts_settings.example", "restrict_by_subject_dn", "false"),
 		resource.TestCheckResourceAttr("pingfederate_server_settings_ws_trust_sts_settings.example", "subject_dns.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_server_settings_ws_trust_sts_settings.example", "users.#", "0"),
-	)
-}
-
-// Validate any computed values when applying complete HCL
-// TODO This may not be needed as a separate function from minimal HCL if the expected values match
-// TODO remove any values that are not computed from this check
-// TODO set expected values
-func serverSettingsWsTrustStsSettings_CheckComputedValuesComplete() resource.TestCheckFunc {
-	return resource.ComposeTestCheckFunc(
-	/*resource.TestCheckResourceAttr("pingfederate_server_settings_ws_trust_sts_settings.example", "basic_authn_enabled", "expected_value"),
-	resource.TestCheckResourceAttr("pingfederate_server_settings_ws_trust_sts_settings.example", "client_cert_authn_enabled", "expected_value"),
-	resource.TestCheckResourceAttr("pingfederate_server_settings_ws_trust_sts_settings.example", "restrict_by_issuer_cert", "expected_value"),
-	resource.TestCheckResourceAttr("pingfederate_server_settings_ws_trust_sts_settings.example", "restrict_by_subject_dn", "expected_value"),
-	resource.TestCheckResourceAttr("pingfederate_server_settings_ws_trust_sts_settings.example", "subject_dns.0", "expected_value"),
-	resource.TestCheckResourceAttr("pingfederate_server_settings_ws_trust_sts_settings.example", "users.0.password", "expected_value"),
-	resource.TestCheckResourceAttr("pingfederate_server_settings_ws_trust_sts_settings.example", "users.0.username", "expected_value"),*/
 	)
 }

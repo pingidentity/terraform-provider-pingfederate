@@ -3,10 +3,14 @@
 package serversettingswstruststssettings
 
 import (
+	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
 var (
@@ -23,6 +27,43 @@ var (
 		},
 	}, nil)
 )
+
+func (r *serverSettingsWsTrustStsSettingsResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var config serverSettingsWsTrustStsSettingsResourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if config.BasicAuthnEnabled.ValueBool() {
+		if !internaltypes.IsDefined(config.Users) || len(config.Users.Elements()) == 0 {
+			resp.Diagnostics.AddError("'basic_authn_enabled' can only be true if users are defined", "")
+		}
+	} else if internaltypes.IsDefined(config.Users) && len(config.Users.Elements()) > 0 {
+		resp.Diagnostics.AddError("users can only be defined if 'basic_authn_enabled' is true", "")
+	}
+
+	if config.ClientCertAuthnEnabled.ValueBool() {
+		if !config.RestrictByIssuerCert.ValueBool() && !config.RestrictBySubjectDn.ValueBool() {
+			resp.Diagnostics.AddError("'client_cert_authn_enabled' can only be true if 'restrict_by_issuer_cert' or 'restrict_by_subject_dn' is true", "")
+		}
+	}
+
+	if config.RestrictByIssuerCert.ValueBool() {
+		if !internaltypes.IsDefined(config.IssuerCerts) || len(config.IssuerCerts.Elements()) == 0 {
+			resp.Diagnostics.AddError("if 'restrict_by_issuer_cert' is true, issuer certs must be defined", "")
+		}
+		if !config.ClientCertAuthnEnabled.ValueBool() {
+			resp.Diagnostics.AddError("'restrict_by_issuer_cert' can only be true if 'client_cert_authn_enabled' is true", "")
+		}
+	}
+
+	if config.RestrictBySubjectDn.ValueBool() {
+		if !internaltypes.IsDefined(config.SubjectDns) || len(config.SubjectDns.Elements()) == 0 {
+			resp.Diagnostics.AddError("if 'restrict_by_subject_dn' is true, subject DNs must be defined", "")
+		}
+		if !config.ClientCertAuthnEnabled.ValueBool() {
+			resp.Diagnostics.AddError("'restrict_by_subject_dn' can only be true if 'client_cert_authn_enabled' is true", "")
+		}
+	}
+}
 
 func (state *serverSettingsWsTrustStsSettingsResourceModel) readClientResponseUsers(response *client.WsTrustStsSettings) diag.Diagnostics {
 	var respDiags diag.Diagnostics
