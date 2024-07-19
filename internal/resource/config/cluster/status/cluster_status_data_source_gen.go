@@ -4,6 +4,8 @@ package clusterstatus
 
 import (
 	"context"
+	"io"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -235,11 +237,63 @@ func (state *clusterStatusDataSourceModel) readClientResponse(response *client.C
 	return respDiags
 }
 
+func (state *clusterStatusDataSourceModel) emptyModel() {
+	// current_node_index
+	state.CurrentNodeIndex = types.Int64Null()
+	// last_config_update_time
+	state.LastConfigUpdateTime = types.StringNull()
+	// last_replication_time
+	state.LastReplicationTime = types.StringNull()
+	// mixed_mode
+	state.MixedMode = types.BoolNull()
+	// nodes
+	nodesAdminConsoleInfoAttrTypes := map[string]attr.Type{
+		"config_sync_status":            types.StringType,
+		"config_sync_timestamp":         types.StringType,
+		"console_role":                  types.StringType,
+		"console_role_last_update_date": types.StringType,
+	}
+	nodesAttrTypes := map[string]attr.Type{
+		"address":                 types.StringType,
+		"admin_console_info":      types.ObjectType{AttrTypes: nodesAdminConsoleInfoAttrTypes},
+		"configuration_timestamp": types.StringType,
+		"index":                   types.Int64Type,
+		"mode":                    types.StringType,
+		"node_group":              types.StringType,
+		"node_tags":               types.StringType,
+		"replication_status":      types.StringType,
+		"version":                 types.StringType,
+	}
+	nodesElementType := types.ObjectType{AttrTypes: nodesAttrTypes}
+	state.Nodes = types.ListNull(nodesElementType)
+	// replication_required
+	state.ReplicationRequired = types.BoolNull()
+}
+
 func (r *clusterStatusDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	// Read API call logic
 	responseData, httpResp, err := r.apiClient.ClusterAPI.GetClusterStatus(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the cluster status", err, httpResp)
+		// If the error indicates that this PF server is not running in clustered mode, just return an empty model
+		isNonClusteredMode := false
+		if httpResp != nil {
+			var internalError error
+			body, internalError := io.ReadAll(httpResp.Body)
+			if internalError == nil {
+				bodyContents := string(body)
+				if strings.Contains(bodyContents, "not deployed in clustered mode") {
+					var data clusterStatusDataSourceModel
+					data.emptyModel()
+					// Save updated data into Terraform state
+					resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+					isNonClusteredMode = true
+				}
+			}
+		}
+		// Otherwise, report the error
+		if !isNonClusteredMode {
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the cluster status", err, httpResp)
+		}
 		return
 	}
 

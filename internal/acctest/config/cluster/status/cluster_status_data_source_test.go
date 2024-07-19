@@ -11,6 +11,14 @@ import (
 )
 
 func TestAccClusterStatus(t *testing.T) {
+	// Check if the server is running in clustered mode or not
+	inCluster := false
+	testClient := acctest.TestClient()
+	_, _, err := testClient.ClusterAPI.GetClusterStatus(acctest.TestBasicAuthContext()).Execute()
+	if err == nil {
+		// The API returned a status, so this server must be in clustered mode
+		inCluster = true
+	}
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
@@ -20,7 +28,7 @@ func TestAccClusterStatus(t *testing.T) {
 			{
 				// Run the export and validate the results
 				Config: clusterStatus_MinimalHCL(),
-				Check:  clusterStatus_CheckComputedValues(),
+				Check:  clusterStatus_CheckComputedValues(inCluster),
 			},
 		},
 	})
@@ -35,22 +43,30 @@ data "pingfederate_cluster_status" "example" {
 }
 
 // Validate any computed values when applying HCL
-func clusterStatus_CheckComputedValues() resource.TestCheckFunc {
+func clusterStatus_CheckComputedValues(inCluster bool) resource.TestCheckFunc {
+	if inCluster {
+		return resource.ComposeTestCheckFunc(
+			resource.TestCheckResourceAttr("data.pingfederate_cluster_status.example", "mixed_mode", "false"),
+			resource.TestCheckResourceAttrSet("data.pingfederate_cluster_status.example", "replication_required"),
+			resource.TestCheckResourceAttrSet("data.pingfederate_cluster_status.example", "current_node_index"),
+			resource.TestCheckResourceAttrSet("data.pingfederate_cluster_status.example", "last_config_update_time"),
+			resource.TestCheckResourceAttr("data.pingfederate_cluster_status.example", "nodes.#", "1"),
+			resource.TestCheckResourceAttrSet("data.pingfederate_cluster_status.example", "nodes.0.address"),
+			resource.TestCheckResourceAttrSet("data.pingfederate_cluster_status.example", "nodes.0.index"),
+			resource.TestCheckResourceAttr("data.pingfederate_cluster_status.example", "nodes.0.mode", "CLUSTERED_CONSOLE"),
+			resource.TestCheckResourceAttr("data.pingfederate_cluster_status.example", "nodes.0.node_group", ""),
+			resource.TestCheckResourceAttrSet("data.pingfederate_cluster_status.example", "nodes.0.replication_status"),
+			resource.TestCheckResourceAttrSet("data.pingfederate_cluster_status.example", "nodes.0.version"),
+			resource.TestCheckNoResourceAttr("data.pingfederate_cluster_status.example", "nodes.0.admin_console_info"),
+			resource.TestCheckNoResourceAttr("data.pingfederate_cluster_status.example", "nodes.0.node_tags"),
+		)
+	}
 	return resource.ComposeTestCheckFunc(
-		resource.TestCheckResourceAttr("data.pingfederate_cluster_status.example", "mixed_mode", "false"),
-		resource.TestCheckResourceAttr("data.pingfederate_cluster_status.example", "replication_required", "true"),
-		resource.TestCheckResourceAttrSet("data.pingfederate_cluster_status.example", "current_node_index"),
-		resource.TestCheckResourceAttrSet("data.pingfederate_cluster_status.example", "last_config_update_time"),
+		resource.TestCheckNoResourceAttr("data.pingfederate_cluster_status.example", "mixed_mode"),
+		resource.TestCheckNoResourceAttr("data.pingfederate_cluster_status.example", "replication_required"),
+		resource.TestCheckNoResourceAttr("data.pingfederate_cluster_status.example", "current_node_index"),
+		resource.TestCheckNoResourceAttr("data.pingfederate_cluster_status.example", "last_config_update_time"),
 		resource.TestCheckNoResourceAttr("data.pingfederate_cluster_status.example", "last_replication_time"),
-		resource.TestCheckResourceAttr("data.pingfederate_cluster_status.example", "nodes.#", "1"),
-		resource.TestCheckResourceAttrSet("data.pingfederate_cluster_status.example", "nodes.0.address"),
-		resource.TestCheckResourceAttrSet("data.pingfederate_cluster_status.example", "nodes.0.index"),
-		resource.TestCheckResourceAttr("data.pingfederate_cluster_status.example", "nodes.0.mode", "CLUSTERED_CONSOLE"),
-		resource.TestCheckResourceAttr("data.pingfederate_cluster_status.example", "nodes.0.node_group", ""),
-		resource.TestCheckResourceAttr("data.pingfederate_cluster_status.example", "nodes.0.replication_status", "OUT_OF_DATE"),
-		resource.TestCheckResourceAttrSet("data.pingfederate_cluster_status.example", "nodes.0.version"),
-		resource.TestCheckNoResourceAttr("data.pingfederate_cluster_status.example", "nodes.0.admin_console_info"),
-		resource.TestCheckNoResourceAttr("data.pingfederate_cluster_status.example", "nodes.0.configuration_timestamp"),
-		resource.TestCheckNoResourceAttr("data.pingfederate_cluster_status.example", "nodes.0.node_tags"),
+		resource.TestCheckNoResourceAttr("data.pingfederate_cluster_status.example", "nodes"),
 	)
 }
