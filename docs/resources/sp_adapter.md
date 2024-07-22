@@ -2,12 +2,12 @@
 page_title: "pingfederate_sp_adapter Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to create and manage SP adapters.
 ---
 
 # pingfederate_sp_adapter (Resource)
 
-
+Resource to create and manage SP adapters.
 
 ## Example Usage
 
