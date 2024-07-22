@@ -2,12 +2,12 @@
 page_title: "pingfederate_server_settings_system_keys_rotate Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource that handles rotating the system keys.
 ---
 
 # pingfederate_server_settings_system_keys_rotate (Resource)
 
-
+Resource that handles rotating the system keys.
 
 ## Example Usage
 
@@ -33,17 +33,17 @@ resource "pingfederate_server_settings_system_keys_rotate" "systemKeysRotate" {
 
 ### Read-Only
 
-- `current` (Attributes) (see [below for nested schema](#nestedatt--current))
-- `pending` (Attributes) (see [below for nested schema](#nestedatt--pending))
-- `previous` (Attributes) (see [below for nested schema](#nestedatt--previous))
+- `current` (Attributes) The current secret. (see [below for nested schema](#nestedatt--current))
+- `pending` (Attributes) The next secret. (see [below for nested schema](#nestedatt--pending))
+- `previous` (Attributes) Previously used secret. (see [below for nested schema](#nestedatt--previous))
 
 <a id="nestedatt--current"></a>
 ### Nested Schema for `current`
 
 Read-Only:
 
-- `creation_date` (String)
-- `encrypted_key_data` (String, Sensitive)
+- `creation_date` (String) Creation time of the key.
+- `encrypted_key_data` (String, Sensitive) The system key encrypted.
 
 
 <a id="nestedatt--pending"></a>
@@ -51,8 +51,8 @@ Read-Only:
 
 Read-Only:
 
-- `creation_date` (String)
-- `encrypted_key_data` (String, Sensitive)
+- `creation_date` (String) Creation time of the key.
+- `encrypted_key_data` (String, Sensitive) The system key encrypted.
 
 
 <a id="nestedatt--previous"></a>
@@ -60,8 +60,8 @@ Read-Only:
 
 Read-Only:
 
-- `creation_date` (String)
-- `encrypted_key_data` (String, Sensitive)
+- `creation_date` (String) Creation time of the key.
+- `encrypted_key_data` (String, Sensitive) The system key encrypted.
 
 ## Import
 

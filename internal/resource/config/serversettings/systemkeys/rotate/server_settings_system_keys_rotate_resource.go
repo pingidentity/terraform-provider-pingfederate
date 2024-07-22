@@ -61,49 +61,59 @@ func (r *serverSettingsSystemKeysRotateResource) Configure(_ context.Context, re
 // GetSchema defines the schema for the resource.
 func (r *serverSettingsSystemKeysRotateResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource that handles rotating the system keys.",
 		Attributes: map[string]schema.Attribute{
 			"current": schema.SingleNestedAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "The current secret.",
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
 				Attributes: map[string]schema.Attribute{
 					"encrypted_key_data": schema.StringAttribute{
-						Computed:  true,
-						Sensitive: true,
+						Computed:    true,
+						Sensitive:   true,
+						Description: "The system key encrypted.",
 					},
 					"creation_date": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: "Creation time of the key.",
 					},
 				},
 			},
 			"previous": schema.SingleNestedAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "Previously used secret.",
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
 				Attributes: map[string]schema.Attribute{
 					"encrypted_key_data": schema.StringAttribute{
-						Computed:  true,
-						Sensitive: true,
+						Computed:    true,
+						Sensitive:   true,
+						Description: "The system key encrypted.",
 					},
 					"creation_date": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: "Creation time of the key.",
 					},
 				},
 			},
 			"pending": schema.SingleNestedAttribute{
-				Computed: true,
+				Computed:    true,
+				Description: "The next secret.",
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.UseStateForUnknown(),
 				},
 				Attributes: map[string]schema.Attribute{
 					"encrypted_key_data": schema.StringAttribute{
-						Computed:  true,
-						Sensitive: true,
+						Computed:    true,
+						Sensitive:   true,
+						Description: "The system key encrypted.",
 					},
 					"creation_date": schema.StringAttribute{
-						Computed: true,
+						Computed:    true,
+						Description: "Creation time of the key.",
 					},
 				},
 			},
