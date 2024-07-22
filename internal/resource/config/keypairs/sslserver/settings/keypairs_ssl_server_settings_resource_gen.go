@@ -53,6 +53,7 @@ type keypairsSslServerSettingsResourceModel struct {
 
 func (r *keypairsSslServerSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to manage the SSL server certificate settings.",
 		Attributes: map[string]schema.Attribute{
 			"active_admin_console_certs": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
@@ -86,7 +87,7 @@ func (r *keypairsSslServerSettingsResource) Schema(ctx context.Context, req reso
 					},
 				},
 				Required:    true,
-				Description: "A reference to a resource.",
+				Description: "Reference to the default SSL Server Certificate Key pair active for PF Administrator Console.",
 			},
 			"runtime_server_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -96,7 +97,7 @@ func (r *keypairsSslServerSettingsResource) Schema(ctx context.Context, req reso
 					},
 				},
 				Required:    true,
-				Description: "A reference to a resource.",
+				Description: "Reference to the default SSL Server Certificate Key pair active for Runtime Server.",
 			},
 		},
 	}

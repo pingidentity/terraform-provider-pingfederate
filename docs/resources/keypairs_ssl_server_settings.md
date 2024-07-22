@@ -2,12 +2,12 @@
 page_title: "pingfederate_keypairs_ssl_server_settings Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to manage the SSL server certificate settings.
 ---
 
 # pingfederate_keypairs_ssl_server_settings (Resource)
 
-
+Resource to manage the SSL server certificate settings.
 
 ## Example Usage
 
@@ -39,8 +39,8 @@ resource "pingfederate_keypairs_ssl_server_settings" "sslServerSettings" {
 
 - `active_admin_console_certs` (Attributes List) The active SSL Server Certificate Key pairs for PF Administrator Console. (see [below for nested schema](#nestedatt--active_admin_console_certs))
 - `active_runtime_server_certs` (Attributes List) The active SSL Server Certificate Key pairs for Runtime Server. (see [below for nested schema](#nestedatt--active_runtime_server_certs))
-- `admin_console_cert_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--admin_console_cert_ref))
-- `runtime_server_cert_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--runtime_server_cert_ref))
+- `admin_console_cert_ref` (Attributes) Reference to the default SSL Server Certificate Key pair active for PF Administrator Console. (see [below for nested schema](#nestedatt--admin_console_cert_ref))
+- `runtime_server_cert_ref` (Attributes) Reference to the default SSL Server Certificate Key pair active for Runtime Server. (see [below for nested schema](#nestedatt--runtime_server_cert_ref))
 
 <a id="nestedatt--active_admin_console_certs"></a>
 ### Nested Schema for `active_admin_console_certs`
