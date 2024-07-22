@@ -19,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -73,7 +74,10 @@ func (r *sessionAuthenticationPolicyResource) Schema(ctx context.Context, req re
 					"source_ref": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
 							"id": schema.StringAttribute{
-								Required:    true,
+								Required: true,
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.RequiresReplace(),
+								},
 								Description: "The ID of the resource.",
 							},
 						},
@@ -120,10 +124,15 @@ func (r *sessionAuthenticationPolicyResource) Schema(ctx context.Context, req re
 			},
 			"policy_id": schema.StringAttribute{
 				Optional:    true,
-				Description: "The persistent, unique ID for the session policy. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.",
+				Computed:    true,
+				Description: "The persistent, unique ID for the session policy. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+					configvalidators.PingFederateId(),
 				},
 			},
 			"timeout_display_unit": schema.StringAttribute{
