@@ -2,12 +2,12 @@
 page_title: "pingfederate_metadata_url Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to create and manage metadata URLs.
 ---
 
 # pingfederate_metadata_url (Resource)
 
-
+Resource to create and manage metadata URLs.
 
 ## Example Usage
 
@@ -34,13 +34,13 @@ resource "pingfederate_metadata_url" "metadataUrl" {
 
 ### Optional
 
-- `url_id` (String) The persistent, unique ID for the Metadata Url. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.
-- `validate_signature` (Boolean) Perform Metadata Signature Validation. The default value is TRUE.
+- `url_id` (String) The persistent, unique ID for the Metadata Url. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.
+- `validate_signature` (Boolean) Perform Metadata Signature Validation. The default value is `true`.
 - `x509_file` (Attributes) Data of the Signature Verification Certificate for the Metadata URL. (see [below for nested schema](#nestedatt--x509_file))
 
 ### Read-Only
 
-- `cert_view` (Attributes) The Signature Verification Certificate details. This property is read-only and is always ignored on a POST or PUT. (see [below for nested schema](#nestedatt--cert_view))
+- `cert_view` (Attributes) The Signature Verification Certificate details. This property is read-only. (see [below for nested schema](#nestedatt--cert_view))
 
 <a id="nestedatt--x509_file"></a>
 ### Nested Schema for `x509_file`
@@ -51,8 +51,8 @@ Required:
 
 Optional:
 
-- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.
-- `id` (String) The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.
+- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is `true`. Options are `LOCAL` or `HSM`.
+- `id` (String) The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.
 
 Read-Only:
 
@@ -64,7 +64,7 @@ Read-Only:
 
 Read-Only:
 
-- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.
+- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is `true`. Options are `LOCAL` or `HSM`.
 - `expires` (String) The end date up until which the item is valid, in ISO 8601 format (UTC).
 - `id` (String) The persistent, unique ID for the certificate.
 - `issuer_dn` (String) The issuer's distinguished name.
@@ -74,7 +74,7 @@ Read-Only:
 - `sha1_fingerprint` (String) SHA-1 fingerprint in Hex encoding.
 - `sha256_fingerprint` (String) SHA-256 fingerprint in Hex encoding.
 - `signature_algorithm` (String) The signature algorithm.
-- `status` (String) Status of the item.
+- `status` (String) Status of the item. Options are `VALID`, `EXPIRED`, `NOT_YET_VALID`, or `REVOKED`.
 - `subject_alternative_names` (List of String) The subject alternative names (SAN).
 - `subject_dn` (String) The subject's distinguished name.
 - `valid_from` (String) The start date from which the item is valid, in ISO 8601 format (UTC).

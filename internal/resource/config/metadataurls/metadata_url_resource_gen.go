@@ -63,12 +63,13 @@ type metadataUrlResourceModel struct {
 
 func (r *metadataUrlResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to create and manage metadata URLs.",
 		Attributes: map[string]schema.Attribute{
 			"cert_view": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"crypto_provider": schema.StringAttribute{
 						Computed:    true,
-						Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
+						Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is `true`. Options are `LOCAL` or `HSM`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"LOCAL",
@@ -114,7 +115,7 @@ func (r *metadataUrlResource) Schema(ctx context.Context, req resource.SchemaReq
 					},
 					"status": schema.StringAttribute{
 						Computed:    true,
-						Description: "Status of the item.",
+						Description: "Status of the item. Options are `VALID`, `EXPIRED`, `NOT_YET_VALID`, or `REVOKED`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"VALID",
@@ -143,7 +144,7 @@ func (r *metadataUrlResource) Schema(ctx context.Context, req resource.SchemaReq
 					},
 				},
 				Computed:    true,
-				Description: "The Signature Verification Certificate details. This property is read-only and is always ignored on a POST or PUT.",
+				Description: "The Signature Verification Certificate details. This property is read-only.",
 			},
 			"name": schema.StringAttribute{
 				Required:    true,
@@ -156,7 +157,7 @@ func (r *metadataUrlResource) Schema(ctx context.Context, req resource.SchemaReq
 			"url_id": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "The persistent, unique ID for the Metadata Url. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.",
+				Description: "The persistent, unique ID for the Metadata Url. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),
@@ -166,13 +167,13 @@ func (r *metadataUrlResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(true),
-				Description: "Perform Metadata Signature Validation. The default value is TRUE.",
+				Description: "Perform Metadata Signature Validation. The default value is `true`.",
 			},
 			"x509_file": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"crypto_provider": schema.StringAttribute{
 						Optional:    true,
-						Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
+						Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is `true`. Options are `LOCAL` or `HSM`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"LOCAL",
@@ -191,7 +192,7 @@ func (r *metadataUrlResource) Schema(ctx context.Context, req resource.SchemaReq
 					"id": schema.StringAttribute{
 						Optional:    true,
 						Computed:    true,
-						Description: "The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.",
+						Description: "The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.",
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.RequiresReplace(),
 							stringplanmodifier.UseStateForUnknown(),
