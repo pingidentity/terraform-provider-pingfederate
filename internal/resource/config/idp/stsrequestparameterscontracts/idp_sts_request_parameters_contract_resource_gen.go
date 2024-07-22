@@ -56,10 +56,11 @@ type idpStsRequestParametersContractResourceModel struct {
 
 func (r *idpStsRequestParametersContractResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to create and manage STS request parameters contracts.",
 		Attributes: map[string]schema.Attribute{
 			"contract_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The ID of the Security Token Service request parameter contract.<br>Note: Ignored for PUT requests.",
+				Description: "The ID of the Security Token Service request parameter contract.<br>Note: Can't be modified after creation.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),
@@ -67,7 +68,7 @@ func (r *idpStsRequestParametersContractResource) Schema(ctx context.Context, re
 			},
 			"name": schema.StringAttribute{
 				Required:    true,
-				Description: "The name of the Security Token Service request parameter contract.<br>Note: Ignored for PUT requests.",
+				Description: "The name of the Security Token Service request parameter contract.<br>Note: Can't be modified after creation.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},

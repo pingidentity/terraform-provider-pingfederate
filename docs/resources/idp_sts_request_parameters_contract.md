@@ -2,12 +2,12 @@
 page_title: "pingfederate_idp_sts_request_parameters_contract Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to create and manage STS request parameters contracts.
 ---
 
 # pingfederate_idp_sts_request_parameters_contract (Resource)
 
-
+Resource to create and manage STS request parameters contracts.
 
 ## Example Usage
 
@@ -28,8 +28,8 @@ resource "pingfederate_idp_sts_request_parameters_contract" "requestParametersCo
 
 ### Required
 
-- `contract_id` (String) The ID of the Security Token Service request parameter contract.<br>Note: Ignored for PUT requests.
-- `name` (String) The name of the Security Token Service request parameter contract.<br>Note: Ignored for PUT requests.
+- `contract_id` (String) The ID of the Security Token Service request parameter contract.<br>Note: Can't be modified after creation.
+- `name` (String) The name of the Security Token Service request parameter contract.<br>Note: Can't be modified after creation.
 - `parameters` (Set of String) The list of parameters within the Security  Token Service request parameter contract.
 
 ## Import
