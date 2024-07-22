@@ -59,6 +59,7 @@ func (r *configurationEncryptionKeysRotateResource) Configure(_ context.Context,
 // GetSchema defines the schema for the resource.
 func (r *configurationEncryptionKeysRotateResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to handle rotating the current configuration encryption keys.",
 		Attributes: map[string]schema.Attribute{
 			"keys": schema.ListNestedAttribute{
 				Computed: true,
@@ -68,13 +69,16 @@ func (r *configurationEncryptionKeysRotateResource) Schema(ctx context.Context, 
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"key_id": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "The id of the key.",
 						},
 						"creation_date": schema.StringAttribute{
-							Computed: true,
+							Computed:    true,
+							Description: "The creation date of the key.",
 						},
 					},
 				},
+				Description: "The list of Configuration Encryption Keys.",
 			},
 			"rotation_trigger_values": schema.MapAttribute{
 				Description: "A meta-argument map of values that, if any values are changed, will force rotation of the encryption keys. Adding values to and removing values from the map will not trigger a rotation. This parameter can be used to control time-based rotation using Terraform.",

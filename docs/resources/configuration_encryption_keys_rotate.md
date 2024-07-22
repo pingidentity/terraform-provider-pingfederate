@@ -2,12 +2,12 @@
 page_title: "pingfederate_configuration_encryption_keys_rotate Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to handle rotating the current configuration encryption keys.
 ---
 
 # pingfederate_configuration_encryption_keys_rotate (Resource)
 
-
+Resource to handle rotating the current configuration encryption keys.
 
 ## Example Usage
 
@@ -33,15 +33,15 @@ resource "pingfederate_configuration_encryption_keys_rotate" "encryptionKeysRota
 
 ### Read-Only
 
-- `keys` (Attributes List) (see [below for nested schema](#nestedatt--keys))
+- `keys` (Attributes List) The list of Configuration Encryption Keys. (see [below for nested schema](#nestedatt--keys))
 
 <a id="nestedatt--keys"></a>
 ### Nested Schema for `keys`
 
 Read-Only:
 
-- `creation_date` (String)
-- `key_id` (String)
+- `creation_date` (String) The creation date of the key.
+- `key_id` (String) The id of the key.
 
 ## Import
 
