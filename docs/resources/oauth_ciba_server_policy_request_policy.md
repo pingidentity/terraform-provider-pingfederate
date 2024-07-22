@@ -2,12 +2,12 @@
 page_title: "pingfederate_oauth_ciba_server_policy_request_policy Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to create and manage ciba server request policies.
 ---
 
 # pingfederate_oauth_ciba_server_policy_request_policy (Resource)
 
-
+Resource to create and manage ciba server request policies.
 
 ## Example Usage
 

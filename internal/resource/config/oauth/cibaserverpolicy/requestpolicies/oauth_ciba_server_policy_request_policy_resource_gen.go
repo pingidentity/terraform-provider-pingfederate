@@ -72,6 +72,7 @@ type oauthCibaServerPolicyRequestPolicyResourceModel struct {
 
 func (r *oauthCibaServerPolicyRequestPolicyResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to create and manage ciba server request policies.",
 		Attributes: map[string]schema.Attribute{
 			"allow_unsigned_login_hint_token": schema.BoolAttribute{
 				Optional:    true,
