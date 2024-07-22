@@ -66,6 +66,7 @@ type sessionAuthenticationPolicyResourceModel struct {
 
 func (r *sessionAuthenticationPolicyResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to create and manage a session policy for a specified authentication source.",
 		Attributes: map[string]schema.Attribute{
 			"authentication_source": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -77,11 +78,11 @@ func (r *sessionAuthenticationPolicyResource) Schema(ctx context.Context, req re
 							},
 						},
 						Required:    true,
-						Description: "A reference to a resource.",
+						Description: "A reference to the authentication source.",
 					},
 					"type": schema.StringAttribute{
 						Required:    true,
-						Description: "The type of this authentication source.",
+						Description: "The type of this authentication source. Options are `IDP_ADAPTER`, `IDP_CONNECTION`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"IDP_ADAPTER",
@@ -97,29 +98,29 @@ func (r *sessionAuthenticationPolicyResource) Schema(ctx context.Context, req re
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
-				Description: "Determines whether the requested authentication context is considered when deciding whether an existing session is valid for a given request. The default is false.",
+				Description: "Determines whether the requested authentication context is considered when deciding whether an existing session is valid for a given request. The default is `false`.",
 			},
 			"enable_sessions": schema.BoolAttribute{
 				Required:    true,
-				Description: "Determines whether sessions are enabled for the authentication source. This value overrides the enableSessions value from the global authentication session policy.",
+				Description: "Determines whether sessions are enabled for the authentication source. This value overrides the `enable_sessions` value from the global authentication session policy.",
 			},
 			"idle_timeout_mins": schema.Int64Attribute{
 				Optional:    true,
-				Description: "The idle timeout period, in minutes. If omitted, the value from the global authentication session policy will be used. If set to -1, the idle timeout will be set to the maximum timeout. If a value is provided for this property, a value must also be provided for maxTimeoutMins.",
+				Description: "The idle timeout period, in minutes. If omitted, the value from the global authentication session policy will be used. If set to `-1`, the idle timeout will be set to the maximum timeout. If a value is provided for this property, a value must also be provided for `max_timeout_mins`.",
 			},
 			"max_timeout_mins": schema.Int64Attribute{
 				Optional:    true,
-				Description: "The maximum timeout period, in minutes. If omitted, the value from the global authentication session policy will be used. If set to -1, sessions do not expire. If a value is provided for this property, a value must also be provided for idleTimeoutMins.",
+				Description: "The maximum timeout period, in minutes. If omitted, the value from the global authentication session policy will be used. If set to `-1`, sessions do not expire. If a value is provided for this property, a value must also be provided for `idle_timeout_mins`.",
 			},
 			"persistent": schema.BoolAttribute{
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
-				Description: "Determines whether sessions for the authentication source are persistent. This value overrides the persistentSessions value from the global authentication session policy.This field is ignored if enableSessions is false.",
+				Description: "Determines whether sessions for the authentication source are persistent. This value overrides the `persistent_sessions` value from the global authentication session policy. This field is ignored if `enable_sessions` is `false`.",
 			},
 			"policy_id": schema.StringAttribute{
 				Optional:    true,
-				Description: "The persistent, unique ID for the session policy. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.",
+				Description: "The persistent, unique ID for the session policy. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),
@@ -129,7 +130,7 @@ func (r *sessionAuthenticationPolicyResource) Schema(ctx context.Context, req re
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString("MINUTES"),
-				Description: "The display unit for session timeout periods in the PingFederate administrative console. When the display unit is HOURS or DAYS, the timeout values in minutes must correspond to a whole number value for the specified unit.",
+				Description: "The display unit for session timeout periods in the PingFederate administrative console. When the display unit is `HOURS` or `DAYS`, the timeout values in minutes must correspond to a whole number value for the specified unit. Options are `MINUTES`, `HOURS`, `DAYS`. If empty, the value will default to `MINUTES`.",
 				Validators: []validator.String{
 					stringvalidator.OneOf(
 						"MINUTES",
@@ -142,7 +143,7 @@ func (r *sessionAuthenticationPolicyResource) Schema(ctx context.Context, req re
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString("PRIVATE"),
-				Description: "Determines the type of user device that the authentication session can be created on. If empty, the value will default to PRIVATE.",
+				Description: "Determines the type of user device that the authentication session can be created on. Options are `PRIVATE`, `SHARED`, `ANY`. If empty, the value will default to `PRIVATE`.",
 				Validators: []validator.String{
 					stringvalidator.OneOf(
 						"PRIVATE",

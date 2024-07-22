@@ -2,12 +2,12 @@
 page_title: "pingfederate_session_authentication_policy Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to create and manage a session policy for a specified authentication source.
 ---
 
 # pingfederate_session_authentication_policy (Resource)
 
-
+Resource to create and manage a session policy for a specified authentication source.
 
 ## Example Usage
 
@@ -34,25 +34,25 @@ resource "pingfederate_session_authentication_policy" "sessionAuthenticationPoli
 ### Required
 
 - `authentication_source` (Attributes) An authentication source (IdP adapter or IdP connection). (see [below for nested schema](#nestedatt--authentication_source))
-- `enable_sessions` (Boolean) Determines whether sessions are enabled for the authentication source. This value overrides the enableSessions value from the global authentication session policy.
+- `enable_sessions` (Boolean) Determines whether sessions are enabled for the authentication source. This value overrides the `enable_sessions` value from the global authentication session policy.
 
 ### Optional
 
-- `authn_context_sensitive` (Boolean) Determines whether the requested authentication context is considered when deciding whether an existing session is valid for a given request. The default is false.
-- `idle_timeout_mins` (Number) The idle timeout period, in minutes. If omitted, the value from the global authentication session policy will be used. If set to -1, the idle timeout will be set to the maximum timeout. If a value is provided for this property, a value must also be provided for maxTimeoutMins.
-- `max_timeout_mins` (Number) The maximum timeout period, in minutes. If omitted, the value from the global authentication session policy will be used. If set to -1, sessions do not expire. If a value is provided for this property, a value must also be provided for idleTimeoutMins.
-- `persistent` (Boolean) Determines whether sessions for the authentication source are persistent. This value overrides the persistentSessions value from the global authentication session policy.This field is ignored if enableSessions is false.
-- `policy_id` (String) The persistent, unique ID for the session policy. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.
-- `timeout_display_unit` (String) The display unit for session timeout periods in the PingFederate administrative console. When the display unit is HOURS or DAYS, the timeout values in minutes must correspond to a whole number value for the specified unit.
-- `user_device_type` (String) Determines the type of user device that the authentication session can be created on. If empty, the value will default to PRIVATE.
+- `authn_context_sensitive` (Boolean) Determines whether the requested authentication context is considered when deciding whether an existing session is valid for a given request. The default is `false`.
+- `idle_timeout_mins` (Number) The idle timeout period, in minutes. If omitted, the value from the global authentication session policy will be used. If set to `-1`, the idle timeout will be set to the maximum timeout. If a value is provided for this property, a value must also be provided for `max_timeout_mins`.
+- `max_timeout_mins` (Number) The maximum timeout period, in minutes. If omitted, the value from the global authentication session policy will be used. If set to `-1`, sessions do not expire. If a value is provided for this property, a value must also be provided for `idle_timeout_mins`.
+- `persistent` (Boolean) Determines whether sessions for the authentication source are persistent. This value overrides the `persistent_sessions` value from the global authentication session policy. This field is ignored if `enable_sessions` is `false`.
+- `policy_id` (String) The persistent, unique ID for the session policy. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.
+- `timeout_display_unit` (String) The display unit for session timeout periods in the PingFederate administrative console. When the display unit is `HOURS` or `DAYS`, the timeout values in minutes must correspond to a whole number value for the specified unit. Options are `MINUTES`, `HOURS`, `DAYS`. If empty, the value will default to `MINUTES`.
+- `user_device_type` (String) Determines the type of user device that the authentication session can be created on. Options are `PRIVATE`, `SHARED`, `ANY`. If empty, the value will default to `PRIVATE`.
 
 <a id="nestedatt--authentication_source"></a>
 ### Nested Schema for `authentication_source`
 
 Required:
 
-- `source_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--authentication_source--source_ref))
-- `type` (String) The type of this authentication source.
+- `source_ref` (Attributes) A reference to the authentication source. (see [below for nested schema](#nestedatt--authentication_source--source_ref))
+- `type` (String) The type of this authentication source. Options are `IDP_ADAPTER`, `IDP_CONNECTION`.
 
 <a id="nestedatt--authentication_source--source_ref"></a>
 ### Nested Schema for `authentication_source.source_ref`
