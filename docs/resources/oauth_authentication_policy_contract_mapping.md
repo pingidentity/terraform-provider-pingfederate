@@ -2,12 +2,12 @@
 page_title: "pingfederate_oauth_authentication_policy_contract_mapping Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to create and manage authentication policy contract to persistent grant mappings.
 ---
 
 # pingfederate_oauth_authentication_policy_contract_mapping (Resource)
 
-
+Resource to create and manage authentication policy contract to persistent grant mappings.
 
 ## Example Usage
 
