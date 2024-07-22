@@ -2,12 +2,12 @@
 page_title: "pingfederate_keypairs_oauth_openid_connect_additional_key_set Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to create and manage OAuth/OpenID Connect additional signing key sets.
 ---
 
 # pingfederate_keypairs_oauth_openid_connect_additional_key_set (Resource)
 
-
+Resource to create and manage OAuth/OpenID Connect additional signing key sets.
 
 ## Example Usage
 
@@ -44,7 +44,7 @@ resource "pingfederate_keypairs_oauth_openid_connect_additional_key_set" "keypai
 ### Optional
 
 - `description` (String) A description of the key set.
-- `set_id` (String) The unique ID for the key set. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
+- `set_id` (String) The unique ID for the key set. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.
 
 <a id="nestedatt--issuers"></a>
 ### Nested Schema for `issuers`
@@ -59,29 +59,29 @@ Required:
 
 Required:
 
-- `rsa_active_cert_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--signing_keys--rsa_active_cert_ref))
+- `rsa_active_cert_ref` (Attributes) Reference to the RSA key currently active. (see [below for nested schema](#nestedatt--signing_keys--rsa_active_cert_ref))
 
 Optional:
 
-- `p256_active_cert_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--signing_keys--p256_active_cert_ref))
+- `p256_active_cert_ref` (Attributes) Reference to the P-256 key currently active. (see [below for nested schema](#nestedatt--signing_keys--p256_active_cert_ref))
 - `p256_active_key_id` (String) Key Id for currently active P-256 key.
-- `p256_previous_cert_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--signing_keys--p256_previous_cert_ref))
+- `p256_previous_cert_ref` (Attributes) Reference to the P-256 key previously active. (see [below for nested schema](#nestedatt--signing_keys--p256_previous_cert_ref))
 - `p256_previous_key_id` (String) Key Id for previously active P-256 key.
 - `p256_publish_x5c_parameter` (Boolean) Enable publishing of the P-256 certificate chain associated with the active key.
-- `p384_active_cert_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--signing_keys--p384_active_cert_ref))
+- `p384_active_cert_ref` (Attributes) Reference to the P-384 key currently active. (see [below for nested schema](#nestedatt--signing_keys--p384_active_cert_ref))
 - `p384_active_key_id` (String) Key Id for currently active P-384 key.
-- `p384_previous_cert_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--signing_keys--p384_previous_cert_ref))
+- `p384_previous_cert_ref` (Attributes) Reference to the P-384 key previously active. (see [below for nested schema](#nestedatt--signing_keys--p384_previous_cert_ref))
 - `p384_previous_key_id` (String) Key Id for previously active P-384 key.
 - `p384_publish_x5c_parameter` (Boolean) Enable publishing of the P-384 certificate chain associated with the active key.
-- `p521_active_cert_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--signing_keys--p521_active_cert_ref))
+- `p521_active_cert_ref` (Attributes) Reference to the P-521 key currently active. (see [below for nested schema](#nestedatt--signing_keys--p521_active_cert_ref))
 - `p521_active_key_id` (String) Key Id for currently active P-521 key.
-- `p521_previous_cert_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--signing_keys--p521_previous_cert_ref))
+- `p521_previous_cert_ref` (Attributes) Reference to the P-521 key previously active. (see [below for nested schema](#nestedatt--signing_keys--p521_previous_cert_ref))
 - `p521_previous_key_id` (String) Key Id for previously active P-521 key.
 - `p521_publish_x5c_parameter` (Boolean) Enable publishing of the P-521 certificate chain associated with the active key.
 - `rsa_active_key_id` (String) Key Id for currently active RSA key.
-- `rsa_algorithm_active_key_ids` (Attributes List) PingFederate uses the same RSA key for all RSA signing algorithms. To enable active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (RS256, RS384, RS512, PS256, PS384 and PS512). (see [below for nested schema](#nestedatt--signing_keys--rsa_algorithm_active_key_ids))
-- `rsa_algorithm_previous_key_ids` (Attributes List) PingFederate uses the same RSA key for all RSA signing algorithms. To enable previously active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (RS256, RS384, RS512, PS256, PS384 and PS512). (see [below for nested schema](#nestedatt--signing_keys--rsa_algorithm_previous_key_ids))
-- `rsa_previous_cert_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--signing_keys--rsa_previous_cert_ref))
+- `rsa_algorithm_active_key_ids` (Attributes List) PingFederate uses the same RSA key for all RSA signing algorithms. To enable active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (`RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`). (see [below for nested schema](#nestedatt--signing_keys--rsa_algorithm_active_key_ids))
+- `rsa_algorithm_previous_key_ids` (Attributes List) PingFederate uses the same RSA key for all RSA signing algorithms. To enable previously active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (`RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`). (see [below for nested schema](#nestedatt--signing_keys--rsa_algorithm_previous_key_ids))
+- `rsa_previous_cert_ref` (Attributes) Reference to the RSA key previously active. (see [below for nested schema](#nestedatt--signing_keys--rsa_previous_cert_ref))
 - `rsa_previous_key_id` (String) Key Id for previously active RSA key.
 - `rsa_publish_x5c_parameter` (Boolean) Enable publishing of the RSA certificate chain associated with the active key.
 
@@ -147,7 +147,7 @@ Required:
 Required:
 
 - `key_id` (String) Unique key identifier.
-- `rsa_alg_type` (String) The RSA signing algorithm type. The supported RSA signing algorithm types are RS256, RS384, RS512, PS256, PS384 and PS512.
+- `rsa_alg_type` (String) The RSA signing algorithm type. The supported RSA signing algorithm types are `RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`.
 
 
 <a id="nestedatt--signing_keys--rsa_algorithm_previous_key_ids"></a>
@@ -156,7 +156,7 @@ Required:
 Required:
 
 - `key_id` (String) Unique key identifier.
-- `rsa_alg_type` (String) The RSA signing algorithm type. The supported RSA signing algorithm types are RS256, RS384, RS512, PS256, PS384 and PS512.
+- `rsa_alg_type` (String) The RSA signing algorithm type. The supported RSA signing algorithm types are `RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`.
 
 
 <a id="nestedatt--signing_keys--rsa_previous_cert_ref"></a>

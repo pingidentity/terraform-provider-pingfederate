@@ -59,6 +59,7 @@ type keypairsOauthOpenidConnectAdditionalKeySetResourceModel struct {
 
 func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to create and manage OAuth/OpenID Connect additional signing key sets.",
 		Attributes: map[string]schema.Attribute{
 			"description": schema.StringAttribute{
 				Optional:    true,
@@ -82,7 +83,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Schema(ctx context.
 			},
 			"set_id": schema.StringAttribute{
 				Optional:    true,
-				Description: "The unique ID for the key set. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
+				Description: "The unique ID for the key set. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),
@@ -98,7 +99,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Schema(ctx context.
 							},
 						},
 						Optional:    true,
-						Description: "A reference to a resource.",
+						Description: "Reference to the P-256 key currently active.",
 					},
 					"p256_active_key_id": schema.StringAttribute{
 						Optional:    true,
@@ -112,7 +113,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Schema(ctx context.
 							},
 						},
 						Optional:    true,
-						Description: "A reference to a resource.",
+						Description: "Reference to the P-256 key previously active.",
 					},
 					"p256_previous_key_id": schema.StringAttribute{
 						Optional:    true,
@@ -131,7 +132,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Schema(ctx context.
 							},
 						},
 						Optional:    true,
-						Description: "A reference to a resource.",
+						Description: "Reference to the P-384 key currently active.",
 					},
 					"p384_active_key_id": schema.StringAttribute{
 						Optional:    true,
@@ -145,7 +146,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Schema(ctx context.
 							},
 						},
 						Optional:    true,
-						Description: "A reference to a resource.",
+						Description: "Reference to the P-384 key previously active.",
 					},
 					"p384_previous_key_id": schema.StringAttribute{
 						Optional:    true,
@@ -164,7 +165,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Schema(ctx context.
 							},
 						},
 						Optional:    true,
-						Description: "A reference to a resource.",
+						Description: "Reference to the P-521 key currently active.",
 					},
 					"p521_active_key_id": schema.StringAttribute{
 						Optional:    true,
@@ -178,7 +179,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Schema(ctx context.
 							},
 						},
 						Optional:    true,
-						Description: "A reference to a resource.",
+						Description: "Reference to the P-521 key previously active.",
 					},
 					"p521_previous_key_id": schema.StringAttribute{
 						Optional:    true,
@@ -196,7 +197,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Schema(ctx context.
 							},
 						},
 						Required:    true,
-						Description: "A reference to a resource.",
+						Description: "Reference to the RSA key currently active.",
 					},
 					"rsa_active_key_id": schema.StringAttribute{
 						Optional:    true,
@@ -211,13 +212,13 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Schema(ctx context.
 								},
 								"rsa_alg_type": schema.StringAttribute{
 									Required:    true,
-									Description: "The RSA signing algorithm type. The supported RSA signing algorithm types are RS256, RS384, RS512, PS256, PS384 and PS512.",
+									Description: "The RSA signing algorithm type. The supported RSA signing algorithm types are `RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`.",
 								},
 							},
 						},
 						Optional:    true,
 						Computed:    true,
-						Description: "PingFederate uses the same RSA key for all RSA signing algorithms. To enable active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (RS256, RS384, RS512, PS256, PS384 and PS512).",
+						Description: "PingFederate uses the same RSA key for all RSA signing algorithms. To enable active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (`RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`).",
 					},
 					"rsa_algorithm_previous_key_ids": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -228,13 +229,13 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Schema(ctx context.
 								},
 								"rsa_alg_type": schema.StringAttribute{
 									Required:    true,
-									Description: "The RSA signing algorithm type. The supported RSA signing algorithm types are RS256, RS384, RS512, PS256, PS384 and PS512.",
+									Description: "The RSA signing algorithm type. The supported RSA signing algorithm types are `RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`.",
 								},
 							},
 						},
 						Optional:    true,
 						Computed:    true,
-						Description: "PingFederate uses the same RSA key for all RSA signing algorithms. To enable previously active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (RS256, RS384, RS512, PS256, PS384 and PS512).",
+						Description: "PingFederate uses the same RSA key for all RSA signing algorithms. To enable previously active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (`RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`).",
 					},
 					"rsa_previous_cert_ref": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
@@ -244,7 +245,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Schema(ctx context.
 							},
 						},
 						Optional:    true,
-						Description: "A reference to a resource.",
+						Description: "Reference to the RSA key previously active.",
 					},
 					"rsa_previous_key_id": schema.StringAttribute{
 						Optional:    true,
