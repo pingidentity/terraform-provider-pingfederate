@@ -2,12 +2,12 @@
 page_title: "pingfederate_captcha_provider_settings Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to manage general CAPTCHA providers settings.
 ---
 
 # pingfederate_captcha_provider_settings (Resource)
 
-
+Resource to manage general CAPTCHA providers settings.
 
 ## Example Usage
 

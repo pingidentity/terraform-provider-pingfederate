@@ -50,6 +50,7 @@ type captchaProviderSettingsResourceModel struct {
 
 func (r *captchaProviderSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to manage general CAPTCHA providers settings.",
 		Attributes: map[string]schema.Attribute{
 			"default_captcha_provider_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
