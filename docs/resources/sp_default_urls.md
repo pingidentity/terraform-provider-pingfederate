@@ -2,12 +2,12 @@
 page_title: "pingfederate_sp_default_urls Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to manage SP Default URLs. These are values that affect the user's experience when executing SP-initiated SSO operations.
 ---
 
 # pingfederate_sp_default_urls (Resource)
 
-
+Resource to manage SP Default URLs. These are values that affect the user's experience when executing SP-initiated SSO operations.
 
 ## Example Usage
 
@@ -24,7 +24,7 @@ resource "pingfederate_sp_default_urls" "spDefaultUrlsExample" {
 
 ### Optional
 
-- `confirm_slo` (Boolean) Determines whether the user is prompted to confirm Single Logout (SLO). The default is false.
+- `confirm_slo` (Boolean) Determines whether the user is prompted to confirm Single Logout (SLO). The default is `false`.
 - `slo_success_url` (String) Provide the default URL you would like to send the user to when Single Logout (SLO) has succeeded.
 - `sso_success_url` (String) Provide the default URL you would like to send the user to when Single Sign On (SSO) has succeeded.
 

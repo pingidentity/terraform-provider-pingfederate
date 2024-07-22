@@ -52,12 +52,13 @@ type spDefaultUrlsResourceModel struct {
 
 func (r *spDefaultUrlsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to manage SP Default URLs. These are values that affect the user's experience when executing SP-initiated SSO operations.",
 		Attributes: map[string]schema.Attribute{
 			"confirm_slo": schema.BoolAttribute{
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
-				Description: "Determines whether the user is prompted to confirm Single Logout (SLO). The default is false.",
+				Description: "Determines whether the user is prompted to confirm Single Logout (SLO). The default is `false`.",
 			},
 			"slo_success_url": schema.StringAttribute{
 				Optional:    true,
