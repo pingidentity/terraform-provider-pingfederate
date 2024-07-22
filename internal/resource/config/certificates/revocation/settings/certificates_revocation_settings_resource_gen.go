@@ -57,6 +57,7 @@ type certificatesRevocationSettingsResourceModel struct {
 
 func (r *certificatesRevocationSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to manage the certificate revocation settings.",
 		Attributes: map[string]schema.Attribute{
 			"crl_settings": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -64,25 +65,25 @@ func (r *certificatesRevocationSettingsResource) Schema(ctx context.Context, req
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(60),
-						Description: "Next retry on next update expiration in minutes. This value defaults to \"60\".",
+						Description: "Next retry on next update expiration in minutes. This value defaults to `60`.",
 					},
 					"next_retry_mins_when_resolve_failed": schema.Int64Attribute{
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(1440),
-						Description: "Next retry on resolution failure in minutes. This value defaults to \"1440\".",
+						Description: "Next retry on resolution failure in minutes. This value defaults to `1440`.",
 					},
 					"treat_non_retrievable_crl_as_revoked": schema.BoolAttribute{
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
-						Description: "Treat non retrievable CRL as revoked. This setting defaults to disabled.",
+						Description: "Treat non retrievable CRL as revoked. This setting defaults to `false`.",
 					},
 					"verify_crl_signature": schema.BoolAttribute{
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(true),
-						Description: "Verify CRL signature. This setting defaults to enabled.",
+						Description: "Verify CRL signature. This setting defaults to `true`.",
 					},
 				},
 				Optional:    true,
@@ -94,7 +95,7 @@ func (r *certificatesRevocationSettingsResource) Schema(ctx context.Context, req
 						Optional:    true,
 						Computed:    true,
 						Default:     stringdefault.StaticString("CONTINUE"),
-						Description: "Action on responder unavailable. This value defaults to \"CONTINUE\".",
+						Description: "Action on responder unavailable. This value defaults to `CONTINUE`. Options are `CONTINUE`, `FAIL`, `FAILOVER`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf("CONTINUE", "FAIL", "FAILOVER"),
 						},
@@ -103,7 +104,7 @@ func (r *certificatesRevocationSettingsResource) Schema(ctx context.Context, req
 						Optional:    true,
 						Computed:    true,
 						Default:     stringdefault.StaticString("FAIL"),
-						Description: "Action on status unknown. This value defaults to \"FAIL\".",
+						Description: "Action on status unknown. This value defaults to `FAIL`. Options are `CONTINUE`, `FAIL`, `FAILOVER`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf("CONTINUE", "FAIL", "FAILOVER"),
 						},
@@ -112,7 +113,7 @@ func (r *certificatesRevocationSettingsResource) Schema(ctx context.Context, req
 						Optional:    true,
 						Computed:    true,
 						Default:     stringdefault.StaticString("FAIL"),
-						Description: "Action on unsuccessful response. This value defaults to \"FAIL\".",
+						Description: "Action on unsuccessful response. This value defaults to `FAIL`. Options are `CONTINUE`, `FAIL`, `FAILOVER`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf("CONTINUE", "FAIL", "FAILOVER"),
 						},
@@ -121,19 +122,19 @@ func (r *certificatesRevocationSettingsResource) Schema(ctx context.Context, req
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(5),
-						Description: "Current update grace period in minutes. This value defaults to \"5\".",
+						Description: "Current update grace period in minutes. This value defaults to `5`.",
 					},
 					"next_update_grace_period": schema.Int64Attribute{
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(5),
-						Description: "Next update grace period in minutes. This value defaults to \"5\".",
+						Description: "Next update grace period in minutes. This value defaults to `5`.",
 					},
 					"requester_add_nonce": schema.BoolAttribute{
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
-						Description: "Do not allow responder to use cached responses. This setting defaults to disabled.",
+						Description: "Do not allow responder to use cached responses. This setting defaults to `false`.",
 					},
 					"responder_cert_reference": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
@@ -149,7 +150,7 @@ func (r *certificatesRevocationSettingsResource) Schema(ctx context.Context, req
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(5),
-						Description: "Responder connection timeout in seconds. This value defaults to \"5\".",
+						Description: "Responder connection timeout in seconds. This value defaults to `5`.",
 					},
 					"responder_url": schema.StringAttribute{
 						Optional:    true,
@@ -159,7 +160,7 @@ func (r *certificatesRevocationSettingsResource) Schema(ctx context.Context, req
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(48),
-						Description: "Response cache period in hours. This value defaults to \"48\".",
+						Description: "Response cache period in hours. This value defaults to `48`.",
 					},
 				},
 				Optional:    true,
