@@ -3,12 +3,12 @@
 page_title: "pingfederate_certificates_ca_export Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Datasource to retrieve the details of a trusted certificate authority.
 ---
 
 # pingfederate_certificates_ca_export (Data Source)
 
-
+Datasource to retrieve the details of a trusted certificate authority.
 
 ## Example Usage
 
@@ -23,7 +23,7 @@ data "pingfederate_certificates_ca_export" "caExport" {
 
 ### Required
 
-- `ca_id` (String) The ID of the trusted cerficiate authority to export.
+- `ca_id` (String) The ID of the trusted certificate authority to export.
 
 ### Read-Only
 

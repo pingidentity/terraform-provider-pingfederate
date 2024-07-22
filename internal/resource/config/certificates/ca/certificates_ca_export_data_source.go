@@ -46,9 +46,10 @@ type certificatesCAExportDataSourceModel struct {
 
 func (r *certificatesCAExportDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Datasource to retrieve the details of a trusted certificate authority.",
 		Attributes: map[string]schema.Attribute{
 			"ca_id": schema.StringAttribute{
-				Description: "The ID of the trusted cerficiate authority to export.",
+				Description: "The ID of the trusted certificate authority to export.",
 				Required:    true,
 			},
 			"exported_certificate": schema.StringAttribute{
