@@ -95,6 +95,7 @@ type keypairsOauthOpenidConnectResourceModel struct {
 
 func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to manage the Oauth/OpenID Connect key settings",
 		Attributes: map[string]schema.Attribute{
 			"p256_active_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -317,7 +318,7 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 						},
 						"rsa_alg_type": schema.StringAttribute{
 							Required:    true,
-							Description: "The RSA signing algorithm type. The supported RSA signing algorithm types are RS256, RS384, RS512, PS256, PS384 and PS512.",
+							Description: "The RSA signing algorithm type. The supported RSA signing algorithm types are `RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`.",
 							Validators: []validator.String{
 								stringvalidator.OneOf("RS256", "RS384", "RS512", "PS256", "PS384", "PS512"),
 							},
@@ -326,7 +327,7 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 				},
 				Optional:    true,
 				Computed:    true,
-				Description: "PingFederate uses the same RSA key for all RSA signing algorithms. To enable active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (RS256, RS384, RS512, PS256, PS384 and PS512).",
+				Description: "PingFederate uses the same RSA key for all RSA signing algorithms. To enable active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (`RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`).",
 			},
 			"rsa_algorithm_previous_key_ids": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
@@ -337,7 +338,7 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 						},
 						"rsa_alg_type": schema.StringAttribute{
 							Required:    true,
-							Description: "The RSA signing algorithm type. The supported RSA signing algorithm types are RS256, RS384, RS512, PS256, PS384 and PS512.",
+							Description: "The RSA signing algorithm type. The supported RSA signing algorithm types are `RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`.",
 							Validators: []validator.String{
 								stringvalidator.OneOf("RS256", "RS384", "RS512", "PS256", "PS384", "PS512"),
 							},
@@ -346,7 +347,7 @@ func (r *keypairsOauthOpenidConnectResource) Schema(ctx context.Context, req res
 				},
 				Optional:    true,
 				Computed:    true,
-				Description: "PingFederate uses the same RSA key for all RSA signing algorithms. To enable previously active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (RS256, RS384, RS512, PS256, PS384 and PS512).",
+				Description: "PingFederate uses the same RSA key for all RSA signing algorithms. To enable previously active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (`RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`).",
 			},
 			"rsa_decryption_active_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{

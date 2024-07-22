@@ -2,12 +2,12 @@
 page_title: "pingfederate_keypairs_oauth_openid_connect Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to manage the Oauth/OpenID Connect key settings
 ---
 
 # pingfederate_keypairs_oauth_openid_connect (Resource)
 
-
+Resource to manage the Oauth/OpenID Connect key settings
 
 ## Example Usage
 
@@ -71,8 +71,8 @@ resource "pingfederate_keypairs_oauth_openid_connect" "keypairsOAuthOpenIDConnec
 - `p521_publish_x5c_parameter` (Boolean) Enable publishing of the P-521 certificate chain associated with the active key.
 - `rsa_active_cert_ref` (Attributes) Reference to the RSA key currently active. (see [below for nested schema](#nestedatt--rsa_active_cert_ref))
 - `rsa_active_key_id` (String) Key Id for currently active RSA key.
-- `rsa_algorithm_active_key_ids` (Attributes List) PingFederate uses the same RSA key for all RSA signing algorithms. To enable active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (RS256, RS384, RS512, PS256, PS384 and PS512). (see [below for nested schema](#nestedatt--rsa_algorithm_active_key_ids))
-- `rsa_algorithm_previous_key_ids` (Attributes List) PingFederate uses the same RSA key for all RSA signing algorithms. To enable previously active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (RS256, RS384, RS512, PS256, PS384 and PS512). (see [below for nested schema](#nestedatt--rsa_algorithm_previous_key_ids))
+- `rsa_algorithm_active_key_ids` (Attributes List) PingFederate uses the same RSA key for all RSA signing algorithms. To enable active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (`RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`). (see [below for nested schema](#nestedatt--rsa_algorithm_active_key_ids))
+- `rsa_algorithm_previous_key_ids` (Attributes List) PingFederate uses the same RSA key for all RSA signing algorithms. To enable previously active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (`RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`). (see [below for nested schema](#nestedatt--rsa_algorithm_previous_key_ids))
 - `rsa_decryption_active_cert_ref` (Attributes) Reference to the RSA decryption key currently active. (see [below for nested schema](#nestedatt--rsa_decryption_active_cert_ref))
 - `rsa_decryption_active_key_id` (String) Key Id for currently active RSA decryption key.
 - `rsa_decryption_previous_cert_ref` (Attributes) Reference to the RSA decryption key previously active. (see [below for nested schema](#nestedatt--rsa_decryption_previous_cert_ref))
@@ -192,7 +192,7 @@ Required:
 Required:
 
 - `key_id` (String) Unique key identifier.
-- `rsa_alg_type` (String) The RSA signing algorithm type. The supported RSA signing algorithm types are RS256, RS384, RS512, PS256, PS384 and PS512.
+- `rsa_alg_type` (String) The RSA signing algorithm type. The supported RSA signing algorithm types are `RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`.
 
 
 <a id="nestedatt--rsa_algorithm_previous_key_ids"></a>
@@ -201,7 +201,7 @@ Required:
 Required:
 
 - `key_id` (String) Unique key identifier.
-- `rsa_alg_type` (String) The RSA signing algorithm type. The supported RSA signing algorithm types are RS256, RS384, RS512, PS256, PS384 and PS512.
+- `rsa_alg_type` (String) The RSA signing algorithm type. The supported RSA signing algorithm types are `RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`.
 
 
 <a id="nestedatt--rsa_decryption_active_cert_ref"></a>
