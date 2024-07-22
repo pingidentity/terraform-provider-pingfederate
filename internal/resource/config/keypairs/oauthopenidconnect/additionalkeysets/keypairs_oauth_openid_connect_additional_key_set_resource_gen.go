@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -93,6 +94,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Schema(ctx context.
 				},
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
+					configvalidators.PingFederateId(),
 				},
 			},
 			"signing_keys": schema.SingleNestedAttribute{

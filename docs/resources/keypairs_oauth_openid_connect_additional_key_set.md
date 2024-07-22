@@ -83,7 +83,7 @@ Optional:
 - `rsa_algorithm_previous_key_ids` (Attributes List) PingFederate uses the same RSA key for all RSA signing algorithms. To enable previously active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (`RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`). (see [below for nested schema](#nestedatt--signing_keys--rsa_algorithm_previous_key_ids))
 - `rsa_previous_cert_ref` (Attributes) Reference to the RSA key previously active. (see [below for nested schema](#nestedatt--signing_keys--rsa_previous_cert_ref))
 - `rsa_previous_key_id` (String) Key Id for previously active RSA key.
-- `rsa_publish_x5c_parameter` (Boolean) Enable publishing of the RSA certificate chain associated with the active key.
+- `rsa_publish_x5c_parameter` (Boolean) Enable publishing of the RSA certificate chain associated with the active key. The default value is `false`.
 
 <a id="nestedatt--signing_keys--rsa_active_cert_ref"></a>
 ### Nested Schema for `signing_keys.rsa_active_cert_ref`
