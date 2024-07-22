@@ -2,12 +2,12 @@
 page_title: "pingfederate_server_settings_ws_trust_sts_settings Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to manage the WS-Trust STS settings.
 ---
 
 # pingfederate_server_settings_ws_trust_sts_settings (Resource)
 
-
+Resource to manage the WS-Trust STS settings.
 
 ## Example Usage
 
@@ -29,12 +29,12 @@ resource "pingfederate_server_settings_ws_trust_sts_settings" "wsTrustStstSettin
 ### Optional
 
 - `basic_authn_enabled` (Boolean) Require the use of HTTP Basic Authentication to access WS-Trust STS endpoints. Requires users be populated.
-- `client_cert_authn_enabled` (Boolean) Require the use of Client Cert Authentication to access WS-Trust STS endpoints. Requires either restrictBySubjectDn and/or restrictByIssuerCert be enabled.
-- `issuer_certs` (Attributes List) List of certificate Issuers that are used to validate certificates for access to the WS-Trust STS endpoints. Required if restrictByIssuerCert is enabled. (see [below for nested schema](#nestedatt--issuer_certs))
-- `restrict_by_issuer_cert` (Boolean) Restrict Access by Issuer Certificate. Ignored if clientCertAuthnEnabled is disabled.
-- `restrict_by_subject_dn` (Boolean) Restrict Access by Subject DN. Ignored if clientCertAuthnEnabled is disabled.
-- `subject_dns` (List of String) List of Subject DNs for certificates that are allowed to authenticate to WS-Trust STS endpoints. Required if restrictBySubjectDn is enabled.
-- `users` (Attributes List) List of users authorized to access WS-Trust STS endpoints when basicAuthnEnabled is enabled. At least one users entry is required if basicAuthnEnabled is enabled. (see [below for nested schema](#nestedatt--users))
+- `client_cert_authn_enabled` (Boolean) Require the use of Client Cert Authentication to access WS-Trust STS endpoints. Requires either `restrict_by_subject_dn` and/or `restrict_by_issuer_cert` be `true`.
+- `issuer_certs` (Attributes List) List of certificate Issuers that are used to validate certificates for access to the WS-Trust STS endpoints. Required if `restrict_by_issuer_cert` is `true`. (see [below for nested schema](#nestedatt--issuer_certs))
+- `restrict_by_issuer_cert` (Boolean) Restrict Access by Issuer Certificate. Ignored if `client_cert_authn_enabled` is `false`.
+- `restrict_by_subject_dn` (Boolean) Restrict Access by Subject DN. Ignored if `client_cert_authn_enabled` is `false`.
+- `subject_dns` (List of String) List of Subject DNs for certificates that are allowed to authenticate to WS-Trust STS endpoints. Required if `restrict_by_subject_dn` is `true`.
+- `users` (Attributes List) List of users authorized to access WS-Trust STS endpoints when `basic_auth_enabled` is `true`. At least one users entry is required if `basic_auth_enabled` is `true`. (see [below for nested schema](#nestedatt--users))
 
 <a id="nestedatt--issuer_certs"></a>
 ### Nested Schema for `issuer_certs`
