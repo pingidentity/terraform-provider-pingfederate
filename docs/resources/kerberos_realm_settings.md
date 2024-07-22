@@ -31,9 +31,9 @@ resource "pingfederate_kerberos_realm_settings" "kerberosRealmSettings" {
 
 ### Optional
 
-- `debug_log_output` (Boolean) Reference to the default logging.
-- `force_tcp` (Boolean) Reference to the default security.
-- `key_set_retention_period_mins` (Number) The key set retention period in minutes. When 'retain_previous_keys_on_password_change' is set to true for a realm, this setting determines how long keys will be retained after a password change occurs. If this field is omitted in a PUT request, the default of `610` minutes is applied.
+- `debug_log_output` (Boolean) Reference to the default logging. Default value is `false`
+- `force_tcp` (Boolean) Reference to the default security. Default value is `false`
+- `key_set_retention_period_mins` (Number) The key set retention period in minutes. When 'retain_previous_keys_on_password_change' is set to `true` for a realm, this setting determines how long keys will be retained after a password change occurs. Default value is `610`
 
 ## Import
 
