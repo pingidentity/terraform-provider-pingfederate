@@ -2,12 +2,12 @@
 page_title: "pingfederate_idp_token_processor Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to create and manage token processor instances.
 ---
 
 # pingfederate_idp_token_processor (Resource)
 
-
+Resource to create and manage token processor instances.
 
 ## Example Usage
 
@@ -43,13 +43,13 @@ resource "pingfederate_idp_token_processor" "idpTokenProcessor" {
 
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--configuration))
 - `name` (String) The plugin instance name. The name can be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.
-- `plugin_descriptor_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
+- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
 - `processor_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.
 
 ### Optional
 
 - `attribute_contract` (Attributes) A set of attributes exposed by a token processor. (see [below for nested schema](#nestedatt--attribute_contract))
-- `parent_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--parent_ref))
+- `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides) (see [below for nested schema](#nestedatt--parent_ref))
 
 <a id="nestedatt--configuration"></a>
 ### Nested Schema for `configuration`
@@ -161,7 +161,7 @@ Required:
 Optional:
 
 - `extended_attributes` (Attributes List) A list of additional attributes that can be returned by the token processor. The extended attributes are only used if the token processor supports them. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
-- `mask_ognl_values` (Boolean) Whether or not all OGNL expressions used to fulfill an outgoing assertion contract should be masked in the logs. Defaults to false.
+- `mask_ognl_values` (Boolean) Whether or not all OGNL expressions used to fulfill an outgoing assertion contract should be masked in the logs. Defaults to `false`.
 
 <a id="nestedatt--attribute_contract--core_attributes"></a>
 ### Nested Schema for `attribute_contract.core_attributes`
@@ -172,7 +172,7 @@ Required:
 
 Optional:
 
-- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to false.
+- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.
 
 
 <a id="nestedatt--attribute_contract--extended_attributes"></a>
@@ -184,7 +184,7 @@ Required:
 
 Optional:
 
-- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to false.
+- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.
 
 
 

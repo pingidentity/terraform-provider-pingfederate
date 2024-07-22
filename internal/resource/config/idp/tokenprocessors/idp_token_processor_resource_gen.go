@@ -63,6 +63,7 @@ type idpTokenProcessorResourceModel struct {
 
 func (r *idpTokenProcessorResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to create and manage token processor instances.",
 		Attributes: map[string]schema.Attribute{
 			"attribute_contract": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -73,7 +74,7 @@ func (r *idpTokenProcessorResource) Schema(ctx context.Context, req resource.Sch
 									Optional:    true,
 									Computed:    true,
 									Default:     booldefault.StaticBool(false),
-									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
+									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
 								},
 								"name": schema.StringAttribute{
 									Required:    true,
@@ -94,7 +95,7 @@ func (r *idpTokenProcessorResource) Schema(ctx context.Context, req resource.Sch
 									Optional:    true,
 									Computed:    true,
 									Default:     booldefault.StaticBool(false),
-									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
+									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
 								},
 								"name": schema.StringAttribute{
 									Required:    true,
@@ -111,7 +112,7 @@ func (r *idpTokenProcessorResource) Schema(ctx context.Context, req resource.Sch
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
-						Description: "Whether or not all OGNL expressions used to fulfill an outgoing assertion contract should be masked in the logs. Defaults to false.",
+						Description: "Whether or not all OGNL expressions used to fulfill an outgoing assertion contract should be masked in the logs. Defaults to `false`.",
 					},
 				},
 				Optional:    true,
@@ -130,7 +131,7 @@ func (r *idpTokenProcessorResource) Schema(ctx context.Context, req resource.Sch
 					},
 				},
 				Optional:    true,
-				Description: "A reference to a resource.",
+				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
 			},
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -143,7 +144,7 @@ func (r *idpTokenProcessorResource) Schema(ctx context.Context, req resource.Sch
 					},
 				},
 				Required:    true,
-				Description: "A reference to a resource.",
+				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
 			},
 			"processor_id": schema.StringAttribute{
 				Required:    true,
