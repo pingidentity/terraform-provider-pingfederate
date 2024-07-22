@@ -2,12 +2,12 @@
 page_title: "pingfederate_notification_publisher Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to create and manage notification publisher plugin instances.
 ---
 
 # pingfederate_notification_publisher (Resource)
 
-
+Resource to create and manage notification publisher plugin instances.
 
 ## Example Usage
 
