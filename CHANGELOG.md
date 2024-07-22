@@ -1,6 +1,7 @@
 # v0.13.0 (Unreleased)
 ### Resources
 * **New Resource:** `pingfederate_keypairs_oauth_openid_connect_additional_key_set` ([#271]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/271)))
+* **New Resource:** `pingfederate_session_authentication_policy` ([#261]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/261)))
 
 # v0.12.0 June 27th, 2024
 ### BREAKING CHANGES
