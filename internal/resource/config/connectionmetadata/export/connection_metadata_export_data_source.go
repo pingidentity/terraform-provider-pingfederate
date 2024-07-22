@@ -55,9 +55,10 @@ type connectionMetadataDataSourceModel struct {
 
 func (r *connectionMetadataExportDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Datasource to export a connection's SAML metadata that can be given to a partner.",
 		Attributes: map[string]schema.Attribute{
 			"connection_type": schema.StringAttribute{
-				Description: "The type of connection to export.",
+				Description: "The type of connection to export. Options are `IDP` or `SP`.",
 				Required:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOf("IDP", "SP"),
@@ -68,11 +69,11 @@ func (r *connectionMetadataExportDataSource) Schema(ctx context.Context, req dat
 				Required:    true,
 			},
 			"virtual_server_id": schema.StringAttribute{
-				Description: "The virtual server ID to export the metadata with. If null, the connection's default will be used.",
+				Description: "The virtual server ID to export the metadata with. If `null`, the connection's default will be used.",
 				Optional:    true,
 			},
 			"signing_settings": schema.SingleNestedAttribute{
-				Description: "The signing settings to sign the metadata with. If null, the metadata will not be signed",
+				Description: "The signing settings to sign the metadata with. If `null`, the metadata will not be signed",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"signing_key_pair_ref": schema.SingleNestedAttribute{
@@ -86,7 +87,7 @@ func (r *connectionMetadataExportDataSource) Schema(ctx context.Context, req dat
 						},
 					},
 					"algorithm": schema.StringAttribute{
-						Description: "The algorithm used to sign messages sent to this partner. The default is SHA1withDSA for DSA certs, SHA256withRSA for RSA certs, and SHA256withECDSA for EC certs. For RSA certs, SHA1withRSA, SHA384withRSA, SHA512withRSA, SHA256withRSAandMGF1, SHA384withRSAandMGF1 and SHA512withRSAandMGF1 are also supported. For EC certs, SHA384withECDSA and SHA512withECDSA are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512",
+						Description: "The algorithm used to sign messages sent to this partner. The default is `SHA1withDSA` for DSA certs, `SHA256withRSA` for RSA certs, and `SHA256withECDSA` for EC certs. For RSA certs, `SHA1withRSA`, `SHA384withRSA`, `SHA512withRSA`, `SHA256withRSAandMGF1`, `SHA384withRSAandMGF1` and `SHA512withRSAandMGF1` are also supported. For EC certs, `SHA384withECDSA` and `SHA512withECDSA` are also supported. If the connection is WS-Federation with JWT token type, then the possible values are `RSA SHA256`, `RSA SHA384`, `RSA SHA512`, `RSASSA-PSS SHA256`, `RSASSA-PSS SHA384`, `RSASSA-PSS SHA512`, `ECDSA SHA256`, `ECDSA SHA384`, `ECDSA SHA512`",
 						Optional:    true,
 					},
 					"include_cert_in_signature": schema.BoolAttribute{
@@ -100,7 +101,7 @@ func (r *connectionMetadataExportDataSource) Schema(ctx context.Context, req dat
 				},
 			},
 			"use_secondary_port_for_soap": schema.BoolAttribute{
-				Description: "If PingFederate's secondary SSL port is configured and you want to use it for the SOAP channel, set to true. If client-certificate authentication is configured for the SOAP channel, the secondary port is required and this must be set to true.",
+				Description: "If PingFederate's secondary SSL port is configured and you want to use it for the SOAP channel, set to true. If client-certificate authentication is configured for the SOAP channel, the secondary port is required and this must be set to `true`.",
 				Optional:    true,
 			},
 			"virtual_host_name": schema.StringAttribute{

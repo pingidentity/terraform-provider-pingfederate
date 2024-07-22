@@ -3,12 +3,12 @@
 page_title: "pingfederate_connection_metadata_export Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Datasource to export a connection's SAML metadata that can be given to a partner.
 ---
 
 # pingfederate_connection_metadata_export (Data Source)
 
-
+Datasource to export a connection's SAML metadata that can be given to a partner.
 
 ## Example Usage
 
@@ -31,14 +31,14 @@ data "pingfederate_connection_metadata_export" "metadataExport" {
 ### Required
 
 - `connection_id` (String) The ID of the connection to export.
-- `connection_type` (String) The type of connection to export.
+- `connection_type` (String) The type of connection to export. Options are `IDP` or `SP`.
 
 ### Optional
 
-- `signing_settings` (Attributes) The signing settings to sign the metadata with. If null, the metadata will not be signed (see [below for nested schema](#nestedatt--signing_settings))
-- `use_secondary_port_for_soap` (Boolean) If PingFederate's secondary SSL port is configured and you want to use it for the SOAP channel, set to true. If client-certificate authentication is configured for the SOAP channel, the secondary port is required and this must be set to true.
+- `signing_settings` (Attributes) The signing settings to sign the metadata with. If `null`, the metadata will not be signed (see [below for nested schema](#nestedatt--signing_settings))
+- `use_secondary_port_for_soap` (Boolean) If PingFederate's secondary SSL port is configured and you want to use it for the SOAP channel, set to true. If client-certificate authentication is configured for the SOAP channel, the secondary port is required and this must be set to `true`.
 - `virtual_host_name` (String) The virtual host name to be used as the base url.
-- `virtual_server_id` (String) The virtual server ID to export the metadata with. If null, the connection's default will be used.
+- `virtual_server_id` (String) The virtual server ID to export the metadata with. If `null`, the connection's default will be used.
 
 ### Read-Only
 
@@ -53,7 +53,7 @@ Required:
 
 Optional:
 
-- `algorithm` (String) The algorithm used to sign messages sent to this partner. The default is SHA1withDSA for DSA certs, SHA256withRSA for RSA certs, and SHA256withECDSA for EC certs. For RSA certs, SHA1withRSA, SHA384withRSA, SHA512withRSA, SHA256withRSAandMGF1, SHA384withRSAandMGF1 and SHA512withRSAandMGF1 are also supported. For EC certs, SHA384withECDSA and SHA512withECDSA are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512
+- `algorithm` (String) The algorithm used to sign messages sent to this partner. The default is `SHA1withDSA` for DSA certs, `SHA256withRSA` for RSA certs, and `SHA256withECDSA` for EC certs. For RSA certs, `SHA1withRSA`, `SHA384withRSA`, `SHA512withRSA`, `SHA256withRSAandMGF1`, `SHA384withRSAandMGF1` and `SHA512withRSAandMGF1` are also supported. For EC certs, `SHA384withECDSA` and `SHA512withECDSA` are also supported. If the connection is WS-Federation with JWT token type, then the possible values are `RSA SHA256`, `RSA SHA384`, `RSA SHA512`, `RSASSA-PSS SHA256`, `RSASSA-PSS SHA384`, `RSASSA-PSS SHA512`, `ECDSA SHA256`, `ECDSA SHA384`, `ECDSA SHA512`
 - `include_cert_in_signature` (Boolean) Determines whether the signing certificate is included in the signature element.
 - `include_raw_key_in_signature` (Boolean) Determines whether the element with the raw public key is included in the signature element.
 
