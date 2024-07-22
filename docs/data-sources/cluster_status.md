@@ -3,12 +3,12 @@
 page_title: "pingfederate_cluster_status Data Source - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Datasource to retrive information on the current status of the cluster.
 ---
 
 # pingfederate_cluster_status (Data Source)
 
-
+Datasource to retrive information on the current status of the cluster.
 
 ## Example Usage
 
@@ -37,8 +37,8 @@ Read-Only:
 - `address` (String) The IP address and port this node is running on.
 - `admin_console_info` (Attributes) The administrative console information when the active/passive administrative console feature is enabled. (see [below for nested schema](#nestedatt--nodes--admin_console_info))
 - `configuration_timestamp` (String) The time stamp of the configuration data retrieved by this node.
-- `index` (Number) Index of the node within the cluster, or -1 if an index is not assigned.
-- `mode` (String) The deployment mode of this node, from a clustering standpoint. CLUSTERED_DUAL is not supported.
+- `index` (Number) Index of the node within the cluster, or `-1` if an index is not assigned.
+- `mode` (String) The deployment mode of this node, from a clustering standpoint. `CLUSTERED_DUAL` is not supported.
 - `node_group` (String) The node group for this node. This field is only populated if adaptive clustering is enabled.
 - `node_tags` (String) The node tags for this node. This field is only populated for engine nodes.
 - `replication_status` (String) The replication status of the node.

@@ -57,6 +57,7 @@ type clusterStatusDataSourceModel struct {
 
 func (r *clusterStatusDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Datasource to retrive information on the current status of the cluster.",
 		Attributes: map[string]schema.Attribute{
 			"current_node_index": schema.Int64Attribute{
 				Computed:    true,
@@ -109,11 +110,11 @@ func (r *clusterStatusDataSource) Schema(ctx context.Context, req datasource.Sch
 						},
 						"index": schema.Int64Attribute{
 							Computed:    true,
-							Description: "Index of the node within the cluster, or -1 if an index is not assigned.",
+							Description: "Index of the node within the cluster, or `-1` if an index is not assigned.",
 						},
 						"mode": schema.StringAttribute{
 							Computed:    true,
-							Description: "The deployment mode of this node, from a clustering standpoint. CLUSTERED_DUAL is not supported.",
+							Description: "The deployment mode of this node, from a clustering standpoint. `CLUSTERED_DUAL` is not supported.",
 						},
 						"node_group": schema.StringAttribute{
 							Computed:    true,
