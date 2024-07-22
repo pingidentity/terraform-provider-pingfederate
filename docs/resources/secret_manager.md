@@ -2,12 +2,12 @@
 page_title: "pingfederate_secret_manager Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to create and manage secret manager plugin instances.
 ---
 
 # pingfederate_secret_manager (Resource)
 
-
+Resource to create and manage secret manager plugin instances.
 
 ## Example Usage
 
@@ -37,11 +37,11 @@ resource "pingfederate_secret_manager" "secretManager" {
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--configuration))
 - `manager_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.
 - `name` (String) The plugin instance name. The name can be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.
-- `plugin_descriptor_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
+- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created.Note: Ignored when specifying a connection's adapter override. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
 
 ### Optional
 
-- `parent_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--parent_ref))
+- `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides) (see [below for nested schema](#nestedatt--parent_ref))
 
 <a id="nestedatt--configuration"></a>
 ### Nested Schema for `configuration`

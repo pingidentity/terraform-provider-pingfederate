@@ -58,6 +58,7 @@ type secretManagerResourceModel struct {
 
 func (r *secretManagerResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to create and manage secret manager plugin instances.",
 		Attributes: map[string]schema.Attribute{
 			"configuration": pluginconfiguration.ToSchema(),
 			"manager_id": schema.StringAttribute{
@@ -80,17 +81,20 @@ func (r *secretManagerResource) Schema(ctx context.Context, req resource.SchemaR
 					},
 				},
 				Optional:    true,
-				Description: "A reference to a resource.",
+				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
 			},
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Required:    true,
 						Description: "The ID of the resource.",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+						},
 					},
 				},
 				Required:    true,
-				Description: "A reference to a resource.",
+				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created.Note: Ignored when specifying a connection's adapter override.",
 			},
 		},
 	}
