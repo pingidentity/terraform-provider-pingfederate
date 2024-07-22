@@ -2,12 +2,12 @@
 page_title: "pingfederate_captcha_provider Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to create and manage CAPTCHA provider plugin instances.
 ---
 
 # pingfederate_captcha_provider (Resource)
 
-
+Resource to create and manage CAPTCHA provider plugin instances.
 
 ## Example Usage
 
