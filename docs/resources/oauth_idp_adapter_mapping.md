@@ -2,12 +2,12 @@
 page_title: "pingfederate_oauth_idp_adapter_mapping Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to create and manage IdP adapter mappings.
 ---
 
 # pingfederate_oauth_idp_adapter_mapping (Resource)
 
-
+Resource to create and manage IdP adapter mappings.
 
 ## Example Usage
 
