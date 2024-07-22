@@ -53,6 +53,7 @@ type serviceAuthenticationResourceModel struct {
 
 func (r *serviceAuthenticationResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to manage the service authentication settings.",
 		Attributes: map[string]schema.Attribute{
 			"attribute_query": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{

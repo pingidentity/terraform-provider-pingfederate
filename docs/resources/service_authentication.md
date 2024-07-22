@@ -2,12 +2,12 @@
 page_title: "pingfederate_service_authentication Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to manage the service authentication settings.
 ---
 
 # pingfederate_service_authentication (Resource)
 
-
+Resource to manage the service authentication settings.
 
 ## Example Usage
 
