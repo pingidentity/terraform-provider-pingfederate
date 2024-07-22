@@ -18,7 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	datasourceresourcelink "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -27,6 +27,7 @@ import (
 
 var (
 	pingOneLdapGatewayDataStoreAttrType = map[string]attr.Type{
+		"use_start_tls":            types.BoolType,
 		"ping_one_connection_ref":  types.ObjectType{AttrTypes: resourcelink.AttrType()},
 		"ldap_type":                types.StringType,
 		"ping_one_ldap_gateway_id": types.StringType,
@@ -52,6 +53,11 @@ func toSchemaPingOneLdapGatewayDataStore() schema.SingleNestedAttribute {
 		},
 		"name": schema.StringAttribute{
 			Description: "The data store name with a unique value across all data sources. Omitting this attribute will set the value to a combination of the hostname(s) and the principal.",
+			Computed:    true,
+			Optional:    true,
+		},
+		"use_start_tls": schema.BoolAttribute{
+			Description: "Connects to the LDAP data store using StartTLS. The default value is false. The value is validated against the LDAP gateway configuration in PingOne unless the header 'X-BypassExternalValidation' is set to true.",
 			Computed:    true,
 			Optional:    true,
 		},
@@ -126,6 +132,11 @@ func toDataSourceSchemaPingOneLdapGatewayDataStore() datasourceschema.SingleNest
 			Computed:    true,
 			Optional:    false,
 		},
+		"use_start_tls": schema.BoolAttribute{
+			Description: "Connects to the LDAP data store using StartTLS. The default value is false. The value is validated against the LDAP gateway configuration in PingOne unless the header 'X-BypassExternalValidation' is set to true.",
+			Computed:    true,
+			Optional:    false,
+		},
 		"ping_one_connection_ref": datasourceschema.SingleNestedAttribute{
 			Computed:    true,
 			Optional:    false,
@@ -171,16 +182,6 @@ func toStatePingOneLdapGatewayDataStore(con context.Context, pingOneLdapGDS *cli
 		return pingOneLdapGatewayDataStoreEmptyStateObj, diags
 	}
 
-	pingOneLdapGatewayDataStoreAttrType := map[string]attr.Type{
-		"ping_one_connection_ref":  types.ObjectType{AttrTypes: resourcelink.AttrType()},
-		"ldap_type":                types.StringType,
-		"ping_one_ldap_gateway_id": types.StringType,
-		"use_ssl":                  types.BoolType,
-		"name":                     types.StringType,
-		"binary_attributes":        types.SetType{ElemType: types.StringType},
-		"type":                     types.StringType,
-		"ping_one_environment_id":  types.StringType,
-	}
 	pingOneConRefFromClient := pingOneLdapGDS.GetPingOneConnectionRef()
 	pingOneConnectionRef, diags := resourcelink.ToState(con, &pingOneConRefFromClient)
 	allDiags = append(allDiags, diags...)
@@ -192,6 +193,7 @@ func toStatePingOneLdapGatewayDataStore(con context.Context, pingOneLdapGDS *cli
 		}
 	}
 	pingOneLdapGatewayDataStoreVal := map[string]attr.Value{
+		"use_start_tls":            types.BoolPointerValue(pingOneLdapGDS.UseStartTLS),
 		"ping_one_connection_ref":  pingOneConnectionRef,
 		"ldap_type":                types.StringValue(pingOneLdapGDS.GetLdapType()),
 		"ping_one_ldap_gateway_id": types.StringValue(pingOneLdapGDS.GetPingOneLdapGatewayId()),
@@ -227,6 +229,10 @@ func readPingOneLdapGatewayDataStoreResponse(ctx context.Context, r *client.Data
 
 func addOptionalPingOneLdapGatewayDataStoreFields(addRequest client.DataStoreAggregation, con context.Context, createJdbcDataStore client.PingOneLdapGatewayDataStore, plan dataStoreModel) error {
 	pingOneLdapGatewayDataStorePlan := plan.PingOneLdapGatewayDataStore.Attributes()
+
+	if internaltypes.IsDefined(pingOneLdapGatewayDataStorePlan["use_start_tls"]) {
+		addRequest.PingOneLdapGatewayDataStore.UseStartTLS = pingOneLdapGatewayDataStorePlan["use_start_tls"].(types.Bool).ValueBoolPointer()
+	}
 
 	if internaltypes.IsDefined(pingOneLdapGatewayDataStorePlan["use_ssl"]) {
 		addRequest.PingOneLdapGatewayDataStore.UseSsl = pingOneLdapGatewayDataStorePlan["use_ssl"].(types.Bool).ValueBoolPointer()

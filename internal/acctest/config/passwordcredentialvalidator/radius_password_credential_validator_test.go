@@ -132,7 +132,6 @@ func testAccRadiusPasswordCredentialValidators(resourceName string, resourceMode
 					name = "contract"
 				}
 			]
-			inherited = false
 	  	}
 	`
 	}

@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
@@ -124,12 +124,6 @@ func (r *idpAdapterDataSource) Schema(ctx context.Context, req datasource.Schema
 						Computed:    true,
 						Optional:    false,
 					},
-					"inherited": schema.BoolAttribute{
-						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
-						Description:        "Whether this attribute contract is inherited from its parent instance.",
-						Computed:           true,
-						Optional:           false,
-					},
 				},
 			},
 			"attribute_mapping": schema.SingleNestedAttribute{
@@ -140,12 +134,6 @@ func (r *idpAdapterDataSource) Schema(ctx context.Context, req datasource.Schema
 					"attribute_sources":              attributesources.ToDataSourceSchema(),
 					"attribute_contract_fulfillment": attributecontractfulfillment.ToDataSourceSchema(),
 					"issuance_criteria":              issuancecriteria.ToDataSourceSchema(),
-					"inherited": schema.BoolAttribute{
-						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
-						Computed:           true,
-						Optional:           false,
-						Description:        "Whether this attribute mapping is inherited from its parent instance.",
-					},
 				},
 			},
 		},
