@@ -2,12 +2,12 @@
 page_title: "pingfederate_certificates_group Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to create and manage certificates for a group.
 ---
 
 # pingfederate_certificates_group (Resource)
 
-
+Resource to create and manage certificates for a group.
 
 ## Example Usage
 
@@ -26,12 +26,12 @@ resource "pingfederate_certificates_group" "certGroup" {
 ### Required
 
 - `file_data` (String) The certificate data in PEM format. New line characters should be omitted or encoded in this value.
-- `group_name` (String) Name of the group to retrieve certificates for.
+- `group_name` (String) Name of the group to manage certificates for.
 
 ### Optional
 
-- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.
-- `group_id` (String) The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.
+- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Options are `LOCAL` or `HSM`.
+- `group_id` (String) The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.
 
 ### Read-Only
 
