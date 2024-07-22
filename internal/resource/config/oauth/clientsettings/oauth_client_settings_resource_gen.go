@@ -58,6 +58,7 @@ type oauthClientSettingsResourceModel struct {
 
 func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to manage the client settings.",
 		Attributes: map[string]schema.Attribute{
 			"client_metadata": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
@@ -117,7 +118,7 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(3),
-						Description: "The minimum amount of time in seconds that the Client must wait between polling requests to the token endpoint. The default is 3 seconds.",
+						Description: "The minimum amount of time in seconds that the Client must wait between polling requests to the token endpoint. The default is `3` seconds.",
 					},
 					"ciba_require_signed_requests": schema.BoolAttribute{
 						Optional:    true,
@@ -139,7 +140,7 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 						Optional:    true,
 						Computed:    true,
 						Default:     stringdefault.StaticString("NONE"),
-						Description: "Client TLS Certificate Issuer Type.",
+						Description: "Client TLS Certificate Issuer Type. Options are `NONE`, `TRUST_ANY`, `CERTIFICATE`. Defaults to `NONE`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"NONE",
@@ -150,13 +151,13 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 					},
 					"client_secret_retention_period_override": schema.Int64Attribute{
 						Optional:    true,
-						Description: "The length of time in minutes that client secrets will be retained as secondary secrets after secret change. The default value is 0, which will disable secondary client secret retention. This value will override the Client Secret Retention Period value on the Authorization Server Settings.",
+						Description: "The length of time in minutes that client secrets will be retained as secondary secrets after secret change. The default value is `0`, which will disable secondary client secret retention. This value will override the `client_secret_retention_period` value on the Authorization Server Settings.",
 					},
 					"client_secret_retention_period_type": schema.StringAttribute{
 						Optional:    true,
 						Computed:    true,
 						Default:     stringdefault.StaticString("SERVER_DEFAULT"),
-						Description: "Use OVERRIDE_SERVER_DEFAULT to override the Client Secret Retention Period value on the Authorization Server Settings. SERVER_DEFAULT will default to the Client Secret Retention Period value on the Authorization Server Setting. Defaults to SERVER_DEFAULT.",
+						Description: "Use `OVERRIDE_SERVER_DEFAULT` to override the Client Secret Retention Period value on the Authorization Server Settings. `SERVER_DEFAULT` will default to the Client Secret Retention Period value on the Authorization Server Setting. Defaults to `SERVER_DEFAULT`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"SERVER_DEFAULT",
@@ -178,7 +179,7 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 						Optional:    true,
 						Computed:    true,
 						Default:     stringdefault.StaticString("SERVER_DEFAULT"),
-						Description: "Allows an administrator to override the Device Authorization Settings set globally for the OAuth AS. Defaults to SERVER_DEFAULT.",
+						Description: "Allows an administrator to override the Device Authorization Settings set globally for the OAuth AS. Defaults to `SERVER_DEFAULT`. Options are `SERVER_DEFAULT`, `OVERRIDE_SERVER_DEFAULT`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"SERVER_DEFAULT",
@@ -194,7 +195,7 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
-						Description: "Disable registration access tokens. Local standards may mandate different registration access token requirements. If applicable, implement custom validation and enforcement rules using the DynamicClientRegistrationPlugin interface from the PingFederate SDK, configure the client registration policies (policyRefs), and set this property (disableRegistrationAccessTokens) to true. CAUTION: When the disableRegistrationAccessTokens property is set to true, all clients, not just the ones created using the Dynamic Client Registration protocol, are vulnerable to unrestricted retrievals, updates (including modifications to the client authentication scheme and redirect URIs), and deletes at the /as/clients.oauth2 endpoint unless one or more client registration policies are in place to protect against unauthorized attempts.",
+						Description: "Disable registration access tokens. Local standards may mandate different registration access token requirements. If applicable, implement custom validation and enforcement rules using the DynamicClientRegistrationPlugin interface from the PingFederate SDK, configure the client registration policies (`policy_refs`), and set this property (`disable_registration_access_tokens`) to `true`. CAUTION: When the `disable_registration_access_tokens` property is set to `true`, all clients, not just the ones created using the Dynamic Client Registration protocol, are vulnerable to unrestricted retrievals, updates (including modifications to the client authentication scheme and redirect URIs), and deletes at the /as/clients.oauth2 endpoint unless one or more client registration policies are in place to protect against unauthorized attempts.",
 					},
 					"enforce_replay_prevention": schema.BoolAttribute{
 						Optional:    true,
@@ -209,7 +210,7 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 					"offline_access_require_consent_prompt": schema.StringAttribute{
 						Optional:    true,
 						Computed:    true,
-						Description: "Determines whether offline_access requires the prompt parameter value to be set to 'consent' or not. The value will be reset to default if the 'requireOfflineAccessScopeToIssueRefreshTokens' attribute is set to 'SERVER_DEFAULT' or 'false'. 'SERVER_DEFAULT' is the default value.",
+						Description: "Determines whether offline_access requires the prompt parameter value to be set to 'consent' or not. The value will be reset to default if the `require_offline_access_scope_to_issue_refresh_tokens` attribute is set to `SERVER_DEFAULT` or `false`. `SERVER_DEFAULT` is the default value. Options are `SERVER_DEFAULT`, `NO`, `YES`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"SERVER_DEFAULT",
@@ -292,7 +293,7 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 					},
 					"pending_authorization_timeout_override": schema.Int64Attribute{
 						Optional:    true,
-						Description: "The 'device_code' and 'user_code' timeout, in seconds.",
+						Description: "The `device_code` and `user_code` timeout, in seconds.",
 					},
 					"persistent_grant_expiration_time": schema.Int64Attribute{
 						Optional:    true,
@@ -300,7 +301,7 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 					},
 					"persistent_grant_expiration_time_unit": schema.StringAttribute{
 						Optional:    true,
-						Description: "The persistent grant expiration time unit.",
+						Description: "The persistent grant expiration time unit. Options are `MINUTES`, `DAYS`, `HOURS`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"MINUTES",
@@ -313,7 +314,7 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 						Optional:    true,
 						Computed:    true,
 						Default:     stringdefault.StaticString("SERVER_DEFAULT"),
-						Description: "Allows an administrator to override the Persistent Grant Lifetime set globally for the OAuth AS. Defaults to SERVER_DEFAULT.",
+						Description: "Allows an administrator to override the Persistent Grant Lifetime set globally for the OAuth AS. Defaults to `SERVER_DEFAULT`. Options are `INDEFINITE_EXPIRY`, `SERVER_DEFAULT`, `OVERRIDE_SERVER_DEFAULT`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"INDEFINITE_EXPIRY",
@@ -328,7 +329,7 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 					},
 					"persistent_grant_idle_timeout_time_unit": schema.StringAttribute{
 						Optional:    true,
-						Description: "The persistent grant idle timeout time unit.",
+						Description: "The persistent grant idle timeout time unit. Options are `MINUTES`, `DAYS`, `HOURS`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"MINUTES",
@@ -341,7 +342,7 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 						Optional:    true,
 						Computed:    true,
 						Default:     stringdefault.StaticString("SERVER_DEFAULT"),
-						Description: "Allows an administrator to override the Persistent Grant Idle Timeout set globally for the OAuth AS. Defaults to SERVER_DEFAULT.",
+						Description: "Allows an administrator to override the Persistent Grant Idle Timeout set globally for the OAuth AS. Defaults to `SERVER_DEFAULT`. Options are `INDEFINITE_EXPIRY`, `SERVER_DEFAULT`, `OVERRIDE_SERVER_DEFAULT`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"INDEFINITE_EXPIRY",
@@ -368,7 +369,7 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 						Optional:    true,
 						Computed:    true,
 						Default:     stringdefault.StaticString("SERVER_DEFAULT"),
-						Description: "Use ROLL or DONT_ROLL to override the Roll Refresh Token Values setting on the Authorization Server Settings. SERVER_DEFAULT will default to the Roll Refresh Token Values setting on the Authorization Server Setting screen. Defaults to SERVER_DEFAULT.",
+						Description: "Use `ROLL` or `DONT_ROLL` to override the `roll_refresh_token_values` setting on the Authorization Server Settings. `SERVER_DEFAULT` will default to the `roll_refresh_token_values` setting on the Authorization Server Setting screen. Defaults to `SERVER_DEFAULT`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"SERVER_DEFAULT",
@@ -385,7 +386,7 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 						Optional:    true,
 						Computed:    true,
 						Default:     stringdefault.StaticString("SERVER_DEFAULT"),
-						Description: "When specified, it overrides the global Refresh Token Grace Period defined in the Authorization Server Settings. The default value is SERVER_DEFAULT",
+						Description: "When set to `OVERRIDE_SERVER_DEFAULT`, it overrides the global `refresh_token_grace_period` defined in the Authorization Server Settings. The default value is `SERVER_DEFAULT`",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"SERVER_DEFAULT",
@@ -395,11 +396,11 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 					},
 					"refresh_token_rolling_interval": schema.Int64Attribute{
 						Optional:    true,
-						Description: "The minimum interval to roll refresh tokens. This value will override the Refresh Token Rolling Interval Value on the Authorization Server Settings.",
+						Description: "The minimum interval to roll refresh tokens. This value will override the `refresh_token_rolling_interval` value on the Authorization Server Settings.",
 					},
 					"refresh_token_rolling_interval_time_unit": schema.StringAttribute{
 						Optional:    true,
-						Description: "The refresh token rolling interval time unit. Defaults to HOURS.",
+						Description: "The refresh token rolling interval time unit. Defaults to `HOURS`. Options are `SECONDS`, `MINUTES`, `HOURS`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"SECONDS",
@@ -412,7 +413,7 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 						Optional:    true,
 						Computed:    true,
 						Default:     stringdefault.StaticString("SERVER_DEFAULT"),
-						Description: "Use OVERRIDE_SERVER_DEFAULT to override the Refresh Token Rolling Interval value on the Authorization Server Settings. SERVER_DEFAULT will default to the Refresh Token Rolling Interval value on the Authorization Server Setting. Defaults to SERVER_DEFAULT.",
+						Description: "Use `OVERRIDE_SERVER_DEFAULT` to override the `refresh_token_rolling_interval` value on the Authorization Server Settings. `SERVER_DEFAULT` will default to the `refresh_token_rolling_interval` value on the Authorization Server Setting. Defaults to SERVER_DEFAULT.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"SERVER_DEFAULT",
@@ -434,12 +435,12 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
-						Description: "Determines whether JWT Secured authorization response mode is required when initiating an authorization request. The default is false.",
+						Description: "Determines whether JWT Secured authorization response mode is required when initiating an authorization request. The default is `false`.",
 					},
 					"require_offline_access_scope_to_issue_refresh_tokens": schema.StringAttribute{
 						Optional:    true,
 						Computed:    true,
-						Description: "Determines whether offline_access scope is required to issue refresh tokens or not. 'SERVER_DEFAULT' is the default value. ",
+						Description: "Determines whether offline_access scope is required to issue refresh tokens or not. 'SERVER_DEFAULT' is the default value. Options are `SERVER_DEFAULT`, `NO`, `YES`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"SERVER_DEFAULT",
@@ -470,7 +471,7 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
-						Description: "Determines whether the client is restricted to using only its default access token manager. The default is false.",
+						Description: "Determines whether the client is restricted to using only its default access token manager. The default is `false`.",
 					},
 					"restricted_common_scopes": schema.ListAttribute{
 						ElementType: types.StringType,
@@ -509,7 +510,7 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 					},
 					"user_authorization_url_override": schema.StringAttribute{
 						Optional:    true,
-						Description: "The URL is used as 'verification_url' and 'verification_url_complete' values in a Device Authorization request.",
+						Description: "The URL is used as `verification_url` and `verification_url_complete` values in a Device Authorization request.",
 					},
 				},
 				Optional:    true,
