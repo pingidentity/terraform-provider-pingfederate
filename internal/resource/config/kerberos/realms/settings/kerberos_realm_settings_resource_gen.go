@@ -55,6 +55,7 @@ type kerberosRealmSettingsResourceModel struct {
 
 func (r *kerberosRealmSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to manage the Kerberos realm settings.",
 		Attributes: map[string]schema.Attribute{
 			"debug_log_output": schema.BoolAttribute{
 				Optional:    true,
@@ -80,7 +81,7 @@ func (r *kerberosRealmSettingsResource) Schema(ctx context.Context, req resource
 				Optional:    true,
 				Computed:    true,
 				Default:     int64default.StaticInt64(610),
-				Description: "The key set retention period in minutes. When 'retainPreviousKeysOnPasswordChange' is set to true for a realm, this setting determines how long keys will be retained after a password change occurs. If this field is omitted in a PUT request, the default of 610 minutes is applied.",
+				Description: "The key set retention period in minutes. When 'retain_previous_keys_on_password_change' is set to true for a realm, this setting determines how long keys will be retained after a password change occurs. If this field is omitted in a PUT request, the default of `610` minutes is applied.",
 			},
 		},
 	}
