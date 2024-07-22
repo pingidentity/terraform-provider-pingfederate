@@ -2,12 +2,12 @@
 page_title: "pingfederate_idp_to_sp_adapter_mapping Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to create and manage IdP-to-SP adapter mappings
 ---
 
 # pingfederate_idp_to_sp_adapter_mapping (Resource)
 
-
+Resource to create and manage IdP-to-SP adapter mappings
 
 ## Example Usage
 

@@ -64,6 +64,7 @@ type idpToSpAdapterMappingResourceModel struct {
 
 func (r *idpToSpAdapterMappingResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to create and manage IdP-to-SP adapter mappings",
 		Attributes: map[string]schema.Attribute{
 			"application_icon_url": schema.StringAttribute{
 				Optional:    true,
