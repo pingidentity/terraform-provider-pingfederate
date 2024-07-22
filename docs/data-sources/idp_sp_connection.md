@@ -707,7 +707,6 @@ Read-Only:
 Read-Only:
 
 - `encrypted_value` (String) The encrypted value for the configuration field.
-- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance.
 - `name` (String) The name of the configuration field.
 - `value` (String) The value for the configuration field.
 
@@ -794,10 +793,6 @@ Required:
 - `name` (String) The name of the configuration field.
 - `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
 
-Optional:
-
-- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
-
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables"></a>
 ### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.tables`
@@ -808,7 +803,6 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean, Deprecated) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
 - `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables--rows))
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables--rows"></a>
@@ -827,10 +821,6 @@ Required:
 - `name` (String) The name of the configuration field.
 - `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
 
-Optional:
-
-- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
-
 
 
 
@@ -842,10 +832,6 @@ Required:
 - `name` (String) The name of the configuration field.
 - `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
 
-Optional:
-
-- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
-
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables_all"></a>
 ### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.plugin_descriptor_ref.tables_all`
@@ -856,7 +842,6 @@ Required:
 
 Optional:
 
-- `inherited` (Boolean, Deprecated) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
 - `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables_all--rows))
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--tables_all--rows"></a>
@@ -875,10 +860,6 @@ Required:
 - `name` (String) The name of the configuration field.
 - `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
 
-Optional:
-
-- `inherited` (Boolean, Deprecated) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
-
 
 
 
@@ -890,7 +871,6 @@ Read-Only:
 
 - `core_attributes` (Attributes List) A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--core_attributes))
 - `extended_attributes` (Attributes List) A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--extended_attributes))
-- `inherited` (Boolean, Deprecated) Whether this attribute contract is inherited from its parent instance.
 - `mask_ognl_values` (Boolean) Whether or not all OGNL expressions used to fulfill an outgoing assertion contract should be masked in the logs.
 - `unique_user_key_attribute` (String) The attribute to use for uniquely identify a user's authentication sessions.
 
@@ -922,7 +902,6 @@ Read-Only:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_contract_fulfillment))
 - `attribute_sources` (Attributes List) (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_sources))
-- `inherited` (Boolean, Deprecated) Whether this attribute mapping is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--issuance_criteria))
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--attribute_contract_fulfillment"></a>

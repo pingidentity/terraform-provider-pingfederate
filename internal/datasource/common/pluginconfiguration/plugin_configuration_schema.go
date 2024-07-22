@@ -60,12 +60,6 @@ func ToDataSourceSchema() schema.SingleNestedAttribute {
 													Optional:    false,
 													Computed:    true,
 												},
-												"inherited": schema.BoolAttribute{
-													Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
-													Required:    false,
-													Optional:    false,
-													Computed:    true,
-												},
 											},
 										},
 									},
@@ -77,12 +71,6 @@ func ToDataSourceSchema() schema.SingleNestedAttribute {
 									},
 								},
 							},
-						},
-						"inherited": schema.BoolAttribute{
-							Description: "Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.",
-							Required:    false,
-							Optional:    false,
-							Computed:    true,
 						},
 					},
 				},
@@ -109,12 +97,6 @@ func ToDataSourceSchema() schema.SingleNestedAttribute {
 						},
 						"encrypted_value": schema.StringAttribute{
 							Description: "For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined.",
-							Required:    false,
-							Optional:    false,
-							Computed:    true,
-						},
-						"inherited": schema.BoolAttribute{
-							Description: "Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.",
 							Required:    false,
 							Optional:    false,
 							Computed:    true,

@@ -59,7 +59,6 @@ Read-Only:
 Read-Only:
 
 - `encrypted_value` (String) For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined.
-- `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 - `name` (String) The name of the configuration field.
 - `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute.
 
@@ -69,7 +68,6 @@ Read-Only:
 
 Read-Only:
 
-- `inherited` (Boolean) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
 - `name` (String) The name of the table.
 - `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables--rows))
 
@@ -87,7 +85,6 @@ Read-Only:
 Read-Only:
 
 - `encrypted_value` (String) For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined.
-- `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 - `name` (String) The name of the configuration field.
 - `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute.
 
@@ -174,6 +171,7 @@ Read-Only:
 - `type` (String) The data store type.
 - `use_dns_srv_records` (Boolean) Use DNS SRV Records to discover LDAP server information.
 - `use_ssl` (Boolean) Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS).
+- `use_start_tls` (Boolean) Connects to the LDAP data store using secure StartTLS encryption. The default value is false.
 - `user_dn` (String) The username credential required to access the data store. If specified, no other authentication fields should be provided.
 - `verify_host` (Boolean) Verifies that the presented server certificate includes the address to which the client intended to establish a connection.
 
@@ -209,6 +207,7 @@ Read-Only:
 - `ping_one_ldap_gateway_id` (String) The ID of the PingOne LDAP Gateway this data store uses.
 - `type` (String) The data store type.
 - `use_ssl` (Boolean) Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS).
+- `use_start_tls` (Boolean) Connects to the LDAP data store using StartTLS. The default value is false. The value is validated against the LDAP gateway configuration in PingOne unless the header 'X-BypassExternalValidation' is set to true.
 
 <a id="nestedatt--ping_one_ldap_gateway_data_store--ping_one_connection_ref"></a>
 ### Nested Schema for `ping_one_ldap_gateway_data_store.ping_one_connection_ref`
