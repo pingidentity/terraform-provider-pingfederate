@@ -5,13 +5,16 @@ package spdefaulturls
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -63,10 +66,18 @@ func (r *spDefaultUrlsResource) Schema(ctx context.Context, req resource.SchemaR
 			"slo_success_url": schema.StringAttribute{
 				Optional:    true,
 				Description: "Provide the default URL you would like to send the user to when Single Logout (SLO) has succeeded.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+					configvalidators.ValidUrl(),
+				},
 			},
 			"sso_success_url": schema.StringAttribute{
 				Optional:    true,
 				Description: "Provide the default URL you would like to send the user to when Single Sign On (SSO) has succeeded.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+					configvalidators.ValidUrl(),
+				},
 			},
 		},
 	}
