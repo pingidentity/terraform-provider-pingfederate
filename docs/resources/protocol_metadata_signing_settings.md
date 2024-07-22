@@ -2,12 +2,12 @@
 page_title: "pingfederate_protocol_metadata_signing_settings Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to manage the certificate ID and algorithm used for metadata signing.
 ---
 
 # pingfederate_protocol_metadata_signing_settings (Resource)
 
-
+Resource to manage the certificate ID and algorithm used for metadata signing.
 
 ## Example Usage
 

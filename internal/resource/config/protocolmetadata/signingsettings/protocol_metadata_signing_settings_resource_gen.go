@@ -51,6 +51,7 @@ type protocolMetadataSigningSettingsResourceModel struct {
 
 func (r *protocolMetadataSigningSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to manage the certificate ID and algorithm used for metadata signing.",
 		Attributes: map[string]schema.Attribute{
 			"signature_algorithm": schema.StringAttribute{
 				Optional:    true,
