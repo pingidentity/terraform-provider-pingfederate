@@ -2,12 +2,12 @@
 page_title: "pingfederate_oauth_access_token_manager_settings Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to manage the general access token management settings.
 ---
 
 # pingfederate_oauth_access_token_manager_settings (Resource)
 
-
+Resource to manage the general access token management settings.
 
 ## Example Usage
 

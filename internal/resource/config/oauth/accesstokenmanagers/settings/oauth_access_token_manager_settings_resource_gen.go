@@ -50,6 +50,7 @@ type oauthAccessTokenManagerSettingsResourceModel struct {
 
 func (r *oauthAccessTokenManagerSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to manage the general access token management settings.",
 		Attributes: map[string]schema.Attribute{
 			"default_access_token_manager_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
