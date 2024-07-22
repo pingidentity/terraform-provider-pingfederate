@@ -72,13 +72,14 @@ type serverSettingsWsTrustStsSettingsIssuerCertificateResourceModel struct {
 
 func (r *serverSettingsWsTrustStsSettingsIssuerCertificateResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to create and manage certificates for WS-Trust STS settings.",
 		Attributes: map[string]schema.Attribute{
 			"crypto_provider": schema.StringAttribute{
 				Optional: true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
-				Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
+				Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is `true`. Options are `LOCAL` or `HSM`.",
 				Validators: []validator.String{
 					stringvalidator.OneOf(
 						"LOCAL",
@@ -100,7 +101,7 @@ func (r *serverSettingsWsTrustStsSettingsIssuerCertificateResource) Schema(ctx c
 			"certificate_id": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.",
+				Description: "The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),
