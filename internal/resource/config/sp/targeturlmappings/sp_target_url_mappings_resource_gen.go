@@ -64,6 +64,7 @@ func (r *spTargetUrlMappingsResource) Schema(ctx context.Context, req resource.S
 	itemsDefault, diags := types.ListValue(itemsElementType, []attr.Value{})
 	resp.Diagnostics.Append(diags...)
 	resp.Schema = schema.Schema{
+		Description: "Resource to manage the mappings between URLs and adapter or connection instances.",
 		Attributes: map[string]schema.Attribute{
 			"items": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
@@ -76,11 +77,11 @@ func (r *spTargetUrlMappingsResource) Schema(ctx context.Context, req resource.S
 								},
 							},
 							Optional:    true,
-							Description: "A reference to a resource.",
+							Description: "The adapter or connection instance mapped for this URL.",
 						},
 						"type": schema.StringAttribute{
 							Required:    true,
-							Description: "The URL mapping type",
+							Description: "The URL mapping type. Options are `SP_ADAPTER` or `SP_CONNECTION`.",
 							Validators: []validator.String{
 								stringvalidator.OneOf(
 									"SP_ADAPTER",

@@ -2,12 +2,12 @@
 page_title: "pingfederate_sp_target_url_mappings Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to manage the mappings between URLs and adapter or connection instances.
 ---
 
 # pingfederate_sp_target_url_mappings (Resource)
 
-
+Resource to manage the mappings between URLs and adapter or connection instances.
 
 ## Example Usage
 
@@ -37,12 +37,12 @@ resource "pingfederate_sp_target_url_mappings" "spTargetUrlMappings" {
 
 Required:
 
-- `type` (String) The URL mapping type
+- `type` (String) The URL mapping type. Options are `SP_ADAPTER` or `SP_CONNECTION`.
 - `url` (String) The URL that will be compared against the target URL. Use a wildcard (*) to match multiple URLs to the same adapter or connection instance.
 
 Optional:
 
-- `ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--items--ref))
+- `ref` (Attributes) The adapter or connection instance mapped for this URL. (see [below for nested schema](#nestedatt--items--ref))
 
 <a id="nestedatt--items--ref"></a>
 ### Nested Schema for `items.ref`
