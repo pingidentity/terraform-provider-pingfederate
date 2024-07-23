@@ -100,7 +100,10 @@ func TestAccOauthAuthServerSettings(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOauthAuthServerSettings(resourceName, initialResourceModel, false),
-				Check:  testAccCheckExpectedOauthAuthServerSettingsAttributes(initialResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedOauthAuthServerSettingsAttributes(initialResourceModel),
+					checkPf121ComputedAttrs(resourceName),
+				),
 			},
 			{
 				// Test updating some fields
@@ -149,6 +152,23 @@ func TestAccOauthAuthServerSettings(t *testing.T) {
 			},
 		},
 	})
+}
+
+func checkPf121ComputedAttrs(resourceName string) resource.TestCheckFunc {
+	if acctest.VersionAtLeast(version.PingFederate1210) {
+		return resource.ComposeTestCheckFunc(
+			resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "require_offline_access_scope_to_issue_refresh_tokens", "false"),
+			resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "offline_access_require_consent_prompt", "false"),
+			resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "refresh_rolling_interval_time_unit", "HOURS"),
+			resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "enable_cookieless_user_authorization_authentication_api", "false"),
+		)
+	}
+	return resource.ComposeTestCheckFunc(
+		resource.TestCheckNoResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "require_offline_access_scope_to_issue_refresh_tokens"),
+		resource.TestCheckNoResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "offline_access_require_consent_prompt"),
+		resource.TestCheckNoResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "refresh_rolling_interval_time_unit"),
+		resource.TestCheckNoResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "enable_cookieless_user_authorization_authentication_api"),
+	)
 }
 
 func testAccOauthAuthServerSettings(resourceName string, resourceModel oauthAuthServerSettingsResourceModel, includeAllAttributes bool) string {
@@ -307,6 +327,15 @@ func testAccOauthAuthServerSettings(resourceName string, resourceModel oauthAuth
 			optionalHcl += `
   bypass_authorization_for_approved_consents = true
   consent_lifetime_days = 5
+			`
+		}
+
+		if acctest.VersionAtLeast(version.PingFederate1210) {
+			optionalHcl += `
+  require_offline_access_scope_to_issue_refresh_tokens = true
+  offline_access_require_consent_prompt = true
+  refresh_rolling_interval_time_unit = "MINUTES"
+  enable_cookieless_user_authorization_authentication_api = true
 			`
 		}
 	}

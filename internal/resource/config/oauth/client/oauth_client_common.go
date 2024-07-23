@@ -8,9 +8,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 var (
@@ -105,6 +106,7 @@ type oauthClientModel struct {
 	PersistentGrantReuseType                                      types.String `tfsdk:"persistent_grant_reuse_type"`
 	PersistentGrantReuseGrantTypes                                types.Set    `tfsdk:"persistent_grant_reuse_grant_types"`
 	AllowAuthenticationApiInit                                    types.Bool   `tfsdk:"allow_authentication_api_init"`
+	EnableCookielessAuthenticationApi                             types.Bool   `tfsdk:"enable_cookieless_authentication_api"`
 	BypassApprovalPage                                            types.Bool   `tfsdk:"bypass_approval_page"`
 	RestrictScopes                                                types.Bool   `tfsdk:"restrict_scopes"`
 	RestrictedScopes                                              types.Set    `tfsdk:"restricted_scopes"`
@@ -136,6 +138,7 @@ type oauthClientModel struct {
 	RefreshRolling                                                types.String `tfsdk:"refresh_rolling"`
 	RefreshTokenRollingIntervalType                               types.String `tfsdk:"refresh_token_rolling_interval_type"`
 	RefreshTokenRollingInterval                                   types.Int64  `tfsdk:"refresh_token_rolling_interval"`
+	RefreshTokenRollingIntervalTimeUnit                           types.String `tfsdk:"refresh_token_rolling_interval_time_unit"`
 	RefreshTokenRollingGracePeriodType                            types.String `tfsdk:"refresh_token_rolling_grace_period_type"`
 	RefreshTokenRollingGracePeriod                                types.Int64  `tfsdk:"refresh_token_rolling_grace_period"`
 	ClientSecretRetentionPeriodType                               types.String `tfsdk:"client_secret_retention_period_type"`
@@ -148,9 +151,11 @@ type oauthClientModel struct {
 	JwtSecuredAuthorizationResponseModeEncryptionAlgorithm        types.String `tfsdk:"jwt_secured_authorization_response_mode_encryption_algorithm"`
 	JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm types.String `tfsdk:"jwt_secured_authorization_response_mode_content_encryption_algorithm"`
 	RequireDpop                                                   types.Bool   `tfsdk:"require_dpop"`
+	RequireOfflineAccessScopeToIssueRefreshTokens                 types.String `tfsdk:"require_offline_access_scope_to_issue_refresh_tokens"`
+	OfflineAccessRequireConsentPrompt                             types.String `tfsdk:"offline_access_require_consent_prompt"`
 }
 
-func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state, plan *oauthClientModel) diag.Diagnostics {
+func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state, plan *oauthClientModel, productVersion version.SupportedVersion) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.Id = types.StringValue(r.ClientId)
 	state.ClientId = types.StringValue(r.ClientId)
@@ -174,6 +179,19 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state,
 	state.RefreshRolling = types.StringPointerValue(r.RefreshRolling)
 	state.RefreshTokenRollingIntervalType = types.StringPointerValue(r.RefreshTokenRollingIntervalType)
 	state.RefreshTokenRollingInterval = types.Int64PointerValue(r.RefreshTokenRollingInterval)
+
+	// This attribute is returned as empty string when set to its default, and it only exists on PF 12.1+
+	compare, err := version.Compare(productVersion, version.PingFederate1210)
+	if err != nil {
+		diags.AddError("Failed to compare PingFederate versions", err.Error())
+	}
+	pfVersionAtLeast121 := compare >= 0
+	if r.GetRefreshTokenRollingIntervalTimeUnit() == "" && pfVersionAtLeast121 {
+		state.RefreshTokenRollingIntervalTimeUnit = types.StringValue("HOURS")
+	} else {
+		state.RefreshTokenRollingIntervalTimeUnit = types.StringPointerValue(r.RefreshTokenRollingIntervalTimeUnit)
+	}
+
 	state.PersistentGrantExpirationType = types.StringPointerValue(r.PersistentGrantExpirationType)
 	state.PersistentGrantExpirationTime = types.Int64PointerValue(r.PersistentGrantExpirationTime)
 	if r.GetPersistentGrantExpirationTimeUnit() == "" {
@@ -187,6 +205,7 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state,
 	state.PersistentGrantReuseType = types.StringPointerValue(r.PersistentGrantReuseType)
 	state.PersistentGrantReuseGrantTypes = internaltypes.GetStringSet(r.PersistentGrantReuseGrantTypes)
 	state.AllowAuthenticationApiInit = types.BoolPointerValue(r.AllowAuthenticationApiInit)
+	state.EnableCookielessAuthenticationApi = types.BoolPointerValue(r.EnableCookielessAuthenticationApi)
 	state.BypassApprovalPage = types.BoolPointerValue(r.BypassApprovalPage)
 	state.RestrictScopes = types.BoolPointerValue(r.RestrictScopes)
 	restrictedScopesToSet, respDiags := types.SetValueFrom(ctx, types.StringType, r.RestrictedScopes)
@@ -223,6 +242,8 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state,
 	state.JwtSecuredAuthorizationResponseModeEncryptionAlgorithm = types.StringPointerValue(r.JwtSecuredAuthorizationResponseModeEncryptionAlgorithm)
 	state.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm = types.StringPointerValue(r.JwtSecuredAuthorizationResponseModeContentEncryptionAlgorithm)
 	state.RequireDpop = types.BoolPointerValue(r.RequireDpop)
+	state.RequireOfflineAccessScopeToIssueRefreshTokens = types.StringPointerValue(r.RequireOfflineAccessScopeToIssueRefreshTokens)
+	state.OfflineAccessRequireConsentPrompt = types.StringPointerValue(r.OfflineAccessRequireConsentPrompt)
 
 	// state.OidcPolicy
 	oidcPolicyToState, respDiags := types.ObjectValueFrom(ctx, oidcPolicyAttrType, r.OidcPolicy)
