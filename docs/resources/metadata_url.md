@@ -34,7 +34,7 @@ resource "pingfederate_metadata_url" "metadataUrl" {
 
 ### Optional
 
-- `url_id` (String) The persistent, unique ID for the Metadata Url. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.
+- `url_id` (String) The persistent, unique ID for the Metadata Url. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.
 - `validate_signature` (Boolean) Perform Metadata Signature Validation. The default value is `true`.
 - `x509_file` (Attributes) Data of the Signature Verification Certificate for the Metadata URL. (see [below for nested schema](#nestedatt--x509_file))
 
