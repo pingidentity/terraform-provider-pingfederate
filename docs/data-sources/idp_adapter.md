@@ -73,7 +73,7 @@ Read-Only:
 Read-Only:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--attribute_mapping--attribute_contract_fulfillment))
-- `attribute_sources` (Attributes List) (see [below for nested schema](#nestedatt--attribute_mapping--attribute_sources))
+- `attribute_sources` (Attributes Set) (see [below for nested schema](#nestedatt--attribute_mapping--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--attribute_mapping--issuance_criteria))
 
 <a id="nestedatt--attribute_mapping--attribute_contract_fulfillment"></a>
@@ -254,8 +254,8 @@ Read-Only:
 
 Read-Only:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--attribute_mapping--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--attribute_mapping--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--attribute_mapping--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--attribute_mapping--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--attribute_mapping--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `attribute_mapping.issuance_criteria.conditional_criteria`

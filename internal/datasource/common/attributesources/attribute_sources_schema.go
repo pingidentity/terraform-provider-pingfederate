@@ -138,8 +138,8 @@ func LdapAttributeSourceDataSourceSchemaAttributes() map[string]schema.Attribute
 	return ldapAttributeSourceDataSourceSchema
 }
 
-func ToDataSourceSchema() schema.ListNestedAttribute {
-	return schema.ListNestedAttribute{
+func ToDataSourceSchema() schema.SetNestedAttribute {
+	return schema.SetNestedAttribute{
 		Optional: false,
 		Computed: true,
 		NestedObject: schema.NestedAttributeObject{

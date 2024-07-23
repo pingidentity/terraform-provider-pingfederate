@@ -11,7 +11,7 @@ func ToDataSourceSchema() schema.SingleNestedAttribute {
 		Optional:    false,
 		Computed:    true,
 		Attributes: map[string]schema.Attribute{
-			"conditional_criteria": schema.ListNestedAttribute{
+			"conditional_criteria": schema.SetNestedAttribute{
 				Description: "A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue.",
 				Optional:    false,
 				Computed:    true,
@@ -41,7 +41,7 @@ func ToDataSourceSchema() schema.SingleNestedAttribute {
 					},
 				},
 			},
-			"expression_criteria": schema.ListNestedAttribute{
+			"expression_criteria": schema.SetNestedAttribute{
 				Description: "A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue.",
 				Optional:    false,
 				Computed:    true,
