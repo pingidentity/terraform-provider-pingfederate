@@ -2,6 +2,7 @@ package attributecontractfulfillment
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
@@ -22,7 +23,8 @@ func ToSchemaWithSuffix(required, computed, fullyComputed bool, descriptionSuffi
 				"source": sourcetypeidkey.ToSchema(fullyComputed),
 				"value": schema.StringAttribute{
 					Optional:    true,
-					Computed:    fullyComputed,
+					Computed:    true,
+					Default:     stringdefault.StaticString(""),
 					Description: "The value for this attribute.",
 				},
 			},
