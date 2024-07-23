@@ -64,13 +64,13 @@ func (r *serverSettingsWsTrustStsSettingsResource) Schema(ctx context.Context, r
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
-				Description: "Require the use of HTTP Basic Authentication to access WS-Trust STS endpoints. Requires users be populated.",
+				Description: "Require the use of HTTP Basic Authentication to access WS-Trust STS endpoints. Requires users be populated. Default value is `false`.",
 			},
 			"client_cert_authn_enabled": schema.BoolAttribute{
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
-				Description: "Require the use of Client Cert Authentication to access WS-Trust STS endpoints. Requires either `restrict_by_subject_dn` and/or `restrict_by_issuer_cert` be `true`.",
+				Description: "Require the use of Client Cert Authentication to access WS-Trust STS endpoints. Requires either `restrict_by_subject_dn` and/or `restrict_by_issuer_cert` be `true`. Default value is `false`.",
 			},
 			"issuer_certs": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
@@ -90,13 +90,13 @@ func (r *serverSettingsWsTrustStsSettingsResource) Schema(ctx context.Context, r
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
-				Description: "Restrict Access by Issuer Certificate. Ignored if `client_cert_authn_enabled` is `false`.",
+				Description: "Restrict Access by Issuer Certificate. Ignored if `client_cert_authn_enabled` is `false`. Default value is `false`.",
 			},
 			"restrict_by_subject_dn": schema.BoolAttribute{
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
-				Description: "Restrict Access by Subject DN. Ignored if `client_cert_authn_enabled` is `false`.",
+				Description: "Restrict Access by Subject DN. Ignored if `client_cert_authn_enabled` is `false`. Default value is `false`.",
 			},
 			"subject_dns": schema.ListAttribute{
 				ElementType: types.StringType,
@@ -111,7 +111,7 @@ func (r *serverSettingsWsTrustStsSettingsResource) Schema(ctx context.Context, r
 						"password": schema.StringAttribute{
 							Optional:    true,
 							Sensitive:   true,
-							Description: "User password.  To update the password, specify the plaintext value in this field.  This field will not be populated for GET requests.",
+							Description: "User password.",
 						},
 						"username": schema.StringAttribute{
 							Optional:    true,
