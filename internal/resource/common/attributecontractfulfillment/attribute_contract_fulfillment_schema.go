@@ -2,7 +2,9 @@ package attributecontractfulfillment
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 )
 
 func ToSchema(required, computed, fullyComputed bool) schema.MapNestedAttribute {
@@ -24,6 +26,9 @@ func ToSchemaWithSuffix(required, computed, fullyComputed bool, descriptionSuffi
 					Description: "The value for this attribute.",
 				},
 			},
+		},
+		Validators: []validator.Map{
+			configvalidators.ValidAttributeContractFulfillment(),
 		},
 	}
 }
