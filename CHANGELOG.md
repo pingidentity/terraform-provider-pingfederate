@@ -1,6 +1,7 @@
 # v0.13.0 (Unreleased)
 ### Resources
 * **New Resource:** `pingfederate_session_authentication_policy` ([#261]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/261)))
+* **New Resource:** `pingfederate_kerberos_realm_settings` ([#266]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/266)))
 
 # v0.12.0 June 27th, 2024
 ### BREAKING CHANGES
