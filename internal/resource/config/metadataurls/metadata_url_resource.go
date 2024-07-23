@@ -13,7 +13,7 @@ import (
 )
 
 func (r *metadataUrlResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	// Handle drift detection for the x509_file.file_data valud changing outside of terraform
+	// Handle drift detection for the x509_file.file_data value changing outside of terraform
 	if !req.Plan.Raw.IsNull() && !req.State.Raw.IsNull() {
 		var plan, state metadataUrlResourceModel
 		req.Plan.Get(ctx, &plan)

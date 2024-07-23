@@ -162,6 +162,9 @@ func (r *metadataUrlResource) Schema(ctx context.Context, req resource.SchemaReq
 					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),
 				},
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"validate_signature": schema.BoolAttribute{
 				Optional:    true,
@@ -199,6 +202,7 @@ func (r *metadataUrlResource) Schema(ctx context.Context, req resource.SchemaReq
 						},
 						Validators: []validator.String{
 							configvalidators.LowercaseId(),
+							stringvalidator.LengthAtLeast(1),
 						},
 					},
 				},
