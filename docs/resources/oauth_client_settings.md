@@ -75,8 +75,8 @@ Required:
 
 Optional:
 
-- `description` (String) The metadata description.
-- `multi_valued` (Boolean) If the field should allow multiple values.
+- `description` (String) The metadata description. Defaults to an empty string.
+- `multi_valued` (Boolean) If the field should allow multiple values. Default value is `false`.
 
 
 <a id="nestedatt--dynamic_client_registration"></a>
@@ -84,12 +84,12 @@ Optional:
 
 Optional:
 
-- `allow_client_delete` (Boolean) Allow client deletion from dynamic client management.
+- `allow_client_delete` (Boolean) Allow client deletion from dynamic client management. Default value is `false`.
 - `allowed_authorization_detail_types` (List of String) The authorization detail types to allow.
 - `allowed_exclusive_scopes` (List of String) The exclusive scopes to allow.
-- `bypass_activation_code_confirmation_override` (Boolean) Indicates if the Activation Code Confirmation page should be bypassed if 'verification_url_complete' is used by the end user to authorize a device.
+- `bypass_activation_code_confirmation_override` (Boolean) Indicates if the Activation Code Confirmation page should be bypassed if 'verification_url_complete' is used by the end user to authorize a device. Default value is `false`.
 - `ciba_polling_interval` (Number) The minimum amount of time in seconds that the Client must wait between polling requests to the token endpoint. The default is `3` seconds.
-- `ciba_require_signed_requests` (Boolean) Determines whether CIBA signed requests are required for this client.
+- `ciba_require_signed_requests` (Boolean) Determines whether CIBA signed requests are required for this client. Default value is `false`.
 - `client_cert_issuer_ref` (Attributes) Client TLS Certificate Issuer DN. (see [below for nested schema](#nestedatt--dynamic_client_registration--client_cert_issuer_ref))
 - `client_cert_issuer_type` (String) Client TLS Certificate Issuer Type. Options are `NONE`, `TRUST_ANY`, `CERTIFICATE`. Defaults to `NONE`.
 - `client_secret_retention_period_override` (Number) The length of time in minutes that client secrets will be retained as secondary secrets after secret change. The default value is `0`, which will disable secondary client secret retention. This value will override the `client_secret_retention_period` value on the Authorization Server Settings.
@@ -97,8 +97,8 @@ Optional:
 - `default_access_token_manager_ref` (Attributes) The default access token manager for this client. (see [below for nested schema](#nestedatt--dynamic_client_registration--default_access_token_manager_ref))
 - `device_flow_setting_type` (String) Allows an administrator to override the Device Authorization Settings set globally for the OAuth AS. Defaults to `SERVER_DEFAULT`. Options are `SERVER_DEFAULT`, `OVERRIDE_SERVER_DEFAULT`.
 - `device_polling_interval_override` (Number) The amount of time client should wait between polling requests, in seconds.
-- `disable_registration_access_tokens` (Boolean) Disable registration access tokens. Local standards may mandate different registration access token requirements. If applicable, implement custom validation and enforcement rules using the DynamicClientRegistrationPlugin interface from the PingFederate SDK, configure the client registration policies (`policy_refs`), and set this property (`disable_registration_access_tokens`) to `true`. CAUTION: When the `disable_registration_access_tokens` property is set to `true`, all clients, not just the ones created using the Dynamic Client Registration protocol, are vulnerable to unrestricted retrievals, updates (including modifications to the client authentication scheme and redirect URIs), and deletes at the /as/clients.oauth2 endpoint unless one or more client registration policies are in place to protect against unauthorized attempts.
-- `enforce_replay_prevention` (Boolean) Enforce replay prevention.
+- `disable_registration_access_tokens` (Boolean) Disable registration access tokens. Local standards may mandate different registration access token requirements. If applicable, implement custom validation and enforcement rules using the DynamicClientRegistrationPlugin interface from the PingFederate SDK, configure the client registration policies (`policy_refs`), and set this property (`disable_registration_access_tokens`) to `true`. CAUTION: When the `disable_registration_access_tokens` property is set to `true`, all clients, not just the ones created using the Dynamic Client Registration protocol, are vulnerable to unrestricted retrievals, updates (including modifications to the client authentication scheme and redirect URIs), and deletes at the /as/clients.oauth2 endpoint unless one or more client registration policies are in place to protect against unauthorized attempts. Default value is `false`.
+- `enforce_replay_prevention` (Boolean) Enforce replay prevention. Default value is `false`.
 - `initial_access_token_scope` (String) The initial access token to prevent unwanted client registrations.
 - `offline_access_require_consent_prompt` (String) Determines whether offline_access requires the prompt parameter value to be set to 'consent' or not. The value will be reset to default if the `require_offline_access_scope_to_issue_refresh_tokens` attribute is set to `SERVER_DEFAULT` or `false`. `SERVER_DEFAULT` is the default value. Options are `SERVER_DEFAULT`, `NO`, `YES`.
 - `oidc_policy` (Attributes) Open ID Connect Policy settings. This is included in the message only when OIDC is enabled. (see [below for nested schema](#nestedatt--dynamic_client_registration--oidc_policy))
@@ -119,14 +119,14 @@ Optional:
 - `request_policy_ref` (Attributes) The CIBA request policy. (see [below for nested schema](#nestedatt--dynamic_client_registration--request_policy_ref))
 - `require_jwt_secured_authorization_response_mode` (Boolean) Determines whether JWT Secured authorization response mode is required when initiating an authorization request. The default is `false`.
 - `require_offline_access_scope_to_issue_refresh_tokens` (String) Determines whether offline_access scope is required to issue refresh tokens or not. 'SERVER_DEFAULT' is the default value. Options are `SERVER_DEFAULT`, `NO`, `YES`.
-- `require_proof_key_for_code_exchange` (Boolean) Determines whether Proof Key for Code Exchange (PKCE) is required for the dynamically created client.
-- `require_signed_requests` (Boolean) Require signed requests.
-- `restrict_common_scopes` (Boolean) Restrict common scopes.
+- `require_proof_key_for_code_exchange` (Boolean) Determines whether Proof Key for Code Exchange (PKCE) is required for the dynamically created client. Default value is `false`.
+- `require_signed_requests` (Boolean) Require signed requests. Default value is `false`.
+- `restrict_common_scopes` (Boolean) Restrict common scopes. Default value is `false`.
 - `restrict_to_default_access_token_manager` (Boolean) Determines whether the client is restricted to using only its default access token manager. The default is `false`.
 - `restricted_common_scopes` (List of String) The common scopes to restrict.
-- `retain_client_secret` (Boolean) Temporarily retain the old client secret on client secret change.
-- `rotate_client_secret` (Boolean) Rotate registration access token on dynamic client management requests.
-- `rotate_registration_access_token` (Boolean) Rotate client secret on dynamic client management requests.
+- `retain_client_secret` (Boolean) Temporarily retain the old client secret on client secret change. Default value is `false`.
+- `rotate_client_secret` (Boolean) Rotate registration access token on dynamic client management requests. Default value is `false`.
+- `rotate_registration_access_token` (Boolean) Rotate client secret on dynamic client management requests. Default value is `false`.
 - `token_exchange_processor_policy_ref` (Attributes) The Token Exchange Processor policy. (see [below for nested schema](#nestedatt--dynamic_client_registration--token_exchange_processor_policy_ref))
 - `user_authorization_url_override` (String) The URL is used as `verification_url` and `verification_url_complete` values in a Device Authorization request.
 

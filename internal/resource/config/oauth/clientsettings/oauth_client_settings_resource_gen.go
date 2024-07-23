@@ -67,13 +67,13 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 							Optional:    true,
 							Computed:    true,
 							Default:     stringdefault.StaticString(""),
-							Description: "The metadata description.",
+							Description: "The metadata description. Defaults to an empty string.",
 						},
 						"multi_valued": schema.BoolAttribute{
 							Optional:    true,
 							Computed:    true,
 							Default:     booldefault.StaticBool(false),
-							Description: "If the field should allow multiple values.",
+							Description: "If the field should allow multiple values. Default value is `false`.",
 						},
 						"parameter": schema.StringAttribute{
 							Required:    true,
@@ -92,7 +92,7 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
-						Description: "Allow client deletion from dynamic client management.",
+						Description: "Allow client deletion from dynamic client management. Default value is `false`.",
 					},
 					"allowed_authorization_detail_types": schema.ListAttribute{
 						ElementType: types.StringType,
@@ -112,7 +112,7 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
-						Description: "Indicates if the Activation Code Confirmation page should be bypassed if 'verification_url_complete' is used by the end user to authorize a device.",
+						Description: "Indicates if the Activation Code Confirmation page should be bypassed if 'verification_url_complete' is used by the end user to authorize a device. Default value is `false`.",
 					},
 					"ciba_polling_interval": schema.Int64Attribute{
 						Optional:    true,
@@ -124,7 +124,7 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
-						Description: "Determines whether CIBA signed requests are required for this client.",
+						Description: "Determines whether CIBA signed requests are required for this client. Default value is `false`.",
 					},
 					"client_cert_issuer_ref": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
@@ -195,13 +195,13 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
-						Description: "Disable registration access tokens. Local standards may mandate different registration access token requirements. If applicable, implement custom validation and enforcement rules using the DynamicClientRegistrationPlugin interface from the PingFederate SDK, configure the client registration policies (`policy_refs`), and set this property (`disable_registration_access_tokens`) to `true`. CAUTION: When the `disable_registration_access_tokens` property is set to `true`, all clients, not just the ones created using the Dynamic Client Registration protocol, are vulnerable to unrestricted retrievals, updates (including modifications to the client authentication scheme and redirect URIs), and deletes at the /as/clients.oauth2 endpoint unless one or more client registration policies are in place to protect against unauthorized attempts.",
+						Description: "Disable registration access tokens. Local standards may mandate different registration access token requirements. If applicable, implement custom validation and enforcement rules using the DynamicClientRegistrationPlugin interface from the PingFederate SDK, configure the client registration policies (`policy_refs`), and set this property (`disable_registration_access_tokens`) to `true`. CAUTION: When the `disable_registration_access_tokens` property is set to `true`, all clients, not just the ones created using the Dynamic Client Registration protocol, are vulnerable to unrestricted retrievals, updates (including modifications to the client authentication scheme and redirect URIs), and deletes at the /as/clients.oauth2 endpoint unless one or more client registration policies are in place to protect against unauthorized attempts. Default value is `false`.",
 					},
 					"enforce_replay_prevention": schema.BoolAttribute{
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
-						Description: "Enforce replay prevention.",
+						Description: "Enforce replay prevention. Default value is `false`.",
 					},
 					"initial_access_token_scope": schema.StringAttribute{
 						Optional:    true,
@@ -453,19 +453,19 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
-						Description: "Determines whether Proof Key for Code Exchange (PKCE) is required for the dynamically created client.",
+						Description: "Determines whether Proof Key for Code Exchange (PKCE) is required for the dynamically created client. Default value is `false`.",
 					},
 					"require_signed_requests": schema.BoolAttribute{
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
-						Description: "Require signed requests.",
+						Description: "Require signed requests. Default value is `false`.",
 					},
 					"restrict_common_scopes": schema.BoolAttribute{
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
-						Description: "Restrict common scopes.",
+						Description: "Restrict common scopes. Default value is `false`.",
 					},
 					"restrict_to_default_access_token_manager": schema.BoolAttribute{
 						Optional:    true,
@@ -484,19 +484,19 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
-						Description: "Temporarily retain the old client secret on client secret change.",
+						Description: "Temporarily retain the old client secret on client secret change. Default value is `false`.",
 					},
 					"rotate_client_secret": schema.BoolAttribute{
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
-						Description: "Rotate registration access token on dynamic client management requests.",
+						Description: "Rotate registration access token on dynamic client management requests. Default value is `false`.",
 					},
 					"rotate_registration_access_token": schema.BoolAttribute{
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
-						Description: "Rotate client secret on dynamic client management requests.",
+						Description: "Rotate client secret on dynamic client management requests. Default value is `false`.",
 					},
 					"token_exchange_processor_policy_ref": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
