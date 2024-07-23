@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
@@ -21,7 +22,9 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -164,9 +167,26 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Optional:    true,
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
-					"attribute_sources":              attributesources.ToSchema(0, false),
-					"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(false, true, true),
-					"issuance_criteria":              issuancecriteria.ToSchema(),
+					"attribute_sources": attributesources.ToSchema(0, false),
+					"attribute_contract_fulfillment": schema.MapNestedAttribute{
+						Description: "Defines how an attribute in an attribute contract should be populated.",
+						Optional:    true,
+						Computed:    true,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"source": sourcetypeidkey.ToSchema(true),
+								"value": schema.StringAttribute{
+									Optional:    true,
+									Computed:    true,
+									Description: "The value for this attribute.",
+								},
+							},
+						},
+						Validators: []validator.Map{
+							configvalidators.ValidAttributeContractFulfillment(),
+						},
+					},
+					"issuance_criteria": issuancecriteria.ToSchema(),
 				},
 			},
 		},
