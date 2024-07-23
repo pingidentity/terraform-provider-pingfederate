@@ -157,13 +157,14 @@ func (r *metadataUrlResource) Schema(ctx context.Context, req resource.SchemaReq
 			"url_id": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "The persistent, unique ID for the Metadata Url. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.",
+				Description: "The persistent, unique ID for the Metadata Url. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),
 				},
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
+					configvalidators.PingFederateId(),
 				},
 			},
 			"validate_signature": schema.BoolAttribute{
