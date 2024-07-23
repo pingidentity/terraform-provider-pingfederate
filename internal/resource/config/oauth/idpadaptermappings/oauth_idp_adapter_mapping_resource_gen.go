@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
@@ -52,7 +52,7 @@ func (r *oauthIdpAdapterMappingResource) Configure(_ context.Context, req resour
 
 type oauthIdpAdapterMappingResourceModel struct {
 	AttributeContractFulfillment types.Map    `tfsdk:"attribute_contract_fulfillment"`
-	AttributeSources             types.List   `tfsdk:"attribute_sources"`
+	AttributeSources             types.Set    `tfsdk:"attribute_sources"`
 	IdpAdapterRef                types.Object `tfsdk:"idp_adapter_ref"`
 	IssuanceCriteria             types.Object `tfsdk:"issuance_criteria"`
 	MappingId                    types.String `tfsdk:"mapping_id"`
@@ -62,12 +62,15 @@ func (r *oauthIdpAdapterMappingResource) Schema(ctx context.Context, req resourc
 	resp.Schema = schema.Schema{
 		Description: "Resource to create and manage IdP adapter mappings.",
 		Attributes: map[string]schema.Attribute{
-			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
+			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchemaWithSuffix(true, false, false, " Map values `USER_NAME` and `USER_KEY` are required.  If extended attributes are configured on the persistent grant contract (for example, using the `pingfederate_oauth_auth_server_settings` resource), these must also be configured as map keys."),
 			"attribute_sources":              attributesources.ToSchema(0, false),
 			"idp_adapter_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
-						Required:    true,
+						Computed: true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
 						Description: "The ID of the resource.",
 					},
 				},

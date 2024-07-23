@@ -55,6 +55,24 @@ resource "pingfederate_idp_adapter" "http_basic" {
   }
 }
 
+resource "pingfederate_oauth_auth_server_settings" "example" {
+  authorization_code_entropy = 20
+  authorization_code_timeout = 50
+  refresh_token_length       = 40
+  refresh_rolling_interval   = 1
+
+  persistent_grant_contract = {
+    extended_attributes = [
+      {
+        name = "Persistent Grant Attribute 1"
+      },
+      {
+        name = "Persistent Grant Attribute 2"
+      },
+    ]
+  }
+}
+
 resource "pingfederate_oauth_idp_adapter_mapping" "oauthIdpAdapterMapping" {
   mapping_id = pingfederate_idp_adapter.http_basic.id
 
@@ -71,19 +89,21 @@ resource "pingfederate_oauth_idp_adapter_mapping" "oauthIdpAdapterMapping" {
       }
       value = "username"
     }
+    "Persistent Grant Attribute 1" = {
+      source = {
+        type = "ADAPTER"
+      }
+      value = "username"
+    }
+    "Persistent Grant Attribute 2" = {
+      source = {
+        type = "ADAPTER"
+      }
+      value = "username"
+    }
   }
 
-  issuance_criteria = {
-    conditional_criteria = [
-      {
-        attribute_name = "OAuthAuthorizationDetails"
-        condition      = "EQUALS"
-        error_result   = "Invalid Authorization Details"
-        source = {
-          type = "CONTEXT"
-        }
-        value = "Auth Details"
-      },
-    ]
-  }
+  depends_on = [
+    pingfederate_oauth_auth_server_settings.example
+  ]
 }

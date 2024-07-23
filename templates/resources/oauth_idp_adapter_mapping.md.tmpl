@@ -7,11 +7,17 @@ description: |-
 
 # {{.Name}} ({{.Type}})
 
+~> Only one contract mapping should be configured per identity provider (the `pingfederate_idp_adapter` resource). Otherwise, configuration conflicts will occur.
+
 {{ .Description | trimspace }}
 
 ## Example Usage
 
 {{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource.tf") }}
+
+## Example Usage - with persistent grant extended attributes
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-extended-attributes.tf") }}
 
 {{ .SchemaMarkdown | trimspace }}
 

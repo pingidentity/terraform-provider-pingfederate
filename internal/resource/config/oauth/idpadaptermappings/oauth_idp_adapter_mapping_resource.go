@@ -3,26 +3,35 @@ package oauthidpadaptermappings
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
+	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
-func (r *oauthIdpAdapterMappingResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	var plan *oauthIdpAdapterMappingResourceModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	if plan == nil {
+func (r *oauthIdpAdapterMappingResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var model oauthIdpAdapterMappingResourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
+
+	if resp.Diagnostics.HasError() {
 		return
 	}
-	// The idp adapter object will be configured based on the provided mapping_id
-	mappingId := plan.MappingId.ValueString()
-	idpAdapterRefValue, diags := types.ObjectValue(map[string]attr.Type{
-		"id": types.StringType,
-	}, map[string]attr.Value{
-		"id": types.StringValue(mappingId),
-	})
-	resp.Diagnostics.Append(diags...)
 
-	plan.IdpAdapterRef = idpAdapterRefValue
-	resp.Plan.Set(ctx, plan)
+	if internaltypes.IsDefined(model.AttributeContractFulfillment) {
+		userKeyFound := false
+		userNameFound := false
+		for key := range model.AttributeContractFulfillment.Elements() {
+			if key == "USER_KEY" {
+				userKeyFound = true
+			}
+			if key == "USER_NAME" {
+				userNameFound = true
+			}
+		}
+
+		if !userKeyFound {
+			resp.Diagnostics.AddError("attribute_contract_fulfillment.USER_KEY is required", "")
+		}
+		if !userNameFound {
+			resp.Diagnostics.AddError("attribute_contract_fulfillment.USER_NAME is required", "")
+		}
+	}
 }
