@@ -6,7 +6,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 )
 
 func (state *kerberosRealmSettingsResourceModel) readClientResponse(response *client.KerberosRealmsSettings, checkForIgnoredRequestAttrs bool) diag.Diagnostics {
