@@ -6,6 +6,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -78,7 +79,7 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) Schema(ctx context.Context,
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
-				Description: "Allow unsigned login hint token.",
+				Description: "Allow unsigned login hint token. Default value is `false`.",
 			},
 			"alternative_login_hint_token_issuers": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
@@ -180,16 +181,19 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) Schema(ctx context.Context,
 					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),
 				},
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"require_token_for_identity_hint": schema.BoolAttribute{
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
-				Description: "Require token for identity hint.",
+				Description: "Require token for identity hint. Default value is `false`.",
 			},
 			"transaction_lifetime": schema.Int64Attribute{
 				Required:    true,
-				Description: "The transaction lifetime in seconds.",
+				Description: "The transaction lifetime in seconds. Must be between 1 and 3600.",
 				Validators: []validator.Int64{
 					int64validator.Between(1, 3600),
 				},

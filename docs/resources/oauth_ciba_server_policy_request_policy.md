@@ -56,15 +56,15 @@ resource "pingfederate_oauth_ciba_server_policy_request_policy" "requestPolicy" 
 - `identity_hint_mapping` (Attributes) Identity hint contract to request policy mapping. (see [below for nested schema](#nestedatt--identity_hint_mapping))
 - `name` (String) The request policy name. Name is unique.
 - `policy_id` (String) The request policy ID. ID is unique.
-- `transaction_lifetime` (Number) The transaction lifetime in seconds.
+- `transaction_lifetime` (Number) The transaction lifetime in seconds. Must be between 1 and 3600.
 
 ### Optional
 
-- `allow_unsigned_login_hint_token` (Boolean) Allow unsigned login hint token.
+- `allow_unsigned_login_hint_token` (Boolean) Allow unsigned login hint token. Default value is `false`.
 - `alternative_login_hint_token_issuers` (Attributes List) Alternative login hint token issuers. (see [below for nested schema](#nestedatt--alternative_login_hint_token_issuers))
 - `identity_hint_contract` (Attributes) Identity hint attribute contract. (see [below for nested schema](#nestedatt--identity_hint_contract))
 - `identity_hint_contract_fulfillment` (Attributes) Identity hint attribute contract fulfillment. (see [below for nested schema](#nestedatt--identity_hint_contract_fulfillment))
-- `require_token_for_identity_hint` (Boolean) Require token for identity hint.
+- `require_token_for_identity_hint` (Boolean) Require token for identity hint. Default value is `false`.
 - `user_code_pcv_ref` (Attributes) Reference to the associated password credential validator. (see [below for nested schema](#nestedatt--user_code_pcv_ref))
 
 <a id="nestedatt--authenticator_ref"></a>
