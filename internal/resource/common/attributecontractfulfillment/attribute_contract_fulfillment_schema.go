@@ -6,8 +6,12 @@ import (
 )
 
 func ToSchema(required, computed, fullyComputed bool) schema.MapNestedAttribute {
+	return ToSchemaWithSuffix(required, computed, fullyComputed, "")
+}
+
+func ToSchemaWithSuffix(required, computed, fullyComputed bool, descriptionSuffix string) schema.MapNestedAttribute {
 	return schema.MapNestedAttribute{
-		Description: "Defines how an attribute in an attribute contract should be populated.",
+		Description: "Defines how an attribute in an attribute contract should be populated." + descriptionSuffix,
 		Required:    required,
 		Optional:    !required,
 		Computed:    computed,
