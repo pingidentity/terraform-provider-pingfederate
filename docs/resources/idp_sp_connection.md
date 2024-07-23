@@ -388,7 +388,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--attribute_query--attribute_sources))
+- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--attribute_query--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--attribute_query--issuance_criteria))
 - `policy` (Attributes) The attribute query profile's security policy. (see [below for nested schema](#nestedatt--attribute_query--policy))
 
@@ -436,7 +436,7 @@ Optional:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--attribute_query--attribute_sources--custom_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--attribute_query--attribute_sources--custom_attribute_source--filter_fields))
+- `filter_fields` (Attributes Set) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--attribute_query--attribute_sources--custom_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
@@ -560,7 +560,7 @@ Optional:
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
-- `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
+- `search_attributes` (Set of String) A list of LDAP attributes returned from search and available for mapping.
 
 <a id="nestedatt--attribute_query--attribute_sources--ldap_attribute_source--data_store_ref"></a>
 ### Nested Schema for `attribute_query.attribute_sources.ldap_attribute_source.data_store_ref`
@@ -609,8 +609,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--attribute_query--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--attribute_query--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--attribute_query--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--attribute_query--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--attribute_query--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `attribute_query.issuance_criteria.conditional_criteria`
@@ -1192,7 +1192,7 @@ Optional:
 
 - `abort_sso_transaction_as_fail_safe` (Boolean) If set to true, SSO transaction will be aborted as a fail-safe when the data-store's attribute mappings fail to complete the attribute contract. Otherwise, the attribute contract with default values is used. By default, this value is false.
 - `adapter_override_settings` (Attributes) (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings))
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources))
+- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources))
 - `idp_adapter_ref` (Attributes) Reference to the associated IdP adapter. Note: This is ignored if adapter overrides for this mapping exists. In this case, the override's parent adapter reference is used. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--idp_adapter_ref))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--issuance_criteria))
 - `restrict_virtual_entity_ids` (Boolean) Restricts this mapping to specific virtual entity IDs.
@@ -1388,7 +1388,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources))
+- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--issuance_criteria))
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_contract_fulfillment"></a>
@@ -1435,7 +1435,7 @@ Optional:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes Set) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
@@ -1559,7 +1559,7 @@ Optional:
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
-- `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
+- `search_attributes` (Set of String) A list of LDAP attributes returned from search and available for mapping.
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--attribute_sources--ldap_attribute_source--data_store_ref"></a>
 ### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.attribute_sources.ldap_attribute_source.data_store_ref`
@@ -1608,8 +1608,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.parent_ref.issuance_criteria.conditional_criteria`
@@ -1681,7 +1681,7 @@ Optional:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes Set) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
@@ -1805,7 +1805,7 @@ Optional:
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
-- `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
+- `search_attributes` (Set of String) A list of LDAP attributes returned from search and available for mapping.
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--attribute_sources--ldap_attribute_source--data_store_ref"></a>
 ### Nested Schema for `sp_browser_sso.adapter_mappings.attribute_sources.ldap_attribute_source.data_store_ref`
@@ -1862,8 +1862,8 @@ Required:
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `sp_browser_sso.adapter_mappings.issuance_criteria.conditional_criteria`
@@ -1995,7 +1995,7 @@ Required:
 Optional:
 
 - `abort_sso_transaction_as_fail_safe` (Boolean) If set to true, SSO transaction will be aborted as a fail-safe when the data-store's attribute mappings fail to complete the attribute contract. Otherwise, the attribute contract with default values is used. By default, this value is false.
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources))
+- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--issuance_criteria))
 - `restrict_virtual_entity_ids` (Boolean) Restricts this mapping to specific virtual entity IDs.
 - `restricted_virtual_entity_ids` (List of String) The list of virtual server IDs that this mapping is restricted to.
@@ -2052,7 +2052,7 @@ Optional:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes Set) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
@@ -2176,7 +2176,7 @@ Optional:
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
-- `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
+- `search_attributes` (Set of String) A list of LDAP attributes returned from search and available for mapping.
 
 <a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_sources--ldap_attribute_source--data_store_ref"></a>
 ### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_sources.ldap_attribute_source.data_store_ref`
@@ -2225,8 +2225,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.issuance_criteria.conditional_criteria`
@@ -2378,7 +2378,7 @@ Required:
 
 Optional:
 
-- `attribute_sources` (Attributes List) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources))
+- `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--issuance_criteria))
 - `restricted_virtual_entity_ids` (List of String) The list of virtual server IDs that this mapping is restricted to.
 
@@ -2434,7 +2434,7 @@ Optional:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--attribute_contract_fulfillment))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--filter_fields))
+- `filter_fields` (Attributes Set) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 
 Read-Only:
@@ -2558,7 +2558,7 @@ Optional:
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `member_of_nested_group` (Boolean) Set this to true to return transitive group memberships for the 'memberOf' attribute.  This only applies for Active Directory data sources.  All other data sources will be set to false.
-- `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
+- `search_attributes` (Set of String) A list of LDAP attributes returned from search and available for mapping.
 
 <a id="nestedatt--ws_trust--token_processor_mappings--attribute_sources--ldap_attribute_source--data_store_ref"></a>
 ### Nested Schema for `ws_trust.token_processor_mappings.attribute_sources.ldap_attribute_source.data_store_ref`
@@ -2607,8 +2607,8 @@ Optional:
 
 Optional:
 
-- `conditional_criteria` (Attributes List) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--issuance_criteria--conditional_criteria))
-- `expression_criteria` (Attributes List) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--issuance_criteria--expression_criteria))
+- `conditional_criteria` (Attributes Set) A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--issuance_criteria--conditional_criteria))
+- `expression_criteria` (Attributes Set) A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--issuance_criteria--expression_criteria))
 
 <a id="nestedatt--ws_trust--token_processor_mappings--issuance_criteria--conditional_criteria"></a>
 ### Nested Schema for `ws_trust.token_processor_mappings.issuance_criteria.conditional_criteria`
