@@ -5,7 +5,7 @@ import (
 	"errors"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -26,7 +26,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 		}
 		attributeSources, ok := apcMappingPolicyAction.(types.Object).Attributes()["attribute_mapping"].(types.Object).Attributes()["attribute_sources"]
 		if ok {
-			attributeSourceStruct, err := attributesources.ClientStruct(attributeSources.(types.List))
+			attributeSourceStruct, err := attributesources.ClientStruct(attributeSources.(types.Set))
 			if err != nil {
 				return nil, err
 			}
@@ -80,7 +80,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 
 		attributeSources, ok := fragmentPolicyAction.(types.Object).Attributes()["fragment_mapping"].(types.Object).Attributes()["attribute_sources"]
 		if ok {
-			attributeSourceStruct, err := attributesources.ClientStruct(attributeSources.(types.List))
+			attributeSourceStruct, err := attributesources.ClientStruct(attributeSources.(types.Set))
 			if err != nil {
 				return nil, err
 			}
@@ -97,7 +97,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 		}
 		outboundAttributeMappingAttributeSources, ok := localIdentityMappingPolicyAction.(types.Object).Attributes()["outbound_attribute_mapping"].(types.Object).Attributes()["attribute_sources"]
 		if ok {
-			attributeSourceStruct, err := attributesources.ClientStruct(outboundAttributeMappingAttributeSources.(types.List))
+			attributeSourceStruct, err := attributesources.ClientStruct(outboundAttributeMappingAttributeSources.(types.Set))
 			if err != nil {
 				return nil, err
 			}
@@ -106,7 +106,7 @@ func ClientStruct(object types.Object) (*client.PolicyActionAggregation, error) 
 
 		inboundAttributeMappingAttributeSources, ok := localIdentityMappingPolicyAction.(types.Object).Attributes()["inbound_mapping"].(types.Object).Attributes()["attribute_sources"]
 		if ok {
-			attributeSourceStruct, err := attributesources.ClientStruct(inboundAttributeMappingAttributeSources.(types.List))
+			attributeSourceStruct, err := attributesources.ClientStruct(inboundAttributeMappingAttributeSources.(types.Set))
 			if err != nil {
 				return nil, err
 			}

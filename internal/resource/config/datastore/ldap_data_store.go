@@ -23,7 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	datasourceresourcelink "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -42,6 +42,7 @@ var (
 
 	ldapDataStoreCommonAttrType = map[string]attr.Type{
 		"hostnames":                  types.SetType{ElemType: types.StringType},
+		"use_start_tls":              types.BoolType,
 		"verify_host":                types.BoolType,
 		"test_on_return":             types.BoolType,
 		"ldap_type":                  types.StringType,
@@ -104,6 +105,11 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Validators: []validator.Set{
 				setvalidator.SizeAtLeast(1),
 			},
+		},
+		"use_start_tls": schema.BoolAttribute{
+			Description: "Connects to the LDAP data store using secure StartTLS encryption. The default value is false.",
+			Computed:    true,
+			Optional:    true,
 		},
 		"verify_host": schema.BoolAttribute{
 			Description: "Verifies that the presented server certificate includes the address to which the client intended to establish a connection. Omitting this attribute will set the value to true.",
@@ -309,6 +315,11 @@ func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
 			Optional:    false,
 			ElementType: types.StringType,
 		},
+		"use_start_tls": schema.BoolAttribute{
+			Description: "Connects to the LDAP data store using secure StartTLS encryption. The default value is false.",
+			Computed:    true,
+			Optional:    false,
+		},
 		"verify_host": datasourceschema.BoolAttribute{
 			Description: "Verifies that the presented server certificate includes the address to which the client intended to establish a connection.",
 			Computed:    true,
@@ -505,6 +516,7 @@ func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataSto
 	//  final obj value
 	ldapDataStoreAttrVal := map[string]attr.Value{
 		"hostnames":                  internaltypes.GetStringSet(ldapDataStore.Hostnames),
+		"use_start_tls":              types.BoolPointerValue(ldapDataStore.UseStartTLS),
 		"verify_host":                types.BoolPointerValue(ldapDataStore.VerifyHost),
 		"test_on_return":             types.BoolPointerValue(ldapDataStore.TestOnReturn),
 		"ldap_type":                  types.StringValue(ldapDataStore.LdapType),
@@ -561,6 +573,7 @@ func toDataSourceStateLdapDataStore(con context.Context, ldapDataStore *client.L
 	//  final obj value
 	ldapDataStoreAttrVal := map[string]attr.Value{
 		"hostnames":                  internaltypes.GetStringSet(ldapDataStore.Hostnames),
+		"use_start_tls":              types.BoolPointerValue(ldapDataStore.UseStartTLS),
 		"verify_host":                types.BoolPointerValue(ldapDataStore.VerifyHost),
 		"test_on_return":             types.BoolPointerValue(ldapDataStore.TestOnReturn),
 		"ldap_type":                  types.StringValue(ldapDataStore.LdapType),
@@ -635,6 +648,11 @@ func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con 
 	hostnames, ok := ldapDataStorePlan["hostnames"]
 	if ok {
 		addRequest.LdapDataStore.Hostnames = internaltypes.SetTypeToStringSlice(hostnames.(types.Set))
+	}
+
+	useStartTls, ok := ldapDataStorePlan["use_start_tls"]
+	if ok {
+		addRequest.LdapDataStore.UseStartTLS = useStartTls.(types.Bool).ValueBoolPointer()
 	}
 
 	verifyHost, ok := ldapDataStorePlan["verify_host"]

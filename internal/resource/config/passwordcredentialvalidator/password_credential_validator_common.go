@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	pluginconfigurationdatasource "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -20,7 +20,6 @@ var (
 	attributeContractTypes = map[string]attr.Type{
 		"core_attributes":     types.ListType{ElemType: types.ObjectType{AttrTypes: attrType}},
 		"extended_attributes": types.ListType{ElemType: types.ObjectType{AttrTypes: attrType}},
-		"inherited":           types.BoolType,
 	}
 
 	emptyAttrList, _ = types.ListValue(types.ObjectType{AttrTypes: attrType}, nil)
@@ -80,16 +79,9 @@ func readPasswordCredentialValidatorResponse(ctx context.Context, r *client.Pass
 		attributeContractExtendedAttributes, respDiags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: attrType}, extdAttrs)
 		diags.Append(respDiags...)
 
-		// PF can return inherited as nil when it is false
-		inherited := false
-		if attrContract.Inherited != nil {
-			inherited = *attrContract.Inherited
-		}
-
 		attributeContractValues := map[string]attr.Value{
 			"core_attributes":     attributeContractCoreAttributes,
 			"extended_attributes": attributeContractExtendedAttributes,
-			"inherited":           types.BoolValue(inherited),
 		}
 		state.AttributeContract, respDiags = types.ObjectValue(attributeContractTypes, attributeContractValues)
 		diags.Append(respDiags...)

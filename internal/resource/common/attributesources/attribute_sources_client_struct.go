@@ -5,12 +5,12 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
-func ClientStruct(attributeSourcesAttr basetypes.ListValue) ([]client.AttributeSourceAggregation, error) {
+func ClientStruct(attributeSourcesAttr basetypes.SetValue) ([]client.AttributeSourceAggregation, error) {
 	attributeSourceAggregation := []client.AttributeSourceAggregation{}
 	for _, source := range attributeSourcesAttr.Elements() {
 		//Determine which attribute source type this is
