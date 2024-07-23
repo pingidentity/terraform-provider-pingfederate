@@ -48,6 +48,7 @@ import (
 	notificationpublishers "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/notificationpublishers/settings"
 	oauthaccesstokenmanager "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/accesstokenmanager"
 	oauthaccesstokenmapping "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/accesstokenmapping"
+	oauthauthenticationpolicycontractmappings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authenticationpolicycontractmappings"
 	oauthauthserversettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authserversettings"
 	oauthauthserversettingsscopescommonscope "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authserversettings/scopes/commonscope"
 	oauthauthserversettingsscopesexclusivescope "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authserversettings/scopes/exclusivescope"
@@ -731,6 +732,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		notificationpublishers.NotificationPublishersSettingsResource,
 		oauthaccesstokenmanager.OauthAccessTokenManagerResource,
 		oauthaccesstokenmapping.OauthAccessTokenMappingsResource,
+		oauthauthenticationpolicycontractmappings.OauthAuthenticationPolicyContractMappingResource,
 		oauthauthserversettings.OauthAuthServerSettingsResource,
 		oauthauthserversettingsscopescommonscope.OauthAuthServerSettingsScopesCommonScopeResource,
 		oauthauthserversettingsscopesexclusivescope.OauthAuthServerSettingsScopesExclusiveScopeResource,
