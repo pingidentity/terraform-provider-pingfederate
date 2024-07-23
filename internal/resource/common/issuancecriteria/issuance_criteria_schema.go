@@ -4,18 +4,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 )
 
 func ToSchema() schema.SingleNestedAttribute {
-	conditionalCriteriaDefault, _ := types.ListValue(ConditionalCriteriaElemType(), nil)
+	conditionalCriteriaDefault, _ := types.SetValue(ConditionalCriteriaElemType(), nil)
 	issuanceCriteriaDefault, _ := types.ObjectValue(AttrTypes(), map[string]attr.Value{
 		"conditional_criteria": conditionalCriteriaDefault,
-		"expression_criteria":  types.ListNull(ExpressionCriteriaElemType()),
+		"expression_criteria":  types.SetNull(ExpressionCriteriaElemType()),
 	})
 	return schema.SingleNestedAttribute{
 		Description: "The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled.",
@@ -23,11 +23,11 @@ func ToSchema() schema.SingleNestedAttribute {
 		Optional:    true,
 		Default:     objectdefault.StaticValue(issuanceCriteriaDefault),
 		Attributes: map[string]schema.Attribute{
-			"conditional_criteria": schema.ListNestedAttribute{
+			"conditional_criteria": schema.SetNestedAttribute{
 				Description: "A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue.",
 				Computed:    true,
 				Optional:    true,
-				Default:     listdefault.StaticValue(conditionalCriteriaDefault),
+				Default:     setdefault.StaticValue(conditionalCriteriaDefault),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"source": sourcetypeidkey.ToSchema(false),
@@ -53,7 +53,7 @@ func ToSchema() schema.SingleNestedAttribute {
 					},
 				},
 			},
-			"expression_criteria": schema.ListNestedAttribute{
+			"expression_criteria": schema.SetNestedAttribute{
 				Description: "A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue.",
 				Optional:    true,
 				NestedObject: schema.NestedAttributeObject{

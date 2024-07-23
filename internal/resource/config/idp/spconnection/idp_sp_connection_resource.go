@@ -1899,7 +1899,7 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 			return err
 		}
 
-		addRequest.AttributeQuery.AttributeSources, err = attributesources.ClientStruct(plan.AttributeQuery.Attributes()["attribute_sources"].(types.List))
+		addRequest.AttributeQuery.AttributeSources, err = attributesources.ClientStruct(plan.AttributeQuery.Attributes()["attribute_sources"].(types.Set))
 		if err != nil {
 			return err
 		}

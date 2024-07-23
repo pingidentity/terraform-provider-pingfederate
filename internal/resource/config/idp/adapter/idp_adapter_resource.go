@@ -210,7 +210,7 @@ func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdap
 			return err
 		}
 
-		attributeSourcesAttr := planAttrs["attribute_sources"].(types.List)
+		attributeSourcesAttr := planAttrs["attribute_sources"].(types.Set)
 		addRequest.AttributeMapping.AttributeSources = []client.AttributeSourceAggregation{}
 		addRequest.AttributeMapping.AttributeSources, err = attributesources.ClientStruct(attributeSourcesAttr)
 		if err != nil {
