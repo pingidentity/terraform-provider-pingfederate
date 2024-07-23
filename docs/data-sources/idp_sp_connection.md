@@ -268,7 +268,7 @@ Read-Only:
 Read-Only:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
-- `condition` (String) The name of the attribute to use in this issuance criterion.
+- `condition` (String) The condition that will be applied to the source attribute's value and the expected value.
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 - `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--attribute_query--issuance_criteria--conditional_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
@@ -1091,7 +1091,7 @@ Read-Only:
 Read-Only:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
-- `condition` (String) The name of the attribute to use in this issuance criterion.
+- `condition` (String) The condition that will be applied to the source attribute's value and the expected value.
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 - `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--issuance_criteria--expression_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
@@ -1329,7 +1329,7 @@ Read-Only:
 Read-Only:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
-- `condition` (String) The name of the attribute to use in this issuance criterion.
+- `condition` (String) The condition that will be applied to the source attribute's value and the expected value.
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 - `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--issuance_criteria--expression_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
@@ -1618,7 +1618,7 @@ Read-Only:
 Read-Only:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
-- `condition` (String) The name of the attribute to use in this issuance criterion.
+- `condition` (String) The condition that will be applied to the source attribute's value and the expected value.
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 - `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--issuance_criteria--expression_criteria--source))
 - `value` (String) The expected value of this issuance criterion.
@@ -1965,7 +1965,7 @@ Read-Only:
 Read-Only:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
-- `condition` (String) The name of the attribute to use in this issuance criterion.
+- `condition` (String) The condition that will be applied to the source attribute's value and the expected value.
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 - `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--issuance_criteria--expression_criteria--source))
 - `value` (String) The expected value of this issuance criterion.

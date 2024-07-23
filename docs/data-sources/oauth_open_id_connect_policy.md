@@ -283,7 +283,7 @@ Read-Only:
 Read-Only:
 
 - `attribute_name` (String) The name of the attribute to use in this issuance criterion.
-- `condition` (String) The name of the attribute to use in this issuance criterion.
+- `condition` (String) The condition that will be applied to the source attribute's value and the expected value.
 - `error_result` (String) The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.
 - `source` (Attributes) The attribute value source. (see [below for nested schema](#nestedatt--attribute_mapping--issuance_criteria--conditional_criteria--source))
 - `value` (String) The expected value of this issuance criterion.

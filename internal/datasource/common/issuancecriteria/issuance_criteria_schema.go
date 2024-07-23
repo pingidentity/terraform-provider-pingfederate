@@ -24,7 +24,7 @@ func ToDataSourceSchema() schema.SingleNestedAttribute {
 							Computed:    true,
 						},
 						"condition": schema.StringAttribute{
-							Description: "The name of the attribute to use in this issuance criterion.",
+							Description: "The condition that will be applied to the source attribute's value and the expected value.",
 							Optional:    false,
 							Computed:    true,
 						},
