@@ -98,6 +98,9 @@ func (r *certificatesGroupResource) Schema(ctx context.Context, req resource.Sch
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"group_id": schema.StringAttribute{
 				Optional:    true,
@@ -109,6 +112,7 @@ func (r *certificatesGroupResource) Schema(ctx context.Context, req resource.Sch
 				},
 				Validators: []validator.String{
 					configvalidators.LowercaseId(),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"group_name": schema.StringAttribute{
