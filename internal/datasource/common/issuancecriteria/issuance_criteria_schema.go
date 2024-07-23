@@ -42,7 +42,7 @@ func ToDataSourceSchema() schema.SingleNestedAttribute {
 				},
 			},
 			"expression_criteria": schema.SetNestedAttribute{
-				Description: "A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue.",
+				Description: "A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue. Expressions must be enabled in PingFederate to use expression criteria.",
 				Optional:    false,
 				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
