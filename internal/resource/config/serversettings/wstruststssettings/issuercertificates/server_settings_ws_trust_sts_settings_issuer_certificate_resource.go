@@ -108,6 +108,7 @@ func (r *serverSettingsWsTrustStsSettingsIssuerCertificateResource) Schema(ctx c
 				},
 				Validators: []validator.String{
 					configvalidators.LowercaseId(),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"issuer_dn": schema.StringAttribute{
