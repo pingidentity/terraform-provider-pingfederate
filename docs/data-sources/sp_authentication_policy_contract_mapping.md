@@ -71,7 +71,7 @@ Read-Only:
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--attribute_sources--custom_attribute_source--attribute_contract_fulfillment))
 - `data_store_ref` (Attributes) Reference to the associated data store. (see [below for nested schema](#nestedatt--attribute_sources--custom_attribute_source--data_store_ref))
 - `description` (String) The description of this attribute source. The description needs to be unique amongst the attribute sources for the mapping.<br>Note: Required for APC-to-SP Adapter Mappings
-- `filter_fields` (Attributes List) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--attribute_sources--custom_attribute_source--filter_fields))
+- `filter_fields` (Attributes Set) The list of fields that can be used to filter a request to the custom data store. (see [below for nested schema](#nestedatt--attribute_sources--custom_attribute_source--filter_fields))
 - `id` (String) The ID that defines this attribute source. Only alphanumeric characters allowed. Note: Required for OpenID Connect policy attribute sources, OAuth IdP adapter mappings, OAuth access token mappings and APC-to-SP Adapter Mappings. IdP Connections will ignore this property since it only allows one attribute source to be defined per mapping. IdP-to-SP Adapter Mappings can contain multiple attribute sources.
 - `type` (String) The data store type of this attribute source.
 
@@ -158,7 +158,7 @@ Read-Only:
 
 Optional:
 
-- `search_attributes` (List of String) A list of LDAP attributes returned from search and available for mapping.
+- `search_attributes` (Set of String) A list of LDAP attributes returned from search and available for mapping.
 
 Read-Only:
 
