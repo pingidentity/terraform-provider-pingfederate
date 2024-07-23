@@ -83,6 +83,7 @@ func (r *certificatesRevocationOcspCertificateResource) Schema(ctx context.Conte
 				},
 				Validators: []validator.String{
 					configvalidators.LowercaseId(),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"crypto_provider": schema.StringAttribute{
