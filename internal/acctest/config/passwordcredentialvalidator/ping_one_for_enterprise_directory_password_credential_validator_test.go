@@ -106,7 +106,6 @@ func testAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(resourceNa
 					name = "example"
 				}
 			]
-			inherited = false
 	  	}
 		`
 	}

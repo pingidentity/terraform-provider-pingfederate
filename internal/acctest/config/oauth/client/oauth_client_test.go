@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
@@ -133,7 +133,10 @@ func TestAccOauthClient(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: testAccOauthClient(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedOauthClientAttributes(initialResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedOauthClientAttributes(initialResourceModel),
+					checkPf121ComputedAttrs(resourceName),
+				),
 			},
 			{
 				// Test updating some fields
@@ -216,6 +219,23 @@ func TestAccOauthClient(t *testing.T) {
 			},
 		},
 	})
+}
+
+func checkPf121ComputedAttrs(resourceName string) resource.TestCheckFunc {
+	if acctest.VersionAtLeast(version.PingFederate1210) {
+		return resource.ComposeTestCheckFunc(
+			resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "refresh_token_rolling_interval_time_unit", "HOURS"),
+			resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "enable_cookieless_authentication_api", "false"),
+			resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "require_offline_access_scope_to_issue_refresh_tokens", "SERVER_DEFAULT"),
+			resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "offline_access_require_consent_prompt", "SERVER_DEFAULT"),
+		)
+	}
+	return resource.ComposeTestCheckFunc(
+		resource.TestCheckNoResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "refresh_token_rolling_interval_time_unit"),
+		resource.TestCheckNoResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "enable_cookieless_authentication_api"),
+		resource.TestCheckNoResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "require_offline_access_scope_to_issue_refresh_tokens"),
+		resource.TestCheckNoResourceAttr(fmt.Sprintf("pingfederate_oauth_client.%s", resourceName), "offline_access_require_consent_prompt"),
+	)
 }
 
 func oidcPolicyHcl(clientOidcPolicy *client.ClientOIDCPolicy) string {
@@ -340,6 +360,19 @@ func testAccOauthClient(resourceName string, resourceModel oauthClientResourceMo
 		if acctest.VersionAtLeast(version.PingFederate1130) {
 			optionalHcl += `
 		require_dpop = true	
+			`
+		}
+
+		if acctest.VersionAtLeast(version.PingFederate1210) {
+			optionalHcl += `
+			// HCL necessary to use refresh token rolling interval time unit
+		refresh_token_rolling_interval_type = "OVERRIDE_SERVER_DEFAULT"
+		refresh_token_rolling_interval = 10
+			// PF 12.1 attributes
+		refresh_token_rolling_interval_time_unit = "MINUTES"
+		enable_cookieless_authentication_api = true
+		require_offline_access_scope_to_issue_refresh_tokens = "YES"
+		offline_access_require_consent_prompt = "YES"
 			`
 		}
 	}

@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	datasourcepluginconfiguration "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
@@ -43,7 +43,6 @@ var (
 		},
 		"unique_user_key_attribute": types.StringType,
 		"mask_ognl_values":          types.BoolType,
-		"inherited":                 types.BoolType,
 	}
 
 	attributeContractDataSourceAttrTypes = map[string]attr.Type{
@@ -59,7 +58,6 @@ var (
 		},
 		"unique_user_key_attribute": types.StringType,
 		"mask_ognl_values":          types.BoolType,
-		"inherited":                 types.BoolType,
 	}
 
 	attributeMappingAttrTypes = map[string]attr.Type{
@@ -72,7 +70,6 @@ var (
 		"issuance_criteria": types.ObjectType{
 			AttrTypes: issuancecriteria.AttrTypes(),
 		},
-		"inherited": types.BoolType,
 	}
 
 	extendedAttributesDefault, _ = types.SetValue(types.ObjectType{
@@ -122,14 +119,6 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 		attributeContractValues["unique_user_key_attribute"] = types.StringPointerValue(r.AttributeContract.UniqueUserKeyAttribute)
 		attributeContractValues["mask_ognl_values"] = types.BoolPointerValue(r.AttributeContract.MaskOgnlValues)
 
-		// PF returns false as nil for inherited in some cases
-		inherited := false
-		if r.AttributeContract.Inherited != nil {
-			inherited = *r.AttributeContract.Inherited
-		}
-
-		attributeContractValues["inherited"] = types.BoolValue(inherited)
-
 		// Only include core_attributes specified in the plan in the response
 		if plan != nil {
 			if internaltypes.IsDefined(plan.AttributeContract) && internaltypes.IsDefined(plan.AttributeContract.Attributes()["core_attributes"]) {
@@ -160,13 +149,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 	}
 
 	if r.AttributeMapping != nil {
-		attributeMappingValues := map[string]attr.Value{
-			"inherited": types.BoolPointerValue(r.AttributeMapping.Inherited),
-		}
-		// The PF API won't return inherited if it is false
-		if r.AttributeMapping.Inherited == nil {
-			attributeMappingValues["inherited"] = types.BoolValue(false)
-		}
+		attributeMappingValues := map[string]attr.Value{}
 
 		// Build attribute_contract_fulfillment value
 		attributeMappingValues["attribute_contract_fulfillment"], diags = attributecontractfulfillment.ToState(ctx, &r.AttributeMapping.AttributeContractFulfillment)

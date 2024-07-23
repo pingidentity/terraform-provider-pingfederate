@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
@@ -157,13 +157,6 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
 					},
-					"inherited": schema.BoolAttribute{
-						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
-						Description:        "Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
-						Optional:           true,
-						Computed:           true,
-						Default:            booldefault.StaticBool(false),
-					},
 				},
 			},
 			"attribute_mapping": schema.SingleNestedAttribute{
@@ -174,13 +167,6 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 					"attribute_sources":              attributesources.ToSchema(0, false),
 					"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(false, true, true),
 					"issuance_criteria":              issuancecriteria.ToSchema(),
-					"inherited": schema.BoolAttribute{
-						DeprecationMessage: "This field is now deprecated and will be removed in a future release.",
-						Optional:           true,
-						Computed:           true,
-						Default:            booldefault.StaticBool(false),
-						Description:        "Whether this attribute mapping is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.",
-					},
 				},
 			},
 		},
@@ -211,8 +197,6 @@ func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdap
 	if internaltypes.IsDefined(plan.AttributeMapping) {
 		addRequest.AttributeMapping = &client.IdpAdapterContractMapping{}
 		planAttrs := plan.AttributeMapping.Attributes()
-
-		addRequest.AttributeMapping.Inherited = planAttrs["inherited"].(types.Bool).ValueBoolPointer()
 
 		attrContractFulfillmentAttr := planAttrs["attribute_contract_fulfillment"].(types.Map)
 		addRequest.AttributeMapping.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(attrContractFulfillmentAttr)
