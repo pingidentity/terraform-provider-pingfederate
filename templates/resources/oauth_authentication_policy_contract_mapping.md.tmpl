@@ -9,6 +9,8 @@ description: |-
 
 {{ .Description | trimspace }}
 
+~> Only one contract mapping should be configured per authentication policy contract (the `pingfederate_authentication_policy_contract` resource). Otherwise, configuration conflicts will occur.
+
 ## Example Usage
 
 {{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource.tf") }}
