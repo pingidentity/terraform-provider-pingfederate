@@ -12,20 +12,53 @@ Resource to create and manage OAuth/OpenID Connect additional signing key sets.
 ## Example Usage
 
 ```terraform
+resource "pingfederate_key_pair_signing_import" "rsa_oidc_signing_1" {
+  import_id = "oidcsigningkey1"
+  file_data = filebase64("./assets/oidc_signing_1.p12")
+  format    = "PKCS12"
+  password  = var.oidc_signing_pkcs12_password1
+}
+
+resource "pingfederate_key_pair_signing_import" "rsa_oidc_signing_2" {
+  import_id = "oidcsigningkey2"
+  file_data = filebase64("./assets/oidc_signing_2.p12")
+  format    = "PKCS12"
+  password  = var.oidc_signing_pkcs12_password2
+}
+
+resource "pingfederate_oauth_issuer" "oauthIssuer1" {
+  issuer_id   = "example"
+  description = "example description"
+  host        = "bxretail.org"
+  name        = "example"
+  path        = "/example"
+}
+
+resource "pingfederate_oauth_issuer" "oauthIssuer2" {
+  issuer_id   = "example2"
+  description = "example description"
+  host        = "bxretail2.org"
+  name        = "example2"
+  path        = "/example"
+}
+
 resource "pingfederate_keypairs_oauth_openid_connect_additional_key_set" "keypairsOAuthOpenIDConnectAdditionalKeySet" {
-  set_id = "my-key-set"
+  name = "My Key Set"
+
   issuers = [
     {
-      id = "issuer-id"
+      id = pingfederate_oauth_issuer.oauthIssuer1.id
+    },
+    {
+      id = pingfederate_oauth_issuer.oauthIssuer2.id
     }
   ]
-  name = "My Key Set"
   signing_keys = {
     rsa_active_cert_ref = {
-      id = "rsaactive"
+      id = pingfederate_key_pair_signing_import.rsa_oidc_signing_2.id
     }
     rsa_previous_cert_ref = {
-      id = "rsaprevious"
+      id = pingfederate_key_pair_signing_import.rsa_oidc_signing_1.id
     }
     rsa_publish_x5c_parameter = true
   }
@@ -37,7 +70,7 @@ resource "pingfederate_keypairs_oauth_openid_connect_additional_key_set" "keypai
 
 ### Required
 
-- `issuers` (Attributes List) A list of virtual issuers that will use the current key set. Once assigned to a key set, the same virtual issuer cannot be assigned to another key set instance. (see [below for nested schema](#nestedatt--issuers))
+- `issuers` (Attributes Set) A list of virtual issuers that will use the current key set. Once assigned to a key set, the same virtual issuer cannot be assigned to another key set instance. (see [below for nested schema](#nestedatt--issuers))
 - `name` (String) The key set name.
 - `signing_keys` (Attributes) Setting for a OAuth/OpenID Connect signing key set while using multiple virtual issuers. (see [below for nested schema](#nestedatt--signing_keys))
 
@@ -79,8 +112,8 @@ Optional:
 - `p521_previous_key_id` (String) Key Id for previously active P-521 key.
 - `p521_publish_x5c_parameter` (Boolean) Enable publishing of the P-521 certificate chain associated with the active key.
 - `rsa_active_key_id` (String) Key Id for currently active RSA key.
-- `rsa_algorithm_active_key_ids` (Attributes List) PingFederate uses the same RSA key for all RSA signing algorithms. To enable active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (`RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`). (see [below for nested schema](#nestedatt--signing_keys--rsa_algorithm_active_key_ids))
-- `rsa_algorithm_previous_key_ids` (Attributes List) PingFederate uses the same RSA key for all RSA signing algorithms. To enable previously active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (`RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`). (see [below for nested schema](#nestedatt--signing_keys--rsa_algorithm_previous_key_ids))
+- `rsa_algorithm_active_key_ids` (Attributes Set) PingFederate uses the same RSA key for all RSA signing algorithms. To enable active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (`RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`). (see [below for nested schema](#nestedatt--signing_keys--rsa_algorithm_active_key_ids))
+- `rsa_algorithm_previous_key_ids` (Attributes Set) PingFederate uses the same RSA key for all RSA signing algorithms. To enable previously active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (`RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`). (see [below for nested schema](#nestedatt--signing_keys--rsa_algorithm_previous_key_ids))
 - `rsa_previous_cert_ref` (Attributes) Reference to the RSA key previously active. (see [below for nested schema](#nestedatt--signing_keys--rsa_previous_cert_ref))
 - `rsa_previous_key_id` (String) Key Id for previously active RSA key.
 - `rsa_publish_x5c_parameter` (Boolean) Enable publishing of the RSA certificate chain associated with the active key. The default value is `false`.

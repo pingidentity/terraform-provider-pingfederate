@@ -54,7 +54,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Configure(_ context
 
 type keypairsOauthOpenidConnectAdditionalKeySetResourceModel struct {
 	Description types.String `tfsdk:"description"`
-	Issuers     types.List   `tfsdk:"issuers"`
+	Issuers     types.Set    `tfsdk:"issuers"`
 	Name        types.String `tfsdk:"name"`
 	SetId       types.String `tfsdk:"set_id"`
 	SigningKeys types.Object `tfsdk:"signing_keys"`
@@ -68,7 +68,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Schema(ctx context.
 				Optional:    true,
 				Description: "A description of the key set.",
 			},
-			"issuers": schema.ListNestedAttribute{
+			"issuers": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
@@ -211,7 +211,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Schema(ctx context.
 						Optional:    true,
 						Description: "Key Id for currently active RSA key.",
 					},
-					"rsa_algorithm_active_key_ids": schema.ListNestedAttribute{
+					"rsa_algorithm_active_key_ids": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"key_id": schema.StringAttribute{
@@ -228,7 +228,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Schema(ctx context.
 						Computed:    true,
 						Description: "PingFederate uses the same RSA key for all RSA signing algorithms. To enable active RSA JWK entry to have unique single valued ''alg'' parameter, use this list to set a key identifier for each RSA algorithm (`RS256`, `RS384`, `RS512`, `PS256`, `PS384` and `PS512`).",
 					},
-					"rsa_algorithm_previous_key_ids": schema.ListNestedAttribute{
+					"rsa_algorithm_previous_key_ids": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"key_id": schema.StringAttribute{
@@ -343,6 +343,8 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) ModifyPlan(ctx cont
 	}
 	// Set default values that can't be set in schema
 	r.setConditionalDefaults(ctx, pfVersionAtLeast1201, plan, resp)
+	// Validation that may be affected by default values
+	resp.Diagnostics.Append(plan.validateActivePreviousCertRefs()...)
 }
 
 func (model *keypairsOauthOpenidConnectAdditionalKeySetResourceModel) buildClientStruct(versionAtLeast1201 bool) *client.AdditionalKeySet {
@@ -421,7 +423,7 @@ func (model *keypairsOauthOpenidConnectAdditionalKeySetResourceModel) buildClien
 	// Key ids are added in version 12.0.1
 	if versionAtLeast1201 {
 		signingKeysValue.RsaAlgorithmActiveKeyIds = []client.RsaAlgKeyId{}
-		for _, rsaAlgorithmActiveKeyIdsElement := range signingKeysAttrs["rsa_algorithm_active_key_ids"].(types.List).Elements() {
+		for _, rsaAlgorithmActiveKeyIdsElement := range signingKeysAttrs["rsa_algorithm_active_key_ids"].(types.Set).Elements() {
 			rsaAlgorithmActiveKeyIdsValue := client.RsaAlgKeyId{}
 			rsaAlgorithmActiveKeyIdsAttrs := rsaAlgorithmActiveKeyIdsElement.(types.Object).Attributes()
 			rsaAlgorithmActiveKeyIdsValue.KeyId = rsaAlgorithmActiveKeyIdsAttrs["key_id"].(types.String).ValueString()
@@ -429,7 +431,7 @@ func (model *keypairsOauthOpenidConnectAdditionalKeySetResourceModel) buildClien
 			signingKeysValue.RsaAlgorithmActiveKeyIds = append(signingKeysValue.RsaAlgorithmActiveKeyIds, rsaAlgorithmActiveKeyIdsValue)
 		}
 		signingKeysValue.RsaAlgorithmPreviousKeyIds = []client.RsaAlgKeyId{}
-		for _, rsaAlgorithmPreviousKeyIdsElement := range signingKeysAttrs["rsa_algorithm_previous_key_ids"].(types.List).Elements() {
+		for _, rsaAlgorithmPreviousKeyIdsElement := range signingKeysAttrs["rsa_algorithm_previous_key_ids"].(types.Set).Elements() {
 			rsaAlgorithmPreviousKeyIdsValue := client.RsaAlgKeyId{}
 			rsaAlgorithmPreviousKeyIdsAttrs := rsaAlgorithmPreviousKeyIdsElement.(types.Object).Attributes()
 			rsaAlgorithmPreviousKeyIdsValue.KeyId = rsaAlgorithmPreviousKeyIdsAttrs["key_id"].(types.String).ValueString()
@@ -467,7 +469,7 @@ func (state *keypairsOauthOpenidConnectAdditionalKeySetResourceModel) readClient
 		respDiags.Append(diags...)
 		issuersValues = append(issuersValues, issuersValue)
 	}
-	issuersValue, diags := types.ListValue(issuersElementType, issuersValues)
+	issuersValue, diags := types.SetValue(issuersElementType, issuersValues)
 	respDiags.Append(diags...)
 
 	state.Issuers = issuersValue
@@ -528,8 +530,8 @@ func (state *keypairsOauthOpenidConnectAdditionalKeySetResourceModel) readClient
 		"p521_publish_x5c_parameter":     types.BoolType,
 		"rsa_active_cert_ref":            types.ObjectType{AttrTypes: signingKeysRsaActiveCertRefAttrTypes},
 		"rsa_active_key_id":              types.StringType,
-		"rsa_algorithm_active_key_ids":   types.ListType{ElemType: signingKeysRsaAlgorithmActiveKeyIdsElementType},
-		"rsa_algorithm_previous_key_ids": types.ListType{ElemType: signingKeysRsaAlgorithmPreviousKeyIdsElementType},
+		"rsa_algorithm_active_key_ids":   types.SetType{ElemType: signingKeysRsaAlgorithmActiveKeyIdsElementType},
+		"rsa_algorithm_previous_key_ids": types.SetType{ElemType: signingKeysRsaAlgorithmPreviousKeyIdsElementType},
 		"rsa_previous_cert_ref":          types.ObjectType{AttrTypes: signingKeysRsaPreviousCertRefAttrTypes},
 		"rsa_previous_key_id":            types.StringType,
 		"rsa_publish_x5c_parameter":      types.BoolType,
@@ -597,7 +599,7 @@ func (state *keypairsOauthOpenidConnectAdditionalKeySetResourceModel) readClient
 		})
 		respDiags.Append(diags...)
 	}
-	var signingKeysRsaAlgorithmActiveKeyIdsValue types.List
+	var signingKeysRsaAlgorithmActiveKeyIdsValue types.Set
 	if versionAtLeast1201 {
 		var signingKeysRsaAlgorithmActiveKeyIdsValues []attr.Value
 		for _, signingKeysRsaAlgorithmActiveKeyIdsResponseValue := range response.SigningKeys.RsaAlgorithmActiveKeyIds {
@@ -608,12 +610,12 @@ func (state *keypairsOauthOpenidConnectAdditionalKeySetResourceModel) readClient
 			respDiags.Append(diags...)
 			signingKeysRsaAlgorithmActiveKeyIdsValues = append(signingKeysRsaAlgorithmActiveKeyIdsValues, signingKeysRsaAlgorithmActiveKeyIdsValue)
 		}
-		signingKeysRsaAlgorithmActiveKeyIdsValue, diags = types.ListValue(signingKeysRsaAlgorithmActiveKeyIdsElementType, signingKeysRsaAlgorithmActiveKeyIdsValues)
+		signingKeysRsaAlgorithmActiveKeyIdsValue, diags = types.SetValue(signingKeysRsaAlgorithmActiveKeyIdsElementType, signingKeysRsaAlgorithmActiveKeyIdsValues)
 		respDiags.Append(diags...)
 	} else {
-		signingKeysRsaAlgorithmActiveKeyIdsValue = types.ListNull(signingKeysRsaAlgorithmActiveKeyIdsElementType)
+		signingKeysRsaAlgorithmActiveKeyIdsValue = types.SetNull(signingKeysRsaAlgorithmActiveKeyIdsElementType)
 	}
-	var signingKeysRsaAlgorithmPreviousKeyIdsValue types.List
+	var signingKeysRsaAlgorithmPreviousKeyIdsValue types.Set
 	if versionAtLeast1201 {
 		var signingKeysRsaAlgorithmPreviousKeyIdsValues []attr.Value
 		for _, signingKeysRsaAlgorithmPreviousKeyIdsResponseValue := range response.SigningKeys.RsaAlgorithmPreviousKeyIds {
@@ -624,10 +626,10 @@ func (state *keypairsOauthOpenidConnectAdditionalKeySetResourceModel) readClient
 			respDiags.Append(diags...)
 			signingKeysRsaAlgorithmPreviousKeyIdsValues = append(signingKeysRsaAlgorithmPreviousKeyIdsValues, signingKeysRsaAlgorithmPreviousKeyIdsValue)
 		}
-		signingKeysRsaAlgorithmPreviousKeyIdsValue, diags = types.ListValue(signingKeysRsaAlgorithmPreviousKeyIdsElementType, signingKeysRsaAlgorithmPreviousKeyIdsValues)
+		signingKeysRsaAlgorithmPreviousKeyIdsValue, diags = types.SetValue(signingKeysRsaAlgorithmPreviousKeyIdsElementType, signingKeysRsaAlgorithmPreviousKeyIdsValues)
 		respDiags.Append(diags...)
 	} else {
-		signingKeysRsaAlgorithmPreviousKeyIdsValue = types.ListNull(signingKeysRsaAlgorithmPreviousKeyIdsElementType)
+		signingKeysRsaAlgorithmPreviousKeyIdsValue = types.SetNull(signingKeysRsaAlgorithmPreviousKeyIdsElementType)
 	}
 	var signingKeysRsaPreviousCertRefValue types.Object
 	if response.SigningKeys.RsaPreviousCertRef == nil {

@@ -16,7 +16,7 @@ var (
 		"key_id":       types.StringType,
 		"rsa_alg_type": types.StringType,
 	}
-	emptyRsaKeyListDefault, _ = types.ListValue(types.ObjectType{AttrTypes: rsaKeyIdAttrTypes}, nil)
+	emptyRsaKeySetDefault, _ = types.SetValue(types.ObjectType{AttrTypes: rsaKeyIdAttrTypes}, nil)
 
 	refAttrTypes = map[string]attr.Type{
 		"id": types.StringType,
@@ -44,8 +44,8 @@ var (
 		"p521_publish_x5c_parameter":     types.BoolType,
 		"rsa_active_cert_ref":            types.ObjectType{AttrTypes: refAttrTypes},
 		"rsa_active_key_id":              types.StringType,
-		"rsa_algorithm_active_key_ids":   types.ListType{ElemType: signingKeysKeyIdsElementType},
-		"rsa_algorithm_previous_key_ids": types.ListType{ElemType: signingKeysKeyIdsElementType},
+		"rsa_algorithm_active_key_ids":   types.SetType{ElemType: signingKeysKeyIdsElementType},
+		"rsa_algorithm_previous_key_ids": types.SetType{ElemType: signingKeysKeyIdsElementType},
 		"rsa_previous_cert_ref":          types.ObjectType{AttrTypes: refAttrTypes},
 		"rsa_previous_key_id":            types.StringType,
 		"rsa_publish_x5c_parameter":      types.BoolType,
@@ -55,12 +55,12 @@ var (
 func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) setConditionalDefaults(ctx context.Context, isVersionAtLeast1201 bool, plan *keypairsOauthOpenidConnectAdditionalKeySetResourceModel, resp *resource.ModifyPlanResponse) {
 	signingKeysAttrs := plan.SigningKeys.Attributes()
 	if isVersionAtLeast1201 {
-		// RSA key id lists default to empty lists
+		// RSA key id sets default to empty sets
 		if signingKeysAttrs["rsa_algorithm_active_key_ids"].IsUnknown() {
-			signingKeysAttrs["rsa_algorithm_active_key_ids"] = emptyRsaKeyListDefault
+			signingKeysAttrs["rsa_algorithm_active_key_ids"] = emptyRsaKeySetDefault
 		}
 		if signingKeysAttrs["rsa_algorithm_previous_key_ids"].IsUnknown() {
-			signingKeysAttrs["rsa_algorithm_previous_key_ids"] = emptyRsaKeyListDefault
+			signingKeysAttrs["rsa_algorithm_previous_key_ids"] = emptyRsaKeySetDefault
 		}
 	}
 	// If an active cert ref is set, then corresponding publish_x5c_parameter attribute defaults to false
@@ -99,26 +99,27 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) setConditionalDefau
 	resp.Plan.Set(ctx, plan)
 }
 
-func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var config *keypairsOauthOpenidConnectAdditionalKeySetResourceModel
-	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
-	if config == nil {
-		return
+func (m *keypairsOauthOpenidConnectAdditionalKeySetResourceModel) validateActivePreviousCertRefs() diag.Diagnostics {
+	var respDiags diag.Diagnostics
+
+	if internaltypes.IsDefined(m.SigningKeys) {
+		signingKeysAttrs := m.SigningKeys.Attributes()
+		validateActiveAndPreviousCertRef("p256", signingKeysAttrs["p256_active_cert_ref"].(types.Object),
+			signingKeysAttrs["p256_previous_cert_ref"].(types.Object), &respDiags)
+		validateActiveAndPreviousCertRef("p384", signingKeysAttrs["p384_active_cert_ref"].(types.Object),
+			signingKeysAttrs["p384_previous_cert_ref"].(types.Object), &respDiags)
+		validateActiveAndPreviousCertRef("p521", signingKeysAttrs["p521_active_cert_ref"].(types.Object),
+			signingKeysAttrs["p521_previous_cert_ref"].(types.Object), &respDiags)
+		validateActiveAndPreviousCertRef("rsa_", signingKeysAttrs["rsa_active_cert_ref"].(types.Object),
+			signingKeysAttrs["rsa_previous_cert_ref"].(types.Object), &respDiags)
 	}
-	signingKeysAttrs := config.SigningKeys.Attributes()
-
-	validateActiveAndPreviousCertRef("p256", signingKeysAttrs["p256_active_cert_ref"].(types.Object),
-		signingKeysAttrs["p256_previous_cert_ref"].(types.Object), resp)
-	validateActiveAndPreviousCertRef("p384", signingKeysAttrs["p384_active_cert_ref"].(types.Object),
-		signingKeysAttrs["p384_previous_cert_ref"].(types.Object), resp)
-	validateActiveAndPreviousCertRef("p521", signingKeysAttrs["p521_active_cert_ref"].(types.Object),
-		signingKeysAttrs["p521_previous_cert_ref"].(types.Object), resp)
-	validateActiveAndPreviousCertRef("rsa_", signingKeysAttrs["rsa_active_cert_ref"].(types.Object),
-		signingKeysAttrs["rsa_previous_cert_ref"].(types.Object), resp)
-
+	return respDiags
 }
 
-func validateActiveAndPreviousCertRef(prefix string, active, previous types.Object, resp *resource.ValidateConfigResponse) {
+func validateActiveAndPreviousCertRef(prefix string, active, previous types.Object, respDiags *diag.Diagnostics) {
+	if active.IsUnknown() || previous.IsUnknown() {
+		return
+	}
 	if internaltypes.IsDefined(active) {
 		// The active cert ref, if set, must be different than the previous cert ref for each type
 		activeId := active.Attributes()["id"].(types.String).ValueString()
@@ -127,10 +128,10 @@ func validateActiveAndPreviousCertRef(prefix string, active, previous types.Obje
 			previousId = previous.Attributes()["id"].(types.String).ValueString()
 		}
 		if activeId == previousId {
-			resp.Diagnostics.AddError(fmt.Sprintf("The signing_keys.%[1]sactive_cert_ref.id and signing_keys.%[1]sprevious_cert_ref.id attributes must be different.", prefix), fmt.Sprintf("active id: %s, previous id: %s", activeId, previousId))
+			respDiags.AddError(fmt.Sprintf("The signing_keys.%[1]sactive_cert_ref.id and signing_keys.%[1]sprevious_cert_ref.id attributes must be different.", prefix), fmt.Sprintf("active id: %s, previous id: %s", activeId, previousId))
 		}
 	} else if internaltypes.IsDefined(previous) {
 		// active must be set to set the previous cert ref
-		resp.Diagnostics.AddError(fmt.Sprintf("The signing_keys.%[1]sactive_cert_ref attribute must be set when signing_keys.%[1]sprevious_cert_ref is set.", prefix), "")
+		respDiags.AddError(fmt.Sprintf("The signing_keys.%[1]sactive_cert_ref attribute must be set when signing_keys.%[1]sprevious_cert_ref is set.", prefix), "")
 	}
 }
