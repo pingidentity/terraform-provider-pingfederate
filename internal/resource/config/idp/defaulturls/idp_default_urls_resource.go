@@ -38,7 +38,7 @@ type idpDefaultUrlsResource struct {
 func (r *idpDefaultUrlsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
 		Description:        "Manages the IdP default URL settings",
-		DeprecationMessage: "This resource is deprecated and will be removed in a future release. Please use the `pingfederate_default_urls` resource in stead to manage both IdP and SP default URLs.",
+		DeprecationMessage: "This resource is deprecated and will be removed in a future release. Please use the `pingfederate_default_urls` resource instead to manage both IdP and SP default URLs.",
 		Attributes: map[string]schema.Attribute{
 			"confirm_idp_slo": schema.BoolAttribute{
 				Description: "Prompt user to confirm Single Logout (SLO). The default value is `false`.",
