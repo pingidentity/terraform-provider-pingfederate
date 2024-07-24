@@ -5,10 +5,12 @@ package keypairssslserversettings
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -45,8 +47,8 @@ func (r *keypairsSslServerSettingsResource) Configure(_ context.Context, req res
 }
 
 type keypairsSslServerSettingsResourceModel struct {
-	ActiveAdminConsoleCerts  types.List   `tfsdk:"active_admin_console_certs"`
-	ActiveRuntimeServerCerts types.List   `tfsdk:"active_runtime_server_certs"`
+	ActiveAdminConsoleCerts  types.Set    `tfsdk:"active_admin_console_certs"`
+	ActiveRuntimeServerCerts types.Set    `tfsdk:"active_runtime_server_certs"`
 	AdminConsoleCertRef      types.Object `tfsdk:"admin_console_cert_ref"`
 	RuntimeServerCertRef     types.Object `tfsdk:"runtime_server_cert_ref"`
 }
@@ -55,7 +57,7 @@ func (r *keypairsSslServerSettingsResource) Schema(ctx context.Context, req reso
 	resp.Schema = schema.Schema{
 		Description: "Resource to manage the SSL server certificate settings.",
 		Attributes: map[string]schema.Attribute{
-			"active_admin_console_certs": schema.ListNestedAttribute{
+			"active_admin_console_certs": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
@@ -65,9 +67,12 @@ func (r *keypairsSslServerSettingsResource) Schema(ctx context.Context, req reso
 					},
 				},
 				Required:    true,
-				Description: "The active SSL Server Certificate Key pairs for PF Administrator Console.",
+				Description: "The active SSL Server Certificate Key pairs for PF Administrator Console. Must not be empty and must contain a reference to the cert configured in `admin_console_cert_ref.id`.",
+				Validators: []validator.Set{
+					setvalidator.SizeAtLeast(1),
+				},
 			},
-			"active_runtime_server_certs": schema.ListNestedAttribute{
+			"active_runtime_server_certs": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
@@ -77,7 +82,10 @@ func (r *keypairsSslServerSettingsResource) Schema(ctx context.Context, req reso
 					},
 				},
 				Required:    true,
-				Description: "The active SSL Server Certificate Key pairs for Runtime Server.",
+				Description: "The active SSL Server Certificate Key pairs for Runtime Server. Must not be empty and must contain a reference to the cert configured in `runtime_server_cert_ref.id`.",
+				Validators: []validator.Set{
+					setvalidator.SizeAtLeast(1),
+				},
 			},
 			"admin_console_cert_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -153,7 +161,7 @@ func (state *keypairsSslServerSettingsResourceModel) readClientResponse(response
 		respDiags.Append(diags...)
 		activeAdminConsoleCertsValues = append(activeAdminConsoleCertsValues, activeAdminConsoleCertsValue)
 	}
-	activeAdminConsoleCertsValue, diags := types.ListValue(activeAdminConsoleCertsElementType, activeAdminConsoleCertsValues)
+	activeAdminConsoleCertsValue, diags := types.SetValue(activeAdminConsoleCertsElementType, activeAdminConsoleCertsValues)
 	respDiags.Append(diags...)
 
 	state.ActiveAdminConsoleCerts = activeAdminConsoleCertsValue
@@ -170,7 +178,7 @@ func (state *keypairsSslServerSettingsResourceModel) readClientResponse(response
 		respDiags.Append(diags...)
 		activeRuntimeServerCertsValues = append(activeRuntimeServerCertsValues, activeRuntimeServerCertsValue)
 	}
-	activeRuntimeServerCertsValue, diags := types.ListValue(activeRuntimeServerCertsElementType, activeRuntimeServerCertsValues)
+	activeRuntimeServerCertsValue, diags := types.SetValue(activeRuntimeServerCertsElementType, activeRuntimeServerCertsValues)
 	respDiags.Append(diags...)
 
 	state.ActiveRuntimeServerCerts = activeRuntimeServerCertsValue
@@ -282,6 +290,7 @@ func (r *keypairsSslServerSettingsResource) Update(ctx context.Context, req reso
 
 func (r *keypairsSslServerSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
+	resp.Diagnostics.AddWarning("`keypairs_ssl_server_settings` configuration cannot be returned to original state.  The resource has been removed from Terraform state but the configuration remains applied to the environment.", "")
 }
 
 func (r *keypairsSslServerSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
