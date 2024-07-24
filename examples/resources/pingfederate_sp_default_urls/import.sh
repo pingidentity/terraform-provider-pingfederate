@@ -1,1 +1,0 @@
-terraform import pingfederate_sp_default_urls.spDefaultUrlsExample id

@@ -73,7 +73,7 @@ import (
 	sessionauthenticationsessionpoliciesglobal "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/authenticationsessionpolicies/global"
 	sessionsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/settings"
 	spauthenticationpolicycontractmapping "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sp/authenticationpolicycontractmapping"
-	spdefaulturls "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sp/defaulturls"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sp/defaulturls"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/tokenprocessortotokengeneratormapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/virtualhostnames"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -718,6 +718,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		authenticationpolicycontract.AuthenticationPolicyContractResource,
 		authenticationselector.AuthenticationSelectorsResource,
 		certificate.CertificateCAResource,
+		defaulturls.DefaultUrlsResource,
 		extendedproperties.ExtendedPropertiesResource,
 		idpadapter.IdpAdapterResource,
 		idpdefaulturls.IdpDefaultUrlsResource,
@@ -759,7 +760,6 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		sessionauthenticationsessionpoliciesglobal.SessionAuthenticationSessionPoliciesGlobalResource,
 		sessionsettings.SessionSettingsResource,
 		spauthenticationpolicycontractmapping.SpAuthenticationPolicyContractMappingResource,
-		spdefaulturls.SpDefaultUrlsResource,
 		tokenprocessortotokengeneratormapping.TokenProcessorToTokenGeneratorMappingResource,
 		virtualhostnames.VirtualHostNamesResource,
 	}
