@@ -1,5 +1,6 @@
 # v0.13.0 (Unreleased)
 ### Resources
+* **New Resource:** `pingfederate_keypairs_ssl_server_settings` ([#272]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/272)))
 * **New Resource:** `pingfederate_oauth_authentication_policy_contract_mapping` ([#262]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/262)))
 * **New Resource:** `pingfederate_session_authentication_policy` ([#261]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/261)))
 * **New Resource:** `pingfederate_kerberos_realm_settings` ([#266]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/266)))
