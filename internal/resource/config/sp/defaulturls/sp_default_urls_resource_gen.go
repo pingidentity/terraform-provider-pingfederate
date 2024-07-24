@@ -187,10 +187,6 @@ func (r *spDefaultUrlsResource) Update(ctx context.Context, req resource.UpdateR
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *spDefaultUrlsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
-}
-
 func (r *spDefaultUrlsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
 	var emptyState spDefaultUrlsResourceModel
