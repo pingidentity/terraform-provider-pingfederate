@@ -9,6 +9,10 @@ import (
 )
 
 func ToSchema(s *schema.Schema) {
+	ToSchemaDeprecated(s, false)
+}
+
+func ToSchemaDeprecated(s *schema.Schema, deprecated bool) {
 	schemaId := schema.StringAttribute{}
 	schemaId.Description = "The ID of this resource."
 	schemaId.Required = false
@@ -16,6 +20,9 @@ func ToSchema(s *schema.Schema) {
 	schemaId.Computed = true
 	schemaId.PlanModifiers = []planmodifier.String{
 		stringplanmodifier.UseStateForUnknown(),
+	}
+	if deprecated {
+		schemaId.DeprecationMessage = "This attribute is deprecated and will be removed in a future release."
 	}
 	s.Attributes["id"] = schemaId
 }
