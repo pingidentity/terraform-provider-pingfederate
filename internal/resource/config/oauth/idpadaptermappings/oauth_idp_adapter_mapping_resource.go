@@ -1,0 +1,37 @@
+package oauthidpadaptermappings
+
+import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+)
+
+func (r *oauthIdpAdapterMappingResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var model oauthIdpAdapterMappingResourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if internaltypes.IsDefined(model.AttributeContractFulfillment) {
+		userKeyFound := false
+		userNameFound := false
+		for key := range model.AttributeContractFulfillment.Elements() {
+			if key == "USER_KEY" {
+				userKeyFound = true
+			}
+			if key == "USER_NAME" {
+				userNameFound = true
+			}
+		}
+
+		if !userKeyFound {
+			resp.Diagnostics.AddError("attribute_contract_fulfillment.USER_KEY is required", "")
+		}
+		if !userNameFound {
+			resp.Diagnostics.AddError("attribute_contract_fulfillment.USER_NAME is required", "")
+		}
+	}
+}
