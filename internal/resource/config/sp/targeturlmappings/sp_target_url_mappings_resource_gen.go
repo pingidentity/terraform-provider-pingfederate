@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -76,7 +77,7 @@ func (r *spTargetUrlMappingsResource) Schema(ctx context.Context, req resource.S
 									Description: "The ID of the resource.",
 								},
 							},
-							Optional:    true,
+							Required:    true,
 							Description: "The adapter or connection instance mapped for this URL.",
 						},
 						"type": schema.StringAttribute{
@@ -92,13 +93,16 @@ func (r *spTargetUrlMappingsResource) Schema(ctx context.Context, req resource.S
 						"url": schema.StringAttribute{
 							Required:    true,
 							Description: "The URL that will be compared against the target URL. Use a wildcard (*) to match multiple URLs to the same adapter or connection instance.",
+							Validators: []validator.String{
+								configvalidators.ValidUrl(),
+							},
 						},
 					},
 				},
 				Optional:    true,
 				Computed:    true,
 				Default:     listdefault.StaticValue(itemsDefault),
-				Description: "The actual list of SP connection URL mappings.",
+				Description: "The actual list of SP connection URL mappings. The order of the items in this list determines the order in which the mappings are evaluated.",
 			},
 		},
 	}
@@ -244,10 +248,6 @@ func (r *spTargetUrlMappingsResource) Update(ctx context.Context, req resource.U
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-}
-
-func (r *spTargetUrlMappingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
 }
 
 func (r *spTargetUrlMappingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

@@ -16,11 +16,18 @@ resource "pingfederate_sp_target_url_mappings" "spTargetUrlMappings" {
   items = [
     {
       ref = {
-        id = "myspadapter"
+        id = pingfederate_sp_adapter.reference_id.id
       }
       type = "SP_ADAPTER"
-      url  = "*"
-    }
+      url  = "https://www.bxretail.org/acct101/"
+    },
+    {
+      ref = {
+        id = pingfederate_sp_adapter.opentoken.id
+      }
+      type = "SP_ADAPTER"
+      url  = "https://www.bxretail.org/*"
+    },
   ]
 }
 ```
@@ -30,19 +37,16 @@ resource "pingfederate_sp_target_url_mappings" "spTargetUrlMappings" {
 
 ### Optional
 
-- `items` (Attributes List) The actual list of SP connection URL mappings. (see [below for nested schema](#nestedatt--items))
+- `items` (Attributes List) The actual list of SP connection URL mappings. The order of the items in this list determines the order in which the mappings are evaluated. (see [below for nested schema](#nestedatt--items))
 
 <a id="nestedatt--items"></a>
 ### Nested Schema for `items`
 
 Required:
 
+- `ref` (Attributes) The adapter or connection instance mapped for this URL. (see [below for nested schema](#nestedatt--items--ref))
 - `type` (String) The URL mapping type. Options are `SP_ADAPTER` or `SP_CONNECTION`.
 - `url` (String) The URL that will be compared against the target URL. Use a wildcard (*) to match multiple URLs to the same adapter or connection instance.
-
-Optional:
-
-- `ref` (Attributes) The adapter or connection instance mapped for this URL. (see [below for nested schema](#nestedatt--items--ref))
 
 <a id="nestedatt--items--ref"></a>
 ### Nested Schema for `items.ref`
