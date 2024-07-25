@@ -1,4 +1,4 @@
-package keypairsigningimport
+package keypairsslserverimport
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -16,22 +16,22 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ datasource.DataSource              = &keyPairsSigningImportDataSource{}
-	_ datasource.DataSourceWithConfigure = &keyPairsSigningImportDataSource{}
+	_ datasource.DataSource              = &keyPairsSslServerImportDataSource{}
+	_ datasource.DataSourceWithConfigure = &keyPairsSslServerImportDataSource{}
 )
 
 // Create a Administrative Account data source
-func KeyPairsSigningImportDataSource() datasource.DataSource {
-	return &keyPairsSigningImportDataSource{}
+func KeyPairsSslServerImportDataSource() datasource.DataSource {
+	return &keyPairsSslServerImportDataSource{}
 }
 
-// keyPairsSigningImportDataSource is the datasource implementation.
-type keyPairsSigningImportDataSource struct {
+// keyPairsSslServerImportDataSource is the datasource implementation.
+type keyPairsSslServerImportDataSource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
 }
 
-type keyPairsSigningImportDataSourceModel struct {
+type keyPairsSslServerImportDataSourceModel struct {
 	Id                      types.String `tfsdk:"id"`
 	ImportId                types.String `tfsdk:"import_id"`
 	SerialNumber            types.String `tfsdk:"serial_number"`
@@ -52,9 +52,9 @@ type keyPairsSigningImportDataSourceModel struct {
 }
 
 // GetSchema defines the schema for the datasource.
-func (r *keyPairsSigningImportDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (r *keyPairsSslServerImportDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes details of a signing key pair.",
+		Description: "Describes details of an SSL key pair.",
 		Attributes: map[string]schema.Attribute{
 			"serial_number": schema.StringAttribute{
 				Description: "The serial number assigned by the CA",
@@ -202,12 +202,12 @@ func (r *keyPairsSigningImportDataSource) Schema(ctx context.Context, req dataso
 }
 
 // Metadata returns the data source type name.
-func (r *keyPairsSigningImportDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_key_pair_signing_import"
+func (r *keyPairsSslServerImportDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_key_pair_ssl_server_import"
 }
 
 // Configure adds the provider configured client to the data source.
-func (r *keyPairsSigningImportDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, _ *datasource.ConfigureResponse) {
+func (r *keyPairsSslServerImportDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, _ *datasource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -218,15 +218,15 @@ func (r *keyPairsSigningImportDataSource) Configure(_ context.Context, req datas
 }
 
 // Read a DseeCompatAdministrativeAccountResponse object into the model struct
-func readKeyPairsSigningImportResponseDataSource(ctx context.Context, r *client.KeyPairView, state *keyPairsSigningImportDataSourceModel) diag.Diagnostics {
+func readKeyPairsSslServerImportResponseDataSource(ctx context.Context, r *client.KeyPairView, state *keyPairsSslServerImportDataSourceModel) diag.Diagnostics {
 	state.Id = types.StringPointerValue(r.Id)
 	state.ImportId = types.StringPointerValue(r.Id)
 	state.SerialNumber = types.StringPointerValue(r.SerialNumber)
 	state.SubjectDN = types.StringPointerValue(r.SubjectDN)
 	state.SubjectAlternativeNames = internaltypes.GetStringSet(r.SubjectAlternativeNames)
 	state.IssuerDN = types.StringPointerValue(r.IssuerDN)
-	state.ValidFrom = types.StringValue(r.ValidFrom.Format(time.RFC3339))
-	state.Expires = types.StringValue(r.Expires.Format(time.RFC3339))
+	state.ValidFrom = types.StringValue(r.GetValidFrom().Format(time.RFC3339))
+	state.Expires = types.StringValue(r.GetExpires().Format(time.RFC3339))
 	state.KeyAlgorithm = types.StringPointerValue(r.KeyAlgorithm)
 	state.KeySize = types.Int64PointerValue(r.KeySize)
 	state.SignatureAlgorithm = types.StringPointerValue(r.SignatureAlgorithm)
@@ -242,8 +242,8 @@ func readKeyPairsSigningImportResponseDataSource(ctx context.Context, r *client.
 }
 
 // Read resource information
-func (r *keyPairsSigningImportDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state keyPairsSigningImportDataSourceModel
+func (r *keyPairsSslServerImportDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var state keyPairsSslServerImportDataSourceModel
 
 	diags := req.Config.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -251,14 +251,14 @@ func (r *keyPairsSigningImportDataSource) Read(ctx context.Context, req datasour
 		return
 	}
 
-	apiReadKeyPairsSigningImport, httpResp, err := r.apiClient.KeyPairsSigningAPI.GetSigningKeyPair(config.AuthContext(ctx, r.providerConfig), state.ImportId.ValueString()).Execute()
+	apiReadKeyPairsSslServerImport, httpResp, err := r.apiClient.KeyPairsSslServerAPI.GetSslServerKeyPair(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the key pair signing import file", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPair SSL Server Import", err, httpResp)
 		return
 	}
 
 	// Read the response into the state
-	diags = readKeyPairsSigningImportResponseDataSource(ctx, apiReadKeyPairsSigningImport, &state)
+	diags = readKeyPairsSslServerImportResponseDataSource(ctx, apiReadKeyPairsSslServerImport, &state)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state

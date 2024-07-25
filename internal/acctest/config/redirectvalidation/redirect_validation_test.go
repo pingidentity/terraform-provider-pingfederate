@@ -8,10 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // Attributes to test with. Add optional properties to test here if desired.
@@ -114,6 +115,22 @@ resource "pingfederate_redirect_validation" "%[1]s" {
 }
 
 func testAccRedirectValidation(resourceName string, resourceModel redirectValidationResourceModel) string {
+	uriAllowListHcl := ""
+	if acctest.VersionAtLeast(version.PingFederate1210) {
+		uriAllowListHcl = `
+ 	uri_allow_list = [
+      {
+        target_resource_sso      = true
+        target_resource_slo      = false
+        in_error_resource        = true
+        idp_discovery            = false
+        allow_query_and_fragment = true
+        valid_uri               = "https://example.com"
+      },
+	]
+		`
+	}
+
 	return fmt.Sprintf(`
 resource "pingfederate_redirect_validation" "%[1]s" {
   redirect_validation_local_settings = {
@@ -143,6 +160,7 @@ resource "pingfederate_redirect_validation" "%[1]s" {
         require_https            = %[21]t
       }
     ]
+	%[23]s
   }
   redirect_validation_partner_settings = {
     enable_wreply_validation_slo = %[22]t
@@ -173,6 +191,7 @@ data "pingfederate_redirect_validation" "%[1]s" {
 		*resourceModel.whiteList[1].AllowQueryAndFragment,
 		*resourceModel.whiteList[1].RequireHttps,
 		*resourceModel.redirectValidationPartnerSettings.EnableWreplyValidationSLO,
+		uriAllowListHcl,
 	)
 }
 

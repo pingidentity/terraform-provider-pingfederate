@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -37,13 +37,13 @@ func (r *authenticationPoliciesSettingsResource) Schema(ctx context.Context, req
 		Description: "Manages Authentication Policies Settings",
 		Attributes: map[string]schema.Attribute{
 			"enable_idp_authn_selection": schema.BoolAttribute{
-				Description: "Enable IdP authentication policies.",
+				Description: "Enable IdP authentication policies. Default value is `false`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"enable_sp_authn_selection": schema.BoolAttribute{
-				Description: "Enable SP authentication policies.",
+				Description: "Enable SP authentication policies. Default value is `false`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
@@ -51,7 +51,7 @@ func (r *authenticationPoliciesSettingsResource) Schema(ctx context.Context, req
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 

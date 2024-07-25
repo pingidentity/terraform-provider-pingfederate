@@ -11,10 +11,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 // These variables cannot be modified due to resource dependent values
@@ -23,7 +24,8 @@ const pingOneLdapGDSType = "PING_ONE_LDAP_GATEWAY"
 const ldapTypeVal = "PING_DIRECTORY"
 
 type pingOneLdapGatewayDataStoreResourceModel struct {
-	dataStore *client.PingOneLdapGatewayDataStore
+	dataStore             *client.PingOneLdapGatewayDataStore
+	includeOptionalFields bool
 }
 
 func initialPingOneLdapGatewayDataStore(pingOneConRef, pingOneEnvId, pingOneLdapGwId string) *client.PingOneLdapGatewayDataStore {
@@ -47,7 +49,7 @@ func updatedPingOneLdapGatewayDataStore(pingOneConRef, pingOneEnvId, pingOneLdap
 	updatedPingOneLdapGatewayDataStore.PingOneConnectionRef = *client.NewResourceLink(pingOneConRef)
 	updatedPingOneLdapGatewayDataStore.PingOneEnvironmentId = pingOneEnvId
 	updatedPingOneLdapGatewayDataStore.PingOneLdapGatewayId = pingOneLdapGwId
-	updatedPingOneLdapGatewayDataStore.UseSsl = pointers.Bool(true)
+	updatedPingOneLdapGatewayDataStore.UseSsl = pointers.Bool(false)
 	updatedPingOneLdapGatewayDataStore.Name = pointers.String("myPingOneLdapGatewayDataStore")
 	updatedPingOneLdapGatewayDataStore.MaskAttributeValues = pointers.Bool(true)
 	updatedPingOneLdapGatewayDataStore.BinaryAttributes = []string{"binaryAttribute1", "binaryAttribute2"}
@@ -90,7 +92,10 @@ func TestAccPingOneLdapGatewayDataStore(t *testing.T) {
 			{
 				// Minimal model
 				Config: testAccPingOneLdapGatewayDataStore(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedPingOneLdapGatewayDataStoreAttributes(initialResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedPingOneLdapGatewayDataStoreAttributes(initialResourceModel),
+					checkGatewayPf121ComputedAttrs(resourceName),
+				),
 			},
 			{
 				// Test updating some fields
@@ -108,7 +113,10 @@ func TestAccPingOneLdapGatewayDataStore(t *testing.T) {
 			{
 				// Back to the initial minimal model
 				Config: testAccPingOneLdapGatewayDataStore(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedPingOneLdapGatewayDataStoreAttributes(initialResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedPingOneLdapGatewayDataStoreAttributes(initialResourceModel),
+					checkGatewayPf121ComputedAttrs(resourceName),
+				),
 			},
 			{
 				PreConfig: func() {
@@ -125,18 +133,38 @@ func TestAccPingOneLdapGatewayDataStore(t *testing.T) {
 			{
 				// Minimal model
 				Config: testAccPingOneLdapGatewayDataStore(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedPingOneLdapGatewayDataStoreAttributes(initialResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedPingOneLdapGatewayDataStoreAttributes(initialResourceModel),
+					checkGatewayPf121ComputedAttrs(resourceName),
+				),
 			},
 		},
 	})
 }
 
-func pingOneLdapGDShcl(pingOneLdapGDS *client.PingOneLdapGatewayDataStore) string {
+func checkGatewayPf121ComputedAttrs(resourceName string) resource.TestCheckFunc {
+	if acctest.VersionAtLeast(version.PingFederate1210) {
+		return resource.ComposeTestCheckFunc(
+			resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "ping_one_ldap_gateway_data_store.use_start_tls", "false"),
+		)
+	}
+	return resource.ComposeTestCheckFunc(
+		resource.TestCheckNoResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "ping_one_ldap_gateway_data_store.use_start_tls"),
+	)
+}
+
+func pingOneLdapGDShcl(pingOneLdapGDS *client.PingOneLdapGatewayDataStore, includeOptionalFields bool) string {
 	var builder strings.Builder
 	if pingOneLdapGDS == nil {
 		return ""
 	}
 	if pingOneLdapGDS != nil {
+		versionedHcl := ""
+		if includeOptionalFields && acctest.VersionAtLeast(version.PingFederate1210) {
+			versionedHcl += `
+			use_start_tls = true
+			`
+		}
 		top := `
 		data_store_id             = "%[1]s"
 		%[2]s
@@ -156,6 +184,7 @@ func pingOneLdapGDShcl(pingOneLdapGDS *client.PingOneLdapGatewayDataStore) strin
 			%[4]s
 			%[5]s
 			%[6]s
+			%[7]s
 		}
 		`
 		builder.WriteString(fmt.Sprintf(tf,
@@ -165,6 +194,7 @@ func pingOneLdapGDShcl(pingOneLdapGDS *client.PingOneLdapGatewayDataStore) strin
 			acctest.TfKeyValuePairToString("ping_one_environment_id", pingOneLdapGDS.PingOneEnvironmentId, true),
 			acctest.TfKeyValuePairToString("ping_one_ldap_gateway_id", pingOneLdapGDS.PingOneLdapGatewayId, true),
 			acctest.TfKeyValuePairToString("use_ssl", strconv.FormatBool(pingOneLdapGDS.GetUseSsl()), false),
+			versionedHcl,
 		))
 	}
 	return builder.String()
@@ -178,7 +208,7 @@ resource "pingfederate_data_store" "%[1]s" {
 data "pingfederate_data_store" "%[1]s" {
   data_store_id = pingfederate_data_store.%[1]s.id
 }`, resourceName,
-		pingOneLdapGDShcl(pingOneLdapGatewayDataStore.dataStore),
+		pingOneLdapGDShcl(pingOneLdapGatewayDataStore.dataStore, pingOneLdapGatewayDataStore.includeOptionalFields),
 	)
 }
 

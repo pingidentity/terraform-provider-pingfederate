@@ -167,6 +167,7 @@ Optional:
 Optional:
 
 - `account_changes_notification_publisher_ref` (Attributes) Reference to the associated notification publisher for admin user account changes. (see [below for nested schema](#nestedatt--notifications--account_changes_notification_publisher_ref))
+- `bulkhead_alert_notification_settings` (Attributes) Settings for bulkhead notifications (see [below for nested schema](#nestedatt--notifications--bulkhead_alert_notification_settings))
 - `certificate_expirations` (Attributes) Notification settings for certificate expiration events. (see [below for nested schema](#nestedatt--notifications--certificate_expirations))
 - `expired_certificate_administrative_console_warning_days` (Number) Indicates the number of days prior to certificate expiry date, the administrative console warning starts. The default value is 14 days. Supported in PF 12.0 or later.
 - `expiring_certificate_administrative_console_warning_days` (Number) Indicates the number of days past the certificate expiry date, the administrative console warning ends. The default value is 14 days. Supported in PF 12.0 or later.
@@ -181,6 +182,25 @@ Optional:
 Required:
 
 - `id` (String) The ID of the resource.
+
+
+<a id="nestedatt--notifications--bulkhead_alert_notification_settings"></a>
+### Nested Schema for `notifications.bulkhead_alert_notification_settings`
+
+Optional:
+
+- `email_address` (String) Email address where notifications are sent.
+- `notification_mode` (String) The mode of notification. Set to NOTIFICATION_PUBLISHER to enable email notifications and server log messages. Set to LOGGING_ONLY to enable server log messages. Defaults to LOGGING_ONLY.
+- `notification_publisher_ref` (Attributes) Reference to the associated notification publisher. (see [below for nested schema](#nestedatt--notifications--bulkhead_alert_notification_settings--notification_publisher_ref))
+- `thread_dump_enabled` (Boolean) Generate a thread dump when a bulkhead reaches its warning threshold or is full.
+
+<a id="nestedatt--notifications--bulkhead_alert_notification_settings--notification_publisher_ref"></a>
+### Nested Schema for `notifications.bulkhead_alert_notification_settings.notification_publisher_ref`
+
+Required:
+
+- `id` (String) The ID of the resource.
+
 
 
 <a id="nestedatt--notifications--certificate_expirations"></a>
