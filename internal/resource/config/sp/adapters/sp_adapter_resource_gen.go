@@ -5,6 +5,7 @@ package spadapters
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -14,10 +15,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -71,6 +74,9 @@ func (r *spAdapterResource) Schema(ctx context.Context, req resource.SchemaReque
 					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),
 				},
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"attribute_contract": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -115,6 +121,9 @@ func (r *spAdapterResource) Schema(ctx context.Context, req resource.SchemaReque
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"parent_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -144,10 +153,17 @@ func (r *spAdapterResource) Schema(ctx context.Context, req resource.SchemaReque
 					"application_icon_url": schema.StringAttribute{
 						Optional:    true,
 						Description: "The application icon URL.",
+						Validators: []validator.String{
+							configvalidators.ValidUrl(),
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"application_name": schema.StringAttribute{
 						Optional:    true,
 						Description: "The application name.",
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 				},
 				Optional:    true,
