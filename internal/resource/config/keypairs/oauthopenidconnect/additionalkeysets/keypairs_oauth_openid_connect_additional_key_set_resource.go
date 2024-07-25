@@ -120,17 +120,14 @@ func validateActiveAndPreviousCertRef(prefix string, active, previous types.Obje
 	if active.IsUnknown() || previous.IsUnknown() {
 		return
 	}
-	if internaltypes.IsDefined(active) {
+	if internaltypes.IsDefined(active) && internaltypes.IsDefined(previous) {
 		// The active cert ref, if set, must be different than the previous cert ref for each type
-		activeId := active.Attributes()["id"].(types.String).ValueString()
-		previousId := ""
-		if internaltypes.IsDefined(previous) {
-			previousId = previous.Attributes()["id"].(types.String).ValueString()
+		activeId := active.Attributes()["id"].(types.String)
+		previousId := previous.Attributes()["id"].(types.String)
+		if !activeId.IsUnknown() && activeId.Equal(previousId) {
+			respDiags.AddError(fmt.Sprintf("The signing_keys.%[1]sactive_cert_ref.id and signing_keys.%[1]sprevious_cert_ref.id attributes must be different.", prefix), fmt.Sprintf("active id: %s, previous id: %s", activeId.ValueString(), previousId.ValueString()))
 		}
-		if activeId == previousId {
-			respDiags.AddError(fmt.Sprintf("The signing_keys.%[1]sactive_cert_ref.id and signing_keys.%[1]sprevious_cert_ref.id attributes must be different.", prefix), fmt.Sprintf("active id: %s, previous id: %s", activeId, previousId))
-		}
-	} else if internaltypes.IsDefined(previous) {
+	} else if !internaltypes.IsDefined(active) && internaltypes.IsDefined(previous) {
 		// active must be set to set the previous cert ref
 		respDiags.AddError(fmt.Sprintf("The signing_keys.%[1]sactive_cert_ref attribute must be set when signing_keys.%[1]sprevious_cert_ref is set.", prefix), "")
 	}
