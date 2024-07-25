@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -94,18 +95,18 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 						Default:     booldefault.StaticBool(false),
 						Description: "Allow client deletion from dynamic client management. Default value is `false`.",
 					},
-					"allowed_authorization_detail_types": schema.ListAttribute{
+					"allowed_authorization_detail_types": schema.SetAttribute{
 						ElementType: types.StringType,
 						Optional:    true,
 						Computed:    true,
-						Default:     listdefault.StaticValue(emptyStringListDefault),
+						Default:     setdefault.StaticValue(emptyStringSetDefault),
 						Description: "The authorization detail types to allow.",
 					},
-					"allowed_exclusive_scopes": schema.ListAttribute{
+					"allowed_exclusive_scopes": schema.SetAttribute{
 						ElementType: types.StringType,
 						Optional:    true,
 						Computed:    true,
-						Default:     listdefault.StaticValue(emptyStringListDefault),
+						Default:     setdefault.StaticValue(emptyStringSetDefault),
 						Description: "The exclusive scopes to allow.",
 					},
 					"bypass_activation_code_confirmation_override": schema.BoolAttribute{
@@ -473,11 +474,11 @@ func (r *oauthClientSettingsResource) Schema(ctx context.Context, req resource.S
 						Default:     booldefault.StaticBool(false),
 						Description: "Determines whether the client is restricted to using only its default access token manager. The default is `false`.",
 					},
-					"restricted_common_scopes": schema.ListAttribute{
+					"restricted_common_scopes": schema.SetAttribute{
 						ElementType: types.StringType,
 						Optional:    true,
 						Computed:    true,
-						Default:     listdefault.StaticValue(emptyStringListDefault),
+						Default:     setdefault.StaticValue(emptyStringSetDefault),
 						Description: "The common scopes to restrict.",
 					},
 					"retain_client_secret": schema.BoolAttribute{
@@ -731,8 +732,8 @@ func (state *oauthClientSettingsResourceModel) readClientResponse(response *clie
 	}
 	dynamicClientRegistrationAttrTypes := map[string]attr.Type{
 		"allow_client_delete":                                  types.BoolType,
-		"allowed_authorization_detail_types":                   types.ListType{ElemType: types.StringType},
-		"allowed_exclusive_scopes":                             types.ListType{ElemType: types.StringType},
+		"allowed_authorization_detail_types":                   types.SetType{ElemType: types.StringType},
+		"allowed_exclusive_scopes":                             types.SetType{ElemType: types.StringType},
 		"bypass_activation_code_confirmation_override":         types.BoolType,
 		"ciba_polling_interval":                                types.Int64Type,
 		"ciba_require_signed_requests":                         types.BoolType,
@@ -769,7 +770,7 @@ func (state *oauthClientSettingsResourceModel) readClientResponse(response *clie
 		"require_signed_requests":                              types.BoolType,
 		"restrict_common_scopes":                               types.BoolType,
 		"restrict_to_default_access_token_manager":             types.BoolType,
-		"restricted_common_scopes":                             types.ListType{ElemType: types.StringType},
+		"restricted_common_scopes":                             types.SetType{ElemType: types.StringType},
 		"retain_client_secret":                                 types.BoolType,
 		"rotate_client_secret":                                 types.BoolType,
 		"rotate_registration_access_token":                     types.BoolType,
@@ -780,9 +781,9 @@ func (state *oauthClientSettingsResourceModel) readClientResponse(response *clie
 	if response.DynamicClientRegistration == nil {
 		dynamicClientRegistrationValue = types.ObjectNull(dynamicClientRegistrationAttrTypes)
 	} else {
-		dynamicClientRegistrationAllowedAuthorizationDetailTypesValue, diags := types.ListValueFrom(context.Background(), types.StringType, response.DynamicClientRegistration.AllowedAuthorizationDetailTypes)
+		dynamicClientRegistrationAllowedAuthorizationDetailTypesValue, diags := types.SetValueFrom(context.Background(), types.StringType, response.DynamicClientRegistration.AllowedAuthorizationDetailTypes)
 		respDiags.Append(diags...)
-		dynamicClientRegistrationAllowedExclusiveScopesValue, diags := types.ListValueFrom(context.Background(), types.StringType, response.DynamicClientRegistration.AllowedExclusiveScopes)
+		dynamicClientRegistrationAllowedExclusiveScopesValue, diags := types.SetValueFrom(context.Background(), types.StringType, response.DynamicClientRegistration.AllowedExclusiveScopes)
 		respDiags.Append(diags...)
 		var dynamicClientRegistrationClientCertIssuerRefValue types.Object
 		if response.DynamicClientRegistration.ClientCertIssuerRef == nil {
@@ -842,7 +843,7 @@ func (state *oauthClientSettingsResourceModel) readClientResponse(response *clie
 			})
 			respDiags.Append(diags...)
 		}
-		dynamicClientRegistrationRestrictedCommonScopesValue, diags := types.ListValueFrom(context.Background(), types.StringType, response.DynamicClientRegistration.RestrictedCommonScopes)
+		dynamicClientRegistrationRestrictedCommonScopesValue, diags := types.SetValueFrom(context.Background(), types.StringType, response.DynamicClientRegistration.RestrictedCommonScopes)
 		respDiags.Append(diags...)
 		var dynamicClientRegistrationTokenExchangeProcessorPolicyRefValue types.Object
 		if response.DynamicClientRegistration.TokenExchangeProcessorPolicyRef == nil {
@@ -951,8 +952,8 @@ func (r *oauthClientSettingsResource) emptyModel() oauthClientSettingsResourceMo
 	}
 	dynamicClientRegistrationAttrTypes := map[string]attr.Type{
 		"allow_client_delete":                                  types.BoolType,
-		"allowed_authorization_detail_types":                   types.ListType{ElemType: types.StringType},
-		"allowed_exclusive_scopes":                             types.ListType{ElemType: types.StringType},
+		"allowed_authorization_detail_types":                   types.SetType{ElemType: types.StringType},
+		"allowed_exclusive_scopes":                             types.SetType{ElemType: types.StringType},
 		"bypass_activation_code_confirmation_override":         types.BoolType,
 		"ciba_polling_interval":                                types.Int64Type,
 		"ciba_require_signed_requests":                         types.BoolType,
@@ -989,7 +990,7 @@ func (r *oauthClientSettingsResource) emptyModel() oauthClientSettingsResourceMo
 		"require_signed_requests":                              types.BoolType,
 		"restrict_common_scopes":                               types.BoolType,
 		"restrict_to_default_access_token_manager":             types.BoolType,
-		"restricted_common_scopes":                             types.ListType{ElemType: types.StringType},
+		"restricted_common_scopes":                             types.SetType{ElemType: types.StringType},
 		"retain_client_secret":                                 types.BoolType,
 		"rotate_client_secret":                                 types.BoolType,
 		"rotate_registration_access_token":                     types.BoolType,
@@ -1083,10 +1084,6 @@ func (r *oauthClientSettingsResource) Update(ctx context.Context, req resource.U
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-}
-
-func (r *oauthClientSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
 }
 
 func (r *oauthClientSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

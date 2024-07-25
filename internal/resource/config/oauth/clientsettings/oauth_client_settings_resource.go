@@ -9,7 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 )
 
 var (
@@ -23,7 +25,7 @@ var (
 
 	clientMetadataDefault, _ = types.ListValue(clientMetadataElemType, nil)
 
-	emptyStringListDefault, _ = types.ListValue(types.StringType, nil)
+	emptyStringSetDefault, _ = types.SetValue(types.StringType, nil)
 
 	refListElemType = types.ObjectType{
 		AttrTypes: map[string]attr.Type{
@@ -201,5 +203,33 @@ func addPfIgnoredError(respDiags *diag.Diagnostics, attrName, responseValue, req
 	if requestValue != responseValue {
 		respDiags.AddError(fmt.Sprintf("PingFederate failed to save the provided value for %s.", attrName),
 			fmt.Sprintf("PingFederate returned \"%s\" after request to set %s to \"%s\"", responseValue, attrName, requestValue))
+	}
+}
+
+func (r *oauthClientSettingsResource) buildDefaultClientStruct() *client.ClientSettings {
+	result := &client.ClientSettings{}
+	result.ClientMetadata = []client.ClientMetadata{}
+	result.ClientMetadata = append(result.ClientMetadata, client.ClientMetadata{
+		Parameter:   utils.Pointer("authNexp"),
+		Description: utils.Pointer("Authentication Experience [Single_Factor | Internal | ID-First | Multi_Factor]"),
+		MultiValued: utils.Pointer(false),
+	})
+	result.ClientMetadata = append(result.ClientMetadata, client.ClientMetadata{
+		Parameter:   utils.Pointer("useAuthnApi"),
+		Description: utils.Pointer("Use the AuthN API"),
+		MultiValued: utils.Pointer(false),
+	})
+	return result
+}
+
+func (r *oauthClientSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
+	// Instead this resource will reset the PF config back to its default value.
+	clientData := r.buildDefaultClientStruct()
+	apiUpdateRequest := r.apiClient.OauthClientSettingsAPI.UpdateOauthClientSettings(config.AuthContext(ctx, r.providerConfig))
+	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
+	_, httpResp, err := r.apiClient.OauthClientSettingsAPI.UpdateOauthClientSettingsExecute(apiUpdateRequest)
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while resetting the oauthClientSettings", err, httpResp)
 	}
 }
