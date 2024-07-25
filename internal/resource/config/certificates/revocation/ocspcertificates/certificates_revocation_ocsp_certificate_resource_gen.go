@@ -109,6 +109,9 @@ func (r *certificatesRevocationOcspCertificateResource) Schema(ctx context.Conte
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"issuer_dn": schema.StringAttribute{
 				Computed:    true,
