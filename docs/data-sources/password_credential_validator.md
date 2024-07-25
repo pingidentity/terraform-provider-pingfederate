@@ -41,7 +41,6 @@ Read-Only:
 
 - `core_attributes` (Attributes List) A list of read-only attributes that are automatically populated by the password credential validator descriptor. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
 - `extended_attributes` (Attributes List) A list of additional attributes that can be returned by the password credential validator. The extended attributes are only used if the adapter supports them. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
-- `inherited` (Boolean, Deprecated) Whether this attribute contract is inherited from its parent instance. If true, the rest of the properties in this model become read-only. The default value is false.
 
 <a id="nestedatt--attribute_contract--core_attributes"></a>
 ### Nested Schema for `attribute_contract.core_attributes`
@@ -74,7 +73,6 @@ Read-Only:
 Read-Only:
 
 - `encrypted_value` (String) For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined.
-- `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 - `name` (String) The name of the configuration field.
 - `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute.
 
@@ -84,7 +82,6 @@ Read-Only:
 
 Read-Only:
 
-- `inherited` (Boolean) Whether this table is inherited from its parent instance. If true, the rows become read-only. The default value is false.
 - `name` (String) The name of the table.
 - `rows` (Attributes List) List of table rows. (see [below for nested schema](#nestedatt--configuration--tables--rows))
 
@@ -102,7 +99,6 @@ Read-Only:
 Read-Only:
 
 - `encrypted_value` (String) For encrypted or hashed fields, this attribute contains the encrypted representation of the field's value, if a value is defined.
-- `inherited` (Boolean) Whether this field is inherited from its parent instance. If true, the value/encrypted value properties become read-only. The default value is false.
 - `name` (String) The name of the configuration field.
 - `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute.
 

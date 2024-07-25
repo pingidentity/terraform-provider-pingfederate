@@ -19,7 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -221,6 +221,41 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 										"LOGGING_ONLY",
 									),
 								},
+							},
+						},
+					},
+					"bulkhead_alert_notification_settings": schema.SingleNestedAttribute{
+						Description: "Settings for bulkhead notifications",
+						Optional:    true,
+						Attributes: map[string]schema.Attribute{
+							"email_address": schema.StringAttribute{
+								Description: "Email address where notifications are sent.",
+								Optional:    true,
+								Computed:    true,
+								Default:     stringdefault.StaticString(""),
+							},
+							"notification_publisher_ref": schema.SingleNestedAttribute{
+								Description: "Reference to the associated notification publisher.",
+								Optional:    true,
+								Attributes:  resourcelink.ToSchema(),
+							},
+							"notification_mode": schema.StringAttribute{
+								Description: "The mode of notification. Set to NOTIFICATION_PUBLISHER to enable email notifications and server log messages. Set to LOGGING_ONLY to enable server log messages. Defaults to LOGGING_ONLY.",
+								Optional:    true,
+								Computed:    true,
+								Default:     stringdefault.StaticString("LOGGING_ONLY"),
+								Validators: []validator.String{
+									stringvalidator.OneOf(
+										"NOTIFICATION_PUBLISHER",
+										"LOGGING_ONLY",
+									),
+								},
+							},
+							"thread_dump_enabled": schema.BoolAttribute{
+								Description: "Generate a thread dump when a bulkhead reaches its warning threshold or is full.",
+								Optional:    true,
+								Computed:    true,
+								Default:     booldefault.StaticBool(true),
 							},
 						},
 					},
@@ -609,6 +644,12 @@ func (r *serverSettingsResource) ModifyPlan(ctx context.Context, req resource.Mo
 		return
 	}
 	pfVersionAtLeast120 := compare >= 0
+	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
+	if err != nil {
+		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		return
+	}
+	pfVersionAtLeast121 := compare >= 0
 	var plan serverSettingsModel
 	req.Plan.Get(ctx, &plan)
 	if !internaltypes.IsDefined(plan.Notifications) {
@@ -677,6 +718,13 @@ func (r *serverSettingsResource) ModifyPlan(ctx context.Context, req resource.Mo
 		if planExpiringCertWarningDays.IsUnknown() {
 			planExpiringCertWarningDays = types.Int64Value(14)
 			updatePlan = true
+		}
+	}
+
+	if !pfVersionAtLeast121 {
+		if internaltypes.IsDefined(planNotificationsAttrs["bulkhead_alert_notification_settings"]) {
+			version.AddUnsupportedAttributeError("bulkhead_alert_notification_settings",
+				r.providerConfig.ProductVersion, version.PingFederate1210, &resp.Diagnostics)
 		}
 	}
 

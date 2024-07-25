@@ -13,7 +13,7 @@ The PingFederate Terraform provider is under active development. As such, consum
 
 ## PingFederate Version Support
 
-The PingFederate provider supports versions `11.2` through `12.0` of PingFederate.
+The PingFederate provider supports versions `11.2` through `12.1` of PingFederate.
 
 ## Documentation
 Detailed documentation on PingFederate can be found in the [online docs](https://docs.pingidentity.com/r/en-us/pingfederate-112/pf_pingfederate_landing_page)
@@ -23,7 +23,7 @@ terraform {
   required_version = ">=1.1"
   required_providers {
     pingfederate = {
-      version = "~> 0.6.0"
+      version = "~> 0.12.0"
       source  = "pingidentity/pingfederate"
     }
   }
@@ -36,7 +36,7 @@ provider "pingfederate" {
   admin_api_path                      = "/pf-admin-api/v1"
   insecure_trust_all_tls              = true
   x_bypass_external_validation_header = true
-  product_version                     = "12.0"
+  product_version                     = "12.1"
 }
 
 resource "pingfederate_administrative_account" "administrativeAccount" {
@@ -54,7 +54,7 @@ provider "pingfederate" {
   password        = "2FederateM0re"
   https_host      = "https://localhost:9999"
   admin_api_path  = "/pf-admin-api/v1"
-  product_version = "12.0"
+  product_version = "12.1"
 }
 ```
 
@@ -67,7 +67,7 @@ provider "pingfederate" {
   token_url       = "https://localhost:9031/as/token.oauth2"
   https_host      = "https://localhost:9999"
   admin_api_path  = "/pf-admin-api/v1"
-  product_version = "12.0"
+  product_version = "12.1"
 }
 ```
 
@@ -77,7 +77,7 @@ provider "pingfederate" {
   access_token    = "accesstokenvaluefromclient"
   https_host      = "https://localhost:9999"
   admin_api_path  = "/pf-admin-api/v1"
-  product_version = "12.0"
+  product_version = "12.1"
 }
 ```
 

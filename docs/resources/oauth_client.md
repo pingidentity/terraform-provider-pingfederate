@@ -131,6 +131,7 @@ RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.
 - `description` (String) A description of what the client application does. This description appears when the user is prompted for authorization.
 - `device_flow_setting_type` (String) Allows an administrator to override the Device Authorization Settings set globally for the OAuth AS. Defaults to SERVER_DEFAULT.
 - `device_polling_interval_override` (Number) The amount of time client should wait between polling requests, in seconds. This overrides the 'devicePollingInterval' value present in Authorization Server Settings.
+- `enable_cookieless_authentication_api` (Boolean) Set to true to allow the authentication API redirectless flow to function without requiring any cookies.
 - `enabled` (Boolean) Specifies whether the client is enabled. The default value is true.
 - `exclusive_scopes` (Set of String) The exclusive scopes available for this client.
 - `extended_parameters` (Attributes Map) OAuth Client Metadata can be extended to use custom Client Metadata Parameters. The names of these custom parameters should be defined in /extendedProperties. (see [below for nested schema](#nestedatt--extended_parameters))
@@ -172,6 +173,7 @@ PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512
 A null value will represent the default algorithm which is RS256.
 RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
 - `logo_url` (String) The location of the logo used on user-facing OAuth grant authorization and revocation pages.
+- `offline_access_require_consent_prompt` (String) Determines whether offline_access requires the prompt parameter value to be set to 'consent' by this client or not. The value will be reset to default if the 'requireOfflineAccessScopeToIssueRefreshTokens' attribute is set to 'SERVER_DEFAULT' or 'false'. 'SERVER_DEFAULT' is the default value.
 - `oidc_policy` (Attributes) Open ID Connect Policy settings. This is included in the message only when OIDC is enabled. (see [below for nested schema](#nestedatt--oidc_policy))
 - `pending_authorization_timeout_override` (Number) The 'device_code' and 'user_code' timeout, in seconds. This overrides the 'pendingAuthorizationTimeout' value present in Authorization Server Settings.
 - `persistent_grant_expiration_time` (Number) The persistent grant expiration time. -1 indicates an indefinite amount of time.
@@ -186,7 +188,8 @@ RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
 - `refresh_rolling` (String) Use ROLL or DONT_ROLL to override the Roll Refresh Token Values setting on the Authorization Server Settings. SERVER_DEFAULT will default to the Roll Refresh Token Values setting on the Authorization Server Setting screen. Defaults to SERVER_DEFAULT.
 - `refresh_token_rolling_grace_period` (Number) The grace period that a rolled refresh token remains valid in seconds.
 - `refresh_token_rolling_grace_period_type` (String) When specified, it overrides the global Refresh Token Grace Period defined in the Authorization Server Settings. The default value is SERVER_DEFAULT
-- `refresh_token_rolling_interval` (Number) The minimum interval to roll refresh tokens, in hours. This value will override the Refresh Token Rolling Interval Value on the Authorization Server Settings.
+- `refresh_token_rolling_interval` (Number) The minimum interval to roll refresh tokens. This value will override the Refresh Token Rolling Interval Value on the Authorization Server Settings.
+- `refresh_token_rolling_interval_time_unit` (String) The refresh token rolling interval time unit. Defaults to HOURS.
 - `refresh_token_rolling_interval_type` (String) Use OVERRIDE_SERVER_DEFAULT to override the Refresh Token Rolling Interval value on the Authorization Server Settings. SERVER_DEFAULT will default to the Refresh Token Rolling Interval value on the Authorization Server Setting. Defaults to SERVER_DEFAULT.
 - `request_object_signing_algorithm` (String) The JSON Web Signature [JWS] algorithm that must be used to sign the Request Object. All signing algorithms are allowed if value is not present
 RS256 - RSA using SHA-256
@@ -203,6 +206,7 @@ RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.
 - `request_policy_ref` (Attributes) The CIBA request policy. (see [below for nested schema](#nestedatt--request_policy_ref))
 - `require_dpop` (Boolean) Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Supported in PF version 11.3 or later.
 - `require_jwt_secured_authorization_response_mode` (Boolean) Determines whether JWT secured authorization response mode is required when initiating an authorization request. The default is false.
+- `require_offline_access_scope_to_issue_refresh_tokens` (String) Determines whether offline_access scope is required to issue refresh tokens by this client or not. 'SERVER_DEFAULT' is the default value.
 - `require_proof_key_for_code_exchange` (Boolean) Determines whether Proof Key for Code Exchange (PKCE) is required for this client.
 - `require_pushed_authorization_requests` (Boolean) Determines whether pushed authorization requests are required when initiating an authorization request. The default is false.
 - `require_signed_requests` (Boolean) Determines whether JWT Secured authorization response mode is required when initiating an authorization request. The default is false.
