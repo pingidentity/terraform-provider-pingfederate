@@ -1,6 +1,19 @@
-# v0.12.0 (Unreleased)
+# v0.13.0 (Unreleased)
 ### Resources
 * **New Resource:** `pingfederate_idp_to_sp_adapter_mapping` ([#264]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/264)))
+* **New Resource:** `pingfederate_sp_target_url_mappings` ([#273]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/273)))
+* **New Resource:** `pingfederate_keypairs_ssl_server_settings` ([#272]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/272)))
+* **New Resource:** `pingfederate_oauth_authentication_policy_contract_mapping` ([#262]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/262)))
+* **New Resource:** `pingfederate_session_authentication_policy` ([#261]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/261)))
+* **New Resource:** `pingfederate_kerberos_realm_settings` ([#266]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/266)))
+* **New Resource:** `pingfederate_oauth_idp_adapter_mapping` ([#263]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/263)))
+
+# v0.12.0 June 27th, 2024
+### BREAKING CHANGES
+* Removed deprecated `inherited` attribute from various resources and data sources. ([#268]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/268)))
+
+### ENHANCEMENTS
+* Added support for PingFederate `12.1.0` and implemented new attributes for the new version. Added support for latest PF patch releases to `11.2`, `11.3`, and `12.0`. ([#268]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/268)))
 
 # v0.11.0 May 30th, 2024
 ### DEPRECATED

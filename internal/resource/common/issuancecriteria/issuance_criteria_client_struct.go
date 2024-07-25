@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
 func ConditionalCriteriaClientStruct(issuanceCriteria types.Object) ([]client.ConditionalIssuanceCriteriaEntry, error) {
 	conditionalCriteria := []client.ConditionalIssuanceCriteriaEntry{}
-	conditionalCriteriaErr := json.Unmarshal([]byte(internaljson.FromValue(issuanceCriteria.Attributes()["conditional_criteria"].(types.List), true)), &conditionalCriteria)
+	conditionalCriteriaErr := json.Unmarshal([]byte(internaljson.FromValue(issuanceCriteria.Attributes()["conditional_criteria"].(types.Set), true)), &conditionalCriteria)
 	if conditionalCriteriaErr != nil {
 		return nil, conditionalCriteriaErr
 	}
@@ -20,7 +20,7 @@ func ConditionalCriteriaClientStruct(issuanceCriteria types.Object) ([]client.Co
 
 func ExpressionCriteriaClientStruct(issuanceCriteria types.Object) ([]client.ExpressionIssuanceCriteriaEntry, error) {
 	expressionCriteria := []client.ExpressionIssuanceCriteriaEntry{}
-	expressionCriteriaErr := json.Unmarshal([]byte(internaljson.FromValue(issuanceCriteria.Attributes()["expression_criteria"].(types.List), true)), &expressionCriteria)
+	expressionCriteriaErr := json.Unmarshal([]byte(internaljson.FromValue(issuanceCriteria.Attributes()["expression_criteria"].(types.Set), true)), &expressionCriteria)
 	if expressionCriteriaErr != nil {
 		return nil, expressionCriteriaErr
 	}

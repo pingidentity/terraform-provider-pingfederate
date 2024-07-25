@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/attributesources"
@@ -57,7 +57,6 @@ func updatedAttributeContract() *client.IdpAdapterAttributeContract {
 		Masked:    pointers.Bool(false),
 	})
 	contract.UniqueUserKeyAttribute = pointers.String("username")
-	contract.Inherited = pointers.Bool(false)
 	return contract
 }
 
@@ -88,7 +87,6 @@ func updatedAttributeMapping() *client.IdpAdapterContractMapping {
 			Value: "another",
 		},
 	})
-	attributeMapping.Inherited = pointers.Bool(false)
 
 	attributeMapping.AttributeSources = []client.AttributeSourceAggregation{
 		{
@@ -223,11 +221,6 @@ func attributeContractHclBlock(attributeContract client.IdpAdapterAttributeContr
 		builder.WriteString(strconv.FormatBool(*attributeContract.MaskOgnlValues))
 		builder.WriteRune('\n')
 	}
-	if attributeContract.Inherited != nil {
-		builder.WriteString("    inherited = ")
-		builder.WriteString(strconv.FormatBool(*attributeContract.Inherited))
-		builder.WriteRune('\n')
-	}
 	if attributeContract.UniqueUserKeyAttribute != nil {
 		builder.WriteString("    unique_user_key_attribute = \"")
 		builder.WriteString(*attributeContract.UniqueUserKeyAttribute)
@@ -301,11 +294,6 @@ func attributeMappingHclBlock(attributeMapping *client.IdpAdapterContractMapping
 	if attributeMapping.IssuanceCriteria != nil && len(attributeMapping.IssuanceCriteria.ConditionalCriteria) > 0 {
 		// Onlye have logic for one conditional criteria right now
 		builder.WriteString(issuancecriteria.Hcl(&attributeMapping.IssuanceCriteria.ConditionalCriteria[0]))
-	}
-	if attributeMapping.Inherited != nil {
-		builder.WriteString("    inherited = ")
-		builder.WriteString(strconv.FormatBool(*attributeMapping.Inherited))
-		builder.WriteRune('\n')
 	}
 	builder.WriteString("}\n")
 	return builder.String()

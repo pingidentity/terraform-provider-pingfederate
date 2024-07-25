@@ -4,15 +4,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
 var (
 	fieldAttrTypes = map[string]attr.Type{
-		"name":      types.StringType,
-		"value":     types.StringType,
-		"inherited": types.BoolType,
+		"name":  types.StringType,
+		"value": types.StringType,
 	}
 
 	rowAttrTypes = map[string]attr.Type{
@@ -21,9 +20,8 @@ var (
 	}
 
 	tableAttrTypes = map[string]attr.Type{
-		"name":      types.StringType,
-		"rows":      types.ListType{ElemType: types.ObjectType{AttrTypes: rowAttrTypes}},
-		"inherited": types.BoolType,
+		"name": types.StringType,
+		"rows": types.ListType{ElemType: types.ObjectType{AttrTypes: rowAttrTypes}},
 	}
 
 	configurationAttrTypes = map[string]attr.Type{
@@ -56,7 +54,6 @@ func ToFieldsListValue(fields []client.ConfigField, planFields *types.List, diag
 		attrValues := map[string]attr.Value{}
 		attrValues["name"] = types.StringValue(field.Name)
 		attrValues["value"] = types.StringPointerValue(field.Value)
-		attrValues["inherited"] = types.BoolPointerValue(field.Inherited)
 
 		// If this field is in the plan, add it to the list of plan fields
 		if planFields != nil {
@@ -69,7 +66,6 @@ func ToFieldsListValue(fields []client.ConfigField, planFields *types.List, diag
 				} else {
 					planAttrValues["value"] = types.StringPointerValue(field.Value)
 				}
-				planAttrValues["inherited"] = types.BoolPointerValue(field.Inherited)
 				objVal, newDiags := types.ObjectValue(fieldAttrTypes, planAttrValues)
 				diags.Append(newDiags...)
 				plannedObjValues = append(plannedObjValues, objVal)
@@ -148,7 +144,6 @@ func ToTablesListValue(tables []client.ConfigTable, planTables *types.List, diag
 	if planTables == nil {
 		for _, table := range tables {
 			attrValues := map[string]attr.Value{}
-			attrValues["inherited"] = types.BoolPointerValue(table.Inherited)
 			attrValues["name"] = types.StringValue(table.Name)
 			attrValues["rows"] = ToRowsListValue(table.Rows, nil, diags)
 			tableObjValue, newDiags := types.ObjectValue(tableAttrTypes, attrValues)
@@ -164,7 +159,6 @@ func ToTablesListValue(tables []client.ConfigTable, planTables *types.List, diag
 
 		for i := 0; i < len(tables); i++ {
 			attrValues := map[string]attr.Value{}
-			attrValues["inherited"] = types.BoolPointerValue(tables[i].Inherited)
 			attrValues["name"] = types.StringValue(tables[i].Name)
 			// If this table was in the plan, pass in the planned rows when getting the 'rows' values in case there are some encrypted values
 			// that aren't returned by the PF API

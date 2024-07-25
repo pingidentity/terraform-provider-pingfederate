@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 )
 
@@ -44,7 +44,7 @@ var (
 		"attribute_contract_fulfillment": attributeContractFulfillmentAttrType,
 		"issuance_criteria":              issuanceCriteriaAttrType,
 		"policy":                         types.ObjectType{AttrTypes: policyAttrTypes},
-		"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
+		"attribute_sources":              types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
 	}
 
 	customSchemaAttrTypes = map[string]attr.Type{

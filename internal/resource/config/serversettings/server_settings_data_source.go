@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
@@ -162,13 +162,11 @@ func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.Sc
 						Description: "Indicates the number of days past the certificate expiry date, the administrative console warning ends. The default value is 14 days. Supported in PF 12.0 or later.",
 						Optional:    false,
 						Computed:    true,
-						// Default will be set in ModifyPlan method. Once we drop support for pre-12.0 versions, we can set the default here instead.
 					},
 					"thread_pool_exhaustion_notification_settings": schema.SingleNestedAttribute{
 						Description: "Notification settings for thread pool exhaustion events. Supported in PF 12.0 or later.",
 						Optional:    false,
 						Computed:    true,
-						// Default will be set in ModifyPlan method. Once we drop support for pre-12.0 versions, we can set the default here instead.
 						Attributes: map[string]schema.Attribute{
 							"email_address": schema.StringAttribute{
 								Description: "Email address where notifications are sent.",
@@ -188,6 +186,34 @@ func (r *serverSettingsDataSource) Schema(ctx context.Context, req datasource.Sc
 							},
 							"notification_mode": schema.StringAttribute{
 								Description: "The mode of notification. Set to NOTIFICATION_PUBLISHER to enable email notifications and server log messages. Set to LOGGING_ONLY to enable server log messages. Defaults to LOGGING_ONLY.",
+								Optional:    false,
+								Computed:    true,
+							},
+						},
+					},
+					"bulkhead_alert_notification_settings": schema.SingleNestedAttribute{
+						Description: "Settings for bulkhead notifications",
+						Optional:    false,
+						Computed:    true,
+						Attributes: map[string]schema.Attribute{
+							"email_address": schema.StringAttribute{
+								Description: "Email address where notifications are sent.",
+								Optional:    false,
+								Computed:    true,
+							},
+							"notification_publisher_ref": schema.SingleNestedAttribute{
+								Description: "Reference to the associated notification publisher.",
+								Optional:    false,
+								Computed:    true,
+								Attributes:  resourcelink.ToDataSourceSchema(),
+							},
+							"notification_mode": schema.StringAttribute{
+								Description: "The mode of notification. Set to NOTIFICATION_PUBLISHER to enable email notifications and server log messages. Set to LOGGING_ONLY to enable server log messages. Defaults to LOGGING_ONLY.",
+								Optional:    false,
+								Computed:    true,
+							},
+							"thread_dump_enabled": schema.BoolAttribute{
+								Description: "Generate a thread dump when a bulkhead reaches its warning threshold or is full.",
 								Optional:    false,
 								Computed:    true,
 							},
