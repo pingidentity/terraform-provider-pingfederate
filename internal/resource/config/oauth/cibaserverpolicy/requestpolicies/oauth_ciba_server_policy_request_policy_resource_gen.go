@@ -173,6 +173,9 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) Schema(ctx context.Context,
 			"name": schema.StringAttribute{
 				Required:    true,
 				Description: "The request policy name. Name is unique.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"policy_id": schema.StringAttribute{
 				Required:    true,
