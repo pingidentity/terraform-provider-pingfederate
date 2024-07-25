@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -175,8 +177,8 @@ func (config *keypairsOauthOpenidConnectResourceModel) validatePlan() diag.Diagn
 		addValidateConfigErrorIfDefined("p521_publish_x5c_parameter", internaltypes.IsDefined(config.P521publishX5cParameter), &respDiags)
 		addValidateConfigErrorIfDefined("rsa_active_cert_ref", internaltypes.IsDefined(config.RsaActiveCertRef), &respDiags)
 		addValidateConfigErrorIfDefined("rsa_active_key_id", internaltypes.IsDefined(config.RsaActiveKeyId), &respDiags)
-		addValidateConfigErrorIfDefined("rsa_algorithm_active_key_ids", internaltypes.IsDefined(config.RsaAlgorithmActiveKeyIds), &respDiags)
-		addValidateConfigErrorIfDefined("rsa_algorithm_previous_key_ids", internaltypes.IsDefined(config.RsaAlgorithmPreviousKeyIds), &respDiags)
+		addValidateConfigErrorIfDefined("rsa_algorithm_active_key_ids", internaltypes.IsDefined(config.RsaAlgorithmActiveKeyIds) && len(config.RsaAlgorithmActiveKeyIds.Elements()) > 0, &respDiags)
+		addValidateConfigErrorIfDefined("rsa_algorithm_previous_key_ids", internaltypes.IsDefined(config.RsaAlgorithmPreviousKeyIds) && len(config.RsaAlgorithmPreviousKeyIds.Elements()) > 0, &respDiags)
 		addValidateConfigErrorIfDefined("rsa_decryption_active_cert_ref", internaltypes.IsDefined(config.RsaDecryptionActiveCertRef), &respDiags)
 		addValidateConfigErrorIfDefined("rsa_decryption_active_key_id", internaltypes.IsDefined(config.RsaDecryptionActiveKeyId), &respDiags)
 		addValidateConfigErrorIfDefined("rsa_decryption_previous_cert_ref", internaltypes.IsDefined(config.RsaDecryptionPreviousCertRef), &respDiags)
@@ -239,4 +241,18 @@ func (m *keypairsOauthOpenidConnectResourceModel) setNullObjectValues() {
 	m.RsaDecryptionActiveCertRef = types.ObjectNull(certRefAttrTypes)
 	m.RsaDecryptionPreviousCertRef = types.ObjectNull(certRefAttrTypes)
 	m.RsaPreviousCertRef = types.ObjectNull(certRefAttrTypes)
+}
+
+func (r *keypairsOauthOpenidConnectResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
+	// Instead this resource will reset to the PingFederate default value.
+	defaultClientStruct := &client.OAuthOidcKeysSettings{
+		StaticJwksEnabled: false,
+	}
+	apiUpdateRequest := r.apiClient.KeyPairsOauthOpenIdConnectAPI.UpdateOAuthOidcKeysSettings(config.AuthContext(ctx, r.providerConfig))
+	apiUpdateRequest = apiUpdateRequest.Body(*defaultClientStruct)
+	_, httpResp, err := r.apiClient.KeyPairsOauthOpenIdConnectAPI.UpdateOAuthOidcKeysSettingsExecute(apiUpdateRequest)
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while resetting the keypairsOauthOpenidConnect", err, httpResp)
+	}
 }
