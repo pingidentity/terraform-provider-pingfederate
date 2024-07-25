@@ -441,10 +441,6 @@ func (r *certificatesRevocationSettingsResource) Update(ctx context.Context, req
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (r *certificatesRevocationSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
-}
-
 func (r *certificatesRevocationSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// This resource has no identifier attributes, so the value passed in here doesn't matter. Just return an empty state struct.
 	emptyState := r.emptyModel()
