@@ -120,6 +120,9 @@ func (r *certificatesGroupResource) Schema(ctx context.Context, req resource.Sch
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 				Description: "Name of the group to manage certificates for.",
 			},
 			"issuer_dn": schema.StringAttribute{
