@@ -7,6 +7,6 @@ resource "pingfederate_idp_to_sp_adapter_mapping" "idpToSpAdapterMapping" {
       value = "subject"
     }
   }
-  source_id = "OTIdPJava"
+  source_id = "idpadapter"
   target_id = "spadapter"
 }

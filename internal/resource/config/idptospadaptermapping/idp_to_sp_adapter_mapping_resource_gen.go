@@ -5,18 +5,21 @@ package idptospadaptermapping
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -53,7 +56,7 @@ type idpToSpAdapterMappingResourceModel struct {
 	ApplicationIconUrl               types.String `tfsdk:"application_icon_url"`
 	ApplicationName                  types.String `tfsdk:"application_name"`
 	AttributeContractFulfillment     types.Map    `tfsdk:"attribute_contract_fulfillment"`
-	AttributeSources                 types.List   `tfsdk:"attribute_sources"`
+	AttributeSources                 types.Set    `tfsdk:"attribute_sources"`
 	DefaultTargetResource            types.String `tfsdk:"default_target_resource"`
 	IssuanceCriteria                 types.Object `tfsdk:"issuance_criteria"`
 	LicenseConnectionGroupAssignment types.String `tfsdk:"license_connection_group_assignment"`
@@ -69,21 +72,35 @@ func (r *idpToSpAdapterMappingResource) Schema(ctx context.Context, req resource
 			"application_icon_url": schema.StringAttribute{
 				Optional:    true,
 				Description: "The application icon URL.",
+				Validators: []validator.String{
+					configvalidators.ValidUrl(),
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"application_name": schema.StringAttribute{
 				Optional:    true,
 				Description: "The application name.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
-			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
+			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchemaWithSuffix(true, false, false, " Map value `subject` is required."),
 			"attribute_sources":              attributesources.ToSchema(0, false),
 			"default_target_resource": schema.StringAttribute{
 				Optional:    true,
 				Description: "Default target URL for this adapter-to-adapter mapping configuration.",
+				Validators: []validator.String{
+					configvalidators.ValidUrl(),
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"issuance_criteria": issuancecriteria.ToSchema(),
 			"license_connection_group_assignment": schema.StringAttribute{
 				Optional:    true,
 				Description: "The license connection group.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"mapping_id": schema.StringAttribute{
 				Optional:    false,
@@ -99,12 +116,18 @@ func (r *idpToSpAdapterMappingResource) Schema(ctx context.Context, req resource
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"target_id": schema.StringAttribute{
 				Required:    true,
 				Description: "The id of the SP Adapter.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 		},
