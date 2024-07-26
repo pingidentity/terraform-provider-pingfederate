@@ -10,7 +10,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-func TestAccConnectionMetadataExport(t *testing.T) {
+func TestAccCertificatesCAExport(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
@@ -19,15 +19,15 @@ func TestAccConnectionMetadataExport(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Run the export and validate the results
-				Config: connectionMetadataExport_MinimalHCL(),
-				Check:  connectionMetadataExport_CheckComputedValues(),
+				Config: certificatesCAExport_MinimalHCL(),
+				Check:  certificatesCAExport_CheckComputedValues(),
 			},
 		},
 	})
 }
 
 // Only the ca_id attribute can be set on this resource
-func connectionMetadataExport_MinimalHCL() string {
+func certificatesCAExport_MinimalHCL() string {
 	return `
 data "pingfederate_certificates_ca_export" "example" {
   ca_id = "gdxuvcw6p95rex3go7eb3ctsb"
@@ -36,7 +36,7 @@ data "pingfederate_certificates_ca_export" "example" {
 }
 
 // Validate any computed values when applying HCL
-func connectionMetadataExport_CheckComputedValues() resource.TestCheckFunc {
+func certificatesCAExport_CheckComputedValues() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttrSet("data.pingfederate_certificates_ca_export.example", "exported_certificate"),
 	)
