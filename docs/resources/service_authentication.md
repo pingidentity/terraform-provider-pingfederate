@@ -15,11 +15,11 @@ Resource to manage the service authentication settings.
 resource "pingfederate_service_authentication" "serviceAuthentication" {
   attribute_query = {
     id            = "heuristics"
-    shared_secret = "mysharedsecret"
+    shared_secret = var.attribute_query_service_shared_secret
   }
   jmx = {
     id            = "heuristics"
-    shared_secret = "mysharedsecret"
+    shared_secret = var.jmx_service_shared_secret
   }
 }
 ```
@@ -37,7 +37,7 @@ resource "pingfederate_service_authentication" "serviceAuthentication" {
 <a id="nestedatt--attribute_query"></a>
 ### Nested Schema for `attribute_query`
 
-Optional:
+Required:
 
 - `id` (String) Id of the service.
 - `shared_secret` (String, Sensitive) Shared secret for the service.
@@ -46,7 +46,7 @@ Optional:
 <a id="nestedatt--connection_management"></a>
 ### Nested Schema for `connection_management`
 
-Optional:
+Required:
 
 - `id` (String) Id of the service.
 - `shared_secret` (String, Sensitive) Shared secret for the service.
@@ -55,7 +55,7 @@ Optional:
 <a id="nestedatt--jmx"></a>
 ### Nested Schema for `jmx`
 
-Optional:
+Required:
 
 - `id` (String) Id of the service.
 - `shared_secret` (String, Sensitive) Shared secret for the service.
@@ -64,7 +64,7 @@ Optional:
 <a id="nestedatt--sso_directory_service"></a>
 ### Nested Schema for `sso_directory_service`
 
-Optional:
+Required:
 
 - `id` (String) Id of the service.
 - `shared_secret` (String, Sensitive) Shared secret for the service.
