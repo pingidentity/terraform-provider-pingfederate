@@ -35,10 +35,10 @@ func ExpressionCriteriaElemType() types.ObjectType {
 
 func AttrTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"conditional_criteria": types.ListType{
+		"conditional_criteria": types.SetType{
 			ElemType: ConditionalCriteriaElemType(),
 		},
-		"expression_criteria": types.ListType{
+		"expression_criteria": types.SetType{
 			ElemType: ExpressionCriteriaElemType(),
 		},
 	}
