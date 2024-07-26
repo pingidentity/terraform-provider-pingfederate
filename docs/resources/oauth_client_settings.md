@@ -85,8 +85,8 @@ Optional:
 Optional:
 
 - `allow_client_delete` (Boolean) Allow client deletion from dynamic client management. Default value is `false`.
-- `allowed_authorization_detail_types` (List of String) The authorization detail types to allow.
-- `allowed_exclusive_scopes` (List of String) The exclusive scopes to allow.
+- `allowed_authorization_detail_types` (Set of String) The authorization detail types to allow.
+- `allowed_exclusive_scopes` (Set of String) The exclusive scopes to allow.
 - `bypass_activation_code_confirmation_override` (Boolean) Indicates if the Activation Code Confirmation page should be bypassed if 'verification_url_complete' is used by the end user to authorize a device. Default value is `false`.
 - `ciba_polling_interval` (Number) The minimum amount of time in seconds that the Client must wait between polling requests to the token endpoint. The default is `3` seconds.
 - `ciba_require_signed_requests` (Boolean) Determines whether CIBA signed requests are required for this client. Default value is `false`.
@@ -123,7 +123,7 @@ Optional:
 - `require_signed_requests` (Boolean) Require signed requests. Default value is `false`.
 - `restrict_common_scopes` (Boolean) Restrict common scopes. Default value is `false`.
 - `restrict_to_default_access_token_manager` (Boolean) Determines whether the client is restricted to using only its default access token manager. The default is `false`.
-- `restricted_common_scopes` (List of String) The common scopes to restrict.
+- `restricted_common_scopes` (Set of String) The common scopes to restrict.
 - `retain_client_secret` (Boolean) Temporarily retain the old client secret on client secret change. Default value is `false`.
 - `rotate_client_secret` (Boolean) Rotate registration access token on dynamic client management requests. Default value is `false`.
 - `rotate_registration_access_token` (Boolean) Rotate client secret on dynamic client management requests. Default value is `false`.
