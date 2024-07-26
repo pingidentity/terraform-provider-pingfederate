@@ -5,10 +5,12 @@ package protocolmetadatasigningsettings
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -56,12 +58,18 @@ func (r *protocolMetadataSigningSettingsResource) Schema(ctx context.Context, re
 			"signature_algorithm": schema.StringAttribute{
 				Optional:    true,
 				Description: "Signature algorithm. If this property is unset, the default signature algorithm for the key algorithm will be used. Supported signature algorithms are available through the /keyPairs/keyAlgorithms endpoint.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"signing_key_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Required:    true,
 						Description: "The ID of the resource.",
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 				},
 				Optional:    true,
@@ -202,10 +210,6 @@ func (r *protocolMetadataSigningSettingsResource) Update(ctx context.Context, re
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-}
-
-func (r *protocolMetadataSigningSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
 }
 
 func (r *protocolMetadataSigningSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
