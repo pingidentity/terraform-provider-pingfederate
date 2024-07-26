@@ -3,16 +3,16 @@ package configvalidators
 import (
 	"context"
 	"fmt"
-	"regexp"
+	"net/url"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var _ validator.String = &urlValidator{}
 var _ validator.List = &urlListValidator{}
-var errorInfo = "%s must start with 'http://' or 'https://'"
-var regexFilter = `^(https?:\/\/)`
 
 type urlValidator struct{}
 type urlListValidator struct{}
@@ -31,14 +31,17 @@ func (v urlValidator) ValidateString(ctx context.Context, req validator.StringRe
 	if req.ConfigValue.IsUnknown() || req.ConfigValue.IsNull() || req.ConfigValue.ValueString() == "" {
 		return
 	}
+	validateUrlValue(req.Path, req.ConfigValue, &resp.Diagnostics)
+}
 
-	strVal := req.ConfigValue.ValueString()
-	isMatch, _ := regexp.MatchString(regexFilter, strVal)
-	if !isMatch {
-		resp.Diagnostics.AddAttributeError(
-			req.Path,
-			"Invalid URL Format",
-			fmt.Sprintf(errorInfo, req.ConfigValue),
+func validateUrlValue(path path.Path, value types.String, respDiags *diag.Diagnostics) {
+	// Ensure the the URL can be parsed by url.Parse
+	_, err := url.Parse(value.ValueString())
+	if err != nil {
+		respDiags.AddAttributeError(
+			path,
+			fmt.Sprintf("Invalid URL Format for '%s'", value.ValueString()),
+			err.Error(),
 		)
 	}
 }
@@ -64,18 +67,16 @@ func (v urlListValidator) ValidateList(ctx context.Context, req validator.ListRe
 
 	listElems := req.ConfigValue.Elements()
 	for _, elem := range listElems {
-		regexComp, regexCompError := regexp.Compile(regexFilter)
-		if regexCompError != nil {
-			return
-		}
-		isMatch := regexComp.MatchString(elem.(types.String).ValueString())
-		if !isMatch {
+		elemString, ok := elem.(types.String)
+		if !ok {
 			resp.Diagnostics.AddAttributeError(
 				req.Path,
-				"Invalid URL Format Found In List",
-				fmt.Sprintf(errorInfo, elem.(types.String).ValueString()),
+				"URL Validation can only be applied to a list of strings",
+				"",
 			)
+			return
 		}
+		validateUrlValue(req.Path, elemString, &resp.Diagnostics)
 	}
 
 }

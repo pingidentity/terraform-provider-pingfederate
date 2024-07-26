@@ -61,7 +61,7 @@ var (
 	}
 
 	attributeMappingAttrTypes = map[string]attr.Type{
-		"attribute_sources": types.ListType{
+		"attribute_sources": types.SetType{
 			ElemType: types.ObjectType{
 				AttrTypes: attributesources.AttrTypes(),
 			},
