@@ -1,6 +1,6 @@
 # v0.13.0 (Unreleased)
 ### Resources
-* **New Resource:** `pingfederate_identity_store_provisioner` ([#301]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/301)))
+* **New Resource:** `pingfederate_identity_store_provisioner` ([#303]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/303)))
 * **New Resource:** `pingfederate_sp_target_url_mappings` ([#273]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/273)))
 * **New Resource:** `pingfederate_keypairs_ssl_server_settings` ([#272]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/272)))
 * **New Resource:** `pingfederate_oauth_authentication_policy_contract_mapping` ([#262]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/262)))
