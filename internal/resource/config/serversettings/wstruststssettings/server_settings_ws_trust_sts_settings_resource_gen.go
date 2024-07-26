@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -49,11 +49,11 @@ func (r *serverSettingsWsTrustStsSettingsResource) Configure(_ context.Context, 
 type serverSettingsWsTrustStsSettingsResourceModel struct {
 	BasicAuthnEnabled      types.Bool `tfsdk:"basic_authn_enabled"`
 	ClientCertAuthnEnabled types.Bool `tfsdk:"client_cert_authn_enabled"`
-	IssuerCerts            types.List `tfsdk:"issuer_certs"`
+	IssuerCerts            types.Set  `tfsdk:"issuer_certs"`
 	RestrictByIssuerCert   types.Bool `tfsdk:"restrict_by_issuer_cert"`
 	RestrictBySubjectDn    types.Bool `tfsdk:"restrict_by_subject_dn"`
-	SubjectDns             types.List `tfsdk:"subject_dns"`
-	Users                  types.List `tfsdk:"users"`
+	SubjectDns             types.Set  `tfsdk:"subject_dns"`
+	Users                  types.Set  `tfsdk:"users"`
 }
 
 func (r *serverSettingsWsTrustStsSettingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -72,7 +72,7 @@ func (r *serverSettingsWsTrustStsSettingsResource) Schema(ctx context.Context, r
 				Default:     booldefault.StaticBool(false),
 				Description: "Require the use of Client Cert Authentication to access WS-Trust STS endpoints. Requires either `restrict_by_subject_dn` and/or `restrict_by_issuer_cert` be `true`. Default value is `false`.",
 			},
-			"issuer_certs": schema.ListNestedAttribute{
+			"issuer_certs": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
@@ -83,7 +83,7 @@ func (r *serverSettingsWsTrustStsSettingsResource) Schema(ctx context.Context, r
 				},
 				Optional:    true,
 				Computed:    true,
-				Default:     listdefault.StaticValue(resourceLinkListDefault),
+				Default:     setdefault.StaticValue(resourceLinkSetDefault),
 				Description: "List of certificate Issuers that are used to validate certificates for access to the WS-Trust STS endpoints. Required if `restrict_by_issuer_cert` is `true`.",
 			},
 			"restrict_by_issuer_cert": schema.BoolAttribute{
@@ -98,14 +98,14 @@ func (r *serverSettingsWsTrustStsSettingsResource) Schema(ctx context.Context, r
 				Default:     booldefault.StaticBool(false),
 				Description: "Restrict Access by Subject DN. Ignored if `client_cert_authn_enabled` is `false`. Default value is `false`.",
 			},
-			"subject_dns": schema.ListAttribute{
+			"subject_dns": schema.SetAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
 				Computed:    true,
-				Default:     listdefault.StaticValue(emptyStringListDefault),
+				Default:     setdefault.StaticValue(emptyStringSetDefault),
 				Description: "List of Subject DNs for certificates that are allowed to authenticate to WS-Trust STS endpoints. Required if `restrict_by_subject_dn` is `true`.",
 			},
-			"users": schema.ListNestedAttribute{
+			"users": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"password": schema.StringAttribute{
@@ -121,7 +121,7 @@ func (r *serverSettingsWsTrustStsSettingsResource) Schema(ctx context.Context, r
 				},
 				Optional:    true,
 				Computed:    true,
-				Default:     listdefault.StaticValue(usersListDefault),
+				Default:     setdefault.StaticValue(usersSetDefault),
 				Description: "List of users authorized to access WS-Trust STS endpoints when `basic_auth_enabled` is `true`. At least one users entry is required if `basic_auth_enabled` is `true`.",
 			},
 		},
@@ -187,7 +187,7 @@ func (state *serverSettingsWsTrustStsSettingsResourceModel) readClientResponse(r
 		respDiags.Append(diags...)
 		issuerCertsValues = append(issuerCertsValues, issuerCertsValue)
 	}
-	issuerCertsValue, diags := types.ListValue(issuerCertsElementType, issuerCertsValues)
+	issuerCertsValue, diags := types.SetValue(issuerCertsElementType, issuerCertsValues)
 	respDiags.Append(diags...)
 
 	state.IssuerCerts = issuerCertsValue
@@ -196,7 +196,7 @@ func (state *serverSettingsWsTrustStsSettingsResourceModel) readClientResponse(r
 	// restrict_by_subject_dn
 	state.RestrictBySubjectDn = types.BoolPointerValue(response.RestrictBySubjectDn)
 	// subject_dns
-	state.SubjectDns, diags = types.ListValueFrom(context.Background(), types.StringType, response.SubjectDns)
+	state.SubjectDns, diags = types.SetValueFrom(context.Background(), types.StringType, response.SubjectDns)
 	respDiags.Append(diags...)
 	// users
 	respDiags.Append(state.readClientResponseUsers(response)...)
@@ -211,16 +211,16 @@ func (r *serverSettingsWsTrustStsSettingsResource) emptyModel() serverSettingsWs
 		"id": types.StringType,
 	}
 	issuerCertsElementType := types.ObjectType{AttrTypes: issuerCertsAttrTypes}
-	model.IssuerCerts = types.ListNull(issuerCertsElementType)
+	model.IssuerCerts = types.SetNull(issuerCertsElementType)
 	// users
 	usersAttrTypes := map[string]attr.Type{
 		"password": types.StringType,
 		"username": types.StringType,
 	}
 	usersElementType := types.ObjectType{AttrTypes: usersAttrTypes}
-	model.Users = types.ListNull(usersElementType)
+	model.Users = types.SetNull(usersElementType)
 	// subject_dns
-	model.SubjectDns = types.ListNull(types.StringType)
+	model.SubjectDns = types.SetNull(types.StringType)
 	return model
 }
 
@@ -307,10 +307,6 @@ func (r *serverSettingsWsTrustStsSettingsResource) Update(ctx context.Context, r
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
-}
-
-func (r *serverSettingsWsTrustStsSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
 }
 
 func (r *serverSettingsWsTrustStsSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

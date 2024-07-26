@@ -10,17 +10,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
 var (
-	emptyStringListDefault, _  = types.ListValue(types.StringType, nil)
-	resourceLinkListDefault, _ = types.ListValue(types.ObjectType{
+	emptyStringSetDefault, _  = types.SetValue(types.StringType, nil)
+	resourceLinkSetDefault, _ = types.SetValue(types.ObjectType{
 		AttrTypes: map[string]attr.Type{
 			"id": types.StringType,
 		},
 	}, nil)
-	usersListDefault, _ = types.ListValue(types.ObjectType{
+	usersSetDefault, _ = types.SetValue(types.ObjectType{
 		AttrTypes: map[string]attr.Type{
 			"username": types.StringType,
 			"password": types.StringType,
@@ -33,7 +34,7 @@ func (r *serverSettingsWsTrustStsSettingsResource) ValidateConfig(ctx context.Co
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 
 	if config.BasicAuthnEnabled.ValueBool() {
-		if !internaltypes.IsDefined(config.Users) || len(config.Users.Elements()) == 0 {
+		if config.Users.IsNull() || (internaltypes.IsDefined(config.Users) && len(config.Users.Elements()) == 0) {
 			resp.Diagnostics.AddError("'basic_authn_enabled' can only be true if users are defined", "")
 		}
 	} else if internaltypes.IsDefined(config.Users) && len(config.Users.Elements()) > 0 {
@@ -47,7 +48,7 @@ func (r *serverSettingsWsTrustStsSettingsResource) ValidateConfig(ctx context.Co
 	}
 
 	if config.RestrictByIssuerCert.ValueBool() {
-		if !internaltypes.IsDefined(config.IssuerCerts) || len(config.IssuerCerts.Elements()) == 0 {
+		if config.IssuerCerts.IsNull() || (internaltypes.IsDefined(config.IssuerCerts) && len(config.IssuerCerts.Elements()) == 0) {
 			resp.Diagnostics.AddError("if 'restrict_by_issuer_cert' is true, issuer certs must be defined", "")
 		}
 		if !config.ClientCertAuthnEnabled.ValueBool() {
@@ -56,7 +57,7 @@ func (r *serverSettingsWsTrustStsSettingsResource) ValidateConfig(ctx context.Co
 	}
 
 	if config.RestrictBySubjectDn.ValueBool() {
-		if !internaltypes.IsDefined(config.SubjectDns) || len(config.SubjectDns.Elements()) == 0 {
+		if config.SubjectDns.IsNull() || (internaltypes.IsDefined(config.SubjectDns) && len(config.SubjectDns.Elements()) == 0) {
 			resp.Diagnostics.AddError("if 'restrict_by_subject_dn' is true, subject DNs must be defined", "")
 		}
 		if !config.ClientCertAuthnEnabled.ValueBool() {
@@ -94,9 +95,20 @@ func (state *serverSettingsWsTrustStsSettingsResourceModel) readClientResponseUs
 		respDiags.Append(diags...)
 		usersValues = append(usersValues, usersValue)
 	}
-	usersValue, diags := types.ListValue(usersElementType, usersValues)
+	usersValue, diags := types.SetValue(usersElementType, usersValues)
 	respDiags.Append(diags...)
 
 	state.Users = usersValue
 	return respDiags
+}
+
+func (r *serverSettingsWsTrustStsSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
+	// Instead this resource will be reset to the PingFederate default values.
+	apiUpdateRequest := r.apiClient.ServerSettingsAPI.UpdateWsTrustStsSettings(config.AuthContext(ctx, r.providerConfig))
+	apiUpdateRequest = apiUpdateRequest.Body(client.WsTrustStsSettings{})
+	_, httpResp, err := r.apiClient.ServerSettingsAPI.UpdateWsTrustStsSettingsExecute(apiUpdateRequest)
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while resetting the serverSettingsWsTrustStsSettings", err, httpResp)
+	}
 }
