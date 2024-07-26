@@ -304,7 +304,7 @@ func getRequiredOauthOpenIDConnectPolicyFields(plan oauthOpenIdConnectPolicyMode
 		return nil, nil, nil
 	}
 
-	attributeSourcesAttr := planAttrs["attribute_sources"].(types.List)
+	attributeSourcesAttr := planAttrs["attribute_sources"].(types.Set)
 	attributeMapping.AttributeSources = []client.AttributeSourceAggregation{}
 	attributeMapping.AttributeSources, err = attributesources.ClientStruct(attributeSourcesAttr)
 	if err != nil {
