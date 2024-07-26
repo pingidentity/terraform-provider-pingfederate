@@ -37,7 +37,7 @@ type spAuthenticationPolicyContractMappingDataSource struct {
 }
 
 type spAuthenticationPolicyContractMappingDataSourceModel struct {
-	AttributeSources                 types.List   `tfsdk:"attribute_sources"`
+	AttributeSources                 types.Set    `tfsdk:"attribute_sources"`
 	AttributeContractFulfillment     types.Map    `tfsdk:"attribute_contract_fulfillment"`
 	IssuanceCriteria                 types.Object `tfsdk:"issuance_criteria"`
 	Id                               types.String `tfsdk:"id"`
