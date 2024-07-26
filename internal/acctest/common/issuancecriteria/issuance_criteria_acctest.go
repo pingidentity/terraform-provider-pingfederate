@@ -12,8 +12,7 @@ func Hcl(conditionalIssuanceCriteriaEntry *client.ConditionalIssuanceCriteriaEnt
 	var builder strings.Builder
 	if conditionalIssuanceCriteriaEntry == nil {
 		return ""
-	}
-	if conditionalIssuanceCriteriaEntry != nil {
+	} else {
 		tf := `
 		issuance_criteria = {
 			conditional_criteria = [

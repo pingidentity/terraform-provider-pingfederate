@@ -1,0 +1,1 @@
+terraform import pingfederate_oauth_idp_adapter_mapping.oauthIdpAdapterMapping oauthIdpAdapterMappingId
