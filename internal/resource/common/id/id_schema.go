@@ -39,7 +39,7 @@ func ToSchemaCustomId(s *schema.Schema, idName string, required, characterLimit 
 	customId.Computed = !required
 	if characterLimit {
 		customId.Validators = []validator.String{
-			configvalidators.ValidChars(),
+			configvalidators.PingFederateIdWithCharLimit(),
 		}
 	}
 	s.Attributes[idName] = customId
