@@ -8,7 +8,7 @@
 * **New Resource:** `pingfederate_oauth_idp_adapter_mapping` ([#263]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/263)))
 
 ### Data Sources
-* **New Data Source:** `pingfederate_keypairs_signing_certificate` ([#304](https://github.com/pingidentity/terraform-provider-pingfederate/pull/304))
+* **New Data Source:** `pingfederate_keypairs_signing_certificate` ([#305](https://github.com/pingidentity/terraform-provider-pingfederate/pull/305))
 
 # v0.12.0 June 27th, 2024
 ### BREAKING CHANGES
