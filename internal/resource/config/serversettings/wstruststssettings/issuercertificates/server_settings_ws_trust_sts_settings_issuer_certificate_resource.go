@@ -97,6 +97,9 @@ func (r *serverSettingsWsTrustStsSettingsIssuerCertificateResource) Schema(ctx c
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"certificate_id": schema.StringAttribute{
 				Optional:    true,
