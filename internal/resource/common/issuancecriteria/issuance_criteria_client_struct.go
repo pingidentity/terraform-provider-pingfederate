@@ -11,7 +11,7 @@ import (
 
 func ConditionalCriteriaClientStruct(issuanceCriteria types.Object) ([]client.ConditionalIssuanceCriteriaEntry, error) {
 	conditionalCriteria := []client.ConditionalIssuanceCriteriaEntry{}
-	conditionalCriteriaErr := json.Unmarshal([]byte(internaljson.FromValue(issuanceCriteria.Attributes()["conditional_criteria"].(types.List), true)), &conditionalCriteria)
+	conditionalCriteriaErr := json.Unmarshal([]byte(internaljson.FromValue(issuanceCriteria.Attributes()["conditional_criteria"].(types.Set), true)), &conditionalCriteria)
 	if conditionalCriteriaErr != nil {
 		return nil, conditionalCriteriaErr
 	}
@@ -20,7 +20,7 @@ func ConditionalCriteriaClientStruct(issuanceCriteria types.Object) ([]client.Co
 
 func ExpressionCriteriaClientStruct(issuanceCriteria types.Object) ([]client.ExpressionIssuanceCriteriaEntry, error) {
 	expressionCriteria := []client.ExpressionIssuanceCriteriaEntry{}
-	expressionCriteriaErr := json.Unmarshal([]byte(internaljson.FromValue(issuanceCriteria.Attributes()["expression_criteria"].(types.List), true)), &expressionCriteria)
+	expressionCriteriaErr := json.Unmarshal([]byte(internaljson.FromValue(issuanceCriteria.Attributes()["expression_criteria"].(types.Set), true)), &expressionCriteria)
 	if expressionCriteriaErr != nil {
 		return nil, expressionCriteriaErr
 	}
