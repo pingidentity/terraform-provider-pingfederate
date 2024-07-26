@@ -1,0 +1,1 @@
+terraform import pingfederate_oauth_authentication_policy_contract_mapping.oauthAuthenticationPolicyContractMapping oauthAuthenticationPolicyContractMappingId
