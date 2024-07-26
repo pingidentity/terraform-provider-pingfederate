@@ -2,12 +2,12 @@
 page_title: "pingfederate_identity_store_provisioner Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to create and manage identity store provisioner instances.
 ---
 
 # pingfederate_identity_store_provisioner (Resource)
 
-
+Resource to create and manage identity store provisioner instances.
 
 ## Example Usage
 

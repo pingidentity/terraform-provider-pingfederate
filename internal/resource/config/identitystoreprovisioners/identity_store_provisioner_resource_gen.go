@@ -63,6 +63,7 @@ type identityStoreProvisionerResourceModel struct {
 
 func (r *identityStoreProvisionerResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to create and manage identity store provisioner instances.",
 		Attributes: map[string]schema.Attribute{
 			"attribute_contract": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
