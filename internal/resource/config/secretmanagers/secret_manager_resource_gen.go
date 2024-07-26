@@ -77,6 +77,9 @@ func (r *secretManagerResource) Schema(ctx context.Context, req resource.SchemaR
 			"name": schema.StringAttribute{
 				Required:    true,
 				Description: "The plugin instance name. The name can be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"parent_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
