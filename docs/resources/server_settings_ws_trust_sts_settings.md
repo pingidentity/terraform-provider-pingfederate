@@ -30,11 +30,11 @@ resource "pingfederate_server_settings_ws_trust_sts_settings" "wsTrustStstSettin
 
 - `basic_authn_enabled` (Boolean) Require the use of HTTP Basic Authentication to access WS-Trust STS endpoints. Requires users be populated. Default value is `false`.
 - `client_cert_authn_enabled` (Boolean) Require the use of Client Cert Authentication to access WS-Trust STS endpoints. Requires either `restrict_by_subject_dn` and/or `restrict_by_issuer_cert` be `true`. Default value is `false`.
-- `issuer_certs` (Attributes List) List of certificate Issuers that are used to validate certificates for access to the WS-Trust STS endpoints. Required if `restrict_by_issuer_cert` is `true`. (see [below for nested schema](#nestedatt--issuer_certs))
+- `issuer_certs` (Attributes Set) List of certificate Issuers that are used to validate certificates for access to the WS-Trust STS endpoints. Required if `restrict_by_issuer_cert` is `true`. (see [below for nested schema](#nestedatt--issuer_certs))
 - `restrict_by_issuer_cert` (Boolean) Restrict Access by Issuer Certificate. Ignored if `client_cert_authn_enabled` is `false`. Default value is `false`.
 - `restrict_by_subject_dn` (Boolean) Restrict Access by Subject DN. Ignored if `client_cert_authn_enabled` is `false`. Default value is `false`.
-- `subject_dns` (List of String) List of Subject DNs for certificates that are allowed to authenticate to WS-Trust STS endpoints. Required if `restrict_by_subject_dn` is `true`.
-- `users` (Attributes List) List of users authorized to access WS-Trust STS endpoints when `basic_auth_enabled` is `true`. At least one users entry is required if `basic_auth_enabled` is `true`. (see [below for nested schema](#nestedatt--users))
+- `subject_dns` (Set of String) List of Subject DNs for certificates that are allowed to authenticate to WS-Trust STS endpoints. Required if `restrict_by_subject_dn` is `true`.
+- `users` (Attributes Set) List of users authorized to access WS-Trust STS endpoints when `basic_auth_enabled` is `true`. At least one users entry is required if `basic_auth_enabled` is `true`. (see [below for nested schema](#nestedatt--users))
 
 <a id="nestedatt--issuer_certs"></a>
 ### Nested Schema for `issuer_certs`
