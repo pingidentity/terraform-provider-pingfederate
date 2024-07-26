@@ -1,0 +1,1 @@
+terraform import pingfederate_kerberos_realm_settings.kerberosRealmSettings id
