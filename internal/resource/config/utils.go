@@ -81,13 +81,13 @@ func reportHttpResponse(ctx context.Context, diagnostics *diag.Diagnostics, erro
 		body, internalError := io.ReadAll(httpResp.Body)
 		if internalError == nil {
 			tflog.Debug(ctx, "Error HTTP response body: "+string(body))
-			var pdError pingFederateError
-			internalError = json.Unmarshal(body, &pdError)
+			var pfError pingFederateError
+			internalError = json.Unmarshal(body, &pfError)
 			if internalError == nil {
 				if isWarning {
-					diagnostics.AddWarning(errorSummary, err.Error()+" - Detail: "+pdError.Detail)
+					diagnostics.AddWarning(errorSummary, err.Error()+" - Detail: "+pfError.Detail)
 				} else {
-					diagnostics.AddError(errorSummary, err.Error()+" - Detail: "+pdError.Detail)
+					diagnostics.AddError(errorSummary, err.Error()+" - Detail: "+pfError.Detail)
 				}
 				httpErrorPrinted = true
 			}
