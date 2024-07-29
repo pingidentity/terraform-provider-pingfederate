@@ -579,13 +579,13 @@ func (model *oauthClientSettingsResourceModel) buildClientStruct() (*client.Clie
 		dynamicClientRegistrationValue.AllowClientDelete = dynamicClientRegistrationAttrs["allow_client_delete"].(types.Bool).ValueBoolPointer()
 		if !dynamicClientRegistrationAttrs["allowed_authorization_detail_types"].IsNull() {
 			dynamicClientRegistrationValue.AllowedAuthorizationDetailTypes = []string{}
-			for _, allowedAuthorizationDetailTypesElement := range dynamicClientRegistrationAttrs["allowed_authorization_detail_types"].(types.List).Elements() {
+			for _, allowedAuthorizationDetailTypesElement := range dynamicClientRegistrationAttrs["allowed_authorization_detail_types"].(types.Set).Elements() {
 				dynamicClientRegistrationValue.AllowedAuthorizationDetailTypes = append(dynamicClientRegistrationValue.AllowedAuthorizationDetailTypes, allowedAuthorizationDetailTypesElement.(types.String).ValueString())
 			}
 		}
 		if !dynamicClientRegistrationAttrs["allowed_exclusive_scopes"].IsNull() {
 			dynamicClientRegistrationValue.AllowedExclusiveScopes = []string{}
-			for _, allowedExclusiveScopesElement := range dynamicClientRegistrationAttrs["allowed_exclusive_scopes"].(types.List).Elements() {
+			for _, allowedExclusiveScopesElement := range dynamicClientRegistrationAttrs["allowed_exclusive_scopes"].(types.Set).Elements() {
 				dynamicClientRegistrationValue.AllowedExclusiveScopes = append(dynamicClientRegistrationValue.AllowedExclusiveScopes, allowedExclusiveScopesElement.(types.String).ValueString())
 			}
 		}
@@ -661,7 +661,7 @@ func (model *oauthClientSettingsResourceModel) buildClientStruct() (*client.Clie
 		dynamicClientRegistrationValue.RestrictToDefaultAccessTokenManager = dynamicClientRegistrationAttrs["restrict_to_default_access_token_manager"].(types.Bool).ValueBoolPointer()
 		if !dynamicClientRegistrationAttrs["restricted_common_scopes"].IsNull() {
 			dynamicClientRegistrationValue.RestrictedCommonScopes = []string{}
-			for _, restrictedCommonScopesElement := range dynamicClientRegistrationAttrs["restricted_common_scopes"].(types.List).Elements() {
+			for _, restrictedCommonScopesElement := range dynamicClientRegistrationAttrs["restricted_common_scopes"].(types.Set).Elements() {
 				dynamicClientRegistrationValue.RestrictedCommonScopes = append(dynamicClientRegistrationValue.RestrictedCommonScopes, restrictedCommonScopesElement.(types.String).ValueString())
 			}
 		}
