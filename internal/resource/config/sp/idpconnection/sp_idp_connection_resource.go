@@ -3715,7 +3715,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			var credentialsInboundBackChannelAuthCertsValues []attr.Value
 			var credentialsInboundBackChannelAuthCertsValue types.List
 			if r.Credentials.Certs != nil {
-				if len(r.Credentials.Certs) >= 1 {
+				if len(r.Credentials.Certs) > 0 {
 					for _, credentialsInboundBackChannelAuthCertsResponseValue := range r.Credentials.InboundBackChannelAuth.Certs {
 						var credentialsInboundBackChannelAuthCertsCertViewValue types.Object
 						if credentialsInboundBackChannelAuthCertsResponseValue.CertView == nil {
