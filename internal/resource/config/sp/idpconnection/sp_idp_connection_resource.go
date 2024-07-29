@@ -3713,51 +3713,58 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			credentialsInboundBackChannelAuthValue = types.ObjectNull(credentialsInboundBackChannelAuthAttrTypes)
 		} else {
 			var credentialsInboundBackChannelAuthCertsValues []attr.Value
-			for _, credentialsInboundBackChannelAuthCertsResponseValue := range r.Credentials.InboundBackChannelAuth.Certs {
-				var credentialsInboundBackChannelAuthCertsCertViewValue types.Object
-				if credentialsInboundBackChannelAuthCertsResponseValue.CertView == nil {
-					credentialsInboundBackChannelAuthCertsCertViewValue = types.ObjectNull(credentialsInboundBackChannelAuthCertsCertViewAttrTypes)
+			var credentialsInboundBackChannelAuthCertsValue types.List
+			if r.Credentials.Certs != nil {
+				if len(r.Credentials.Certs) >= 1 {
+					for _, credentialsInboundBackChannelAuthCertsResponseValue := range r.Credentials.InboundBackChannelAuth.Certs {
+						var credentialsInboundBackChannelAuthCertsCertViewValue types.Object
+						if credentialsInboundBackChannelAuthCertsResponseValue.CertView == nil {
+							credentialsInboundBackChannelAuthCertsCertViewValue = types.ObjectNull(credentialsInboundBackChannelAuthCertsCertViewAttrTypes)
+						} else {
+							credentialsInboundBackChannelAuthCertsCertViewSubjectAlternativeNamesValue, objDiags := types.SetValueFrom(ctx, types.StringType, credentialsInboundBackChannelAuthCertsResponseValue.CertView.SubjectAlternativeNames)
+							diags.Append(objDiags...)
+							credentialsInboundBackChannelAuthCertsCertViewValue, objDiags = types.ObjectValue(credentialsInboundBackChannelAuthCertsCertViewAttrTypes, map[string]attr.Value{
+								"crypto_provider":           types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.CryptoProvider),
+								"expires":                   types.StringValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Expires.Format(time.RFC3339)),
+								"id":                        types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Id),
+								"issuer_dn":                 types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.IssuerDN),
+								"key_algorithm":             types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.KeyAlgorithm),
+								"key_size":                  types.Int64PointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.KeySize),
+								"serial_number":             types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.SerialNumber),
+								"sha1_fingerprint":          types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Sha1Fingerprint),
+								"sha256_fingerprint":        types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Sha256Fingerprint),
+								"signature_algorithm":       types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.SignatureAlgorithm),
+								"status":                    types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Status),
+								"subject_alternative_names": credentialsInboundBackChannelAuthCertsCertViewSubjectAlternativeNamesValue,
+								"subject_dn":                types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.SubjectDN),
+								"valid_from":                types.StringValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.ValidFrom.Format(time.RFC3339)),
+								"version":                   types.Int64PointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Version),
+							})
+							diags.Append(objDiags...)
+						}
+						credentialsInboundBackChannelAuthCertsX509fileValue, objDiags := types.ObjectValue(credentialsInboundBackChannelAuthCertsX509fileAttrTypes, map[string]attr.Value{
+							"crypto_provider": types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.X509File.CryptoProvider),
+							"file_data":       types.StringValue(credentialsInboundBackChannelAuthCertsResponseValue.X509File.FileData),
+							"id":              types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.X509File.Id),
+						})
+						diags.Append(objDiags...)
+						credentialsInboundBackChannelAuthCertsValue, objDiags := types.ObjectValue(credentialsInboundBackChannelAuthCertsAttrTypes, map[string]attr.Value{
+							"active_verification_cert":    types.BoolPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.ActiveVerificationCert),
+							"cert_view":                   credentialsInboundBackChannelAuthCertsCertViewValue,
+							"encryption_cert":             types.BoolPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.EncryptionCert),
+							"primary_verification_cert":   types.BoolPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.PrimaryVerificationCert),
+							"secondary_verification_cert": types.BoolPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.SecondaryVerificationCert),
+							"x509_file":                   credentialsInboundBackChannelAuthCertsX509fileValue,
+						})
+						diags.Append(objDiags...)
+						credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, credentialsInboundBackChannelAuthCertsValue)
+					}
+					credentialsInboundBackChannelAuthCertsValue, objDiags = types.ListValue(credentialsInboundBackChannelAuthCertsElementType, credentialsInboundBackChannelAuthCertsValues)
+					diags.Append(objDiags...)
 				} else {
-					credentialsInboundBackChannelAuthCertsCertViewSubjectAlternativeNamesValue, objDiags := types.SetValueFrom(ctx, types.StringType, credentialsInboundBackChannelAuthCertsResponseValue.CertView.SubjectAlternativeNames)
-					diags.Append(objDiags...)
-					credentialsInboundBackChannelAuthCertsCertViewValue, objDiags = types.ObjectValue(credentialsInboundBackChannelAuthCertsCertViewAttrTypes, map[string]attr.Value{
-						"crypto_provider":           types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.CryptoProvider),
-						"expires":                   types.StringValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Expires.Format(time.RFC3339)),
-						"id":                        types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Id),
-						"issuer_dn":                 types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.IssuerDN),
-						"key_algorithm":             types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.KeyAlgorithm),
-						"key_size":                  types.Int64PointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.KeySize),
-						"serial_number":             types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.SerialNumber),
-						"sha1_fingerprint":          types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Sha1Fingerprint),
-						"sha256_fingerprint":        types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Sha256Fingerprint),
-						"signature_algorithm":       types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.SignatureAlgorithm),
-						"status":                    types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Status),
-						"subject_alternative_names": credentialsInboundBackChannelAuthCertsCertViewSubjectAlternativeNamesValue,
-						"subject_dn":                types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.SubjectDN),
-						"valid_from":                types.StringValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.ValidFrom.Format(time.RFC3339)),
-						"version":                   types.Int64PointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.Version),
-					})
-					diags.Append(objDiags...)
+					credentialsInboundBackChannelAuthCertsValue = types.ListNull(credentialsInboundBackChannelAuthCertsElementType)
 				}
-				credentialsInboundBackChannelAuthCertsX509fileValue, objDiags := types.ObjectValue(credentialsInboundBackChannelAuthCertsX509fileAttrTypes, map[string]attr.Value{
-					"crypto_provider": types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.X509File.CryptoProvider),
-					"file_data":       types.StringValue(credentialsInboundBackChannelAuthCertsResponseValue.X509File.FileData),
-					"id":              types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.X509File.Id),
-				})
-				diags.Append(objDiags...)
-				credentialsInboundBackChannelAuthCertsValue, objDiags := types.ObjectValue(credentialsInboundBackChannelAuthCertsAttrTypes, map[string]attr.Value{
-					"active_verification_cert":    types.BoolPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.ActiveVerificationCert),
-					"cert_view":                   credentialsInboundBackChannelAuthCertsCertViewValue,
-					"encryption_cert":             types.BoolPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.EncryptionCert),
-					"primary_verification_cert":   types.BoolPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.PrimaryVerificationCert),
-					"secondary_verification_cert": types.BoolPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.SecondaryVerificationCert),
-					"x509_file":                   credentialsInboundBackChannelAuthCertsX509fileValue,
-				})
-				diags.Append(objDiags...)
-				credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, credentialsInboundBackChannelAuthCertsValue)
 			}
-			credentialsInboundBackChannelAuthCertsValue, objDiags := types.ListValue(credentialsInboundBackChannelAuthCertsElementType, credentialsInboundBackChannelAuthCertsValues)
-			diags.Append(objDiags...)
 			var credentialsInboundBackChannelAuthHttpBasicCredentialsValue types.Object
 			if r.Credentials.InboundBackChannelAuth.HttpBasicCredentials == nil {
 				credentialsInboundBackChannelAuthHttpBasicCredentialsValue = types.ObjectNull(credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes)
@@ -3767,6 +3774,8 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					passwordFromPlan := plan.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String)
 					if internaltypes.IsDefined(passwordFromPlan) {
 						password = passwordFromPlan.ValueString()
+					} else {
+						password = state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
 					}
 				} else {
 					password = state.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
@@ -3796,12 +3805,12 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			if r.Credentials.OutboundBackChannelAuth.HttpBasicCredentials == nil {
 				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue = types.ObjectNull(credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes)
 			} else {
-				var password string
-				if plan.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"] != nil {
-					password = plan.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
-				} else {
-					password = *r.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.Password
-				}
+				var password string = ""
+				// if plan.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"] != nil {
+				// 	password = plan.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String).ValueString()
+				// } else {
+				// 	password = *r.Credentials.OutboundBackChannelAuth.HttpBasicCredentials.Password
+				// }
 
 				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue, objDiags = types.ObjectValue(credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes, map[string]attr.Value{
 					"password": types.StringPointerValue(&password),
