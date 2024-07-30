@@ -21,7 +21,15 @@ func readOauthIssuerResponse(ctx context.Context, r *client.Issuer, state *oauth
 	state.Id = types.StringPointerValue(r.Id)
 	state.IssuerId = types.StringPointerValue(r.Id)
 	state.Name = types.StringValue(r.Name)
-	state.Description = types.StringPointerValue(r.Description)
+	if r.Description != nil && *r.Description != "" {
+		state.Description = types.StringPointerValue(r.Description)
+	} else {
+		state.Description = types.StringNull()
+	}
 	state.Host = types.StringValue(r.Host)
-	state.Path = types.StringPointerValue(r.Path)
+	if r.Path != nil && *r.Path != "" {
+		state.Path = types.StringPointerValue(r.Path)
+	} else {
+		state.Path = types.StringNull()
+	}
 }
