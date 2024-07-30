@@ -63,7 +63,7 @@ type certificatesRevocationOcspCertificateResourceModel struct {
 	Sha256Fingerprint       types.String `tfsdk:"sha256_fingerprint"`
 	SignatureAlgorithm      types.String `tfsdk:"signature_algorithm"`
 	Status                  types.String `tfsdk:"status"`
-	SubjectAlternativeNames types.List   `tfsdk:"subject_alternative_names"`
+	SubjectAlternativeNames types.Set    `tfsdk:"subject_alternative_names"`
 	SubjectDn               types.String `tfsdk:"subject_dn"`
 	ValidFrom               types.String `tfsdk:"valid_from"`
 	Version                 types.Int64  `tfsdk:"version"`
@@ -145,7 +145,7 @@ func (r *certificatesRevocationOcspCertificateResource) Schema(ctx context.Conte
 				Computed:    true,
 				Description: "Status of the item.",
 			},
-			"subject_alternative_names": schema.ListAttribute{
+			"subject_alternative_names": schema.SetAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
 				Description: "The subject alternative names (SAN).",
@@ -202,7 +202,7 @@ func (state *certificatesRevocationOcspCertificateResourceModel) readClientRespo
 	// status
 	state.Status = types.StringPointerValue(response.Status)
 	// subject_alternative_names
-	state.SubjectAlternativeNames, diags = types.ListValueFrom(context.Background(), types.StringType, response.SubjectAlternativeNames)
+	state.SubjectAlternativeNames, diags = types.SetValueFrom(context.Background(), types.StringType, response.SubjectAlternativeNames)
 	respDiags.Append(diags...)
 	// subject_dn
 	state.SubjectDn = types.StringPointerValue(response.SubjectDN)
