@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
@@ -54,7 +54,7 @@ type oauthAccessTokenMappingsResourceModel struct {
 	Id                           types.String `tfsdk:"id"`
 	Context                      types.Object `tfsdk:"context"`
 	AccessTokenManagerRef        types.Object `tfsdk:"access_token_manager_ref"`
-	AttributeSources             types.List   `tfsdk:"attribute_sources"`
+	AttributeSources             types.Set    `tfsdk:"attribute_sources"`
 	AttributeContractFulfillment types.Map    `tfsdk:"attribute_contract_fulfillment"`
 	IssuanceCriteria             types.Object `tfsdk:"issuance_criteria"`
 }
@@ -155,7 +155,7 @@ func readOauthAccessTokenMappingsResponse(ctx context.Context, r *client.AccessT
 	diags.Append(objDiags...)
 	state.AttributeSources, objDiags = attributesources.ToState(ctx, r.AttributeSources)
 	diags.Append(objDiags...)
-	state.AttributeContractFulfillment, objDiags = attributecontractfulfillment.ToState(ctx, r.AttributeContractFulfillment)
+	state.AttributeContractFulfillment, objDiags = attributecontractfulfillment.ToState(ctx, &r.AttributeContractFulfillment)
 	diags.Append(objDiags...)
 	state.IssuanceCriteria, objDiags = issuancecriteria.ToState(ctx, r.IssuanceCriteria)
 	diags.Append(objDiags...)

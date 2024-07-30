@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -102,6 +102,45 @@ func (r *redirectValidationDataSource) Schema(ctx context.Context, req datasourc
 								},
 								"require_https": schema.BoolAttribute{
 									Description: "Require HTTPS for accessing this resource.",
+									Computed:    true,
+									Optional:    false,
+								},
+							},
+						},
+					},
+					"uri_allow_list": schema.ListNestedAttribute{
+						Description: "List of URIs that are designated as valid target resources.",
+						Computed:    true,
+						Optional:    false,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"target_resource_sso": schema.BoolAttribute{
+									Description: "Enable this target resource for SSO redirect validation.",
+									Computed:    true,
+									Optional:    false,
+								},
+								"target_resource_slo": schema.BoolAttribute{
+									Description: "Enable this target resource for SLO redirect validation.",
+									Computed:    true,
+									Optional:    false,
+								},
+								"in_error_resource": schema.BoolAttribute{
+									Description: "Enable this target resource for in error resource validation.",
+									Computed:    true,
+									Optional:    false,
+								},
+								"idp_discovery": schema.BoolAttribute{
+									Description: "Enable this target resource for IdP discovery validation.",
+									Computed:    true,
+									Optional:    false,
+								},
+								"allow_query_and_fragment": schema.BoolAttribute{
+									Description: "Allow any query parameters and fragment in the resource.",
+									Computed:    true,
+									Optional:    false,
+								},
+								"valid_uri": schema.StringAttribute{
+									Description: "URI of a valid resource.",
 									Computed:    true,
 									Optional:    false,
 								},

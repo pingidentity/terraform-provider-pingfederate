@@ -12,8 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
@@ -21,7 +22,9 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -164,9 +167,26 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Optional:    true,
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
-					"attribute_sources":              attributesources.ToSchema(0, false),
-					"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(false, true, true),
-					"issuance_criteria":              issuancecriteria.ToSchema(),
+					"attribute_sources": attributesources.ToSchema(0, false),
+					"attribute_contract_fulfillment": schema.MapNestedAttribute{
+						Description: "Defines how an attribute in an attribute contract should be populated.",
+						Optional:    true,
+						Computed:    true,
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"source": sourcetypeidkey.ToSchema(true),
+								"value": schema.StringAttribute{
+									Optional:    true,
+									Computed:    true,
+									Description: "The value for this attribute.",
+								},
+							},
+						},
+						Validators: []validator.Map{
+							configvalidators.ValidAttributeContractFulfillment(),
+						},
+					},
+					"issuance_criteria": issuancecriteria.ToSchema(),
 				},
 			},
 		},
@@ -197,6 +217,7 @@ func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdap
 	if internaltypes.IsDefined(plan.AttributeMapping) {
 		addRequest.AttributeMapping = &client.IdpAdapterContractMapping{}
 		planAttrs := plan.AttributeMapping.Attributes()
+
 		attrContractFulfillmentAttr := planAttrs["attribute_contract_fulfillment"].(types.Map)
 		addRequest.AttributeMapping.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(attrContractFulfillmentAttr)
 		if err != nil {
@@ -209,7 +230,7 @@ func addOptionalIdpAdapterFields(ctx context.Context, addRequest *client.IdpAdap
 			return err
 		}
 
-		attributeSourcesAttr := planAttrs["attribute_sources"].(types.List)
+		attributeSourcesAttr := planAttrs["attribute_sources"].(types.Set)
 		addRequest.AttributeMapping.AttributeSources = []client.AttributeSourceAggregation{}
 		addRequest.AttributeMapping.AttributeSources, err = attributesources.ClientStruct(attributeSourcesAttr)
 		if err != nil {

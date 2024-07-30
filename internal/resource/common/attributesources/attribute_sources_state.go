@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 )
@@ -24,7 +24,7 @@ func CommonAttributeSourceAttrType() map[string]attr.Type {
 
 func CustomAttributeSourceAttrType() map[string]attr.Type {
 	customAttrSourceAttrType := CommonAttributeSourceAttrType()
-	customAttrSourceAttrType["filter_fields"] = types.ListType{ElemType: types.ObjectType{
+	customAttrSourceAttrType["filter_fields"] = types.SetType{ElemType: types.ObjectType{
 		AttrTypes: map[string]attr.Type{
 			"value": types.StringType,
 			"name":  types.StringType,
@@ -47,7 +47,7 @@ func LdapAttributeSourceAttrType() map[string]attr.Type {
 	ldapAttrSourceAttrType["base_dn"] = types.StringType
 	ldapAttrSourceAttrType["search_scope"] = types.StringType
 	ldapAttrSourceAttrType["search_filter"] = types.StringType
-	ldapAttrSourceAttrType["search_attributes"] = types.ListType{ElemType: types.StringType}
+	ldapAttrSourceAttrType["search_attributes"] = types.SetType{ElemType: types.StringType}
 	ldapAttrSourceAttrType["binary_attribute_settings"] = types.MapType{
 		ElemType: types.ObjectType{
 			AttrTypes: map[string]attr.Type{
@@ -59,17 +59,7 @@ func LdapAttributeSourceAttrType() map[string]attr.Type {
 	return ldapAttrSourceAttrType
 }
 
-func AttrType() map[string]attr.Type {
-	return map[string]attr.Type{
-		"attribute_sources": types.ListType{
-			ElemType: types.ObjectType{
-				AttrTypes: ElemAttrType(),
-			},
-		},
-	}
-}
-
-func ElemAttrType() map[string]attr.Type {
+func AttrTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"custom_attribute_source": types.ObjectType{
 			AttrTypes: CustomAttributeSourceAttrType(),
@@ -83,7 +73,7 @@ func ElemAttrType() map[string]attr.Type {
 	}
 }
 
-func ToState(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation) (basetypes.ListValue, diag.Diagnostics) {
+func ToState(con context.Context, attributeSourcesFromClient []client.AttributeSourceAggregation) (basetypes.SetValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	var customAttrSourceAttrTypes = CustomAttributeSourceAttrType()
 	var jdbcAttrSourceAttrTypes = JdbcAttributeSourceAttrType()
@@ -97,7 +87,7 @@ func ToState(con context.Context, attributeSourcesFromClient []client.AttributeS
 		attrSourceValues := map[string]attr.Value{}
 		if attrSource.CustomAttributeSource != nil {
 			customAttrSourceValues := map[string]attr.Value{}
-			customAttrSourceValues["filter_fields"], valueFromDiags = types.ListValueFrom(con, customAttrSourceAttrTypes["filter_fields"].(types.ListType).ElemType, attrSource.CustomAttributeSource.FilterFields)
+			customAttrSourceValues["filter_fields"], valueFromDiags = types.SetValueFrom(con, customAttrSourceAttrTypes["filter_fields"].(types.SetType).ElemType, attrSource.CustomAttributeSource.FilterFields)
 			diags.Append(valueFromDiags...)
 
 			customAttrSourceValues["type"] = types.StringValue("CUSTOM")
@@ -105,7 +95,7 @@ func ToState(con context.Context, attributeSourcesFromClient []client.AttributeS
 			diags.Append(valueFromDiags...)
 			customAttrSourceValues["id"] = types.StringPointerValue(attrSource.CustomAttributeSource.Id)
 			customAttrSourceValues["description"] = types.StringPointerValue(attrSource.CustomAttributeSource.Description)
-			customAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = types.MapValueFrom(con, types.ObjectType{AttrTypes: attributecontractfulfillment.AttrType()}, attrSource.CustomAttributeSource.AttributeContractFulfillment)
+			customAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = types.MapValueFrom(con, types.ObjectType{AttrTypes: attributecontractfulfillment.AttrTypes()}, attrSource.CustomAttributeSource.AttributeContractFulfillment)
 			diags.Append(valueFromDiags...)
 			attrSourceValues["custom_attribute_source"], valueFromDiags = types.ObjectValue(customAttrSourceAttrTypes, customAttrSourceValues)
 			diags.Append(valueFromDiags...)
@@ -124,7 +114,7 @@ func ToState(con context.Context, attributeSourcesFromClient []client.AttributeS
 			diags.Append(valueFromDiags...)
 			jdbcAttrSourceValues["id"] = types.StringPointerValue(attrSource.JdbcAttributeSource.Id)
 			jdbcAttrSourceValues["description"] = types.StringPointerValue(attrSource.JdbcAttributeSource.Description)
-			jdbcAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = types.MapValueFrom(con, types.ObjectType{AttrTypes: attributecontractfulfillment.AttrType()}, attrSource.JdbcAttributeSource.AttributeContractFulfillment)
+			jdbcAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = types.MapValueFrom(con, types.ObjectType{AttrTypes: attributecontractfulfillment.AttrTypes()}, attrSource.JdbcAttributeSource.AttributeContractFulfillment)
 			diags.Append(valueFromDiags...)
 			attrSourceValues["jdbc_attribute_source"], valueFromDiags = types.ObjectValue(jdbcAttrSourceAttrTypes, jdbcAttrSourceValues)
 			diags.Append(valueFromDiags...)
@@ -136,7 +126,7 @@ func ToState(con context.Context, attributeSourcesFromClient []client.AttributeS
 			ldapAttrSourceValues["base_dn"] = types.StringPointerValue(attrSource.LdapAttributeSource.BaseDn)
 			ldapAttrSourceValues["search_scope"] = types.StringValue(attrSource.LdapAttributeSource.SearchScope)
 			ldapAttrSourceValues["search_filter"] = types.StringValue(attrSource.LdapAttributeSource.SearchFilter)
-			ldapAttrSourceValues["search_attributes"], valueFromDiags = types.ListValueFrom(con, types.StringType, attrSource.LdapAttributeSource.SearchAttributes)
+			ldapAttrSourceValues["search_attributes"], valueFromDiags = types.SetValueFrom(con, types.StringType, attrSource.LdapAttributeSource.SearchAttributes)
 			diags.Append(valueFromDiags...)
 			if attrSource.LdapAttributeSource.BinaryAttributeSettings == nil {
 				ldapAttrSourceValues["binary_attribute_settings"] = types.MapNull(ldapAttrSourceAttrTypes["binary_attribute_settings"].(types.MapType).ElemType)
@@ -150,18 +140,18 @@ func ToState(con context.Context, attributeSourcesFromClient []client.AttributeS
 			diags.Append(valueFromDiags...)
 			ldapAttrSourceValues["id"] = types.StringPointerValue(attrSource.LdapAttributeSource.Id)
 			ldapAttrSourceValues["description"] = types.StringPointerValue(attrSource.LdapAttributeSource.Description)
-			ldapAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = types.MapValueFrom(con, types.ObjectType{AttrTypes: attributecontractfulfillment.AttrType()}, attrSource.LdapAttributeSource.AttributeContractFulfillment)
+			ldapAttrSourceValues["attribute_contract_fulfillment"], valueFromDiags = types.MapValueFrom(con, types.ObjectType{AttrTypes: attributecontractfulfillment.AttrTypes()}, attrSource.LdapAttributeSource.AttributeContractFulfillment)
 			diags.Append(valueFromDiags...)
 			attrSourceValues["ldap_attribute_source"], valueFromDiags = types.ObjectValue(ldapAttrSourceAttrTypes, ldapAttrSourceValues)
 			diags.Append(valueFromDiags...)
 		} else {
 			attrSourceValues["ldap_attribute_source"] = types.ObjectNull(ldapAttrSourceAttrTypes)
 		}
-		attrSourceElement, valueFromDiags := types.ObjectValue(ElemAttrType(), attrSourceValues)
+		attrSourceElement, valueFromDiags := types.ObjectValue(AttrTypes(), attrSourceValues)
 		diags.Append(valueFromDiags...)
 		attrSourceElements = append(attrSourceElements, attrSourceElement)
 	}
-	attrToState, valueFromDiags := types.ListValue(types.ObjectType{AttrTypes: ElemAttrType()}, attrSourceElements)
+	attrToState, valueFromDiags := types.SetValue(types.ObjectType{AttrTypes: AttrTypes()}, attrSourceElements)
 	diags.Append(valueFromDiags...)
 	return attrToState, diags
 }

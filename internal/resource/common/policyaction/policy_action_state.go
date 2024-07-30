@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributemapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
@@ -20,7 +20,7 @@ var (
 		"fallback_to_success": types.BoolType,
 		"items": types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
 			"attribute_name":   types.StringType,
-			"attribute_source": types.ObjectType{AttrTypes: sourcetypeidkey.AttrType()},
+			"attribute_source": types.ObjectType{AttrTypes: sourcetypeidkey.AttrTypes()},
 			"condition":        types.StringType,
 			"expected_value":   types.StringType,
 			"expression":       types.StringType,
@@ -42,7 +42,7 @@ var (
 		"type":       types.StringType,
 	}
 	inputUserIdMappingAttrTypes = map[string]attr.Type{
-		"source": types.ObjectType{AttrTypes: sourcetypeidkey.AttrType()},
+		"source": types.ObjectType{AttrTypes: sourcetypeidkey.AttrTypes()},
 		"value":  types.StringType,
 	}
 	authnSourcePolicyActionAttrTypes = map[string]attr.Type{

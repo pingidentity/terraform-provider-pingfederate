@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	"github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
@@ -15,14 +15,14 @@ import (
 
 var (
 	attributeMappingAttrTypes = map[string]attr.Type{
-		"attribute_sources": types.ListType{
+		"attribute_sources": types.SetType{
 			ElemType: types.ObjectType{
-				AttrTypes: attributesources.ElemAttrType(),
+				AttrTypes: attributesources.AttrTypes(),
 			},
 		},
 		"attribute_contract_fulfillment": attributecontractfulfillment.MapType(),
 		"issuance_criteria": types.ObjectType{
-			AttrTypes: issuancecriteria.AttrType(),
+			AttrTypes: issuancecriteria.AttrTypes(),
 		},
 	}
 )
@@ -53,7 +53,7 @@ func ToState(con context.Context, attributeMappingFromClient *configurationapi.A
 
 	attributeMappingState := map[string]attr.Value{}
 
-	attributeContractFulfillment, objDiags := attributecontractfulfillment.ToState(con, attributeMappingFromClient.AttributeContractFulfillment)
+	attributeContractFulfillment, objDiags := attributecontractfulfillment.ToState(con, &attributeMappingFromClient.AttributeContractFulfillment)
 	diags = append(diags, objDiags...)
 
 	attributeSources, objDiags := attributesources.ToState(con, attributeMappingFromClient.AttributeSources)

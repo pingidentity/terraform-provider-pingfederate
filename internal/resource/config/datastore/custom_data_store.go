@@ -15,7 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	datasourcepluginconfiguration "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/pluginconfiguration"
 	datasourceresourcelink "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
@@ -33,7 +33,7 @@ var (
 		"parent_ref":            types.ObjectType{AttrTypes: resourcelink.AttrType()},
 	}
 
-	customDataStoreAttrType                = internaltypes.AddKeyValToMapStringAttrType(customDataStoreCommonAttrType, "configuration", types.ObjectType{AttrTypes: pluginconfiguration.AttrType()})
+	customDataStoreAttrType                = internaltypes.AddKeyValToMapStringAttrType(customDataStoreCommonAttrType, "configuration", types.ObjectType{AttrTypes: pluginconfiguration.AttrTypes()})
 	customDataStoreEmptyStateObj           = types.ObjectNull(customDataStoreAttrType)
 	customDataStoreDataSourceAttrType      = internaltypes.AddKeyValToMapStringAttrType(customDataStoreCommonAttrType, "configuration", types.ObjectType{AttrTypes: datasourcepluginconfiguration.AttrType()})
 	customDataStoreEmptyDataSourceStateObj = types.ObjectNull(customDataStoreDataSourceAttrType)
@@ -141,7 +141,7 @@ func toStateCustomDataStore(con context.Context, clientValue *client.DataStoreAg
 			configurationObject, diags = pluginconfiguration.ToState(planConfiguration.(types.Object), &customDataStore.Configuration)
 			allDiags = append(allDiags, diags...)
 		} else {
-			configurationObject, diags = pluginconfiguration.ToState(types.ObjectNull(pluginconfiguration.AttrType()), &customDataStore.Configuration)
+			configurationObject, diags = pluginconfiguration.ToState(types.ObjectNull(pluginconfiguration.AttrTypes()), &customDataStore.Configuration)
 			allDiags = append(allDiags, diags...)
 		}
 		customDataStoreVal["configuration"] = configurationObject

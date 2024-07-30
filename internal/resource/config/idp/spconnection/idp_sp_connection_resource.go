@@ -23,7 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
@@ -151,14 +151,14 @@ var (
 		},
 	}
 	attributeContractFulfillmentElemAttrType = types.ObjectType{AttrTypes: map[string]attr.Type{
-		"source": types.ObjectType{AttrTypes: sourcetypeidkey.AttrType()},
+		"source": types.ObjectType{AttrTypes: sourcetypeidkey.AttrTypes()},
 		"value":  types.StringType,
 	}}
 	attributeContractFulfillmentAttrType = types.MapType{
 		ElemType: attributeContractFulfillmentElemAttrType,
 	}
 	issuanceCriteriaAttrType = types.ObjectType{
-		AttrTypes: issuancecriteria.AttrType(),
+		AttrTypes: issuancecriteria.AttrTypes(),
 	}
 	idpAdapterAttributeAttrType = types.ObjectType{
 		AttrTypes: map[string]attr.Type{
@@ -228,10 +228,10 @@ var (
 				"name":                  types.StringType,
 				"plugin_descriptor_ref": resourceLinkObjectType,
 				"parent_ref":            resourceLinkObjectType,
-				"configuration":         types.ObjectType{AttrTypes: pluginconfiguration.AttrType()},
+				"configuration":         types.ObjectType{AttrTypes: pluginconfiguration.AttrTypes()},
 				"authn_ctx_class_ref":   types.StringType,
 				"attribute_mapping": types.ObjectType{AttrTypes: map[string]attr.Type{
-					"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
+					"attribute_sources":              types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
 					"attribute_contract_fulfillment": attributeContractFulfillmentAttrType,
 					"issuance_criteria":              issuanceCriteriaAttrType,
 				}},
@@ -243,7 +243,7 @@ var (
 				}},
 			}},
 			"abort_sso_transaction_as_fail_safe": types.BoolType,
-			"attribute_sources":                  types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
+			"attribute_sources":                  types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
 			"attribute_contract_fulfillment":     attributeContractFulfillmentAttrType,
 			"issuance_criteria":                  issuanceCriteriaAttrType,
 		}}},
@@ -252,7 +252,7 @@ var (
 			"restrict_virtual_entity_ids":        types.BoolType,
 			"restricted_virtual_entity_ids":      types.ListType{ElemType: types.StringType},
 			"abort_sso_transaction_as_fail_safe": types.BoolType,
-			"attribute_sources":                  types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
+			"attribute_sources":                  types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
 			"attribute_contract_fulfillment":     attributeContractFulfillmentAttrType,
 			"issuance_criteria":                  issuanceCriteriaAttrType,
 		}}},
@@ -292,7 +292,7 @@ var (
 		"token_processor_mappings": types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
 			"idp_token_processor_ref":        resourceLinkObjectType,
 			"restricted_virtual_entity_ids":  types.ListType{ElemType: types.StringType},
-			"attribute_sources":              types.ListType{ElemType: types.ObjectType{AttrTypes: attributesources.ElemAttrType()}},
+			"attribute_sources":              types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
 			"attribute_contract_fulfillment": attributeContractFulfillmentAttrType,
 			"issuance_criteria":              issuanceCriteriaAttrType,
 		}}},
@@ -1075,7 +1075,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										"group_membership_detection": schema.SingleNestedAttribute{
 											Attributes: map[string]schema.Attribute{
 												"group_member_attribute_name": schema.StringAttribute{
-													Required:    true,
+													Optional:    true,
 													Description: "The name of the attribute that represents group members in a group, also known as group member attribute.",
 												},
 												"member_of_group_attribute_name": schema.StringAttribute{
@@ -1899,7 +1899,7 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 			return err
 		}
 
-		addRequest.AttributeQuery.AttributeSources, err = attributesources.ClientStruct(plan.AttributeQuery.Attributes()["attribute_sources"].(types.List))
+		addRequest.AttributeQuery.AttributeSources, err = attributesources.ClientStruct(plan.AttributeQuery.Attributes()["attribute_sources"].(types.Set))
 		if err != nil {
 			return err
 		}

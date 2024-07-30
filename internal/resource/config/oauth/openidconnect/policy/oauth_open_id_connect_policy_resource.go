@@ -16,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributemapping"
@@ -301,7 +301,7 @@ func getRequiredOauthOpenIDConnectPolicyFields(plan oauthOpenIdConnectPolicyMode
 		return nil, nil, nil
 	}
 
-	attributeSourcesAttr := planAttrs["attribute_sources"].(types.List)
+	attributeSourcesAttr := planAttrs["attribute_sources"].(types.Set)
 	attributeMapping.AttributeSources = []client.AttributeSourceAggregation{}
 	attributeMapping.AttributeSources, err = attributesources.ClientStruct(attributeSourcesAttr)
 	if err != nil {

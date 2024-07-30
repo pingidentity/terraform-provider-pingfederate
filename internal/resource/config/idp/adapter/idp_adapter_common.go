@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	datasourcepluginconfiguration "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
@@ -61,14 +61,14 @@ var (
 	}
 
 	attributeMappingAttrTypes = map[string]attr.Type{
-		"attribute_sources": types.ListType{
+		"attribute_sources": types.SetType{
 			ElemType: types.ObjectType{
-				AttrTypes: attributesources.ElemAttrType(),
+				AttrTypes: attributesources.AttrTypes(),
 			},
 		},
 		"attribute_contract_fulfillment": attributecontractfulfillment.MapType(),
 		"issuance_criteria": types.ObjectType{
-			AttrTypes: issuancecriteria.AttrType(),
+			AttrTypes: issuancecriteria.AttrTypes(),
 		},
 	}
 
@@ -118,6 +118,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 		}
 		attributeContractValues["unique_user_key_attribute"] = types.StringPointerValue(r.AttributeContract.UniqueUserKeyAttribute)
 		attributeContractValues["mask_ognl_values"] = types.BoolPointerValue(r.AttributeContract.MaskOgnlValues)
+
 		// Only include core_attributes specified in the plan in the response
 		if plan != nil {
 			if internaltypes.IsDefined(plan.AttributeContract) && internaltypes.IsDefined(plan.AttributeContract.Attributes()["core_attributes"]) {
@@ -151,7 +152,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 		attributeMappingValues := map[string]attr.Value{}
 
 		// Build attribute_contract_fulfillment value
-		attributeMappingValues["attribute_contract_fulfillment"], diags = attributecontractfulfillment.ToState(ctx, r.AttributeMapping.AttributeContractFulfillment)
+		attributeMappingValues["attribute_contract_fulfillment"], diags = attributecontractfulfillment.ToState(ctx, &r.AttributeMapping.AttributeContractFulfillment)
 		respDiags.Append(diags...)
 
 		// Build issuance_criteria value

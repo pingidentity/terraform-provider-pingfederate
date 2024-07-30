@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	datasourceattributecontractfulfillment "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributecontractfulfillment"
 	datasourceattributesources "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
@@ -37,7 +37,7 @@ type spAuthenticationPolicyContractMappingDataSource struct {
 }
 
 type spAuthenticationPolicyContractMappingDataSourceModel struct {
-	AttributeSources                 types.List   `tfsdk:"attribute_sources"`
+	AttributeSources                 types.Set    `tfsdk:"attribute_sources"`
 	AttributeContractFulfillment     types.Map    `tfsdk:"attribute_contract_fulfillment"`
 	IssuanceCriteria                 types.Object `tfsdk:"issuance_criteria"`
 	Id                               types.String `tfsdk:"id"`
@@ -105,7 +105,7 @@ func readSpAuthenticationPolicyContractMappingDataSourceResponse(ctx context.Con
 	var diags, respDiags diag.Diagnostics
 	state.AttributeSources, respDiags = attributesources.ToState(ctx, r.AttributeSources)
 	diags.Append(respDiags...)
-	state.AttributeContractFulfillment, respDiags = attributecontractfulfillment.ToState(ctx, r.AttributeContractFulfillment)
+	state.AttributeContractFulfillment, respDiags = attributecontractfulfillment.ToState(ctx, &r.AttributeContractFulfillment)
 	diags.Append(respDiags...)
 	state.IssuanceCriteria, respDiags = issuancecriteria.ToState(ctx, r.IssuanceCriteria)
 	diags.Append(respDiags...)

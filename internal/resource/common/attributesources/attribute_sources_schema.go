@@ -1,14 +1,14 @@
 package attributesources
 
 import (
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -48,7 +48,7 @@ func CustomAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeCon
 		Description: "The data store type of this attribute source.",
 		Default:     stringdefault.StaticString("CUSTOM"),
 	}
-	customAttributeSourceSchema["filter_fields"] = schema.ListNestedAttribute{
+	customAttributeSourceSchema["filter_fields"] = schema.SetNestedAttribute{
 		Description: "The list of fields that can be used to filter a request to the custom data store.",
 		Optional:    true,
 		NestedObject: schema.NestedAttributeObject{
@@ -122,7 +122,7 @@ func LdapAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContr
 		Description: "The LDAP filter that will be used to lookup the objects from the directory.",
 		Required:    true,
 	}
-	ldapAttributeSourceSchema["search_attributes"] = schema.ListAttribute{
+	ldapAttributeSourceSchema["search_attributes"] = schema.SetAttribute{
 		Description: "A list of LDAP attributes returned from search and available for mapping.",
 		Optional:    true,
 		ElementType: types.StringType,
@@ -151,17 +151,17 @@ func LdapAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContr
 	return ldapAttributeSourceSchema
 }
 
-func ToSchema(sizeAtLeast int, optionalAndComputedNestedAttributeContractFulfillment bool) schema.ListNestedAttribute {
-	attributeSourcesDefault, _ := types.ListValue(types.ObjectType{AttrTypes: ElemAttrType()}, nil)
-	validators := []validator.List{}
+func ToSchema(sizeAtLeast int, optionalAndComputedNestedAttributeContractFulfillment bool) schema.SetNestedAttribute {
+	attributeSourcesDefault, _ := types.SetValue(types.ObjectType{AttrTypes: AttrTypes()}, nil)
+	validators := []validator.Set{}
 	if sizeAtLeast > 0 {
-		validators = append(validators, listvalidator.SizeAtLeast(sizeAtLeast))
+		validators = append(validators, setvalidator.SizeAtLeast(sizeAtLeast))
 	}
-	return schema.ListNestedAttribute{
+	return schema.SetNestedAttribute{
 		Description: "A list of configured data stores to look up attributes from.",
 		Computed:    true,
 		Optional:    true,
-		Default:     listdefault.StaticValue(attributeSourcesDefault),
+		Default:     setdefault.StaticValue(attributeSourcesDefault),
 		Validators:  validators,
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{

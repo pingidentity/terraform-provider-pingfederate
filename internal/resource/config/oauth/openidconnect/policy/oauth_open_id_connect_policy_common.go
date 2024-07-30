@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	client "github.com/pingidentity/pingfederate-go-client/v1200/configurationapi"
+	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributemapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
@@ -85,7 +85,7 @@ func readOauthOpenIdConnectPolicyResponse(ctx context.Context, response *client.
 	attributeMappingValues := map[string]attr.Value{}
 
 	// Build attribute_contract_fulfillment value
-	attributeMappingValues["attribute_contract_fulfillment"], diags = attributecontractfulfillment.ToState(ctx, response.AttributeMapping.AttributeContractFulfillment)
+	attributeMappingValues["attribute_contract_fulfillment"], diags = attributecontractfulfillment.ToState(ctx, &response.AttributeMapping.AttributeContractFulfillment)
 	respDiags.Append(diags...)
 
 	// Build issuance_criteria value
