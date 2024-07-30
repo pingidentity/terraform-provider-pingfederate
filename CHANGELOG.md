@@ -8,7 +8,7 @@
 * **New Resource:** `pingfederate_oauth_idp_adapter_mapping` ([#263]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/263)))
 
 ### Enhancements
-* Improved examples, schema documentation, and attribute validation for `pingfederate_oauth_issuer` and `pingfederate_authentication_policy_contract`. 
+* Improved examples, schema documentation, and attribute validation for `pingfederate_oauth_issuer`, `pingfederate_authentication_policy_contract`, `pingfederate_certificate_ca`, `pingfederate_extended_properties`.
 
 # v0.12.0 June 27th, 2024
 ### BREAKING CHANGES
