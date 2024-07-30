@@ -8,6 +8,9 @@
 * **New Resource:** `pingfederate_kerberos_realm_settings` ([#266]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/266)))
 * **New Resource:** `pingfederate_oauth_idp_adapter_mapping` ([#263]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/263)))
 
+### Enhancements
+* Improved examples, schema documentation, and attribute validation for `pingfederate_oauth_issuer` and `pingfederate_authentication_policy_contract`. 
+
 # v0.12.0 June 27th, 2024
 ### BREAKING CHANGES
 * Removed deprecated `inherited` attribute from various resources and data sources. ([#268]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/268)))
