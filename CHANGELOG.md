@@ -8,8 +8,11 @@
 * **New Resource:** `pingfederate_kerberos_realm_settings` ([#266]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/266)))
 * **New Resource:** `pingfederate_oauth_idp_adapter_mapping` ([#263]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/263)))
 
-### DEPRECATED
-* The `pingfederate_idp_urls` resource. Use `pingfederate_default_urls` instead. This resource will be removed in a future release. ([#260]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/260)))
+### Deprecated
+* The `pingfederate_idp_urls` resource has been deprecated. Use `pingfederate_default_urls` instead. `pingfederate_idp_urls` will be removed in a future release. ([#260]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/260)))
+
+### Enhancements
+* Improved examples, schema documentation, and attribute validation for `pingfederate_oauth_issuer` and `pingfederate_authentication_policy_contract`. 
 
 # v0.12.0 June 27th, 2024
 ### BREAKING CHANGES
