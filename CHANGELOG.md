@@ -12,7 +12,7 @@
 * The `pingfederate_idp_urls` resource has been deprecated. Use `pingfederate_default_urls` instead. `pingfederate_idp_urls` will be removed in a future release. ([#260]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/260)))
 
 ### Enhancements
-* Improved examples, schema documentation, and attribute validation for `pingfederate_oauth_issuer` and `pingfederate_authentication_policy_contract`. 
+* Improved examples, schema documentation, and attribute validation for `pingfederate_oauth_issuer`, `pingfederate_authentication_policy_contract`, `pingfederate_certificate_ca`, `pingfederate_extended_properties`.
 
 # v0.12.0 June 27th, 2024
 ### BREAKING CHANGES
