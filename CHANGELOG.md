@@ -1,4 +1,4 @@
-# v0.13.0 (Unreleased)
+# v0.13.0 August 1, 2024
 ### Resources
 * **New Resource:** `pingfederate_default_urls` ([#260]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/260)))
 * **New Resource:** `pingfederate_sp_target_url_mappings` ([#273]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/273)))
@@ -12,7 +12,7 @@
 * The `pingfederate_idp_urls` resource has been deprecated. Use `pingfederate_default_urls` instead. `pingfederate_idp_urls` will be removed in a future release. ([#260]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/260)))
 
 ### Enhancements
-* Improved examples, schema documentation, and attribute validation for `pingfederate_oauth_issuer`, `pingfederate_authentication_policy_contract`, `pingfederate_certificate_ca`, `pingfederate_extended_properties`.
+* Improved examples, schema documentation, and attribute validation for `pingfederate_oauth_issuer`, `pingfederate_authentication_policy_contract`, `pingfederate_certificate_ca`, `pingfederate_extended_properties`, `pingfederate_incoming_proxy_settings`.
 
 # v0.12.0 June 27th, 2024
 ### BREAKING CHANGES
