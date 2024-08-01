@@ -13,7 +13,7 @@ Resource to create and manage signing key pairs.
 
 ```terraform
 resource "pingfederate_keypairs_signing_key" "signingKey" {
-  key_id    = "signingKey"
+  key_id    = "signingkey"
   file_data = filebase64("./assets/signingkey.p12")
   password  = var.signing_key_password
   format    = "PKCS12"
@@ -24,7 +24,7 @@ resource "pingfederate_keypairs_signing_key" "signingKey" {
 
 ```terraform
 resource "pingfederate_keypairs_signing_key" "signingKey" {
-  key_id                    = "signingKey"
+  key_id                    = "signingkey"
   city                      = "Austin"
   common_name               = "Example"
   country                   = "US"
@@ -86,13 +86,3 @@ Read-Only:
 - `key_size` (Number) Key size, in bits. If this property is unset, the key size of the original key pair will be used. Supported key sizes are available through the /keyPairs/keyAlgorithms endpoint.
 - `signature_algorithm` (String) Required if the original key pair used SHA1 algorithm. If this property is unset, the default signature algorithm of the original key pair will be used. Supported signature algorithms are available through the /keyPairs/keyAlgorithms endpoint.
 - `valid_days` (Number) Valid days for the new key pair to be created. If this property is unset, the validity days of the original key pair will be used.
-
-## Import
-
-Import is supported using the following syntax:
-
-~> "key_id" should be the id of the Signing Key Pair to be imported
-
-```shell
-terraform import pingfederate_keypairs_signing_key.signingKey key_id
-```

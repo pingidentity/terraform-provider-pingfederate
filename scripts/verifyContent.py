@@ -7,6 +7,10 @@ missing_in_changelog = False
 no_import_dirs = set()
 missing_changelog_entries = set()
 
+noImportResources = [
+  "pingfederate_keypairs_signing_key"
+]
+
 dirs = glob("./examples/resources/*/", recursive=True)
 for dir in dirs:
   resource_name = str(dir).split("/")[-2].encode()
@@ -16,7 +20,7 @@ for dir in dirs:
       missing_changelog_entries.add(resource_name.decode())
   
   has_import_file = os.path.isfile(f"{dir}/import.sh")
-  if not has_import_file:
+  if not has_import_file and resource_name.decode() not in noImportResources:
     no_import_dirs.add(dir)
 
 if len(missing_changelog_entries) > 0:

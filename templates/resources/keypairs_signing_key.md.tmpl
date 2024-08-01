@@ -18,11 +18,3 @@ description: |-
 {{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-generate.tf") }}
 
 {{ .SchemaMarkdown | trimspace }}
-
-## Import
-
-Import is supported using the following syntax:
-
-~> "key_id" should be the id of the Signing Key Pair to be imported
-
-{{ codefile "shell" (printf "%s%s%s" "examples/resources/" .Name "/import.sh") }}

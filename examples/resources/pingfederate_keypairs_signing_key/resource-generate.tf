@@ -1,5 +1,5 @@
 resource "pingfederate_keypairs_signing_key" "signingKey" {
-  key_id                    = "signingKey"
+  key_id                    = "signingkey"
   city                      = "Austin"
   common_name               = "Example"
   country                   = "US"
