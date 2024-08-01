@@ -1,3 +1,10 @@
+# v0.14.0 (Unreleased)
+### Resources
+* **New Resource:** `pingfederate_keypairs_ssl_server_key` ([#314]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/314)))
+
+### Deprecated
+* The `pingfederate_key_pair_ssl_server_import` resource and corresponding data source have been deprecated. Use `pingfederate_keypairs_ssl_server_key` instead. ([#314]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/314)))
+
 # v0.13.0 August 1, 2024
 ### Resources
 * **New Resource:** `pingfederate_default_urls` ([#260]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/260)))
