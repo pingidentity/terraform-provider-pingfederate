@@ -15,7 +15,8 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const keypairsSigningKeyKeyId = "keypairssigningkeyid"
+const keypairsSigningKeyGenerateKeyId = "keypairssigninggenkeyid"
+const keypairsSigningKeyImportKeyId = "keypairssigningimpkeyid"
 
 func TestAccKeypairsSigningKey_RemovalDrift(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -23,7 +24,7 @@ func TestAccKeypairsSigningKey_RemovalDrift(t *testing.T) {
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
-		CheckDestroy: keypairsSigningKey_CheckDestroy,
+		CheckDestroy: keypairsSigningKey_GenerateCheckDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Create the resource with a minimal model
@@ -32,7 +33,7 @@ func TestAccKeypairsSigningKey_RemovalDrift(t *testing.T) {
 			{
 				// Delete the resource on the service, outside of terraform, verify that a non-empty plan is generated
 				PreConfig: func() {
-					keypairsSigningKey_Delete(t)
+					keypairsSigningKey_Delete(t, keypairsSigningKeyGenerateKeyId)
 				},
 				RefreshState:       true,
 				ExpectNonEmptyPlan: true,
@@ -47,7 +48,7 @@ func TestAccKeypairsSigningKey_GenerateMinimalMaximal(t *testing.T) {
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
-		CheckDestroy: keypairsSigningKey_CheckDestroy,
+		CheckDestroy: keypairsSigningKey_GenerateCheckDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Create the resource with a minimal model
@@ -63,7 +64,7 @@ func TestAccKeypairsSigningKey_GenerateMinimalMaximal(t *testing.T) {
 				// Test importing the resource
 				Config:                               keypairsSigningKey_GenerateCompleteHCL(),
 				ResourceName:                         "pingfederate_keypairs_signing_key.example",
-				ImportStateId:                        keypairsSigningKeyKeyId,
+				ImportStateId:                        keypairsSigningKeyGenerateKeyId,
 				ImportStateVerifyIdentifierAttribute: "key_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
@@ -100,7 +101,7 @@ func TestAccKeypairsSigningKey_FileDataMinimalMaximal(t *testing.T) {
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
-		CheckDestroy: keypairsSigningKey_CheckDestroy,
+		CheckDestroy: keypairsSigningKey_ImportCheckDestroy,
 		Steps: []resource.TestStep{
 			{
 				// Create the resource with a minimal model
@@ -116,7 +117,7 @@ func TestAccKeypairsSigningKey_FileDataMinimalMaximal(t *testing.T) {
 				// Test importing the resource
 				Config:                               keypairsSigningKey_ImportCompleteHCL(),
 				ResourceName:                         "pingfederate_keypairs_signing_key.example",
-				ImportStateId:                        keypairsSigningKeyKeyId,
+				ImportStateId:                        keypairsSigningKeyImportKeyId,
 				ImportStateVerifyIdentifierAttribute: "key_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
@@ -142,7 +143,12 @@ resource "pingfederate_keypairs_signing_key" "example" {
   organization  = "Ping Identity"
   valid_days    = 365
 }
-`, keypairsSigningKeyKeyId)
+
+data "pingfederate_keypairs_signing_key" "example" {
+  depends_on = [pingfederate_keypairs_signing_key.example]
+  key_id = pingfederate_keypairs_signing_key.example.key_id
+}
+`, keypairsSigningKeyGenerateKeyId)
 }
 
 // Maximal HCL with all values set where possible
@@ -162,7 +168,12 @@ resource "pingfederate_keypairs_signing_key" "example" {
   subject_alternative_names = ["example.com"]
   valid_days                = 365
 }
-`, keypairsSigningKeyKeyId)
+
+data "pingfederate_keypairs_signing_key" "example" {
+  depends_on = [pingfederate_keypairs_signing_key.example]
+  key_id = pingfederate_keypairs_signing_key.example.key_id
+}
+`, keypairsSigningKeyGenerateKeyId)
 }
 
 // Minimal HCL with only required values set
@@ -173,7 +184,12 @@ resource "pingfederate_keypairs_signing_key" "example" {
   file_data = "%s"
   password  = "2FederateM0re"
 }
-`, keypairsSigningKeyKeyId, fileDataInitial)
+
+data "pingfederate_keypairs_signing_key" "example" {
+  depends_on = [pingfederate_keypairs_signing_key.example]
+  key_id = pingfederate_keypairs_signing_key.example.key_id
+}
+`, keypairsSigningKeyImportKeyId, fileDataInitial)
 }
 
 // Maximal HCL with all values set where possible
@@ -185,97 +201,138 @@ resource "pingfederate_keypairs_signing_key" "example" {
   password  = "2FederateM0re"
   format    = "PKCS12"
 }
-`, keypairsSigningKeyKeyId, fileDataUpdated)
+
+data "pingfederate_keypairs_signing_key" "example" {
+  depends_on = [pingfederate_keypairs_signing_key.example]
+  key_id = pingfederate_keypairs_signing_key.example.key_id
+}
+`, keypairsSigningKeyImportKeyId, fileDataUpdated)
 }
 
 // Validate any computed values when applying minimal generated key HCL
 func keypairsSigningKey_CheckComputedValuesGenerateMinimal() resource.TestCheckFunc {
+	testChecks := []resource.TestCheckFunc{}
+	for _, prefix := range []string{"", "data."} {
+		testChecks = append(testChecks,
+			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_signing_key.example", "expires"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "issuer_dn", "CN=Example, O=Ping Identity, C=US"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "key_size", "2048"),
+			resource.TestCheckNoResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "rotation_settings"),
+			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_signing_key.example", "serial_number"),
+			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_signing_key.example", "sha1_fingerprint"),
+			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_signing_key.example", "sha256_fingerprint"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "signature_algorithm", "SHA256withRSA"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "status", "VALID"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "subject_alternative_names.#", "0"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "subject_dn", "CN=Example, O=Ping Identity, C=US"),
+			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_signing_key.example", "valid_from"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "version", "3"),
+		)
+	}
+
 	return resource.ComposeTestCheckFunc(
-		resource.TestCheckResourceAttrSet("pingfederate_keypairs_signing_key.example", "expires"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "issuer_dn", "CN=Example, O=Ping Identity, C=US"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "key_size", "2048"),
-		resource.TestCheckNoResourceAttr("pingfederate_keypairs_signing_key.example", "rotation_settings"),
-		resource.TestCheckResourceAttrSet("pingfederate_keypairs_signing_key.example", "serial_number"),
-		resource.TestCheckResourceAttrSet("pingfederate_keypairs_signing_key.example", "sha1_fingerprint"),
-		resource.TestCheckResourceAttrSet("pingfederate_keypairs_signing_key.example", "sha256_fingerprint"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "signature_algorithm", "SHA256withRSA"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "status", "VALID"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "subject_alternative_names.#", "0"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "subject_dn", "CN=Example, O=Ping Identity, C=US"),
-		resource.TestCheckResourceAttrSet("pingfederate_keypairs_signing_key.example", "valid_from"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "version", "3"),
+		testChecks...,
 	)
 }
 
 // Validate any computed values when applying complete generated key HCL
 func keypairsSigningKey_CheckComputedValuesGenerateComplete() resource.TestCheckFunc {
+	testChecks := []resource.TestCheckFunc{}
+	for _, prefix := range []string{"", "data."} {
+		testChecks = append(testChecks,
+			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_signing_key.example", "expires"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "issuer_dn", "CN=Example, OU=Engineering, O=Ping Identity, L=Austin, ST=Texas, C=US"),
+			resource.TestCheckNoResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "rotation_settings"),
+			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_signing_key.example", "serial_number"),
+			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_signing_key.example", "sha1_fingerprint"),
+			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_signing_key.example", "sha256_fingerprint"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "signature_algorithm", "SHA256withRSA"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "status", "VALID"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "subject_alternative_names.0", "example.com"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "subject_dn", "CN=Example, OU=Engineering, O=Ping Identity, L=Austin, ST=Texas, C=US"),
+			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_signing_key.example", "valid_from"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "version", "3"),
+		)
+	}
+
 	return resource.ComposeTestCheckFunc(
-		resource.TestCheckResourceAttrSet("pingfederate_keypairs_signing_key.example", "expires"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "issuer_dn", "CN=Example, OU=Engineering, O=Ping Identity, L=Austin, ST=Texas, C=US"),
-		resource.TestCheckNoResourceAttr("pingfederate_keypairs_signing_key.example", "rotation_settings"),
-		resource.TestCheckResourceAttrSet("pingfederate_keypairs_signing_key.example", "serial_number"),
-		resource.TestCheckResourceAttrSet("pingfederate_keypairs_signing_key.example", "sha1_fingerprint"),
-		resource.TestCheckResourceAttrSet("pingfederate_keypairs_signing_key.example", "sha256_fingerprint"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "signature_algorithm", "SHA256withRSA"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "status", "VALID"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "subject_alternative_names.0", "example.com"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "subject_dn", "CN=Example, OU=Engineering, O=Ping Identity, L=Austin, ST=Texas, C=US"),
-		resource.TestCheckResourceAttrSet("pingfederate_keypairs_signing_key.example", "valid_from"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "version", "3"),
+		testChecks...,
 	)
 }
 
 // Validate any computed values when applying minimal HCL
 func keypairsSigningKey_CheckComputedValuesImportMinimal() resource.TestCheckFunc {
+	testChecks := []resource.TestCheckFunc{}
+	for _, prefix := range []string{"", "data."} {
+		testChecks = append(testChecks,
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "expires", "2044-07-24T15:46:27Z"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "issuer_dn", "CN=Example Authority, O=Example Corporation, C=US"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "key_size", "2048"),
+			resource.TestCheckNoResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "rotation_settings"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "serial_number", "28463092959443571178990831419139562736"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "sha1_fingerprint", "1C83D0C571A1AE934C3C2A4BF7BDC541974497E5"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "sha256_fingerprint", "B9A2940E5E5E06AC2852DD0A32B7192876C3B194577155CE58E1AD5234375EB7"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "signature_algorithm", "SHA256withRSA"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "status", "VALID"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "subject_alternative_names.#", "0"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "subject_dn", "CN=Example Authority, O=Example Corporation, C=US"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "valid_from", "2024-07-29T15:46:27Z"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "version", "3"),
+		)
+	}
+
 	return resource.ComposeTestCheckFunc(
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "expires", "2044-07-24T15:46:27Z"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "issuer_dn", "CN=Example Authority, O=Example Corporation, C=US"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "key_size", "2048"),
-		resource.TestCheckNoResourceAttr("pingfederate_keypairs_signing_key.example", "rotation_settings"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "serial_number", "28463092959443571178990831419139562736"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "sha1_fingerprint", "1C83D0C571A1AE934C3C2A4BF7BDC541974497E5"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "sha256_fingerprint", "B9A2940E5E5E06AC2852DD0A32B7192876C3B194577155CE58E1AD5234375EB7"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "signature_algorithm", "SHA256withRSA"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "status", "VALID"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "subject_alternative_names.#", "0"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "subject_dn", "CN=Example Authority, O=Example Corporation, C=US"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "valid_from", "2024-07-29T15:46:27Z"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "version", "3"),
+		testChecks...,
 	)
 }
 
 // Validate any computed values when applying complete HCL
 func keypairsSigningKey_CheckComputedValuesImportComplete() resource.TestCheckFunc {
+	testChecks := []resource.TestCheckFunc{}
+	for _, prefix := range []string{"", "data."} {
+		testChecks = append(testChecks,
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "expires", "2025-08-01T15:16:44Z"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "issuer_dn", "CN=Another Authority, O=Example Corporation, C=US"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "key_size", "2048"),
+			resource.TestCheckNoResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "rotation_settings"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "serial_number", "34314007937343527069893005115224475439"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "sha1_fingerprint", "60CB3F8861673E1E814D87D84C8FADDDC37AE270"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "sha256_fingerprint", "8AA7D3C77D5053A9C8781D4F3E123712667E6B9A3E103DB74D035D2751695938"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "signature_algorithm", "SHA256withRSA"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "status", "VALID"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "subject_alternative_names.#", "0"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "subject_dn", "CN=Another Authority, O=Example Corporation, C=US"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "valid_from", "2024-08-01T15:16:44Z"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_signing_key.example", "version", "3"),
+		)
+	}
+
 	return resource.ComposeTestCheckFunc(
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "expires", "2025-08-01T15:16:44Z"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "issuer_dn", "CN=Another Authority, O=Example Corporation, C=US"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "key_size", "2048"),
-		resource.TestCheckNoResourceAttr("pingfederate_keypairs_signing_key.example", "rotation_settings"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "serial_number", "34314007937343527069893005115224475439"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "sha1_fingerprint", "60CB3F8861673E1E814D87D84C8FADDDC37AE270"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "sha256_fingerprint", "8AA7D3C77D5053A9C8781D4F3E123712667E6B9A3E103DB74D035D2751695938"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "signature_algorithm", "SHA256withRSA"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "status", "VALID"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "subject_alternative_names.#", "0"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "subject_dn", "CN=Another Authority, O=Example Corporation, C=US"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "valid_from", "2024-08-01T15:16:44Z"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key.example", "version", "3"),
+		testChecks...,
 	)
 }
 
 // Delete the resource
-func keypairsSigningKey_Delete(t *testing.T) {
+func keypairsSigningKey_Delete(t *testing.T, keyId string) {
 	testClient := acctest.TestClient()
-	_, err := testClient.KeyPairsSigningAPI.DeleteSigningKeyPair(acctest.TestBasicAuthContext(), keypairsSigningKeyKeyId).Execute()
+	_, err := testClient.KeyPairsSigningAPI.DeleteSigningKeyPair(acctest.TestBasicAuthContext(), keyId).Execute()
 	if err != nil {
 		t.Fatalf("Failed to delete config: %v", err)
 	}
 }
 
 // Test that any objects created by the test are destroyed
-func keypairsSigningKey_CheckDestroy(s *terraform.State) error {
+func keypairsSigningKey_GenerateCheckDestroy(s *terraform.State) error {
+	return keypairsSigningKey_CheckDestroy(s, keypairsSigningKeyGenerateKeyId)
+}
+
+func keypairsSigningKey_ImportCheckDestroy(s *terraform.State) error {
+	return keypairsSigningKey_CheckDestroy(s, keypairsSigningKeyImportKeyId)
+}
+
+func keypairsSigningKey_CheckDestroy(s *terraform.State, keyId string) error {
 	testClient := acctest.TestClient()
-	_, err := testClient.KeyPairsSigningAPI.DeleteSigningKeyPair(acctest.TestBasicAuthContext(), keypairsSigningKeyKeyId).Execute()
+	_, err := testClient.KeyPairsSigningAPI.DeleteSigningKeyPair(acctest.TestBasicAuthContext(), keyId).Execute()
 	if err == nil {
 		return fmt.Errorf("keypairs_signing_key still exists after tests. Expected it to be destroyed")
 	}

@@ -55,7 +55,7 @@ type keyPairsSigningImportDataSourceModel struct {
 func (r *keyPairsSigningImportDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
 		Description:        "Describes details of a signing key pair.",
-		DeprecationMessage: "This data source is deprecated and will be removed in a future release.",
+		DeprecationMessage: "This data source is deprecated and will be removed in a future release. Use the `pingfederate_keypairs_signing_key` data source instead.",
 		Attributes: map[string]schema.Attribute{
 			"serial_number": schema.StringAttribute{
 				Description: "The serial number assigned by the CA",

@@ -313,9 +313,11 @@ func (r *keypairsSigningKeyResource) Schema(ctx context.Context, req resource.Sc
 }
 
 func (r *keypairsSigningKeyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	var plan keypairsSigningKeyResourceModel
+	var plan *keypairsSigningKeyResourceModel
+	var config *keypairsSigningKeyResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	if resp.Diagnostics.HasError() {
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() || plan == nil {
 		return
 	}
 
@@ -324,37 +326,37 @@ func (r *keypairsSigningKeyResource) ModifyPlan(ctx context.Context, req resourc
 		if plan.Password.IsNull() {
 			resp.Diagnostics.AddError("password must be configured when file_data is set", "")
 		}
-		if internaltypes.IsDefined(plan.CommonName) {
+		if internaltypes.IsDefined(config.CommonName) {
 			resp.Diagnostics.AddError("common_name cannot be configured when file_data is set", "")
 		}
-		if internaltypes.IsDefined(plan.Organization) {
+		if internaltypes.IsDefined(config.Organization) {
 			resp.Diagnostics.AddError("organization cannot be configured when file_data is set", "")
 		}
-		if internaltypes.IsDefined(plan.OrganizationUnit) {
+		if internaltypes.IsDefined(config.OrganizationUnit) {
 			resp.Diagnostics.AddError("organization_unit cannot be configured when file_data is set", "")
 		}
-		if internaltypes.IsDefined(plan.City) {
+		if internaltypes.IsDefined(config.City) {
 			resp.Diagnostics.AddError("city cannot be configured when file_data is set", "")
 		}
-		if internaltypes.IsDefined(plan.State) {
+		if internaltypes.IsDefined(config.State) {
 			resp.Diagnostics.AddError("state cannot be configured when file_data is set", "")
 		}
-		if internaltypes.IsDefined(plan.Country) {
+		if internaltypes.IsDefined(config.Country) {
 			resp.Diagnostics.AddError("country cannot be configured when file_data is set", "")
 		}
-		if internaltypes.IsDefined(plan.ValidDays) {
+		if internaltypes.IsDefined(config.ValidDays) {
 			resp.Diagnostics.AddError("valid_days cannot be configured when file_data is set", "")
 		}
-		if internaltypes.IsDefined(plan.KeyAlgorithm) {
+		if internaltypes.IsDefined(config.KeyAlgorithm) {
 			resp.Diagnostics.AddError("key_algorithm cannot be configured when file_data is set", "")
 		}
-		if internaltypes.IsDefined(plan.KeySize) {
+		if internaltypes.IsDefined(config.KeySize) {
 			resp.Diagnostics.AddError("key_size cannot be configured when file_data is set", "")
 		}
-		if internaltypes.IsDefined(plan.SignatureAlgorithm) {
+		if internaltypes.IsDefined(config.SignatureAlgorithm) {
 			resp.Diagnostics.AddError("signature_algorithm cannot be configured when file_data is set", "")
 		}
-		if internaltypes.IsDefined(plan.SubjectAlternativeNames) {
+		if internaltypes.IsDefined(config.SubjectAlternativeNames) {
 			resp.Diagnostics.AddError("subject_alternative_names cannot be configured when file_data is set", "")
 		}
 	} else {
