@@ -146,7 +146,7 @@ resource "pingfederate_keypairs_signing_key" "example" {
 
 data "pingfederate_keypairs_signing_key" "example" {
   depends_on = [pingfederate_keypairs_signing_key.example]
-  key_id = pingfederate_keypairs_signing_key.example.key_id
+  key_id     = pingfederate_keypairs_signing_key.example.key_id
 }
 `, keypairsSigningKeyGenerateKeyId)
 }
@@ -171,7 +171,7 @@ resource "pingfederate_keypairs_signing_key" "example" {
 
 data "pingfederate_keypairs_signing_key" "example" {
   depends_on = [pingfederate_keypairs_signing_key.example]
-  key_id = pingfederate_keypairs_signing_key.example.key_id
+  key_id     = pingfederate_keypairs_signing_key.example.key_id
 }
 `, keypairsSigningKeyGenerateKeyId)
 }
@@ -187,7 +187,7 @@ resource "pingfederate_keypairs_signing_key" "example" {
 
 data "pingfederate_keypairs_signing_key" "example" {
   depends_on = [pingfederate_keypairs_signing_key.example]
-  key_id = pingfederate_keypairs_signing_key.example.key_id
+  key_id     = pingfederate_keypairs_signing_key.example.key_id
 }
 `, keypairsSigningKeyImportKeyId, fileDataInitial)
 }
@@ -204,7 +204,7 @@ resource "pingfederate_keypairs_signing_key" "example" {
 
 data "pingfederate_keypairs_signing_key" "example" {
   depends_on = [pingfederate_keypairs_signing_key.example]
-  key_id = pingfederate_keypairs_signing_key.example.key_id
+  key_id     = pingfederate_keypairs_signing_key.example.key_id
 }
 `, keypairsSigningKeyImportKeyId, fileDataUpdated)
 }
