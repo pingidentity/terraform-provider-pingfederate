@@ -84,17 +84,17 @@ func TestAccKeypairsSigningKey_GenerateMinimalMaximal(t *testing.T) {
 
 var fileDataInitial, fileDataUpdated string
 
-func TestAccKeypairsSigningKey_ImportMinimalMaximal(t *testing.T) {
+func TestAccKeypairsSigningKey_FileDataMinimalMaximal(t *testing.T) {
 	fileDataInitial = os.Getenv("PF_TF_ACC_TEST_SIGNING_KEY_KEYSTORE_1")
 	fileDataUpdated = os.Getenv("PF_TF_ACC_TEST_SIGNING_KEY_KEYSTORE_2")
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			acctest.ConfigurationPreCheck(t)
 			if fileDataInitial == "" {
-				t.Fatal("PF_TF_ACC_TEST_SIGNING_KEY_KEYSTORE_1 must be set for TestAccKeypairsSigningKey_ImportMinimalMaximal")
+				t.Fatal("PF_TF_ACC_TEST_SIGNING_KEY_KEYSTORE_1 must be set for TestAccKeypairsSigningKey_FileDataMinimalMaximal")
 			}
 			if fileDataUpdated == "" {
-				t.Fatal("PF_TF_ACC_TEST_SIGNING_KEY_KEYSTORE_2 must be set for TestAccKeypairsSigningKey_ImportMinimalMaximal")
+				t.Fatal("PF_TF_ACC_TEST_SIGNING_KEY_KEYSTORE_2 must be set for TestAccKeypairsSigningKey_FileDataMinimalMaximal")
 			}
 		},
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
@@ -135,12 +135,12 @@ func TestAccKeypairsSigningKey_ImportMinimalMaximal(t *testing.T) {
 func keypairsSigningKey_GenerateMinimalHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_keypairs_signing_key" "example" {
-  key_id = "%s"
-  common_name = "Example"
-  country = "US"
+  key_id        = "%s"
+  common_name   = "Example"
+  country       = "US"
   key_algorithm = "RSA"
-  organization = "Ping Identity"
-  valid_days = 365
+  organization  = "Ping Identity"
+  valid_days    = 365
 }
 `, keypairsSigningKeyKeyId)
 }
@@ -149,18 +149,18 @@ resource "pingfederate_keypairs_signing_key" "example" {
 func keypairsSigningKey_GenerateCompleteHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_keypairs_signing_key" "example" {
-  key_id = "%s"
-  city = "Austin"
-  common_name = "Example"
-  country = "US"
-  key_algorithm = "RSA"
-  key_size = 2048
-  organization = "Ping Identity"
-  organization_unit = "Engineering"
-  signature_algorithm = "SHA256withRSA"
-  state = "Texas"
+  key_id                    = "%s"
+  city                      = "Austin"
+  common_name               = "Example"
+  country                   = "US"
+  key_algorithm             = "RSA"
+  key_size                  = 2048
+  organization              = "Ping Identity"
+  organization_unit         = "Engineering"
+  signature_algorithm       = "SHA256withRSA"
+  state                     = "Texas"
   subject_alternative_names = ["example.com"]
-  valid_days = 365
+  valid_days                = 365
 }
 `, keypairsSigningKeyKeyId)
 }
@@ -169,9 +169,9 @@ resource "pingfederate_keypairs_signing_key" "example" {
 func keypairsSigningKey_ImportMinimalHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_keypairs_signing_key" "example" {
-  key_id = "%s"
+  key_id    = "%s"
   file_data = "%s"
-  password = "2FederateM0re"
+  password  = "2FederateM0re"
 }
 `, keypairsSigningKeyKeyId, fileDataInitial)
 }
@@ -180,10 +180,10 @@ resource "pingfederate_keypairs_signing_key" "example" {
 func keypairsSigningKey_ImportCompleteHCL() string {
 	return fmt.Sprintf(`
 resource "pingfederate_keypairs_signing_key" "example" {
-  key_id = "%s"
+  key_id    = "%s"
   file_data = "%s"
-  password = "2FederateM0re"
-  format = "PKCS12"
+  password  = "2FederateM0re"
+  format    = "PKCS12"
 }
 `, keypairsSigningKeyKeyId, fileDataUpdated)
 }
