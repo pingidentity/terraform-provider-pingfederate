@@ -13,29 +13,41 @@ Resource to create and manage notification publisher plugin instances.
 
 ```terraform
 resource "pingfederate_notification_publisher" "notificationPublisher" {
-  publisher_id = "MigratedSmtpSettings"
-  name         = "Migrated SMTP Settings"
+  publisher_id = "EmailSMTPPublisherSettings"
+  name         = "Email SMTP Publisher Settings"
   configuration = {
     fields = [
-      {
-        name  = "From Address"
-        value = "EmailVerificationRuntimeTests@fakesmtpserver.com"
-      },
       {
         name  = "Email Server"
         value = "localhost"
       },
       {
+        name  = "From Address"
+        value = "noreply@bxretail.org"
+      },
+      {
+        name  = "Sender Name"
+        value = "BXRetail"
+      },
+      {
         name  = "SMTP Port"
-        value = "2525"
+        value = "25"
       },
       {
         name  = "Encryption Method"
-        value = "NONE"
+        value = "SSL"
       },
       {
         name  = "SMTPS Port"
         value = "465"
+      },
+      {
+        name  = "Username"
+        value = var.email_smtp_server_username
+      },
+      {
+        name  = "Password"
+        value = var.email_smtp_server_password
       },
       {
         name  = "Verify Hostname"
