@@ -55,6 +55,9 @@ func toSchemaPingOneLdapGatewayDataStore() schema.SingleNestedAttribute {
 			Description: "The data store name with a unique value across all data sources. Omitting this attribute will set the value to a combination of the hostname(s) and the principal.",
 			Computed:    true,
 			Optional:    true,
+			Validators: []validator.String{
+				stringvalidator.LengthAtLeast(1),
+			},
 		},
 		"use_start_tls": schema.BoolAttribute{
 			Description: "Connects to the LDAP data store using StartTLS. The default value is false. The value is validated against the LDAP gateway configuration in PingOne unless the header 'X-BypassExternalValidation' is set to true.",

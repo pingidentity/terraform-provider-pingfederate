@@ -15,8 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -92,7 +90,7 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 			Default:     int64default.StaticInt64(100),
 		},
 		"connection_url_tags": schema.SetNestedAttribute{
-			Description: "The set of connection URLs and associated tags for this JDBC data store. This is required if 'connectionUrl' is not provided.",
+			Description: "The set of connection URLs and associated tags for this JDBC data store. This is required if 'connection_url' is not provided.",
 			Computed:    true,
 			Optional:    true,
 			NestedObject: schema.NestedAttributeObject{
@@ -100,21 +98,21 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 					"connection_url": schema.StringAttribute{
 						Description: "The location of the JDBC database.",
 						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"tags": schema.StringAttribute{
 						Description: "Tags associated with the connection URL. At runtime, nodes will use the first JdbcTagConfig that has a tag that matches with node.tags in run.properties.",
 						Optional:    true,
 					},
 					"default_source": schema.BoolAttribute{
-						Description: "Whether this is the default connection. Defaults to false if not specified.",
+						Description: "Whether this is the default connection. Default value is `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
 					},
 				},
-			},
-			PlanModifiers: []planmodifier.Set{
-				setplanmodifier.UseStateForUnknown(),
 			},
 			Validators: []validator.Set{
 				setvalidator.SizeAtLeast(1),
@@ -145,6 +143,7 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 			Computed:    true,
 			Optional:    true,
 			Validators: []validator.String{
+				stringvalidator.LengthAtLeast(1),
 				stringvalidator.AtLeastOneOf(
 					path.Expression.AtName(path.MatchRoot("jdbc_data_store"), "connection_url_tags"),
 					path.Expression.AtName(path.MatchRoot("jdbc_data_store"), "connection_url"),

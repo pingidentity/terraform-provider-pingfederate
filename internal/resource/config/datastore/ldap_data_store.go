@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -17,7 +18,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -34,14 +34,14 @@ import (
 var (
 	ldapTagConfigAttrType = types.ObjectType{
 		AttrTypes: map[string]attr.Type{
-			"hostnames":      types.SetType{ElemType: types.StringType},
+			"hostnames":      types.ListType{ElemType: types.StringType},
 			"tags":           types.StringType,
 			"default_source": types.BoolType,
 		},
 	}
 
 	ldapDataStoreCommonAttrType = map[string]attr.Type{
-		"hostnames":                  types.SetType{ElemType: types.StringType},
+		"hostnames":                  types.ListType{ElemType: types.StringType},
 		"use_start_tls":              types.BoolType,
 		"verify_host":                types.BoolType,
 		"test_on_return":             types.BoolType,
@@ -90,6 +90,9 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Description: "The data store name with a unique value across all data sources. Omitting this attribute will set the value to a combination of the connection url and the username.",
 			Computed:    true,
 			Optional:    true,
+			Validators: []validator.String{
+				stringvalidator.LengthAtLeast(1),
+			},
 		},
 		"read_timeout": schema.Int64Attribute{
 			Description: "The maximum number of milliseconds a connection waits for a response to be returned before producing an error. A value of -1 causes the connection to wait indefinitely. Omitting this attribute will set the value to the default value.",
@@ -97,13 +100,13 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Optional:    true,
 			Default:     int64default.StaticInt64(0),
 		},
-		"hostnames": schema.SetAttribute{
-			Description: "The default LDAP host names. This field is required if no mapping for host names and tags is specified. Failover can be configured by providing multiple host names.",
+		"hostnames": schema.ListAttribute{
+			Description: "The default LDAP host names. This field is required if `hostnames_tags` is not specified. Failover can be configured by providing multiple host names.",
 			Computed:    true,
 			Optional:    true,
 			ElementType: types.StringType,
-			Validators: []validator.Set{
-				setvalidator.SizeAtLeast(1),
+			Validators: []validator.List{
+				listvalidator.SizeAtLeast(1),
 			},
 		},
 		"use_start_tls": schema.BoolAttribute{
@@ -206,10 +209,13 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Optional:    true,
 			NestedObject: schema.NestedAttributeObject{
 				Attributes: map[string]schema.Attribute{
-					"hostnames": schema.SetAttribute{
+					"hostnames": schema.ListAttribute{
 						Description: "The LDAP host names. Failover can be configured by providing multiple host names.",
 						Required:    true,
 						ElementType: types.StringType,
+						Validators: []validator.List{
+							listvalidator.SizeAtLeast(1),
+						},
 					},
 					"tags": schema.StringAttribute{
 						Description: "Tags associated with the host names. At runtime, nodes will use the first LdapTagConfig that has a tag that matches with node.tags in run.properties.",
@@ -219,12 +225,9 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 						Description: "Whether this is the default connection. Defaults to false if not specified.",
 						Computed:    true,
 						Optional:    true,
-						Default:     booldefault.StaticBool(true),
+						Default:     booldefault.StaticBool(false),
 					},
 				},
-			},
-			PlanModifiers: []planmodifier.Set{
-				setplanmodifier.UseStateForUnknown(),
 			},
 			Validators: []validator.Set{
 				setvalidator.SizeAtLeast(1),
@@ -252,7 +255,7 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 				stringplanmodifier.UseStateForUnknown(),
 			},
 		},
-		"bind_anonymously": schema.BoolAttribute{
+		"bind_anonymously": schema.BoolAttribute{ //TODO need validation for these mutually exclusive authentication fields
 			Description: "Whether username and password are required. If true, no other authentication fields should be provided. The default value is false.",
 			Computed:    true,
 			Optional:    true,
@@ -309,7 +312,7 @@ func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
 			Computed:    true,
 			Optional:    false,
 		},
-		"hostnames": datasourceschema.SetAttribute{
+		"hostnames": datasourceschema.ListAttribute{
 			Description: "The default LDAP host names. Failover can be configured by providing multiple host names.",
 			Computed:    true,
 			Optional:    false,
@@ -397,7 +400,7 @@ func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
 			Optional:    false,
 			NestedObject: datasourceschema.NestedAttributeObject{
 				Attributes: map[string]datasourceschema.Attribute{
-					"hostnames": datasourceschema.SetAttribute{
+					"hostnames": datasourceschema.ListAttribute{
 						Description: "The LDAP host names. Failover can be configured by providing multiple host names.",
 						Computed:    true,
 						Optional:    false,
@@ -513,9 +516,12 @@ func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataSto
 	clientTlsCertificateRef, diags := resourcelink.ToState(con, ldapDataStore.ClientTlsCertificateRef)
 	allDiags = append(allDiags, diags...)
 
+	hostnamesVal, diags := types.ListValueFrom(con, types.StringType, ldapDataStore.Hostnames)
+	allDiags = append(allDiags, diags...)
+
 	//  final obj value
 	ldapDataStoreAttrVal := map[string]attr.Value{
-		"hostnames":                  internaltypes.GetStringSet(ldapDataStore.Hostnames),
+		"hostnames":                  hostnamesVal,
 		"use_start_tls":              types.BoolPointerValue(ldapDataStore.UseStartTLS),
 		"verify_host":                types.BoolPointerValue(ldapDataStore.VerifyHost),
 		"test_on_return":             types.BoolPointerValue(ldapDataStore.TestOnReturn),
@@ -570,9 +576,12 @@ func toDataSourceStateLdapDataStore(con context.Context, ldapDataStore *client.L
 	clientTlsCertificateRef, diags := resourcelink.ToState(con, ldapDataStore.ClientTlsCertificateRef)
 	allDiags = append(allDiags, diags...)
 
+	hostnamesVal, diags := types.ListValueFrom(con, types.StringType, ldapDataStore.Hostnames)
+	allDiags = append(allDiags, diags...)
+
 	//  final obj value
 	ldapDataStoreAttrVal := map[string]attr.Value{
-		"hostnames":                  internaltypes.GetStringSet(ldapDataStore.Hostnames),
+		"hostnames":                  hostnamesVal,
 		"use_start_tls":              types.BoolPointerValue(ldapDataStore.UseStartTLS),
 		"verify_host":                types.BoolPointerValue(ldapDataStore.VerifyHost),
 		"test_on_return":             types.BoolPointerValue(ldapDataStore.TestOnReturn),
@@ -647,7 +656,10 @@ func addOptionalLdapDataStoreFields(addRequest client.DataStoreAggregation, con 
 
 	hostnames, ok := ldapDataStorePlan["hostnames"]
 	if ok {
-		addRequest.LdapDataStore.Hostnames = internaltypes.SetTypeToStringSlice(hostnames.(types.Set))
+		addRequest.LdapDataStore.Hostnames = []string{}
+		for _, hostname := range hostnames.(types.List).Elements() {
+			addRequest.LdapDataStore.Hostnames = append(addRequest.LdapDataStore.Hostnames, hostname.(types.String).ValueString())
+		}
 	}
 
 	useStartTls, ok := ldapDataStorePlan["use_start_tls"]
