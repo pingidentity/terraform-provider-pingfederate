@@ -286,6 +286,31 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 
 		plan.LdapDataStore, respDiags = types.ObjectValue(ldapDataStoreAttrType, ldapDataStore)
 		resp.Diagnostics.Append(respDiags...)
+
+		// Ensure one and only one of the authentication attributes is set
+		if internaltypes.IsDefined(ldapDataStore["client_tls_certificate_ref"]) {
+			// If client_tls_certificate_ref is defined, ensure use_start_tls or use_ssl is set to true
+			if !ldapDataStore["use_start_tls"].(types.Bool).ValueBool() && !ldapDataStore["use_ssl"].(types.Bool).ValueBool() {
+				resp.Diagnostics.AddError("Attribute 'client_tls_certificate_ref' requires either 'use_start_tls' or 'use_ssl' to be set to true", "")
+			}
+			// user_dn and bind_anonymously should not be set
+			if internaltypes.IsDefined(ldapDataStore["user_dn"]) {
+				resp.Diagnostics.AddError("Attribute 'client_tls_certificate_ref' requires 'user_dn' to be null", "")
+			}
+			if ldapDataStore["bind_anonymously"].(types.Bool).ValueBool() {
+				resp.Diagnostics.AddError("Attribute 'client_tls_certificate_ref' requires 'bind_anonymously' to be false", "")
+			}
+		}
+		if internaltypes.IsDefined(ldapDataStore["user_dn"]) {
+			if ldapDataStore["bind_anonymously"].(types.Bool).ValueBool() {
+				resp.Diagnostics.AddError("Attribute 'user_dn' requires 'bind_anonymously' to be false", "")
+			}
+		}
+		// If password is set, then user_dn must be set
+		if (internaltypes.IsDefined(ldapDataStore["password"]) && !internaltypes.IsDefined(ldapDataStore["user_dn"])) ||
+			(!internaltypes.IsDefined(ldapDataStore["password"]) && internaltypes.IsDefined(ldapDataStore["user_dn"])) {
+			resp.Diagnostics.AddError("'password' and 'user_dn' must be set together", "")
+		}
 	}
 
 	if internaltypes.IsDefined(plan.PingOneLdapGatewayDataStore) {

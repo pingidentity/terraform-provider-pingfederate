@@ -245,22 +245,22 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Default:     int64default.StaticInt64(0),
 		},
 		"user_dn": schema.StringAttribute{
-			Description: "The username credential required to access the data store. If specified, no other authentication fields should be provided.",
-			Required:    true,
+			Description: "The username credential required to access the data store. Mutually exclusive with `bind_anonymously` and `client_tls_certificate_ref`. `password` must also be set to use this attribute.",
+			Optional:    true,
 			Validators: []validator.String{
 				stringvalidator.LengthAtLeast(1),
 			},
 		},
 		"password": schema.StringAttribute{
-			Description: "The password credential required to access the data store.",
-			Required:    true,
+			Description: "The password credential required to access the data store. Requires `user_dn` to be set.",
+			Optional:    true,
 			Sensitive:   true,
 			Validators: []validator.String{
 				stringvalidator.LengthAtLeast(1),
 			},
 		},
 		"bind_anonymously": schema.BoolAttribute{
-			Description: "Whether username and password are required. If `true`, no other authentication fields should be provided. The default value is `false`.",
+			Description: "Whether username and password are required. If `true`, then `user_dn` and `client_tls_certificate_ref` cannot be set. The default value is `false`.",
 			Computed:    true,
 			Optional:    true,
 			Default:     booldefault.StaticBool(false),
@@ -273,7 +273,7 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 		},
 		"client_tls_certificate_ref": schema.SingleNestedAttribute{
 			Optional:    true,
-			Description: "The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS and no other authentication fields should be provided. See '/keyPairs/sslClient' to manage certificates. Supported in PF version `11.3` or later.",
+			Description: "The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS. See '/keyPairs/sslClient' to manage certificates. Supported in PF version `11.3` or later. In order to use this authentication method, you must set either `use_start_tls` or `use_ssl` to `true`. Mutually exclusive with `bind_anonymously` and `user_dn`",
 			Attributes:  resourcelink.ToSchema(),
 		},
 		"retry_failed_operations": schema.BoolAttribute{
