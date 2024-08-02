@@ -51,7 +51,7 @@ func updatedLdapDataStore() *client.LdapDataStore {
 	updatedLdapDataStore.Name = pointers.String("updatedLdapDataStoreName")
 	updatedLdapDataStore.Type = dataStoreType
 	updatedLdapDataStore.LdapType = ldapType
-	updatedLdapDataStore.BindAnonymously = pointers.Bool(true)
+	updatedLdapDataStore.BindAnonymously = pointers.Bool(false)
 	updatedLdapDataStore.UserDN = pointers.String(userDn)
 	updatedLdapDataStore.Password = pointers.String(passwordVal)
 	updatedLdapDataStore.Hostnames = []string{hostname1, hostname2}
