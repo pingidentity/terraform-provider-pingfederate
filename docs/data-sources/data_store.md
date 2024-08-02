@@ -41,8 +41,8 @@ Read-Only:
 
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--custom_data_store--configuration))
 - `name` (String) The plugin instance name.
-- `parent_ref` (Attributes) The reference to this plugin's parent instance. Supported prior to PingFederate 12.0. (see [below for nested schema](#nestedatt--custom_data_store--parent_ref))
-- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created..) (see [below for nested schema](#nestedatt--custom_data_store--plugin_descriptor_ref))
+- `parent_ref` (Attributes) The reference to this plugin's parent instance. Supported prior to PingFederate `12.0`. (see [below for nested schema](#nestedatt--custom_data_store--parent_ref))
+- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. (see [below for nested schema](#nestedatt--custom_data_store--plugin_descriptor_ref))
 - `type` (String) The data store type.
 
 <a id="nestedatt--custom_data_store--configuration"></a>
@@ -156,7 +156,7 @@ Read-Only:
 - `dns_ttl` (Number) The maximum time in milliseconds that DNS information are cached.
 - `encrypted_password` (String) The encrypted password credential required to access the data store.
 - `follow_ldap_referrals` (Boolean) Follow LDAP Referrals in the domain tree.
-- `hostnames` (Set of String) The default LDAP host names. Failover can be configured by providing multiple host names.
+- `hostnames` (List of String) The default LDAP host names. Failover can be configured by providing multiple host names.
 - `hostnames_tags` (Attributes Set) The set of host names and associated tags for this LDAP data store. (see [below for nested schema](#nestedatt--ldap_data_store--hostnames_tags))
 - `ldap_dns_srv_prefix` (String) The prefix value used to discover LDAP DNS SRV record.
 - `ldap_type` (String) A type that allows PingFederate to configure many provisioning settings automatically.
@@ -189,7 +189,7 @@ Read-Only:
 Read-Only:
 
 - `default_source` (Boolean) Whether this is the default connection.
-- `hostnames` (Set of String) The LDAP host names. Failover can be configured by providing multiple host names.
+- `hostnames` (List of String) The LDAP host names. Failover can be configured by providing multiple host names.
 - `tags` (String) Tags associated with the host names. At runtime, nodes will use the first LdapTagConfig that has a tag that matches with node.tags in run.properties.
 
 

@@ -16,10 +16,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -87,7 +85,7 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			Default:     stringdefault.StaticString("LDAP"),
 		},
 		"name": schema.StringAttribute{
-			Description: "The data store name with a unique value across all data sources. Omitting this attribute will set the value to a combination of the connection url and the username.",
+			Description: "The data store name with a unique value across all data sources. Defaults to a combination of the values of `hostnames` and `user_dn`.",
 			Computed:    true,
 			Optional:    true,
 			Validators: []validator.String{
@@ -95,7 +93,7 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			},
 		},
 		"read_timeout": schema.Int64Attribute{
-			Description: "The maximum number of milliseconds a connection waits for a response to be returned before producing an error. A value of -1 causes the connection to wait indefinitely. Omitting this attribute will set the value to the default value.",
+			Description: "The maximum number of milliseconds a connection waits for a response to be returned before producing an error. A value of `-1` causes the connection to wait indefinitely. Defaults to `0`.",
 			Computed:    true,
 			Optional:    true,
 			Default:     int64default.StaticInt64(0),
@@ -110,79 +108,79 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			},
 		},
 		"use_start_tls": schema.BoolAttribute{
-			Description: "Connects to the LDAP data store using secure StartTLS encryption. The default value is false.",
+			Description: "Connects to the LDAP data store using secure StartTLS encryption. The default value is `false`.",
 			Computed:    true,
 			Optional:    true,
 		},
 		"verify_host": schema.BoolAttribute{
-			Description: "Verifies that the presented server certificate includes the address to which the client intended to establish a connection. Omitting this attribute will set the value to true.",
+			Description: "Verifies that the presented server certificate includes the address to which the client intended to establish a connection. Defaults to `true`.",
 			Computed:    true,
 			Optional:    true,
 			Default:     booldefault.StaticBool(true),
 		},
 		"test_on_return": schema.BoolAttribute{
-			Description: "Indicates whether objects are validated before being returned to the pool.",
+			Description: "Indicates whether objects are validated before being returned to the pool. Default value is `false`.",
 			Computed:    true,
 			Optional:    true,
 			Default:     booldefault.StaticBool(false),
 		},
 		"ldap_type": schema.StringAttribute{
-			Description: "A type that allows PingFederate to configure many provisioning settings automatically. The 'UNBOUNDID_DS' type has been deprecated, please use the 'PING_DIRECTORY' type instead.",
+			Description: "A type that allows PingFederate to configure many provisioning settings automatically. The `UNBOUNDID_DS` type has been deprecated, please use the `PING_DIRECTORY` type instead. Supported values are `ACTIVE_DIRECTORY`, `ORACLE_DIRECTORY_SERVER`, `ORACLE_UNIFIED_DIRECTORY`, `PING_DIRECTORY`, `GENERIC`.",
 			Required:    true,
 			Validators: []validator.String{
 				stringvalidator.OneOf("ACTIVE_DIRECTORY", "ORACLE_DIRECTORY_SERVER", "ORACLE_UNIFIED_DIRECTORY", "PING_DIRECTORY", "GENERIC"),
 			},
 		},
 		"dns_ttl": schema.Int64Attribute{
-			Description: "The maximum time in milliseconds that DNS information are cached. Omitting this attribute will set the value to the default value.",
+			Description: "The maximum time in milliseconds that DNS information are cached. Defaults to `0`.",
 			Computed:    true,
 			Optional:    true,
 			Default:     int64default.StaticInt64(0),
 		},
 		"connection_timeout": schema.Int64Attribute{
-			Description: "The maximum number of milliseconds that a connection attempt should be allowed to continue before returning an error. A value of -1 causes the pool to wait indefinitely. Omitting this attribute will set the value to the default value.",
+			Description: "The maximum number of milliseconds that a connection attempt should be allowed to continue before returning an error. A value of `-1` causes the pool to wait indefinitely. Defaults to `0`.",
 			Computed:    true,
 			Optional:    true,
 			Default:     int64default.StaticInt64(0),
 		},
 		"min_connections": schema.Int64Attribute{
-			Description: "The smallest number of connections that can remain in each pool, without creating extra ones. Omitting this attribute will set the value to the default value.",
+			Description: "The smallest number of connections that can remain in each pool, without creating extra ones. Defaults to `10`.",
 			Computed:    true,
 			Optional:    true,
 			Default:     int64default.StaticInt64(10),
 		},
 		"max_connections": schema.Int64Attribute{
-			Description: "The largest number of active connections that can remain in each pool without releasing extra ones. Omitting this attribute will set the value to the default value.",
+			Description: "The largest number of active connections that can remain in each pool without releasing extra ones. Defaults to `100`.",
 			Computed:    true,
 			Optional:    true,
 			Default:     int64default.StaticInt64(100),
 		},
 		"use_ssl": schema.BoolAttribute{
-			Description: "Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS). The default value is false.",
+			Description: "Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS). The default value is `false`.",
 			Computed:    true,
 			Optional:    true,
 			Default:     booldefault.StaticBool(false),
 		},
 		"test_on_borrow": schema.BoolAttribute{
-			Description: "Indicates whether objects are validated before being borrowed from the pool.",
+			Description: "Indicates whether objects are validated before being borrowed from the pool. Default value is `false`.",
 			Computed:    true,
 			Optional:    true,
 			Default:     booldefault.StaticBool(false),
 		},
 		"ldap_dns_srv_prefix": schema.StringAttribute{
-			Description: "The prefix value used to discover LDAP DNS SRV record. Omitting this attribute will set the value to the default value.",
+			Description: "The prefix value used to discover LDAP DNS SRV record. Defaults to `_ldap._tcp`.",
 			Computed:    true,
 			Optional:    true,
 			Default:     stringdefault.StaticString("_ldap._tcp"),
 		},
 		"use_dns_srv_records": schema.BoolAttribute{
-			Description: "Use DNS SRV Records to discover LDAP server information. The default value is false.",
+			Description: "Use DNS SRV Records to discover LDAP server information. The default value is `false`.",
 			Computed:    true,
 			Optional:    true,
 			Default:     booldefault.StaticBool(false),
 		},
 		"create_if_necessary": schema.BoolAttribute{
-			Description: "Indicates whether temporary connections can be created when the Maximum Connections threshold is reached.",
+			Description: "Indicates whether temporary connections can be created when the Maximum Connections threshold is reached. Default value is `false`.",
 			Computed:    true,
 			Optional:    true,
 			Default:     booldefault.StaticBool(false),
@@ -198,7 +196,7 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			},
 		},
 		"max_wait": schema.Int64Attribute{
-			Description: "The maximum number of milliseconds the pool waits for a connection to become available when trying to obtain a connection from the pool. Omitting this attribute or setting a value of -1 causes the pool not to wait at all and to either create a new connection or produce an error (when no connections are available).",
+			Description: "The maximum number of milliseconds the pool waits for a connection to become available when trying to obtain a connection from the pool. Setting a value of `-1` causes the pool not to wait at all and to either create a new connection or produce an error (when no connections are available). Defaults to `-1`.",
 			Computed:    true,
 			Optional:    true,
 			Default:     int64default.StaticInt64(-1),
@@ -218,11 +216,14 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 						},
 					},
 					"tags": schema.StringAttribute{
-						Description: "Tags associated with the host names. At runtime, nodes will use the first LdapTagConfig that has a tag that matches with node.tags in run.properties.",
+						Description: "Tags associated with the host names. At runtime, nodes will use the first `hostnames_tags` element that has a tag that matches with node.tags in the run.properties file.",
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"default_source": schema.BoolAttribute{
-						Description: "Whether this is the default connection. Defaults to false if not specified.",
+						Description: "Whether this is the default connection. Defaults to `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
@@ -238,7 +239,7 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 			},
 		},
 		"time_between_evictions": schema.Int64Attribute{
-			Description: "The frequency, in milliseconds, that the evictor cleans up the connections in the pool. A value of -1 disables the evictor. Omitting this attribute will set the value to the default value.",
+			Description: "The frequency, in milliseconds, that the evictor cleans up the connections in the pool. A value of `-1` disables the evictor. Defaults to `0`.",
 			Computed:    true,
 			Optional:    true,
 			Default:     int64default.StaticInt64(0),
@@ -246,34 +247,37 @@ func toSchemaLdapDataStore() schema.SingleNestedAttribute {
 		"user_dn": schema.StringAttribute{
 			Description: "The username credential required to access the data store. If specified, no other authentication fields should be provided.",
 			Required:    true,
-		},
-		"password": schema.StringAttribute{
-			Description: "The password credential required to access the data store. GETs will not return this attribute. To update this field, specify the new value in this attribute.",
-			Required:    true,
-			Sensitive:   true,
-			PlanModifiers: []planmodifier.String{
-				stringplanmodifier.UseStateForUnknown(),
+			Validators: []validator.String{
+				stringvalidator.LengthAtLeast(1),
 			},
 		},
-		"bind_anonymously": schema.BoolAttribute{ //TODO need validation for these mutually exclusive authentication fields
-			Description: "Whether username and password are required. If true, no other authentication fields should be provided. The default value is false.",
+		"password": schema.StringAttribute{
+			Description: "The password credential required to access the data store.",
+			Required:    true,
+			Sensitive:   true,
+			Validators: []validator.String{
+				stringvalidator.LengthAtLeast(1),
+			},
+		},
+		"bind_anonymously": schema.BoolAttribute{
+			Description: "Whether username and password are required. If `true`, no other authentication fields should be provided. The default value is `false`.",
 			Computed:    true,
 			Optional:    true,
 			Default:     booldefault.StaticBool(false),
 		},
 		"follow_ldap_referrals": schema.BoolAttribute{
-			Description: "Follow LDAP Referrals in the domain tree. The default value is false. This property does not apply to PingDirectory as this functionality is configured in PingDirectory.",
+			Description: "Follow LDAP Referrals in the domain tree. The default value is `false`. This property does not apply to PingDirectory as this functionality is configured in PingDirectory.",
 			Computed:    true,
 			Optional:    true,
 			Default:     booldefault.StaticBool(false),
 		},
 		"client_tls_certificate_ref": schema.SingleNestedAttribute{
 			Optional:    true,
-			Description: "The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS and no other authentication fields should be provided. See '/keyPairs/sslClient' to manage certificates. Supported in PF version 11.3 or later.",
+			Description: "The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS and no other authentication fields should be provided. See '/keyPairs/sslClient' to manage certificates. Supported in PF version `11.3` or later.",
 			Attributes:  resourcelink.ToSchema(),
 		},
 		"retry_failed_operations": schema.BoolAttribute{
-			Description: "Indicates whether failed operations should be retried. The default is false. Supported in PF version 11.3 or later.",
+			Description: "Indicates whether failed operations should be retried. The default is `false`. Supported in PF version `11.3` or later.",
 			Computed:    true,
 			Optional:    true,
 			// The default is set in ModifyPlan, since it is dependent on PF version 11.3+

@@ -3,12 +3,12 @@
 page_title: "pingfederate_data_store Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a data store resource
+  Resource to create and manage data stores.
 ---
 
 # pingfederate_data_store (Resource)
 
-Manages a data store resource
+Resource to create and manage data stores.
 
 ## Example Usage
 
@@ -311,10 +311,10 @@ resource "pingfederate_data_store" "pingOneLdapDataStore" {
 ### Optional
 
 - `custom_data_store` (Attributes) A custom data store. (see [below for nested schema](#nestedatt--custom_data_store))
-- `data_store_id` (String) The persistent, unique ID for the data store. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
+- `data_store_id` (String) The persistent, unique ID for the data store. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.
 - `jdbc_data_store` (Attributes) A JDBC data store. (see [below for nested schema](#nestedatt--jdbc_data_store))
 - `ldap_data_store` (Attributes) An LDAP Data Store (see [below for nested schema](#nestedatt--ldap_data_store))
-- `mask_attribute_values` (Boolean) Whether attribute values should be masked in the log.
+- `mask_attribute_values` (Boolean) Whether attribute values should be masked in the log. Default value is `false`.
 - `ping_one_ldap_gateway_data_store` (Attributes) A PingOne LDAP Gateway data store. (see [below for nested schema](#nestedatt--ping_one_ldap_gateway_data_store))
 
 ### Read-Only
@@ -332,7 +332,7 @@ Required:
 
 Optional:
 
-- `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides). Supported prior to PingFederate 12.0. (see [below for nested schema](#nestedatt--custom_data_store--parent_ref))
+- `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides). Supported prior to PingFederate `12.0`. (see [below for nested schema](#nestedatt--custom_data_store--parent_ref))
 
 Read-Only:
 
@@ -456,15 +456,15 @@ Required:
 
 Optional:
 
-- `allow_multi_value_attributes` (Boolean) Indicates that this data store can select more than one record from a column and return the results as a multi-value attribute.
-- `blocking_timeout` (Number) The amount of time in milliseconds a request waits to get a connection from the connection pool before it fails. Omitting this attribute will set the value to the connection pool default. The default value is 5000 milliseconds.
-- `connection_url` (String) The default location of the JDBC database. This field is required if no mapping for JDBC database location and tags is specified.
-- `connection_url_tags` (Attributes Set) The set of connection URLs and associated tags for this JDBC data store. This is required if 'connectionUrl' is not provided. (see [below for nested schema](#nestedatt--jdbc_data_store--connection_url_tags))
-- `idle_timeout` (Number) The length of time in minutes the connection can be idle in the pool before it is closed. Omitting this attribute will set the value to the connection pool default. The default value is 5 minutes.
-- `max_pool_size` (Number) The largest number of database connections in the connection pool for the given data store. Omitting this attribute will set the value to the connection pool default. The default value is 100.
-- `min_pool_size` (Number) The smallest number of database connections in the connection pool for the given data store. Omitting this attribute will set the value to the connection pool default. The default value is 10.
-- `name` (String) The data store name with a unique value across all data sources. Omitting this attribute will set the value to a combination of the connection url and the username.
-- `password` (String, Sensitive) The password needed to access the database. GETs will not return this attribute. To update this field, specify the new value in this attribute.
+- `allow_multi_value_attributes` (Boolean) Indicates that this data store can select more than one record from a column and return the results as a multi-value attribute. Default value is `false`.
+- `blocking_timeout` (Number) The amount of time in milliseconds a request waits to get a connection from the connection pool before it fails. The default value is `5000` milliseconds.
+- `connection_url` (String) The default location of the JDBC database. This field is required if `connection_url_tags` is not specified.
+- `connection_url_tags` (Attributes Set) The set of connection URLs and associated tags for this JDBC data store. This is required if 'connection_url' is not provided. (see [below for nested schema](#nestedatt--jdbc_data_store--connection_url_tags))
+- `idle_timeout` (Number) The length of time in minutes the connection can be idle in the pool before it is closed. The default value is `5` minutes.
+- `max_pool_size` (Number) The largest number of database connections in the connection pool for the given data store. The default value is `100`.
+- `min_pool_size` (Number) The smallest number of database connections in the connection pool for the given data store. The default value is `10`.
+- `name` (String) The data store name with a unique value across all data sources. Defaults to a combination of the `connection_url` and `username`.
+- `password` (String, Sensitive) The password needed to access the database.
 - `user_name` (String) The name that identifies the user when connecting to the database.
 - `validate_connection_sql` (String) A simple SQL statement used by PingFederate at runtime to verify that the database connection is still active and to reconnect if needed.
 
@@ -481,8 +481,8 @@ Required:
 
 Optional:
 
-- `default_source` (Boolean) Whether this is the default connection. Defaults to false if not specified.
-- `tags` (String) Tags associated with the connection URL. At runtime, nodes will use the first JdbcTagConfig that has a tag that matches with node.tags in run.properties.
+- `default_source` (Boolean) Whether this is the default connection. Default value is `false`.
+- `tags` (String) Tags associated with the `connection_url`. At runtime, nodes will use the first `connection_url_tags` element that has a tag that matches with `node.tags` in the run.properties file.
 
 
 
@@ -491,35 +491,35 @@ Optional:
 
 Required:
 
-- `ldap_type` (String) A type that allows PingFederate to configure many provisioning settings automatically. The 'UNBOUNDID_DS' type has been deprecated, please use the 'PING_DIRECTORY' type instead.
-- `password` (String, Sensitive) The password credential required to access the data store. GETs will not return this attribute. To update this field, specify the new value in this attribute.
+- `ldap_type` (String) A type that allows PingFederate to configure many provisioning settings automatically. The `UNBOUNDID_DS` type has been deprecated, please use the `PING_DIRECTORY` type instead. Supported values are `ACTIVE_DIRECTORY`, `ORACLE_DIRECTORY_SERVER`, `ORACLE_UNIFIED_DIRECTORY`, `PING_DIRECTORY`, `GENERIC`.
+- `password` (String, Sensitive) The password credential required to access the data store.
 - `user_dn` (String) The username credential required to access the data store. If specified, no other authentication fields should be provided.
 
 Optional:
 
 - `binary_attributes` (Set of String) A list of LDAP attributes to be handled as binary data.
-- `bind_anonymously` (Boolean) Whether username and password are required. If true, no other authentication fields should be provided. The default value is false.
-- `client_tls_certificate_ref` (Attributes) The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS and no other authentication fields should be provided. See '/keyPairs/sslClient' to manage certificates. Supported in PF version 11.3 or later. (see [below for nested schema](#nestedatt--ldap_data_store--client_tls_certificate_ref))
-- `connection_timeout` (Number) The maximum number of milliseconds that a connection attempt should be allowed to continue before returning an error. A value of -1 causes the pool to wait indefinitely. Omitting this attribute will set the value to the default value.
-- `create_if_necessary` (Boolean) Indicates whether temporary connections can be created when the Maximum Connections threshold is reached.
-- `dns_ttl` (Number) The maximum time in milliseconds that DNS information are cached. Omitting this attribute will set the value to the default value.
-- `follow_ldap_referrals` (Boolean) Follow LDAP Referrals in the domain tree. The default value is false. This property does not apply to PingDirectory as this functionality is configured in PingDirectory.
-- `hostnames` (Set of String) The default LDAP host names. This field is required if no mapping for host names and tags is specified. Failover can be configured by providing multiple host names.
+- `bind_anonymously` (Boolean) Whether username and password are required. If `true`, no other authentication fields should be provided. The default value is `false`.
+- `client_tls_certificate_ref` (Attributes) The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS and no other authentication fields should be provided. See '/keyPairs/sslClient' to manage certificates. Supported in PF version `11.3` or later. (see [below for nested schema](#nestedatt--ldap_data_store--client_tls_certificate_ref))
+- `connection_timeout` (Number) The maximum number of milliseconds that a connection attempt should be allowed to continue before returning an error. A value of `-1` causes the pool to wait indefinitely. Defaults to `0`.
+- `create_if_necessary` (Boolean) Indicates whether temporary connections can be created when the Maximum Connections threshold is reached. Default value is `false`.
+- `dns_ttl` (Number) The maximum time in milliseconds that DNS information are cached. Defaults to `0`.
+- `follow_ldap_referrals` (Boolean) Follow LDAP Referrals in the domain tree. The default value is `false`. This property does not apply to PingDirectory as this functionality is configured in PingDirectory.
+- `hostnames` (List of String) The default LDAP host names. This field is required if `hostnames_tags` is not specified. Failover can be configured by providing multiple host names.
 - `hostnames_tags` (Attributes Set) The set of host names and associated tags for this LDAP data store. This is required if 'hostnames' is not provided. (see [below for nested schema](#nestedatt--ldap_data_store--hostnames_tags))
-- `ldap_dns_srv_prefix` (String) The prefix value used to discover LDAP DNS SRV record. Omitting this attribute will set the value to the default value.
-- `max_connections` (Number) The largest number of active connections that can remain in each pool without releasing extra ones. Omitting this attribute will set the value to the default value.
-- `max_wait` (Number) The maximum number of milliseconds the pool waits for a connection to become available when trying to obtain a connection from the pool. Omitting this attribute or setting a value of -1 causes the pool not to wait at all and to either create a new connection or produce an error (when no connections are available).
-- `min_connections` (Number) The smallest number of connections that can remain in each pool, without creating extra ones. Omitting this attribute will set the value to the default value.
-- `name` (String) The data store name with a unique value across all data sources. Omitting this attribute will set the value to a combination of the connection url and the username.
-- `read_timeout` (Number) The maximum number of milliseconds a connection waits for a response to be returned before producing an error. A value of -1 causes the connection to wait indefinitely. Omitting this attribute will set the value to the default value.
-- `retry_failed_operations` (Boolean) Indicates whether failed operations should be retried. The default is false. Supported in PF version 11.3 or later.
-- `test_on_borrow` (Boolean) Indicates whether objects are validated before being borrowed from the pool.
-- `test_on_return` (Boolean) Indicates whether objects are validated before being returned to the pool.
-- `time_between_evictions` (Number) The frequency, in milliseconds, that the evictor cleans up the connections in the pool. A value of -1 disables the evictor. Omitting this attribute will set the value to the default value.
-- `use_dns_srv_records` (Boolean) Use DNS SRV Records to discover LDAP server information. The default value is false.
-- `use_ssl` (Boolean) Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS). The default value is false.
-- `use_start_tls` (Boolean) Connects to the LDAP data store using secure StartTLS encryption. The default value is false.
-- `verify_host` (Boolean) Verifies that the presented server certificate includes the address to which the client intended to establish a connection. Omitting this attribute will set the value to true.
+- `ldap_dns_srv_prefix` (String) The prefix value used to discover LDAP DNS SRV record. Defaults to `_ldap._tcp`.
+- `max_connections` (Number) The largest number of active connections that can remain in each pool without releasing extra ones. Defaults to `100`.
+- `max_wait` (Number) The maximum number of milliseconds the pool waits for a connection to become available when trying to obtain a connection from the pool. Setting a value of `-1` causes the pool not to wait at all and to either create a new connection or produce an error (when no connections are available). Defaults to `-1`.
+- `min_connections` (Number) The smallest number of connections that can remain in each pool, without creating extra ones. Defaults to `10`.
+- `name` (String) The data store name with a unique value across all data sources. Defaults to a combination of the values of `hostnames` and `user_dn`.
+- `read_timeout` (Number) The maximum number of milliseconds a connection waits for a response to be returned before producing an error. A value of `-1` causes the connection to wait indefinitely. Defaults to `0`.
+- `retry_failed_operations` (Boolean) Indicates whether failed operations should be retried. The default is `false`. Supported in PF version `11.3` or later.
+- `test_on_borrow` (Boolean) Indicates whether objects are validated before being borrowed from the pool. Default value is `false`.
+- `test_on_return` (Boolean) Indicates whether objects are validated before being returned to the pool. Default value is `false`.
+- `time_between_evictions` (Number) The frequency, in milliseconds, that the evictor cleans up the connections in the pool. A value of `-1` disables the evictor. Defaults to `0`.
+- `use_dns_srv_records` (Boolean) Use DNS SRV Records to discover LDAP server information. The default value is `false`.
+- `use_ssl` (Boolean) Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS). The default value is `false`.
+- `use_start_tls` (Boolean) Connects to the LDAP data store using secure StartTLS encryption. The default value is `false`.
+- `verify_host` (Boolean) Verifies that the presented server certificate includes the address to which the client intended to establish a connection. Defaults to `true`.
 
 Read-Only:
 
@@ -538,12 +538,12 @@ Required:
 
 Required:
 
-- `hostnames` (Set of String) The LDAP host names. Failover can be configured by providing multiple host names.
+- `hostnames` (List of String) The LDAP host names. Failover can be configured by providing multiple host names.
 
 Optional:
 
-- `default_source` (Boolean) Whether this is the default connection. Defaults to false if not specified.
-- `tags` (String) Tags associated with the host names. At runtime, nodes will use the first LdapTagConfig that has a tag that matches with node.tags in run.properties.
+- `default_source` (Boolean) Whether this is the default connection. Defaults to `false`.
+- `tags` (String) Tags associated with the host names. At runtime, nodes will use the first `hostnames_tags` element that has a tag that matches with node.tags in the run.properties file.
 
 
 
@@ -552,7 +552,7 @@ Optional:
 
 Required:
 
-- `ldap_type` (String) A type that allows PingFederate to configure many provisioning settings automatically. The value is validated against the LDAP gateway configuration in PingOne unless the header 'X-BypassExternalValidation' is set to true.
+- `ldap_type` (String) A type that allows PingFederate to configure many provisioning settings automatically. The value is validated against the LDAP gateway configuration in PingOne unless the provider setting 'x_bypass_external_validation_header' is set to `true`. Supported values are `ACTIVE_DIRECTORY`, `ORACLE_DIRECTORY_SERVER`, `ORACLE_UNIFIED_DIRECTORY`, `UNBOUNDID_DS`, `PING_DIRECTORY`, and `GENERIC`.
 - `ping_one_connection_ref` (Attributes) Reference to the PingOne connection this gateway uses. (see [below for nested schema](#nestedatt--ping_one_ldap_gateway_data_store--ping_one_connection_ref))
 - `ping_one_environment_id` (String) The environment ID to which the gateway belongs.
 - `ping_one_ldap_gateway_id` (String) The ID of the PingOne LDAP Gateway this data store uses.
@@ -560,9 +560,9 @@ Required:
 Optional:
 
 - `binary_attributes` (Set of String) A list of LDAP attributes to be handled as binary data.
-- `name` (String) The data store name with a unique value across all data sources. Omitting this attribute will set the value to a combination of the hostname(s) and the principal.
-- `use_ssl` (Boolean) Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS). The default value is false. The value is validated against the LDAP gateway configuration in PingOne unless the header 'X-BypassExternalValidation' is set to true.
-- `use_start_tls` (Boolean) Connects to the LDAP data store using StartTLS. The default value is false. The value is validated against the LDAP gateway configuration in PingOne unless the header 'X-BypassExternalValidation' is set to true.
+- `name` (String) The data store name with a unique value across all data sources. Defaults to `ping_one_connection_ref.id` plus `ping_one_environment_id` plus `ping_one_ldap_gateway_id`, each separated by `:`.
+- `use_ssl` (Boolean) Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS). The default value is `false`. The value is validated against the LDAP gateway configuration in PingOne unless the provider setting 'x_bypass_external_validation_header' is set to `true`.
+- `use_start_tls` (Boolean) Connects to the LDAP data store using StartTLS. The default value is `false`. The value is validated against the LDAP gateway configuration in PingOne unless the provider setting 'x_bypass_external_validation_header' is set to `true`.
 
 Read-Only:
 

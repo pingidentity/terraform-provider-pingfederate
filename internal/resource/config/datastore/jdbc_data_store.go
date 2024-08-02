@@ -68,23 +68,29 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 			Default:     stringdefault.StaticString("JDBC"),
 		},
 		"password": schema.StringAttribute{
-			Description: "The password needed to access the database. GETs will not return this attribute. To update this field, specify the new value in this attribute.",
+			Description: "The password needed to access the database.",
 			Optional:    true,
 			Sensitive:   true,
+			Validators: []validator.String{
+				stringvalidator.LengthAtLeast(1),
+			},
 		},
 		"name": schema.StringAttribute{
-			Description: "The data store name with a unique value across all data sources. Omitting this attribute will set the value to a combination of the connection url and the username.",
+			Description: "The data store name with a unique value across all data sources. Defaults to a combination of the `connection_url` and `username`.",
 			Computed:    true,
 			Optional:    true,
+			Validators: []validator.String{
+				stringvalidator.LengthAtLeast(1),
+			},
 		},
 		"min_pool_size": schema.Int64Attribute{
-			Description: "The smallest number of database connections in the connection pool for the given data store. Omitting this attribute will set the value to the connection pool default. The default value is 10.",
+			Description: "The smallest number of database connections in the connection pool for the given data store. The default value is `10`.",
 			Computed:    true,
 			Optional:    true,
 			Default:     int64default.StaticInt64(10),
 		},
 		"max_pool_size": schema.Int64Attribute{
-			Description: "The largest number of database connections in the connection pool for the given data store. Omitting this attribute will set the value to the connection pool default. The default value is 100.",
+			Description: "The largest number of database connections in the connection pool for the given data store. The default value is `100`.",
 			Computed:    true,
 			Optional:    true,
 			Default:     int64default.StaticInt64(100),
@@ -103,8 +109,11 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 						},
 					},
 					"tags": schema.StringAttribute{
-						Description: "Tags associated with the connection URL. At runtime, nodes will use the first JdbcTagConfig that has a tag that matches with node.tags in run.properties.",
+						Description: "Tags associated with the `connection_url`. At runtime, nodes will use the first `connection_url_tags` element that has a tag that matches with `node.tags` in the run.properties file.",
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"default_source": schema.BoolAttribute{
 						Description: "Whether this is the default connection. Default value is `false`.",
@@ -123,13 +132,13 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 			},
 		},
 		"blocking_timeout": schema.Int64Attribute{
-			Description: "The amount of time in milliseconds a request waits to get a connection from the connection pool before it fails. Omitting this attribute will set the value to the connection pool default. The default value is 5000 milliseconds.",
+			Description: "The amount of time in milliseconds a request waits to get a connection from the connection pool before it fails. The default value is `5000` milliseconds.",
 			Computed:    true,
 			Optional:    true,
 			Default:     int64default.StaticInt64(5000),
 		},
 		"idle_timeout": schema.Int64Attribute{
-			Description: "The length of time in minutes the connection can be idle in the pool before it is closed. Omitting this attribute will set the value to the connection pool default. The default value is 5 minutes.",
+			Description: "The length of time in minutes the connection can be idle in the pool before it is closed. The default value is `5` minutes.",
 			Computed:    true,
 			Optional:    true,
 			Default:     int64default.StaticInt64(5),
@@ -137,9 +146,12 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 		"driver_class": schema.StringAttribute{
 			Description: "The name of the driver class used to communicate with the source database.",
 			Required:    true,
+			Validators: []validator.String{
+				stringvalidator.LengthAtLeast(1),
+			},
 		},
 		"connection_url": schema.StringAttribute{
-			Description: "The default location of the JDBC database. This field is required if no mapping for JDBC database location and tags is specified.",
+			Description: "The default location of the JDBC database. This field is required if `connection_url_tags` is not specified.",
 			Computed:    true,
 			Optional:    true,
 			Validators: []validator.String{
@@ -153,9 +165,12 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 		"user_name": schema.StringAttribute{
 			Description: "The name that identifies the user when connecting to the database.",
 			Optional:    true,
+			Validators: []validator.String{
+				stringvalidator.LengthAtLeast(1),
+			},
 		},
 		"allow_multi_value_attributes": schema.BoolAttribute{
-			Description: "Indicates that this data store can select more than one record from a column and return the results as a multi-value attribute.",
+			Description: "Indicates that this data store can select more than one record from a column and return the results as a multi-value attribute. Default value is `false`.",
 			Computed:    true,
 			Optional:    true,
 			Default:     booldefault.StaticBool(false),
@@ -163,6 +178,9 @@ func toSchemaJdbcDataStore() schema.SingleNestedAttribute {
 		"validate_connection_sql": schema.StringAttribute{
 			Description: "A simple SQL statement used by PingFederate at runtime to verify that the database connection is still active and to reconnect if needed.",
 			Optional:    true,
+			Validators: []validator.String{
+				stringvalidator.LengthAtLeast(1),
+			},
 		},
 	}
 

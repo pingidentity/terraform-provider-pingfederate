@@ -5,17 +5,22 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -46,6 +51,19 @@ func (r *dataStoreResource) Schema(ctx context.Context, req resource.SchemaReque
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
 			},
+			"data_store_id": schema.StringAttribute{
+				Description: "The persistent, unique ID for the data store. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.",
+				Optional:    true,
+				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+					configvalidators.PingFederateId(),
+				},
+			},
 			"custom_data_store":                toSchemaCustomDataStore(),
 			"jdbc_data_store":                  toSchemaJdbcDataStore(),
 			"ldap_data_store":                  toSchemaLdapDataStore(),
@@ -53,11 +71,6 @@ func (r *dataStoreResource) Schema(ctx context.Context, req resource.SchemaReque
 		},
 	}
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema,
-		"data_store_id",
-		false,
-		false,
-		"The persistent, unique ID for the data store. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.")
 
 	resp.Schema = schema
 }
@@ -179,6 +192,7 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 			})
 			resp.Diagnostics.Append(respDiags...)
 			jdbcDataStore["connection_url_tags"], respDiags = types.SetValue(jdbcTagConfigAttrType, []attr.Value{urlTag})
+			resp.Diagnostics.Append(respDiags...)
 		}
 
 		// If name is not set, build it based on connection_url and user_name
@@ -231,6 +245,7 @@ func (r *dataStoreResource) ModifyPlan(ctx context.Context, req resource.ModifyP
 			})
 			resp.Diagnostics.Append(respDiags...)
 			ldapDataStore["hostnames_tags"], respDiags = types.SetValue(ldapTagConfigAttrType, []attr.Value{tagAttr})
+			resp.Diagnostics.Append(respDiags...)
 		}
 
 		// If name is not set, build it based on hostnames and user_dn
