@@ -323,7 +323,7 @@ func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
 			ElementType: types.StringType,
 		},
 		"use_start_tls": schema.BoolAttribute{
-			Description: "Connects to the LDAP data store using secure StartTLS encryption. The default value is false.",
+			Description: "Connects to the LDAP data store using secure StartTLS encryption.",
 			Computed:    true,
 			Optional:    false,
 		},
@@ -411,7 +411,7 @@ func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
 						ElementType: types.StringType,
 					},
 					"tags": datasourceschema.StringAttribute{
-						Description: "Tags associated with the host names. At runtime, nodes will use the first LdapTagConfig that has a tag that matches with node.tags in run.properties.",
+						Description: "Tags associated with the host names. At runtime, nodes will use the first `hostname_tags` element that has a tag that matches with node.tags in the run.properties file.",
 						Computed:    true,
 						Optional:    false,
 					},
@@ -429,7 +429,7 @@ func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
 			Optional:    false,
 		},
 		"user_dn": datasourceschema.StringAttribute{
-			Description: "The username credential required to access the data store. If specified, no other authentication fields should be provided.",
+			Description: "The username credential required to access the data store.",
 			Computed:    true,
 			Optional:    false,
 		},
@@ -439,7 +439,7 @@ func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
 			Optional:    false,
 		},
 		"bind_anonymously": datasourceschema.BoolAttribute{
-			Description: "Whether username and password are required. If true, no other authentication fields should be provided. The default value is false.",
+			Description: "Whether username and password are required.",
 			Computed:    true,
 			Optional:    false,
 		},
@@ -451,11 +451,11 @@ func toDataSourceSchemaLdapDataStore() datasourceschema.SingleNestedAttribute {
 		"client_tls_certificate_ref": datasourceschema.SingleNestedAttribute{
 			Computed:    true,
 			Optional:    false,
-			Description: "The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS and no other authentication fields should be provided. See '/keyPairs/sslClient' to manage certificates. Supported in PF version 11.3 or later.",
+			Description: "The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS. See '/keyPairs/sslClient' to manage certificates. Supported in PF version `11.3` or later.",
 			Attributes:  datasourceresourcelink.ToDataSourceSchema(),
 		},
 		"retry_failed_operations": datasourceschema.BoolAttribute{
-			Description: "Indicates whether failed operations should be retried. The default is false. Supported in PF version 11.3 or later.",
+			Description: "Indicates whether failed operations should be retried. Supported in PF version `11.3` or later.",
 			Computed:    true,
 			Optional:    false,
 		},

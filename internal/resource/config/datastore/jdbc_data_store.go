@@ -227,7 +227,7 @@ func toDataSourceSchemaJdbcDataStore() datasourceschema.SingleNestedAttribute {
 			Optional:    false,
 		},
 		"connection_url_tags": datasourceschema.SetNestedAttribute{
-			Description: "The set of connection URLs and associated tags for this JDBC data store. This is required if 'connectionUrl' is not provided.",
+			Description: "The set of connection URLs and associated tags for this JDBC data store.",
 			Computed:    true,
 			Optional:    false,
 			NestedObject: datasourceschema.NestedAttributeObject{
@@ -238,7 +238,7 @@ func toDataSourceSchemaJdbcDataStore() datasourceschema.SingleNestedAttribute {
 						Optional:    false,
 					},
 					"tags": datasourceschema.StringAttribute{
-						Description: "Tags associated with the connection URL. At runtime, nodes will use the first JdbcTagConfig that has a tag that matches with node.tags in run.properties.",
+						Description: "Tags associated with the connection URL. At runtime, nodes will use the first `connection_url_tags` element that has a tag that matches with node.tags in the run.properties file.",
 						Computed:    true,
 						Optional:    false,
 					},
@@ -266,7 +266,7 @@ func toDataSourceSchemaJdbcDataStore() datasourceschema.SingleNestedAttribute {
 			Optional:    false,
 		},
 		"connection_url": datasourceschema.StringAttribute{
-			Description: "The default location of the JDBC database. This field is required if no mapping for JDBC database location and tags is specified.",
+			Description: "The default location of the JDBC database.",
 			Computed:    true,
 			Optional:    false,
 		},
