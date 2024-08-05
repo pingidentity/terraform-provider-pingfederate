@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -80,41 +79,6 @@ func AddResourceNotFoundWarning(ctx context.Context, diagnostics *diag.Diagnosti
 			tflog.Debug(ctx, "Error HTTP response body: "+string(body))
 		} else {
 			tflog.Warn(ctx, "Failed to read HTTP response body: "+err.Error())
-		}
-	}
-}
-
-func reportHttpResponse(ctx context.Context, diagnostics *diag.Diagnostics, errorSummary string, err error, httpResp *http.Response, isWarning bool) {
-	httpErrorPrinted := false
-	var internalError error
-	if httpResp != nil {
-		body, internalError := io.ReadAll(httpResp.Body)
-		if internalError == nil {
-			tflog.Debug(ctx, "Error HTTP response body: "+string(body))
-			var pfError pingFederateError
-			internalError = json.Unmarshal(body, &pfError)
-			if internalError == nil {
-				detailStr := ""
-				if strings.Trim(pfError.Detail, " ") != "" {
-					detailStr = " - Detail: " + pfError.Detail
-				}
-				if isWarning {
-					diagnostics.AddWarning(errorSummary, err.Error()+detailStr)
-				} else {
-					diagnostics.AddError(errorSummary, err.Error()+detailStr)
-				}
-				httpErrorPrinted = true
-			}
-		}
-	}
-	if !httpErrorPrinted {
-		if internalError != nil {
-			tflog.Warn(ctx, "Failed to unmarshal HTTP response body: "+internalError.Error())
-		}
-		if isWarning {
-			diagnostics.AddWarning(errorSummary, err.Error())
-		} else {
-			diagnostics.AddError(errorSummary, err.Error())
 		}
 	}
 }
