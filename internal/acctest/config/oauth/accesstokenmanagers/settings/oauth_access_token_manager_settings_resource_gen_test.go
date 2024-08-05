@@ -32,6 +32,10 @@ func TestAccOauthAccessTokenManagerSettings_MinimalMaximal(t *testing.T) {
 				ImportState:                          true,
 				ImportStateVerify:                    true,
 			},
+			{
+				// Reset to the original default access token manager ref
+				Config: oauthAccessTokenManagerSettings_ResetDefaultManagerHCL(),
+			},
 		},
 	})
 }
@@ -39,6 +43,55 @@ func TestAccOauthAccessTokenManagerSettings_MinimalMaximal(t *testing.T) {
 // Minimal HCL with only required values set
 func oauthAccessTokenManagerSettings_MinimalHCL() string {
 	return fmt.Sprintf(`
+resource "pingfederate_oauth_access_token_manager" "example" {
+  manager_id = "myOauthAccessTokenManager"
+  name       = "Internal Manager"
+  plugin_descriptor_ref = {
+    id = "org.sourceid.oauth20.token.plugin.impl.ReferenceBearerAccessTokenManagementPlugin"
+  }
+  configuration = {
+  }
+  attribute_contract = {
+    coreAttributes = []
+	extended_attributes = [
+      {
+        name         = "extended_contract"
+        multi_valued = true
+      }
+    ]
+  }
+}
+
+resource "pingfederate_oauth_access_token_manager_settings" "example" {
+  default_access_token_manager_ref = {
+    id = pingfederate_oauth_access_token_manager.example.manager_id
+  }
+}
+`)
+}
+
+// Minimal HCL with only required values set
+func oauthAccessTokenManagerSettings_ResetDefaultManagerHCL() string {
+	return fmt.Sprintf(`
+resource "pingfederate_oauth_access_token_manager" "example" {
+  manager_id = "myOauthAccessTokenManager"
+  name       = "Internal Manager"
+  plugin_descriptor_ref = {
+    id = "org.sourceid.oauth20.token.plugin.impl.ReferenceBearerAccessTokenManagementPlugin"
+  }
+  configuration = {
+  }
+  attribute_contract = {
+    coreAttributes = []
+	extended_attributes = [
+      {
+        name         = "extended_contract"
+        multi_valued = true
+      }
+    ]
+  }
+}
+
 resource "pingfederate_oauth_access_token_manager_settings" "example" {
   default_access_token_manager_ref = {
     id = "jwt"

@@ -14,7 +14,7 @@ Resource to manage the general access token management settings.
 ```terraform
 resource "pingfederate_oauth_access_token_manager_settings" "oauthTokenManagersSettings" {
   default_access_token_manager_ref = {
-    id = "myDefaultAccessTokenManager"
+    id = pingfederate_oauth_access_token_manager.example.id
   }
 }
 ```
