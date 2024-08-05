@@ -52,14 +52,18 @@ func toSchemaPingOneLdapGatewayDataStore() schema.SingleNestedAttribute {
 			Default:     stringdefault.StaticString("PING_ONE_LDAP_GATEWAY"),
 		},
 		"name": schema.StringAttribute{
-			Description: "The data store name with a unique value across all data sources. Omitting this attribute will set the value to a combination of the hostname(s) and the principal.",
+			Description: "The data store name with a unique value across all data sources. Defaults to `ping_one_connection_ref.id` plus `ping_one_environment_id` plus `ping_one_ldap_gateway_id`, each separated by `:`.",
 			Computed:    true,
 			Optional:    true,
+			Validators: []validator.String{
+				stringvalidator.LengthAtLeast(1),
+			},
 		},
 		"use_start_tls": schema.BoolAttribute{
-			Description: "Connects to the LDAP data store using StartTLS. The default value is false. The value is validated against the LDAP gateway configuration in PingOne unless the header 'X-BypassExternalValidation' is set to true.",
+			Description: "Connects to the LDAP data store using StartTLS. The default value is `false`. The value is validated against the LDAP gateway configuration in PingOne unless the provider setting 'x_bypass_external_validation_header' is set to `true`.",
 			Computed:    true,
 			Optional:    true,
+			Default:     booldefault.StaticBool(false),
 		},
 		"ping_one_connection_ref": schema.SingleNestedAttribute{
 			Required:    true,
@@ -67,7 +71,7 @@ func toSchemaPingOneLdapGatewayDataStore() schema.SingleNestedAttribute {
 			Attributes:  resourcelink.ToSchema(),
 		},
 		"ldap_type": schema.StringAttribute{
-			Description: "A type that allows PingFederate to configure many provisioning settings automatically. The value is validated against the LDAP gateway configuration in PingOne unless the header 'X-BypassExternalValidation' is set to true.",
+			Description: "A type that allows PingFederate to configure many provisioning settings automatically. The value is validated against the LDAP gateway configuration in PingOne unless the provider setting 'x_bypass_external_validation_header' is set to `true`. Supported values are `ACTIVE_DIRECTORY`, `ORACLE_DIRECTORY_SERVER`, `ORACLE_UNIFIED_DIRECTORY`, `UNBOUNDID_DS`, `PING_DIRECTORY`, and `GENERIC`.",
 			Required:    true,
 			Validators: []validator.String{
 				stringvalidator.OneOf("ACTIVE_DIRECTORY", "ORACLE_DIRECTORY_SERVER", "ORACLE_UNIFIED_DIRECTORY", "UNBOUNDID_DS", "PING_DIRECTORY", "GENERIC"),
@@ -81,7 +85,7 @@ func toSchemaPingOneLdapGatewayDataStore() schema.SingleNestedAttribute {
 			},
 		},
 		"use_ssl": schema.BoolAttribute{
-			Description: "Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS). The default value is false. The value is validated against the LDAP gateway configuration in PingOne unless the header 'X-BypassExternalValidation' is set to true.",
+			Description: "Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS). The default value is `false`. The value is validated against the LDAP gateway configuration in PingOne unless the provider setting 'x_bypass_external_validation_header' is set to `true`.",
 			Computed:    true,
 			Optional:    true,
 			Default:     booldefault.StaticBool(false),
@@ -133,7 +137,7 @@ func toDataSourceSchemaPingOneLdapGatewayDataStore() datasourceschema.SingleNest
 			Optional:    false,
 		},
 		"use_start_tls": schema.BoolAttribute{
-			Description: "Connects to the LDAP data store using StartTLS. The default value is false. The value is validated against the LDAP gateway configuration in PingOne unless the header 'X-BypassExternalValidation' is set to true.",
+			Description: "Connects to the LDAP data store using StartTLS.",
 			Computed:    true,
 			Optional:    false,
 		},

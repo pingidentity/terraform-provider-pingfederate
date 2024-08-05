@@ -3,13 +3,16 @@ package idpdefaulturls
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -34,10 +37,11 @@ type idpDefaultUrlsResource struct {
 // GetSchema defines the schema for the resource.
 func (r *idpDefaultUrlsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages the IdP default URL settings",
+		Description:        "Manages the IdP default URL settings",
+		DeprecationMessage: "This resource is deprecated and will be removed in a future release. Please use the `pingfederate_default_urls` resource instead to manage both IdP and SP default URLs.",
 		Attributes: map[string]schema.Attribute{
 			"confirm_idp_slo": schema.BoolAttribute{
-				Description: "Prompt user to confirm Single Logout (SLO).",
+				Description: "Prompt user to confirm Single Logout (SLO). The default value is `false`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
@@ -49,6 +53,10 @@ func (r *idpDefaultUrlsResource) Schema(ctx context.Context, req resource.Schema
 			"idp_slo_success_url": schema.StringAttribute{
 				Description: "Provide the default URL you would like to send the user to when Single Logout has succeeded.",
 				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+					configvalidators.ValidUrl(),
+				},
 			},
 		},
 	}

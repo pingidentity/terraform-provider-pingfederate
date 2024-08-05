@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const sessionAuthenticationPolicyPolicyId = "session_auth_policy_policy_id"
@@ -104,6 +105,10 @@ resource "pingfederate_session_authentication_policy" "example" {
 
 // Maximal HCL with all values set where possible
 func sessionAuthenticationPolicy_CompleteHCL() string {
+	optionalHcl := ""
+	if acctest.VersionAtLeast(version.PingFederate1200) {
+		optionalHcl = "user_device_type        = \"ANY\""
+	}
 	return fmt.Sprintf(`
 resource "pingfederate_session_authentication_policy" "example" {
   policy_id = "%s"
@@ -119,29 +124,35 @@ resource "pingfederate_session_authentication_policy" "example" {
   max_timeout_mins        = 480
   persistent              = true
   timeout_display_unit    = "HOURS"
-  user_device_type        = "ANY"
+  %s
 }
-`, sessionAuthenticationPolicyPolicyId)
+`, sessionAuthenticationPolicyPolicyId, optionalHcl)
 }
 
 // Validate any computed values when applying minimal HCL
 func sessionAuthenticationPolicy_CheckComputedValuesMinimal() resource.TestCheckFunc {
-	return resource.ComposeTestCheckFunc(
+	testCheckFuncs := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr("pingfederate_session_authentication_policy.example", "authn_context_sensitive", "false"),
 		resource.TestCheckResourceAttr("pingfederate_session_authentication_policy.example", "persistent", "false"),
 		resource.TestCheckResourceAttr("pingfederate_session_authentication_policy.example", "timeout_display_unit", "MINUTES"),
-		resource.TestCheckResourceAttr("pingfederate_session_authentication_policy.example", "user_device_type", "PRIVATE"),
-	)
+	}
+	if acctest.VersionAtLeast(version.PingFederate1200) {
+		testCheckFuncs = append(testCheckFuncs, resource.TestCheckResourceAttr("pingfederate_session_authentication_policy.example", "user_device_type", "PRIVATE"))
+	}
+	return resource.ComposeTestCheckFunc(testCheckFuncs...)
 }
 
 // Validate any computed values when applying complete HCL
 func sessionAuthenticationPolicy_CheckComputedValuesComplete() resource.TestCheckFunc {
-	return resource.ComposeTestCheckFunc(
+	testCheckFuncs := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr("pingfederate_session_authentication_policy.example", "authn_context_sensitive", "true"),
 		resource.TestCheckResourceAttr("pingfederate_session_authentication_policy.example", "persistent", "true"),
 		resource.TestCheckResourceAttr("pingfederate_session_authentication_policy.example", "timeout_display_unit", "HOURS"),
-		resource.TestCheckResourceAttr("pingfederate_session_authentication_policy.example", "user_device_type", "ANY"),
-	)
+	}
+	if acctest.VersionAtLeast(version.PingFederate1200) {
+		testCheckFuncs = append(testCheckFuncs, resource.TestCheckResourceAttr("pingfederate_session_authentication_policy.example", "user_device_type", "ANY"))
+	}
+	return resource.ComposeTestCheckFunc(testCheckFuncs...)
 }
 
 // Delete the resource
