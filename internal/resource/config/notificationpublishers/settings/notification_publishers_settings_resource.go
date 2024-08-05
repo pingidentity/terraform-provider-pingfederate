@@ -1,4 +1,4 @@
-package notificationpublishers
+package notificationpublisherssettings
 
 import (
 	"context"
