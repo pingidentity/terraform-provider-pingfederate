@@ -125,7 +125,7 @@ func getLatestPatchForMajorMinorVersion(majorMinorVersionString string) (string,
 	if versionIndex < 0 || versionIndex >= len(sortedVersions) {
 		// This should never happen
 		respDiags.AddError("Unexpected failure determining major-minor PingFederate version", "")
-		return "", respDiags
+		return majorMinorVersionString, respDiags
 	}
 	return string(sortedVersions[versionIndex]), respDiags
 }
@@ -145,6 +145,11 @@ func Parse(versionString string) (SupportedVersion, diag.Diagnostics) {
 		return "", diags
 	}
 	if len(versionDigits) == 2 {
+		if !IsValid(versionString + ".0") {
+			// This major minor version isn't supported - fail now
+			diags.AddError("PingFederate version '"+versionString+"' is not supported in this version of the PingFederate terraform provider", getSortedVersionsMessage())
+			return "", diags
+		}
 		// Get the latest patch for the major minor version provided
 		var respDiags diag.Diagnostics
 		versionString, respDiags = getLatestPatchForMajorMinorVersion(versionString + ".0")
@@ -173,5 +178,5 @@ func AddUnsupportedAttributeError(attr string, actualVersion, requiredVersion Su
 	}
 
 	diags.AddError(fmt.Sprintf("Attribute '%s' not supported by PingFederate version %s", attr, string(actualVersion)),
-		fmt.Sprintf("PingFederate version %s or later is required for this attribute", string(requiredVersion)))
+		fmt.Sprintf("PingFederate version %s or later is required for this attribute. PingFederate version %s was provided via the 'product_version' field in your provider configuration or the 'PINGFEDERATE_PROVIDER_PRODUCT_VERSION' environment variable.", string(requiredVersion), string(actualVersion)))
 }
