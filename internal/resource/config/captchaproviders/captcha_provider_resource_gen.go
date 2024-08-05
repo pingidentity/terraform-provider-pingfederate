@@ -240,7 +240,7 @@ func (r *captchaProviderResource) Read(ctx context.Context, req resource.ReadReq
 	responseData, httpResp, err := r.apiClient.CaptchaProvidersAPI.GetCaptchaProvider(config.AuthContext(ctx, r.providerConfig), data.ProviderId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the captchaProvider", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Captcha Provider", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the captchaProvider", err, httpResp)

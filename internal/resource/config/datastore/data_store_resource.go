@@ -450,7 +450,7 @@ func (r *dataStoreResource) Read(ctx context.Context, req resource.ReadRequest, 
 	dataStoreGetReq, httpResp, err := r.apiClient.DataStoresAPI.GetDataStore(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the data store", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Data Store", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the data store", err, httpResp)

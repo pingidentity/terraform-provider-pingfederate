@@ -530,7 +530,7 @@ func (r *oauthAccessTokenManagerResource) Read(ctx context.Context, req resource
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Manager", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OAuth Access Token Manager", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Manager", err, httpResp)

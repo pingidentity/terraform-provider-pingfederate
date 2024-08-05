@@ -339,7 +339,7 @@ func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest,
 	apiReadIdpAdapter, httpResp, err := r.apiClient.IdpAdaptersAPI.GetIdpAdapter(config.AuthContext(ctx, r.providerConfig), state.AdapterId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an IdpAdapter", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "IdP Adapter", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an IdpAdapter", err, httpResp)

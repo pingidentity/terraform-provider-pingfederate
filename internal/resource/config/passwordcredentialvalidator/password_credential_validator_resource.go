@@ -341,7 +341,7 @@ func (r *passwordCredentialValidatorResource) Read(ctx context.Context, req reso
 	apiReadPasswordCredentialValidators, httpResp, err := r.apiClient.PasswordCredentialValidatorsAPI.GetPasswordCredentialValidator(config.AuthContext(ctx, r.providerConfig), state.ValidatorId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a Password Credential Validator", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Password Credential Validator", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Password Credential Validator", err, httpResp)

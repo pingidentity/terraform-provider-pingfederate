@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -69,9 +70,17 @@ type pingFederateError struct {
 	Detail  string   `json:"detail"`
 }
 
-// Report an HTTP error as a warning
-func ReportHttpErrorAsWarning(ctx context.Context, diagnostics *diag.Diagnostics, errorSummary string, err error, httpResp *http.Response) {
-	reportHttpResponse(ctx, diagnostics, errorSummary, err, httpResp, true)
+// Report a 404 as a warning for resources
+func AddResourceNotFoundWarning(ctx context.Context, diagnostics *diag.Diagnostics, resourceType string, httpResp *http.Response) {
+	diagnostics.AddWarning("Resource not found", fmt.Sprintf("The requested %s resource configuration cannot be found in the PingFederate service.  If the requested resource is managed in Terraform's state, it may have been removed outside of Terraform.", resourceType))
+	if httpResp != nil {
+		body, err := io.ReadAll(httpResp.Body)
+		if err == nil {
+			tflog.Debug(ctx, "Error HTTP response body: "+string(body))
+		} else {
+			tflog.Warn(ctx, "Failed to read HTTP response body: "+err.Error())
+		}
+	}
 }
 
 func reportHttpResponse(ctx context.Context, diagnostics *diag.Diagnostics, errorSummary string, err error, httpResp *http.Response, isWarning bool) {

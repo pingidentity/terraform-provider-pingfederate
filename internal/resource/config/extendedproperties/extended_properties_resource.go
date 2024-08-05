@@ -178,7 +178,7 @@ func (r *extendedPropertiesResource) Read(ctx context.Context, req resource.Read
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the extended properties", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Extended Properties", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the extended properties", err, httpResp)
