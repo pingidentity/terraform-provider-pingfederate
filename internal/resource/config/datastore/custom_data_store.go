@@ -12,7 +12,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
@@ -57,14 +59,27 @@ func toSchemaCustomDataStore() schema.SingleNestedAttribute {
 		"plugin_descriptor_ref": schema.SingleNestedAttribute{
 			Required:    true,
 			Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created.",
-			Attributes:  resourcelink.ToSchema(),
+			Attributes: map[string]schema.Attribute{
+				"id": schema.StringAttribute{
+					Required:    true,
+					Description: "The ID of the resource.",
+					PlanModifiers: []planmodifier.String{
+						stringplanmodifier.RequiresReplace(),
+					},
+				},
+			},
 		},
 		"parent_ref": schema.SingleNestedAttribute{
 			Computed:    true,
 			Optional:    true,
-			Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides). Supported prior to PingFederate 12.0.",
+			Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides). Supported prior to PingFederate `12.0`.",
 			Default:     objectdefault.StaticValue(types.ObjectNull(resourcelink.AttrType())),
-			Attributes:  resourcelink.ToSchema(),
+			Attributes: map[string]schema.Attribute{
+				"id": schema.StringAttribute{
+					Required:    true,
+					Description: "The ID of the resource.",
+				},
+			},
 		},
 		"configuration": pluginconfiguration.ToSchema(),
 	}
@@ -98,13 +113,13 @@ func toDataSourceSchemaCustomDataStore() datasourceschema.SingleNestedAttribute 
 		"plugin_descriptor_ref": datasourceschema.SingleNestedAttribute{
 			Computed:    true,
 			Optional:    false,
-			Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created..)",
+			Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created.",
 			Attributes:  datasourceresourcelink.ToDataSourceSchema(),
 		},
 		"parent_ref": datasourceschema.SingleNestedAttribute{
 			Computed:    true,
 			Optional:    false,
-			Description: "The reference to this plugin's parent instance. Supported prior to PingFederate 12.0.",
+			Description: "The reference to this plugin's parent instance. Supported prior to PingFederate `12.0`.",
 			Attributes:  datasourceresourcelink.ToDataSourceSchema(),
 		},
 		"configuration": datasourcepluginconfiguration.ToDataSourceSchema(),

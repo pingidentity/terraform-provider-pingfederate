@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -12,11 +13,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -56,6 +59,19 @@ func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req r
 	schema := schema.Schema{
 		Description: "Manages an authentication policy contract.",
 		Attributes: map[string]schema.Attribute{
+			"contract_id": schema.StringAttribute{
+				Description: "The persistent, unique ID for the authentication policy contract. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.",
+				Optional:    true,
+				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+					configvalidators.PingFederateId(),
+				},
+			},
 			"core_attributes": schema.ListNestedAttribute{
 				Description: "A list of read-only assertion attributes (for example, subject) that are automatically populated by PingFederate.",
 				Computed:    true,
@@ -64,7 +80,8 @@ func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req r
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
-							Required: true,
+							Required:    true,
+							Description: "The name of this attribute.",
 						},
 					},
 				},
@@ -77,7 +94,8 @@ func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req r
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
-							Required: true,
+							Required:    true,
+							Description: "The name of this attribute.",
 						},
 					},
 				},
@@ -85,19 +103,14 @@ func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req r
 			"name": schema.StringAttribute{
 				Description: "The Authentication Policy contract name. Name is unique.",
 				Required:    true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 		},
 	}
 
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema,
-		"contract_id",
-		false,
-		false,
-		"The persistent, unique ID for the authentication policy contract. It can be any combination of [a-zA-Z0-9._-].")
 	resp.Schema = schema
 }
 

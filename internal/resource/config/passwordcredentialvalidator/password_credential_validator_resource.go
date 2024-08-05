@@ -144,7 +144,7 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 	var isRadiusServerTableFound bool
 	if pluginDescriptorRefId == "org.sourceid.saml20.domain.RadiusUsernamePasswordCredentialValidator" || pluginDescriptorRefId == "org.sourceid.saml20.domain.SimpleUsernamePasswordCredentialValidator" {
 		if configuration["tables"] != nil {
-			tables := configuration["tables"].(types.List).Elements()
+			tables := configuration["tables"].(types.Set).Elements()
 			for _, table := range tables {
 				tableAttrs := table.(types.Object).Attributes()
 				tableName := tableAttrs["name"].(types.String).ValueString()
@@ -153,7 +153,7 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 					tableRow := tableAttrs["rows"].(types.List).Elements()
 					for tableRowIndex, row := range tableRow {
 						rowAttrs := row.(types.Object).Attributes()
-						fields := rowAttrs["fields"].(types.List).Elements()
+						fields := rowAttrs["fields"].(types.Set).Elements()
 						usernameFound := false
 						passwordFound := false
 						confirmPasswordFound := false
@@ -193,7 +193,7 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 
 	fieldNameMap := map[string]bool{}
 	if configuration["fields"] != nil {
-		fields := configuration["fields"].(types.List).Elements()
+		fields := configuration["fields"].(types.Set).Elements()
 		for _, field := range fields {
 			field := field.(types.Object).Attributes()
 			fieldName := field["name"].(types.String).ValueString()

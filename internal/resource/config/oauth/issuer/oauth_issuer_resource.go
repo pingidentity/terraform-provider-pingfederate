@@ -3,12 +3,17 @@ package oauthissuer
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -33,29 +38,54 @@ type oauthIssuerResource struct {
 // GetSchema defines the schema for the resource.
 func (r *oauthIssuerResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a virtual OAuth issuer.",
+		Description: "Resource to create and manage a virtual OAuth issuer.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: "The name of this virtual issuer with a unique value.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
+			},
+			"issuer_id": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The persistent, unique ID for the virtual issuer. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified. This property cannot be changed after initial creation.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+					configvalidators.PingFederateId(),
+				},
 			},
 			"description": schema.StringAttribute{
-				Required: true,
+				Optional:    true,
+				Description: "The description of this virtual issuer.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"host": schema.StringAttribute{
-				Required: true,
+				Required:    true,
+				Description: "The hostname of this virtual issuer.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"path": schema.StringAttribute{
-				Required: true,
+				Optional:    true,
+				Description: "The path of this virtual issuer. Path must start with a `/`, but cannot end with `/`.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+					configvalidators.ValidPath(),
+				},
 			},
 		},
 	}
 
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema,
-		"issuer_id",
-		true,
-		false,
-		"The persistent, unique ID for the virtual issuer. It can be any combination of [a-zA-Z0-9._-].")
 	resp.Schema = schema
 }
 func addOptionalOauthIssuerFields(ctx context.Context, addRequest *client.Issuer, plan oauthIssuerModel) error {
