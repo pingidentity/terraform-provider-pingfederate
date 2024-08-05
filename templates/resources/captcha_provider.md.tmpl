@@ -9,9 +9,13 @@ description: |-
 
 {{ .Description | trimspace }}
 
-## Example Usage
+## Example Usage - reCAPTCHA v2 Invisible
 
-{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource.tf") }}
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-recaptchav2provider.tf") }}
+
+## Example Usage - PingOne Protect
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-ping-one-protect.tf") }}
 
 {{ .SchemaMarkdown | trimspace }}
 

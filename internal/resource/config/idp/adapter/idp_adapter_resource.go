@@ -56,11 +56,11 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Optional:    true,
 			},
 			"name": schema.StringAttribute{
-				Description: "The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
+				Description: "The plugin instance name. The name can be modified once the instance is created.",
 				Required:    true,
 			},
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
-				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
+				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created.",
 				Required:    true,
 				Attributes:  resourcelink.ToSchema(),
 			},
@@ -197,7 +197,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 		"adapter_id",
 		true,
 		true,
-		"The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.")
+		"The ID of the plugin instance. The ID cannot be modified once the instance is created.")
 	resp.Schema = schema
 }
 

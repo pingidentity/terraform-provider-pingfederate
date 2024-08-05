@@ -767,10 +767,10 @@ Read-Only:
 - `attribute_contract` (Attributes) A set of attributes exposed by an IdP adapter. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_contract))
 - `attribute_mapping` (Attributes) An IdP Adapter Contract Mapping. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--attribute_mapping))
 - `authn_ctx_class_ref` (String) The fixed value that indicates how the user was authenticated.
-- `id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.
-- `name` (String) The plugin instance name. The name can be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.
+- `id` (String) The ID of the plugin instance.
+- `name` (String) The plugin instance name.
 - `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides) (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref))
-- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref))
+- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref))
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--configuration"></a>
 ### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings.configuration`

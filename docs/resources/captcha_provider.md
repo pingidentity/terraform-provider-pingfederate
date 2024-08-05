@@ -2,36 +2,103 @@
 page_title: "pingfederate_captcha_provider Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Resource to create and manage CAPTCHA provider plugin instances.
+  Resource to create and manage CAPTCHA and Risk Providers (including PingOne Protect) for use with external Risk services.
 ---
 
 # pingfederate_captcha_provider (Resource)
 
-Resource to create and manage CAPTCHA provider plugin instances.
+Resource to create and manage CAPTCHA and Risk Providers (including PingOne Protect) for use with external Risk services.
 
-## Example Usage
+## Example Usage - reCAPTCHA v2 Invisible
 
 ```terraform
-resource "pingfederate_captcha_provider" "captchaProviderExample" {
-  provider_id = "myCaptchaProviderId"
-  name        = "My Captcha Provider"
+resource "pingfederate_captcha_provider" "reCAPTCHAv2ProviderExample" {
+  provider_id = "myreCAPTCHAv2ProviderId"
+  name        = "My reCAPTCHA v2 Provider"
   configuration = {
-    tables = [],
     fields = [
       {
         name  = "Site Key"
-        value = "exampleSiteKey"
+        value = var.recaptcha_v2_site_key
       },
       {
         name  = "Secret Key"
-        value = "exampleSecretKey"
+        value = var.recaptcha_v2_secret_key
       }
     ]
   }
-  // class name of the plugin
-  // Captcha V2 used here
   plugin_descriptor_ref = {
     id = "com.pingidentity.captcha.ReCaptchaV2InvisiblePlugin"
+  }
+}
+```
+
+## Example Usage - PingOne Protect
+
+```terraform
+resource "pingfederate_ping_one_connection" "example" {
+  name        = "My PingOne Environment"
+  description = "My environment"
+  credential  = var.pingone_gateway_credential
+}
+
+resource "pingfederate_captcha_provider" "riskProviderExample" {
+  provider_id = "pingoneProtectProviderId"
+  name        = "PingOne Protect Provider"
+  configuration = {
+    fields = [
+      {
+        "name" : "PingOne Environment",
+        "value" : format("%s|%s", pingfederate_ping_one_connection.example.id, var.pingone_environment_id)
+      },
+      {
+        "name" : "PingOne Risk Policy",
+        "value" : var.pingone_risk_policy_id
+      },
+      {
+        "name" : "Enable Risk Evaluation",
+        "value" : "true"
+      },
+      {
+        "name" : "Password Encryption",
+        "value" : "SHA-256"
+      },
+      {
+        "name" : "Follow Recommended Action",
+        "value" : "true"
+      },
+      {
+        "name" : "Failure Mode",
+        "value" : "Continue with fallback policy decision"
+      },
+      {
+        "name" : "Fallback Policy Decision Value",
+        "value" : "MEDIUM"
+      },
+      {
+        "name" : "API Request Timeout",
+        "value" : "2000"
+      },
+      {
+        "name" : "Proxy Settings",
+        "value" : "System Defaults"
+      },
+      {
+        "name" : "Custom Proxy Host",
+        "value" : ""
+      },
+      {
+        "name" : "Custom Proxy Port",
+        "value" : ""
+      },
+      {
+        "name" : "Custom connection pool",
+        "value" : "50"
+      }
+    ]
+  }
+  plugin_descriptor_ref = {
+    id = "com.pingidentity.adapters.pingone.protect.PingOneProtectProvider"
   }
 }
 ```
@@ -42,9 +109,9 @@ resource "pingfederate_captcha_provider" "captchaProviderExample" {
 ### Required
 
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--configuration))
-- `name` (String) The plugin instance name. The name can be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.
-- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
-- `provider_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.
+- `name` (String) The plugin instance name. The name can be modified once the instance is created.
+- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
+- `provider_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created.
 
 ### Optional
 

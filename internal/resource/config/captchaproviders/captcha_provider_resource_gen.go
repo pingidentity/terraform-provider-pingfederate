@@ -60,12 +60,12 @@ type captchaProviderResourceModel struct {
 
 func (r *captchaProviderResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Resource to create and manage CAPTCHA provider plugin instances.",
+		Description: "Resource to create and manage CAPTCHA and Risk Providers (including PingOne Protect) for use with external Risk services.",
 		Attributes: map[string]schema.Attribute{
 			"configuration": pluginconfiguration.ToSchema(),
 			"name": schema.StringAttribute{
 				Required:    true,
-				Description: "The plugin instance name. The name can be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.",
+				Description: "The plugin instance name. The name can be modified once the instance is created.",
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
@@ -91,11 +91,11 @@ func (r *captchaProviderResource) Schema(ctx context.Context, req resource.Schem
 					},
 				},
 				Required:    true,
-				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
+				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created.",
 			},
 			"provider_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.",
+				Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 					stringplanmodifier.UseStateForUnknown(),

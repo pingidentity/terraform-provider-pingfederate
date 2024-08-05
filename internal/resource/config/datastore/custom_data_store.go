@@ -56,7 +56,7 @@ func toSchemaCustomDataStore() schema.SingleNestedAttribute {
 		},
 		"plugin_descriptor_ref": schema.SingleNestedAttribute{
 			Required:    true,
-			Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
+			Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created.",
 			Attributes:  resourcelink.ToSchema(),
 		},
 		"parent_ref": schema.SingleNestedAttribute{
