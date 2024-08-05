@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -81,13 +82,17 @@ func reportHttpResponse(ctx context.Context, diagnostics *diag.Diagnostics, erro
 		body, internalError := io.ReadAll(httpResp.Body)
 		if internalError == nil {
 			tflog.Debug(ctx, "Error HTTP response body: "+string(body))
-			var pdError pingFederateError
-			internalError = json.Unmarshal(body, &pdError)
+			var pfError pingFederateError
+			internalError = json.Unmarshal(body, &pfError)
 			if internalError == nil {
+				detailStr := ""
+				if strings.Trim(pfError.Detail, " ") != "" {
+					detailStr = " - Detail: " + pfError.Detail
+				}
 				if isWarning {
-					diagnostics.AddWarning(errorSummary, err.Error()+" - Detail: "+pdError.Detail)
+					diagnostics.AddWarning(errorSummary, err.Error()+detailStr)
 				} else {
-					diagnostics.AddError(errorSummary, err.Error()+" - Detail: "+pdError.Detail)
+					diagnostics.AddError(errorSummary, err.Error()+detailStr)
 				}
 				httpErrorPrinted = true
 			}
