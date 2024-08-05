@@ -238,7 +238,7 @@ func (r *notificationPublisherResource) Read(ctx context.Context, req resource.R
 	responseData, httpResp, err := r.apiClient.NotificationPublishersAPI.GetNotificationPublisher(config.AuthContext(ctx, r.providerConfig), data.PublisherId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the notificationPublisher", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Notification Publisher", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the notificationPublisher", err, httpResp)

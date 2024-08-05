@@ -145,7 +145,7 @@ func (r *oauthAccessTokenManagerSettingsResource) Read(ctx context.Context, req 
 	responseData, httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.GetOauthAccessTokenManagersSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the oauthAccessTokenManagerSettings", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OAuth Access Token Manager Settings", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the oauthAccessTokenManagerSettings", err, httpResp)
