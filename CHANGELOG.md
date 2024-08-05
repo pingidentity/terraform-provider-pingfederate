@@ -1,3 +1,6 @@
+# v0.14.0 (Unreleased)
+* **New Resource:** `pingfederate_notification_publisher` ([#284]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/284)))
+
 # v0.13.0 August 1, 2024
 ### Resources
 * **New Resource:** `pingfederate_default_urls` ([#260]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/260)))
