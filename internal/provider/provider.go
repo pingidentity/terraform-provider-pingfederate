@@ -49,6 +49,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/notificationpublishers"
 	notificationpublisherssettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/notificationpublishers/settings"
 	oauthaccesstokenmanager "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/accesstokenmanager"
+	oauthaccesstokenmanagerssettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/accesstokenmanagers/settings"
 	oauthaccesstokenmapping "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/accesstokenmapping"
 	oauthauthenticationpolicycontractmappings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authenticationpolicycontractmappings"
 	oauthauthserversettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authserversettings"
@@ -739,6 +740,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		notificationpublisherssettings.NotificationPublishersSettingsResource,
 		notificationpublishers.NotificationPublisherResource,
 		oauthaccesstokenmanager.OauthAccessTokenManagerResource,
+		oauthaccesstokenmanagerssettings.OauthAccessTokenManagerSettingsResource,
 		oauthaccesstokenmapping.OauthAccessTokenMappingsResource,
 		oauthauthenticationpolicycontractmappings.OauthAuthenticationPolicyContractMappingResource,
 		oauthauthserversettings.OauthAuthServerSettingsResource,
