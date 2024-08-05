@@ -1,5 +1,10 @@
 # v0.14.0 (Unreleased)
+### Resources
 * **New Resource:** `pingfederate_notification_publisher` ([#284]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/284)))
+
+### Bug Fixes
+* Fixed inability to configure mutliple `hostnames_tags` in the `pingfederate_data_store` resource.
+* Fixed config validation error when using variables for password and username in the `pingfederate_kerberos_realm` resource. 
 
 # v0.13.0 August 1, 2024
 ### Resources
