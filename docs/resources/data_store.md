@@ -343,13 +343,13 @@ Read-Only:
 
 Optional:
 
-- `fields` (Attributes List) List of configuration fields. (see [below for nested schema](#nestedatt--custom_data_store--configuration--fields))
-- `tables` (Attributes List) List of configuration tables. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables))
+- `fields` (Attributes Set) List of configuration fields. (see [below for nested schema](#nestedatt--custom_data_store--configuration--fields))
+- `tables` (Attributes Set) List of configuration tables. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables))
 
 Read-Only:
 
-- `fields_all` (Attributes List) List of configuration fields. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--custom_data_store--configuration--fields_all))
-- `tables_all` (Attributes List) List of configuration tables. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables_all))
+- `fields_all` (Attributes Set) List of configuration fields. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--custom_data_store--configuration--fields_all))
+- `tables_all` (Attributes Set) List of configuration tables. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables_all))
 
 <a id="nestedatt--custom_data_store--configuration--fields"></a>
 ### Nested Schema for `custom_data_store.configuration.fields`
@@ -377,7 +377,7 @@ Optional:
 Optional:
 
 - `default_row` (Boolean) Whether this row is the default.
-- `fields` (Attributes List) The configuration fields in the row. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables--rows--fields))
+- `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables--rows--fields))
 
 <a id="nestedatt--custom_data_store--configuration--tables--rows--fields"></a>
 ### Nested Schema for `custom_data_store.configuration.tables.rows.fields`
@@ -416,7 +416,7 @@ Optional:
 Optional:
 
 - `default_row` (Boolean) Whether this row is the default.
-- `fields` (Attributes List) The configuration fields in the row. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables_all--rows--fields))
+- `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--custom_data_store--configuration--tables_all--rows--fields))
 
 <a id="nestedatt--custom_data_store--configuration--tables_all--rows--fields"></a>
 ### Nested Schema for `custom_data_store.configuration.tables_all.rows.fields`

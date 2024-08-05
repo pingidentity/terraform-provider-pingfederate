@@ -189,8 +189,12 @@ resource "pingfederate_notification_publisher" "example" {
 func notificationPublisher_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_notification_publisher.example", "configuration.fields_all.#", "13"),
-		resource.TestCheckResourceAttr("pingfederate_notification_publisher.example", "configuration.fields_all.3.name", "SMTP Port"),
-		resource.TestCheckResourceAttr("pingfederate_notification_publisher.example", "configuration.fields_all.3.value", "25"),
+		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_notification_publisher.example", "configuration.fields_all.*",
+			map[string]string{
+				"name":  "SMTP Port",
+				"value": "25",
+			},
+		),
 		resource.TestCheckResourceAttr("pingfederate_notification_publisher.example", "configuration.tables.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_notification_publisher.example", "configuration.tables_all.#", "0"),
 	)
