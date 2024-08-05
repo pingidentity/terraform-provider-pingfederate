@@ -53,7 +53,7 @@ resource "pingfederate_oauth_access_token_manager" "example" {
   }
   attribute_contract = {
     coreAttributes = []
-	extended_attributes = [
+    extended_attributes = [
       {
         name         = "extended_contract"
         multi_valued = true
@@ -83,7 +83,7 @@ resource "pingfederate_oauth_access_token_manager" "example" {
   }
   attribute_contract = {
     coreAttributes = []
-	extended_attributes = [
+    extended_attributes = [
       {
         name         = "extended_contract"
         multi_valued = true
