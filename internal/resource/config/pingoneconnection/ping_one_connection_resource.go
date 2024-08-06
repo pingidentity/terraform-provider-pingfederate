@@ -231,7 +231,7 @@ func (r *pingOneConnectionResource) Read(ctx context.Context, req resource.ReadR
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the the PingOne Connection", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "PingOne Connection", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  the PingOne Connection", err, httpResp)
