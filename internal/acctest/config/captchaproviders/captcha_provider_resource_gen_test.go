@@ -159,7 +159,11 @@ resource "pingfederate_captcha_provider" "example" {
 // Validate any computed values when applying minimal HCL
 func captchaProvider_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
-		resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.fields_all.2.value", "recaptcha-v2-invisible.js"),
+		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
+			map[string]string{
+				"value": "recaptcha-v2-invisible.js",
+			},
+		),
 		resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.tables_all.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.fields_all.#", "3"),
 	)
@@ -170,10 +174,26 @@ func captchaProvider_CheckComputedValuesComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.tables_all.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.fields_all.#", "12"),
-		resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.fields_all.2.value", "true"),
-		resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.fields_all.3.value", "SHA-256"),
-		resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.fields_all.6.value", "MEDIUM"),
-		resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.fields_all.11.value", "50"),
+		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
+			map[string]string{
+				"value": "true",
+			},
+		),
+		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
+			map[string]string{
+				"value": "SHA-256",
+			},
+		),
+		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
+			map[string]string{
+				"value": "MEDIUM",
+			},
+		),
+		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
+			map[string]string{
+				"value": "50",
+			},
+		),
 	)
 }
 
