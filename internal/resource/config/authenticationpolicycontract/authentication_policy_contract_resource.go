@@ -204,7 +204,7 @@ func (r *authenticationPolicyContractResource) Read(ctx context.Context, req res
 	apiReadAuthenticationPolicyContracts, httpResp, err := r.apiClient.AuthenticationPolicyContractsAPI.GetAuthenticationPolicyContract(config.AuthContext(ctx, r.providerConfig), state.ContractId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an authentication policy contract", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Authentication Policy Contract", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an authentication policy contract", err, httpResp)

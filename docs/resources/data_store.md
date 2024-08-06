@@ -338,7 +338,7 @@ Required:
 
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--custom_data_store--configuration))
 - `name` (String) The plugin instance name.
-- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override. (see [below for nested schema](#nestedatt--custom_data_store--plugin_descriptor_ref))
+- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. (see [below for nested schema](#nestedatt--custom_data_store--plugin_descriptor_ref))
 
 Optional:
 
@@ -572,7 +572,7 @@ Optional:
 - `binary_attributes` (Set of String) A list of LDAP attributes to be handled as binary data.
 - `name` (String) The data store name with a unique value across all data sources. Defaults to `ping_one_connection_ref.id` plus `ping_one_environment_id` plus `ping_one_ldap_gateway_id`, each separated by `:`.
 - `use_ssl` (Boolean) Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS). The default value is `false`. The value is validated against the LDAP gateway configuration in PingOne unless the provider setting 'x_bypass_external_validation_header' is set to `true`.
-- `use_start_tls` (Boolean) Connects to the LDAP data store using StartTLS. The default value is `false`. The value is validated against the LDAP gateway configuration in PingOne unless the provider setting 'x_bypass_external_validation_header' is set to `true`.
+- `use_start_tls` (Boolean) Connects to the LDAP data store using StartTLS. The default value is `false`. The value is validated against the LDAP gateway configuration in PingOne unless the provider setting 'x_bypass_external_validation_header' is set to `true`. Supported in PingFederate `12.1` and later.
 
 Read-Only:
 

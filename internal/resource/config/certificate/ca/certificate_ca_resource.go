@@ -245,7 +245,7 @@ func (r *certificateCAResource) Read(ctx context.Context, req resource.ReadReque
 	apiReadCertificate, httpResp, err := r.apiClient.CertificatesCaAPI.GetTrustedCert(config.AuthContext(ctx, r.providerConfig), state.CaId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while looking for a Certificate", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Certificate CA", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a Certificate", err, httpResp)

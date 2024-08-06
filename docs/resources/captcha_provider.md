@@ -1,82 +1,104 @@
 ---
-page_title: "pingfederate_notification_publisher Resource - terraform-provider-pingfederate"
+page_title: "pingfederate_captcha_provider Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Resource to create and manage notification publisher plugin instances.
+  Resource to create and manage CAPTCHA and Risk Providers (including PingOne Protect) for use with external Risk services.
 ---
 
-# pingfederate_notification_publisher (Resource)
+# pingfederate_captcha_provider (Resource)
 
-Resource to create and manage notification publisher plugin instances.
+Resource to create and manage CAPTCHA and Risk Providers (including PingOne Protect) for use with external Risk services.
 
-## Example Usage
+## Example Usage - reCAPTCHA v2 Invisible
 
 ```terraform
-resource "pingfederate_notification_publisher" "notificationPublisher" {
-  publisher_id = "EmailSMTPPublisherSettings"
-  name         = "Email SMTP Publisher Settings"
+resource "pingfederate_captcha_provider" "reCAPTCHAv2ProviderExample" {
+  provider_id = "myreCAPTCHAv2ProviderId"
+  name        = "My reCAPTCHA v2 Provider"
   configuration = {
     fields = [
       {
-        name  = "Email Server"
-        value = "localhost"
+        name  = "Site Key"
+        value = var.recaptcha_v2_site_key
       },
       {
-        name  = "From Address"
-        value = "noreply@bxretail.org"
-      },
-      {
-        name  = "Sender Name"
-        value = "BXRetail"
-      },
-      {
-        name  = "SMTP Port"
-        value = "25"
-      },
-      {
-        name  = "Encryption Method"
-        value = "SSL"
-      },
-      {
-        name  = "SMTPS Port"
-        value = "465"
-      },
-      {
-        name  = "Username"
-        value = var.email_smtp_server_username
-      },
-      {
-        name  = "Password"
-        value = var.email_smtp_server_password
-      },
-      {
-        name  = "Verify Hostname"
-        value = "true"
-      },
-      {
-        name  = "UTF-8 Message Header Support"
-        value = "false"
-      },
-      {
-        name  = "Connection Timeout"
-        value = "30"
-      },
-      {
-        name  = "Retry Attempt"
-        value = "2"
-      },
-      {
-        name  = "Retry Delay"
-        value = "2"
-      },
-      {
-        name  = "Enable SMTP Debugging Messages"
-        value = "true"
+        name  = "Secret Key"
+        value = var.recaptcha_v2_secret_key
       }
     ]
   }
   plugin_descriptor_ref = {
-    id = "com.pingidentity.email.SmtpNotificationPlugin"
+    id = "com.pingidentity.captcha.ReCaptchaV2InvisiblePlugin"
+  }
+}
+```
+
+## Example Usage - PingOne Protect
+
+```terraform
+resource "pingfederate_ping_one_connection" "example" {
+  name        = "My PingOne Environment"
+  description = "My environment"
+  credential  = var.pingone_gateway_credential
+}
+
+resource "pingfederate_captcha_provider" "riskProviderExample" {
+  provider_id = "pingoneProtectProviderId"
+  name        = "PingOne Protect Provider"
+  configuration = {
+    fields = [
+      {
+        "name" : "PingOne Environment",
+        "value" : format("%s|%s", pingfederate_ping_one_connection.example.id, var.pingone_environment_id)
+      },
+      {
+        "name" : "PingOne Risk Policy",
+        "value" : var.pingone_risk_policy_id
+      },
+      {
+        "name" : "Enable Risk Evaluation",
+        "value" : "true"
+      },
+      {
+        "name" : "Password Encryption",
+        "value" : "SHA-256"
+      },
+      {
+        "name" : "Follow Recommended Action",
+        "value" : "true"
+      },
+      {
+        "name" : "Failure Mode",
+        "value" : "Continue with fallback policy decision"
+      },
+      {
+        "name" : "Fallback Policy Decision Value",
+        "value" : "MEDIUM"
+      },
+      {
+        "name" : "API Request Timeout",
+        "value" : "2000"
+      },
+      {
+        "name" : "Proxy Settings",
+        "value" : "System Defaults"
+      },
+      {
+        "name" : "Custom Proxy Host",
+        "value" : ""
+      },
+      {
+        "name" : "Custom Proxy Port",
+        "value" : ""
+      },
+      {
+        "name" : "Custom connection pool",
+        "value" : "50"
+      }
+    ]
+  }
+  plugin_descriptor_ref = {
+    id = "com.pingidentity.adapters.pingone.protect.PingOneProtectProvider"
   }
 }
 ```
@@ -89,7 +111,7 @@ resource "pingfederate_notification_publisher" "notificationPublisher" {
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--configuration))
 - `name` (String) The plugin instance name. The name can be modified once the instance is created.
 - `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
-- `publisher_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created.
+- `provider_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created.
 
 ### Optional
 
@@ -206,8 +228,8 @@ Required:
 
 Import is supported using the following syntax:
 
-~> "notificationPublisherId" should be the id of the Notification Publisher to be imported
+~> "myCaptchaProviderId" should be the id of the Captcha provider to be imported
 
 ```shell
-terraform import pingfederate_notification_publisher.notificationPublisher notificationPublisherId
+terraform import pingfederate_captcha_provider.captchaProviderExample myCaptchaProviderId
 ```
