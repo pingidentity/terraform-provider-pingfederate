@@ -105,7 +105,7 @@ func connectionMetadataExport_MinimalHCL() string {
 	return fmt.Sprintf(`
 %s
 
-data "pingfederate_connection_metadata_export" "example" {
+resource "pingfederate_connection_metadata_export" "example" {
   depends_on      = [pingfederate_idp_sp_connection.spConnection]
   connection_type = "SP"
   connection_id   = pingfederate_idp_sp_connection.spConnection.connection_id
@@ -118,7 +118,7 @@ func connectionMetadataExport_CompleteHCL() string {
 	return fmt.Sprintf(`
 %s
 
-data "pingfederate_connection_metadata_export" "example" {
+resource "pingfederate_connection_metadata_export" "example" {
   depends_on                  = [pingfederate_idp_sp_connection.spConnection]
   connection_type             = "SP"
   connection_id               = pingfederate_idp_sp_connection.spConnection.connection_id
@@ -138,6 +138,6 @@ data "pingfederate_connection_metadata_export" "example" {
 // Validate any computed values when applying HCL
 func connectionMetadataExport_CheckComputedValues() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
-		resource.TestCheckResourceAttrSet("data.pingfederate_connection_metadata_export.example", "exported_connection_metadata"),
+		resource.TestCheckResourceAttrSet("pingfederate_connection_metadata_export.example", "exported_connection_metadata"),
 	)
 }

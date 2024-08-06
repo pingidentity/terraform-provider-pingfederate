@@ -6,8 +6,12 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
@@ -16,24 +20,24 @@ import (
 )
 
 var (
-	_ datasource.DataSource              = &connectionMetadataExportDataSource{}
-	_ datasource.DataSourceWithConfigure = &connectionMetadataExportDataSource{}
+	_ resource.Resource              = &connectionMetadataExportResource{}
+	_ resource.ResourceWithConfigure = &connectionMetadataExportResource{}
 )
 
-func ConnectionMetadataExportDataSource() datasource.DataSource {
-	return &connectionMetadataExportDataSource{}
+func ConnectionMetadataExportResource() resource.Resource {
+	return &connectionMetadataExportResource{}
 }
 
-type connectionMetadataExportDataSource struct {
+type connectionMetadataExportResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
 }
 
-func (r *connectionMetadataExportDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (r *connectionMetadataExportResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_connection_metadata_export"
 }
 
-func (r *connectionMetadataExportDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, _ *datasource.ConfigureResponse) {
+func (r *connectionMetadataExportResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -43,7 +47,7 @@ func (r *connectionMetadataExportDataSource) Configure(_ context.Context, req da
 	r.apiClient = providerCfg.ApiClient
 }
 
-type connectionMetadataDataSourceModel struct {
+type connectionMetadataResourceModel struct {
 	ConnectionType             types.String `tfsdk:"connection_type"`
 	ConnectionId               types.String `tfsdk:"connection_id"`
 	VirtualServerId            types.String `tfsdk:"virtual_server_id"`
@@ -53,9 +57,9 @@ type connectionMetadataDataSourceModel struct {
 	ExportedConnectionMetadata types.String `tfsdk:"exported_connection_metadata"`
 }
 
-func (r *connectionMetadataExportDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (r *connectionMetadataExportResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Datasource to export a connection's SAML metadata that can be given to a partner.",
+		Description: "Resource to export a connection's SAML metadata that can be given to a partner.",
 		Attributes: map[string]schema.Attribute{
 			"connection_type": schema.StringAttribute{
 				Description: "The type of connection to export. Options are `IDP` or `SP`.",
@@ -63,14 +67,26 @@ func (r *connectionMetadataExportDataSource) Schema(ctx context.Context, req dat
 				Validators: []validator.String{
 					stringvalidator.OneOf("IDP", "SP"),
 				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"connection_id": schema.StringAttribute{
 				Description: "The ID of the connection to export.",
 				Required:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"virtual_server_id": schema.StringAttribute{
 				Description: "The virtual server ID to export the metadata with. If `null`, the connection's default will be used.",
 				Optional:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"signing_settings": schema.SingleNestedAttribute{
 				Description: "The signing settings to sign the metadata with. If `null`, the metadata will not be signed",
@@ -83,41 +99,70 @@ func (r *connectionMetadataExportDataSource) Schema(ctx context.Context, req dat
 							"id": schema.StringAttribute{
 								Description: "The ID of the resource.",
 								Required:    true,
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.RequiresReplace(),
+								},
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
 							},
 						},
 					},
 					"algorithm": schema.StringAttribute{
 						Description: "The algorithm used to sign messages sent to this partner. The default is `SHA1withDSA` for DSA certs, `SHA256withRSA` for RSA certs, and `SHA256withECDSA` for EC certs. For RSA certs, `SHA1withRSA`, `SHA384withRSA`, `SHA512withRSA`, `SHA256withRSAandMGF1`, `SHA384withRSAandMGF1` and `SHA512withRSAandMGF1` are also supported. For EC certs, `SHA384withECDSA` and `SHA512withECDSA` are also supported. If the connection is WS-Federation with JWT token type, then the possible values are `RSA SHA256`, `RSA SHA384`, `RSA SHA512`, `RSASSA-PSS SHA256`, `RSASSA-PSS SHA384`, `RSASSA-PSS SHA512`, `ECDSA SHA256`, `ECDSA SHA384`, `ECDSA SHA512`",
 						Optional:    true,
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
+						},
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"include_cert_in_signature": schema.BoolAttribute{
 						Description: "Determines whether the signing certificate is included in the signature element.",
 						Optional:    true,
+						PlanModifiers: []planmodifier.Bool{
+							boolplanmodifier.RequiresReplace(),
+						},
 					},
 					"include_raw_key_in_signature": schema.BoolAttribute{
 						Description: "Determines whether the element with the raw public key is included in the signature element.",
 						Optional:    true,
+						PlanModifiers: []planmodifier.Bool{
+							boolplanmodifier.RequiresReplace(),
+						},
 					},
+				},
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.RequiresReplace(),
 				},
 			},
 			"use_secondary_port_for_soap": schema.BoolAttribute{
-				Description: "If PingFederate's secondary SSL port is configured and you want to use it for the SOAP channel, set to true. If client-certificate authentication is configured for the SOAP channel, the secondary port is required and this must be set to `true`.",
+				Description: "If PingFederate's secondary SSL port is configured and you want to use it for the SOAP channel, set to `true`. If client-certificate authentication is configured for the SOAP channel, the secondary port is required and this must be set to `true`.",
 				Optional:    true,
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.RequiresReplace(),
+				},
 			},
 			"virtual_host_name": schema.StringAttribute{
 				Description: "The virtual host name to be used as the base url.",
 				Optional:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"exported_connection_metadata": schema.StringAttribute{
 				Description: "The exported SAML metadata.",
-				Optional:    false,
 				Computed:    true,
 			},
 		},
 	}
 }
 
-func (model *connectionMetadataDataSourceModel) buildClientStruct() *client.ExportMetadataRequest {
+func (model *connectionMetadataResourceModel) buildClientStruct() *client.ExportMetadataRequest {
 	result := &client.ExportMetadataRequest{}
 
 	result.ConnectionId = model.ConnectionId.ValueString()
@@ -142,8 +187,8 @@ func (model *connectionMetadataDataSourceModel) buildClientStruct() *client.Expo
 	return result
 }
 
-func (r *connectionMetadataExportDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data connectionMetadataDataSourceModel
+func (r *connectionMetadataExportResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data connectionMetadataResourceModel
 
 	// Read Terraform config data into the model
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
@@ -165,4 +210,17 @@ func (r *connectionMetadataExportDataSource) Read(ctx context.Context, req datas
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func (r *connectionMetadataExportResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	// To avoid re-exporting the connection metadata on every plan, we'll just maintain whatever is in state
+	resp.State.Raw = req.State.Raw
+}
+
+func (r *connectionMetadataExportResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	// This method won't be called since all non-computed attributes require replacement
+}
+
+func (r *connectionMetadataExportResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// This doesn't represent a real resource in PF, so nothing to do here
 }
