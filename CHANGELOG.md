@@ -1,5 +1,6 @@
 # v0.14.0 (Unreleased)
 ### Resources
+* **New Resource:** `pingfederate_idp_sts_request_parameters_contract` ([#281]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/281)))
 * **New Resource:** `pingfederate_captcha_provider` ([#275]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/275)))
 * **New Resource:** `pingfederate_oauth_access_token_manager_settings` ([#274]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/274)))
 * **New Resource:** `pingfederate_notification_publisher` ([#284]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/284)))
