@@ -134,7 +134,7 @@ func (r *sessionSettingsResource) Read(ctx context.Context, req resource.ReadReq
 	apiReadSessionSettings, httpResp, err := r.apiClient.SessionAPI.GetSessionSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Session Settings", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Session Settings", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Session Settings", err, httpResp)

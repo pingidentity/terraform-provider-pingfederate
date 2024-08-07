@@ -38,7 +38,7 @@ type oauthTokenExchangeTokenGeneratorMappingResource struct {
 }
 
 type oauthTokenExchangeTokenGeneratorMappingResourceModel struct {
-	AttributeSources                 types.List   `tfsdk:"attribute_sources"`
+	AttributeSources                 types.Set    `tfsdk:"attribute_sources"`
 	AttributeContractFulfillment     types.Map    `tfsdk:"attribute_contract_fulfillment"`
 	IssuanceCriteria                 types.Object `tfsdk:"issuance_criteria"`
 	Id                               types.String `tfsdk:"id"`
@@ -179,7 +179,7 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Read(ctx context.Conte
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Token Exchange Token Generator Mapping", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OAuth Token Exchange Token Generator Mapping", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Token Exchange Token Generator Mapping", err, httpResp)

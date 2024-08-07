@@ -23,7 +23,7 @@ data "pingfederate_oauth_access_token_manager" "myOauthAccessTokenManager" {
 
 ### Required
 
-- `manager_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
+- `manager_id` (String) The ID of the plugin instance.
 
 ### Read-Only
 
@@ -31,9 +31,9 @@ data "pingfederate_oauth_access_token_manager" "myOauthAccessTokenManager" {
 - `attribute_contract` (Attributes) The list of attributes that will be added to an access token. (see [below for nested schema](#nestedatt--attribute_contract))
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--configuration))
 - `id` (String) ID of this resource.
-- `name` (String) The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
+- `name` (String) The plugin instance name.
 - `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides) (see [below for nested schema](#nestedatt--parent_ref))
-- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
+- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
 - `selection_settings` (Attributes) Settings which determine how this token manager can be selected for use by an OAuth request. (see [below for nested schema](#nestedatt--selection_settings))
 - `sequence_number` (Number) Number added to an access token to identify which Access Token Manager issued the token.
 - `session_validation_settings` (Attributes) Settings which determine how the user session is associated with the access token. (see [below for nested schema](#nestedatt--session_validation_settings))
