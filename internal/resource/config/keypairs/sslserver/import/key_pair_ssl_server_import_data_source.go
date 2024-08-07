@@ -54,7 +54,8 @@ type keyPairsSslServerImportDataSourceModel struct {
 // GetSchema defines the schema for the datasource.
 func (r *keyPairsSslServerImportDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	schemaDef := schema.Schema{
-		Description: "Describes details of an SSL key pair.",
+		Description:        "Describes details of an SSL key pair.",
+		DeprecationMessage: "This data source is deprecated and will be removed in a future release. Use the `pingfederate_keypairs_ssl_server_key` data source instead.",
 		Attributes: map[string]schema.Attribute{
 			"serial_number": schema.StringAttribute{
 				Description: "The serial number assigned by the CA",
