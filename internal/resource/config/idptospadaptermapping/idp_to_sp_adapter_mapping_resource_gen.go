@@ -249,7 +249,7 @@ func (r *idpToSpAdapterMappingResource) Read(ctx context.Context, req resource.R
 	responseData, httpResp, err := r.apiClient.IdpToSpAdapterMappingAPI.GetIdpToSpAdapterMappingsById(config.AuthContext(ctx, r.providerConfig), data.MappingId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the idpToSpAdapterMapping", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "IdP to SP Adapter Mappint", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the idpToSpAdapterMapping", err, httpResp)
