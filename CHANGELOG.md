@@ -5,6 +5,9 @@
 * **New Resource:** `pingfederate_notification_publisher` ([#284]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/284)))
 * **New Resource:** `pingfederate_connection_metadata_export` ([#276](https://github.com/pingidentity/terraform-provider-pingfederate/pull/276))
 
+### Data Sources
+* **New Data Source:** `pingfederate_cluster_status` ([#297](https://github.com/pingidentity/terraform-provider-pingfederate/pull/297))
+
 ### Bug Fixes
 * Fixed inability to configure mutliple `hostnames_tags` in the `pingfederate_data_store` resource.
 * Fixed config validation error when using variables for password and username in the `pingfederate_kerberos_realm` resource. 

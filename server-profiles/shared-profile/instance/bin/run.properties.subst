@@ -252,7 +252,7 @@ pf.runtime.http.maxRequestBodySize=200000
 #                       protocol engine. 
 # Note: Only one node in a cluster can run the administrative console.
 # Default is STANDALONE.
-pf.operational.mode=STANDALONE
+pf.operational.mode=${OPERATIONAL_MODE}
 
 # The following properties apply only if "pf.operational.mode"
 # is *not* STANDALONE:
