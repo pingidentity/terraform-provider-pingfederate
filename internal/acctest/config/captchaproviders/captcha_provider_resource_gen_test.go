@@ -174,14 +174,14 @@ resource "pingfederate_captcha_provider" "example" {
         name : "Secret Key"
         value : "1234"
       },
-	  {
-	    name : "Pass Score Threshold"
-		value : "0.8" 
-	  },
-	  {
-	    name : "JavaScript File Name"
-		value : "recaptcha-v3.js" 
-	  }
+      {
+        name : "Pass Score Threshold"
+        value : "0.8"
+      },
+      {
+        name : "JavaScript File Name"
+        value : "recaptcha-v3.js"
+      }
     ]
   }
   plugin_descriptor_ref = {
