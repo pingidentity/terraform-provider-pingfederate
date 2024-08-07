@@ -29,7 +29,7 @@ resource "pingfederate_idp_default_urls" "idpDefaultUrl" {
 
 ### Optional
 
-- `confirm_idp_slo` (Boolean) Prompt user to confirm Single Logout (SLO).
+- `confirm_idp_slo` (Boolean) Prompt user to confirm Single Logout (SLO). The default value is `false`.
 - `idp_slo_success_url` (String) Provide the default URL you would like to send the user to when Single Logout has succeeded.
 
 ### Read-Only
