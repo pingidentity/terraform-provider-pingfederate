@@ -267,7 +267,7 @@ func (r *certificatesGroupResource) Read(ctx context.Context, req resource.ReadR
 	responseData, httpResp, err := r.apiClient.CertificatesGroupsAPI.GetCertificateFromGroup(config.AuthContext(ctx, r.providerConfig), data.GroupName.ValueString(), data.GroupId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the certificatesGroup", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Certificates Group", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the certificatesGroup", err, httpResp)
