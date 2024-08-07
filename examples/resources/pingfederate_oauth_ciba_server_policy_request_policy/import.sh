@@ -1,0 +1,1 @@
+terraform import pingfederate_oauth_ciba_server_policy_request_policy.requestPolicy policyId
