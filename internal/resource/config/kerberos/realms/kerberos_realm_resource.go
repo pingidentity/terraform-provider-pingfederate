@@ -8,14 +8,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -55,14 +58,29 @@ type kerberosRealmsResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *kerberosRealmsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a Kerberos Realm",
+		Description: "Resource to create and manage a Kerberos Realm",
 		Attributes: map[string]schema.Attribute{
+			"realm_id": schema.StringAttribute{
+				Description: "The persistent, unique ID for the Kerberos Realm. It can be any combination of `[a-zA-Z0-9._-]`.",
+				Optional:    true,
+				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+					configvalidators.PingFederateId(),
+				},
+			},
 			"kerberos_realm_name": schema.StringAttribute{
 				Description: "The Domain/Realm name used for display in UI screens.",
 				Required:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"connection_type": schema.StringAttribute{
-				Description: "Controls how PingFederate connects to the Active Directory/Kerberos Realm. The default is: DIRECT.",
+				Description: "Controls how PingFederate connects to the Active Directory/Kerberos Realm. Options are `DIRECT` and `LDAP_GATEWAY`. The default is `DIRECT`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     stringdefault.StaticString("DIRECT"),
@@ -71,41 +89,48 @@ func (r *kerberosRealmsResource) Schema(ctx context.Context, req resource.Schema
 				},
 			},
 			"key_distribution_centers": schema.SetAttribute{
-				Description: "The Domain Controller/Key Distribution Center Host Action Names. Only applicable when 'connectionType' is DIRECT.",
+				Description: "The Domain Controller/Key Distribution Center Host Action Names. Only applicable when 'connection_type' is `DIRECT`.",
 				Computed:    true,
 				Optional:    true,
 				ElementType: types.StringType,
 				Default:     setdefault.StaticValue(emptyStringSet),
 			},
 			"kerberos_username": schema.StringAttribute{
-				Description: "The Domain/Realm username. Only required when 'connectionType' is DIRECT.",
+				Description: "The Domain/Realm username. Required when 'connection_type' is `DIRECT`, otherwise should not be specified.",
 				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"kerberos_password": schema.StringAttribute{
-				Description: "The Domain/Realm password. To update this field, specify the new value in this attribute. Only applicable when 'connectionType' is DIRECT.",
+				Description: "The Domain/Realm password. Required when 'connection_type' is `DIRECT`, otherwise should not be specified.",
 				Optional:    true,
 				Sensitive:   true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			// Computed due to dependency on connection_type, this value is not present when connection_type is LDAP_GATEWAY, default set in ModifyPlan
 			"retain_previous_keys_on_password_change": schema.BoolAttribute{
-				Description: "Determines whether the previous encryption keys are retained when the password is updated. Retaining the previous keys allows existing Kerberos tickets to continue to be validated. The default is false. Only applicable when 'connectionType' is DIRECT.",
+				Description: "Determines whether the previous encryption keys are retained when the password is updated. Retaining the previous keys allows existing Kerberos tickets to continue to be validated. The default is `false`. Only applicable when 'connection_type' is `DIRECT`.",
 				Computed:    true,
 				Optional:    true,
 			},
 			// Computed due to dependency on connection_type, this value is not present when connection_type is LDAP_GATEWAY, default set in ModifyPlan
 			"suppress_domain_name_concatenation": schema.BoolAttribute{
-				Description: "Controls whether the KDC hostnames and the realm name are concatenated in the auto-generated krb5.conf file. Only applicable when 'connectionType' is DIRECT.",
+				Description: "Controls whether the KDC hostnames and the realm name are concatenated in the auto-generated `krb5.conf` file. Only applicable when 'connection_type' is `DIRECT`.",
 				Computed:    true,
 				Optional:    true,
 			},
-			"ldap_gateway_data_store_ref": resourcelink.SingleNestedAttribute(),
+			"ldap_gateway_data_store_ref": schema.SingleNestedAttribute{
+				Description: "The LDAP gateway used by PingFederate to communicate with the Active Directory. Required when `connection_type` is `LDAP_GATEWAY`.",
+				Optional:    true,
+				Attributes:  resourcelink.ToSchema(),
+			},
 		},
 	}
 
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, "realm_id", false, false,
-		"The persistent, unique ID for the Kerberos Realm. It can be any combination of [a-z0-9._-].")
-
 	resp.Schema = schema
 }
 
@@ -125,58 +150,60 @@ func (r *kerberosRealmsResource) Configure(_ context.Context, req resource.Confi
 
 }
 
-func (r *kerberosRealmsResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var model kerberosRealmsResourceModel
+func (r *kerberosRealmsResource) validatePlan(ctx context.Context, plan *kerberosRealmsResourceModel) diag.Diagnostics {
+	var diags diag.Diagnostics
 	errSummary := "Invalid property combination:"
 	errorMsg := "is only applicable when connection_type is set to \"DIRECT\"."
-	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
-	if !model.ConnectionType.IsNull() && model.ConnectionType.ValueString() != "DIRECT" {
-		if internaltypes.IsDefined(model.KerberosUsername) {
-			resp.Diagnostics.AddError(errSummary, "kerberos_username "+errorMsg)
+	if plan.ConnectionType.ValueString() != "DIRECT" {
+		if internaltypes.IsDefined(plan.KerberosUsername) {
+			diags.AddError(errSummary, "kerberos_username "+errorMsg)
 		}
-		if internaltypes.IsDefined(model.KerberosPassword) {
-			resp.Diagnostics.AddError(errSummary, "kerberos_password "+errorMsg)
+		if internaltypes.IsDefined(plan.KerberosPassword) {
+			diags.AddError(errSummary, "kerberos_password "+errorMsg)
 		}
-		if internaltypes.IsDefined(model.RetainPreviousKeysOnPasswordChange) {
-			resp.Diagnostics.AddError(errSummary, "retain_previous_keys_on_password_change "+errorMsg)
+		if internaltypes.IsDefined(plan.RetainPreviousKeysOnPasswordChange) {
+			diags.AddError(errSummary, "retain_previous_keys_on_password_change "+errorMsg)
 		}
-		if internaltypes.IsDefined(model.SuppressDomainNameConcatenation) {
-			resp.Diagnostics.AddError(errSummary, "suppress_domain_name_concatenation "+errorMsg)
+		if internaltypes.IsDefined(plan.SuppressDomainNameConcatenation) {
+			diags.AddError(errSummary, "suppress_domain_name_concatenation "+errorMsg)
 		}
-		if internaltypes.IsDefined(model.KeyDistributionCenters) {
-			resp.Diagnostics.AddError(errSummary, "key_distribution_centers "+errorMsg)
+		if internaltypes.IsDefined(plan.KeyDistributionCenters) {
+			diags.AddError(errSummary, "key_distribution_centers "+errorMsg)
 		}
-	}
-
-	// This implies that connection_type is set to DIRECT, the default value
-	if model.ConnectionType.IsNull() || model.ConnectionType.ValueString() == "DIRECT" {
-		if !internaltypes.IsDefined(model.KerberosUsername) {
-			resp.Diagnostics.AddError("Property Required:", "kerberos_username is required when connection_type is set to \"DIRECT\".")
+	} else {
+		// This implies that connection_type is set to DIRECT, the default value
+		if plan.KerberosUsername.IsNull() {
+			diags.AddError("Property Required:", "kerberos_username is required when connection_type is set to \"DIRECT\".")
 		}
-		if !internaltypes.IsDefined(model.KerberosPassword) {
-			resp.Diagnostics.AddError("Property Required:", "kerberos_password is required when connection_type is set to \"DIRECT\".")
+		if plan.KerberosPassword.IsNull() {
+			diags.AddError("Property Required:", "kerberos_password is required when connection_type is set to \"DIRECT\".")
 		}
 	}
 
 	// ldap_gateway_data_store_ref is required when connection_type is set to LDAP_GATEWAY
-	if model.ConnectionType.ValueString() == "LDAP_GATEWAY" {
-		if !internaltypes.IsDefined(model.LdapGatewayDataStoreRef) {
-			resp.Diagnostics.AddError("Property Required:", "ldap_gateway_data_store_ref is required when connection_type is set to \"LDAP_GATEWAY\".")
+	if plan.ConnectionType.ValueString() == "LDAP_GATEWAY" {
+		if plan.LdapGatewayDataStoreRef.IsNull() {
+			diags.AddError("Property Required:", "ldap_gateway_data_store_ref is required when connection_type is set to \"LDAP_GATEWAY\".")
 		}
 	}
+	return diags
 }
 
 func (r *kerberosRealmsResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	var plan kerberosRealmsResourceModel
-	req.Plan.Get(ctx, &plan)
+	var plan *kerberosRealmsResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() || plan == nil {
+		return
+	}
 	if plan.ConnectionType.ValueString() == "DIRECT" {
-		if !internaltypes.IsDefined(plan.RetainPreviousKeysOnPasswordChange) {
+		if plan.RetainPreviousKeysOnPasswordChange.IsUnknown() {
 			plan.RetainPreviousKeysOnPasswordChange = types.BoolValue(false)
 		}
-		if !internaltypes.IsDefined(plan.SuppressDomainNameConcatenation) {
+		if plan.SuppressDomainNameConcatenation.IsUnknown() {
 			plan.SuppressDomainNameConcatenation = types.BoolValue(false)
 		}
 	}
+	resp.Diagnostics.Append(r.validatePlan(ctx, plan)...)
 	resp.Plan.Set(ctx, plan)
 }
 
@@ -271,7 +298,7 @@ func (r *kerberosRealmsResource) Read(ctx context.Context, req resource.ReadRequ
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a kerberos realm", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Kerberos Realm", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a kerberos realm", err, httpResp)
