@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 
@@ -69,38 +70,15 @@ type pingFederateError struct {
 	Detail  string   `json:"detail"`
 }
 
-// Report an HTTP error as a warning
-func ReportHttpErrorAsWarning(ctx context.Context, diagnostics *diag.Diagnostics, errorSummary string, err error, httpResp *http.Response) {
-	reportHttpResponse(ctx, diagnostics, errorSummary, err, httpResp, true)
-}
-
-func reportHttpResponse(ctx context.Context, diagnostics *diag.Diagnostics, errorSummary string, err error, httpResp *http.Response, isWarning bool) {
-	httpErrorPrinted := false
-	var internalError error
+// Report a 404 as a warning for resources
+func AddResourceNotFoundWarning(ctx context.Context, diagnostics *diag.Diagnostics, resourceType string, httpResp *http.Response) {
+	diagnostics.AddWarning("Resource not found", fmt.Sprintf("The requested %s resource configuration cannot be found in the PingFederate service.  If the requested resource is managed in Terraform's state, it may have been removed outside of Terraform.", resourceType))
 	if httpResp != nil {
-		body, internalError := io.ReadAll(httpResp.Body)
-		if internalError == nil {
+		body, err := io.ReadAll(httpResp.Body)
+		if err == nil {
 			tflog.Debug(ctx, "Error HTTP response body: "+string(body))
-			var pfError pingFederateError
-			internalError = json.Unmarshal(body, &pfError)
-			if internalError == nil {
-				if isWarning {
-					diagnostics.AddWarning(errorSummary, err.Error()+" - Detail: "+pfError.Detail)
-				} else {
-					diagnostics.AddError(errorSummary, err.Error()+" - Detail: "+pfError.Detail)
-				}
-				httpErrorPrinted = true
-			}
-		}
-	}
-	if !httpErrorPrinted {
-		if internalError != nil {
-			tflog.Warn(ctx, "Failed to unmarshal HTTP response body: "+internalError.Error())
-		}
-		if isWarning {
-			diagnostics.AddWarning(errorSummary, err.Error())
 		} else {
-			diagnostics.AddError(errorSummary, err.Error())
+			tflog.Warn(ctx, "Failed to read HTTP response body: "+err.Error())
 		}
 	}
 }
@@ -113,8 +91,8 @@ func ReportHttpError(ctx context.Context, diagnostics *diag.Diagnostics, errorSu
 		body, internalError := io.ReadAll(httpResp.Body)
 		if internalError == nil {
 			tflog.Debug(ctx, "Error HTTP response body: "+string(body))
-			var paError pingFederateError
-			internalError = json.Unmarshal(body, &paError)
+			var pfError pingFederateError
+			internalError = json.Unmarshal(body, &pfError)
 			if internalError == nil {
 				diagnostics.AddError(errorSummary, err.Error()+" - Detail: "+string(body))
 				httpErrorPrinted = true
