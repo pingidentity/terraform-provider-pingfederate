@@ -80,9 +80,6 @@ testacc:
 		false; \
 	fi
 
-testaccfolder:
-	$(call test_acc_common_env_vars) $(call test_acc_basic_auth_env_vars) TF_ACC=1 go test ./internal/acctest/config/${ACC_TEST_FOLDER}... -timeout 10m -v count=1
-
 testauthacc:
 	$(call test_acc_common_env_vars) $(call test_acc_oauth_env_vars) TF_ACC=1 go test ./internal/acctest/authentication/oauth_test.go -timeout 5m -v; \
 	oauthResult=$$?; \

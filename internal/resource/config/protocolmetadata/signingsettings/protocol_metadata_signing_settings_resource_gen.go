@@ -169,7 +169,7 @@ func (r *protocolMetadataSigningSettingsResource) Read(ctx context.Context, req 
 	responseData, httpResp, err := r.apiClient.ProtocolMetadataAPI.GetSigningSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the protocolMetadataSigningSettings", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Protocol Metadata Signing Settings", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the protocolMetadataSigningSettings", err, httpResp)
