@@ -343,7 +343,7 @@ func (r *keyPairsSslServerImportResource) Read(ctx context.Context, req resource
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPair SSL Server Import", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "SSL Server Key Pair", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the KeyPair SSL Server Import", err, httpResp)

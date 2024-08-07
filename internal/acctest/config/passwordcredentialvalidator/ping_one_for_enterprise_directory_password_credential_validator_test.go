@@ -56,7 +56,7 @@ func TestAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(t *testing
 				Config: testAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(resourceName, updatedResourceModel),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckExpectedPingOneForEnterpriseDirectoryPasswordCredentialValidatorsAttributes(updatedResourceModel),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_password_credential_validator.%s", resourceName), "configuration.fields.7.value", updatedResourceModel.connectionPoolTimeout),
+					resource.TestCheckTypeSetElemNestedAttrs(fmt.Sprintf("pingfederate_password_credential_validator.%s", resourceName), "configuration.fields.*", map[string]string{"value": updatedResourceModel.connectionPoolTimeout}),
 				),
 			},
 			{
