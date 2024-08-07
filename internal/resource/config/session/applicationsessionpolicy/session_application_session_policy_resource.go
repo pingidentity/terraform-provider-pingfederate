@@ -125,7 +125,7 @@ func (r *sessionApplicationSessionPolicyResource) Read(ctx context.Context, req 
 	apiReadSessionApplicationSessionPolicy, httpResp, err := r.apiClient.SessionAPI.GetApplicationPolicy(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a Session Application Session Policy", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Session Application Session Policy", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Session Application Session Policy", err, httpResp)

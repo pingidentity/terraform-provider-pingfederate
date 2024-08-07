@@ -988,15 +988,15 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 										"id": schema.StringAttribute{
 											Computed:    true,
 											Optional:    false,
-											Description: "The ID of the plugin instance. The ID cannot be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.",
+											Description: "The ID of the plugin instance.",
 										},
 										"name": schema.StringAttribute{
 											Computed:    true,
 											Optional:    false,
-											Description: "The plugin instance name. The name can be modified once the instance is created.<br>Note: Ignored when specifying a connection's adapter override.",
+											Description: "The plugin instance name.",
 										},
 										"parent_ref":            datasourceresourcelink.ToDataSourceSchemaSingleNestedAttributeCustomDescription("The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)"),
-										"plugin_descriptor_ref": datasourceresourcelink.ToDataSourceSchemaSingleNestedAttributeCustomDescription("Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override."),
+										"plugin_descriptor_ref": datasourceresourcelink.ToDataSourceSchemaSingleNestedAttributeCustomDescription("Reference to the plugin descriptor for this instance."),
 									},
 									Computed: true,
 									Optional: false,
