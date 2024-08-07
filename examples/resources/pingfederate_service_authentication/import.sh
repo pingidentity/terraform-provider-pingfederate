@@ -1,0 +1,1 @@
+terraform import pingfederate_service_authentication.serviceAuthentication id
