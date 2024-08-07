@@ -72,13 +72,13 @@ func (r *oauthAccessTokenManagerDataSource) Schema(ctx context.Context, req data
 		Description: "Describes an OAuth access token manager plugin instance.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
-				Description: "The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
+				Description: "The plugin instance name.",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
 			},
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
-				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
+				Description: "Reference to the plugin descriptor for this instance.",
 				Required:    false,
 				Optional:    false,
 				Computed:    true,
@@ -232,7 +232,7 @@ func (r *oauthAccessTokenManagerDataSource) Schema(ctx context.Context, req data
 	id.ToDataSourceSchemaCustomId(&schemaDef,
 		"manager_id",
 		true,
-		"The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.")
+		"The ID of the plugin instance.")
 	resp.Schema = schemaDef
 }
 

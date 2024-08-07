@@ -41,8 +41,8 @@ Read-Only:
 
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--custom_data_store--configuration))
 - `name` (String) The plugin instance name.
-- `parent_ref` (Attributes) The reference to this plugin's parent instance. Supported prior to PingFederate 12.0. (see [below for nested schema](#nestedatt--custom_data_store--parent_ref))
-- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created..) (see [below for nested schema](#nestedatt--custom_data_store--plugin_descriptor_ref))
+- `parent_ref` (Attributes) The reference to this plugin's parent instance. Supported prior to PingFederate `12.0`. (see [below for nested schema](#nestedatt--custom_data_store--parent_ref))
+- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. (see [below for nested schema](#nestedatt--custom_data_store--plugin_descriptor_ref))
 - `type` (String) The data store type.
 
 <a id="nestedatt--custom_data_store--configuration"></a>
@@ -116,8 +116,8 @@ Read-Only:
 
 - `allow_multi_value_attributes` (Boolean) Indicates that this data store can select more than one record from a column and return the results as a multi-value attribute.
 - `blocking_timeout` (Number) The amount of time in milliseconds a request waits to get a connection from the connection pool before it fails.
-- `connection_url` (String) The default location of the JDBC database. This field is required if no mapping for JDBC database location and tags is specified.
-- `connection_url_tags` (Attributes Set) The set of connection URLs and associated tags for this JDBC data store. This is required if 'connectionUrl' is not provided. (see [below for nested schema](#nestedatt--jdbc_data_store--connection_url_tags))
+- `connection_url` (String) The default location of the JDBC database.
+- `connection_url_tags` (Attributes Set) The set of connection URLs and associated tags for this JDBC data store. (see [below for nested schema](#nestedatt--jdbc_data_store--connection_url_tags))
 - `driver_class` (String) The name of the driver class used to communicate with the source database.
 - `encrypted_password` (String) The encrypted password needed to access the database.
 - `idle_timeout` (Number) The length of time in minutes the connection can be idle in the pool before it is closed.
@@ -135,7 +135,7 @@ Read-Only:
 
 - `connection_url` (String) The location of the JDBC database.
 - `default_source` (Boolean) Whether this is the default connection.
-- `tags` (String) Tags associated with the connection URL. At runtime, nodes will use the first JdbcTagConfig that has a tag that matches with node.tags in run.properties.
+- `tags` (String) Tags associated with the connection URL. At runtime, nodes will use the first `connection_url_tags` element that has a tag that matches with node.tags in the run.properties file.
 
 
 
@@ -149,14 +149,14 @@ Optional:
 Read-Only:
 
 - `binary_attributes` (Set of String) A list of LDAP attributes to be handled as binary data.
-- `bind_anonymously` (Boolean) Whether username and password are required. If true, no other authentication fields should be provided. The default value is false.
-- `client_tls_certificate_ref` (Attributes) The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS and no other authentication fields should be provided. See '/keyPairs/sslClient' to manage certificates. Supported in PF version 11.3 or later. (see [below for nested schema](#nestedatt--ldap_data_store--client_tls_certificate_ref))
+- `bind_anonymously` (Boolean) Whether username and password are required.
+- `client_tls_certificate_ref` (Attributes) The client TLS certificate used to access the data store. If specified, authentication to the data store will be done using mutual TLS. See '/keyPairs/sslClient' to manage certificates. Supported in PF version `11.3` or later. (see [below for nested schema](#nestedatt--ldap_data_store--client_tls_certificate_ref))
 - `connection_timeout` (Number) The maximum number of milliseconds that a connection attempt should be allowed to continue before returning an error.
 - `create_if_necessary` (Boolean) Indicates whether temporary connections can be created when the Maximum Connections threshold is reached.
 - `dns_ttl` (Number) The maximum time in milliseconds that DNS information are cached.
 - `encrypted_password` (String) The encrypted password credential required to access the data store.
 - `follow_ldap_referrals` (Boolean) Follow LDAP Referrals in the domain tree.
-- `hostnames` (Set of String) The default LDAP host names. Failover can be configured by providing multiple host names.
+- `hostnames` (List of String) The default LDAP host names. Failover can be configured by providing multiple host names.
 - `hostnames_tags` (Attributes Set) The set of host names and associated tags for this LDAP data store. (see [below for nested schema](#nestedatt--ldap_data_store--hostnames_tags))
 - `ldap_dns_srv_prefix` (String) The prefix value used to discover LDAP DNS SRV record.
 - `ldap_type` (String) A type that allows PingFederate to configure many provisioning settings automatically.
@@ -164,15 +164,15 @@ Read-Only:
 - `max_wait` (Number) The maximum number of milliseconds the pool waits for a connection to become available when trying to obtain a connection from the pool.
 - `min_connections` (Number) The smallest number of connections that can remain in each pool, without creating extra ones.
 - `read_timeout` (Number) The maximum number of milliseconds a connection waits for a response to be returned before producing an error.
-- `retry_failed_operations` (Boolean) Indicates whether failed operations should be retried. The default is false. Supported in PF version 11.3 or later.
+- `retry_failed_operations` (Boolean) Indicates whether failed operations should be retried. Supported in PF version `11.3` or later.
 - `test_on_borrow` (Boolean) Indicates whether objects are validated before being borrowed from the pool.
 - `test_on_return` (Boolean) Indicates whether objects are validated before being returned to the pool.
 - `time_between_evictions` (Number) The frequency, in milliseconds, that the evictor cleans up the connections in the pool.
 - `type` (String) The data store type.
 - `use_dns_srv_records` (Boolean) Use DNS SRV Records to discover LDAP server information.
 - `use_ssl` (Boolean) Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS).
-- `use_start_tls` (Boolean) Connects to the LDAP data store using secure StartTLS encryption. The default value is false.
-- `user_dn` (String) The username credential required to access the data store. If specified, no other authentication fields should be provided.
+- `use_start_tls` (Boolean) Connects to the LDAP data store using secure StartTLS encryption.
+- `user_dn` (String) The username credential required to access the data store.
 - `verify_host` (Boolean) Verifies that the presented server certificate includes the address to which the client intended to establish a connection.
 
 <a id="nestedatt--ldap_data_store--client_tls_certificate_ref"></a>
@@ -189,8 +189,8 @@ Read-Only:
 Read-Only:
 
 - `default_source` (Boolean) Whether this is the default connection.
-- `hostnames` (Set of String) The LDAP host names. Failover can be configured by providing multiple host names.
-- `tags` (String) Tags associated with the host names. At runtime, nodes will use the first LdapTagConfig that has a tag that matches with node.tags in run.properties.
+- `hostnames` (List of String) The LDAP host names. Failover can be configured by providing multiple host names.
+- `tags` (String) Tags associated with the host names. At runtime, nodes will use the first `hostname_tags` element that has a tag that matches with node.tags in the run.properties file.
 
 
 
@@ -207,7 +207,7 @@ Read-Only:
 - `ping_one_ldap_gateway_id` (String) The ID of the PingOne LDAP Gateway this data store uses.
 - `type` (String) The data store type.
 - `use_ssl` (Boolean) Connects to the LDAP data store using secure SSL/TLS encryption (LDAPS).
-- `use_start_tls` (Boolean) Connects to the LDAP data store using StartTLS. The default value is false. The value is validated against the LDAP gateway configuration in PingOne unless the header 'X-BypassExternalValidation' is set to true.
+- `use_start_tls` (Boolean) Connects to the LDAP data store using StartTLS.
 
 <a id="nestedatt--ping_one_ldap_gateway_data_store--ping_one_connection_ref"></a>
 ### Nested Schema for `ping_one_ldap_gateway_data_store.ping_one_connection_ref`

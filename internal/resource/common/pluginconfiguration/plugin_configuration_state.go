@@ -15,7 +15,7 @@ var (
 	}
 
 	rowAttrTypes = map[string]attr.Type{
-		"fields":      types.ListType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
+		"fields":      types.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
 		"default_row": types.BoolType,
 	}
 
@@ -25,10 +25,10 @@ var (
 	}
 
 	configurationAttrTypes = map[string]attr.Type{
-		"fields":     types.ListType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
-		"fields_all": types.ListType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
-		"tables":     types.ListType{ElemType: types.ObjectType{AttrTypes: tableAttrTypes}},
-		"tables_all": types.ListType{ElemType: types.ObjectType{AttrTypes: tableAttrTypes}},
+		"fields":     types.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
+		"fields_all": types.SetType{ElemType: types.ObjectType{AttrTypes: fieldAttrTypes}},
+		"tables":     types.SetType{ElemType: types.ObjectType{AttrTypes: tableAttrTypes}},
+		"tables_all": types.SetType{ElemType: types.ObjectType{AttrTypes: tableAttrTypes}},
 	}
 )
 
@@ -37,7 +37,7 @@ func AttrTypes() map[string]attr.Type {
 }
 
 // Creates state values for fields. Returns one value that only includes values specified in the plan, and a second value that includes all fields values
-func ToFieldsListValue(fields []client.ConfigField, planFields *types.List, diags *diag.Diagnostics) (types.List, types.List) {
+func ToFieldsSetValue(fields []client.ConfigField, planFields *types.Set, diags *diag.Diagnostics) (types.Set, types.Set) {
 	plannedObjValues := []attr.Value{}
 	allObjValues := []attr.Value{}
 	planFieldsValues := map[string]*string{}
@@ -77,15 +77,15 @@ func ToFieldsListValue(fields []client.ConfigField, planFields *types.List, diag
 		allObjValues = append(allObjValues, objVal)
 	}
 
-	allListVal, newDiags := types.ListValue(types.ObjectType{
+	allSetVal, newDiags := types.SetValue(types.ObjectType{
 		AttrTypes: fieldAttrTypes,
 	}, allObjValues)
 	diags.Append(newDiags...)
-	plannedListVal, newDiags := types.ListValue(types.ObjectType{
+	plannedSetVal, newDiags := types.SetValue(types.ObjectType{
 		AttrTypes: fieldAttrTypes,
 	}, plannedObjValues)
 	diags.Append(newDiags...)
-	return plannedListVal, allListVal
+	return plannedSetVal, allSetVal
 }
 
 func ToRowsListValue(rows []client.ConfigRow, planRows *types.List, diags *diag.Diagnostics) types.List {
@@ -100,7 +100,7 @@ func ToRowsListValue(rows []client.ConfigRow, planRows *types.List, diags *diag.
 		for _, row := range rows {
 			attrValues := map[string]attr.Value{}
 			attrValues["default_row"] = types.BoolPointerValue(row.DefaultRow)
-			_, attrValues["fields"] = ToFieldsListValue(row.Fields, nil, diags)
+			_, attrValues["fields"] = ToFieldsSetValue(row.Fields, nil, diags)
 			rowObjVal, newDiags := types.ObjectValue(rowAttrTypes, attrValues)
 			diags.Append(newDiags...)
 			objValues = append(objValues, rowObjVal)
@@ -114,13 +114,13 @@ func ToRowsListValue(rows []client.ConfigRow, planRows *types.List, diags *diag.
 			attrValues := map[string]attr.Value{}
 			attrValues["default_row"] = types.BoolPointerValue(rows[i].DefaultRow)
 			planRow := planRowsElements[i].(types.Object)
-			var planRowFields *types.List
+			var planRowFields *types.Set
 			planRowFieldsVal, ok := planRow.Attributes()["fields"]
 			if ok {
-				listVal := planRowFieldsVal.(types.List)
-				planRowFields = &listVal
+				setVal := planRowFieldsVal.(types.Set)
+				planRowFields = &setVal
 			}
-			attrValues["fields"], _ = ToFieldsListValue(rows[i].Fields, planRowFields, diags)
+			attrValues["fields"], _ = ToFieldsSetValue(rows[i].Fields, planRowFields, diags)
 			rowObjVal, newDiags := types.ObjectValue(rowAttrTypes, attrValues)
 			diags.Append(newDiags...)
 			objValues = append(objValues, rowObjVal)
@@ -134,7 +134,7 @@ func ToRowsListValue(rows []client.ConfigRow, planRows *types.List, diags *diag.
 }
 
 // Creates state values for tables. Returns one value that only includes values specified in the plan, and a second value that includes all tables values
-func ToTablesListValue(tables []client.ConfigTable, planTables *types.List, diags *diag.Diagnostics) (types.List, types.List) {
+func ToTablesSetValue(tables []client.ConfigTable, planTables *types.Set, diags *diag.Diagnostics) (types.Set, types.Set) {
 	// List of *all* tables values to return
 	finalTablesAllObjValues := []attr.Value{}
 	// List of tables values to return that were expected based on the plan
@@ -180,11 +180,11 @@ func ToTablesListValue(tables []client.ConfigTable, planTables *types.List, diag
 			}
 		}
 	}
-	plannedTables, newDiags := types.ListValue(types.ObjectType{
+	plannedTables, newDiags := types.SetValue(types.ObjectType{
 		AttrTypes: tableAttrTypes,
 	}, finalTablesObjValues)
 	diags.Append(newDiags...)
-	allTables, newDiags := types.ListValue(types.ObjectType{
+	allTables, newDiags := types.SetValue(types.ObjectType{
 		AttrTypes: tableAttrTypes,
 	}, finalTablesAllObjValues)
 	diags.Append(newDiags...)
@@ -193,21 +193,21 @@ func ToTablesListValue(tables []client.ConfigTable, planTables *types.List, diag
 
 func ToState(configFromPlan types.Object, configuration *client.PluginConfiguration) (types.Object, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	var planFields, planTables *types.List
+	var planFields, planTables *types.Set
 
 	planFieldsValue, ok := configFromPlan.Attributes()["fields"]
 	if ok {
-		listVal := planFieldsValue.(types.List)
-		planFields = &listVal
+		setVal := planFieldsValue.(types.Set)
+		planFields = &setVal
 	}
 	planTablesValue, ok := configFromPlan.Attributes()["tables"]
 	if ok {
-		listVal := planTablesValue.(types.List)
-		planTables = &listVal
+		setVal := planTablesValue.(types.Set)
+		planTables = &setVal
 	}
 
-	fieldsAttrValue, fieldsAllAttrValue := ToFieldsListValue(configuration.Fields, planFields, &diags)
-	tablesAttrValue, tablesAllAttrValue := ToTablesListValue(configuration.Tables, planTables, &diags)
+	fieldsAttrValue, fieldsAllAttrValue := ToFieldsSetValue(configuration.Fields, planFields, &diags)
+	tablesAttrValue, tablesAllAttrValue := ToTablesSetValue(configuration.Tables, planTables, &diags)
 
 	configurationAttrValue := map[string]attr.Value{
 		"fields":     fieldsAttrValue,
@@ -229,13 +229,13 @@ func MarkComputedAttrsUnknownOnChange(planConfiguration, stateConfiguration type
 	planFields := planConfiguration.Attributes()["fields"]
 	stateFields := stateConfiguration.Attributes()["fields"]
 	if !planFields.Equal(stateFields) {
-		planConfigurationAttrs["fields_all"] = types.ListUnknown(types.ObjectType{AttrTypes: fieldAttrTypes})
+		planConfigurationAttrs["fields_all"] = types.SetUnknown(types.ObjectType{AttrTypes: fieldAttrTypes})
 	}
 
 	planTables := planConfiguration.Attributes()["tables"]
 	stateTables := stateConfiguration.Attributes()["tables"]
 	if !planTables.Equal(stateTables) {
-		planConfigurationAttrs["tables_all"] = types.ListUnknown(types.ObjectType{AttrTypes: tableAttrTypes})
+		planConfigurationAttrs["tables_all"] = types.SetUnknown(types.ObjectType{AttrTypes: tableAttrTypes})
 	}
 
 	return types.ObjectValue(configurationAttrTypes, planConfigurationAttrs)
@@ -247,7 +247,7 @@ func MarkComputedAttrsUnknown(planConfiguration types.Object) (types.Object, dia
 		return planConfiguration, nil
 	}
 	planConfigurationAttrs := planConfiguration.Attributes()
-	planConfigurationAttrs["fields_all"] = types.ListUnknown(types.ObjectType{AttrTypes: fieldAttrTypes})
-	planConfigurationAttrs["tables_all"] = types.ListUnknown(types.ObjectType{AttrTypes: tableAttrTypes})
+	planConfigurationAttrs["fields_all"] = types.SetUnknown(types.ObjectType{AttrTypes: fieldAttrTypes})
+	planConfigurationAttrs["tables_all"] = types.SetUnknown(types.ObjectType{AttrTypes: tableAttrTypes})
 	return types.ObjectValue(configurationAttrTypes, planConfigurationAttrs)
 }
