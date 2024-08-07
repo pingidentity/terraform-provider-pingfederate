@@ -262,7 +262,7 @@ func (r *serverSettingsWsTrustStsSettingsIssuerCertificateResource) Read(ctx con
 	responseData, httpResp, err := r.apiClient.ServerSettingsAPI.GetCert(config.AuthContext(ctx, r.providerConfig), data.CertificateId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the WS Trust issuer certificate", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "WS Trust Issuer Certificate", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the WS Trust issuer certificate", err, httpResp)
