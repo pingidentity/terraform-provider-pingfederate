@@ -1,0 +1,1 @@
+terraform import pingfederate_keypairs_oauth_openid_connect.keypairsOAuthOpenIDConnect id
