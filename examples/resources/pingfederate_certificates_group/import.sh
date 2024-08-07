@@ -1,0 +1,1 @@
+terraform import pingfederate_certificates_group.certGroup "MyGroup/mygroupid"
