@@ -1,14 +1,13 @@
-resource "pingfederate_extended_properties" "extendedPropertiesExample" {
+resource "pingfederate_extended_properties" "example" {
   items = [
     {
-      name         = "extended_attribute_1"
-      description  = "attribute_1_description"
-      multi_valued = false
+      name        = "Attribute 1"
+      description = "My single valued extended attribute"
     },
     {
-      name         = "extended_attribute_2"
-      description  = "attribute_2_description"
+      name         = "Attribute 2"
+      description  = "My multi-valued extended attribute"
       multi_valued = true
-    }
+    },
   ]
 }
