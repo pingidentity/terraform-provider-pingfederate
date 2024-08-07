@@ -371,7 +371,7 @@ func (r *identityStoreProvisionerResource) Read(ctx context.Context, req resourc
 	responseData, httpResp, err := r.apiClient.IdentityStoreProvisionersAPI.GetIdentityStoreProvisioner(config.AuthContext(ctx, r.providerConfig), data.ProvisionerId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the identityStoreProvisioner", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Identity Store Provisioner", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the identityStoreProvisioner", err, httpResp)
