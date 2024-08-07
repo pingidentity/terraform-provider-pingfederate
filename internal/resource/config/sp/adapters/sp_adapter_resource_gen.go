@@ -375,7 +375,7 @@ func (r *spAdapterResource) Read(ctx context.Context, req resource.ReadRequest, 
 	responseData, httpResp, err := r.apiClient.SpAdaptersAPI.GetSpAdapter(config.AuthContext(ctx, r.providerConfig), data.AdapterId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the spAdapter", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "SP Adapter", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the spAdapter", err, httpResp)
