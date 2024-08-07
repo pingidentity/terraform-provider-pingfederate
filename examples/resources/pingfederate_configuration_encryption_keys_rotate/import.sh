@@ -1,0 +1,1 @@
+terraform import pingfederate_configuration_encryption_keys_rotate.encryptionKeysRotate id
