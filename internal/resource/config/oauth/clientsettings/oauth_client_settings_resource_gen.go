@@ -1043,7 +1043,7 @@ func (r *oauthClientSettingsResource) Read(ctx context.Context, req resource.Rea
 	responseData, httpResp, err := r.apiClient.OauthClientSettingsAPI.GetOauthClientSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the oauthClientSettings", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OAuth Client Settings", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the oauthClientSettings", err, httpResp)
