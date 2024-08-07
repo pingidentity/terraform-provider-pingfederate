@@ -339,7 +339,7 @@ func (r *metadataUrlResource) Read(ctx context.Context, req resource.ReadRequest
 	responseData, httpResp, err := r.apiClient.MetadataUrlsAPI.GetMetadataUrl(config.AuthContext(ctx, r.providerConfig), data.UrlId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the metadataUrl", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Metadata URL", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the metadataUrl", err, httpResp)
