@@ -22,7 +22,8 @@ const ldapDataStoreId = "ldapDataStoreId"
 const dataStoreType = "LDAP"
 const ldapType = "PING_DIRECTORY"
 const verifyHost = false
-const hostnames = "pingdirectory:1389"
+const hostname1 = "pingdirectory.example.com"
+const hostname2 = "pingdirectory2.example.com"
 const userDn = "cn=userDN"
 const passwordVal = "password"
 
@@ -39,7 +40,7 @@ func initialLdapDataStore() *client.LdapDataStore {
 	initialLdapDataStore.BindAnonymously = pointers.Bool(false)
 	initialLdapDataStore.UserDN = pointers.String(userDn)
 	initialLdapDataStore.Password = pointers.String(passwordVal)
-	initialLdapDataStore.Hostnames = []string{hostnames}
+	initialLdapDataStore.Hostnames = []string{hostname1}
 	initialLdapDataStore.VerifyHost = pointers.Bool(verifyHost)
 	return initialLdapDataStore
 }
@@ -50,14 +51,14 @@ func updatedLdapDataStore() *client.LdapDataStore {
 	updatedLdapDataStore.Name = pointers.String("updatedLdapDataStoreName")
 	updatedLdapDataStore.Type = dataStoreType
 	updatedLdapDataStore.LdapType = ldapType
-	updatedLdapDataStore.BindAnonymously = pointers.Bool(true)
+	updatedLdapDataStore.BindAnonymously = pointers.Bool(false)
 	updatedLdapDataStore.UserDN = pointers.String(userDn)
 	updatedLdapDataStore.Password = pointers.String(passwordVal)
-	updatedLdapDataStore.Hostnames = []string{hostnames}
+	updatedLdapDataStore.Hostnames = []string{hostname1, hostname2}
 	updatedLdapDataStore.VerifyHost = pointers.Bool(verifyHost)
 	updatedLdapDataStore.MaskAttributeValues = pointers.Bool(true)
 	updatedLdapDataStore.UseSsl = pointers.Bool(false)
-	updatedLdapDataStore.UseDnsSrvRecords = pointers.Bool(true)
+	updatedLdapDataStore.UseDnsSrvRecords = pointers.Bool(false)
 	updatedLdapDataStore.TestOnBorrow = pointers.Bool(true)
 	updatedLdapDataStore.TestOnReturn = pointers.Bool(true)
 	updatedLdapDataStore.CreateIfNecessary = pointers.Bool(true)
@@ -69,8 +70,6 @@ func updatedLdapDataStore() *client.LdapDataStore {
 	updatedLdapDataStore.ConnectionTimeout = pointers.Int64(600)
 	updatedLdapDataStore.BinaryAttributes = []string{"updatedBinaryAttribute1", "updatedBinaryAttribute2"}
 	updatedLdapDataStore.DnsTtl = pointers.Int64(3000)
-	updatedLdapDataStore.LdapDnsSrvPrefix = pointers.String("_ldap._tcp")
-	updatedLdapDataStore.LdapsDnsSrvPrefix = pointers.String("_ldaps._tcp")
 	return updatedLdapDataStore
 }
 
@@ -98,6 +97,11 @@ func TestAccLdapDataStore(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckExpectedLdapDataStoreAttributes(initialResourceModel),
 					checkLdapPf121ComputedAttrs(resourceName),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "ldap_data_store.name", hostname1+" (cn=userDN)"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "ldap_data_store.hostnames_tags.#", "1"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "ldap_data_store.hostnames_tags.0.hostnames.0", hostname1),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "ldap_data_store.hostnames_tags.0.default_source", "true"),
+					resource.TestCheckNoResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "ldap_data_store.hostnames_tags.0.tags"),
 				),
 			},
 			{
@@ -120,6 +124,11 @@ func TestAccLdapDataStore(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckExpectedLdapDataStoreAttributes(initialResourceModel),
 					checkLdapPf121ComputedAttrs(resourceName),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "ldap_data_store.name", hostname1+" (cn=userDN)"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "ldap_data_store.hostnames_tags.#", "1"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "ldap_data_store.hostnames_tags.0.hostnames.0", hostname1),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "ldap_data_store.hostnames_tags.0.default_source", "true"),
+					resource.TestCheckNoResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "ldap_data_store.hostnames_tags.0.tags"),
 				),
 			},
 			{
@@ -174,6 +183,34 @@ func hcl(lds *client.LdapDataStore, includeOptionalFields bool) string {
 			use_start_tls = true
 			`
 		}
+		var tagsHcl string
+		if includeOptionalFields {
+			tagsHcl = fmt.Sprintf(`
+			hostnames_tags = [
+        {
+            hostnames = [
+                "%s",
+				"%s"
+            ]
+            default_source = true
+        },
+        {
+            hostnames = [
+                "pdeast1:1234"
+            ]
+            default_source = false
+            tags = "us-east-1"
+        },
+        {
+            hostnames = [
+                "pdeast2:5678"
+            ]
+            tags = "us-east-2"
+        }
+        ]
+			
+			`, lds.Hostnames[0], lds.Hostnames[1])
+		}
 
 		top := `
 		data_store_id             = "%[1]s"
@@ -209,6 +246,7 @@ func hcl(lds *client.LdapDataStore, includeOptionalFields bool) string {
 			%[21]s
 			%[22]s
 			%[23]s
+			%[24]s
 		}
 		`
 		hostnames := func() string {
@@ -248,7 +286,8 @@ func hcl(lds *client.LdapDataStore, includeOptionalFields bool) string {
 			acctest.TfKeyValuePairToString("dns_ttl", strconv.FormatInt(lds.GetDnsTtl(), 10), false),
 			acctest.TfKeyValuePairToString("ldap_dns_srv_prefix", lds.GetLdapDnsSrvPrefix(), true),
 			acctest.TfKeyValuePairToString("ldaps_dns_srv_prefix", lds.GetLdapsDnsSrvPrefix(), true),
-			versionedHcl),
+			versionedHcl,
+			tagsHcl),
 		)
 	}
 	return builder.String()

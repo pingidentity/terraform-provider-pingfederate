@@ -342,7 +342,7 @@ func (r *keyPairsSigningImportResource) Read(ctx context.Context, req resource.R
 	apiReadKeyPairsSigningImport, httpResp, err := r.apiClient.KeyPairsSigningAPI.GetSigningKeyPair(config.AuthContext(ctx, r.providerConfig), state.ImportId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the key pair signing import resource", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Signing Key Pair", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the key pair signing import resource", err, httpResp)

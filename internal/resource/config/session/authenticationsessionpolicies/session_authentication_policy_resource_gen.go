@@ -151,7 +151,6 @@ func (r *sessionAuthenticationPolicyResource) Schema(ctx context.Context, req re
 			"user_device_type": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Default:     stringdefault.StaticString("PRIVATE"),
 				Description: "Determines the type of user device that the authentication session can be created on. Options are `PRIVATE`, `SHARED`, `ANY`. If empty, the value will default to `PRIVATE`.",
 				Validators: []validator.String{
 					stringvalidator.OneOf(
@@ -184,6 +183,14 @@ func (r *sessionAuthenticationPolicyResource) ModifyPlan(ctx context.Context, re
 			version.AddUnsupportedAttributeError("user_device_type",
 				r.providerConfig.ProductVersion, version.PingFederate1200, &resp.Diagnostics)
 		}
+	}
+	if plan.UserDeviceType.IsUnknown() {
+		if pfVersionAtLeast1200 {
+			plan.UserDeviceType = types.StringValue("PRIVATE")
+		} else {
+			plan.UserDeviceType = types.StringNull()
+		}
+		resp.Plan.Set(ctx, plan)
 	}
 }
 
@@ -299,7 +306,7 @@ func (r *sessionAuthenticationPolicyResource) Read(ctx context.Context, req reso
 	responseData, httpResp, err := r.apiClient.SessionAPI.GetSourcePolicy(config.AuthContext(ctx, r.providerConfig), data.PolicyId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the sessionAuthenticationPolicy", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Session Authentication Policy", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the sessionAuthenticationPolicy", err, httpResp)

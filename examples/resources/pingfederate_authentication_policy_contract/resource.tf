@@ -1,6 +1,8 @@
-resource "pingfederate_authentication_policy_contract" "authenticationPolicyContractExample" {
-  contract_id         = "authenticationPolicyContract"
-  core_attributes     = [{ name = "subject" }]
-  extended_attributes = [{ name = "extended_attribute" }, { name = "extended_attribute2" }]
-  name                = "example"
+resource "pingfederate_authentication_policy_contract" "example" {
+  name = "User"
+  extended_attributes = [
+    { name = "email" },
+    { name = "given_name" },
+    { name = "family_name" }
+  ]
 }
