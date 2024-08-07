@@ -187,7 +187,7 @@ func (r *spAuthenticationPolicyContractMappingResource) Read(ctx context.Context
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the SP Authentication Policy Contract Mapping Resource", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "SP Authentication Policy Contract Mapping", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the SP Authentication Policy Contract Mapping Resource", err, httpResp)
