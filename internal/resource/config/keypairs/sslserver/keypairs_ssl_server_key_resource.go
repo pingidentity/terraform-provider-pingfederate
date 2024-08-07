@@ -576,7 +576,7 @@ func (r *keypairsSslServerKeyResource) Read(ctx context.Context, req resource.Re
 	responseData, httpResp, err := r.apiClient.KeyPairsSslServerAPI.GetSslServerKeyPair(config.AuthContext(ctx, r.providerConfig), data.KeyId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the key pair", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "SSL Server Key Pair", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the key pair", err, httpResp)
