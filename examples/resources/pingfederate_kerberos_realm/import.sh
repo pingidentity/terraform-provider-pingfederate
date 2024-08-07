@@ -1,2 +1,1 @@
-# "realmId" should be the id of the Kerberos Realm to be imported
-terraform import pingfederate_kerberos_realm.kerberosRealm realmId
+terraform import pingfederate_kerberos_realm.kerberos_realm realm_id
