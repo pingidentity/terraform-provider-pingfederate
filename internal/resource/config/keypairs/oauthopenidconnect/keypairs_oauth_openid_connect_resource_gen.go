@@ -1099,7 +1099,7 @@ func (r *keypairsOauthOpenidConnectResource) Read(ctx context.Context, req resou
 	responseData, httpResp, err := r.apiClient.KeyPairsOauthOpenIdConnectAPI.GetOauthOidcKeysSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the keypairsOauthOpenidConnect", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OAuth OpenID Connect Keypairs", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the keypairsOauthOpenidConnect", err, httpResp)
