@@ -8,19 +8,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-var _ validator.String = &customIdReqValidator{}
+var _ validator.String = &pingFederateIdWithCharLimitValidator{}
 
-type customIdReqValidator struct{}
+type pingFederateIdWithCharLimitValidator struct{}
 
-func (v customIdReqValidator) Description(ctx context.Context) string {
+func (v pingFederateIdWithCharLimitValidator) Description(ctx context.Context) string {
 	return "Verifies custom_id contains more than 33 characters, contain no spaces, and be alphanumeric"
 }
 
-func (v customIdReqValidator) MarkdownDescription(ctx context.Context) string {
+func (v pingFederateIdWithCharLimitValidator) MarkdownDescription(ctx context.Context) string {
 	return v.Description(ctx)
 }
 
-func (v customIdReqValidator) ValidateString(ctx context.Context, req validator.StringRequest, resp *validator.StringResponse) {
+func (v pingFederateIdWithCharLimitValidator) ValidateString(ctx context.Context, req validator.StringRequest, resp *validator.StringResponse) {
 	// If the value is unknown or null, there is nothing to validate.
 	if req.ConfigValue.IsUnknown() || req.ConfigValue.IsNull() {
 		return
@@ -37,6 +37,6 @@ func (v customIdReqValidator) ValidateString(ctx context.Context, req validator.
 	}
 }
 
-func ValidChars() customIdReqValidator {
-	return customIdReqValidator{}
+func PingFederateIdWithCharLimit() pingFederateIdWithCharLimitValidator {
+	return pingFederateIdWithCharLimitValidator{}
 }
