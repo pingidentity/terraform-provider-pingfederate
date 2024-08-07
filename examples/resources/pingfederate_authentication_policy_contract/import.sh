@@ -1,2 +1,1 @@
-# "authenticationPolicyContractId" should be the id of the Authentication Policy Contract to be imported
-terraform import pingfederate_authentication_policy_contract.authenticationPolicyContract authenticationPolicyContractId
+terraform import pingfederate_authentication_policy_contract.authenticationPolicyContract contract_id
