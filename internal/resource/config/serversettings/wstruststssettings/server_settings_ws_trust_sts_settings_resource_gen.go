@@ -266,7 +266,7 @@ func (r *serverSettingsWsTrustStsSettingsResource) Read(ctx context.Context, req
 	responseData, httpResp, err := r.apiClient.ServerSettingsAPI.GetWsTrustStsSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the serverSettingsWsTrustStsSettings", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Server Settings WS-Trust STS Settings", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the serverSettingsWsTrustStsSettings", err, httpResp)
