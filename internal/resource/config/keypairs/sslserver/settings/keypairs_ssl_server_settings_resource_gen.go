@@ -246,7 +246,7 @@ func (r *keypairsSslServerSettingsResource) Read(ctx context.Context, req resour
 	responseData, httpResp, err := r.apiClient.KeyPairsSslServerAPI.GetSslServerSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the keypairsSslServerSettings", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "SSL Server Keypair Settings", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the keypairsSslServerSettings", err, httpResp)
