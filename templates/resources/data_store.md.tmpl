@@ -1,0 +1,40 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.RenderedProviderName}}"
+subcategory: ""
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage - LDAP data store
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-ldap-data-store.tf") }}
+
+## Example Usage - PingOne LDAP gateway data store
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-ping-one-ldap-gateway-data-store.tf") }}
+
+## Example Usage - JDBC data store
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-jdbc-data-store.tf") }}
+
+## Example Usage - PingOne data store
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-ping-one-data-store.tf") }}
+
+## Example Usage - Custom data store
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-custom-data-store.tf") }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the following syntax:
+
+~> "data-store-id" should be the id of the Data Store to be imported
+
+{{ codefile "shell" (printf "%s%s%s" "examples/resources/" .Name "/import.sh") }}
