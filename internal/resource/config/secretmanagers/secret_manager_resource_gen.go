@@ -239,7 +239,7 @@ func (r *secretManagerResource) Read(ctx context.Context, req resource.ReadReque
 	responseData, httpResp, err := r.apiClient.SecretManagersAPI.GetSecretManager(config.AuthContext(ctx, r.providerConfig), data.ManagerId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the secretManager", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Secret Manager", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the secretManager", err, httpResp)
