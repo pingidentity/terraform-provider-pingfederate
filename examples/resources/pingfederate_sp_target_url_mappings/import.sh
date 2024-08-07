@@ -1,0 +1,1 @@
+terraform import pingfederate_sp_target_url_mappings.spTargetUrlMappings id

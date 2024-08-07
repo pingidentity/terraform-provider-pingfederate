@@ -4,15 +4,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 func ToSchema() schema.SingleNestedAttribute {
-	fieldsListDefault, _ := types.ListValue(types.ObjectType{AttrTypes: fieldAttrTypes}, nil)
-	tablesListDefault, _ := types.ListValue(types.ObjectType{AttrTypes: tableAttrTypes}, nil)
+	fieldsSetDefault, _ := types.SetValue(types.ObjectType{AttrTypes: fieldAttrTypes}, nil)
+	tablesSetDefault, _ := types.SetValue(types.ObjectType{AttrTypes: tableAttrTypes}, nil)
 	fieldsNestedObject := schema.NestedAttributeObject{
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
@@ -36,7 +36,7 @@ func ToSchema() schema.SingleNestedAttribute {
 				Optional:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"fields": schema.ListNestedAttribute{
+						"fields": schema.SetNestedAttribute{
 							Description: "The configuration fields in the row.",
 							Optional:    true,
 							NestedObject: schema.NestedAttributeObject{
@@ -70,36 +70,36 @@ func ToSchema() schema.SingleNestedAttribute {
 		Description: "Plugin instance configuration.",
 		Required:    true,
 		Attributes: map[string]schema.Attribute{
-			"tables": schema.ListNestedAttribute{
+			"tables": schema.SetNestedAttribute{
 				Description:  "List of configuration tables.",
 				Computed:     true,
 				Optional:     true,
-				Default:      listdefault.StaticValue(tablesListDefault),
+				Default:      setdefault.StaticValue(tablesSetDefault),
 				NestedObject: tablesNestedObject,
 			},
-			"tables_all": schema.ListNestedAttribute{
+			"tables_all": schema.SetNestedAttribute{
 				Description:  "List of configuration tables. This attribute will include any values set by default by PingFederate.",
 				Computed:     true,
 				Optional:     false,
 				NestedObject: tablesNestedObject,
-				PlanModifiers: []planmodifier.List{
-					listplanmodifier.UseStateForUnknown(),
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"fields": schema.ListNestedAttribute{
+			"fields": schema.SetNestedAttribute{
 				Description:  "List of configuration fields.",
 				Computed:     true,
 				Optional:     true,
-				Default:      listdefault.StaticValue(fieldsListDefault),
+				Default:      setdefault.StaticValue(fieldsSetDefault),
 				NestedObject: fieldsNestedObject,
 			},
-			"fields_all": schema.ListNestedAttribute{
+			"fields_all": schema.SetNestedAttribute{
 				Description:  "List of configuration fields. This attribute will include any values set by default by PingFederate.",
 				Computed:     true,
 				Optional:     false,
 				NestedObject: fieldsNestedObject,
-				PlanModifiers: []planmodifier.List{
-					listplanmodifier.UseStateForUnknown(),
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
 				},
 			},
 		},
