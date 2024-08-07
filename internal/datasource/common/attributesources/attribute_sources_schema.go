@@ -36,7 +36,7 @@ func CustomAttributeSourceDataSourceSchemaAttributes() map[string]schema.Attribu
 		Computed:    true,
 		Description: "The data store type of this attribute source.",
 	}
-	customAttributeSourceDataSourceSchema["filter_fields"] = schema.ListNestedAttribute{
+	customAttributeSourceDataSourceSchema["filter_fields"] = schema.SetNestedAttribute{
 		Description: "The list of fields that can be used to filter a request to the custom data store.",
 		Optional:    false,
 		Computed:    true,
@@ -111,7 +111,7 @@ func LdapAttributeSourceDataSourceSchemaAttributes() map[string]schema.Attribute
 		Optional:    false,
 		Computed:    true,
 	}
-	ldapAttributeSourceDataSourceSchema["search_attributes"] = schema.ListAttribute{
+	ldapAttributeSourceDataSourceSchema["search_attributes"] = schema.SetAttribute{
 		Description: "A list of LDAP attributes returned from search and available for mapping.",
 		Optional:    true,
 		ElementType: types.StringType,
@@ -138,8 +138,8 @@ func LdapAttributeSourceDataSourceSchemaAttributes() map[string]schema.Attribute
 	return ldapAttributeSourceDataSourceSchema
 }
 
-func ToDataSourceSchema() schema.ListNestedAttribute {
-	return schema.ListNestedAttribute{
+func ToDataSourceSchema() schema.SetNestedAttribute {
+	return schema.SetNestedAttribute{
 		Optional: false,
 		Computed: true,
 		NestedObject: schema.NestedAttributeObject{

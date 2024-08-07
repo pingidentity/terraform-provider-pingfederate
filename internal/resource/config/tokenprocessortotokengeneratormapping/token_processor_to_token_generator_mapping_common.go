@@ -12,7 +12,7 @@ import (
 )
 
 type tokenProcessorToTokenGeneratorMappingModel struct {
-	AttributeSources                 types.List   `tfsdk:"attribute_sources"`
+	AttributeSources                 types.Set    `tfsdk:"attribute_sources"`
 	AttributeContractFulfillment     types.Map    `tfsdk:"attribute_contract_fulfillment"`
 	IssuanceCriteria                 types.Object `tfsdk:"issuance_criteria"`
 	SourceId                         types.String `tfsdk:"source_id"`

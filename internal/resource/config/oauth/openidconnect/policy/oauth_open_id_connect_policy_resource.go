@@ -301,7 +301,7 @@ func getRequiredOauthOpenIDConnectPolicyFields(plan oauthOpenIdConnectPolicyMode
 		return nil, nil, nil
 	}
 
-	attributeSourcesAttr := planAttrs["attribute_sources"].(types.List)
+	attributeSourcesAttr := planAttrs["attribute_sources"].(types.Set)
 	attributeMapping.AttributeSources = []client.AttributeSourceAggregation{}
 	attributeMapping.AttributeSources, err = attributesources.ClientStruct(attributeSourcesAttr)
 	if err != nil {
@@ -361,7 +361,7 @@ func (r *oauthOpenIdConnectPolicyResource) Read(ctx context.Context, req resourc
 	apiReadOIDCPolicy, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.GetOIDCPolicy(config.AuthContext(ctx, r.providerConfig), state.PolicyId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an OIDC Policy", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OIDC Policy", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OIDC Policy", err, httpResp)
