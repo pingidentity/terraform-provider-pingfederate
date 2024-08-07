@@ -91,8 +91,8 @@ func ReportHttpError(ctx context.Context, diagnostics *diag.Diagnostics, errorSu
 		body, internalError := io.ReadAll(httpResp.Body)
 		if internalError == nil {
 			tflog.Debug(ctx, "Error HTTP response body: "+string(body))
-			var paError pingFederateError
-			internalError = json.Unmarshal(body, &paError)
+			var pfError pingFederateError
+			internalError = json.Unmarshal(body, &pfError)
 			if internalError == nil {
 				diagnostics.AddError(errorSummary, err.Error()+" - Detail: "+string(body))
 				httpErrorPrinted = true
