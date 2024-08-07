@@ -517,7 +517,7 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) Read(ctx context.Context, r
 	responseData, httpResp, err := r.apiClient.OauthCibaServerPolicyAPI.GetCibaServerPolicyById(config.AuthContext(ctx, r.providerConfig), data.PolicyId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the oauthCibaServerPolicyRequestPolicy", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OAuth Ciba Server Policy Request Policy", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the oauthCibaServerPolicyRequestPolicy", err, httpResp)
