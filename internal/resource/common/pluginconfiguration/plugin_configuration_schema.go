@@ -22,6 +22,7 @@ func ToSchema() schema.SingleNestedAttribute {
 			"value": schema.StringAttribute{
 				Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
 				Required:    true,
+				Sensitive:   true,
 			},
 		},
 	}
@@ -48,6 +49,7 @@ func ToSchema() schema.SingleNestedAttribute {
 									"value": schema.StringAttribute{
 										Description: "The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.",
 										Required:    true,
+										Sensitive:   true,
 									},
 								},
 							},
