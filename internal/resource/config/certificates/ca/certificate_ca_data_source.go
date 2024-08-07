@@ -1,4 +1,4 @@
-package certificateca
+package certificatesca
 
 import (
 	"context"
