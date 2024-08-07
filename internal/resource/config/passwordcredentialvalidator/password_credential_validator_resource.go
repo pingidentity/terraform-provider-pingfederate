@@ -48,11 +48,11 @@ func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req re
 		Description: "Manages a password credential validator plugin instance.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
-				Description: "The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
+				Description: "The plugin instance name. The name can be modified once the instance is created.",
 				Required:    true,
 			},
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
-				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
+				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created.",
 				Required:    true,
 				Attributes:  resourcelink.ToSchema(),
 			},
@@ -114,7 +114,7 @@ func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req re
 		"validator_id",
 		true,
 		true,
-		"The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.")
+		"The ID of the plugin instance. The ID cannot be modified once the instance is created.")
 	resp.Schema = schema
 }
 
@@ -144,7 +144,7 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 	var isRadiusServerTableFound bool
 	if pluginDescriptorRefId == "org.sourceid.saml20.domain.RadiusUsernamePasswordCredentialValidator" || pluginDescriptorRefId == "org.sourceid.saml20.domain.SimpleUsernamePasswordCredentialValidator" {
 		if configuration["tables"] != nil {
-			tables := configuration["tables"].(types.List).Elements()
+			tables := configuration["tables"].(types.Set).Elements()
 			for _, table := range tables {
 				tableAttrs := table.(types.Object).Attributes()
 				tableName := tableAttrs["name"].(types.String).ValueString()
@@ -153,7 +153,7 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 					tableRow := tableAttrs["rows"].(types.List).Elements()
 					for tableRowIndex, row := range tableRow {
 						rowAttrs := row.(types.Object).Attributes()
-						fields := rowAttrs["fields"].(types.List).Elements()
+						fields := rowAttrs["fields"].(types.Set).Elements()
 						usernameFound := false
 						passwordFound := false
 						confirmPasswordFound := false
@@ -193,7 +193,7 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 
 	fieldNameMap := map[string]bool{}
 	if configuration["fields"] != nil {
-		fields := configuration["fields"].(types.List).Elements()
+		fields := configuration["fields"].(types.Set).Elements()
 		for _, field := range fields {
 			field := field.(types.Object).Attributes()
 			fieldName := field["name"].(types.String).ValueString()
@@ -341,7 +341,7 @@ func (r *passwordCredentialValidatorResource) Read(ctx context.Context, req reso
 	apiReadPasswordCredentialValidators, httpResp, err := r.apiClient.PasswordCredentialValidatorsAPI.GetPasswordCredentialValidator(config.AuthContext(ctx, r.providerConfig), state.ValidatorId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting a Password Credential Validator", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Password Credential Validator", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Password Credential Validator", err, httpResp)
