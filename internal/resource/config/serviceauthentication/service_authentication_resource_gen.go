@@ -331,7 +331,7 @@ func (r *serviceAuthenticationResource) Read(ctx context.Context, req resource.R
 	responseData, httpResp, err := r.apiClient.ServiceAuthenticationAPI.GetServiceAuthentication(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the serviceAuthentication", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Service Authentication", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the serviceAuthentication", err, httpResp)
