@@ -161,7 +161,7 @@ func (r *idpStsRequestParametersContractResource) Read(ctx context.Context, req 
 	responseData, httpResp, err := r.apiClient.IdpStsRequestParametersContractsAPI.GetStsRequestParamContractById(config.AuthContext(ctx, r.providerConfig), data.ContractId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the idpStsRequestParametersContract", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "IdP STS Request Parameters Contract", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the idpStsRequestParametersContract", err, httpResp)
