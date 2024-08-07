@@ -1,0 +1,1 @@
+terraform import pingfederate_secret_manager.secretManager secretManagerId
