@@ -337,7 +337,7 @@ func (r *authenticationPoliciesResource) Read(ctx context.Context, req resource.
 	policyResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.GetDefaultAuthenticationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the Authentication Policies", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Authentication Policies", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the Authentication Policies", err, httpResp)

@@ -1,0 +1,28 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.RenderedProviderName}}"
+subcategory: ""
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage - reCAPTCHA v2 Invisible
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-recaptchav2provider.tf") }}
+
+## Example Usage - PingOne Protect
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-ping-one-protect.tf") }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the following syntax:
+
+~> "myCaptchaProviderId" should be the id of the Captcha provider to be imported
+
+{{ codefile "shell" (printf "%s%s%s" "examples/resources/" .Name "/import.sh") }}
