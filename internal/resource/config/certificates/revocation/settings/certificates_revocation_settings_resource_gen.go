@@ -398,7 +398,7 @@ func (r *certificatesRevocationSettingsResource) Read(ctx context.Context, req r
 	responseData, httpResp, err := r.apiClient.CertificatesRevocationAPI.GetRevocationSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the certificatesRevocationSettings", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Certificates Revocation Settings", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the certificatesRevocationSettings", err, httpResp)
