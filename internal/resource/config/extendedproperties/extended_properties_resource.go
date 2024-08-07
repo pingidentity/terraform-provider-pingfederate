@@ -4,11 +4,14 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
@@ -45,7 +48,7 @@ type extendedPropertiesResource struct {
 
 type extendedPropertiesResourceModel struct {
 	Id    types.String `tfsdk:"id"`
-	Items types.List   `tfsdk:"items"`
+	Items types.Set    `tfsdk:"items"`
 }
 
 // GetSchema defines the schema for the resource.
@@ -53,28 +56,27 @@ func (r *extendedPropertiesResource) Schema(ctx context.Context, req resource.Sc
 	schema := schema.Schema{
 		Description: "Manages Extended Properties definitions",
 		Attributes: map[string]schema.Attribute{
-			"items": schema.ListNestedAttribute{
+			"items": schema.SetNestedAttribute{
 				Description: "A collection of Extended Properties definitions.",
 				Required:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
 							Description: "The property name.",
-							Required:    false,
-							Optional:    true,
-							Computed:    false,
+							Required:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 						"description": schema.StringAttribute{
 							Description: "The property description.",
-							Required:    false,
 							Optional:    true,
-							Computed:    false,
 						},
 						"multi_valued": schema.BoolAttribute{
-							Description: "Indicates whether the property should allow multiple values.",
-							Required:    false,
+							Description: "Indicates whether the property should allow multiple values. Default value is `false`.",
 							Optional:    true,
-							Computed:    false,
+							Computed:    true,
+							Default:     booldefault.StaticBool(false),
 						},
 					},
 				},
@@ -82,7 +84,7 @@ func (r *extendedPropertiesResource) Schema(ctx context.Context, req resource.Sc
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -127,7 +129,7 @@ func readExtendedPropertiesResponse(ctx context.Context, r *client.ExtendedPrope
 
 	var diags diag.Diagnostics
 
-	state.Items, diags = types.ListValueFrom(ctx, extendedPropertyAttrType, r.GetItems())
+	state.Items, diags = types.SetValueFrom(ctx, extendedPropertyAttrType, r.GetItems())
 
 	// make sure all object type building appends diags
 	return diags
@@ -178,7 +180,7 @@ func (r *extendedPropertiesResource) Read(ctx context.Context, req resource.Read
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the extended properties", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Extended Properties", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the extended properties", err, httpResp)
