@@ -22,11 +22,13 @@ const userName = "sa"
 const password = "secretpass"
 const jdbcDataStoreType = "JDBC"
 const connectionUrl = "jdbc:hsqldb:$${pf.server.data.dir}$${/}hypersonic$${/}ProvisionerDefaultDB;hsqldb.lock_file=false"
+const connectionUrlUnescaped = "jdbc:hsqldb:${pf.server.data.dir}${/}hypersonic${/}ProvisionerDefaultDB;hsqldb.lock_file=false"
 
 // Attributes to test with. Add optional properties to test here if desired.
 type jdbcDataStoreResourceModel struct {
 	maskAttributeValues bool
 	jdbcDataStore       client.JdbcDataStore
+	addTags             bool
 }
 
 func initialJdbcDataStore() *client.JdbcDataStore {
@@ -34,7 +36,6 @@ func initialJdbcDataStore() *client.JdbcDataStore {
 	jdbcDataStore.UserName = pointers.String(userName)
 	jdbcDataStore.Password = pointers.String(password)
 	jdbcDataStore.ConnectionUrl = pointers.String(connectionUrl)
-	jdbcDataStore.Name = pointers.String("initialJdbcDataStore")
 	jdbcDataStore.AllowMultiValueAttributes = pointers.Bool(false)
 	jdbcDataStore.MinPoolSize = pointers.Int64(10)
 	jdbcDataStore.MaxPoolSize = pointers.Int64(100)
@@ -57,37 +58,62 @@ func updatedJdbcDataStore() *client.JdbcDataStore {
 	return jdbcDataStore
 }
 
-func hclJdbcDataStore(jdbcDataStore *client.JdbcDataStore) string {
+func hclJdbcDataStore(jdbcDataStore *client.JdbcDataStore, addTags bool) string {
 	var builder strings.Builder
 	if jdbcDataStore == nil {
 		return ""
 	}
+	var optionalHcl string
+	if addTags {
+		optionalHcl = fmt.Sprintf(`
+		connection_url_tags = [
+			{
+				connection_url = "%s"
+				default_source = true
+			},
+			{
+				connection_url = "secondurl.com"
+				tags = "us-east-1"
+			},
+			{
+			    connection_url = "thirdurl.com"
+				tags = "us-west-1"
+				default_source = false
+			}
+		]
+		`, *jdbcDataStore.ConnectionUrl)
+	}
+	if jdbcDataStore.Name != nil {
+		optionalHcl += fmt.Sprintf(`
+		name = "%s"
+		`, *jdbcDataStore.Name)
+	}
 	if jdbcDataStore != nil {
 		tf := `
 		jdbc_data_store = {
-			connection_url               = "%[1]s"
-			driver_class                 = "%[2]s"
-			user_name                    = "%[3]s"
-			password                     = "%[4]s"
-			allow_multi_value_attributes = %[5]t
-			name                         = "%[6]s"
-			min_pool_size    = %[7]d
-			max_pool_size    = %[8]d
-			blocking_timeout = %[9]d
-			idle_timeout     = %[10]d
+			connection_url               = "%s"
+			driver_class                 = "%s"
+			user_name                    = "%s"
+			password                     = "%s"
+			allow_multi_value_attributes = %t
+			min_pool_size    = %d
+			max_pool_size    = %d
+			blocking_timeout = %d
+			idle_timeout     = %d
+			%s
 		}
 	`
 		builder.WriteString(fmt.Sprintf(tf,
 			*jdbcDataStore.ConnectionUrl,
 			jdbcDataStore.DriverClass,
-			jdbcDataStore.UserName,
+			*jdbcDataStore.UserName,
 			*jdbcDataStore.Password,
 			*jdbcDataStore.AllowMultiValueAttributes,
-			*jdbcDataStore.Name,
 			*jdbcDataStore.MinPoolSize,
 			*jdbcDataStore.MaxPoolSize,
 			*jdbcDataStore.BlockingTimeout,
-			*jdbcDataStore.IdleTimeout),
+			*jdbcDataStore.IdleTimeout,
+			optionalHcl),
 		)
 	}
 	return builder.String()
@@ -98,11 +124,13 @@ func TestAccJdbcDataStore(t *testing.T) {
 	initialResourceModel := jdbcDataStoreResourceModel{
 		maskAttributeValues: false,
 		jdbcDataStore:       *initialJdbcDataStore(),
+		addTags:             false,
 	}
 
 	updatedResourceModel := jdbcDataStoreResourceModel{
 		maskAttributeValues: true,
 		jdbcDataStore:       *updatedJdbcDataStore(),
+		addTags:             true,
 	}
 
 	resource.Test(t, resource.TestCase{
@@ -115,7 +143,14 @@ func TestAccJdbcDataStore(t *testing.T) {
 			{
 				// Minimal model
 				Config: testAccJdbcDataStore(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedJdbcDataStoreAttributes(initialResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedJdbcDataStoreAttributes(initialResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "jdbc_data_store.name", connectionUrlUnescaped+" (sa)"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "jdbc_data_store.connection_url_tags.#", "1"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "jdbc_data_store.connection_url_tags.0.connection_url", connectionUrlUnescaped),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "jdbc_data_store.connection_url_tags.0.default_source", "true"),
+					resource.TestCheckNoResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "jdbc_data_store.connection_url_tags.0.tags"),
+				),
 			},
 			{
 				// Test updating some fields
@@ -134,7 +169,14 @@ func TestAccJdbcDataStore(t *testing.T) {
 			{
 				// Back to the initial minimal model
 				Config: testAccJdbcDataStore(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedJdbcDataStoreAttributes(initialResourceModel),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckExpectedJdbcDataStoreAttributes(initialResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "jdbc_data_store.name", connectionUrlUnescaped+" (sa)"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "jdbc_data_store.connection_url_tags.#", "1"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "jdbc_data_store.connection_url_tags.0.connection_url", connectionUrlUnescaped),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "jdbc_data_store.connection_url_tags.0.default_source", "true"),
+					resource.TestCheckNoResourceAttr(fmt.Sprintf("pingfederate_data_store.%s", resourceName), "jdbc_data_store.connection_url_tags.0.tags"),
+				),
 			},
 			{
 				PreConfig: func() {
@@ -169,7 +211,7 @@ data "pingfederate_data_store" "%[1]s" {
 }`, resourceName,
 		jdbcDataStoreId,
 		resourceModel.maskAttributeValues,
-		hclJdbcDataStore(&resourceModel.jdbcDataStore),
+		hclJdbcDataStore(&resourceModel.jdbcDataStore, resourceModel.addTags),
 	)
 }
 
@@ -186,9 +228,11 @@ func testAccCheckExpectedJdbcDataStoreAttributes(config jdbcDataStoreResourceMod
 		}
 
 		// Verify that attributes have expected values
-		err = acctest.TestAttributesMatchString(resourceType, pointers.String(jdbcDataStoreId), "name", *config.jdbcDataStore.Name, *resp.JdbcDataStore.Name)
-		if err != nil {
-			return err
+		if config.jdbcDataStore.Name != nil {
+			err = acctest.TestAttributesMatchString(resourceType, pointers.String(jdbcDataStoreId), "name", *config.jdbcDataStore.Name, *resp.JdbcDataStore.Name)
+			if err != nil {
+				return err
+			}
 		}
 
 		err = acctest.TestAttributesMatchBool(resourceType, pointers.String(jdbcDataStoreId), "allow_multi_value_attributes", *config.jdbcDataStore.AllowMultiValueAttributes, *resp.JdbcDataStore.AllowMultiValueAttributes)

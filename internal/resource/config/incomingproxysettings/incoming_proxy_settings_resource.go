@@ -95,7 +95,7 @@ func (r *incomingProxySettingsResource) Schema(ctx context.Context, req resource
 				Optional:    true,
 			},
 			"proxy_terminates_https_conns": schema.BoolAttribute{
-				Description: "Allows you to globally specify that connections to the reverse proxy are made over HTTPS even when HTTP is used between the reverse proxy and PingFederate.",
+				Description: "Allows you to globally specify that connections to the reverse proxy are made over HTTPS even when HTTP is used between the reverse proxy and PingFederate. Default value is `false`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
@@ -103,7 +103,7 @@ func (r *incomingProxySettingsResource) Schema(ctx context.Context, req resource
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -223,7 +223,7 @@ func (r *incomingProxySettingsResource) Read(ctx context.Context, req resource.R
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the incoming proxy settings", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Incoming Proxy Settings", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the incoming proxy settings", err, httpResp)

@@ -132,7 +132,7 @@ func (r *oauthTokenExchangeGeneratorSettingsResource) Read(ctx context.Context, 
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Token Exchange Generator Settings", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OAuth Token Exchange Generator Settings", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Token Exchange Generator Settings", err, httpResp)
