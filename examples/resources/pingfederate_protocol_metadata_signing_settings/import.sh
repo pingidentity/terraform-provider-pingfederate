@@ -1,0 +1,1 @@
+terraform import pingfederate_protocol_metadata_signing_settings.signingSettings id
