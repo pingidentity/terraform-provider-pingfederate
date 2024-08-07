@@ -883,7 +883,7 @@ func (r *oauthAuthServerSettingsResource) Read(ctx context.Context, req resource
 
 	if err != nil {
 		if httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Auth Server Settings", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OAuth Auth Server Settings", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Auth Server Settings", err, httpResp)

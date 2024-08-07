@@ -212,7 +212,7 @@ func (r *openIdConnectSettingsResource) Read(ctx context.Context, req resource.R
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the OpenID Connect settings", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OpenID Connect Settings", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OpenID Connect settings", err, httpResp)

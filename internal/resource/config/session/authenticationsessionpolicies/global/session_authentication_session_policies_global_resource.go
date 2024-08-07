@@ -174,7 +174,7 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Read(ctx context.Co
 	apiReadSessionAuthenticationSessionPoliciesGlobal, httpResp, err := r.apiClient.SessionAPI.GetGlobalPolicy(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while a Session Authentication Session Policies Global", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Session Authentication Session Policies Global", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Session Authentication Session Policies Global", err, httpResp)
