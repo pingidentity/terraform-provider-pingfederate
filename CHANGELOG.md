@@ -3,6 +3,7 @@
 * **New Resource:** `pingfederate_captcha_provider` ([#275]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/275)))
 * **New Resource:** `pingfederate_oauth_access_token_manager_settings` ([#274]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/274)))
 * **New Resource:** `pingfederate_notification_publisher` ([#284]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/284)))
+* **New Resource:** `pingfederate_connection_metadata_export` ([#276](https://github.com/pingidentity/terraform-provider-pingfederate/pull/276))
 
 ### Bug Fixes
 * Fixed inability to configure mutliple `hostnames_tags` in the `pingfederate_data_store` resource.
@@ -26,7 +27,7 @@
 
 # v0.12.0 June 27th, 2024
 ### BREAKING CHANGES
-* Removed deprecated `inherited` attribute from various resources and data sources. ([#268]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/268)))
+* Removed deprecated `inherited` attribute from various resources and data sources. ([#268](https://github.com/pingidentity/terraform-provider-pingfederate/pull/268))
 
 ### ENHANCEMENTS
 * Added support for PingFederate `12.1.0` and implemented new attributes for the new version. Added support for latest PF patch releases to `11.2`, `11.3`, and `12.0`. ([#268]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/268)))
@@ -41,11 +42,11 @@
 * `pingfederate_ping_one_connection` resource correctly requires `credential` value ([#233](https://github.com/pingidentity/terraform-provider-pingfederate/pull/233))
 
 ### Resources
-* **New Resource:** `pingfederate_authentication_policies ` ([#249](https://github.com/pingidentity/terraform-provider-pingfederate/pull/249))
+* **New Resource:** `pingfederate_authentication_policies` ([#249](https://github.com/pingidentity/terraform-provider-pingfederate/pull/249))
 
 # v0.10.0 April 11th, 2024
 ### Resources
-* **New Resource:** `pingfederate_ping_one_connection ` ([#231](https://github.com/pingidentity/terraform-provider-pingfederate/pull/231))
+* **New Resource:** `pingfederate_ping_one_connection` ([#231](https://github.com/pingidentity/terraform-provider-pingfederate/pull/231))
 
 # v0.9.0 March 29th, 2024
 ### FEATURES
