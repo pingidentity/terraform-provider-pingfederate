@@ -1,4 +1,15 @@
-# v0.13.0 (Unreleased)
+# v0.14.0 (Unreleased)
+### Resources
+* **New Resource:** `pingfederate_captcha_provider` ([#275]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/275)))
+* **New Resource:** `pingfederate_oauth_access_token_manager_settings` ([#274]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/274)))
+* **New Resource:** `pingfederate_notification_publisher` ([#284]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/284)))
+* **New Resource:** `pingfederate_connection_metadata_export` ([#276](https://github.com/pingidentity/terraform-provider-pingfederate/pull/276))
+
+### Bug Fixes
+* Fixed inability to configure mutliple `hostnames_tags` in the `pingfederate_data_store` resource.
+* Fixed config validation error when using variables for password and username in the `pingfederate_kerberos_realm` resource. 
+
+# v0.13.0 August 1, 2024
 ### Resources
 * **New Resource:** `pingfederate_keypairs_signing_key` ([#313]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/313)))
 * **New Resource:** `pingfederate_default_urls` ([#260]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/260)))
@@ -14,11 +25,11 @@
 * The `pingfederate_key_pair_signing_import` resource and corresponding data source have been deprecated. Use `pingfederate_keypairs_signing_key` instead. ([#313]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/313)))
 
 ### Enhancements
-* Improved examples, schema documentation, and attribute validation for `pingfederate_oauth_issuer`, `pingfederate_authentication_policy_contract`, `pingfederate_certificate_ca`, `pingfederate_extended_properties`.
+* Improved examples, schema documentation, and attribute validation for `pingfederate_oauth_issuer`, `pingfederate_authentication_policy_contract`, `pingfederate_certificate_ca`, `pingfederate_extended_properties`, `pingfederate_incoming_proxy_settings`.
 
 # v0.12.0 June 27th, 2024
 ### BREAKING CHANGES
-* Removed deprecated `inherited` attribute from various resources and data sources. ([#268]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/268)))
+* Removed deprecated `inherited` attribute from various resources and data sources. ([#268](https://github.com/pingidentity/terraform-provider-pingfederate/pull/268))
 
 ### ENHANCEMENTS
 * Added support for PingFederate `12.1.0` and implemented new attributes for the new version. Added support for latest PF patch releases to `11.2`, `11.3`, and `12.0`. ([#268]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/268)))
@@ -33,11 +44,11 @@
 * `pingfederate_ping_one_connection` resource correctly requires `credential` value ([#233](https://github.com/pingidentity/terraform-provider-pingfederate/pull/233))
 
 ### Resources
-* **New Resource:** `pingfederate_authentication_policies ` ([#249](https://github.com/pingidentity/terraform-provider-pingfederate/pull/249))
+* **New Resource:** `pingfederate_authentication_policies` ([#249](https://github.com/pingidentity/terraform-provider-pingfederate/pull/249))
 
 # v0.10.0 April 11th, 2024
 ### Resources
-* **New Resource:** `pingfederate_ping_one_connection ` ([#231](https://github.com/pingidentity/terraform-provider-pingfederate/pull/231))
+* **New Resource:** `pingfederate_ping_one_connection` ([#231](https://github.com/pingidentity/terraform-provider-pingfederate/pull/231))
 
 # v0.9.0 March 29th, 2024
 ### FEATURES

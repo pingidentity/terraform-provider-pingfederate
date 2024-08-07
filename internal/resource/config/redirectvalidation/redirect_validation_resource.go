@@ -366,7 +366,7 @@ func (r *redirectValidationResource) Read(ctx context.Context, req resource.Read
 	apiReadRedirectValidation, httpResp, err := r.apiClient.RedirectValidationAPI.GetRedirectValidationSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Redirect Validation", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Redirect Validation", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Redirect Validation", err, httpResp)

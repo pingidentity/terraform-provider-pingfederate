@@ -201,7 +201,7 @@ func (r *administrativeAccountsResource) Read(ctx context.Context, req resource.
 	apiReadAdministrativeAccount, httpResp, err := r.apiClient.AdministrativeAccountsAPI.GetAccount(config.AuthContext(ctx, r.providerConfig), state.Username.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Administrative Account", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Administrative Account", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Administrative Account", err, httpResp)

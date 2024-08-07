@@ -269,7 +269,7 @@ func (r *oauthAccessTokenMappingsResource) Read(ctx context.Context, req resourc
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Mapping", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OAuth Access Token Mapping", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Mapping", err, httpResp)

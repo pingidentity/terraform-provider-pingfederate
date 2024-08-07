@@ -255,9 +255,9 @@ resource "pingfederate_oauth_access_token_manager" "jwt_example" {
 
 - `attribute_contract` (Attributes) The list of attributes that will be added to an access token. (see [below for nested schema](#nestedatt--attribute_contract))
 - `configuration` (Attributes) Plugin instance configuration. (see [below for nested schema](#nestedatt--configuration))
-- `manager_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
-- `name` (String) The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.
-- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
+- `manager_id` (String) The ID of the plugin instance. The ID cannot be modified once the instance is created.
+- `name` (String) The plugin instance name. The name can be modified once the instance is created.
+- `plugin_descriptor_ref` (Attributes) Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. (see [below for nested schema](#nestedatt--plugin_descriptor_ref))
 
 ### Optional
 
@@ -313,13 +313,13 @@ Read-Only:
 
 Optional:
 
-- `fields` (Attributes List) List of configuration fields. (see [below for nested schema](#nestedatt--configuration--fields))
-- `tables` (Attributes List) List of configuration tables. (see [below for nested schema](#nestedatt--configuration--tables))
+- `fields` (Attributes Set) List of configuration fields. (see [below for nested schema](#nestedatt--configuration--fields))
+- `tables` (Attributes Set) List of configuration tables. (see [below for nested schema](#nestedatt--configuration--tables))
 
 Read-Only:
 
-- `fields_all` (Attributes List) List of configuration fields. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--configuration--fields_all))
-- `tables_all` (Attributes List) List of configuration tables. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--configuration--tables_all))
+- `fields_all` (Attributes Set) List of configuration fields. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--configuration--fields_all))
+- `tables_all` (Attributes Set) List of configuration tables. This attribute will include any values set by default by PingFederate. (see [below for nested schema](#nestedatt--configuration--tables_all))
 
 <a id="nestedatt--configuration--fields"></a>
 ### Nested Schema for `configuration.fields`
@@ -347,7 +347,7 @@ Optional:
 Optional:
 
 - `default_row` (Boolean) Whether this row is the default.
-- `fields` (Attributes List) The configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables--rows--fields))
+- `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables--rows--fields))
 
 <a id="nestedatt--configuration--tables--rows--fields"></a>
 ### Nested Schema for `configuration.tables.rows.fields`
@@ -386,7 +386,7 @@ Optional:
 Optional:
 
 - `default_row` (Boolean) Whether this row is the default.
-- `fields` (Attributes List) The configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables_all--rows--fields))
+- `fields` (Attributes Set) The configuration fields in the row. (see [below for nested schema](#nestedatt--configuration--tables_all--rows--fields))
 
 <a id="nestedatt--configuration--tables_all--rows--fields"></a>
 ### Nested Schema for `configuration.tables_all.rows.fields`

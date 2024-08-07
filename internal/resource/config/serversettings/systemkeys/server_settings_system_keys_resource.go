@@ -239,7 +239,7 @@ func (r *serverSettingsSystemKeysResource) Read(ctx context.Context, req resourc
 	apiReadServerSettingsSystemKeys, httpResp, err := r.apiClient.ServerSettingsAPI.GetSystemKeys(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings System Keys", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Server Settings System Keys", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Server Settings System Keys", err, httpResp)

@@ -56,11 +56,11 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Optional:    true,
 			},
 			"name": schema.StringAttribute{
-				Description: "The plugin instance name. The name can be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
+				Description: "The plugin instance name. The name can be modified once the instance is created.",
 				Required:    true,
 			},
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
-				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.",
+				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created.",
 				Required:    true,
 				Attributes:  resourcelink.ToSchema(),
 			},
@@ -197,7 +197,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 		"adapter_id",
 		true,
 		true,
-		"The ID of the plugin instance. The ID cannot be modified once the instance is created. Note: Ignored when specifying a connection's adapter override.")
+		"The ID of the plugin instance. The ID cannot be modified once the instance is created.")
 	resp.Schema = schema
 }
 
@@ -339,7 +339,7 @@ func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest,
 	apiReadIdpAdapter, httpResp, err := r.apiClient.IdpAdaptersAPI.GetIdpAdapter(config.AuthContext(ctx, r.providerConfig), state.AdapterId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an IdpAdapter", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "IdP Adapter", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an IdpAdapter", err, httpResp)

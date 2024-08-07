@@ -199,7 +199,7 @@ func (r *oauthIdpAdapterMappingResource) Read(ctx context.Context, req resource.
 	responseData, httpResp, err := r.apiClient.OauthIdpAdapterMappingsAPI.GetIdpAdapterMapping(config.AuthContext(ctx, r.providerConfig), data.MappingId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the oauthIdpAdapterMapping", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OAuth IdP Adapter Mapping", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the oauthIdpAdapterMapping", err, httpResp)

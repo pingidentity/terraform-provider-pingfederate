@@ -31,7 +31,9 @@ import (
 	authenticationpoliciessettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicies/settings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicycontract"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationselector"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/captchaproviders"
 	certificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificate/ca"
+	connectionmetadataexport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/connectionmetadata/export"
 	datastore "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/datastore"
 	extendedproperties "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/extendedproperties"
 	idpadapter "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/adapter"
@@ -47,8 +49,10 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/license"
 	licenseagreement "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/license/agreement"
 	localidentity "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/localidentity/identityprofile"
-	notificationpublishers "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/notificationpublishers/settings"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/notificationpublishers"
+	notificationpublisherssettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/notificationpublishers/settings"
 	oauthaccesstokenmanager "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/accesstokenmanager"
+	oauthaccesstokenmanagerssettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/accesstokenmanagers/settings"
 	oauthaccesstokenmapping "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/accesstokenmapping"
 	oauthauthenticationpolicycontractmappings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authenticationpolicycontractmappings"
 	oauthauthserversettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authserversettings"
@@ -721,7 +725,9 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		authenticationpoliciessettings.AuthenticationPoliciesSettingsResource,
 		authenticationpolicycontract.AuthenticationPolicyContractResource,
 		authenticationselector.AuthenticationSelectorsResource,
+		captchaproviders.CaptchaProviderResource,
 		certificate.CertificateCAResource,
+		connectionmetadataexport.ConnectionMetadataExportResource,
 		defaulturls.DefaultUrlsResource,
 		extendedproperties.ExtendedPropertiesResource,
 		idpadapter.IdpAdapterResource,
@@ -738,8 +744,10 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		license.LicenseResource,
 		licenseagreement.LicenseAgreementResource,
 		localidentity.LocalIdentityIdentityProfileResource,
-		notificationpublishers.NotificationPublishersSettingsResource,
+		notificationpublisherssettings.NotificationPublishersSettingsResource,
+		notificationpublishers.NotificationPublisherResource,
 		oauthaccesstokenmanager.OauthAccessTokenManagerResource,
+		oauthaccesstokenmanagerssettings.OauthAccessTokenManagerSettingsResource,
 		oauthaccesstokenmapping.OauthAccessTokenMappingsResource,
 		oauthauthenticationpolicycontractmappings.OauthAuthenticationPolicyContractMappingResource,
 		oauthauthserversettings.OauthAuthServerSettingsResource,

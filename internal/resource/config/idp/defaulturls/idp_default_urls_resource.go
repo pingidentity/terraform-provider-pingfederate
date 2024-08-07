@@ -136,7 +136,7 @@ func (r *idpDefaultUrlsResource) Read(ctx context.Context, req resource.ReadRequ
 	apiReadIdpDefaultUrls, httpResp, err := r.apiClient.IdpDefaultUrlsAPI.GetDefaultUrl(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting the IdP default URL settings", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "IdP default URL settings", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the IdP default URL settings", err, httpResp)
