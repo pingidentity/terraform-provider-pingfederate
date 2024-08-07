@@ -1,7 +1,9 @@
 package resourcelink
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
 func ToSchema() map[string]schema.Attribute {
@@ -9,6 +11,9 @@ func ToSchema() map[string]schema.Attribute {
 		"id": schema.StringAttribute{
 			Description: "The ID of the resource.",
 			Required:    true,
+			Validators: []validator.String{
+				stringvalidator.LengthAtLeast(1),
+			},
 		},
 	}
 }
