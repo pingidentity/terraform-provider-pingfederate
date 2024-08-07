@@ -374,7 +374,7 @@ func (r *idpTokenProcessorResource) Read(ctx context.Context, req resource.ReadR
 	responseData, httpResp, err := r.apiClient.IdpTokenProcessorsAPI.GetTokenProcessor(config.AuthContext(ctx, r.providerConfig), data.ProcessorId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the idpTokenProcessor", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "IdP Token Processor", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the idpTokenProcessor", err, httpResp)
