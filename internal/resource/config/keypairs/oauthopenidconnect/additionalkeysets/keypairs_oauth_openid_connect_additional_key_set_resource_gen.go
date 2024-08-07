@@ -717,7 +717,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Read(ctx context.Co
 	responseData, httpResp, err := r.apiClient.KeyPairsOauthOpenIdConnectAPI.GetKeySet(config.AuthContext(ctx, r.providerConfig), data.SetId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the keypairsOauthOpenidConnectAdditionalKeySet", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Additional Key Set", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the keypairsOauthOpenidConnectAdditionalKeySet", err, httpResp)
