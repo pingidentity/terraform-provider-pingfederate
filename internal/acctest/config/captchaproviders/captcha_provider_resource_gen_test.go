@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
 const captchaProviderProviderId = "captchaProviderProviderId"
@@ -132,7 +133,9 @@ resource "pingfederate_captcha_provider" "example" {
 
 // Maximal HCL with all values set where possible
 func captchaProvider_CompleteHCL() string {
-	return fmt.Sprintf(`
+	if acctest.VersionAtLeast(version.PingFederate1200) {
+		// The PingOneProtectProvider was added in PF version 12.0+
+		return fmt.Sprintf(`
 resource "pingfederate_captcha_provider" "example" {
   provider_id = "%s"
   name        = "%s"
@@ -154,6 +157,39 @@ resource "pingfederate_captcha_provider" "example" {
   }
 }
 `, captchaProviderProviderId, captchaProviderProviderId, testEnvConnId)
+	} else {
+		// For earlier versions use captcha v3
+		return fmt.Sprintf(`
+resource "pingfederate_captcha_provider" "example" {
+  provider_id = "%s"
+  name        = "%s"
+  configuration = {
+    tables = [],
+    fields = [
+      {
+        name : "Site Key"
+        value : "1234"
+      },
+      {
+        name : "Secret Key"
+        value : "1234"
+      },
+	  {
+	    name : "Pass Score Threshold"
+		value : "0.8" 
+	  },
+	  {
+	    name : "JavaScript File Name"
+		value : "recaptcha-v3.js" 
+	  }
+    ]
+  }
+  plugin_descriptor_ref = {
+    id = "com.pingidentity.captcha.recaptchaV3.ReCaptchaV3Plugin"
+  }
+}
+`, captchaProviderProviderId, captchaProviderProviderId)
+	}
 }
 
 // Validate any computed values when applying minimal HCL
@@ -171,30 +207,62 @@ func captchaProvider_CheckComputedValuesMinimal() resource.TestCheckFunc {
 
 // Validate any computed values when applying complete HCL
 func captchaProvider_CheckComputedValuesComplete() resource.TestCheckFunc {
-	return resource.ComposeTestCheckFunc(
-		resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.tables_all.#", "0"),
-		resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.fields_all.#", "12"),
-		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
-			map[string]string{
-				"value": "true",
-			},
-		),
-		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
-			map[string]string{
-				"value": "SHA-256",
-			},
-		),
-		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
-			map[string]string{
-				"value": "MEDIUM",
-			},
-		),
-		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
-			map[string]string{
-				"value": "50",
-			},
-		),
-	)
+	if acctest.VersionAtLeast(version.PingFederate1200) {
+		// The PingOneProtectProvider was added in PF version 12.0+
+		return resource.ComposeTestCheckFunc(
+			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.tables_all.#", "0"),
+			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.fields_all.#", "12"),
+			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
+				map[string]string{
+					"value": "true",
+				},
+			),
+			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
+				map[string]string{
+					"value": "SHA-256",
+				},
+			),
+			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
+				map[string]string{
+					"value": "MEDIUM",
+				},
+			),
+			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
+				map[string]string{
+					"value": "50",
+				},
+			),
+		)
+	} else {
+		// For earlier versions use captcha v3
+		return resource.ComposeTestCheckFunc(
+			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.tables_all.#", "0"),
+			resource.TestCheckResourceAttr("pingfederate_captcha_provider.example", "configuration.fields_all.#", "4"),
+			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
+				map[string]string{
+					"name":  "Site Key",
+					"value": "1234",
+				},
+			),
+			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
+				map[string]string{
+					"name": "Secret Key",
+				},
+			),
+			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
+				map[string]string{
+					"name":  "Pass Score Threshold",
+					"value": "0.8",
+				},
+			),
+			resource.TestCheckTypeSetElemNestedAttrs("pingfederate_captcha_provider.example", "configuration.fields_all.*",
+				map[string]string{
+					"name":  "JavaScript File Name",
+					"value": "recaptcha-v3.js",
+				},
+			),
+		)
+	}
 }
 
 // Delete the resource
