@@ -11,6 +11,7 @@
 
 # v0.13.0 August 1, 2024
 ### Resources
+* **New Resource:** `pingfederate_keypairs_signing_key` ([#313]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/313)))
 * **New Resource:** `pingfederate_default_urls` ([#260]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/260)))
 * **New Resource:** `pingfederate_sp_target_url_mappings` ([#273]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/273)))
 * **New Resource:** `pingfederate_keypairs_ssl_server_settings` ([#272]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/272)))
@@ -21,6 +22,7 @@
 
 ### Deprecated
 * The `pingfederate_idp_urls` resource has been deprecated. Use `pingfederate_default_urls` instead. `pingfederate_idp_urls` will be removed in a future release. ([#260]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/260)))
+* The `pingfederate_key_pair_signing_import` resource and corresponding data source have been deprecated. Use `pingfederate_keypairs_signing_key` instead. ([#313]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/313)))
 
 ### Enhancements
 * Improved examples, schema documentation, and attribute validation for `pingfederate_oauth_issuer`, `pingfederate_authentication_policy_contract`, `pingfederate_certificate_ca`, `pingfederate_extended_properties`, `pingfederate_incoming_proxy_settings`.
