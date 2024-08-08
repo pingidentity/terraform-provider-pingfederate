@@ -63,7 +63,7 @@ type oauthAuthServerSettingsModel struct {
 	AdminWebServicePcvRef                              types.Object `tfsdk:"admin_web_service_pcv_ref"`
 	AtmIdForOAuthGrantManagement                       types.String `tfsdk:"atm_id_for_oauth_grant_management"`
 	ScopeForOAuthGrantManagement                       types.String `tfsdk:"scope_for_oauth_grant_management"`
-	AllowedOrigins                                     types.List   `tfsdk:"allowed_origins"`
+	AllowedOrigins                                     types.Set    `tfsdk:"allowed_origins"`
 	UserAuthorizationUrl                               types.String `tfsdk:"user_authorization_url"`
 	BypassActivationCodeConfirmation                   types.Bool   `tfsdk:"bypass_activation_code_confirmation"`
 	EnableCookielessUserAuthorizationAuthenticationApi types.Bool   `tfsdk:"enable_cookieless_user_authorization_authentication_api"`
@@ -132,7 +132,7 @@ func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.Authoriz
 	diags.Append(respDiags...)
 	state.AtmIdForOAuthGrantManagement = types.StringPointerValue(r.AtmIdForOAuthGrantManagement)
 	state.ScopeForOAuthGrantManagement = types.StringPointerValue(r.ScopeForOAuthGrantManagement)
-	state.AllowedOrigins = internaltypes.GetStringList(r.AllowedOrigins)
+	state.AllowedOrigins = internaltypes.GetStringSet(r.AllowedOrigins)
 	state.UserAuthorizationUrl = types.StringPointerValue(r.UserAuthorizationUrl)
 	state.RegisteredAuthorizationPath = types.StringPointerValue(r.RegisteredAuthorizationPath)
 	state.PendingAuthorizationTimeout = types.Int64PointerValue(r.PendingAuthorizationTimeout)

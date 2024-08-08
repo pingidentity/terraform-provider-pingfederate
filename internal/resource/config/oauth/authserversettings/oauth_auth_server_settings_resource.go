@@ -14,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
@@ -49,7 +48,7 @@ var (
 		"scopes":      types.SetType{ElemType: types.StringType},
 	}}, nil)
 	persistentGrantReuseGrantTypesDefault, _ = types.SetValue(types.StringType, nil)
-	allowedOriginsDefault, _                 = types.ListValue(types.StringType, nil)
+	allowedOriginsDefault, _                 = types.SetValue(types.StringType, nil)
 	defaultCoreAttribute1, _                 = types.ObjectValue(attributeAttrTypes, map[string]attr.Value{
 		"name": types.StringValue("USER_KEY"),
 	})
@@ -106,14 +105,18 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 							Required:    true,
 							Validators: []validator.String{
 								configvalidators.NoWhitespace(),
+								stringvalidator.LengthAtLeast(1),
 							},
 						},
 						"description": schema.StringAttribute{
 							Description: "The description of the scope that appears when the user is prompted for authorization.",
 							Required:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 						"dynamic": schema.BoolAttribute{
-							Description: "True if the scope is dynamic. (Defaults to false)",
+							Description: "True if the scope is dynamic. The default is `false`.",
 							Computed:    true,
 							Optional:    true,
 							Default:     booldefault.StaticBool(false),
@@ -133,11 +136,15 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 							Required:    true,
 							Validators: []validator.String{
 								configvalidators.NoWhitespace(),
+								stringvalidator.LengthAtLeast(1),
 							},
 						},
 						"description": schema.StringAttribute{
 							Description: "The description of the scope group.",
 							Required:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 						"scopes": schema.SetAttribute{
 							Description: "The set of scopes for this scope group.",
@@ -159,14 +166,18 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 							Required:    true,
 							Validators: []validator.String{
 								configvalidators.NoWhitespace(),
+								stringvalidator.LengthAtLeast(1),
 							},
 						},
 						"description": schema.StringAttribute{
 							Description: "The description of the scope that appears when the user is prompted for authorization.",
 							Required:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 						"dynamic": schema.BoolAttribute{
-							Description: "True if the scope is dynamic. (Defaults to false)",
+							Description: "True if the scope is dynamic. The default is `false`.",
 							Computed:    true,
 							Optional:    true,
 							Default:     booldefault.StaticBool(false),
@@ -186,11 +197,15 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 							Required:    true,
 							Validators: []validator.String{
 								configvalidators.NoWhitespace(),
+								stringvalidator.LengthAtLeast(1),
 							},
 						},
 						"description": schema.StringAttribute{
 							Description: "The description of the scope group.",
 							Required:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 						"scopes": schema.SetAttribute{
 							Description: "The set of scopes for this scope group.",
@@ -209,19 +224,19 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Required:    true,
 			},
 			"disallow_plain_pkce": schema.BoolAttribute{
-				Description: "Determines whether PKCE's 'plain' code challenge method will be disallowed. The default value is false.",
+				Description: "Determines whether PKCE's 'plain' code challenge method will be disallowed. The default value is `false`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"include_issuer_in_authorization_response": schema.BoolAttribute{
-				Description: "Determines whether the authorization server's issuer value is added to the authorization response or not. The default value is false.",
+				Description: "Determines whether the authorization server's issuer value is added to the authorization response or not. The default value is `false`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"track_user_sessions_for_logout": schema.BoolAttribute{
-				Description: "Determines whether user sessions are tracked for logout. If this property is not provided on a PUT, the setting is left unchanged.",
+				Description: "Determines whether user sessions are tracked for logout. The default value is `false`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
@@ -233,23 +248,23 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Default:     stringdefault.StaticString(""),
 			},
 			"require_offline_access_scope_to_issue_refresh_tokens": schema.BoolAttribute{
-				Description: "Determines whether offline_access scope is required to issue refresh tokens or not. The default value is false.",
+				Description: "Determines whether offline_access scope is required to issue refresh tokens or not. The default value is `false`. Supported in PF version `12.1` or later.",
 				Computed:    true,
 				Optional:    true,
 			},
 			"offline_access_require_consent_prompt": schema.BoolAttribute{
-				Description: "Determines whether offline_access requires the prompt parameter value be 'consent' or not. The value will be reset to default if the 'requireOfflineAccessScopeToIssueRefreshTokens' attribute is set to false. The default value is false.",
+				Description: "Determines whether offline_access requires the prompt parameter value be 'consent' or not. The value will be reset to default if the `require_offline_access_scope_to_issue_refresh_tokens` attribute is set to `false`. The default value is `false`. Supported in PF version `12.1` or later.",
 				Computed:    true,
 				Optional:    true,
 			},
 			"persistent_grant_lifetime": schema.Int64Attribute{
-				Description: "The persistent grant lifetime. The default value is indefinite. -1 indicates an indefinite amount of time.",
+				Description: "The persistent grant lifetime. The default value is `-1`, which indicates an indefinite amount of time.",
 				Computed:    true,
 				Optional:    true,
 				Default:     int64default.StaticInt64(-1),
 			},
 			"persistent_grant_lifetime_unit": schema.StringAttribute{
-				Description: "The persistent grant lifetime unit.",
+				Description: "The persistent grant lifetime unit. Supported values are `MINUTES`, `DAYS`, and `HOURS`. The default value is `DAYS`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     stringdefault.StaticString("DAYS"),
@@ -258,13 +273,13 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				},
 			},
 			"persistent_grant_idle_timeout": schema.Int64Attribute{
-				Description: "The persistent grant idle timeout. The default value is 30 (days). -1 indicates an indefinite amount of time.",
+				Description: "The persistent grant idle timeout. The default value is `30` (days). `-1` indicates an indefinite amount of time.",
 				Computed:    true,
 				Optional:    true,
 				Default:     int64default.StaticInt64(30),
 			},
 			"persistent_grant_idle_timeout_time_unit": schema.StringAttribute{
-				Description: "The persistent grant idle timeout time unit. The default value is DAYS",
+				Description: "The persistent grant idle timeout time unit. Supported values are `MINUTES`, `DAYS`, and `HOURS`. The default value is `DAYS`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     stringdefault.StaticString("DAYS"),
@@ -277,13 +292,13 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Required:    true,
 			},
 			"roll_refresh_token_values": schema.BoolAttribute{
-				Description: "The roll refresh token values default policy. The default value is false.",
+				Description: "The roll refresh token values default policy. The default value is `false`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"refresh_token_rolling_grace_period": schema.Int64Attribute{
-				Description: "The grace period that a rolled refresh token remains valid in seconds. The default value is 60.",
+				Description: "The grace period that a rolled refresh token remains valid in seconds. The default value is `60`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     int64default.StaticInt64(60),
@@ -293,7 +308,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Required:    true,
 			},
 			"refresh_rolling_interval_time_unit": schema.StringAttribute{
-				Description: "The refresh token rolling interval time unit. The default unit is HOURS.",
+				Description: "The refresh token rolling interval time unit. Supported values are `SECONDS`, `MINUTES`, and `HOURS`. The default value is `HOURS`. Supported in PF version `12.1` or later.",
 				Computed:    true,
 				Optional:    true,
 				Validators: []validator.String{
@@ -305,7 +320,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				},
 			},
 			"persistent_grant_reuse_grant_types": schema.SetAttribute{
-				Description: "The grant types that the OAuth AS can reuse rather than creating a new grant for each request. Only 'IMPLICIT' or 'AUTHORIZATION_CODE' or 'RESOURCE_OWNER_CREDENTIALS' are valid grant types.",
+				Description: "The grant types that the OAuth AS can reuse rather than creating a new grant for each request. Only `IMPLICIT` or `AUTHORIZATION_CODE` or `RESOURCE_OWNER_CREDENTIALS` are valid grant types.",
 				Computed:    true,
 				Optional:    true,
 				Validators: []validator.Set{
@@ -326,7 +341,7 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Default:     objectdefault.StaticValue(persistentGrantContactDefault),
 				Attributes: map[string]schema.Attribute{
 					"core_attributes": schema.SetNestedAttribute{
-						Description: "This is a read-only list of persistent grant attributes and includes USER_KEY and USER_NAME. Changes to this field will be ignored.",
+						Description: "This is a read-only list of persistent grant attributes and includes `USER_KEY` and `USER_NAME`.",
 						Computed:    true,
 						Optional:    false,
 						Default:     setdefault.StaticValue(coreAttributesDefault),
@@ -354,6 +369,9 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 								"name": schema.StringAttribute{
 									Description: "The name of this attribute.",
 									Required:    true,
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 							},
 						},
@@ -361,19 +379,19 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				},
 			},
 			"bypass_authorization_for_approved_grants": schema.BoolAttribute{
-				Description: "Bypass authorization for previously approved persistent grants. The default value is false.",
+				Description: "Bypass authorization for previously approved persistent grants. The default value is `false`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"allow_unidentified_client_ro_creds": schema.BoolAttribute{
-				Description: "Allow unidentified clients to request resource owner password credentials grants. The default value is false.",
+				Description: "Allow unidentified clients to request resource owner password credentials grants. The default value is `false`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"allow_unidentified_client_extension_grants": schema.BoolAttribute{
-				Description: "Allow unidentified clients to request extension grants. The default value is false.",
+				Description: "Allow unidentified clients to request extension grants. The default value is `false`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
@@ -395,14 +413,14 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				Optional:    true,
 				Default:     stringdefault.StaticString(""),
 			},
-			"allowed_origins": schema.ListAttribute{
+			"allowed_origins": schema.SetAttribute{
 				Description: "The list of allowed origins.",
 				ElementType: types.StringType,
 				Computed:    true,
 				Optional:    true,
-				Default:     listdefault.StaticValue(allowedOriginsDefault),
-				Validators: []validator.List{
-					configvalidators.ValidUrls(),
+				Default:     setdefault.StaticValue(allowedOriginsDefault),
+				Validators: []validator.Set{
+					configvalidators.ValidUrlsSet(),
 				},
 			},
 			"user_authorization_url": schema.StringAttribute{
@@ -421,19 +439,19 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				},
 			},
 			"pending_authorization_timeout": schema.Int64Attribute{
-				Description: "The 'device_code' and 'user_code' timeout, in seconds. The default is 600 seconds.",
+				Description: "The 'device_code' and 'user_code' timeout, in seconds. The default is `600` seconds.",
 				Optional:    true,
 				Computed:    true,
 				Default:     int64default.StaticInt64(600),
 			},
 			"device_polling_interval": schema.Int64Attribute{
-				Description: "The amount of time client should wait between polling requests, in seconds. The default is 5 seconds.",
+				Description: "The amount of time client should wait between polling requests, in seconds. The default is `5` seconds.",
 				Optional:    true,
 				Computed:    true,
 				Default:     int64default.StaticInt64(5),
 			},
 			"activation_code_check_mode": schema.StringAttribute{
-				Description: "Determines whether the user is prompted to enter or confirm the activation code after authenticating or before. The default is AFTER_AUTHENTICATION.",
+				Description: "Determines whether the user is prompted to enter or confirm the activation code after authenticating or before. Supported values are `AFTER_AUTHENTICATION` and `BEFORE_AUTHENTICATION`. The default value is `AFTER_AUTHENTICATION`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     stringdefault.StaticString("AFTER_AUTHENTICATION"),
@@ -442,18 +460,18 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				},
 			},
 			"bypass_activation_code_confirmation": schema.BoolAttribute{
-				Description: "Indicates if the Activation Code Confirmation page should be bypassed if 'verification_url_complete' is used by the end user to authorize a device. The default is false.",
+				Description: "Indicates if the Activation Code Confirmation page should be bypassed if 'verification_url_complete' is used by the end user to authorize a device. The default is `false`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"enable_cookieless_user_authorization_authentication_api": schema.BoolAttribute{
-				Description: "Indicates if cookies should be used for state tracking when the user authorization endpoint is operating in authentication API redirectless mode",
+				Description: "Indicates if cookies should be used for state tracking when the user authorization endpoint is operating in authentication API redirectless mode. The default is `false`. Supported in PF version `12.1` or later.",
 				Optional:    true,
 				Computed:    true,
 			},
 			"user_authorization_consent_page_setting": schema.StringAttribute{
-				Description: "User Authorization Consent Page setting to use PingFederate's internal consent page or an external system",
+				Description: "User Authorization Consent Page setting to use PingFederate's internal consent page or an external system. Supported values are `INTERNAL` and `ADAPTER`. The default value is `INTERNAL`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     stringdefault.StaticString("INTERNAL"),
@@ -464,29 +482,38 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 			"user_authorization_consent_adapter": schema.StringAttribute{
 				Description: "Adapter ID of the external consent adapter to be used for the consent page user interface.",
 				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"approved_scopes_attribute": schema.StringAttribute{
 				Description: "Attribute from the external consent adapter's contract, intended for storing approved scopes returned by the external consent page.",
 				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"approved_authorization_detail_attribute": schema.StringAttribute{
 				Description: "Attribute from the external consent adapter's contract, intended for storing approved authorization details returned by the external consent page.",
 				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"par_reference_timeout": schema.Int64Attribute{
-				Description: "The timeout, in seconds, of the pushed authorization request reference. The default value is 60.",
+				Description: "The timeout, in seconds, of the pushed authorization request reference. The default value is `60`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     int64default.StaticInt64(60),
 			},
 			"par_reference_length": schema.Int64Attribute{
-				Description: "The entropy of pushed authorization request references, in bytes. The default value is 24.",
+				Description: "The entropy of pushed authorization request references, in bytes. The default value is `24`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     int64default.StaticInt64(24),
 			},
 			"par_status": schema.StringAttribute{
-				Description: "The status of pushed authorization request support. The default value is ENABLED.",
+				Description: "The status of pushed authorization request support. Supported values are `DISABLED`, `ENABLED`, and `REQUIRED`. The default value is `ENABLED`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     stringdefault.StaticString("ENABLED"),
@@ -495,51 +522,51 @@ func (r *oauthAuthServerSettingsResource) Schema(ctx context.Context, req resour
 				},
 			},
 			"client_secret_retention_period": schema.Int64Attribute{
-				Description: "The length of time in minutes that client secrets will be retained as secondary secrets after secret change. The default value is 0, which will disable secondary client secret retention.",
+				Description: "The length of time in minutes that client secrets will be retained as secondary secrets after secret change. The default value is `0`, which will disable secondary client secret retention.",
 				Computed:    true,
 				Optional:    true,
 				Default:     int64default.StaticInt64(0),
 			},
 			"jwt_secured_authorization_response_mode_lifetime": schema.Int64Attribute{
-				Description: "The lifetime, in seconds, of the JWT Secured authorization response. The default value is 600.",
+				Description: "The lifetime, in seconds, of the JWT Secured authorization response. The default value is `600`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     int64default.StaticInt64(600),
 			},
 			"dpop_proof_require_nonce": schema.BoolAttribute{
 				// Default is set in ModifyPlan below. Once only PF 11.3 and newer is supported, we can set the default in the schema here
-				Description: "Determines whether nonce is required in the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is false. Supported in PF version 11.3 or later.",
+				Description: "Determines whether nonce is required in the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is `false`. Supported in PF version `11.3` or later.",
 				Computed:    true,
 				Optional:    true,
 			},
 			"dpop_proof_lifetime_seconds": schema.Int64Attribute{
 				// Default is set in ModifyPlan below. Once only PF 11.3 and newer is supported, we can set the default in the schema here
-				Description: "The lifetime, in seconds, of the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is 120. Supported in PF version 11.3 or later.",
+				Description: "The lifetime, in seconds, of the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is `120`. Supported in PF version `11.3` or later.",
 				Computed:    true,
 				Optional:    true,
 			},
 			"dpop_proof_enforce_replay_prevention": schema.BoolAttribute{
 				// Default is set in ModifyPlan below. Once only PF 11.3 and newer is supported, we can set the default in the schema here
-				Description: "Determines whether Demonstrating Proof-of-Possession (DPoP) proof JWT replay prevention is enforced. The default value is false. Supported in PF version 11.3 or later.",
+				Description: "Determines whether Demonstrating Proof-of-Possession (DPoP) proof JWT replay prevention is enforced. The default value is `false`. Supported in PF version `11.3` or later.",
 				Computed:    true,
 				Optional:    true,
 			},
 			"bypass_authorization_for_approved_consents": schema.BoolAttribute{
 				// Default is set in ModifyPlan below. Once only PF 12.0 and newer is supported, we can set the default in the schema here
-				Description: "Bypass authorization for previously approved consents. The default value is false. Supported in PF version 12.0 or later.",
+				Description: "Bypass authorization for previously approved consents. The default value is `false`. Supported in PF version `12.0` or later.",
 				Computed:    true,
 				Optional:    true,
 			},
 			"consent_lifetime_days": schema.Int64Attribute{
 				// Default is set in ModifyPlan below. Once only PF 12.0 and newer is supported, we can set the default in the schema here
-				Description: "The consent lifetime in days. The default value is indefinite. -1 indicates an indefinite amount of time. Supported in PF version 12.0 or later.",
+				Description: "The consent lifetime in days. The default value is `-1`, which indicates an indefinite amount of time. Supported in PF version `12.0` or later.",
 				Computed:    true,
 				Optional:    true,
 			},
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -558,8 +585,8 @@ func (r *oauthAuthServerSettingsResource) ValidateConfig(ctx context.Context, re
 			scopeNames = append(scopeNames, scopeEntryName)
 			scopeEntryIsDynamic := scopeElemObjectAttrs.Attributes()["dynamic"].(basetypes.BoolValue).ValueBool()
 			if scopeEntryIsDynamic {
-				if strings.Index(scopeEntryName, "*") != 0 {
-					resp.Diagnostics.AddError("Scope name conflict!", fmt.Sprintf("Scope name \"%s\" must be prefixed with a \"*\" when dynamic is set to true.", scopeEntryName))
+				if strings.Count(scopeEntryName, "*") != 1 {
+					resp.Diagnostics.AddError("Scope name conflict!", fmt.Sprintf("Scope name \"%s\" must be include a single \"*\" when dynamic is set to true.", scopeEntryName))
 				}
 			}
 		}
@@ -882,7 +909,7 @@ func (r *oauthAuthServerSettingsResource) Read(ctx context.Context, req resource
 	apiReadOauthAuthServerSettings, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.GetAuthorizationServerSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 
 	if err != nil {
-		if httpResp.StatusCode == 404 {
+		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OAuth Auth Server Settings", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
