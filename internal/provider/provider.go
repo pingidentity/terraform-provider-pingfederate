@@ -73,6 +73,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings"
 	serversettingsgeneralsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/generalsettings"
 	serversettingslogsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/logsettings"
+	serversettingsoutboundprovisioning "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/outboundprovisioning"
 	serversettingssystemkeys "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/systemkeys"
 	sessionapplicationsessionpolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/applicationsessionpolicy"
 	sessionauthenticationsessionpolicies "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/session/authenticationsessionpolicies"
@@ -767,6 +768,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		serversettings.ServerSettingsResource,
 		serversettingsgeneralsettings.ServerSettingsGeneralSettingsResource,
 		serversettingslogsettings.ServerSettingsLogSettingsResource,
+		serversettingsoutboundprovisioning.ServerSettingsOutboundProvisioningResource,
 		serversettingssystemkeys.ServerSettingsSystemKeysResource,
 		sessionapplicationsessionpolicy.SessionApplicationSessionPolicyResource,
 		sessionauthenticationsessionpolicies.SessionAuthenticationPolicyResource,
