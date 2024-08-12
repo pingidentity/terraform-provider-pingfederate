@@ -2,12 +2,12 @@
 page_title: "pingfederate_oauth_resource_owner_credentials_mapping Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to create and manage an OAuth Resource Owner Credentials Mapping.
 ---
 
 # pingfederate_oauth_resource_owner_credentials_mapping (Resource)
 
-
+Resource to create and manage an OAuth Resource Owner Credentials Mapping.
 
 ## Example Usage
 

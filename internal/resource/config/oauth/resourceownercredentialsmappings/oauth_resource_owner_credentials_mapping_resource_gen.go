@@ -62,6 +62,7 @@ type oauthResourceOwnerCredentialsMappingResourceModel struct {
 
 func (r *oauthResourceOwnerCredentialsMappingResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to create and manage an OAuth Resource Owner Credentials Mapping.",
 		Attributes: map[string]schema.Attribute{
 			"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
 			"attribute_sources":              attributesources.ToSchema(0, false),
