@@ -2,12 +2,12 @@
 page_title: "pingfederate_server_settings_outbound_provisioning Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  
+  Resource to manage the outbound provisioning settings.
 ---
 
 # pingfederate_server_settings_outbound_provisioning (Resource)
 
-
+Resource to manage the outbound provisioning settings.
 
 ## Example Usage
 

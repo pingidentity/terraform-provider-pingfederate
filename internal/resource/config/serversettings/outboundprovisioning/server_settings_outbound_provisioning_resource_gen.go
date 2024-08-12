@@ -55,6 +55,7 @@ type serverSettingsOutboundProvisioningResourceModel struct {
 
 func (r *serverSettingsOutboundProvisioningResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		Description: "Resource to manage the outbound provisioning settings.",
 		Attributes: map[string]schema.Attribute{
 			"data_store_ref": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
