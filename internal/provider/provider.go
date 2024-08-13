@@ -64,6 +64,7 @@ import (
 	oauthissuer "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/issuer"
 	oauthopenidconnectpolicy "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/openidconnect/policy"
 	oauthopenidconnectsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/openidconnect/settings"
+	oauthoutofbandauthplugins "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/outofbandauthplugins"
 	oauthtokenexchangegeneratorsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/generator/settings"
 	oauthtokenexchangetokengeneratormapping "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/tokenexchange/tokengeneratormapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/passwordcredentialvalidator"
@@ -758,6 +759,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		oauthissuer.OauthIssuerResource,
 		oauthopenidconnectpolicy.OauthOpenIdConnectPolicyResource,
 		oauthopenidconnectsettings.OauthOpenIdConnectSettingsResource,
+		oauthoutofbandauthplugins.OauthOutOfBandAuthPluginResource,
 		oauthtokenexchangegeneratorsettings.OauthTokenExchangeGeneratorSettingsResource,
 		oauthtokenexchangetokengeneratormapping.OauthTokenExchangeTokenGeneratorMappingResource,
 		passwordcredentialvalidator.PasswordCredentialValidatorResource,
