@@ -87,7 +87,7 @@ func TestAccOauthAuthorizationDetailType_MinimalMaximal(t *testing.T) {
 func dependencyAuthorizationDetailProcessorHCL() string {
 	return `
 resource "pingfederate_oauth_authorization_detail_processor" "example" {
-  processor_id = "myprocessor"
+  processor_id = "mydependencyprocessor"
   configuration = {
     fields = [
       {
@@ -96,7 +96,7 @@ resource "pingfederate_oauth_authorization_detail_processor" "example" {
       }
     ]
   }
-  name = "my processor"
+  name = "my dependency processor"
   plugin_descriptor_ref = {
     id = "com.pingidentity.authorizationdetail.AuthorizationDetailProcessorImplForTestingOnly"
   }
