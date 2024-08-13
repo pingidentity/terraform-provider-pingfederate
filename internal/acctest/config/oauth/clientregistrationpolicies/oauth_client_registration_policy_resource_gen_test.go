@@ -145,27 +145,27 @@ resource "pingfederate_oauth_client_registration_policy" "example" {
     fields = [
       {
         name  = "code"
-        value = "true"
+        value = "false"
       },
       {
         name  = "code id_token"
-        value = "true"
+        value = "false"
       },
       {
         name  = "code id_token token"
-        value = "true"
+        value = "false"
       },
       {
         name  = "code token"
-        value = "true"
+        value = "false"
       },
       {
         name  = "id_token"
-        value = "true"
+        value = "false"
       },
       {
         name  = "id_token token"
-        value = "true"
+        value = "false"
       },
       {
         name  = "token"
@@ -173,7 +173,7 @@ resource "pingfederate_oauth_client_registration_policy" "example" {
       }
     ]
   }
-  name = "My registration policy"
+  name = "My registration policy updated"
   plugin_descriptor_ref = {
     id = "com.pingidentity.pf.client.registration.ResponseTypesConstraintsPlugin"
   }
