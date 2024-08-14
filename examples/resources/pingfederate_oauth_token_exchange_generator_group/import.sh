@@ -1,0 +1,1 @@
+terraform import pingfederate_oauth_token_exchange_generator_group.generatorGroup groupId
