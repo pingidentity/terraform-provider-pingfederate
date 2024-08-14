@@ -191,11 +191,11 @@ Required:
 
 Optional:
 
-- `extended_attributes` (Attributes List) A list of additional attributes that can be returned by the out of band authenticator plugin instance. The extended attributes are only used if the plugin supports them. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
+- `extended_attributes` (Attributes Set) A list of additional attributes that can be returned by the out of band authenticator plugin instance. The extended attributes are only used if the plugin supports them. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
 
 Read-Only:
 
-- `core_attributes` (Attributes List) A list of out of band authenticator attributes. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
+- `core_attributes` (Attributes Set) A list of out of band authenticator attributes. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
 
 <a id="nestedatt--attribute_contract--extended_attributes"></a>
 ### Nested Schema for `attribute_contract.extended_attributes`

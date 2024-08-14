@@ -11,10 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -68,12 +68,12 @@ func (r *oauthOutOfBandAuthPluginResource) Schema(ctx context.Context, req resou
 		"name": types.StringType,
 	}
 	attributeContractExtendedAttributesElementType := types.ObjectType{AttrTypes: attributeContractExtendedAttributesAttrTypes}
-	attributeContractExtendedAttributesDefault, diags := types.ListValue(attributeContractExtendedAttributesElementType, nil)
+	attributeContractExtendedAttributesDefault, diags := types.SetValue(attributeContractExtendedAttributesElementType, nil)
 	resp.Diagnostics.Append(diags...)
 	// attribute_contract
 	attributeContractAttrTypes := map[string]attr.Type{
-		"core_attributes":     types.ListType{ElemType: attributeContractExtendedAttributesElementType},
-		"extended_attributes": types.ListType{ElemType: attributeContractExtendedAttributesElementType},
+		"core_attributes":     types.SetType{ElemType: attributeContractExtendedAttributesElementType},
+		"extended_attributes": types.SetType{ElemType: attributeContractExtendedAttributesElementType},
 	}
 	attributeContractDefault, diags := types.ObjectValue(attributeContractAttrTypes, map[string]attr.Value{
 		"core_attributes":     attributeContractExtendedAttributesDefault,
@@ -85,7 +85,7 @@ func (r *oauthOutOfBandAuthPluginResource) Schema(ctx context.Context, req resou
 		Attributes: map[string]schema.Attribute{
 			"attribute_contract": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"core_attributes": schema.ListNestedAttribute{
+					"core_attributes": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -98,12 +98,12 @@ func (r *oauthOutOfBandAuthPluginResource) Schema(ctx context.Context, req resou
 							},
 						},
 						Computed: true,
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.UseStateForUnknown(),
+						PlanModifiers: []planmodifier.Set{
+							setplanmodifier.UseStateForUnknown(),
 						},
 						Description: "A list of out of band authenticator attributes.",
 					},
-					"extended_attributes": schema.ListNestedAttribute{
+					"extended_attributes": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
@@ -118,7 +118,7 @@ func (r *oauthOutOfBandAuthPluginResource) Schema(ctx context.Context, req resou
 						Optional:    true,
 						Computed:    true,
 						Description: "A list of additional attributes that can be returned by the out of band authenticator plugin instance. The extended attributes are only used if the plugin supports them.",
-						Default:     listdefault.StaticValue(attributeContractExtendedAttributesDefault),
+						Default:     setdefault.StaticValue(attributeContractExtendedAttributesDefault),
 					},
 				},
 				Optional:    true,
@@ -204,14 +204,14 @@ func (model *oauthOutOfBandAuthPluginResourceModel) buildClientStruct() (*client
 		attributeContractValue := &client.OutOfBandAuthAttributeContract{}
 		attributeContractAttrs := model.AttributeContract.Attributes()
 		attributeContractValue.CoreAttributes = []client.OutOfBandAuthAttribute{}
-		for _, coreAttributesElement := range attributeContractAttrs["core_attributes"].(types.List).Elements() {
+		for _, coreAttributesElement := range attributeContractAttrs["core_attributes"].(types.Set).Elements() {
 			coreAttributesValue := client.OutOfBandAuthAttribute{}
 			coreAttributesAttrs := coreAttributesElement.(types.Object).Attributes()
 			coreAttributesValue.Name = coreAttributesAttrs["name"].(types.String).ValueString()
 			attributeContractValue.CoreAttributes = append(attributeContractValue.CoreAttributes, coreAttributesValue)
 		}
 		attributeContractValue.ExtendedAttributes = []client.OutOfBandAuthAttribute{}
-		for _, extendedAttributesElement := range attributeContractAttrs["extended_attributes"].(types.List).Elements() {
+		for _, extendedAttributesElement := range attributeContractAttrs["extended_attributes"].(types.Set).Elements() {
 			extendedAttributesValue := client.OutOfBandAuthAttribute{}
 			extendedAttributesAttrs := extendedAttributesElement.(types.Object).Attributes()
 			extendedAttributesValue.Name = extendedAttributesAttrs["name"].(types.String).ValueString()
@@ -261,8 +261,8 @@ func (state *oauthOutOfBandAuthPluginResourceModel) readClientResponse(response 
 	}
 	attributeContractExtendedAttributesElementType := types.ObjectType{AttrTypes: attributeContractExtendedAttributesAttrTypes}
 	attributeContractAttrTypes := map[string]attr.Type{
-		"core_attributes":     types.ListType{ElemType: attributeContractCoreAttributesElementType},
-		"extended_attributes": types.ListType{ElemType: attributeContractExtendedAttributesElementType},
+		"core_attributes":     types.SetType{ElemType: attributeContractCoreAttributesElementType},
+		"extended_attributes": types.SetType{ElemType: attributeContractExtendedAttributesElementType},
 	}
 	var attributeContractValue types.Object
 	if response.AttributeContract == nil {
@@ -276,7 +276,7 @@ func (state *oauthOutOfBandAuthPluginResourceModel) readClientResponse(response 
 			respDiags.Append(diags...)
 			attributeContractCoreAttributesValues = append(attributeContractCoreAttributesValues, attributeContractCoreAttributesValue)
 		}
-		attributeContractCoreAttributesValue, diags := types.ListValue(attributeContractCoreAttributesElementType, attributeContractCoreAttributesValues)
+		attributeContractCoreAttributesValue, diags := types.SetValue(attributeContractCoreAttributesElementType, attributeContractCoreAttributesValues)
 		respDiags.Append(diags...)
 		var attributeContractExtendedAttributesValues []attr.Value
 		for _, attributeContractExtendedAttributesResponseValue := range response.AttributeContract.ExtendedAttributes {
@@ -286,7 +286,7 @@ func (state *oauthOutOfBandAuthPluginResourceModel) readClientResponse(response 
 			respDiags.Append(diags...)
 			attributeContractExtendedAttributesValues = append(attributeContractExtendedAttributesValues, attributeContractExtendedAttributesValue)
 		}
-		attributeContractExtendedAttributesValue, diags := types.ListValue(attributeContractExtendedAttributesElementType, attributeContractExtendedAttributesValues)
+		attributeContractExtendedAttributesValue, diags := types.SetValue(attributeContractExtendedAttributesElementType, attributeContractExtendedAttributesValues)
 		respDiags.Append(diags...)
 		attributeContractValue, diags = types.ObjectValue(attributeContractAttrTypes, map[string]attr.Value{
 			"core_attributes":     attributeContractCoreAttributesValue,
