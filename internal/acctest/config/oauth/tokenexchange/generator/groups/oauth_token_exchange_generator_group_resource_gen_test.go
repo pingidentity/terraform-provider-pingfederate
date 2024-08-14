@@ -86,65 +86,183 @@ func TestAccOauthTokenExchangeGeneratorGroup_MinimalMaximal(t *testing.T) {
 	})
 }
 
-//TODO dependency HCL
+func dependencyTokenGeneratorHCL() string {
+	return `
+resource "pingfederate_sp_token_generator" "saml1" {
+  generator_id = "saml1Generator"
+  attribute_contract = {
+    core_attributes = [
+      {
+        name = "SAML_SUBJECT"
+      }
+    ]
+  }
+  configuration = {
+    fields = [
+      {
+        name  = "Minutes Before"
+        value = "60"
+      },
+      {
+        name  = "Minutes After"
+        value = "60"
+      },
+      {
+        name  = "Issuer"
+        value = "issuer"
+      },
+      {
+        name  = "Signing Certificate"
+        value = "419x9yg43rlawqwq9v6az997k"
+      },
+      {
+        name  = "Signing Algorithm"
+        value = "RSA_SHA256"
+      },
+      {
+        name  = "Include Certificate in KeyInfo"
+        value = "false"
+      },
+      {
+        name  = "Include Raw Key in KeyValue"
+        value = "false"
+      },
+      {
+        name  = "Audience"
+        value = "audience"
+      },
+      {
+        name  = "Confirmation Method"
+        value = "urn:oasis:names:tc:SAML:1.0:cm:sender-vouches"
+      }
+    ]
+  }
+  name = "My saml1.1 token generator"
+  plugin_descriptor_ref = {
+    id = "org.sourceid.wstrust.generator.saml.Saml11TokenGenerator"
+  }
+}
+
+
+resource "pingfederate_sp_token_generator" "saml2" {
+  generator_id = "saml2Generator"
+  attribute_contract = {
+    core_attributes = [
+      {
+        name = "SAML_SUBJECT"
+      }
+    ]
+  }
+  configuration = {
+    fields = [
+      {
+        name  = "Minutes Before"
+        value = "60"
+      },
+      {
+        name  = "Minutes After"
+        value = "60"
+      },
+      {
+        name  = "Issuer"
+        value = "issuer"
+      },
+      {
+        name  = "Signing Certificate"
+        value = "419x9yg43rlawqwq9v6az997k"
+      },
+      {
+        name  = "Signing Algorithm"
+        value = "SHA1"
+      },
+      {
+        name  = "Include Certificate in KeyInfo"
+        value = "false"
+      },
+      {
+        name  = "Include Raw Key in KeyValue"
+        value = "false"
+      },
+      {
+        name  = "Audience"
+        value = "audience"
+      },
+      {
+        name  = "Confirmation Method"
+        value = "urn:oasis:names:tc:SAML:2.0:cm:sender-vouches"
+      }
+    ]
+  }
+  name = "My saml2 token generator"
+  plugin_descriptor_ref = {
+    id = "org.sourceid.wstrust.generator.saml.Saml20TokenGenerator"
+  }
+}
+	`
+}
 
 // Minimal HCL with only required values set
 func oauthTokenExchangeGeneratorGroup_MinimalHCL() string {
 	return fmt.Sprintf(`
+%s
 resource "pingfederate_oauth_token_exchange_generator_group" "example" {
   group_id = "%s"
   generator_mappings = [
     {
-      default_mapping = true
-      requested_token_type = "urn:ietf:params:oauth:token-type:saml2"
+      default_mapping      = true
+      requested_token_type = "urn:ietf:params:oauth:token-type:saml1"
       token_generator = {
-        id = "tokengenerator"
+        id = pingfederate_sp_token_generator.saml1.generator_id
       }
     }
   ]
   name = "My generator group"
 }
-`, oauthTokenExchangeGeneratorGroupGroupId)
+`, dependencyTokenGeneratorHCL(), oauthTokenExchangeGeneratorGroupGroupId)
 }
 
 // Maximal HCL with all values set where possible
 func oauthTokenExchangeGeneratorGroup_CompleteHCL() string {
 	return fmt.Sprintf(`
+%s
 resource "pingfederate_oauth_token_exchange_generator_group" "example" {
   group_id = "%s"
   generator_mappings = [
     {
-      default_mapping = true
+      requested_token_type = "urn:ietf:params:oauth:token-type:saml1"
+      token_generator = {
+        id = pingfederate_sp_token_generator.saml1.generator_id
+      }
+    },
+    {
+      default_mapping      = true
       requested_token_type = "urn:ietf:params:oauth:token-type:saml2"
       token_generator = {
-        id = "tokengenerator"
+        id = pingfederate_sp_token_generator.saml2.generator_id
       }
     }
   ]
-  name = "My updated generator group"
+  name          = "My updated generator group"
   resource_uris = ["https://apps.example.com/scim/"]
 }
-`, oauthTokenExchangeGeneratorGroupGroupId)
+`, dependencyTokenGeneratorHCL(), oauthTokenExchangeGeneratorGroupGroupId)
 }
 
 // Validate any computed values when applying minimal HCL
 func oauthTokenExchangeGeneratorGroup_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
-		/*resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_token_exchange_generator_group.example", "generator_mappings.*", map[string]string{
-			"default_mapping": "false",
-		}),*/
 		resource.TestCheckResourceAttr("pingfederate_oauth_token_exchange_generator_group.example", "resource_uris.#", "0"),
 	)
 }
 
 // Validate any computed values when applying complete HCL
-// TODO This may not be needed as a separate function from minimal HCL if the expected values match
-// TODO remove any values that are not computed from this check
-// TODO set expected values
 func oauthTokenExchangeGeneratorGroup_CheckComputedValuesComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
-	/*resource.TestCheckResourceAttr("pingfederate_oauth_token_exchange_generator_group.example", "generator_mappings.0.default_mapping", "expected_value"),
-	resource.TestCheckResourceAttr("pingfederate_oauth_token_exchange_generator_group.example", "resource_uris.0", "expected_value"),*/
+		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_token_exchange_generator_group.example", "generator_mappings.*", map[string]string{
+			"default_mapping":      "false",
+			"requested_token_type": "urn:ietf:params:oauth:token-type:saml1",
+			"token_generator.id":   "saml1Generator",
+		}),
 	)
 }
 

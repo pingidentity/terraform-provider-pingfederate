@@ -17,6 +17,8 @@ func (r *oauthTokenExchangeGeneratorGroupResource) ModifyPlan(ctx context.Contex
 
 	// Exactly one generator mapping must be marked as default
 	numDefaults := 0
+	// Each requested_token_type must be unique
+	uniqueTokenTypes := map[string]bool{}
 	// Each pair of requested_token_type and token_generator.id must be unique
 	uniquePairs := map[string]bool{}
 	for _, mapping := range plan.GeneratorMappings.Elements() {
@@ -25,6 +27,10 @@ func (r *oauthTokenExchangeGeneratorGroupResource) ModifyPlan(ctx context.Contex
 			numDefaults++
 		}
 		tokenType := mappingAttrs["requested_token_type"].(types.String).ValueString()
+		if uniqueTokenTypes[tokenType] {
+			resp.Diagnostics.AddError("Each `requested_token_type` must be unique.", fmt.Sprintf("Duplicate token type: %s", tokenType))
+		}
+		uniqueTokenTypes[tokenType] = true
 		tokenGeneratorAttributes := mappingAttrs["token_generator"].(types.Object).Attributes()
 		tokenGeneratorId := tokenGeneratorAttributes["id"].(types.String).ValueString()
 		pair := fmt.Sprintf("%s, %s", tokenType, tokenGeneratorId)
