@@ -7,6 +7,7 @@
 * **New Resource:** `pingfederate_notification_publisher` ([#284]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/284)))
 * **New Resource:** `pingfederate_connection_metadata_export` ([#276](https://github.com/pingidentity/terraform-provider-pingfederate/pull/276))
 * **New Resource:** `pingfederate_oauth_token_exchange_processor_policy` ([#333](https://github.com/pingidentity/terraform-provider-pingfederate/pull/333))
+* **New Resource:** `pingfederate_oauth_token_exchange_processor_settings` ([#333](https://github.com/pingidentity/terraform-provider-pingfederate/pull/333))
 
 ### Bug Fixes
 * Fixed inability to configure mutliple `hostnames_tags` in the `pingfederate_data_store` resource.
