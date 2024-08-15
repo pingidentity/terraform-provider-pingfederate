@@ -17,8 +17,8 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const tokenProcessorToTokenGeneratorMappingId = "tokenprocessor|tokengenerator"
-const tokenProcSourceId = "tokenprocessor"
+const tokenProcessorToTokenGeneratorMappingId = "mappingTestTokenProcessor|tokengenerator"
+const tokenProcSourceId = "mappingTestTokenProcessor"
 const tokenGenTargetId = "tokengenerator"
 
 type tokenProcessorToTokenGeneratorMappingResourceModel struct {
@@ -101,6 +101,33 @@ func TestAccTokenProcessorToTokenGeneratorMapping(t *testing.T) {
 	})
 }
 
+func dependencyHCL() string {
+	return fmt.Sprintf(`
+resource "pingfederate_idp_token_processor" "example" {
+  processor_id = "%s"
+  attribute_contract = {
+    core_attributes = [
+      {
+        name = "SAML_SUBJECT"
+      }
+    ]
+  }
+  configuration = {
+    fields = [
+      {
+        name  = "Audience",
+        value = "myaudience"
+      }
+    ]
+  }
+  name = "My token processor"
+  plugin_descriptor_ref = {
+    id = "org.sourceid.wstrust.processor.saml.Saml20TokenProcessor"
+  }
+}
+	`, tokenProcSourceId)
+}
+
 func testAccTokenProcessorToTokenGeneratorMapping(resourceName string, resourceModel tokenProcessorToTokenGeneratorMappingResourceModel) string {
 	defaultTargetResourceHcl := ""
 	if resourceModel.defaultTargetResource != nil {
@@ -110,6 +137,7 @@ func testAccTokenProcessorToTokenGeneratorMapping(resourceName string, resourceM
 	// license_connection_group can't be tested without some changes to the license
 	return fmt.Sprintf(`
 resource "pingfederate_token_processor_to_token_generator_mapping" "%[1]s" {
+  depends_on = [pingfederate_idp_token_processor.example]
   source_id = "%[2]s"
   target_id = "%[3]s"
   attribute_contract_fulfillment = {
@@ -123,13 +151,16 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "%[1]s" {
 }
 data "pingfederate_token_processor_to_token_generator_mapping" "%[1]s" {
   mapping_id = pingfederate_token_processor_to_token_generator_mapping.%[1]s.id
-}`, resourceName,
+}
+%[8]s
+`, resourceName,
 		resourceModel.sourceId,
 		resourceModel.targetId,
 		attributecontractfulfillment.Hcl(&resourceModel.attributeContractFulfillment),
 		attributesources.Hcl(nil, resourceModel.attributeSource),
 		issuancecriteria.Hcl(resourceModel.issuanceCriteria),
 		defaultTargetResourceHcl,
+		dependencyHCL(),
 	)
 }
 
