@@ -1,3 +1,7 @@
+# v0.15.0 (Unreleased)
+### Resources
+* **New Resource:** `pingfederate_keypairs_signing_key_rotation_settings` ([#334]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/334)))
+
 # v0.14.0 August 15, 2024
 ### Resources
 * **New Resource:** `pingfederate_keypairs_oauth_openid_connect_additional_key_set` ([#271]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/271)))
