@@ -95,9 +95,13 @@ resource "pingfederate_oauth_token_exchange_processor_policy" "policyDep" {
 // Minimal HCL with only required values set
 func oauthTokenExchangeProcessorSettings_MinimalHCL() string {
 	return fmt.Sprintf(`
+%s
 resource "pingfederate_oauth_token_exchange_processor_settings" "example" {
+  default_processor_policy_ref = {
+    id = "tokenexchangeprocessorpolicy"
+  }
 }
-`)
+`, dependencyOauthTokenExchangeProcessorPolicy())
 }
 
 // Maximal HCL with all values set where possible

@@ -208,17 +208,8 @@ func (r *oauthTokenExchangeProcessorSettingsResource) Update(ctx context.Context
 }
 
 func (r *oauthTokenExchangeProcessorSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// This resource is singleton, so it can't be deleted from the service.
-	// Instead this delete method will attempt to set the resource to its default state on the service. If this isn't possible,
-	// this method can be replaced with a no-op with a diagnostic warning message about being unable to set to the default state.
-	// Update API call logic to reset to default
-	defaultClientData := r.buildDefaultClientStruct()
-	apiUpdateRequest := r.apiClient.OauthTokenExchangeProcessorAPI.UpdateOauthTokenExchangeProcessorPolicySettings(config.AuthContext(ctx, r.providerConfig))
-	apiUpdateRequest = apiUpdateRequest.Body(*defaultClientData)
-	_, httpResp, err := r.apiClient.OauthTokenExchangeProcessorAPI.UpdateOauthTokenExchangeProcessorPolicySettingsExecute(apiUpdateRequest)
-	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while resetting the oauthTokenExchangeProcessorSettings", err, httpResp)
-	}
+	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
+	resp.Diagnostics.AddWarning("Configuration cannot be returned to original state. The resource has been removed from Terraform state but the configuration remains applied to the environment.", "")
 }
 
 func (r *oauthTokenExchangeProcessorSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

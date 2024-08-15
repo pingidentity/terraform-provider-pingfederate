@@ -16,6 +16,8 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
+// TODO once all the resources are available in the provider, build them in this
+// test rather than relying on resources in data.json
 const tokenExchangeProcessorPolicyToTokenGeneratorMappingId = "tokenexchangeprocessorpolicy|tokengenerator"
 const tokenExchangeProccessorSourceId = "tokenexchangeprocessorpolicy"
 const tokenGenTargetId = "tokengenerator"
