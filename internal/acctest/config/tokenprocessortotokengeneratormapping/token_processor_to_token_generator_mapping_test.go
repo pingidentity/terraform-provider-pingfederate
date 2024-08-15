@@ -138,8 +138,8 @@ func testAccTokenProcessorToTokenGeneratorMapping(resourceName string, resourceM
 	return fmt.Sprintf(`
 resource "pingfederate_token_processor_to_token_generator_mapping" "%[1]s" {
   depends_on = [pingfederate_idp_token_processor.example]
-  source_id = "%[2]s"
-  target_id = "%[3]s"
+  source_id  = "%[2]s"
+  target_id  = "%[3]s"
   attribute_contract_fulfillment = {
     "SAML_SUBJECT" = {
 			%[4]s
