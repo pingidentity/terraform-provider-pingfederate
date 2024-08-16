@@ -42,6 +42,7 @@ import (
 	incomingproxysettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/incomingproxysettings"
 	kerberosrealms "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/kerberos/realms"
 	kerberosrealmssettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/kerberos/realms/settings"
+	keypairsoauthopenidconnectadditionalkeysets "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/oauthopenidconnect/additionalkeysets"
 	keypairssigningcsr "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/csr"
 	keypairsigningimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/import"
 	keypairsslserverimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver/import"
@@ -735,6 +736,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		incomingproxysettings.IncomingProxySettingsResource,
 		kerberosrealms.KerberosRealmsResource,
 		kerberosrealmssettings.KerberosRealmSettingsResource,
+		keypairsoauthopenidconnectadditionalkeysets.KeypairsOauthOpenidConnectAdditionalKeySetResource,
 		keypairsigningimport.KeyPairsSigningImportResource,
 		keypairssigningcsr.KeypairsSigningCsrExportResource,
 		keypairsslserverimport.KeyPairsSslServerImportResource,

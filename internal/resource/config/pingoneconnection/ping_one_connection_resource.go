@@ -4,12 +4,12 @@ import (
 	"context"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
@@ -55,18 +55,24 @@ type pingOneConnectionResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *pingOneConnectionResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages Ping One Connection",
+		Description: "Manages a Ping One Connection",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Description: "The name of the PingOne Connection",
 				Required:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"description": schema.StringAttribute{
 				Description: "The description of the PingOne Connection",
 				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"active": schema.BoolAttribute{
-				Description: "Whether the PingOne Connection is active. Defaults to true.",
+				Description: "Whether the PingOne Connection is active. Defaults to `true`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(true),
@@ -75,47 +81,39 @@ func (r *pingOneConnectionResource) Schema(ctx context.Context, req resource.Sch
 				Description: "The credential for the PingOne connection.",
 				Required:    true,
 				Sensitive:   true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"credential_id": schema.StringAttribute{
 				Description: "The ID of the PingOne credential. This field is read only.",
-				Optional:    false,
 				Computed:    true,
 			},
 			"ping_one_connection_id": schema.StringAttribute{
 				Description: "The ID of the PingOne connection. This field is read only.",
-				Optional:    false,
 				Computed:    true,
 			},
 			"environment_id": schema.StringAttribute{
 				Description: "The ID of the environment of the PingOne credential. This field is read only.",
-				Optional:    false,
 				Computed:    true,
 			},
 			"creation_date": schema.StringAttribute{
 				Description: "The creation date of the PingOne connection. This field is read only.",
-				Optional:    false,
 				Computed:    true,
 			},
 			"organization_name": schema.StringAttribute{
-				Optional:    false,
 				Computed:    true,
 				Description: "The name of the organization associated with this PingOne connection. This field is read only.",
 			},
 			"region": schema.StringAttribute{
-				Optional:    false,
 				Computed:    true,
 				Description: "The region of the PingOne connection. This field is read only.",
 			},
 			"ping_one_management_api_endpoint": schema.StringAttribute{
-				Optional:    false,
 				Computed:    true,
 				Description: "The PingOne Management API endpoint. This field is read only.",
 			},
 			"ping_one_authentication_api_endpoint": schema.StringAttribute{
-				Optional:    false,
 				Computed:    true,
 				Description: "The PingOne Authentication API endpoint. This field is read only.",
 			},
