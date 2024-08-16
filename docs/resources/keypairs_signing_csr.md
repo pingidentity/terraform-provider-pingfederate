@@ -27,12 +27,9 @@ resource "pingfederate_keypairs_signing_csr" "csrResponse" {
 - `file_data` (String) The certificate data in PEM format. New line characters should be omitted or encoded in this value.
 - `keypair_id` (String) The id of the key pair.
 
-### Optional
-
-- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is `true`. Options are `LOCAL` or `HSM`.
-
 ### Read-Only
 
+- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is `true`. Options are `LOCAL` or `HSM`.
 - `expires` (String) The end date up until which the item is valid, in ISO 8601 format (UTC).
 - `issuer_dn` (String) The issuer's distinguished name.
 - `key_algorithm` (String) The public key algorithm.

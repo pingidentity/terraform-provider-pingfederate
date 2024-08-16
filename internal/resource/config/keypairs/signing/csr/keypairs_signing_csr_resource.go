@@ -71,10 +71,7 @@ func (r *keypairsSigningCsrResource) Schema(ctx context.Context, req resource.Sc
 		Description: "Resource to create and manage CSR responses for signing key pairs.",
 		Attributes: map[string]schema.Attribute{
 			"crypto_provider": schema.StringAttribute{
-				Optional: true,
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
+				Computed:    true,
 				Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is `true`. Options are `LOCAL` or `HSM`.",
 				Validators: []validator.String{
 					stringvalidator.OneOf(
