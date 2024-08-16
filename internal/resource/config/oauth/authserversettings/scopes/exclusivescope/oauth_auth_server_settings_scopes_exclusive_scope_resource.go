@@ -37,7 +37,8 @@ type oauthAuthServerSettingsScopesExclusiveScopeResource struct {
 // GetSchema defines the schema for the resource.
 func (r *oauthAuthServerSettingsScopesExclusiveScopeResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages an exclusive scope in the authorization server settings.",
+		Description:        "Manages an exclusive scope in the authorization server settings.",
+		DeprecationMessage: "This resource is deprecated and will be removed in a future release. Use the `pingfederate_oauth_auth_server_settings` resource instead.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Description: "The name of the scope.",

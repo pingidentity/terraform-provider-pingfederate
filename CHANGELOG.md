@@ -1,6 +1,10 @@
-# v0.14.0 (Unreleased)
+# v0.15.0 (Unreleased)
 ### Resources
 * **New Resource:** `pingfederate_oauth_ciba_server_policy_request_policy` ([#285]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/285)))
+
+# v0.14.0 August 15, 2024
+### Resources
+* **New Resource:** `pingfederate_keypairs_oauth_openid_connect_additional_key_set` ([#271]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/271)))
 * **New Resource:** `pingfederate_captcha_provider` ([#275]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/275)))
 * **New Resource:** `pingfederate_oauth_access_token_manager_settings` ([#274]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/274)))
 * **New Resource:** `pingfederate_notification_publisher` ([#284]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/284)))
