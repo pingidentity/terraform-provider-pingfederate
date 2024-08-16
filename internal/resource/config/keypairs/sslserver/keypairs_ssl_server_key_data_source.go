@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -38,7 +37,6 @@ type keypairsSslServerKeyDataSourceModel struct {
 	KeyAlgorithm            types.String `tfsdk:"key_algorithm"`
 	KeyId                   types.String `tfsdk:"key_id"`
 	KeySize                 types.Int64  `tfsdk:"key_size"`
-	RotationSettings        types.Object `tfsdk:"rotation_settings"`
 	SerialNumber            types.String `tfsdk:"serial_number"`
 	Sha1Fingerprint         types.String `tfsdk:"sha1_fingerprint"`
 	Sha256Fingerprint       types.String `tfsdk:"sha256_fingerprint"`
@@ -53,7 +51,7 @@ type keypairsSslServerKeyDataSourceModel struct {
 // GetSchema defines the schema for the data source.
 func (r *keypairsSslServerKeyDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Resource to create and manage ssl server key pairs.",
+		Description: "Data source to retrieve a ssl server key pair.",
 		Attributes: map[string]schema.Attribute{
 			"key_id": schema.StringAttribute{
 				Description: "The persistent, unique ID for the certificate.",
@@ -116,40 +114,6 @@ func (r *keypairsSslServerKeyDataSource) Schema(ctx context.Context, req datasou
 				Description: "Status of the item.",
 				Computed:    true,
 			},
-			"rotation_settings": schema.SingleNestedAttribute{
-				Description: "The local identity profile data store configuration.",
-				Computed:    true,
-				Attributes: map[string]schema.Attribute{
-					"id": schema.StringAttribute{
-						Description: "The base DN to search from. If not specified, the search will start at the LDAP's root.",
-						Computed:    true,
-					},
-					"creation_buffer_days": schema.Int64Attribute{
-						Description: "Buffer days before key pair expiration for creation of a new key pair.",
-						Computed:    true,
-					},
-					"activation_buffer_days": schema.Int64Attribute{
-						Description: "Buffer days before key pair expiration for activation of the new key pair.",
-						Computed:    true,
-					},
-					"valid_days": schema.Int64Attribute{
-						Description: "Valid days for the new key pair to be created. If this property is unset, the validity days of the original key pair will be used.",
-						Computed:    true,
-					},
-					"key_algorithm": schema.StringAttribute{
-						Description: "Key algorithm to be used while creating a new key pair. If this property is unset, the key algorithm of the original key pair will be used. Supported algorithms are available through the /keyPairs/keyAlgorithms endpoint.",
-						Computed:    true,
-					},
-					"key_size": schema.Int64Attribute{
-						Description: "Key size, in bits. If this property is unset, the key size of the original key pair will be used. Supported key sizes are available through the /keyPairs/keyAlgorithms endpoint.",
-						Computed:    true,
-					},
-					"signature_algorithm": schema.StringAttribute{
-						Description: "Required if the original key pair used SHA1 algorithm. If this property is unset, the default signature algorithm of the original key pair will be used. Supported signature algorithms are available through the /keyPairs/keyAlgorithms endpoint.",
-						Computed:    true,
-					},
-				},
-			},
 		},
 	}
 }
@@ -168,33 +132,6 @@ func (state *keypairsSslServerKeyDataSourceModel) readClientResponse(response *c
 	state.KeyId = types.StringPointerValue(response.Id)
 	// key_size
 	state.KeySize = types.Int64PointerValue(response.KeySize)
-	// rotation_settings
-	rotationSettingsAttrTypes := map[string]attr.Type{
-		"activation_buffer_days": types.Int64Type,
-		"creation_buffer_days":   types.Int64Type,
-		"id":                     types.StringType,
-		"key_algorithm":          types.StringType,
-		"key_size":               types.Int64Type,
-		"signature_algorithm":    types.StringType,
-		"valid_days":             types.Int64Type,
-	}
-	var rotationSettingsValue types.Object
-	if response.RotationSettings == nil {
-		rotationSettingsValue = types.ObjectNull(rotationSettingsAttrTypes)
-	} else {
-		rotationSettingsValue, diags = types.ObjectValue(rotationSettingsAttrTypes, map[string]attr.Value{
-			"activation_buffer_days": types.Int64Value(response.RotationSettings.ActivationBufferDays),
-			"creation_buffer_days":   types.Int64Value(response.RotationSettings.CreationBufferDays),
-			"id":                     types.StringPointerValue(response.RotationSettings.Id),
-			"key_algorithm":          types.StringPointerValue(response.RotationSettings.KeyAlgorithm),
-			"key_size":               types.Int64PointerValue(response.RotationSettings.KeySize),
-			"signature_algorithm":    types.StringPointerValue(response.RotationSettings.SignatureAlgorithm),
-			"valid_days":             types.Int64PointerValue(response.RotationSettings.ValidDays),
-		})
-		respDiags.Append(diags...)
-	}
-
-	state.RotationSettings = rotationSettingsValue
 	// serial_number
 	state.SerialNumber = types.StringPointerValue(response.SerialNumber)
 	// sha1_fingerprint
