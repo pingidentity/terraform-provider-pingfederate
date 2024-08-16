@@ -4,9 +4,7 @@
 * **New Resource:** `pingfederate_oauth_access_token_manager_settings` ([#274]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/274)))
 * **New Resource:** `pingfederate_notification_publisher` ([#284]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/284)))
 * **New Resource:** `pingfederate_connection_metadata_export` ([#276](https://github.com/pingidentity/terraform-provider-pingfederate/pull/276))
-
-### Data Sources
-* **New Data Source:** `pingfederate_keypairs_signing_csr` ([#307](https://github.com/pingidentity/terraform-provider-pingfederate/pull/307))
+* **New Resource:** `pingfederate_keypairs_signing_csr_export` ([#307](https://github.com/pingidentity/terraform-provider-pingfederate/pull/307))
 
 ### Bug Fixes
 * Fixed inability to configure mutliple `hostnames_tags` in the `pingfederate_data_store` resource.

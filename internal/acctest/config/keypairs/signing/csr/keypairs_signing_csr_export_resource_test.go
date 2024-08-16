@@ -10,7 +10,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-func TestAccKeypairsSigningCsrDataSource(t *testing.T) {
+func TestAccKeypairsSigningCsrExportResource(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() { acctest.ConfigurationPreCheck(t) },
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
@@ -19,25 +19,25 @@ func TestAccKeypairsSigningCsrDataSource(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				// Run the export and validate the results
-				Config: keypairsSigningCsrDataSource_MinimalHCL(),
-				Check:  keypairsSigningCsrDataSource_CheckComputedValues(),
+				Config: keypairsSigningCsrExportResource_MinimalHCL(),
+				Check:  keypairsSigningCsrExportResource_CheckComputedValues(),
 			},
 		},
 	})
 }
 
 // Only the keypair_id attribute can be set on this resource
-func keypairsSigningCsrDataSource_MinimalHCL() string {
+func keypairsSigningCsrExportResource_MinimalHCL() string {
 	return `
-data "pingfederate_keypairs_signing_csr" "example" {
+resource "pingfederate_keypairs_signing_csr_export" "example" {
   keypair_id = "419x9yg43rlawqwq9v6az997k"
 }
 `
 }
 
 // Validate any computed values when applying HCL
-func keypairsSigningCsrDataSource_CheckComputedValues() resource.TestCheckFunc {
+func keypairsSigningCsrExportResource_CheckComputedValues() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
-		resource.TestCheckResourceAttrSet("data.pingfederate_keypairs_signing_csr.example", "exported_csr"),
+		resource.TestCheckResourceAttrSet("pingfederate_keypairs_signing_csr_export.example", "exported_csr"),
 	)
 }
