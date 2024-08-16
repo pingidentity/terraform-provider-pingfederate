@@ -14,7 +14,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const keypairsSigningKeyRotationSettingsSettingsId = "419x9yg43rlawqwq9v6az997k"
+const keypairsSigningKeyRotationSettingsSettingsId = "rotationsettingstestkey"
 
 func TestAccKeypairsSigningKeyRotationSettings_RemovalDrift(t *testing.T) {
 	resource.Test(t, resource.TestCase{
@@ -118,7 +118,7 @@ func keypairsSigningKeyRotationSettings_CheckComputedValuesMinimal() resource.Te
 		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key_rotation_settings.example", "key_algorithm", "RSA"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key_rotation_settings.example", "key_size", "2048"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key_rotation_settings.example", "signature_algorithm", "SHA256withRSA"),
-		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key_rotation_settings.example", "valid_days", "365"),
+		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key_rotation_settings.example", "valid_days", "3000"),
 	)
 }
 
