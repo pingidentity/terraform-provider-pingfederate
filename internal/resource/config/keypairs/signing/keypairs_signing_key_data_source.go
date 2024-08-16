@@ -53,7 +53,7 @@ type keypairsSigningKeyDataSourceModel struct {
 // GetSchema defines the schema for the data source.
 func (r *keypairsSigningKeyDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "Resource to create and manage signing key pairs.",
+		Description: "Data source to retrieve a signing key pair.",
 		Attributes: map[string]schema.Attribute{
 			"key_id": schema.StringAttribute{
 				Description: "The persistent, unique ID for the certificate.",
