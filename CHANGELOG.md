@@ -1,3 +1,8 @@
+# v0.15.0 (Unreleased)
+### Resources
+* **New Resource:** `pingfederate_keypairs_ssl_client_csr` ([#335]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/335)))
+* **New Resource:** `pingfederate_keypairs_ssl_client_csr_export` ([#335]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/335)))
+
 # v0.14.0 August 15, 2024
 ### Resources
 * **New Resource:** `pingfederate_keypairs_oauth_openid_connect_additional_key_set` ([#271]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/271)))
