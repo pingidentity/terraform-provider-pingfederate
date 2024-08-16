@@ -44,6 +44,7 @@ import (
 	kerberosrealmssettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/kerberos/realms/settings"
 	keypairsoauthopenidconnectadditionalkeysets "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/oauthopenidconnect/additionalkeysets"
 	keypairsigningimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/import"
+	keypairssslclient "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslclient"
 	keypairsslserverimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver/import"
 	keypairssslserversettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver/settings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/license"
@@ -686,6 +687,7 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		idpspconnection.IdpSpConnectionDataSource,
 		keypairsigningimport.KeyPairsSigningImportDataSource,
 		keypairsslserverimport.KeyPairsSslServerImportDataSource,
+		keypairssslclient.KeypairsSslClientKeyDataSource,
 		license.LicenseDataSource,
 		licenseagreement.LicenseAgreementDataSource,
 		localidentity.LocalIdentityIdentityProfileDataSource,
@@ -737,6 +739,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		kerberosrealmssettings.KerberosRealmSettingsResource,
 		keypairsoauthopenidconnectadditionalkeysets.KeypairsOauthOpenidConnectAdditionalKeySetResource,
 		keypairsigningimport.KeyPairsSigningImportResource,
+		keypairssslclient.KeypairsSslClientKeyResource,
 		keypairsslserverimport.KeyPairsSslServerImportResource,
 		keypairssslserversettings.KeypairsSslServerSettingsResource,
 		datastore.DataStoreResource,
