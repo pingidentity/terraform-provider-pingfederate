@@ -32,6 +32,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationpolicycontract"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/authenticationselector"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/captchaproviders"
+	captchaproviderssettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/captchaproviders/settings"
 	certificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificates/ca"
 	certificatesrevocationsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificates/revocation/settings"
 	connectionmetadataexport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/connectionmetadata/export"
@@ -727,6 +728,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		authenticationpolicycontract.AuthenticationPolicyContractResource,
 		authenticationselector.AuthenticationSelectorsResource,
 		captchaproviders.CaptchaProviderResource,
+		captchaproviderssettings.CaptchaProviderSettingsResource,
 		certificate.CertificateCAResource,
 		certificatesrevocationsettings.CertificatesRevocationSettingsResource,
 		connectionmetadataexport.ConnectionMetadataExportResource,
