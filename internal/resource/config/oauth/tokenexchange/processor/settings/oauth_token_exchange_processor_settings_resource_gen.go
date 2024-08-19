@@ -64,7 +64,7 @@ func (r *oauthTokenExchangeProcessorSettingsResource) Schema(ctx context.Context
 						},
 					},
 				},
-				Optional:    true,
+				Required:    true,
 				Description: "Reference to the default Token Exchange Processor policy, if one is defined.",
 			},
 		},
