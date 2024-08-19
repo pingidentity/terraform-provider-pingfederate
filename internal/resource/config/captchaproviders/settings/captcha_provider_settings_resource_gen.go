@@ -59,7 +59,7 @@ func (r *captchaProviderSettingsResource) Schema(ctx context.Context, req resour
 						Description: "The ID of the resource.",
 					},
 				},
-				Optional:    true,
+				Required:    true,
 				Description: "Reference to the default CAPTCHA provider, if one is defined.",
 			},
 		},
