@@ -1,5 +1,6 @@
 # v0.15.0 (Unreleased)
 ### Resources
+* **New Resource:** `pingfederate_certificates_revocation_settings` ([#280]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/280)))
 * **New Resource:** `pingfederate_idp_sts_request_parameters_contract` ([#281]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/281)))
 
 # v0.14.0 August 15, 2024
