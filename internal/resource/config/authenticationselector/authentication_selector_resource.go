@@ -51,6 +51,7 @@ type authenticationSelectorResourceModel struct {
 	SelectorId          types.String `tfsdk:"selector_id"`
 	Id                  types.String `tfsdk:"id"`
 	Name                types.String `tfsdk:"name"`
+	ParentRef           types.Object `tfsdk:"parent_ref"`
 	PluginDescriptorRef types.Object `tfsdk:"plugin_descriptor_ref"`
 	Configuration       types.Object `tfsdk:"configuration"`
 }
@@ -71,6 +72,16 @@ func (r *authenticationSelectorResource) Schema(ctx context.Context, req resourc
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.RequiresReplace(),
 				},
+			},
+			"parent_ref": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"id": schema.StringAttribute{
+						Required:    true,
+						Description: "The ID of the resource.",
+					},
+				},
+				Optional:    true,
+				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
 			},
 			"configuration": pluginconfiguration.ToSchema(),
 			"attribute_contract": schema.SingleNestedAttribute{
@@ -106,6 +117,14 @@ func addOptionalAuthenticationSelectorsFields(addRequest *client.AuthenticationS
 		if err != nil {
 			return err
 		}
+	}
+
+	// parent_ref
+	if !plan.ParentRef.IsNull() {
+		parentRefValue := &client.ResourceLink{}
+		parentRefAttrs := plan.ParentRef.Attributes()
+		parentRefValue.Id = parentRefAttrs["id"].(types.String).ValueString()
+		addRequest.ParentRef = parentRefValue
 	}
 
 	return nil
@@ -152,8 +171,9 @@ func readAuthenticationSelectorsResponse(ctx context.Context, r *client.Authenti
 	state.SelectorId = types.StringValue(r.Id)
 	state.Id = types.StringValue(r.Id)
 	state.Name = types.StringValue(r.Name)
-	state.PluginDescriptorRef, objDiags = resourcelink.ToState(ctx, &r.PluginDescriptorRef)
+	state.ParentRef, objDiags = resourcelink.ToState(ctx, r.ParentRef)
 	diags = append(diags, objDiags...)
+	state.PluginDescriptorRef, objDiags = resourcelink.ToState(ctx, &r.PluginDescriptorRef)
 	diags = append(diags, objDiags...)
 	state.Configuration, objDiags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration)
 	diags = append(diags, objDiags...)
@@ -204,7 +224,7 @@ func (r *authenticationSelectorResource) Create(ctx context.Context, req resourc
 	apiCreateAuthenticationSelectors = apiCreateAuthenticationSelectors.Body(*createAuthenticationSelectors)
 	authenticationSelectorResponse, httpResp, err := r.apiClient.AuthenticationSelectorsAPI.CreateAuthenticationSelectorExecute(apiCreateAuthenticationSelectors)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the an Authentication Selector", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Authentication Selector", err, httpResp)
 		return
 	}
 
@@ -232,7 +252,7 @@ func (r *authenticationSelectorResource) Read(ctx context.Context, req resource.
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Authentication Selector", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  an Authentication Selector", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Authentication Selector", err, httpResp)
 		}
 		return
 	}
