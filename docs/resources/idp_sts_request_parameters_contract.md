@@ -30,7 +30,7 @@ resource "pingfederate_idp_sts_request_parameters_contract" "requestParametersCo
 
 - `contract_id` (String) The ID of the Security Token Service request parameter contract.<br>Note: Can't be modified after creation.
 - `name` (String) The name of the Security Token Service request parameter contract.<br>Note: Can't be modified after creation.
-- `parameters` (Set of String) The list of parameters within the Security  Token Service request parameter contract.
+- `parameters` (Set of String) The list of parameters within the Security Token Service request parameter contract.
 
 ## Import
 

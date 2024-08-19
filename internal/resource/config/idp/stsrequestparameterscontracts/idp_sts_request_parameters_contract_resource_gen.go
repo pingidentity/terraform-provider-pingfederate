@@ -83,7 +83,7 @@ func (r *idpStsRequestParametersContractResource) Schema(ctx context.Context, re
 			"parameters": schema.SetAttribute{
 				ElementType: types.StringType,
 				Required:    true,
-				Description: "The list of parameters within the Security  Token Service request parameter contract.",
+				Description: "The list of parameters within the Security Token Service request parameter contract.",
 				Validators: []validator.Set{
 					setvalidator.SizeAtLeast(1),
 				},
