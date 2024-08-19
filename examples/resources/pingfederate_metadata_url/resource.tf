@@ -1,10 +1,9 @@
 resource "pingfederate_metadata_url" "metadataUrl" {
   url_id             = "myUrlId"
-  name               = "My Url"
-  url                = "https://example.com"
+  name               = "My Metadata Url"
+  url                = "https://bxretail.org/metadata"
   validate_signature = true
   x509_file = {
-    # Insert base64-encoded cert data here
-    file_data = ""
+    file_data = filebase64("./assets/my-certificate.pem")
   }
 }
