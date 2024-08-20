@@ -220,7 +220,7 @@ func (r *defaultUrlsResource) Read(ctx context.Context, req resource.ReadRequest
 	spResponseData, httpResp, err := r.apiClient.SpDefaultUrlsAPI.GetSpDefaultUrls(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the SP default URLs", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "SP Default URLs", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the SP default URLs", err, httpResp)
@@ -236,7 +236,7 @@ func (r *defaultUrlsResource) Read(ctx context.Context, req resource.ReadRequest
 	idpResponseData, httpResp, err := r.apiClient.IdpDefaultUrlsAPI.GetDefaultUrl(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while reading the IdP default URLs", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "IdP Default URLs", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the IdP default URLs", err, httpResp)

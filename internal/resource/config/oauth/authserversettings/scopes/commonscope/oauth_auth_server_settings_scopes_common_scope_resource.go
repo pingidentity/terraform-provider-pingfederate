@@ -37,7 +37,8 @@ type oauthAuthServerSettingsScopesCommonScopeResource struct {
 // GetSchema defines the schema for the resource.
 func (r *oauthAuthServerSettingsScopesCommonScopeResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Manages a common scope in the authorization server settings.",
+		Description:        "Manages a common scope in the authorization server settings.",
+		DeprecationMessage: "This resource is deprecated and will be removed in a future release. Use the `pingfederate_oauth_auth_server_settings` resource instead.",
 		Attributes: map[string]schema.Attribute{
 			"name": schema.StringAttribute{
 				Description: "The name of the scope.",
@@ -150,7 +151,7 @@ func (r *oauthAuthServerSettingsScopesCommonScopeResource) Read(ctx context.Cont
 	apiReadOauthAuthServerSettingsScopesCommonScopes, httpResp, err := r.apiClient.OauthAuthServerSettingsAPI.GetCommonScope(config.AuthContext(ctx, r.providerConfig), state.Name.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.ReportHttpErrorAsWarning(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Auth Server Settings Scopes Common Scope", err, httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OAuth Auth Server Settings Common Scopes", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
 			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Auth Server Settings Scopes Common Scope", err, httpResp)
