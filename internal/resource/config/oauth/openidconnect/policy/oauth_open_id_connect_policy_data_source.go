@@ -82,7 +82,7 @@ func (r *oauthOpenIdConnectPolicyDataSource) Schema(ctx context.Context, req dat
 				Computed:    true,
 				Optional:    false,
 				Attributes: map[string]schema.Attribute{
-					"core_attributes": schema.ListNestedAttribute{
+					"core_attributes": schema.SetNestedAttribute{
 						Description: "A list of read-only attributes (for example, sub) that are automatically populated by PingFederate.",
 						Computed:    true,
 						Optional:    false,
@@ -111,7 +111,7 @@ func (r *oauthOpenIdConnectPolicyDataSource) Schema(ctx context.Context, req dat
 							},
 						},
 					},
-					"extended_attributes": schema.ListNestedAttribute{
+					"extended_attributes": schema.SetNestedAttribute{
 						Description: "A list of additional attributes.",
 						Optional:    true,
 						NestedObject: schema.NestedAttributeObject{
