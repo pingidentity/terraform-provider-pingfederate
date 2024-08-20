@@ -13,10 +13,6 @@ Manages a password credential validator plugin instance.
 ## Example Usage
 
 ```terraform
-# WARNING! You will need to secure your state file properly when using this resource! #
-# Please refer to the link below on how to best store state files and data within. #
-# https://developer.hashicorp.com/terraform/plugin/best-practices/sensitive-state #
-
 resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCredentialValidatorExample" {
   validator_id = "simpleUsernamePCV"
   name         = "simpleUsernamePasswordCredentialValidator"
