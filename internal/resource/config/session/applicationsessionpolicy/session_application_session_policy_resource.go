@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -24,9 +22,7 @@ func SessionApplicationSessionPolicyResource() resource.Resource {
 
 // sessionApplicationSessionPolicyResource is the resource implementation.
 type sessionApplicationSessionPolicyResource struct {
-	providerConfig internaltypes.ProviderConfiguration
-	apiClient      *client.APIClient
-	impl           sessionApplicationPolicyResource
+	impl sessionApplicationPolicyResource
 }
 
 // GetSchema defines the schema for the resource.
