@@ -3656,13 +3656,21 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 	var credentialsValue types.Object
 	if r.Credentials != nil {
 		var credentialsCertsValues []attr.Value
-		for _, cert := range r.Credentials.Certs {
-			for _, certInPlan := range plan.Credentials.Attributes()["certs"].(types.List).Elements() {
-				x509FilePlanAttrs := certInPlan.(types.Object).Attributes()["x509_file"].(types.Object).Attributes()
-				x509FileIdPlan := x509FilePlanAttrs["id"].(types.String).ValueString()
-				if *cert.X509File.Id == x509FileIdPlan {
-					planFileData := x509FilePlanAttrs["file_data"].(types.String)
-					credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, planFileData, cert, &diags)
+		if r.Credentials.Certs != nil && len(r.Credentials.Certs) > 0 {
+			for _, cert := range r.Credentials.Certs {
+				if plan.Credentials.Attributes()["certs"] != nil {
+					for _, certInPlan := range plan.Credentials.Attributes()["certs"].(types.List).Elements() {
+						x509FilePlanAttrs := certInPlan.(types.Object).Attributes()["x509_file"].(types.Object).Attributes()
+						x509FileIdPlan := x509FilePlanAttrs["id"].(types.String).ValueString()
+						if *cert.X509File.Id == x509FileIdPlan {
+							planFileData := x509FilePlanAttrs["file_data"].(types.String)
+							credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, planFileData, cert, &diags)
+							diags.Append(objDiags...)
+							credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
+						}
+					}
+				} else {
+					credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), cert, &diags)
 					diags.Append(objDiags...)
 					credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
 				}
@@ -3685,15 +3693,21 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			if r.Credentials.InboundBackChannelAuth.Certs != nil && len(r.Credentials.InboundBackChannelAuth.Certs) > 0 {
 				var credentialsInboundBackChannelAuthCertsValues []attr.Value
 				for _, ibcaCert := range r.Credentials.InboundBackChannelAuth.Certs {
-					for _, ibcaCertInPlan := range plan.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["certs"].(types.List).Elements() {
-						ibcax509FilePlanAttrs := ibcaCertInPlan.(types.Object).Attributes()["x509_file"].(types.Object).Attributes()
-						ibcax509FileIdPlan := ibcax509FilePlanAttrs["id"].(types.String).ValueString()
-						if *ibcaCert.X509File.Id == ibcax509FileIdPlan {
-							planIbcaX509FileFileData := ibcax509FilePlanAttrs["file_data"].(types.String)
-							planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, planIbcaX509FileFileData, ibcaCert, &diags)
-							diags.Append(objDiags...)
-							credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
+					if plan.Credentials.Attributes()["inbound_back_channel_auth"] != nil {
+						for _, ibcaCertInPlan := range plan.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["certs"].(types.List).Elements() {
+							ibcax509FilePlanAttrs := ibcaCertInPlan.(types.Object).Attributes()["x509_file"].(types.Object).Attributes()
+							ibcax509FileIdPlan := ibcax509FilePlanAttrs["id"].(types.String).ValueString()
+							if *ibcaCert.X509File.Id == ibcax509FileIdPlan {
+								planIbcaX509FileFileData := ibcax509FilePlanAttrs["file_data"].(types.String)
+								planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, planIbcaX509FileFileData, ibcaCert, &diags)
+								diags.Append(objDiags...)
+								credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
+							}
 						}
+					} else {
+						planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), ibcaCert, &diags)
+						diags.Append(objDiags...)
+						credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
 					}
 				}
 				credentialsInboundBackChannelAuthCertsValue, objDiags = types.ListValue(connectioncert.ObjType(), credentialsInboundBackChannelAuthCertsValues)
@@ -3706,7 +3720,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				credentialsInboundBackChannelAuthHttpBasicCredentialsValue = types.ObjectNull(credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes)
 			} else {
 				var password string = ""
-				if plan != nil {
+				if plan != nil && plan.Credentials.Attributes()["inbound_back_channel_auth"] != nil {
 					passwordFromPlan := plan.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String)
 					if internaltypes.IsDefined(passwordFromPlan) {
 						password = passwordFromPlan.ValueString()
@@ -3742,7 +3756,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue = types.ObjectNull(credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes)
 			} else {
 				var password string = ""
-				if plan != nil {
+				if plan != nil && plan.Credentials.Attributes()["outbound_back_channel_auth"] != nil {
 					passwordFromPlan := plan.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String)
 					if internaltypes.IsDefined(passwordFromPlan) {
 						password = passwordFromPlan.ValueString()

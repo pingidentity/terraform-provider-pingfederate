@@ -38,63 +38,78 @@ func ToSchemaAttributes() map[string]schema.Attribute {
 			Attributes: map[string]schema.Attribute{
 				"id": schema.StringAttribute{
 					Description: "The persistent, unique ID for the certificate.",
+					Optional:    false,
 					Computed:    true,
 				},
 				"serial_number": schema.StringAttribute{
 					Description: "The serial number assigned by the CA.",
+					Optional:    false,
 					Computed:    true,
 				},
 				"subject_dn": schema.StringAttribute{
 					Description: "The subject's distinguished name.",
+					Optional:    false,
 					Computed:    true,
 				},
 				"subject_alternative_names": schema.SetAttribute{
 					ElementType: types.StringType,
 					Description: "The subject alternative names (SAN).",
+					Optional:    false,
 					Computed:    true,
 				},
 				"issuer_dn": schema.StringAttribute{
 					Description: "The issuer's distinguished name.",
+					Optional:    false,
 					Computed:    true,
 				},
 				"valid_from": schema.StringAttribute{
 					Description: "The start date from which the item is valid, in ISO 8601 format (UTC).",
+					Optional:    false,
 					Computed:    true,
 				},
 				"expires": schema.StringAttribute{
 					Description: "The end date up until which the item is valid, in ISO 8601 format (UTC).",
+					Optional:    false,
 					Computed:    true,
 				},
 				"key_algorithm": schema.StringAttribute{
 					Description: "The public key algorithm.",
+					Optional:    false,
 					Computed:    true,
 				},
 				"key_size": schema.Int64Attribute{
 					Description: "The public key size.",
+					Optional:    false,
 					Computed:    true,
 				},
 				"signature_algorithm": schema.StringAttribute{
 					Description: "The signature algorithm.",
+					Optional:    false,
 					Computed:    true,
 				},
 				"version": schema.Int64Attribute{
 					Description: "The X.509 version to which the item conforms.",
+					Optional:    false,
 					Computed:    true,
 				},
 				"sha1_fingerprint": schema.StringAttribute{
 					Description: "SHA-1 fingerprint in Hex encoding.",
+					Optional:    false,
 					Computed:    true,
 				},
 				"sha256_fingerprint": schema.StringAttribute{
 					Description: "SHA-256 fingerprint in Hex encoding.",
+					Optional:    false,
 					Computed:    true,
 				},
 				"status": schema.StringAttribute{
 					Description: "Status of the item.",
+					Optional:    false,
 					Computed:    true,
 				},
 				"crypto_provider": schema.StringAttribute{
 					Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
+					Optional:    false,
 					Computed:    true,
 				},
 			},
