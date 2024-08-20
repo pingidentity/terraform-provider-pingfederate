@@ -755,7 +755,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		notificationpublishers.NotificationPublisherResource,
 		oauthaccesstokenmanager.OauthAccessTokenManagerResource,
 		oauthaccesstokenmanagerssettings.OauthAccessTokenManagerSettingsResource,
-		oauthaccesstokenmapping.OauthAccessTokenMappingsResource,
+		oauthaccesstokenmapping.OauthAccessTokenMappingResource,
 		oauthauthenticationpolicycontractmappings.OauthAuthenticationPolicyContractMappingResource,
 		oauthauthserversettings.OauthAuthServerSettingsResource,
 		oauthauthserversettingsscopescommonscope.OauthAuthServerSettingsScopesCommonScopeResource,

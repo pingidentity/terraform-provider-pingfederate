@@ -29,9 +29,9 @@ import (
 
 // Ensure the implementation satisfies the expected interfaces.
 var (
-	_ resource.Resource                = &oauthAccessTokenMappingsResource{}
-	_ resource.ResourceWithConfigure   = &oauthAccessTokenMappingsResource{}
-	_ resource.ResourceWithImportState = &oauthAccessTokenMappingsResource{}
+	_ resource.Resource                = &oauthAccessTokenMappingResource{}
+	_ resource.ResourceWithConfigure   = &oauthAccessTokenMappingResource{}
+	_ resource.ResourceWithImportState = &oauthAccessTokenMappingResource{}
 
 	accessTokenMappingContext = map[string]attr.Type{
 		"type":        types.StringType,
@@ -39,18 +39,18 @@ var (
 	}
 )
 
-// OauthAccessTokenMappingsResource is a helper function to simplify the provider implementation.
-func OauthAccessTokenMappingsResource() resource.Resource {
-	return &oauthAccessTokenMappingsResource{}
+// OauthAccessTokenMappingResource is a helper function to simplify the provider implementation.
+func OauthAccessTokenMappingResource() resource.Resource {
+	return &oauthAccessTokenMappingResource{}
 }
 
-// oauthAccessTokenMappingsResource is the resource implementation.
-type oauthAccessTokenMappingsResource struct {
+// oauthAccessTokenMappingResource is the resource implementation.
+type oauthAccessTokenMappingResource struct {
 	providerConfig internaltypes.ProviderConfiguration
 	apiClient      *client.APIClient
 }
 
-type oauthAccessTokenMappingsResourceModel struct {
+type oauthAccessTokenMappingResourceModel struct {
 	Id                           types.String `tfsdk:"id"`
 	Context                      types.Object `tfsdk:"context"`
 	AccessTokenManagerRef        types.Object `tfsdk:"access_token_manager_ref"`
@@ -60,7 +60,7 @@ type oauthAccessTokenMappingsResourceModel struct {
 }
 
 // GetSchema defines the schema for the resource.
-func (r *oauthAccessTokenMappingsResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *oauthAccessTokenMappingResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
 		Description: "Manages an OAuth Access Token Mapping",
 		Attributes: map[string]schema.Attribute{
@@ -72,7 +72,7 @@ func (r *oauthAccessTokenMappingsResource) Schema(ctx context.Context, req resou
 				},
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{
-						Description: "The Access Token Mapping Context type.",
+						Description: "The Access Token Mapping Context type. Options are `DEFAULT`, `PCV`, `IDP_CONNECTION`, `IDP_ADAPTER`, `AUTHENTICATION_POLICY_CONTRACT`, `CLIENT_CREDENTIALS`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`.",
 						Required:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOf("DEFAULT", "PCV", "IDP_CONNECTION", "IDP_ADAPTER", "AUTHENTICATION_POLICY_CONTRACT", "CLIENT_CREDENTIALS", "TOKEN_EXCHANGE_PROCESSOR_POLICY"),
@@ -101,8 +101,6 @@ func (r *oauthAccessTokenMappingsResource) Schema(ctx context.Context, req resou
 			"attribute_contract_fulfillment": schema.MapNestedAttribute{
 				Description: "Defines how an attribute in an attribute contract should be populated.",
 				Required:    true,
-				Optional:    false,
-				Computed:    false,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"source": sourcetypeidkey.ToSchema(false),
@@ -123,11 +121,11 @@ func (r *oauthAccessTokenMappingsResource) Schema(ctx context.Context, req resou
 }
 
 // Metadata returns the resource type name.
-func (r *oauthAccessTokenMappingsResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *oauthAccessTokenMappingResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_oauth_access_token_mapping"
 }
 
-func (r *oauthAccessTokenMappingsResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
+func (r *oauthAccessTokenMappingResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
@@ -138,7 +136,7 @@ func (r *oauthAccessTokenMappingsResource) Configure(_ context.Context, req reso
 
 }
 
-func readOauthAccessTokenMappingsResponse(ctx context.Context, r *client.AccessTokenMapping, state *oauthAccessTokenMappingsResourceModel) diag.Diagnostics {
+func readOauthAccessTokenMappingsResponse(ctx context.Context, r *client.AccessTokenMapping, state *oauthAccessTokenMappingResourceModel) diag.Diagnostics {
 	var diags, objDiags diag.Diagnostics
 
 	state.Id = types.StringPointerValue(r.Id)
@@ -164,7 +162,7 @@ func readOauthAccessTokenMappingsResponse(ctx context.Context, r *client.AccessT
 	return diags
 }
 
-func addOptionalOauthAccessTokenMappingsFields(addRequest *client.AccessTokenMapping, plan oauthAccessTokenMappingsResourceModel) error {
+func addOptionalOauthAccessTokenMappingsFields(addRequest *client.AccessTokenMapping, plan oauthAccessTokenMappingResourceModel) error {
 	var err error
 	if internaltypes.IsDefined(plan.AttributeSources) {
 		addRequest.AttributeSources = []client.AttributeSourceAggregation{}
@@ -183,8 +181,8 @@ func addOptionalOauthAccessTokenMappingsFields(addRequest *client.AccessTokenMap
 	return nil
 }
 
-func (r *oauthAccessTokenMappingsResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var model oauthAccessTokenMappingsResourceModel
+func (r *oauthAccessTokenMappingResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var model oauthAccessTokenMappingResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &model)...)
 	if internaltypes.IsDefined(model.Context) {
 		modelContextType := model.Context.Attributes()["type"].(types.String).ValueString()
@@ -196,8 +194,8 @@ func (r *oauthAccessTokenMappingsResource) ValidateConfig(ctx context.Context, r
 	}
 }
 
-func (r *oauthAccessTokenMappingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan oauthAccessTokenMappingsResourceModel
+func (r *oauthAccessTokenMappingResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan oauthAccessTokenMappingResourceModel
 	var err error
 
 	diags := req.Plan.Get(ctx, &plan)
@@ -249,7 +247,7 @@ func (r *oauthAccessTokenMappingsResource) Create(ctx context.Context, req resou
 	}
 
 	// Read the response into the state
-	var state oauthAccessTokenMappingsResourceModel
+	var state oauthAccessTokenMappingResourceModel
 
 	diags = readOauthAccessTokenMappingsResponse(ctx, oauthAccessTokenMappingsResponse, &state)
 	resp.Diagnostics.Append(diags...)
@@ -257,8 +255,8 @@ func (r *oauthAccessTokenMappingsResource) Create(ctx context.Context, req resou
 	resp.Diagnostics.Append(diags...)
 }
 
-func (r *oauthAccessTokenMappingsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state oauthAccessTokenMappingsResourceModel
+func (r *oauthAccessTokenMappingResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state oauthAccessTokenMappingResourceModel
 
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -287,8 +285,8 @@ func (r *oauthAccessTokenMappingsResource) Read(ctx context.Context, req resourc
 }
 
 // Update updates the resource and sets the updated Terraform state on success.
-func (r *oauthAccessTokenMappingsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan oauthAccessTokenMappingsResourceModel
+func (r *oauthAccessTokenMappingResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan oauthAccessTokenMappingResourceModel
 	var err error
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
@@ -334,12 +332,12 @@ func (r *oauthAccessTokenMappingsResource) Update(ctx context.Context, req resou
 	apiUpdateOauthAccessTokenMappings = apiUpdateOauthAccessTokenMappings.Body(*updateOauthAccessTokenMappings)
 	updateOauthAccessTokenMappingsResponse, httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.UpdateMappingExecute(apiUpdateOauthAccessTokenMappings)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating OAuth Access Token Mapping", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the OAuth Access Token Mapping", err, httpResp)
 		return
 	}
 
 	// Read the response
-	var state oauthAccessTokenMappingsResourceModel
+	var state oauthAccessTokenMappingResourceModel
 	diags = readOauthAccessTokenMappingsResponse(ctx, updateOauthAccessTokenMappingsResponse, &state)
 	resp.Diagnostics.Append(diags...)
 
@@ -348,9 +346,9 @@ func (r *oauthAccessTokenMappingsResource) Update(ctx context.Context, req resou
 	resp.Diagnostics.Append(diags...)
 }
 
-func (r *oauthAccessTokenMappingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+func (r *oauthAccessTokenMappingResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// Retrieve values from state
-	var state oauthAccessTokenMappingsResourceModel
+	var state oauthAccessTokenMappingResourceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -362,7 +360,7 @@ func (r *oauthAccessTokenMappingsResource) Delete(ctx context.Context, req resou
 	}
 }
 
-func (r *oauthAccessTokenMappingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *oauthAccessTokenMappingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
