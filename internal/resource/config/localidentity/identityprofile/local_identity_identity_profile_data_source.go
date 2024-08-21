@@ -51,7 +51,7 @@ func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req
 				Computed:    true,
 				Attributes:  datasourceresourcelink.ToDataSourceSchema(),
 			},
-			"auth_sources": schema.ListNestedAttribute{
+			"auth_sources": schema.SetNestedAttribute{
 				Description: "The local identity authentication sources. Sources are unique.",
 				Required:    false,
 				Optional:    false,
@@ -195,7 +195,7 @@ func (r *localIdentityIdentityProfileDataSource) Schema(ctx context.Context, req
 				Optional:    false,
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
-					"fields": schema.ListNestedAttribute{
+					"fields": schema.SetNestedAttribute{
 						Description: "The field configuration for the local identity profile.",
 						Required:    false,
 						Optional:    false,
@@ -495,7 +495,7 @@ func readLocalIdentityIdentityProfileResponseDataSource(ctx context.Context, r *
 		diags.Append(respDiags...)
 		authSourcesSliceAttrVal = append(authSourcesSliceAttrVal, authSourcesObj)
 	}
-	state.AuthSources, respDiags = types.ListValue(authSourcesSliceType, authSourcesSliceAttrVal)
+	state.AuthSources, respDiags = types.SetValue(authSourcesSliceType, authSourcesSliceAttrVal)
 	diags.Append(respDiags...)
 
 	registrationConfig := r.RegistrationConfig
@@ -512,7 +512,7 @@ func readLocalIdentityIdentityProfileResponseDataSource(ctx context.Context, r *
 	fieldConfig := r.GetFieldConfig()
 	fieldType := types.ObjectType{AttrTypes: fieldItemAttrTypes}
 	fieldAttrsStruct := fieldConfig.GetFields()
-	fieldAttrsState, respDiags := types.ListValueFrom(ctx, fieldType, fieldAttrsStruct)
+	fieldAttrsState, respDiags := types.SetValueFrom(ctx, fieldType, fieldAttrsStruct)
 	diags.Append(respDiags...)
 
 	stripSpaceFromUniqueFieldState := types.BoolPointerValue(r.GetFieldConfig().StripSpaceFromUniqueField)

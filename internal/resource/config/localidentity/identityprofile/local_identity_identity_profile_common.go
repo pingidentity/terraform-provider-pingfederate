@@ -45,7 +45,7 @@ var (
 	}
 
 	fieldConfigAttrTypes = map[string]attr.Type{
-		"fields":                        types.ListType{ElemType: types.ObjectType{AttrTypes: fieldItemAttrTypes}},
+		"fields":                        types.SetType{ElemType: types.ObjectType{AttrTypes: fieldItemAttrTypes}},
 		"strip_space_from_unique_field": types.BoolType,
 	}
 
@@ -91,7 +91,7 @@ type localIdentityIdentityProfileModel struct {
 	ProfileId               types.String `tfsdk:"profile_id"`
 	Name                    types.String `tfsdk:"name"`
 	ApcId                   types.Object `tfsdk:"apc_id"`
-	AuthSources             types.List   `tfsdk:"auth_sources"`
+	AuthSources             types.Set    `tfsdk:"auth_sources"`
 	AuthSourceUpdatePolicy  types.Object `tfsdk:"auth_source_update_policy"`
 	RegistrationEnabled     types.Bool   `tfsdk:"registration_enabled"`
 	RegistrationConfig      types.Object `tfsdk:"registration_config"`

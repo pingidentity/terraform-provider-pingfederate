@@ -14,9 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/mapdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -27,6 +27,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -38,7 +39,7 @@ var (
 )
 
 var (
-	authSourcesDefault, _ = types.ListValue(types.ObjectType{AttrTypes: authSourcesAttrTypes}, nil)
+	authSourcesDefault, _ = types.SetValue(types.ObjectType{AttrTypes: authSourcesAttrTypes}, nil)
 
 	authSourceUpdatePolicyDefault, _ = types.ObjectValue(authSourceUpdatePolicyAttrTypes, map[string]attr.Value{
 		"store_attributes":  types.BoolValue(false),
@@ -87,33 +88,54 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 	schema := schema.Schema{
 		Description: "Manages a configured local identity profile",
 		Attributes: map[string]schema.Attribute{
+			"profile_id": schema.StringAttribute{
+				Description: "The persistent, unique ID for the local identity profile. It can be any combination of `[a-zA-Z0-9._-]`.",
+				Required:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					configvalidators.PingFederateId(),
+					stringvalidator.LengthAtLeast(1),
+				},
+			},
 			"name": schema.StringAttribute{
 				Description: "The local identity profile name. Name is unique.",
 				Required:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"apc_id": schema.SingleNestedAttribute{
 				Description: "The reference to the authentication policy contract to use for this local identity profile.",
 				Required:    true,
 				Attributes:  resourcelink.ToSchema(),
 			},
-			"auth_sources": schema.ListNestedAttribute{
+			"auth_sources": schema.SetNestedAttribute{
 				Description: "The local identity authentication sources. Sources are unique.",
 				Computed:    true,
 				Optional:    true,
-				Default:     listdefault.StaticValue(authSourcesDefault),
+				Default:     setdefault.StaticValue(authSourcesDefault),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
-							Description: "The persistent, unique ID for the local identity authentication source. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.",
+							Description: "The persistent, unique ID for the local identity authentication source. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.",
 							Computed:    true,
 							Optional:    true,
 							PlanModifiers: []planmodifier.String{
 								stringplanmodifier.UseStateForUnknown(),
 							},
+							Validators: []validator.String{
+								configvalidators.PingFederateId(),
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 						"source": schema.StringAttribute{
 							Description: "The local identity authentication source. Source is unique.",
 							Required:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 					},
 				},
@@ -125,25 +147,25 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 				// Default set in ModifyPlan
 				Attributes: map[string]schema.Attribute{
 					"store_attributes": schema.BoolAttribute{
-						Description: "Whether or not to store attributes that came from authentication sources.",
+						Description: "Whether or not to store attributes that came from authentication sources. The default value is `false`.",
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
 					},
 					"retain_attributes": schema.BoolAttribute{
-						Description: "Whether or not to keep attributes after user disconnects.",
+						Description: "Whether or not to keep attributes after user disconnects. The default value is `false`.",
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
 					},
 					"update_attributes": schema.BoolAttribute{
-						Description: "Whether or not to update attributes when users authenticate.",
+						Description: "Whether or not to update attributes when users authenticate. The default value is `false`.",
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
 					},
 					"update_interval": schema.Int64Attribute{
-						Description: "The minimum number of days between updates.",
+						Description: "The minimum number of days between updates. The default value is `0`.",
 						Optional:    true,
 						Computed:    true,
 						Default:     int64default.StaticInt64(0),
@@ -151,7 +173,7 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 				},
 			},
 			"registration_enabled": schema.BoolAttribute{
-				Description: "Whether the registration configuration is enabled or not.",
+				Description: "Whether the registration configuration is enabled or not. The default value is `false`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
@@ -161,7 +183,7 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"captcha_enabled": schema.BoolAttribute{
-						Description: "Whether CAPTCHA is enabled or not in the registration configuration.",
+						Description: "Whether CAPTCHA is enabled or not in the registration configuration. The default value is `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
@@ -174,9 +196,12 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 					"template_name": schema.StringAttribute{
 						Description: "The template name for the registration configuration.",
 						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"create_authn_session_after_registration": schema.BoolAttribute{
-						Description: "Whether to create an Authentication Session when registering a local account. Default is true.",
+						Description: "Whether to create an Authentication Session when registering a local account. The default value is `true`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(true),
@@ -184,9 +209,12 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 					"username_field": schema.StringAttribute{
 						Description: "When creating an Authentication Session after registering a local account, PingFederate will pass the Unique ID field's value as the username. If the Unique ID value is not the username, then override which field's value will be used as the username.",
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"this_is_my_device_enabled": schema.BoolAttribute{
-						Description: "Allows users to indicate whether their device is shared or private. In this mode, PingFederate Authentication Sessions will not be stored unless the user indicates the device is private.",
+						Description: "Allows users to indicate whether their device is shared or private. In this mode, PingFederate Authentication Sessions will not be stored unless the user indicates the device is private. The default value is `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
@@ -197,7 +225,7 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 						Attributes:  resourcelink.ToSchema(),
 					},
 					"execute_workflow": schema.StringAttribute{
-						Description: "This setting indicates whether PingFederate should execute the workflow before or after account creation. The default is to run the registration workflow after account creation.",
+						Description: "This setting indicates whether PingFederate should execute the workflow before or after account creation. The default is to run the registration workflow after account creation. Supported values are `BEFORE_ACCOUNT_CREATION` and `AFTER_ACCOUNT_CREATION`. Requires that `registration_workflow` is also set.",
 						Optional:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOf([]string{"BEFORE_ACCOUNT_CREATION", "AFTER_ACCOUNT_CREATION"}...),
@@ -211,7 +239,7 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"delete_identity_enabled": schema.BoolAttribute{
-						Description: "Whether the end user is allowed to use delete functionality.",
+						Description: "Whether the end user is allowed to use delete functionality. The default value is `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
@@ -219,6 +247,9 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 					"template_name": schema.StringAttribute{
 						Description: "The template name for end-user profile management.",
 						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 				},
 			},
@@ -226,13 +257,13 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 				Description: "The local identity profile field configuration.",
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
-					"fields": schema.ListNestedAttribute{
+					"fields": schema.SetNestedAttribute{
 						Description: "The field configuration for the local identity profile.",
 						Optional:    true,
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"type": schema.StringAttribute{
-									Description: "The type of the local identity field.",
+									Description: "The type of the local identity field. Supported values are `CHECKBOX`, `CHECKBOX_GROUP`, `DATE`, `DROP_DOWN`, `EMAIL`, `PHONE`, `TEXT`, and `HIDDEN`.",
 									Required:    true,
 									Validators: []validator.String{
 										stringvalidator.OneOf([]string{"CHECKBOX", "CHECKBOX_GROUP", "DATE", "DROP_DOWN", "EMAIL", "PHONE", "TEXT", "HIDDEN"}...),
@@ -241,18 +272,30 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 								"id": schema.StringAttribute{
 									Description: "Id of the local identity field.",
 									Required:    true,
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 								"label": schema.StringAttribute{
 									Description: "Label of the local identity field.",
 									Required:    true,
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 								"registration_page_field": schema.BoolAttribute{
-									Description: "Whether this is a registration page field or not.",
+									Description: "Whether this is a registration page field or not. The default value is `false`.",
 									Optional:    true,
+									Computed:    true,
+									// This default causes issues with unexpected plans - see https://github.com/hashicorp/terraform-plugin-framework/issues/867
+									// Default:     booldefault.StaticBool(false),
 								},
 								"profile_page_field": schema.BoolAttribute{
-									Description: "Whether this is a profile page field or not.",
+									Description: "Whether this is a profile page field or not. The default value is `false`.",
 									Optional:    true,
+									Computed:    true,
+									// This default causes issues with unexpected plans - see https://github.com/hashicorp/terraform-plugin-framework/issues/867
+									// Default:     booldefault.StaticBool(false),
 								},
 								"attributes": schema.MapAttribute{
 									Description: "Attributes of the local identity field.",
@@ -265,7 +308,7 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 						},
 					},
 					"strip_space_from_unique_field": schema.BoolAttribute{
-						Description: "Strip leading/trailing spaces from unique ID field. Default is true.",
+						Description: "Strip leading/trailing spaces from unique ID field. The default value is `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
@@ -279,77 +322,92 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 				// Default set in ModifyPlan
 				Attributes: map[string]schema.Attribute{
 					"email_verification_enabled": schema.BoolAttribute{
-						Description: "Whether the email ownership verification is enabled.",
+						Description: "Whether the email ownership verification is enabled. The default value is `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
 					},
 					"verify_email_template_name": schema.StringAttribute{
-						Description: "The template name for verify email. The default is message-template-email-ownership-verification.html.",
+						Description: "The template name for verify email. The default is `message-template-email-ownership-verification.html`.",
 						Computed:    true,
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"email_verification_sent_template_name": schema.StringAttribute{
-						Description: "The template name for email verification sent. The default is local.identity.email.verification.sent.html. Note:Only applicable if EmailVerificationType is OTL.",
+						Description: "The template name for email verification sent. The default is `local.identity.email.verification.sent.html`. Note:Only applicable if `email_verification_type` is `OTL`.",
 						Computed:    true,
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"email_verification_success_template_name": schema.StringAttribute{
-						Description: "The template name for email verification success. The default is local.identity.email.verification.success.html.",
+						Description: "The template name for email verification success. The default is `local.identity.email.verification.success.html`.",
 						Computed:    true,
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"email_verification_error_template_name": schema.StringAttribute{
-						Description: "The template name for email verification error. The default is local.identity.email.verification.error.html.",
+						Description: "The template name for email verification error. The default is `local.identity.email.verification.error.html`.",
 						Computed:    true,
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"email_verification_type": schema.StringAttribute{
-						Description: "Email Verification Type.",
+						Description: "Email Verification Type. Supported values are `OTP` and `OTL`.",
 						Optional:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOf([]string{"OTP", "OTL"}...),
 						},
 					},
 					"otp_length": schema.Int64Attribute{
-						Description: "The OTP length generated for email verification. The default is 8. Note: Only applicable if EmailVerificationType is OTP.",
+						Description: "The OTP length generated for email verification. The default is `8`. Note: Only applicable if `email_verification_type` is `OTP`. The value must be between `5` and `100`.",
 						Optional:    true,
 						Validators: []validator.Int64{
 							int64validator.Between(5, 100),
 						},
 					},
 					"otp_retry_attempts": schema.Int64Attribute{
-						Description: "The number of OTP retry attempts for email verification. The default is 3. Note: Only applicable if EmailVerificationType is OTP.",
+						Description: "The number of OTP retry attempts for email verification. The default is `3`. Note: Only applicable if `email_verification_type` is `OTP`.",
 						Optional:    true,
 					},
 					"allowed_otp_character_set": schema.StringAttribute{
-						Description: "The allowed character set used to generate the OTP. The default is 23456789BCDFGHJKMNPQRSTVWXZbcdfghjkmnpqrstvwxz. Note: Only applicable if EmailVerificationType is OTP.",
+						Description: "The allowed character set used to generate the OTP. The default is `23456789BCDFGHJKMNPQRSTVWXZbcdfghjkmnpqrstvwxz`. Note: Only applicable if `email_verification_type` is `OTP`.",
 						Optional:    true,
 						Computed:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"otp_time_to_live": schema.Int64Attribute{
-						Description: "Field used OTP time to live. The default is 15. Note: Only applicable if EmailVerificationType is OTP.",
+						Description: "Field used OTP time to live. The default is `15`. Note: Only applicable if `email_verification_type` is `OTP`.",
 						Computed:    true,
 						Optional:    true,
 					},
 					"email_verification_otp_template_name": schema.StringAttribute{
-						Description: "The template name for email verification OTP verification. The default is local.identity.email.verification.otp.html. Note: Only applicable if EmailVerificationType is OTP.",
+						Description: "The template name for email verification OTP verification. The default is `local.identity.email.verification.otp.html`. Note: Only applicable if `email_verification_type` is `OTP`.",
 						Optional:    true,
 						Computed:    true,
 					},
 					"otl_time_to_live": schema.Int64Attribute{
-						Description: "Field used OTL time to live. The default is 1440. Note: Only applicable if EmailVerificationType is OTL.",
+						Description: "Field used OTL time to live. The default is `1440`. Note: Only applicable if `email_verification_type` is `OTL`.",
 						Computed:    true,
 						Optional:    true,
 					},
 					"field_for_email_to_verify": schema.StringAttribute{
-						Description: "Field used for email ownership verification. Note: Not required when emailVerificationEnabled is set to false.",
+						Description: "Field used for email ownership verification. Note: Not required when `email_verification_enabled` is set to `false`.",
 						Optional:    true,
 						Computed:    true,
 						Default:     stringdefault.StaticString(""),
 					},
 					"field_storing_verification_status": schema.StringAttribute{
-						Description: "Field used for storing email verification status. Note: Not required when emailVerificationEnabled is set to false.",
+						Description: "Field used for storing email verification status. Note: Not required when `email_verification_enabled` is set to `false`.",
 						Optional:    true,
 						Computed:    true,
 						Default:     stringdefault.StaticString(""),
@@ -360,12 +418,12 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 						Attributes:  resourcelink.ToSchema(),
 					},
 					"require_verified_email": schema.BoolAttribute{
-						Description: "Whether the user must verify their email address before they can complete a single sign-on transaction. The default is false.",
+						Description: "Whether the user must verify their email address before they can complete a single sign-on transaction. The default is `false`.",
 						Computed:    true,
 						Optional:    true,
 					},
 					"require_verified_email_template_name": schema.StringAttribute{
-						Description: "The template to render when the user must verify their email address before they can complete a single sign-on transaction. The default is local.identity.email.verification.required.html. Note:Only applicable if EmailVerificationType is OTL and requireVerifiedEmail is true.",
+						Description: "The template to render when the user must verify their email address before they can complete a single sign-on transaction. The default is `local.identity.email.verification.required.html`. Note: Only applicable if `email_verification_type` is OTL and `require_verified_email` is true.",
 						Computed:    true,
 						Optional:    true,
 					},
@@ -378,9 +436,12 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 					"base_dn": schema.StringAttribute{
 						Description: "The base DN to search from. If not specified, the search will start at the LDAP's root.",
 						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"type": schema.StringAttribute{
-						Description: "The data store config type.",
+						Description: "The data store config type. Supported values are `LDAP`, `PING_ONE_LDAP_GATEWAY`, `JDBC`, and `CUSTOM`.",
 						Required:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOf([]string{"LDAP", "PING_ONE_LDAP_GATEWAY", "JDBC", "CUSTOM"}...),
@@ -393,6 +454,9 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 							"id": schema.StringAttribute{
 								Description: "The ID of the resource.",
 								Required:    true,
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
 							},
 						},
 					},
@@ -402,7 +466,7 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"type": schema.StringAttribute{
-									Description: "The data store attribute type.",
+									Description: "The data store attribute type. Supported values are `LDAP`, `PING_ONE_LDAP_GATEWAY`, `JDBC`, and `CUSTOM`.",
 									Required:    true,
 									Validators: []validator.String{
 										stringvalidator.OneOf([]string{"LDAP", "PING_ONE_LDAP_GATEWAY", "JDBC", "CUSTOM"}...),
@@ -411,6 +475,9 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 								"name": schema.StringAttribute{
 									Description: "The data store attribute name.",
 									Required:    true,
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 								"metadata": schema.MapAttribute{
 									Description: "The data store attribute metadata.",
@@ -443,7 +510,7 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 				},
 			},
 			"profile_enabled": schema.BoolAttribute{
-				Description: "Whether the profile configuration is enabled or not.",
+				Description: "Whether the profile configuration is enabled or not. The default value is `false`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
@@ -452,11 +519,6 @@ func (r *localIdentityIdentityProfileResource) Schema(ctx context.Context, req r
 	}
 
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema,
-		"profile_id",
-		true,
-		false,
-		"The persistent, unique ID for the local identity profile. It can be any combination of [a-zA-Z0-9._-].")
 	resp.Schema = schema
 }
 
@@ -644,6 +706,22 @@ func (r *localIdentityIdentityProfileResource) ModifyPlan(ctx context.Context, r
 			}
 		}
 
+		if emailVerificationAttributes["otp_length"].IsUnknown() {
+			if emailVerificationEnabled && isOTP {
+				emailVerificationAttributes["otp_length"] = types.Int64Value(8)
+			} else {
+				emailVerificationAttributes["otp_length"] = types.Int64Null()
+			}
+		}
+
+		if emailVerificationAttributes["otp_retry_attempts"].IsUnknown() {
+			if emailVerificationEnabled && isOTP {
+				emailVerificationAttributes["otp_retry_attempts"] = types.Int64Value(3)
+			} else {
+				emailVerificationAttributes["otp_retry_attempts"] = types.Int64Null()
+			}
+		}
+
 		if emailVerificationAttributes["email_verification_otp_template_name"].IsUnknown() {
 			if emailVerificationEnabled && isOTP {
 				emailVerificationAttributes["email_verification_otp_template_name"] = types.StringValue("local.identity.email.verification.otp.html")
@@ -684,7 +762,7 @@ func (r *localIdentityIdentityProfileResource) ModifyPlan(ctx context.Context, r
 
 	// Some default for fields attributes depend on the field type
 	if internaltypes.IsDefined(plan.FieldConfig) {
-		fieldsList := plan.FieldConfig.Attributes()["fields"].(types.List)
+		fieldsList := plan.FieldConfig.Attributes()["fields"].(types.Set)
 		if internaltypes.IsDefined(fieldsList) {
 			fields := fieldsList.Elements()
 			fieldsWithDefaults := []attr.Value{}
@@ -733,7 +811,7 @@ func (r *localIdentityIdentityProfileResource) ModifyPlan(ctx context.Context, r
 			}
 			// Update the Field config with any defaults that were set
 			fieldsAttrs := plan.FieldConfig.Attributes()
-			fieldsAttrs["fields"], respDiags = types.ListValue(fieldsList.ElementType(ctx), fieldsWithDefaults)
+			fieldsAttrs["fields"], respDiags = types.SetValue(fieldsList.ElementType(ctx), fieldsWithDefaults)
 			resp.Diagnostics.Append(respDiags...)
 			plan.FieldConfig, respDiags = types.ObjectValue(plan.FieldConfig.AttributeTypes(ctx), fieldsAttrs)
 			resp.Diagnostics.Append(respDiags...)
@@ -753,7 +831,7 @@ func (r *localIdentityIdentityProfileResource) ValidateConfig(ctx context.Contex
 		switch emailVerificationType {
 		case "OTP":
 			if internaltypes.IsDefined(emailVerificationConfig["otl_time_to_live"]) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otl_time_to_live attribute is not allowed when email_verification_type is OTP. Required attributes are otp_length, otp_retry_attempts and otp_time_to_live."))
+				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otl_time_to_live attribute is not allowed when email_verification_type is OTP."))
 			}
 			if internaltypes.IsDefined(emailVerificationConfig["require_verified_email_template_name"]) {
 				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("require_verified_email_template_name is not allowed when email verification or require_verified_email is disabled or when email_verification_type is OTP."))
@@ -763,38 +841,63 @@ func (r *localIdentityIdentityProfileResource) ValidateConfig(ctx context.Contex
 			}
 		case "OTL":
 			if internaltypes.IsDefined(emailVerificationConfig["otp_length"]) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otp_length attribute is not allowed when email_verification_type is OTL. Required attribute: otl_time_to_live."))
+				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otp_length attribute is not allowed when email_verification_type is OTL."))
 			}
 			if internaltypes.IsDefined(emailVerificationConfig["otp_retry_attempts"]) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otp_retry_attempts attribute is not allowed when email_verification_type is OTL. Required attribute: otl_time_to_live."))
+				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otp_retry_attempts attribute is not allowed when email_verification_type is OTL."))
 			}
 			if internaltypes.IsDefined(emailVerificationConfig["allowed_otp_character_set"]) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("allowed_otp_character_set attribute is not allowed when email_verification_type is OTL. Required attribute: otl_time_to_live."))
+				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("allowed_otp_character_set attribute is not allowed when email_verification_type is OTL."))
 			}
 			if internaltypes.IsDefined(emailVerificationConfig["otp_length"]) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otp_length attribute is not allowed when email_verification_type is OTL. Required attribute: otl_time_to_live."))
+				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otp_length attribute is not allowed when email_verification_type is OTL."))
 			}
 			if internaltypes.IsDefined(emailVerificationConfig["email_verification_otp_template_name"]) {
-				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("email_verification_otp_template_name attribute is not allowed when email_verification_type is OTL. Required attribute: otl_time_to_live."))
+				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("email_verification_otp_template_name attribute is not allowed when email_verification_type is OTL."))
+			}
+		default:
+			if internaltypes.IsDefined(emailVerificationConfig["otl_time_to_live"]) {
+				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otl_time_to_live attribute is not allowed when email verification is disabled."))
+			}
+			if internaltypes.IsDefined(emailVerificationConfig["require_verified_email_template_name"]) {
+				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("require_verified_email_template_name is not allowed when email verification is disabled."))
+			}
+			if internaltypes.IsDefined(emailVerificationConfig["email_verification_sent_template_name"]) {
+				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("email_verification_sent_template_name is not allowed when email verification is disabled."))
+			}
+			if internaltypes.IsDefined(emailVerificationConfig["otp_length"]) {
+				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otp_length attribute is not allowed when email verification is disabled."))
+			}
+			if internaltypes.IsDefined(emailVerificationConfig["otp_retry_attempts"]) {
+				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otp_retry_attempts attribute is not allowed when email verification is disabled."))
+			}
+			if internaltypes.IsDefined(emailVerificationConfig["allowed_otp_character_set"]) {
+				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("allowed_otp_character_set attribute is not allowed when email verification is disabled."))
+			}
+			if internaltypes.IsDefined(emailVerificationConfig["otp_length"]) {
+				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("otp_length attribute is not allowed when email verification is disabled."))
+			}
+			if internaltypes.IsDefined(emailVerificationConfig["email_verification_otp_template_name"]) {
+				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("email_verification_otp_template_name attribute is not allowed when  email verification is disabled."))
 			}
 		}
 		// If email verification is enabled, some fields become required
 		verificationEnabled := emailVerificationConfig["email_verification_enabled"].(types.Bool)
 		if verificationEnabled.ValueBool() {
 			fieldForEmailToVerify := emailVerificationConfig["field_for_email_to_verify"].(types.String)
-			if !internaltypes.IsDefined(fieldForEmailToVerify) || fieldForEmailToVerify.ValueString() == "" {
+			if fieldForEmailToVerify.IsNull() || (internaltypes.IsDefined(fieldForEmailToVerify) && fieldForEmailToVerify.ValueString() == "") {
 				resp.Diagnostics.AddError("Missing Required Attribute", fmt.Sprintln("field_for_email_to_verify is required when email_verification_enabled is set to true"))
 			}
 			fieldStoringVerificationStatus := emailVerificationConfig["field_storing_verification_status"].(types.String)
-			if !internaltypes.IsDefined(fieldStoringVerificationStatus) || fieldStoringVerificationStatus.ValueString() == "" {
+			if fieldStoringVerificationStatus.IsNull() || (internaltypes.IsDefined(fieldStoringVerificationStatus) && fieldStoringVerificationStatus.ValueString() == "") {
 				resp.Diagnostics.AddError("Missing Required Attribute", fmt.Sprintln("field_storing_verification_status is required when email_verification_enabled is set to true"))
 			}
-			if !internaltypes.IsDefined(emailVerificationConfig["notification_publisher_ref"]) {
+			if emailVerificationConfig["notification_publisher_ref"].IsNull() {
 				resp.Diagnostics.AddError("Missing Required Attribute", fmt.Sprintln("notification_publisher_ref is required when email_verification_enabled is set to true"))
 			}
 		}
 	}
-	if (!model.ProfileEnabled.ValueBool()) && (!model.RegistrationEnabled.ValueBool()) {
+	if !model.ProfileEnabled.ValueBool() && !model.RegistrationEnabled.ValueBool() {
 		if internaltypes.IsDefined(model.EmailVerificationConfig) || internaltypes.IsDefined(model.DataStoreConfig) || internaltypes.IsDefined(model.FieldConfig) || internaltypes.IsDefined(model.RegistrationConfig) || internaltypes.IsDefined(model.ProfileConfig) {
 			resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("email, data_store_config, field Config, registration_config and profile_config are not allowed when registration and profile are disabled."))
 		}
@@ -802,59 +905,62 @@ func (r *localIdentityIdentityProfileResource) ValidateConfig(ctx context.Contex
 			resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("auth_source_update_policy is not allowed when registration and profile are disabled."))
 		}
 	} else {
-		if (model.ProfileEnabled.ValueBool()) && (model.RegistrationEnabled.ValueBool()) {
-			if !model.ProfileEnabled.ValueBool() {
-				if internaltypes.IsDefined(model.FieldConfig.Attributes()["fields"]) {
-					fieldObj := model.FieldConfig.Attributes()["fields"].(basetypes.ListValue)
-					fieldElems := fieldObj.Elements()
-					for _, fieldElem := range fieldElems {
-						fieldElemAttrs := fieldElem.(types.Object)
-						profilePagefield := fieldElemAttrs.Attributes()["profile_page_field"].(basetypes.BoolValue)
-						if (internaltypes.IsDefined(profilePagefield)) && (profilePagefield.ValueBool()) {
-							resp.Diagnostics.AddError("Invalid Value for Attribute!", fmt.Sprintln("profile_page_field option for the fields attribute should not be set to 'true' when profile is disabled."))
-						}
-						registrationPageField := fieldElemAttrs.Attributes()["registration_page_field"].(basetypes.BoolValue)
-						if (internaltypes.IsDefined(registrationPageField)) && (!registrationPageField.ValueBool()) {
-							resp.Diagnostics.AddError("Invalid Value for Attribute!", fmt.Sprintln("registration_page_field option is required to be set to 'true' for the fields attribute when registration is the only option enabled."))
-						}
+		if model.ProfileEnabled.ValueBool() || model.RegistrationEnabled.ValueBool() {
+			if model.FieldConfig.IsNull() {
+				resp.Diagnostics.AddError("Invalid Value for Attribute!", fmt.Sprintln("field_config is required when profile or registration is enabled."))
+			}
+		}
+		if model.ProfileEnabled.ValueBool() && model.ProfileConfig.IsNull() {
+			resp.Diagnostics.AddError("Invalid Value for Attribute!", fmt.Sprintln("profile_config is required when profile is enabled."))
+		}
+		if model.RegistrationEnabled.ValueBool() && model.RegistrationConfig.IsNull() {
+			resp.Diagnostics.AddError("Invalid Value for Attribute!", fmt.Sprintln("registration_config is required when registration is enabled."))
+		}
+		if !model.RegistrationEnabled.ValueBool() {
+			if internaltypes.IsDefined(model.FieldConfig.Attributes()["fields"]) {
+				fieldObj := model.FieldConfig.Attributes()["fields"].(basetypes.SetValue)
+				fieldElems := fieldObj.Elements()
+				for _, fieldElem := range fieldElems {
+					fieldElemAttrs := fieldElem.(types.Object)
+					registrationPageField := fieldElemAttrs.Attributes()["registration_page_field"].(basetypes.BoolValue)
+					if registrationPageField.ValueBool() {
+						resp.Diagnostics.AddError("Invalid Value for Attribute!", fmt.Sprintln("registration_page_field option for the fields attribute should not be set to 'true' when registration is disabled."))
+					}
+					profilePageField := fieldElemAttrs.Attributes()["profile_page_field"].(basetypes.BoolValue)
+					if internaltypes.IsDefined(profilePageField) && !profilePageField.ValueBool() {
+						resp.Diagnostics.AddError("Invalid Value for Attribute!", fmt.Sprintln("profile_page_field option is required to be set to 'true' for the fields attribute when profile management is the only option enabled."))
 					}
 				}
-				if !model.ProfileConfig.IsNull() {
-					resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("profile_config is not allowed when profile is not enabled."))
-				}
 			}
-			if (model.ProfileEnabled.ValueBool()) && (model.ProfileConfig.IsNull()) {
-				resp.Diagnostics.AddError("Invalid Value for Attribute!", fmt.Sprintln("profile_config is required when profile is enabled."))
+			if internaltypes.IsDefined(model.RegistrationConfig) {
+				resp.Diagnostics.AddError("Invalid Attribute!", fmt.Sprintln("registration_config is not allowed when registration is not enabled."))
 			}
-			if !model.RegistrationEnabled.ValueBool() {
-				if internaltypes.IsDefined(model.FieldConfig.Attributes()["fields"]) {
-					fieldObj := model.FieldConfig.Attributes()["fields"].(basetypes.SetValue)
-					fieldElems := fieldObj.Elements()
-					for _, fieldElem := range fieldElems {
-						fieldElemAttrs := fieldElem.(types.Object)
-						registrationPageField := fieldElemAttrs.Attributes()["registration_page_field"].(basetypes.BoolValue)
-						if (internaltypes.IsDefined(registrationPageField)) && (registrationPageField.ValueBool()) {
-							resp.Diagnostics.AddError("Invalid Value for Attribute!", fmt.Sprintln("registration_page_field option for the fields attribute should not be set to 'true' when registration is disabled."))
-						}
-						profilePageField := fieldElemAttrs.Attributes()["profile_page_field"].(basetypes.BoolValue)
-						if (internaltypes.IsDefined(profilePageField)) && (!profilePageField.ValueBool()) {
-							resp.Diagnostics.AddError("Invalid Value for Attribute!", fmt.Sprintln("profile_page_field option is required to be set to 'true' for the fields attribute when profile management is the only option enabled."))
-						}
+		}
+		if !model.ProfileEnabled.ValueBool() {
+			if internaltypes.IsDefined(model.FieldConfig.Attributes()["fields"]) {
+				fieldObj := model.FieldConfig.Attributes()["fields"].(basetypes.SetValue)
+				fieldElems := fieldObj.Elements()
+				for _, fieldElem := range fieldElems {
+					fieldElemAttrs := fieldElem.(types.Object)
+					profilePagefield := fieldElemAttrs.Attributes()["profile_page_field"].(basetypes.BoolValue)
+					if profilePagefield.ValueBool() {
+						resp.Diagnostics.AddError("Invalid Value for Attribute!", fmt.Sprintln("profile_page_field option for the fields attribute should not be set to 'true' when profile is disabled."))
+					}
+					registrationPageField := fieldElemAttrs.Attributes()["registration_page_field"].(basetypes.BoolValue)
+					if (internaltypes.IsDefined(registrationPageField)) && (!registrationPageField.ValueBool()) {
+						resp.Diagnostics.AddError("Invalid Value for Attribute!", fmt.Sprintln("registration_page_field option is required to be set to 'true' for the fields attribute when registration is the only option enabled."))
 					}
 				}
-				if !model.RegistrationConfig.IsNull() {
-					resp.Diagnostics.AddError("Invalid Attribute!", fmt.Sprintln("registration_config is not allowed when registration is not enabled."))
-				}
 			}
-			if (model.RegistrationEnabled.ValueBool()) && (model.RegistrationConfig.IsNull()) {
-				resp.Diagnostics.AddError("Invalid Value for Attribute!", fmt.Sprintln("registration_config is required when registration is enabled."))
+			if internaltypes.IsDefined(model.ProfileConfig) {
+				resp.Diagnostics.AddError("Invalid Attribute Combination!", fmt.Sprintln("profile_config is not allowed when profile is not enabled."))
 			}
 		}
 	}
 	if internaltypes.IsDefined(model.RegistrationConfig) {
 		captchaEnabled := model.RegistrationConfig.Attributes()["captcha_enabled"].(types.Bool)
 		captchaProviderRef := model.RegistrationConfig.Attributes()["captcha_provider_ref"].(types.Object)
-		if captchaEnabled.ValueBool() != internaltypes.IsDefined(captchaProviderRef) {
+		if (captchaEnabled.ValueBool() && captchaProviderRef.IsNull()) || (internaltypes.IsDefined(captchaEnabled) && !captchaEnabled.ValueBool() && internaltypes.IsDefined(captchaProviderRef)) {
 			resp.Diagnostics.AddError("Invalid registration captcha settings",
 				"If registration_config.captcha_enabled is set to true, then registration_config.captcha_provider_ref must be configured. If registration_config.captcha_enabled is false, then registration_config.captcha_provider_ref must not be configured.")
 		}
@@ -887,7 +993,7 @@ func readLocalIdentityIdentityProfileResponse(ctx context.Context, r *client.Loc
 		diags.Append(respDiags...)
 		authSourcesSliceAttrVal = append(authSourcesSliceAttrVal, authSourcesObj)
 	}
-	state.AuthSources, respDiags = types.ListValue(authSourcesSliceType, authSourcesSliceAttrVal)
+	state.AuthSources, respDiags = types.SetValue(authSourcesSliceType, authSourcesSliceAttrVal)
 	diags.Append(respDiags...)
 
 	state.RegistrationConfig, respDiags = types.ObjectValueFrom(ctx, registrationConfigAttrTypes, r.RegistrationConfig)
