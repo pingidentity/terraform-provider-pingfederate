@@ -754,6 +754,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		localidentity.LocalIdentityProfileResource,
 		localidentity.LocalIdentityIdentityProfileResource,
 		metadataurls.MetadataUrlResource,
+		notificationpublisherssettings.NotificationPublisherSettingsResource,
 		notificationpublisherssettings.NotificationPublishersSettingsResource,
 		notificationpublishers.NotificationPublisherResource,
 		oauthaccesstokenmanager.OauthAccessTokenManagerResource,

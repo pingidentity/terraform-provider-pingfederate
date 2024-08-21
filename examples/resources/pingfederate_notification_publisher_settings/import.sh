@@ -1,0 +1,1 @@
+terraform import pingfederate_notification_publisher_settings.publisherSettings id
