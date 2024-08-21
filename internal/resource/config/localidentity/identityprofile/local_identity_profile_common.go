@@ -86,7 +86,7 @@ var (
 	}
 )
 
-type localIdentityIdentityProfileModel struct {
+type localIdentityProfileModel struct {
 	Id                      types.String `tfsdk:"id"`
 	ProfileId               types.String `tfsdk:"profile_id"`
 	Name                    types.String `tfsdk:"name"`
