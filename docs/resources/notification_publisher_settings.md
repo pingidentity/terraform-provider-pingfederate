@@ -1,11 +1,11 @@
 ---
-page_title: "pingfederate_notification_publishers_settings Resource - terraform-provider-pingfederate"
+page_title: "pingfederate_notification_publisher_settings Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
   Manages Notification Publisher Settings
 ---
 
-# pingfederate_notification_publishers_settings (Resource)
+# pingfederate_notification_publisher_settings (Resource)
 
 Manages Notification Publisher Settings
 
@@ -80,7 +80,7 @@ resource "pingfederate_notification_publisher" "notificationPublisher" {
   }
 }
 
-resource "pingfederate_notification_publishers_settings" "publisherSettings" {
+resource "pingfederate_notification_publisher_settings" "publisherSettings" {
   default_notification_publisher_ref = {
     id = pingfederate_notification_publisher.notificationPublisher.publisher_id
   }
@@ -112,5 +112,5 @@ Import is supported using the following syntax:
 ~> This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
 
 ```shell
-terraform import pingfederate_notification_publishers_settings.publisherSettings id
+terraform import pingfederate_notification_publisher_settings.publisherSettings id
 ```

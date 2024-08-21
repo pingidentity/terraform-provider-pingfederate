@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
-	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -23,9 +21,7 @@ func SessionApplicationSessionPolicyDataSource() datasource.DataSource {
 
 // sessionApplicationSessionPolicyDataSource is the datasource implementation.
 type sessionApplicationSessionPolicyDataSource struct {
-	providerConfig internaltypes.ProviderConfiguration
-	apiClient      *client.APIClient
-	impl           sessionApplicationPolicyDataSource
+	impl sessionApplicationPolicyDataSource
 }
 
 // GetSchema defines the schema for the datasource.

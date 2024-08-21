@@ -32,12 +32,12 @@ func TestAccSessionApplicationPolicy(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSessionApplicationPolicy(resourceName, nil, false),
+				Config: testAccSessionApplicationPolicy(resourceName, nil),
 				Check:  testAccCheckExpectedSessionApplicationPolicyAttributes(nil),
 			},
 			{
 				// Test updating some fields
-				Config: testAccSessionApplicationPolicy(resourceName, &updatedResourceModel, false),
+				Config: testAccSessionApplicationPolicy(resourceName, &updatedResourceModel),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckExpectedSessionApplicationPolicyAttributes(&updatedResourceModel),
 					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_application_policy.%s", resourceName), "idle_timeout_mins", fmt.Sprintf("%d", updatedResourceModel.idleTimeoutMins)),
@@ -46,21 +46,21 @@ func TestAccSessionApplicationPolicy(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:            testAccSessionApplicationPolicy(resourceName, &updatedResourceModel, false),
+				Config:            testAccSessionApplicationPolicy(resourceName, &updatedResourceModel),
 				ResourceName:      "pingfederate_session_application_policy." + resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
 			{
 				// Back to minimal model
-				Config: testAccSessionApplicationPolicy(resourceName, nil, false),
+				Config: testAccSessionApplicationPolicy(resourceName, nil),
 				Check:  testAccCheckExpectedSessionApplicationPolicyAttributes(nil),
 			},
 		},
 	})
 }
 
-func testAccSessionApplicationPolicy(resourceName string, resourceModel *sessionApplicationPolicyResourceModel, useDeprecated bool) string {
+func testAccSessionApplicationPolicy(resourceName string, resourceModel *sessionApplicationPolicyResourceModel) string {
 	optionalHcl := ""
 	if resourceModel != nil {
 		optionalHcl = fmt.Sprintf(`
@@ -71,19 +71,13 @@ func testAccSessionApplicationPolicy(resourceName string, resourceModel *session
 			resourceModel.maxTimeoutMins,
 		)
 	}
-
-	resourceType := "pingfederate_session_application_policy"
-	if useDeprecated {
-		resourceType = "pingfederate_session_application_session_policy"
-	}
 	return fmt.Sprintf(`
-resource "%[1]s" "%[2]s" {
+resource "pingfederate_session_application_policy" "%s" {
   %s
 }
-data "%[1]s" "%[2]s" {
-  depends_on = [%[1]s.%[2]s]
+data "pingfederate_session_application_policy" "%[1]s" {
+  depends_on = [pingfederate_session_application_policy.%[1]s]
 }`,
-		resourceType,
 		resourceName,
 		optionalHcl,
 	)

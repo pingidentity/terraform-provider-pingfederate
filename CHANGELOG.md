@@ -5,6 +5,9 @@
 * **New Resource:** `pingfederate_certificates_revocation_settings` ([#280]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/280)))
 * **New Resource:** `pingfederate_idp_sts_request_parameters_contract` ([#281]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/281)))
 
+### Deprecated
+* The `pingfederate_session_application_session_policy` resource has been deprecated. Use `pingfederate_session_application_policy` instead. `pingfederate_session_application_session_policy` will be removed in a future release. ([#343]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/343)))
+
 # v0.14.0 August 15, 2024
 ### Resources
 * **New Resource:** `pingfederate_keypairs_oauth_openid_connect_additional_key_set` ([#271]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/271)))
