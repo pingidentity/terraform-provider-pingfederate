@@ -28,7 +28,7 @@ type sessionApplicationSessionPolicyResource struct {
 // GetSchema defines the schema for the resource.
 func (r *sessionApplicationSessionPolicyResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	r.impl.Schema(ctx, req, resp)
-	resp.Schema.DeprecationMessage = "The `session_application_session_policy` resource is deprecated. Use the `session_application_policy` resource instead."
+	resp.Schema.DeprecationMessage = "The `pingfederate_session_application_session_policy` resource is deprecated. Use the `pingfederate_session_application_policy` resource instead."
 }
 
 // Metadata returns the resource type name.

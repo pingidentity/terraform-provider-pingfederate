@@ -1,11 +1,11 @@
 ---
-page_title: "pingfederate_open_id_connect_settings Resource - terraform-provider-pingfederate"
+page_title: "pingfederate_openid_connect_settings Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
   Manages OpenID Connect configuration settings
 ---
 
-# pingfederate_open_id_connect_settings (Resource)
+# pingfederate_openid_connect_settings (Resource)
 
 Manages OpenID Connect configuration settings
 
@@ -39,7 +39,7 @@ resource "pingfederate_oauth_open_id_connect_policy" "oauthOIDCPolicyExample" {
   id_token_lifetime                = 5
 }
 
-resource "pingfederate_open_id_connect_settings" "openIdConnectSettingsExample" {
+resource "pingfederate_openid_connect_settings" "openIdConnectSettingsExample" {
   default_policy_ref = {
     id = pingfederate_oauth_open_id_connect_policy.oauthOIDCPolicyExample.policy_id
   }
@@ -85,5 +85,5 @@ Import is supported using the following syntax:
 ~> This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
 
 ```shell
-terraform import pingfederate_open_id_connect_settings.openIdConnectSettings id
+terraform import pingfederate_openid_connect_settings.openIdConnectSettings id
 ```
