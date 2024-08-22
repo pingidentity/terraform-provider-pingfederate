@@ -21,6 +21,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -74,29 +75,32 @@ func (r *openIdConnectSettingsResource) Schema(ctx context.Context, req resource
 						openIdConnectSettingsAttrTypes,
 						map[string]attr.Value{
 							"track_user_sessions_for_logout": types.BoolValue(false),
-							"revoke_user_session_on_logout":  types.BoolValue(false),
-							"session_revocation_lifetime":    types.Int64Value(1450),
+							"revoke_user_session_on_logout":  types.BoolValue(true),
+							"session_revocation_lifetime":    types.Int64Value(490),
 						},
 					),
 				),
 				Attributes: map[string]schema.Attribute{
 					"track_user_sessions_for_logout": schema.BoolAttribute{
-						Description: "Determines whether user sessions are tracked for logout. This property is now available under /oauth/authServerSettings and should be accessed through that resource.",
-						Computed:    true,
-						Optional:    true,
-						Default:     booldefault.StaticBool(false),
+						Description:        "Determines whether user sessions are tracked for logout. The default is `false`.",
+						DeprecationMessage: "This property is now available under `pingfederate_oauth_server_settings` and should be accessed through that resource.",
+						Computed:           true,
+						Optional:           true,
+						Default:            booldefault.StaticBool(false),
 					},
 					"revoke_user_session_on_logout": schema.BoolAttribute{
-						Description: "Determines whether the user's session is revoked on logout. This property is now available under /session/settings and should be accessed through that resource.",
-						Computed:    true,
-						Optional:    true,
-						Default:     booldefault.StaticBool(false),
+						Description:        "Determines whether the user's session is revoked on logout. The default is `true`.",
+						DeprecationMessage: "This property is now available under `pingfederate_session_settings` and should be accessed through that resource.",
+						Computed:           true,
+						Optional:           true,
+						Default:            booldefault.StaticBool(true),
 					},
 					"session_revocation_lifetime": schema.Int64Attribute{
-						Description: "How long a session revocation is tracked and stored, in minutes. This property is now available under /session/settings and should be accessed through that resource.",
-						Computed:    true,
-						Optional:    true,
-						Default:     int64default.StaticInt64(1450),
+						Description:        "How long a session revocation is tracked and stored, in minutes. The default is `490`. Value must be between `1` and `432001`, inclusive.",
+						DeprecationMessage: "This property is now available under `pingfederate_session_settings` and should be accessed through that resource.",
+						Computed:           true,
+						Optional:           true,
+						Default:            int64default.StaticInt64(490),
 						Validators: []validator.Int64{
 							// session_revocation_lifetime must be between 1 and 43200 minutes, inclusive
 							int64validator.Between(1, 43200),
@@ -106,7 +110,7 @@ func (r *openIdConnectSettingsResource) Schema(ctx context.Context, req resource
 			},
 		},
 	}
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -146,6 +150,16 @@ func (r *openIdConnectSettingsResource) Configure(_ context.Context, req resourc
 	r.providerConfig = providerCfg.ProviderConfig
 	r.apiClient = providerCfg.ApiClient
 
+}
+
+func (m *openIdConnectSettingsResourceModel) buildDefaultClientStruct() *client.OpenIdConnectSettings {
+	return &client.OpenIdConnectSettings{
+		SessionSettings: &client.OIDCSessionSettings{
+			TrackUserSessionsForLogout: utils.Pointer(false),
+			RevokeUserSessionOnLogout:  utils.Pointer(true),
+			SessionRevocationLifetime:  utils.Pointer(int64(490)),
+		},
+	}
 }
 
 func readOpenIdConnectSettingsResponse(ctx context.Context, r *client.OpenIdConnectSettings, state *openIdConnectSettingsResourceModel, existingId *string) diag.Diagnostics {
@@ -277,6 +291,16 @@ func (r *openIdConnectSettingsResource) Update(ctx context.Context, req resource
 
 // This config object is edit-only, so Terraform can't delete it.
 func (r *openIdConnectSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
+	// Instead this delete will reset the configuration back to the "default" value used by PingFederate.
+	var model openIdConnectSettingsResourceModel
+	clientData := model.buildDefaultClientStruct()
+	apiUpdateRequest := r.apiClient.OauthOpenIdConnectAPI.UpdateOIDCSettings(config.AuthContext(ctx, r.providerConfig))
+	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
+	_, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.UpdateOIDCSettingsExecute(apiUpdateRequest)
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while resetting the OpenID Connect settings", err, httpResp)
+	}
 }
 
 func (r *openIdConnectSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
