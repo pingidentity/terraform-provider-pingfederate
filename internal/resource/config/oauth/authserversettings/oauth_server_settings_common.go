@@ -31,7 +31,7 @@ var (
 	}
 )
 
-type oauthAuthServerSettingsModel struct {
+type oauthServerSettingsModel struct {
 	Id                                                 types.String `tfsdk:"id"`
 	DefaultScopeDescription                            types.String `tfsdk:"default_scope_description"`
 	Scopes                                             types.Set    `tfsdk:"scopes"`
@@ -87,7 +87,7 @@ type oauthAuthServerSettingsModel struct {
 	ConsentLifetimeDays                                types.Int64  `tfsdk:"consent_lifetime_days"`
 }
 
-func readOauthAuthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthAuthServerSettingsModel, existingId *string) diag.Diagnostics {
+func readOauthServerSettingsResponse(ctx context.Context, r *client.AuthorizationServerSettings, state *oauthServerSettingsModel, existingId *string) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	if existingId != nil {
 		state.Id = types.StringValue(*existingId)
