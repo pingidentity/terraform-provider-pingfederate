@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -12,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
@@ -77,7 +79,7 @@ func (r *serverSettingsLogSettingsResource) Schema(ctx context.Context, req reso
 		Description: "Manages the settings related to server logging.",
 		Attributes: map[string]schema.Attribute{
 			"log_categories": schema.SetNestedAttribute{
-				Description: "The log categories defined for the system and whether they are enabled. On a PUT request, if a category is not included in the list, it will be disabled.",
+				Description: "The log categories defined for the system and whether they are enabled.",
 				Optional:    true,
 				Computed:    true,
 				Default:     setdefault.StaticValue(logCategoriesDefault),
@@ -89,9 +91,12 @@ func (r *serverSettingsLogSettingsResource) Schema(ctx context.Context, req reso
 						"id": schema.StringAttribute{
 							Description: "The ID of the log category. This field must match one of the category IDs defined in log4j-categories.xml.",
 							Required:    true,
+							Validators: []validator.String{
+								stringvalidator.LengthAtLeast(1),
+							},
 						},
 						"name": schema.StringAttribute{
-							Description: "The description of the log category. This field is read-only and is ignored for PUT requests.",
+							Description: "The description of the log category. This field is read-only.",
 							Optional:    false,
 							Computed:    true,
 							// Adding these plan modifiers also seems to cause issues with Terraform's set planning logic. Possibly related to the issue linked below
@@ -100,7 +105,7 @@ func (r *serverSettingsLogSettingsResource) Schema(ctx context.Context, req reso
 							},*/
 						},
 						"description": schema.StringAttribute{
-							Description: "The description of the log category. This field is read-only and is ignored for PUT requests.",
+							Description: "The description of the log category. This field is read-only.",
 							Optional:    false,
 							Computed:    true,
 							// Adding these plan modifiers also seems to cause issues with Terraform's set planning logic. Possibly related to the issue linked below
@@ -109,7 +114,7 @@ func (r *serverSettingsLogSettingsResource) Schema(ctx context.Context, req reso
 							},*/
 						},
 						"enabled": schema.BoolAttribute{
-							Description: "Determines whether or not the log category is enabled. The default is false.",
+							Description: "Determines whether or not the log category is enabled. The default is `false`.",
 							Optional:    true,
 							Computed:    true,
 							// This default causes issues with unexpected plans - see https://github.com/hashicorp/terraform-plugin-framework/issues/867
@@ -119,28 +124,26 @@ func (r *serverSettingsLogSettingsResource) Schema(ctx context.Context, req reso
 				},
 			},
 			"log_categories_all": schema.SetNestedAttribute{
-				Description: "The log categories defined for the system and whether they are enabled. On a PUT request, if a category is not included in the list, it will be disabled. This attribute will include any categories not specified in the normal log_categories attribute.",
+				Description: "The log categories defined for the system and whether they are enabled. This attribute is read-only and will include any categories returned by PingFederate that were not specified in the normal log_categories attribute.",
 				Optional:    false,
 				Computed:    true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.StringAttribute{
 							Description: "The ID of the log category. This field must match one of the category IDs defined in log4j-categories.xml.",
-							Optional:    false,
 							Computed:    true,
 						},
 						"name": schema.StringAttribute{
-							Description: "The description of the log category. This field is read-only and is ignored for PUT requests.",
-							Optional:    false,
+							Description: "The description of the log category.",
 							Computed:    true,
 						},
 						"description": schema.StringAttribute{
-							Description: "The description of the log category. This field is read-only and is ignored for PUT requests.",
+							Description: "The description of the log category.",
 							Optional:    false,
 							Computed:    true,
 						},
 						"enabled": schema.BoolAttribute{
-							Description: "Determines whether or not the log category is enabled. The default is false.",
+							Description: "Determines whether or not the log category is enabled.",
 							Optional:    false,
 							Computed:    true,
 						},
@@ -150,7 +153,7 @@ func (r *serverSettingsLogSettingsResource) Schema(ctx context.Context, req reso
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -332,6 +335,8 @@ func (r *serverSettingsLogSettingsResource) Update(ctx context.Context, req reso
 
 // This config object is edit-only, so Terraform can't delete it.
 func (r *serverSettingsLogSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
+	resp.Diagnostics.AddWarning("Configuration cannot be returned to original state.  The resource has been removed from Terraform state but the configuration remains applied to the environment.", "")
 }
 
 func (r *serverSettingsLogSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
