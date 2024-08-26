@@ -35,7 +35,7 @@ func (r *virtualHostNamesDataSource) Schema(ctx context.Context, req datasource.
 	schema := schema.Schema{
 		Description: "Describes settings for virtual host names.",
 		Attributes: map[string]schema.Attribute{
-			"virtual_host_names": schema.ListAttribute{
+			"virtual_host_names": schema.SetAttribute{
 				Description: "List of virtual host names.",
 				ElementType: types.StringType,
 				Computed:    true,
@@ -43,7 +43,7 @@ func (r *virtualHostNamesDataSource) Schema(ctx context.Context, req datasource.
 			},
 		},
 	}
-	id.ToDataSourceSchema(&schema)
+	id.ToDataSourceSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
