@@ -17,6 +17,7 @@
 * The `pingfederate_server_settings_general_settings` resource and data source have been renamed. Use `pingfederate_server_settings_general` instead. `pingfederate_server_settings_general_settings` will be removed in a future release. ([#346]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/346)))
 * The `pingfederate_session_authentication_session_policies_global` resource and data source have been renamed. Use `pingfederate_session_authentication_policies_global` instead. `pingfederate_session_authentication_session_policies_global` will be removed in a future release. ([#347]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/347)))
 * The `pingfederate_server_settings_log_settings` resource and data source have been renamed. Use `pingfederate_server_settings_logging` instead. `pingfederate_server_settings_log_settings` will be removed in a future release. ([#347]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/347)))
+* The `pingfederate_oauth_open_id_connect_policy` resource and data source have been renamed. Use `pingfederate_openid_connect_policy` instead. `pingfederate_oauth_open_id_connect_policy` will be removed in a future release. ([#347]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/347)))
 
 # v0.14.0 August 15, 2024
 ### Resources
