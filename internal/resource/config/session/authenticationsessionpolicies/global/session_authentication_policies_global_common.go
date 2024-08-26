@@ -8,7 +8,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 )
 
-type sessionAuthenticationSessionPoliciesGlobalModel struct {
+type sessionAuthenticationPoliciesGlobalModel struct {
 	Id                         types.String `tfsdk:"id"`
 	EnableSessions             types.Bool   `tfsdk:"enable_sessions"`
 	PersistentSessions         types.Bool   `tfsdk:"persistent_sessions"`
@@ -19,7 +19,7 @@ type sessionAuthenticationSessionPoliciesGlobalModel struct {
 	MaxTimeoutDisplayUnit      types.String `tfsdk:"max_timeout_display_unit"`
 }
 
-func readSessionAuthenticationSessionPoliciesGlobalResponse(ctx context.Context, r *client.GlobalAuthenticationSessionPolicy, state *sessionAuthenticationSessionPoliciesGlobalModel, existingId *string) {
+func readSessionAuthenticationPoliciesGlobalResponse(ctx context.Context, r *client.GlobalAuthenticationSessionPolicy, state *sessionAuthenticationPoliciesGlobalModel, existingId *string) {
 	if existingId != nil {
 		state.Id = types.StringValue(*existingId)
 	} else {
