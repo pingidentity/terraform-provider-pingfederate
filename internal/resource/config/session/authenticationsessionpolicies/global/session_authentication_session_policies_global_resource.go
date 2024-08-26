@@ -3,18 +3,19 @@ package sessionauthenticationsessionpoliciesglobal
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -43,49 +44,53 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Schema(ctx context.
 			"enable_sessions": schema.BoolAttribute{
 				Description: "Determines whether authentication sessions are enabled globally.",
 				Required:    true,
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.UseStateForUnknown()},
 			},
 			"persistent_sessions": schema.BoolAttribute{
-				Description: "Determines whether authentication sessions are persistent by default. Persistent sessions are linked to a persistent cookie and stored in a data store. This field is ignored if enableSessions is false.",
+				Description: "Determines whether authentication sessions are persistent by default. Persistent sessions are linked to a persistent cookie and stored in a data store. This field is ignored if `enable_sessions` is `false`. Default values is `false`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"hash_unique_user_key_attribute": schema.BoolAttribute{
-				Description: "Determines whether to hash the value of the unique user key attribute.",
+				Description: "Determines whether to hash the value of the unique user key attribute. Default value is `false`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"idle_timeout_mins": schema.Int64Attribute{
-				Description: "The idle timeout period, in minutes. If set to -1, the idle timeout will be set to the maximum timeout. The default is 60.",
+				Description: "The idle timeout period, in minutes. If set to `-1`, the idle timeout will be set to the maximum timeout. The default is `60`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     int64default.StaticInt64(60),
 			},
 			"idle_timeout_display_unit": schema.StringAttribute{
-				Description: "The display unit for the idle timeout period in the PingFederate administrative console. When the display unit is HOURS or DAYS, the timeout value in minutes must correspond to a whole number value for the specified unit. [ MINUTES, HOURS, DAYS ]",
+				Description: "The display unit for the idle timeout period in the PingFederate administrative console. When the display unit is `HOURS` or `DAYS`, the timeout value in minutes must correspond to a whole number value for the specified unit. Supported values are `MINUTES`, `HOURS`, and `DAYS`. Default value is `MINUTES`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString("MINUTES"),
+				Validators: []validator.String{
+					stringvalidator.OneOf("MINUTES", "HOURS", "DAYS"),
+				},
 			},
 			"max_timeout_mins": schema.Int64Attribute{
-				Description: "The maximum timeout period, in minutes. If set to -1, sessions do not expire. The default is 480.",
+				Description: "The maximum timeout period, in minutes. If set to `-1`, sessions do not expire. The default is `480`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     int64default.StaticInt64(480),
 			},
 			"max_timeout_display_unit": schema.StringAttribute{
-				Description: "The display unit for the maximum timeout period in the PingFederate administrative console. When the display unit is HOURS or DAYS, the timeout value in minutes must correspond to a whole number value for the specified unit.",
+				Description: "The display unit for the maximum timeout period in the PingFederate administrative console. When the display unit is `HOURS` or `DAYS`, the timeout value in minutes must correspond to a whole number value for the specified unit. Supported values are `MINUTES`, `HOURS`, and `DAYS`. Default value is `MINUTES`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString("MINUTES"),
+				Validators: []validator.String{
+					stringvalidator.OneOf("MINUTES", "HOURS", "DAYS"),
+				},
 			},
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -131,6 +136,18 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Configure(_ context
 
 }
 
+func (m *sessionAuthenticationSessionPoliciesGlobalModel) buildDefaultClientStruct() *client.GlobalAuthenticationSessionPolicy {
+	return &client.GlobalAuthenticationSessionPolicy{
+		EnableSessions:             false,
+		PersistentSessions:         utils.Pointer(false),
+		HashUniqueUserKeyAttribute: utils.Pointer(false),
+		IdleTimeoutMins:            utils.Pointer(int64(60)),
+		IdleTimeoutDisplayUnit:     utils.Pointer("MINUTES"),
+		MaxTimeoutMins:             utils.Pointer(int64(480)),
+		MaxTimeoutDisplayUnit:      utils.Pointer("MINUTES"),
+	}
+}
+
 func (r *sessionAuthenticationSessionPoliciesGlobalResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan sessionAuthenticationSessionPoliciesGlobalModel
 
@@ -143,7 +160,7 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Create(ctx context.
 	createSessionAuthenticationSessionPoliciesGlobal := client.NewGlobalAuthenticationSessionPolicy(plan.EnableSessions.ValueBool())
 	err := addOptionalSessionAuthenticationSessionPoliciesGlobalFields(ctx, createSessionAuthenticationSessionPoliciesGlobal, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Session Authentication Session Policies Global", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for the global authentication session policy", err.Error())
 		return
 	}
 
@@ -151,7 +168,7 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Create(ctx context.
 	apiCreateSessionAuthenticationSessionPoliciesGlobal = apiCreateSessionAuthenticationSessionPoliciesGlobal.Body(*createSessionAuthenticationSessionPoliciesGlobal)
 	sessionAuthenticationSessionPoliciesGlobalResponse, httpResp, err := r.apiClient.SessionAPI.UpdateGlobalPolicyExecute(apiCreateSessionAuthenticationSessionPoliciesGlobal)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Session Authentication Session Policies Global", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the the global authentication session policy", err, httpResp)
 		return
 	}
 
@@ -174,10 +191,10 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Read(ctx context.Co
 	apiReadSessionAuthenticationSessionPoliciesGlobal, httpResp, err := r.apiClient.SessionAPI.GetGlobalPolicy(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
-			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Session Authentication Session Policies Global", httpResp)
+			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "the global authentication session policy", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Session Authentication Session Policies Global", err, httpResp)
+			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a the global authentication session policy", err, httpResp)
 		}
 		return
 	}
@@ -209,14 +226,14 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Update(ctx context.
 	createUpdateRequest := client.NewGlobalAuthenticationSessionPolicy(plan.EnableSessions.ValueBool())
 	err := addOptionalSessionAuthenticationSessionPoliciesGlobalFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Session Authentication Session Policies Global", err.Error())
+		resp.Diagnostics.AddError("Failed to add optional properties to add request for the global authentication session policy", err.Error())
 		return
 	}
 
 	updateSessionAuthenticationSessionPoliciesGlobal = updateSessionAuthenticationSessionPoliciesGlobal.Body(*createUpdateRequest)
 	updateSessionAuthenticationSessionPoliciesGlobalResponse, httpResp, err := r.apiClient.SessionAPI.UpdateGlobalPolicyExecute(updateSessionAuthenticationSessionPoliciesGlobal)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating Session Authentication Session Policies Global", err, httpResp)
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the global authentication session policy", err, httpResp)
 		return
 	}
 
@@ -236,6 +253,16 @@ func (r *sessionAuthenticationSessionPoliciesGlobalResource) Update(ctx context.
 
 // This config object is edit-only, so Terraform can't delete it.
 func (r *sessionAuthenticationSessionPoliciesGlobalResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
+	// Instead this delete will reset the configuration back to the "default" value used by PingFederate.
+	var model sessionAuthenticationSessionPoliciesGlobalModel
+	clientData := model.buildDefaultClientStruct()
+	apiUpdateRequest := r.apiClient.SessionAPI.UpdateGlobalPolicy(config.AuthContext(ctx, r.providerConfig))
+	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
+	_, httpResp, err := r.apiClient.SessionAPI.UpdateGlobalPolicyExecute(apiUpdateRequest)
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while resetting the global authentication session policy", err, httpResp)
+	}
 }
 
 func (r *sessionAuthenticationSessionPoliciesGlobalResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
