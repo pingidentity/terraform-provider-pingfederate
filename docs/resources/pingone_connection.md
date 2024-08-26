@@ -1,18 +1,18 @@
 ---
-page_title: "pingfederate_ping_one_connection Resource - terraform-provider-pingfederate"
+page_title: "pingfederate_pingone_connection Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
   Manages a PingOne Connection
 ---
 
-# pingfederate_ping_one_connection (Resource)
+# pingfederate_pingone_connection (Resource)
 
 Manages a PingOne Connection
 
 ## Example Usage
 
 ```terraform
-resource "pingfederate_ping_one_connection" "example" {
+resource "pingfederate_pingone_connection" "example" {
   name       = "My PingOne Environment"
   credential = var.pingone_connection_credential
 }
@@ -51,5 +51,5 @@ Import is supported using the following syntax:
 ~> "connectionId" should be the id of the PingOne Connection to be imported
 
 ```shell
-terraform import pingfederate_ping_one_connection.pingOneConnection connectionId
+terraform import pingfederate_pingone_connection.pingOneConnection connectionId
 ```
