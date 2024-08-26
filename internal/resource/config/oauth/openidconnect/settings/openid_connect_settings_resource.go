@@ -21,7 +21,6 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
-	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -148,16 +147,6 @@ func (r *openidConnectSettingsResource) Configure(_ context.Context, req resourc
 	r.providerConfig = providerCfg.ProviderConfig
 	r.apiClient = providerCfg.ApiClient
 
-}
-
-func (m *openidConnectSettingsResourceModel) buildDefaultClientStruct() *client.OpenIdConnectSettings {
-	return &client.OpenIdConnectSettings{
-		SessionSettings: &client.OIDCSessionSettings{
-			TrackUserSessionsForLogout: utils.Pointer(false),
-			RevokeUserSessionOnLogout:  utils.Pointer(true),
-			SessionRevocationLifetime:  utils.Pointer(int64(490)),
-		},
-	}
 }
 
 func readOpenidConnectSettingsResponse(ctx context.Context, r *client.OpenIdConnectSettings, state *openidConnectSettingsResourceModel, existingId *string) diag.Diagnostics {

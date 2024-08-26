@@ -168,9 +168,9 @@ resource "pingfederate_oauth_open_id_connect_policy" "oauthOIDCPolicyExample" {
 
 
 resource "pingfederate_openid_connect_settings" "%[1]s" {
-    default_policy_ref = {
-		id = pingfederate_oauth_open_id_connect_policy.oauthOIDCPolicyExample.policy_id
- 	}
+  default_policy_ref = {
+    id = pingfederate_oauth_open_id_connect_policy.oauthOIDCPolicyExample.policy_id
+  }
 	%[2]s
 }`, resourceName,
 		generateDependentHcl(resourceModel),
