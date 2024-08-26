@@ -9,6 +9,8 @@ description: |-
 
 Manages Notification Publisher Settings
 
+!> The `pingfederate_notification_publishers_settings` resource has been renamed and will be removed in a future release. Use the `pingfederate_notification_publisher_settings` resource instead.
+
 ## Example Usage
 
 ```terraform

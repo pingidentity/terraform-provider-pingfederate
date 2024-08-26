@@ -9,6 +9,8 @@ description: |-
 
 {{ .Description | trimspace }}
 
+!> The `pingfederate_local_identity_identity_profile` resource has been renamed and will be removed in a future release. Use the `pingfederate_local_identity_profile` resource instead.
+
 ## Example Usage
 
 {{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource.tf") }}

@@ -9,6 +9,8 @@ description: |-
 
 Manages a PingOne Connection
 
+!> The `pingfederate_ping_one_connection` resource has been renamed and will be removed in a future release. Use the `pingfederate_pingone_connection` resource instead.
+
 ## Example Usage
 
 ```terraform

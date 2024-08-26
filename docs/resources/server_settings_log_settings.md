@@ -9,6 +9,8 @@ description: |-
 
 Manages the settings related to server logging.
 
+!> The `pingfederate_server_settings_log_settings` resource has been renamed and will be removed in a future release. Use the `pingfederate_server_settings_logging` resource instead.
+
 ## Example Usage
 
 ```terraform

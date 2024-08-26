@@ -9,6 +9,8 @@ description: |-
 
 Manages the global settings for authentication session policies.
 
+!> The `pingfederate_session_authentication_session_policies_global` resource has been renamed and will be removed in a future release. Use the `pingfederate_session_authentication_policies_global` resource instead.
+
 ## Example Usage
 
 ```terraform
