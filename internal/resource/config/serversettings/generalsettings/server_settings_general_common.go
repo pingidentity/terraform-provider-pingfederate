@@ -8,7 +8,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 )
 
-type serverSettingsGeneralSettingsModel struct {
+type serverSettingsGeneralModel struct {
 	Id                                      types.String `tfsdk:"id"`
 	DisableAutomaticConnectionValidation    types.Bool   `tfsdk:"disable_automatic_connection_validation"`
 	IdpConnectionTransactionLoggingOverride types.String `tfsdk:"idp_connection_transaction_logging_override"`
@@ -17,7 +17,7 @@ type serverSettingsGeneralSettingsModel struct {
 	RequestHeaderForCorrelationId           types.String `tfsdk:"request_header_for_correlation_id"`
 }
 
-func readServerSettingsGeneralSettingsResponse(ctx context.Context, r *client.GeneralSettings, state *serverSettingsGeneralSettingsModel, existingId *string) {
+func readServerSettingsGeneralResponse(ctx context.Context, r *client.GeneralSettings, state *serverSettingsGeneralModel, existingId *string) {
 	if existingId != nil {
 		state.Id = types.StringValue(*existingId)
 	} else {
