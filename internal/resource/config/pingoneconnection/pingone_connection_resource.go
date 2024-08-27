@@ -120,7 +120,7 @@ func (r *pingoneConnectionResource) Schema(ctx context.Context, req resource.Sch
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	id.ToSchemaCustomId(&schema, "connection_id", false, false, "The persistent, unique ID of the connection.")
 
 	resp.Schema = schema

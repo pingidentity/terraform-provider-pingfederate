@@ -539,7 +539,7 @@ func (r *oauthServerSettingsResource) Schema(ctx context.Context, req resource.S
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 

@@ -1694,7 +1694,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	id.ToSchemaCustomId(&schema,
 		"connection_id",
 		true,
