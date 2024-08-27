@@ -279,5 +279,5 @@ func (r *oauthTokenExchangeTokenGeneratorMappingResource) Delete(ctx context.Con
 
 func (r *oauthTokenExchangeTokenGeneratorMappingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
-	resource.ImportStatePassthroughID(ctx, path.Root("mapping_id"), req, resp)
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
