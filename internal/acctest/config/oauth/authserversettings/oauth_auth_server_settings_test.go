@@ -110,38 +110,38 @@ func TestAccOauthAuthServerSettings(t *testing.T) {
 				Config: testAccOauthAuthServerSettings(resourceName, updatedResourceModel, true),
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckExpectedOauthAuthServerSettingsAttributes(updatedResourceModel),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "activation_code_check_mode", updatedResourceModel.activationCodeCheckMode),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "allow_unidentified_client_extension_grants", fmt.Sprintf("%t", updatedResourceModel.allowUnidentifiedClientExtensionGrants)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "allow_unidentified_client_ro_creds", fmt.Sprintf("%t", updatedResourceModel.allowUnidentifiedClientRoCreds)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "allowed_origins.0", updatedResourceModel.allowedOrigins[0]),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "atm_id_for_oauth_grant_management", updatedResourceModel.atmIdForOauthGrantManagement),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "bypass_activation_code_confirmation", fmt.Sprintf("%t", updatedResourceModel.bypassActivationCodeConfirmation)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "client_secret_retention_period", fmt.Sprintf("%d", updatedResourceModel.clientSecretRetentionPeriod)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "default_scope_description", updatedResourceModel.defaultScopeDescription),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "device_polling_interval", fmt.Sprintf("%d", updatedResourceModel.devicePollingInterval)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "disallow_plain_pkce", fmt.Sprintf("%t", updatedResourceModel.disallowPlainPkce)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "include_issuer_in_authorization_response", fmt.Sprintf("%t", updatedResourceModel.includeIssuerInAuthorizationResponse)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "jwt_secured_authorization_response_mode_lifetime", fmt.Sprintf("%d", updatedResourceModel.jwtSecuredAuthorizationResponseModeLifetime)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "par_status", updatedResourceModel.parStatus),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "persistent_grant_reuse_grant_types.0", updatedResourceModel.persistentGrantReuseGrantTypes[0]),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "pending_authorization_timeout", fmt.Sprintf("%d", updatedResourceModel.pendingAuthorizationTimeout)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "persistent_grant_lifetime", fmt.Sprintf("%d", updatedResourceModel.persistentGrantLifetime)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "persistent_grant_lifetime_unit", updatedResourceModel.persistentGrantLifetimeUnit),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "persistent_grant_idle_timeout", fmt.Sprintf("%d", updatedResourceModel.persistentGrantIdleTimeout)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "refresh_token_rolling_grace_period", "60"),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "registered_authorization_path", updatedResourceModel.registeredAuthorizationPath),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "roll_refresh_token_values", fmt.Sprintf("%t", updatedResourceModel.rollRefreshTokenValues)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "scope_for_oauth_grant_management", updatedResourceModel.scopeForOauthGrantManagement),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "token_endpoint_base_url", updatedResourceModel.tokenEndpointBaseUrl),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "track_user_sessions_for_logout", fmt.Sprintf("%t", updatedResourceModel.trackUserSessionsForLogout)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "user_authorization_consent_page_setting", updatedResourceModel.userAuthorizationConsentPageSetting),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "user_authorization_url", updatedResourceModel.userAuthorizationUrl),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "activation_code_check_mode", updatedResourceModel.activationCodeCheckMode),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "allow_unidentified_client_extension_grants", fmt.Sprintf("%t", updatedResourceModel.allowUnidentifiedClientExtensionGrants)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "allow_unidentified_client_ro_creds", fmt.Sprintf("%t", updatedResourceModel.allowUnidentifiedClientRoCreds)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "allowed_origins.0", updatedResourceModel.allowedOrigins[0]),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "atm_id_for_oauth_grant_management", updatedResourceModel.atmIdForOauthGrantManagement),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "bypass_activation_code_confirmation", fmt.Sprintf("%t", updatedResourceModel.bypassActivationCodeConfirmation)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "client_secret_retention_period", fmt.Sprintf("%d", updatedResourceModel.clientSecretRetentionPeriod)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "default_scope_description", updatedResourceModel.defaultScopeDescription),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "device_polling_interval", fmt.Sprintf("%d", updatedResourceModel.devicePollingInterval)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "disallow_plain_pkce", fmt.Sprintf("%t", updatedResourceModel.disallowPlainPkce)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "include_issuer_in_authorization_response", fmt.Sprintf("%t", updatedResourceModel.includeIssuerInAuthorizationResponse)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "jwt_secured_authorization_response_mode_lifetime", fmt.Sprintf("%d", updatedResourceModel.jwtSecuredAuthorizationResponseModeLifetime)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "par_status", updatedResourceModel.parStatus),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "persistent_grant_reuse_grant_types.0", updatedResourceModel.persistentGrantReuseGrantTypes[0]),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "pending_authorization_timeout", fmt.Sprintf("%d", updatedResourceModel.pendingAuthorizationTimeout)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "persistent_grant_lifetime", fmt.Sprintf("%d", updatedResourceModel.persistentGrantLifetime)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "persistent_grant_lifetime_unit", updatedResourceModel.persistentGrantLifetimeUnit),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "persistent_grant_idle_timeout", fmt.Sprintf("%d", updatedResourceModel.persistentGrantIdleTimeout)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "refresh_token_rolling_grace_period", "60"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "registered_authorization_path", updatedResourceModel.registeredAuthorizationPath),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "roll_refresh_token_values", fmt.Sprintf("%t", updatedResourceModel.rollRefreshTokenValues)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "scope_for_oauth_grant_management", updatedResourceModel.scopeForOauthGrantManagement),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "token_endpoint_base_url", updatedResourceModel.tokenEndpointBaseUrl),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "track_user_sessions_for_logout", fmt.Sprintf("%t", updatedResourceModel.trackUserSessionsForLogout)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "user_authorization_consent_page_setting", updatedResourceModel.userAuthorizationConsentPageSetting),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "user_authorization_url", updatedResourceModel.userAuthorizationUrl),
 				),
 			},
 			{
 				// Test importing the resource
 				Config:            testAccOauthAuthServerSettings(resourceName, updatedResourceModel, true),
-				ResourceName:      "pingfederate_oauth_auth_server_settings." + resourceName,
+				ResourceName:      "pingfederate_oauth_server_settings." + resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
@@ -157,17 +157,17 @@ func TestAccOauthAuthServerSettings(t *testing.T) {
 func checkPf121ComputedAttrs(resourceName string) resource.TestCheckFunc {
 	if acctest.VersionAtLeast(version.PingFederate1210) {
 		return resource.ComposeTestCheckFunc(
-			resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "require_offline_access_scope_to_issue_refresh_tokens", "false"),
-			resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "offline_access_require_consent_prompt", "false"),
-			resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "refresh_rolling_interval_time_unit", "HOURS"),
-			resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "enable_cookieless_user_authorization_authentication_api", "false"),
+			resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "require_offline_access_scope_to_issue_refresh_tokens", "false"),
+			resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "offline_access_require_consent_prompt", "false"),
+			resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "refresh_rolling_interval_time_unit", "HOURS"),
+			resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "enable_cookieless_user_authorization_authentication_api", "false"),
 		)
 	}
 	return resource.ComposeTestCheckFunc(
-		resource.TestCheckNoResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "require_offline_access_scope_to_issue_refresh_tokens"),
-		resource.TestCheckNoResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "offline_access_require_consent_prompt"),
-		resource.TestCheckNoResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "refresh_rolling_interval_time_unit"),
-		resource.TestCheckNoResourceAttr(fmt.Sprintf("pingfederate_oauth_auth_server_settings.%s", resourceName), "enable_cookieless_user_authorization_authentication_api"),
+		resource.TestCheckNoResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "require_offline_access_scope_to_issue_refresh_tokens"),
+		resource.TestCheckNoResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "offline_access_require_consent_prompt"),
+		resource.TestCheckNoResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "refresh_rolling_interval_time_unit"),
+		resource.TestCheckNoResourceAttr(fmt.Sprintf("pingfederate_oauth_server_settings.%s", resourceName), "enable_cookieless_user_authorization_authentication_api"),
 	)
 }
 
@@ -341,7 +341,7 @@ func testAccOauthAuthServerSettings(resourceName string, resourceModel oauthAuth
 	}
 
 	return fmt.Sprintf(`
-resource "pingfederate_oauth_auth_server_settings" "%[1]s" {
+resource "pingfederate_oauth_server_settings" "%[1]s" {
   authorization_code_entropy = %[2]d
   authorization_code_timeout = %[3]d
   refresh_rolling_interval   = %[4]d
@@ -349,9 +349,9 @@ resource "pingfederate_oauth_auth_server_settings" "%[1]s" {
   %[6]s
 	%[7]s
 }
-data "pingfederate_oauth_auth_server_settings" "%[1]s" {
+data "pingfederate_oauth_server_settings" "%[1]s" {
   depends_on = [
-    pingfederate_oauth_auth_server_settings.%[1]s
+    pingfederate_oauth_server_settings.%[1]s
   ]
 }`, resourceName,
 		resourceModel.authorizationCodeEntropy,

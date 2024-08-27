@@ -2,13 +2,16 @@ package serversettingssystemkeys
 
 import (
 	"context"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -29,13 +32,6 @@ var (
 		"encrypted_key_data": types.StringType,
 		"key_data":           types.StringType,
 	}
-
-	creationTimeDefault   = "0001-01-01T00:00:00Z"
-	previousKeyDefault, _ = types.ObjectValue(systemKeyAttrTypes, map[string]attr.Value{
-		"creation_date":      types.StringValue(creationTimeDefault),
-		"encrypted_key_data": types.StringValue(""),
-		"key_data":           types.StringValue(""),
-	})
 )
 
 // ServerSettingsSystemKeysResource is a helper function to simplify the provider implementation.
@@ -61,8 +57,6 @@ func (r *serverSettingsSystemKeysResource) Schema(ctx context.Context, req resou
 					"creation_date": schema.StringAttribute{
 						Description: "Creation time of the key.",
 						Computed:    true,
-						Optional:    false,
-						Required:    false,
 					},
 					"encrypted_key_data": schema.StringAttribute{
 						Description: "The system key encrypted.",
@@ -77,6 +71,7 @@ func (r *serverSettingsSystemKeysResource) Schema(ctx context.Context, req resou
 						Description: "The clear text system key base 64 encoded. The system key must be 32 bytes before base 64 encoding",
 						Optional:    true,
 						Computed:    true,
+						Sensitive:   true,
 						Default:     stringdefault.StaticString(""),
 						Validators: []validator.String{
 							stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("encrypted_key_data")),
@@ -88,14 +83,13 @@ func (r *serverSettingsSystemKeysResource) Schema(ctx context.Context, req resou
 				Description: "Previous SystemKeys Secrets that are used in cryptographic operations to generate and consume internal tokens.",
 				Optional:    true,
 				Computed:    true,
-				Default:     objectdefault.StaticValue(previousKeyDefault),
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
 				Attributes: map[string]schema.Attribute{
 					"creation_date": schema.StringAttribute{
 						Description: "Creation time of the key.",
 						Computed:    true,
-						Optional:    false,
-						Required:    false,
-						Default:     stringdefault.StaticString(creationTimeDefault),
 					},
 					"encrypted_key_data": schema.StringAttribute{
 						Description: "The system key encrypted.",
@@ -124,8 +118,6 @@ func (r *serverSettingsSystemKeysResource) Schema(ctx context.Context, req resou
 					"creation_date": schema.StringAttribute{
 						Description: "Creation time of the key.",
 						Computed:    true,
-						Optional:    false,
-						Required:    false,
 					},
 					"encrypted_key_data": schema.StringAttribute{
 						Description: "The system key encrypted.",
@@ -150,37 +142,45 @@ func (r *serverSettingsSystemKeysResource) Schema(ctx context.Context, req resou
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
 func addServerSettingsSystemKeysFields(ctx context.Context, addRequest *client.SystemKeys, plan serverSettingsSystemKeysModel) {
-
 	if internaltypes.IsDefined(plan.Current) {
 		currentAttrs := plan.Current.Attributes()
 		encryptedKeyDataAttrcurrent := currentAttrs["encrypted_key_data"].(types.String)
-		if internaltypes.IsNonEmptyString(encryptedKeyDataAttrcurrent) {
+		keyData := currentAttrs["key_data"].(types.String)
+		if internaltypes.IsNonEmptyString(encryptedKeyDataAttrcurrent) || internaltypes.IsNonEmptyString(keyData) {
 			addRequest.Current = *client.NewSystemKey()
-			currentEncryptedKeyData := encryptedKeyDataAttrcurrent.ValueString()
-			addRequest.Current.EncryptedKeyData = &currentEncryptedKeyData
+			if !encryptedKeyDataAttrcurrent.IsUnknown() {
+				addRequest.Current.EncryptedKeyData = encryptedKeyDataAttrcurrent.ValueStringPointer()
+			}
+			addRequest.Current.KeyData = keyData.ValueStringPointer()
 		}
 	}
 	if internaltypes.IsDefined(plan.Previous) {
 		previousAttrs := plan.Previous.Attributes()
 		encryptedKeyDataAttrPrevious := previousAttrs["encrypted_key_data"].(types.String)
+		keyData := previousAttrs["key_data"].(types.String)
 		if internaltypes.IsNonEmptyString(encryptedKeyDataAttrPrevious) {
 			addRequest.Previous = client.NewSystemKey()
-			previousEncryptedKeyData := encryptedKeyDataAttrPrevious.ValueString()
-			addRequest.Previous.EncryptedKeyData = &previousEncryptedKeyData
+			if !encryptedKeyDataAttrPrevious.IsUnknown() {
+				addRequest.Previous.EncryptedKeyData = encryptedKeyDataAttrPrevious.ValueStringPointer()
+			}
+			addRequest.Previous.KeyData = keyData.ValueStringPointer()
 		}
 	}
 	if internaltypes.IsDefined(plan.Pending) {
 		pendingAttrs := plan.Pending.Attributes()
 		encryptedKeyDataAttrPending := pendingAttrs["encrypted_key_data"].(types.String)
+		keyData := pendingAttrs["key_data"].(types.String)
 		if internaltypes.IsNonEmptyString(encryptedKeyDataAttrPending) {
 			addRequest.Pending = *client.NewSystemKey()
-			pendingEncryptedKeyData := encryptedKeyDataAttrPending.ValueString()
-			addRequest.Pending.EncryptedKeyData = &pendingEncryptedKeyData
+			if !encryptedKeyDataAttrPending.IsUnknown() {
+				addRequest.Pending.EncryptedKeyData = encryptedKeyDataAttrPending.ValueStringPointer()
+			}
+			addRequest.Pending.KeyData = keyData.ValueStringPointer()
 		}
 	}
 }
@@ -199,6 +199,54 @@ func (r *serverSettingsSystemKeysResource) Configure(_ context.Context, req reso
 	r.providerConfig = providerCfg.ProviderConfig
 	r.apiClient = providerCfg.ApiClient
 
+}
+
+func readServerSettingsSystemKeysResourceResponse(ctx context.Context, r *client.SystemKeys, state *serverSettingsSystemKeysModel, existingId *string) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if existingId != nil {
+		state.Id = types.StringValue(*existingId)
+	} else {
+		state.Id = id.GenerateUUIDToState(existingId)
+	}
+	// Maintain key_data values from state
+	var keyDataCurrent, keyDataPrevious, keyDataPending string
+	if internaltypes.IsDefined(state.Current) {
+		keyDataCurrent = state.Current.Attributes()["key_data"].(types.String).ValueString()
+		keyDataPrevious = state.Previous.Attributes()["key_data"].(types.String).ValueString()
+		keyDataPending = state.Pending.Attributes()["key_data"].(types.String).ValueString()
+	}
+
+	currentAttrs := r.GetCurrent()
+	currentAttrVals := map[string]attr.Value{
+		"creation_date":      types.StringValue(currentAttrs.GetCreationDate().Format(time.RFC3339Nano)),
+		"encrypted_key_data": types.StringValue(currentAttrs.GetEncryptedKeyData()),
+		"key_data":           types.StringValue(keyDataCurrent),
+	}
+	currentAttrsObjVal, respDiags := types.ObjectValue(systemKeyAttrTypes, currentAttrVals)
+	diags = append(diags, respDiags...)
+
+	previousAttrs := r.GetPrevious()
+	previousAttrVals := map[string]attr.Value{
+		"creation_date":      types.StringValue(previousAttrs.GetCreationDate().Format(time.RFC3339Nano)),
+		"encrypted_key_data": types.StringValue(previousAttrs.GetEncryptedKeyData()),
+		"key_data":           types.StringValue(keyDataPrevious),
+	}
+	previousAttrsObjVal, respDiags := types.ObjectValue(systemKeyAttrTypes, previousAttrVals)
+	diags = append(diags, respDiags...)
+
+	pendingAttrs := r.GetPending()
+	pendingAttrVals := map[string]attr.Value{
+		"creation_date":      types.StringValue(pendingAttrs.GetCreationDate().Format(time.RFC3339Nano)),
+		"encrypted_key_data": types.StringValue(pendingAttrs.GetEncryptedKeyData()),
+		"key_data":           types.StringValue(keyDataPending),
+	}
+	pendingAttrsObjVal, respDiags := types.ObjectValue(systemKeyAttrTypes, pendingAttrVals)
+	diags = append(diags, respDiags...)
+
+	state.Current = currentAttrsObjVal
+	state.Pending = pendingAttrsObjVal
+	state.Previous = previousAttrsObjVal
+	return diags
 }
 
 func (r *serverSettingsSystemKeysResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -222,7 +270,7 @@ func (r *serverSettingsSystemKeysResource) Create(ctx context.Context, req resou
 
 	// Read the response into the state
 	var state serverSettingsSystemKeysModel
-	diags = readServerSettingsSystemKeysResponse(ctx, serverSettingsSystemKeysResponse, &state, nil)
+	diags = readServerSettingsSystemKeysResourceResponse(ctx, serverSettingsSystemKeysResponse, &state, nil)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -253,7 +301,7 @@ func (r *serverSettingsSystemKeysResource) Read(ctx context.Context, req resourc
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	diags = readServerSettingsSystemKeysResponse(ctx, apiReadServerSettingsSystemKeys, &state, id)
+	diags = readServerSettingsSystemKeysResourceResponse(ctx, apiReadServerSettingsSystemKeys, &state, id)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -290,7 +338,7 @@ func (r *serverSettingsSystemKeysResource) Update(ctx context.Context, req resou
 		return
 	}
 
-	diags = readServerSettingsSystemKeysResponse(ctx, serverSettingsSystemKeysResponse, &state, id)
+	diags = readServerSettingsSystemKeysResourceResponse(ctx, serverSettingsSystemKeysResponse, &state, id)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -298,6 +346,8 @@ func (r *serverSettingsSystemKeysResource) Update(ctx context.Context, req resou
 
 // This config object is edit-only, so Terraform can't delete it.
 func (r *serverSettingsSystemKeysResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
+	resp.Diagnostics.AddWarning("Configuration cannot be returned to original state.  The resource has been removed from Terraform state but the configuration remains applied to the environment.", "")
 }
 
 func (r *serverSettingsSystemKeysResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

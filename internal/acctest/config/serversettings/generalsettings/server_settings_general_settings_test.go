@@ -13,7 +13,7 @@ import (
 )
 
 // Attributes to test with. Add optional properties to test here if desired.
-type serverSettingsGeneralSettingsResourceModel struct {
+type serverSettingsGeneralResourceModel struct {
 	disableAutomaticConnectionValidation    bool
 	idpConnectionTransactionLoggingOverride string
 	spConnectionTransactionLoggingOverride  string
@@ -21,9 +21,9 @@ type serverSettingsGeneralSettingsResourceModel struct {
 	requestHeaderForCorrelationId           string
 }
 
-func TestAccServerSettingsGeneralSettings(t *testing.T) {
-	resourceName := "myServerSettingsGeneralSettings"
-	updatedResourceModel := serverSettingsGeneralSettingsResourceModel{
+func TestAccServerSettingsGeneral(t *testing.T) {
+	resourceName := "myServerSettingsGeneral"
+	updatedResourceModel := serverSettingsGeneralResourceModel{
 		disableAutomaticConnectionValidation:    true,
 		idpConnectionTransactionLoggingOverride: "FULL",
 		spConnectionTransactionLoggingOverride:  "NONE",
@@ -38,38 +38,38 @@ func TestAccServerSettingsGeneralSettings(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: testAccServerSettingsGeneralSettings(resourceName, nil),
-				Check:  testAccCheckExpectedServerSettingsGeneralSettingsAttributes(nil),
+				Config: testAccServerSettingsGeneral(resourceName, nil),
+				Check:  testAccCheckExpectedServerSettingsGeneralAttributes(nil),
 			},
 			{
 				// Test updating some fields
-				Config: testAccServerSettingsGeneralSettings(resourceName, &updatedResourceModel),
+				Config: testAccServerSettingsGeneral(resourceName, &updatedResourceModel),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckExpectedServerSettingsGeneralSettingsAttributes(&updatedResourceModel),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings_general_settings.%s", resourceName), "disable_automatic_connection_validation", fmt.Sprintf("%t", updatedResourceModel.disableAutomaticConnectionValidation)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings_general_settings.%s", resourceName), "idp_connection_transaction_logging_override", updatedResourceModel.idpConnectionTransactionLoggingOverride),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings_general_settings.%s", resourceName), "sp_connection_transaction_logging_override", updatedResourceModel.spConnectionTransactionLoggingOverride),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings_general_settings.%s", resourceName), "datastore_validation_interval_secs", fmt.Sprintf("%d", updatedResourceModel.datastoreValidationIntervalSecs)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings_general_settings.%s", resourceName), "request_header_for_correlation_id", updatedResourceModel.requestHeaderForCorrelationId),
+					testAccCheckExpectedServerSettingsGeneralAttributes(&updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings_general.%s", resourceName), "disable_automatic_connection_validation", fmt.Sprintf("%t", updatedResourceModel.disableAutomaticConnectionValidation)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings_general.%s", resourceName), "idp_connection_transaction_logging_override", updatedResourceModel.idpConnectionTransactionLoggingOverride),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings_general.%s", resourceName), "sp_connection_transaction_logging_override", updatedResourceModel.spConnectionTransactionLoggingOverride),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings_general.%s", resourceName), "datastore_validation_interval_secs", fmt.Sprintf("%d", updatedResourceModel.datastoreValidationIntervalSecs)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_server_settings_general.%s", resourceName), "request_header_for_correlation_id", updatedResourceModel.requestHeaderForCorrelationId),
 				),
 			},
 			{
 				// Test importing the resource
-				Config:            testAccServerSettingsGeneralSettings(resourceName, &updatedResourceModel),
-				ResourceName:      "pingfederate_server_settings_general_settings." + resourceName,
+				Config:            testAccServerSettingsGeneral(resourceName, &updatedResourceModel),
+				ResourceName:      "pingfederate_server_settings_general." + resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
 			{
 				// Back to minimal model
-				Config: testAccServerSettingsGeneralSettings(resourceName, nil),
-				Check:  testAccCheckExpectedServerSettingsGeneralSettingsAttributes(nil),
+				Config: testAccServerSettingsGeneral(resourceName, nil),
+				Check:  testAccCheckExpectedServerSettingsGeneralAttributes(nil),
 			},
 		},
 	})
 }
 
-func testAccServerSettingsGeneralSettings(resourceName string, resourceModel *serverSettingsGeneralSettingsResourceModel) string {
+func testAccServerSettingsGeneral(resourceName string, resourceModel *serverSettingsGeneralResourceModel) string {
 	optionalHcl := ""
 	if resourceModel != nil {
 		optionalHcl = fmt.Sprintf(`
@@ -85,20 +85,20 @@ func testAccServerSettingsGeneralSettings(resourceName string, resourceModel *se
 			resourceModel.spConnectionTransactionLoggingOverride)
 	}
 	return fmt.Sprintf(`
-resource "pingfederate_server_settings_general_settings" "%s" {
+resource "pingfederate_server_settings_general" "%s" {
 	%s
 }
-data "pingfederate_server_settings_general_settings" "%[1]s" {
-  depends_on = [pingfederate_server_settings_general_settings.%[1]s]
+data "pingfederate_server_settings_general" "%[1]s" {
+  depends_on = [pingfederate_server_settings_general.%[1]s]
 }`, resourceName,
 		optionalHcl,
 	)
 }
 
 // Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedServerSettingsGeneralSettingsAttributes(config *serverSettingsGeneralSettingsResourceModel) resource.TestCheckFunc {
+func testAccCheckExpectedServerSettingsGeneralAttributes(config *serverSettingsGeneralResourceModel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resourceType := "ServerSettingsGeneralSettings"
+		resourceType := "ServerSettingsGeneral"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
 		response, _, err := testClient.ServerSettingsAPI.GetGeneralSettings(ctx).Execute()

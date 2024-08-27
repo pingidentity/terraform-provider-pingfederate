@@ -27,7 +27,7 @@ type sessionApplicationSessionPolicyDataSource struct {
 // GetSchema defines the schema for the datasource.
 func (r *sessionApplicationSessionPolicyDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	r.impl.Schema(ctx, req, resp)
-	resp.Schema.DeprecationMessage = "The `session_application_session_policy` datasource is deprecated. Use the `session_application_policy` datasource instead."
+	resp.Schema.DeprecationMessage = "The `pingfederate_session_application_session_policy` datasource is deprecated. Use the `pingfederate_session_application_policy` datasource instead."
 }
 
 // Metadata returns the datasource type name.
