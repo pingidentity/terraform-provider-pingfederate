@@ -5,6 +5,9 @@
 * **New Resource:** `pingfederate_certificates_revocation_settings` ([#280]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/280)))
 * **New Resource:** `pingfederate_idp_sts_request_parameters_contract` ([#281]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/281)))
 
+### Bug Fixes
+* Fixed "inconsistent result after apply" issues with resources using `attribute_sources.ldap_attribute_source.binary_attribute_settings`.
+
 ### Enhancements
 * Various documentations and schema improvements for resources released in previous versions.
 
