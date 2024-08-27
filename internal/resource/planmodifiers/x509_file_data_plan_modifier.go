@@ -32,43 +32,35 @@ func (v x509FileData) PlanModifyObject(ctx context.Context, req planmodifier.Obj
 		return
 	}
 
-	var planFileDataStringFormatted, formattedFileDataAsStringFormatted, fileDataAsStringFormatted string
+	var planFileDataStringFormatted, formattedFileDataAsStringFormatted, fileDataBase64Decoded string
 
 	// Remove header, footer, and new lines
 	stringReplacer := strings.NewReplacer("-----BEGIN CERTIFICATE-----", "", "-----END CERTIFICATE-----", "", "\n", "")
 
 	// Get file_data from plan
-	for key, attribute := range req.ConfigValue.Attributes() {
-		if key == "file_data" {
-			fileData, ok := attribute.(types.String)
-			if !ok {
-				continue
-			}
-			planFileDataString := fileData.ValueString()
-			planFileDataStringFormatted = stringReplacer.Replace(planFileDataString)
-			base64DecodedFileData, err := base64.StdEncoding.DecodeString(planFileDataString)
-			if err == nil {
-				// The plan value was base64-encoded, use the decoded value for comparison
-				fileDataAsStringFormatted = string(base64DecodedFileData)
-			}
-			fileDataAsStringFormatted = stringReplacer.Replace(fileDataAsStringFormatted)
-		}
+	fileData, ok := req.ConfigValue.Attributes()["file_data"]
+	if !ok {
+		return
 	}
+	planFileDataString := fileData.(types.String).ValueString()
+	planFileDataStringFormatted = stringReplacer.Replace(planFileDataString)
+	base64DecodedFileData, err := base64.StdEncoding.DecodeString(planFileDataString)
+	if err == nil {
+		// The plan value was base64-encoded, use the decoded value for comparison
+		fileDataBase64Decoded = string(base64DecodedFileData)
+	}
+	fileDataBase64Decoded = stringReplacer.Replace(fileDataBase64Decoded)
 
 	// Get formatted_file_data from state
-	for key, attribute := range req.StateValue.Attributes() {
-		if key == "formatted_file_data" {
-			formattedFileData, ok := attribute.(types.String)
-			if !ok {
-				continue
-			}
-			formattedFileDataAsStringFormatted = stringReplacer.Replace(formattedFileData.ValueString())
-		}
+	formattedFileData, ok := req.StateValue.Attributes()["formatted_file_data"].(types.String)
+	if !ok {
+		return
 	}
+	formattedFileDataAsStringFormatted = stringReplacer.Replace(formattedFileData.ValueString())
 
 	// Check if formatted_file_data and file_data strings match, or if formatted_file_data matches original string
 	// If they do not, formatted_file_data is set to unknown
-	if formattedFileDataAsStringFormatted != fileDataAsStringFormatted && formattedFileDataAsStringFormatted != planFileDataStringFormatted {
+	if formattedFileDataAsStringFormatted != fileDataBase64Decoded && formattedFileDataAsStringFormatted != planFileDataStringFormatted {
 		var respDiags diag.Diagnostics
 		reqConfigAttrs := req.ConfigValue.Attributes()
 		reqConfigAttrs["formatted_file_data"] = types.StringUnknown()

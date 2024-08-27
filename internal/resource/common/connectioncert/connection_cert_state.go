@@ -66,9 +66,19 @@ func ToState(ctx context.Context, planFileData types.String, clientConnectionCer
 		certViewSubjectAlternativeNamesValue, objDiags := types.SetValueFrom(ctx, types.StringType, clientConnectionCert.CertView.SubjectAlternativeNames)
 		diags.Append(objDiags...)
 
+		expires := types.StringNull()
+		if clientConnectionCert.CertView.Expires != nil {
+			expires = types.StringValue(clientConnectionCert.CertView.Expires.Format(time.RFC3339))
+		}
+
+		validFrom := types.StringNull()
+		if clientConnectionCert.CertView.ValidFrom != nil {
+			validFrom = types.StringValue(clientConnectionCert.CertView.ValidFrom.Format(time.RFC3339))
+		}
+
 		certViewAttrValues := map[string]attr.Value{
 			"crypto_provider":           types.StringPointerValue(clientConnectionCert.CertView.CryptoProvider),
-			"expires":                   types.StringValue(clientConnectionCert.CertView.Expires.Format(time.RFC3339)),
+			"expires":                   expires,
 			"id":                        types.StringPointerValue(clientConnectionCert.CertView.Id),
 			"issuer_dn":                 types.StringPointerValue(clientConnectionCert.CertView.IssuerDN),
 			"key_algorithm":             types.StringPointerValue(clientConnectionCert.CertView.KeyAlgorithm),
@@ -80,7 +90,7 @@ func ToState(ctx context.Context, planFileData types.String, clientConnectionCer
 			"status":                    types.StringPointerValue(clientConnectionCert.CertView.Status),
 			"subject_alternative_names": certViewSubjectAlternativeNamesValue,
 			"subject_dn":                types.StringPointerValue(clientConnectionCert.CertView.SubjectDN),
-			"valid_from":                types.StringValue(clientConnectionCert.CertView.ValidFrom.Format(time.RFC3339)),
+			"valid_from":                validFrom,
 			"version":                   types.Int64PointerValue(clientConnectionCert.CertView.Version),
 		}
 

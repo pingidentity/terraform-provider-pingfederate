@@ -5,6 +5,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -111,7 +112,13 @@ func ToSchemaAttributes() map[string]schema.Attribute {
 					Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
 					Optional:    false,
 					Computed:    true,
+					PlanModifiers: []planmodifier.String{
+						stringplanmodifier.UseStateForUnknown(),
+					},
 				},
+			},
+			PlanModifiers: []planmodifier.Object{
+				objectplanmodifier.UseStateForUnknown(),
 			},
 		},
 		"x509_file": schema.SingleNestedAttribute{
@@ -137,9 +144,12 @@ func ToSchemaAttributes() map[string]schema.Attribute {
 				"formatted_file_data": schema.StringAttribute{
 					Description: "The certificate data in PEM format, formatted by PingFederate. This attribute is read-only.",
 					Computed:    true,
+					PlanModifiers: []planmodifier.String{
+						stringplanmodifier.UseStateForUnknown(),
+					},
 				},
 				"crypto_provider": schema.StringAttribute{
-					Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.",
+					Description: "Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Optional values are `HSM` and `LOCAL`.",
 					Optional:    true,
 					Validators: []validator.String{
 						stringvalidator.OneOf("HSM", "LOCAL"),

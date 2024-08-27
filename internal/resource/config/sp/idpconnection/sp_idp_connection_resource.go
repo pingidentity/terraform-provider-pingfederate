@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -34,6 +33,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -52,53 +52,6 @@ var (
 	oidcClientCredentialsAttrTypes = map[string]attr.Type{
 		"client_id":     types.StringType,
 		"client_secret": types.StringType,
-	}
-
-	credentialsCertsCertViewAttrTypes = map[string]attr.Type{
-		"crypto_provider":           types.StringType,
-		"expires":                   types.StringType,
-		"id":                        types.StringType,
-		"issuer_dn":                 types.StringType,
-		"key_algorithm":             types.StringType,
-		"key_size":                  types.Int64Type,
-		"serial_number":             types.StringType,
-		"sha1_fingerprint":          types.StringType,
-		"sha256_fingerprint":        types.StringType,
-		"signature_algorithm":       types.StringType,
-		"status":                    types.StringType,
-		"subject_alternative_names": types.SetType{ElemType: types.StringType},
-		"subject_dn":                types.StringType,
-		"valid_from":                types.StringType,
-		"version":                   types.Int64Type,
-	}
-	credentialsCertsX509fileAttrTypes = map[string]attr.Type{
-		"crypto_provider":     types.StringType,
-		"formatted_file_data": types.StringType,
-		"file_data":           types.StringType,
-		"id":                  types.StringType,
-	}
-
-	credentialsInboundBackChannelAuthCertsCertViewAttrTypes = map[string]attr.Type{
-		"crypto_provider":           types.StringType,
-		"expires":                   types.StringType,
-		"id":                        types.StringType,
-		"issuer_dn":                 types.StringType,
-		"key_algorithm":             types.StringType,
-		"key_size":                  types.Int64Type,
-		"serial_number":             types.StringType,
-		"sha1_fingerprint":          types.StringType,
-		"sha256_fingerprint":        types.StringType,
-		"signature_algorithm":       types.StringType,
-		"status":                    types.StringType,
-		"subject_alternative_names": types.SetType{ElemType: types.StringType},
-		"subject_dn":                types.StringType,
-		"valid_from":                types.StringType,
-		"version":                   types.Int64Type,
-	}
-	credentialsInboundBackChannelAuthCertsX509fileAttrTypes = map[string]attr.Type{
-		"crypto_provider": types.StringType,
-		"file_data":       types.StringType,
-		"id":              types.StringType,
 	}
 
 	credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes = map[string]attr.Type{
@@ -419,7 +372,7 @@ var (
 
 	idpBrowserSsoUrlWhitelistEntriesElementType = types.ObjectType{AttrTypes: idpBrowserSsoUrlWhitelistEntriesAttrTypes}
 	idpBrowserSsoAttrTypes                      = map[string]attr.Type{
-		"adapter_mappings":                         types.ListType{ElemType: idpBrowserSsoAdapterMappingsElementType},
+		"adapter_mappings":                         types.SetType{ElemType: idpBrowserSsoAdapterMappingsElementType},
 		"always_sign_artifact_response":            types.BoolType,
 		"artifact":                                 types.ObjectType{AttrTypes: idpBrowserSsoArtifactAttrTypes},
 		"assertions_signed":                        types.BoolType,
@@ -518,7 +471,7 @@ var (
 			}},
 		}},
 		"generate_local_token":     types.BoolType,
-		"token_generator_mappings": types.ListType{ElemType: types.ObjectType{AttrTypes: spTokenGeneratorMappingAttrTypes}},
+		"token_generator_mappings": types.SetType{ElemType: types.ObjectType{AttrTypes: spTokenGeneratorMappingAttrTypes}},
 	}
 
 	// inbound_provisioning
@@ -722,11 +675,17 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Optional:            true,
 									Description:         "Unique entity identifier.",
 									MarkdownDescription: "Unique entity identifier.",
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 								"entity_description": schema.StringAttribute{
 									Optional:            true,
 									Description:         "Entity description.",
 									MarkdownDescription: "Entity description.",
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 							},
 						},
@@ -742,11 +701,17 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Required:            true,
 									Description:         "The local attribute name.",
 									MarkdownDescription: "The local attribute name.",
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 								"remote_name": schema.StringAttribute{
 									Required:            true,
 									Description:         "The remote attribute name as defined by the attribute authority.",
 									MarkdownDescription: "The remote attribute name as defined by the attribute authority.",
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 							},
 						},
@@ -795,6 +760,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Required:            true,
 						Description:         "The URL at your IdP partner's site where attribute queries are to be sent.",
 						MarkdownDescription: "The URL at your IdP partner's site where attribute queries are to be sent.",
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 				},
 				Optional:            true,
@@ -813,6 +781,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Optional:            true,
 				Description:         "The fully-qualified hostname and port on which your partner's federation deployment runs.",
 				MarkdownDescription: "The fully-qualified hostname and port on which your partner's federation deployment runs.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"contact_info": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -820,26 +791,41 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Optional:            true,
 						Description:         "Company name.",
 						MarkdownDescription: "Company name.",
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"email": schema.StringAttribute{
 						Optional:            true,
 						Description:         "Contact email address.",
 						MarkdownDescription: "Contact email address.",
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"phone": schema.StringAttribute{
 						Optional:            true,
 						Description:         "Contact phone number.",
 						MarkdownDescription: "Contact phone number.",
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"first_name": schema.StringAttribute{
 						Optional:            true,
 						Description:         "Contact first name.",
 						MarkdownDescription: "Contact first name.",
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"last_name": schema.StringAttribute{
 						Optional:            true,
 						Description:         "Contact last name.",
 						MarkdownDescription: "Contact last name.",
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 				},
 				Optional:            true,
@@ -852,11 +838,17 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Optional:            true,
 						Description:         "If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the certs array.",
 						MarkdownDescription: "If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the certs array.",
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"verification_subject_dn": schema.StringAttribute{
 						Optional:            true,
 						Description:         "If a verification Subject DN is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
 						MarkdownDescription: "If a verification Subject DN is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"certs": connectioncert.ToSchema(
 						"The certificates used for signature verification and XML encryption.",
@@ -865,16 +857,16 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					),
 					"block_encryption_algorithm": schema.StringAttribute{
 						Optional:            true,
-						Description:         "The algorithm used to encrypt assertions sent to this partner. AES_128, AES_256, AES_128_GCM, AES_192_GCM, AES_256_GCM and Triple_DES are supported.",
-						MarkdownDescription: "The algorithm used to encrypt assertions sent to this partner. AES_128, AES_256, AES_128_GCM, AES_192_GCM, AES_256_GCM and Triple_DES are supported.",
+						Description:         "The algorithm used to encrypt assertions sent to this partner. Options are `AES_128`, `AES_256`, `AES_128_GCM`, `AES_192_GCM`, `AES_256_GCM`, `Triple_DES`.",
+						MarkdownDescription: "The algorithm used to encrypt assertions sent to this partner. Options are `AES_128`, `AES_256`, `AES_128_GCM`, `AES_192_GCM`, `AES_256_GCM`, `Triple_DES`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf("AES_128", "AES_256", "AES_128_GCM", "AES_192_GCM", "AES_256_GCM", "Triple_DES"),
 						},
 					},
 					"key_transport_algorithm": schema.StringAttribute{
 						Optional:            true,
-						Description:         "The algorithm used to transport keys to this partner. RSA_OAEP, RSA_OAEP_256 and RSA_v15 are supported.",
-						MarkdownDescription: "The algorithm used to transport keys to this partner. RSA_OAEP, RSA_OAEP_256 and RSA_v15 are supported.",
+						Description:         "The algorithm used to transport keys to this partner. Options are `RSA_OAEP`, `RSA_OAEP_256`, `RSA_v15`.",
+						MarkdownDescription: "The algorithm used to transport keys to this partner. Options are `RSA_OAEP`, `RSA_OAEP_256`, `RSA_v15`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf("RSA_OAEP", "RSA_OAEP_256", "RSA_v15"),
 						},
@@ -884,8 +876,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							"signing_key_pair_ref": schema.SingleNestedAttribute{
 								Attributes:          resourcelink.ToSchema(),
 								Optional:            true,
-								Description:         "A reference to a resource.",
-								MarkdownDescription: "A reference to a resource.",
+								Description:         "A reference to a signing key pair.",
+								MarkdownDescription: "A reference to a signing key pair.",
 							},
 							"alternative_signing_key_pair_refs": schema.SetAttribute{
 								ElementType:         types.ObjectType{AttrTypes: resourcelink.AttrType()},
@@ -897,6 +889,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Optional:            true,
 								Description:         "The algorithm used to sign messages sent to this partner. The default is SHA1withDSA for DSA certs, SHA256withRSA for RSA certs, and SHA256withECDSA for EC certs. For RSA certs, SHA1withRSA, SHA384withRSA, SHA512withRSA, SHA256withRSAandMGF1, SHA384withRSAandMGF1 and SHA512withRSAandMGF1 are also supported. For EC certs, SHA384withECDSA and SHA512withECDSA are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512",
 								MarkdownDescription: "The algorithm used to sign messages sent to this partner. The default is SHA1withDSA for DSA certs, SHA256withRSA for RSA certs, and SHA256withECDSA for EC certs. For RSA certs, SHA1withRSA, SHA384withRSA, SHA512withRSA, SHA256withRSAandMGF1, SHA384withRSAandMGF1 and SHA512withRSAandMGF1 are also supported. For EC certs, SHA384withECDSA and SHA512withECDSA are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
 							},
 							"include_cert_in_signature": schema.BoolAttribute{
 								Optional:            true,
@@ -929,8 +924,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Attributes: map[string]schema.Attribute{
 							"type": schema.StringAttribute{
 								Required:            true,
-								Description:         "The back channel authentication type.",
-								MarkdownDescription: "The back channel authentication type.",
+								Description:         "The back channel authentication type. Options are `INBOUND`, `OUTBOUND`.",
+								MarkdownDescription: "The back channel authentication type. Options are `INBOUND`, `OUTBOUND`.",
 								Validators: []validator.String{
 									stringvalidator.OneOf("INBOUND", "OUTBOUND"),
 								},
@@ -941,12 +936,18 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										Optional:            true,
 										Description:         "The username.",
 										MarkdownDescription: "The username.",
+										Validators: []validator.String{
+											stringvalidator.LengthAtLeast(1),
+										},
 									},
 									"password": schema.StringAttribute{
 										Optional:            true,
-										Sensitive:           false,
+										Sensitive:           true,
 										Description:         "User password. To update the password, specify the plaintext value in this field.",
 										MarkdownDescription: "User password. To update the password, specify the plaintext value in this field.",
+										Validators: []validator.String{
+											stringvalidator.LengthAtLeast(1),
+										},
 									},
 								},
 								Optional:            true,
@@ -967,8 +968,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							"validate_partner_cert": schema.BoolAttribute{
 								Optional:            true,
 								Computed:            true,
-								Description:         "Validate the partner server certificate. Default is true.",
-								MarkdownDescription: "Validate the partner server certificate. Default is true.",
+								Description:         "Validate the partner server certificate. Default is `true`.",
+								MarkdownDescription: "Validate the partner server certificate. Default is `true`.",
 								Default:             booldefault.StaticBool(true),
 							},
 						},
@@ -980,8 +981,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Attributes: map[string]schema.Attribute{
 							"type": schema.StringAttribute{
 								Required:            true,
-								Description:         "The back channel authentication type.",
-								MarkdownDescription: "The back channel authentication type.",
+								Description:         "The back channel authentication type. Options are `INBOUND`, `OUTBOUND`.",
+								MarkdownDescription: "The back channel authentication type. Options are `INBOUND`, `OUTBOUND`.",
 								Validators: []validator.String{
 									stringvalidator.OneOf("INBOUND", "OUTBOUND"),
 								},
@@ -992,12 +993,18 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										Optional:            true,
 										Description:         "The username.",
 										MarkdownDescription: "The username.",
+										Validators: []validator.String{
+											stringvalidator.LengthAtLeast(1),
+										},
 									},
 									"password": schema.StringAttribute{
 										Optional:            true,
-										Sensitive:           false,
+										Sensitive:           true,
 										Description:         "User password. To update the password, specify the plaintext value in this field.",
 										MarkdownDescription: "User password. To update the password, specify the plaintext value in this field.",
+										Validators: []validator.String{
+											stringvalidator.LengthAtLeast(1),
+										},
 									},
 								},
 								Optional:            true,
@@ -1011,13 +1018,19 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"verification_subject_dn": schema.StringAttribute{
 								Optional:            true,
-								Description:         "",
-								MarkdownDescription: "",
+								Description:         "If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the certs array.",
+								MarkdownDescription: "If this property is set, the verification trust model is Anchored. The verification certificate must be signed by a trusted CA and included in the incoming message, and the subject DN of the expected certificate is specified in this property. If this property is not set, then a primary verification certificate must be specified in the certs array.",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
 							},
 							"verification_issuer_dn": schema.StringAttribute{
 								Optional:            true,
-								Description:         "",
-								MarkdownDescription: "",
+								Description:         "If a verification Subject DN is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
+								MarkdownDescription: "If a verification Subject DN is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
 							},
 							"certs": connectioncert.ToSchema(
 								"The certificates used for signature verification and XML encryption.",
@@ -1041,19 +1054,27 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"default_virtual_entity_id": schema.StringAttribute{
 				Optional:            true,
-				Description:         "The default alternate entity ID that identifies the local server to this partner. It is required when virtualEntityIds is not empty and must be included in that list.",
-				MarkdownDescription: "The default alternate entity ID that identifies the local server to this partner. It is required when virtualEntityIds is not empty and must be included in that list.",
+				Description:         "The default alternate entity ID that identifies the local server to this partner. It is required when `virtual_entity_ids` is not empty and must be included in that list.",
+				MarkdownDescription: "The default alternate entity ID that identifies the local server to this partner. It is required when `virtual_entity_ids` is not empty and must be included in that list.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"entity_id": schema.StringAttribute{
 				Required:            true,
 				Description:         "The partner's entity ID (connection ID) or issuer value (for OIDC Connections).",
 				MarkdownDescription: "The partner's entity ID (connection ID) or issuer value (for OIDC Connections).",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"error_page_msg_id": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
 				Description:         "Identifier that specifies the message displayed on a user-facing error page.",
 				MarkdownDescription: "Identifier that specifies the message displayed on a user-facing error page.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"extended_properties": schema.MapNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
@@ -1070,7 +1091,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"idp_browser_sso": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"adapter_mappings": schema.ListNestedAttribute{
+					"adapter_mappings": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"adapter_override_settings": schema.SingleNestedAttribute{
@@ -1082,11 +1103,17 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Required:            true,
 											Description:         "The ID of the plugin instance. The ID cannot be modified once the instance is created.",
 											MarkdownDescription: "The ID of the plugin instance. The ID cannot be modified once the instance is created.",
+											Validators: []validator.String{
+												stringvalidator.LengthAtLeast(1),
+											},
 										},
 										"name": schema.StringAttribute{
 											Required:            true,
 											Description:         "The plugin instance name.",
 											MarkdownDescription: "The plugin instance name.",
+											Validators: []validator.String{
+												stringvalidator.LengthAtLeast(1),
+											},
 										},
 										"plugin_descriptor_ref": schema.SingleNestedAttribute{
 											Attributes:          resourcelink.ToSchema(),
@@ -1112,6 +1139,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 																Computed:            true,
 																Description:         "The name of this attribute.",
 																MarkdownDescription: "The name of this attribute.",
+																Validators: []validator.String{
+																	stringvalidator.LengthAtLeast(1),
+																},
 															},
 														},
 													},
@@ -1130,6 +1160,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 																Required:            true,
 																Description:         "The name of this attribute.",
 																MarkdownDescription: "The name of this attribute.",
+																Validators: []validator.String{
+																	stringvalidator.LengthAtLeast(1),
+																},
 															},
 														},
 													},
@@ -1146,6 +1179,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													Optional:            true,
 													Description:         "The application name.",
 													MarkdownDescription: "The application name.",
+													Validators: []validator.String{
+														stringvalidator.LengthAtLeast(1),
+													},
 												},
 												"application_icon_url": schema.StringAttribute{
 													Optional:            true,
@@ -1160,8 +1196,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								"attribute_sources":              attributesources.ToSchema(0, false),
 								"issuance_criteria": schema.SingleNestedAttribute{
 									Description: "The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled.",
-									// Computed:    true,
-									Optional: true,
+									Optional:    true,
 									Attributes: map[string]schema.Attribute{
 										"conditional_criteria": schema.SetNestedAttribute{
 											Description: "A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue.",
@@ -1238,8 +1273,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Computed:            true,
 						Optional:            true,
 						Default:             booldefault.StaticBool(false),
-						Description:         "Specify to always sign the SAML ArtifactResponse.",
-						MarkdownDescription: "Specify to always sign the SAML ArtifactResponse.",
+						Description:         "Specify to always sign the SAML ArtifactResponse. Default is false.",
+						MarkdownDescription: "Specify to always sign the SAML ArtifactResponse. Default is false.",
 					},
 					"artifact": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
@@ -1260,6 +1295,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Required:            true,
 											Description:         "Remote party URLs that you will use to resolve/translate the artifact and get the actual protocol message",
 											MarkdownDescription: "Remote party URLs that you will use to resolve/translate the artifact and get the actual protocol message",
+											Validators: []validator.String{
+												stringvalidator.LengthAtLeast(1),
+											},
 										},
 									},
 								},
@@ -1271,6 +1309,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Optional:            true,
 								Description:         "Source ID for SAML1.x connections",
 								MarkdownDescription: "Source ID for SAML1.x connections",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
 							},
 						},
 						Optional:            true,
@@ -1299,6 +1340,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Computed:            true,
 											Description:         "The name of this attribute.",
 											MarkdownDescription: "The name of this attribute.",
+											Validators: []validator.String{
+												stringvalidator.LengthAtLeast(1),
+											},
 										},
 									},
 								},
@@ -1324,6 +1368,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Required:            true,
 											Description:         "The name of this attribute.",
 											MarkdownDescription: "The name of this attribute.",
+											Validators: []validator.String{
+												stringvalidator.LengthAtLeast(1),
+											},
 										},
 									},
 								},
@@ -1348,11 +1395,14 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 														Optional:            true,
 														Description:         "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
 														MarkdownDescription: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+														Validators: []validator.String{
+															stringvalidator.LengthAtLeast(1),
+														},
 													},
 													"type": schema.StringAttribute{
 														Required:            true,
-														Description:         "The source type of this key.",
-														MarkdownDescription: "The source type of this key.",
+														Description:         "The source type of this key. Options are `ACCOUNT_LINK`, `ACTOR_TOKEN`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXPRESSION`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
+														MarkdownDescription: "The source type of this key. Options are `ACCOUNT_LINK`, `ACTOR_TOKEN`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXPRESSION`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
 														Validators: []validator.String{
 															stringvalidator.OneOf(
 																"TOKEN_EXCHANGE_PROCESSOR_POLICY",
@@ -1425,11 +1475,14 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 														Required:            true,
 														Description:         "The name of the attribute to use in this issuance criterion.",
 														MarkdownDescription: "The name of the attribute to use in this issuance criterion.",
+														Validators: []validator.String{
+															stringvalidator.LengthAtLeast(1),
+														},
 													},
 													"condition": schema.StringAttribute{
 														Required:            true,
-														Description:         "The condition that will be applied to the source attribute's value and the expected value.",
-														MarkdownDescription: "The condition that will be applied to the source attribute's value and the expected value.",
+														Description:         "The condition that will be applied to the source attribute's value and the expected value. Options are `EQUALS`, `EQUALS_CASE_INSENSITIVE`, `EQUALS_DN`, `NOT_EQUAL`, `NOT_EQUAL_CASE_INSENSITIVE`, `NOT_EQUAL_DN`, `MULTIVALUE_CONTAINS`, `MULTIVALUE_CONTAINS_CASE_INSENSITIVE`, `MULTIVALUE_CONTAINS_DN`, `MULTIVALUE_DOES_NOT_CONTAIN`, `MULTIVALUE_DOES_NOT_CONTAIN_CASE_INSENSITIVE`, `MULTIVALUE_DOES_NOT_CONTAIN_DN`.",
+														MarkdownDescription: "The condition that will be applied to the source attribute's value and the expected value. Options are `EQUALS`, `EQUALS_CASE_INSENSITIVE`, `EQUALS_DN`, `NOT_EQUAL`, `NOT_EQUAL_CASE_INSENSITIVE`, `NOT_EQUAL_DN`, `MULTIVALUE_CONTAINS`, `MULTIVALUE_CONTAINS_CASE_INSENSITIVE`, `MULTIVALUE_CONTAINS_DN`, `MULTIVALUE_DOES_NOT_CONTAIN`, `MULTIVALUE_DOES_NOT_CONTAIN_CASE_INSENSITIVE`, `MULTIVALUE_DOES_NOT_CONTAIN_DN`.",
 														Validators: []validator.String{
 															stringvalidator.OneOf(
 																"EQUALS",
@@ -1448,10 +1501,12 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 														},
 													},
 													"error_result": schema.StringAttribute{
-														Optional: true,
-
+														Optional:            true,
 														Description:         "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
 														MarkdownDescription: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
+														Validators: []validator.String{
+															stringvalidator.LengthAtLeast(1),
+														},
 													},
 													"source": schema.SingleNestedAttribute{
 														Attributes: map[string]schema.Attribute{
@@ -1459,11 +1514,14 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 																Optional:            true,
 																Description:         "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
 																MarkdownDescription: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+																Validators: []validator.String{
+																	stringvalidator.LengthAtLeast(1),
+																},
 															},
 															"type": schema.StringAttribute{
 																Required:            true,
-																Description:         "The source type of this key.",
-																MarkdownDescription: "The source type of this key.",
+																Description:         "The source type of this key. Options are `ACCOUNT_LINK`, `ACTOR_TOKEN`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXPRESSION`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
+																MarkdownDescription: "The source type of this key. Options are `ACCOUNT_LINK`, `ACTOR_TOKEN`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXPRESSION`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
 																Validators: []validator.String{
 																	stringvalidator.OneOf(
 																		"TOKEN_EXCHANGE_PROCESSOR_POLICY",
@@ -1511,6 +1569,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 														Required:            true,
 														Description:         "The expected value of this issuance criterion.",
 														MarkdownDescription: "The expected value of this issuance criterion.",
+														Validators: []validator.String{
+															stringvalidator.LengthAtLeast(1),
+														},
 													},
 												},
 											},
@@ -1525,11 +1586,17 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 														Optional:            true,
 														Description:         "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
 														MarkdownDescription: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
+														Validators: []validator.String{
+															stringvalidator.LengthAtLeast(1),
+														},
 													},
 													"expression": schema.StringAttribute{
 														Required:            true,
 														Description:         "The OGNL expression to evaluate.",
 														MarkdownDescription: "The OGNL expression to evaluate.",
+														Validators: []validator.String{
+															stringvalidator.LengthAtLeast(1),
+														},
 													},
 												},
 											},
@@ -1566,11 +1633,17 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Optional:            true,
 									Description:         "The local authentication context value.",
 									MarkdownDescription: "The local authentication context value.",
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 								"remote": schema.StringAttribute{
 									Optional:            true,
 									Description:         "The remote authentication context value.",
 									MarkdownDescription: "The remote authentication context value.",
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 							},
 						},
@@ -1614,6 +1687,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Optional:            true,
 						Description:         "The default target URL for this connection. If defined, this overrides the default URL.",
 						MarkdownDescription: "The default target URL for this connection. If defined, this overrides the default URL.",
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"enabled_profiles": schema.SetAttribute{
 						ElementType:         types.StringType,
@@ -1623,8 +1699,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"idp_identity_mapping": schema.StringAttribute{
 						Required:            true,
-						Description:         "Defines the process in which users authenticated by the IdP are associated with user accounts local to the SP.",
-						MarkdownDescription: "Defines the process in which users authenticated by the IdP are associated with user accounts local to the SP.",
+						Description:         "Defines the process in which users authenticated by the IdP are associated with user accounts local to the SP. Options are `ACCOUNT_LINKING`, `ACCOUNT_MAPPING`, `NONE`.",
+						MarkdownDescription: "Defines the process in which users authenticated by the IdP are associated with user accounts local to the SP. Options are `ACCOUNT_LINKING`, `ACCOUNT_MAPPING`, `NONE`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"ACCOUNT_MAPPING",
@@ -1643,8 +1719,10 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Attributes: map[string]schema.Attribute{
 							"error_handling": schema.StringAttribute{
 								Optional:            true,
-								Description:         "Specify behavior when provisioning request fails. The default is 'CONTINUE_SSO'.",
-								MarkdownDescription: "Specify behavior when provisioning request fails. The default is 'CONTINUE_SSO'.",
+								Computed:            true,
+								Description:         "Specify behavior when provisioning request fails. The default is `CONTINUE_SSO`. Options are `ABORT_SSO`, `CONTINUE_SSO`.",
+								MarkdownDescription: "Specify behavior when provisioning request fails. The default is `CONTINUE_SSO`. Options are `ABORT_SSO`, `CONTINUE_SSO`.",
+								Default:             stringdefault.StaticString("CONTINUE_SSO"),
 								Validators: []validator.String{
 									stringvalidator.OneOf(
 										"CONTINUE_SSO",
@@ -1654,8 +1732,10 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"event_trigger": schema.StringAttribute{
 								Optional:            true,
-								Description:         "Specify when provisioning occurs during assertion processing. The default is 'NEW_USER_ONLY'.",
-								MarkdownDescription: "Specify when provisioning occurs during assertion processing. The default is 'NEW_USER_ONLY'.",
+								Computed:            true,
+								Description:         "Specify when provisioning occurs during assertion processing. The default is `NEW_USER_ONLY`. Options are `ALL_SAML_ASSERTIONS`, `NEW_USER_ONLY`.",
+								MarkdownDescription: "Specify when provisioning occurs during assertion processing. The default is `NEW_USER_ONLY`. Options are `ALL_SAML_ASSERTIONS`, `NEW_USER_ONLY`.",
+								Default:             stringdefault.StaticString("NEW_USER_ONLY"),
 								Validators: []validator.String{
 									stringvalidator.OneOf(
 										"NEW_USER_ONLY",
@@ -1679,6 +1759,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													Required:            true,
 													Description:         "The name of this attribute.",
 													MarkdownDescription: "The name of this attribute.",
+													Validators: []validator.String{
+														stringvalidator.LengthAtLeast(1),
+													},
 												},
 											},
 										},
@@ -1713,11 +1796,14 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 																	Optional:            true,
 																	Description:         "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
 																	MarkdownDescription: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+																	Validators: []validator.String{
+																		stringvalidator.LengthAtLeast(1),
+																	},
 																},
 																"type": schema.StringAttribute{
 																	Required:            true,
-																	Description:         "The source type of this key.",
-																	MarkdownDescription: "The source type of this key.",
+																	Description:         "The source type of this key. Options are `ACCOUNT_LINK`, `ACTOR_TOKEN`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXPRESSION`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
+																	MarkdownDescription: "The source type of this key. Options are `ACCOUNT_LINK`, `ACTOR_TOKEN`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXPRESSION`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
 																	Validators: []validator.String{
 																		stringvalidator.OneOf(
 																			"TOKEN_EXCHANGE_PROCESSOR_POLICY",
@@ -1765,6 +1851,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 															Required:            true,
 															Description:         "The value for this attribute.",
 															MarkdownDescription: "The value for this attribute.",
+															Validators: []validator.String{
+																stringvalidator.LengthAtLeast(1),
+															},
 														},
 													},
 												},
@@ -1786,16 +1875,25 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 																Required:            true,
 																Description:         "Lists the table structure that stores information within a database.",
 																MarkdownDescription: "Lists the table structure that stores information within a database.",
+																Validators: []validator.String{
+																	stringvalidator.LengthAtLeast(1),
+																},
 															},
 															"table_name": schema.StringAttribute{
 																Required:            true,
 																Description:         "The name of the database table.",
 																MarkdownDescription: "The name of the database table.",
+																Validators: []validator.String{
+																	stringvalidator.LengthAtLeast(1),
+																},
 															},
 															"unique_id_column": schema.StringAttribute{
 																Required:            true,
 																Description:         "The database column that uniquely identifies the provisioned user on the SP side.",
 																MarkdownDescription: "The database column that uniquely identifies the provisioned user on the SP side.",
+																Validators: []validator.String{
+																	stringvalidator.LengthAtLeast(1),
+																},
 															},
 														},
 													},
@@ -1807,11 +1905,17 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 																Required:            true,
 																Description:         "Lists the table structure that stores information within a database.",
 																MarkdownDescription: "Lists the table structure that stores information within a database.",
+																Validators: []validator.String{
+																	stringvalidator.LengthAtLeast(1),
+																},
 															},
 															"stored_procedure": schema.StringAttribute{
 																Required:            true,
 																Description:         "The name of the database stored procedure.",
 																MarkdownDescription: "The name of the database stored procedure.",
+																Validators: []validator.String{
+																	stringvalidator.LengthAtLeast(1),
+																},
 															},
 														},
 													},
@@ -1839,6 +1943,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 																	Optional:            true,
 																	Description:         "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
 																	MarkdownDescription: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+																	Validators: []validator.String{
+																		stringvalidator.LengthAtLeast(1),
+																	},
 																},
 																"type": schema.StringAttribute{
 																	Required:            true,
@@ -1891,6 +1998,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 															Required:            true,
 															Description:         "The value for this attribute.",
 															MarkdownDescription: "The value for this attribute.",
+															Validators: []validator.String{
+																stringvalidator.LengthAtLeast(1),
+															},
 														},
 													},
 												},
@@ -1902,11 +2012,17 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 												Optional:            true,
 												Description:         "The base DN to search from. If not specified, the search will start at the LDAP's root.",
 												MarkdownDescription: "The base DN to search from. If not specified, the search will start at the LDAP's root.",
+												Validators: []validator.String{
+													stringvalidator.LengthAtLeast(1),
+												},
 											},
 											"unique_user_id_filter": schema.StringAttribute{
 												Required:            true,
 												Description:         "The expression that results in a unique user identifier, when combined with the Base DN.",
 												MarkdownDescription: "The expression that results in a unique user identifier, when combined with the Base DN.",
+												Validators: []validator.String{
+													stringvalidator.LengthAtLeast(1),
+												},
 											},
 										},
 										Optional: true,
@@ -1932,13 +2048,19 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							Attributes: map[string]schema.Attribute{
 								"context_name": schema.StringAttribute{
 									Optional:            true,
-									Description:         "The context in which the customization will be applied. Depending on the connection type and protocol, this can either be 'assertion', 'authn-response' or 'authn-request'.",
-									MarkdownDescription: "The context in which the customization will be applied. Depending on the connection type and protocol, this can either be 'assertion', 'authn-response' or 'authn-request'.",
+									Description:         "The context in which the customization will be applied. Depending on the connection type and protocol, this can either be `assertion`, `authn-response` or `authn-request`.",
+									MarkdownDescription: "The context in which the customization will be applied. Depending on the connection type and protocol, this can either be `assertion`, `authn-response` or `authn-request`.",
+									Validators: []validator.String{
+										stringvalidator.OneOf("assertion", "authn-request", "authn-response"),
+									},
 								},
 								"message_expression": schema.StringAttribute{
 									Optional:            true,
 									Description:         "The OGNL expression that will be executed. Refer to the Admin Manual for a list of variables provided by PingFederate.",
 									MarkdownDescription: "The OGNL expression that will be executed. Refer to the Admin Manual for a list of variables provided by PingFederate.",
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 							},
 						},
@@ -1956,8 +2078,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Attributes: map[string]schema.Attribute{
 							"authentication_scheme": schema.StringAttribute{
 								Optional:            true,
-								Description:         "The OpenID Connect Authentication Scheme. This is required for Authentication using Code Flow. ",
-								MarkdownDescription: "The OpenID Connect Authentication Scheme. This is required for Authentication using Code Flow. ",
+								Description:         "The OpenID Connect Authentication Scheme. This is required for Authentication using Code Flow. Options are `BASIC`, `CLIENT_SECRET_JWT`, `POST`, `PRIVATE_KEY_JWT`.",
+								MarkdownDescription: "The OpenID Connect Authentication Scheme. This is required for Authentication using Code Flow. Options are `BASIC`, `CLIENT_SECRET_JWT`, `POST`, `PRIVATE_KEY_JWT`.",
 								Validators: []validator.String{
 									stringvalidator.OneOf(
 										"BASIC",
@@ -1969,8 +2091,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"authentication_signing_algorithm": schema.StringAttribute{
 								Optional:            true,
-								Description:         "The authentication signing algorithm for token endpoint PRIVATE_KEY_JWT or CLIENT_SECRET_JWT authentication. Asymmetric algorithms are allowed for PRIVATE_KEY_JWT and symmetric algorithms are allowed for CLIENT_SECRET_JWT. For RSASSA-PSS signing algorithm, PingFederate must be integrated with a hardware security module (HSM) or Java 11.",
-								MarkdownDescription: "The authentication signing algorithm for token endpoint PRIVATE_KEY_JWT or CLIENT_SECRET_JWT authentication. Asymmetric algorithms are allowed for PRIVATE_KEY_JWT and symmetric algorithms are allowed for CLIENT_SECRET_JWT. For RSASSA-PSS signing algorithm, PingFederate must be integrated with a hardware security module (HSM) or Java 11.",
+								Description:         "The authentication signing algorithm for token endpoint PRIVATE_KEY_JWT or CLIENT_SECRET_JWT authentication. Asymmetric algorithms are allowed for PRIVATE_KEY_JWT and symmetric algorithms are allowed for CLIENT_SECRET_JWT. For RSASSA-PSS signing algorithm, PingFederate must be integrated with a hardware security module (HSM) or Java 11. Options are `NONE`, `ES256`, `ES384`, `ES512`, `HS256`, `HS384`, `HS512`, `PS256`, `PS384`, `PS512` `RS256`, `RS384`, `RS512`.",
+								MarkdownDescription: "The authentication signing algorithm for token endpoint PRIVATE_KEY_JWT or CLIENT_SECRET_JWT authentication. Asymmetric algorithms are allowed for PRIVATE_KEY_JWT and symmetric algorithms are allowed for CLIENT_SECRET_JWT. For RSASSA-PSS signing algorithm, PingFederate must be integrated with a hardware security module (HSM) or Java 11. Options are `NONE`, `ES256`, `ES384`, `ES512`, `HS256`, `HS384`, `HS512`, `PS256`, `PS384`, `PS512` `RS256`, `RS384`, `RS512`.",
 								Validators: []validator.String{
 									stringvalidator.OneOf(
 										"NONE",
@@ -1993,11 +2115,17 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Required:            true,
 								Description:         "URL of the OpenID Provider's OAuth 2.0 Authorization Endpoint.",
 								MarkdownDescription: "URL of the OpenID Provider's OAuth 2.0 Authorization Endpoint.",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
 							},
 							"back_channel_logout_uri": schema.StringAttribute{
 								Optional:            true,
 								Description:         "The Back-Channel Logout URI. This read-only parameter is available when user sessions are tracked for logout.",
 								MarkdownDescription: "The Back-Channel Logout URI. This read-only parameter is available when user sessions are tracked for logout.",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
 							},
 							"enable_pkce": schema.BoolAttribute{
 								Optional:            true,
@@ -2008,16 +2136,22 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Optional:            true,
 								Description:         "The Front-Channel Logout URI. This is a read-only parameter.",
 								MarkdownDescription: "The Front-Channel Logout URI. This is a read-only parameter.",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
 							},
 							"jwks_url": schema.StringAttribute{
 								Required:            true,
 								Description:         "URL of the OpenID Provider's JSON Web Key Set [JWK] document.",
 								MarkdownDescription: "URL of the OpenID Provider's JSON Web Key Set [JWK] document.",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
 							},
 							"login_type": schema.StringAttribute{
 								Required:            true,
-								Description:         "The OpenID Connect login type. These values maps to: <br>  CODE: Authentication using Code Flow <br> POST: Authentication using Form Post <br> POST_AT: Authentication using Form Post with Access Token",
-								MarkdownDescription: "The OpenID Connect login type. These values maps to: <br>  CODE: Authentication using Code Flow <br> POST: Authentication using Form Post <br> POST_AT: Authentication using Form Post with Access Token",
+								Description:         "The OpenID Connect login type. These values maps to: \n CODE: Authentication using Code Flow \n  POST: Authentication using Form Post \n  POST_AT: Authentication using Form Post with Access Token. Options are `CODE`, `POST`, `POST_AT`.",
+								MarkdownDescription: "The OpenID Connect login type. These values maps to: \n CODE: Authentication using Code Flow \n  POST: Authentication using Form Post \n  POST_AT: Authentication using Form Post with Access Token. Options are `CODE`, `POST`, `POST_AT`.",
 								Validators: []validator.String{
 									stringvalidator.OneOf(
 										"CODE",
@@ -2030,21 +2164,33 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Optional:            true,
 								Description:         "URL of the OpenID Provider's RP-Initiated Logout Endpoint.",
 								MarkdownDescription: "URL of the OpenID Provider's RP-Initiated Logout Endpoint.",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
 							},
 							"post_logout_redirect_uri": schema.StringAttribute{
 								Optional:            true,
 								Description:         "The Post-Logout Redirect URI, where the OpenID Provider may redirect the user when RP-Initiated Logout has completed. This is a read-only parameter.",
 								MarkdownDescription: "The Post-Logout Redirect URI, where the OpenID Provider may redirect the user when RP-Initiated Logout has completed. This is a read-only parameter.",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
 							},
 							"pushed_authorization_request_endpoint": schema.StringAttribute{
 								Optional:            true,
 								Description:         "URL of the OpenID Provider's OAuth 2.0 Pushed Authorization Request Endpoint.",
 								MarkdownDescription: "URL of the OpenID Provider's OAuth 2.0 Pushed Authorization Request Endpoint.",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
 							},
 							"redirect_uri": schema.StringAttribute{
 								Optional:            true,
 								Description:         "The redirect URI. This is a read-only parameter.",
 								MarkdownDescription: "The redirect URI. This is a read-only parameter.",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
 							},
 							"request_parameters": schema.SetNestedAttribute{
 								NestedObject: schema.NestedAttributeObject{
@@ -2062,11 +2208,14 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 															Optional:            true,
 															Description:         "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
 															MarkdownDescription: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+															Validators: []validator.String{
+																stringvalidator.LengthAtLeast(1),
+															},
 														},
 														"type": schema.StringAttribute{
 															Required:            true,
-															Description:         "The source type of this key.",
-															MarkdownDescription: "The source type of this key.",
+															Description:         "The source type of this key. Options are `ACTOR_TOKEN`, `ACCOUNT_LINK`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `EXPRESSION`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
+															MarkdownDescription: "The source type of this key. Options are `ACTOR_TOKEN`, `ACCOUNT_LINK`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `EXPRESSION`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
 															Validators: []validator.String{
 																stringvalidator.OneOf(
 																	"TOKEN_EXCHANGE_PROCESSOR_POLICY",
@@ -2114,6 +2263,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													Required:            true,
 													Description:         "The value for this attribute.",
 													MarkdownDescription: "The value for this attribute.",
+													Validators: []validator.String{
+														stringvalidator.LengthAtLeast(1),
+													},
 												},
 											},
 											Required:            true,
@@ -2124,11 +2276,17 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Required:            true,
 											Description:         "Request parameter name.",
 											MarkdownDescription: "Request parameter name.",
+											Validators: []validator.String{
+												stringvalidator.LengthAtLeast(1),
+											},
 										},
 										"value": schema.StringAttribute{
 											Optional:            true,
 											Description:         "A request parameter value. A parameter can have either a value or a attribute value but not both. Value set here will be converted to an attribute value of source type TEXT. An empty value will be converted to attribute value of source type NO_MAPPING.",
 											MarkdownDescription: "A request parameter value. A parameter can have either a value or a attribute value but not both. Value set here will be converted to an attribute value of source type TEXT. An empty value will be converted to attribute value of source type NO_MAPPING.",
+											Validators: []validator.String{
+												stringvalidator.LengthAtLeast(1),
+											},
 										},
 									},
 								},
@@ -2138,8 +2296,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"request_signing_algorithm": schema.StringAttribute{
 								Optional:            true,
-								Description:         "The request signing algorithm. Required only if you wish to use signed requests. Only asymmetric algorithms are allowed. For RSASSA-PSS signing algorithm, PingFederate must be integrated with a hardware security module (HSM) or Java 11.",
-								MarkdownDescription: "The request signing algorithm. Required only if you wish to use signed requests. Only asymmetric algorithms are allowed. For RSASSA-PSS signing algorithm, PingFederate must be integrated with a hardware security module (HSM) or Java 11.",
+								Description:         "The request signing algorithm. Required only if you wish to use signed requests. Only asymmetric algorithms are allowed. For RSASSA-PSS signing algorithm, PingFederate must be integrated with a hardware security module (HSM) or Java 11. Options are `ES256`, `ES384`, `ES512`, `HS256`, `HS384`, `HS512`, `NONE`, `PS256`, `PS384`, `PS512`, `RS256`, `RS384`, `RS512`.",
+								MarkdownDescription: "The request signing algorithm. Required only if you wish to use signed requests. Only asymmetric algorithms are allowed. For RSASSA-PSS signing algorithm, PingFederate must be integrated with a hardware security module (HSM) or Java 11. Options are `ES256`, `ES384`, `ES512`, `HS256`, `HS384`, `HS512`, `NONE`, `PS256`, `PS384`, `PS512`, `RS256`, `RS384`, `RS512`.",
 								Validators: []validator.String{
 									stringvalidator.OneOf(
 										"NONE",
@@ -2162,11 +2320,17 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Required:            true,
 								Description:         "Space separated scope values that the OpenID Provider supports.",
 								MarkdownDescription: "Space separated scope values that the OpenID Provider supports.",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
 							},
 							"token_endpoint": schema.StringAttribute{
 								Optional:            true,
 								Description:         "URL of the OpenID Provider's OAuth 2.0 Token Endpoint.",
 								MarkdownDescription: "URL of the OpenID Provider's OAuth 2.0 Token Endpoint.",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
 							},
 							"track_user_sessions_for_logout": schema.BoolAttribute{
 								Optional:            true,
@@ -2177,6 +2341,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Optional:            true,
 								Description:         "URL of the OpenID Provider's UserInfo Endpoint.",
 								MarkdownDescription: "URL of the OpenID Provider's UserInfo Endpoint.",
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
 							},
 						},
 						Optional: true,
@@ -2186,8 +2353,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"protocol": schema.StringAttribute{
 						Required:            true,
-						Description:         "The browser-based SSO protocol to use.",
-						MarkdownDescription: "The browser-based SSO protocol to use.",
+						Description:         "The browser-based SSO protocol to use. Options are `OIDC`, `SAML10`, `SAML11`, `SAML20`, `WSFED`.",
+						MarkdownDescription: "The browser-based SSO protocol to use. Options are `OIDC`, `SAML10`, `SAML11`, `SAML20`, `WSFED`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"SAML20",
@@ -2208,8 +2375,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							Attributes: map[string]schema.Attribute{
 								"binding": schema.StringAttribute{
 									Optional:            true,
-									Description:         "The binding of this endpoint, if applicable - usually only required for SAML 2.0 endpoints.",
-									MarkdownDescription: "The binding of this endpoint, if applicable - usually only required for SAML 2.0 endpoints.",
+									Description:         "The binding of this endpoint, if applicable - usually only required for SAML 2.0 endpoints. Options are `ARTIFACT`, `POST`, `REDIRECT`, `SOAP`.",
+									MarkdownDescription: "The binding of this endpoint, if applicable - usually only required for SAML 2.0 endpoints. Options are `ARTIFACT`, `POST`, `REDIRECT`, `SOAP`.",
 									Validators: []validator.String{
 										stringvalidator.OneOf(
 											"ARTIFACT",
@@ -2223,11 +2390,17 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Optional:            true,
 									Description:         "The absolute or relative URL to which logout responses are sent. A relative URL can be specified if a base URL for the connection has been defined.",
 									MarkdownDescription: "The absolute or relative URL to which logout responses are sent. A relative URL can be specified if a base URL for the connection has been defined.",
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 								"url": schema.StringAttribute{
 									Required:            true,
 									Description:         "The absolute or relative URL of the endpoint. A relative URL can be specified if a base URL for the connection has been defined.",
 									MarkdownDescription: "The absolute or relative URL of the endpoint. A relative URL can be specified if a base URL for the connection has been defined.",
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 							},
 						},
@@ -2239,6 +2412,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Optional:            true,
 						Description:         "Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter.",
 						MarkdownDescription: "Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter.",
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"sso_oauth_mapping": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
@@ -2251,11 +2427,14 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													Optional:            true,
 													Description:         "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
 													MarkdownDescription: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+													Validators: []validator.String{
+														stringvalidator.LengthAtLeast(1),
+													},
 												},
 												"type": schema.StringAttribute{
 													Required:            true,
-													Description:         "The source type of this key.",
-													MarkdownDescription: "The source type of this key.",
+													Description:         "The source type of this key. Options are `ACTOR_TOKEN`, `ACCOUNT_LINK`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `EXPRESSION`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
+													MarkdownDescription: "The source type of this key. Options are `ACTOR_TOKEN`, `ACCOUNT_LINK`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `EXPRESSION`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
 													Validators: []validator.String{
 														stringvalidator.OneOf(
 															"TOKEN_EXCHANGE_PROCESSOR_POLICY",
@@ -2324,8 +2503,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							Attributes: map[string]schema.Attribute{
 								"binding": schema.StringAttribute{
 									Required:            true,
-									Description:         "The binding of this endpoint, if applicable - usually only required for SAML 2.0 endpoints.",
-									MarkdownDescription: "The binding of this endpoint, if applicable - usually only required for SAML 2.0 endpoints.",
+									Description:         "The binding of this endpoint, if applicable - usually only required for SAML 2.0 endpoints. Options are `ARTIFACT`, `POST`, `REDIRECT`, `SOAP`.",
+									MarkdownDescription: "The binding of this endpoint, if applicable - usually only required for SAML 2.0 endpoints. Options are `ARTIFACT`, `POST`, `REDIRECT`, `SOAP`.",
 									Validators: []validator.String{
 										stringvalidator.OneOf(
 											"ARTIFACT",
@@ -2339,6 +2518,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Required:            true,
 									Description:         "The absolute or relative URL of the endpoint. A relative URL can be specified if a base URL for the connection has been defined.",
 									MarkdownDescription: "The absolute or relative URL of the endpoint. A relative URL can be specified if a base URL for the connection has been defined.",
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 							},
 						},
@@ -2363,11 +2545,17 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Optional:            true,
 									Description:         "Valid Domain Name (leading wildcard '*.' allowed)",
 									MarkdownDescription: "Valid Domain Name (leading wildcard '*.' allowed)",
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 								"valid_path": schema.StringAttribute{
 									Optional:            true,
 									Description:         "Valid Path (leave blank to allow any path)",
 									MarkdownDescription: "Valid Path (leave blank to allow any path)",
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 							},
 						},
@@ -2400,11 +2588,14 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 														Optional:            true,
 														Description:         "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
 														MarkdownDescription: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+														Validators: []validator.String{
+															stringvalidator.LengthAtLeast(1),
+														},
 													},
 													"type": schema.StringAttribute{
 														Required:            true,
-														Description:         "The source type of this key.",
-														MarkdownDescription: "The source type of this key.",
+														Description:         "The source type of this key. Options are `ACTOR_TOKEN`, `ACCOUNT_LINK`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `EXPRESSION`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
+														MarkdownDescription: "The source type of this key. Options are `ACTOR_TOKEN`, `ACCOUNT_LINK`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `EXPRESSION`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
 														Validators: []validator.String{
 															stringvalidator.OneOf(
 																"TOKEN_EXCHANGE_PROCESSOR_POLICY",
@@ -2486,6 +2677,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Computed:            true,
 											Description:         "The name of this attribute.",
 											MarkdownDescription: "The name of this attribute.",
+											Validators: []validator.String{
+												stringvalidator.LengthAtLeast(1),
+											},
 										},
 									},
 								},
@@ -2511,6 +2705,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Required:            true,
 											Description:         "The name of this attribute.",
 											MarkdownDescription: "The name of this attribute.",
+											Validators: []validator.String{
+												stringvalidator.LengthAtLeast(1),
+											},
 										},
 									},
 								},
@@ -2532,8 +2729,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Attributes: map[string]schema.Attribute{
 					"action_on_delete": schema.StringAttribute{
 						Optional:            true,
-						Description:         "Specify behavior of how SCIM DELETE requests are handled.",
-						MarkdownDescription: "Specify behavior of how SCIM DELETE requests are handled.",
+						Description:         "Specify behavior of how SCIM DELETE requests are handled. Options are `DISABLE_USER`, `PERMANENTLY_DELETE_USER`.",
+						MarkdownDescription: "Specify behavior of how SCIM DELETE requests are handled. Options are `DISABLE_USER`, `PERMANENTLY_DELETE_USER`.",
 						Validators: []validator.String{
 							stringvalidator.OneOf(
 								"DISABLE_USER",
@@ -2544,6 +2741,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					"custom_schema": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
 							"attributes": schema.SetNestedAttribute{
+								Description: "A custom SCIM attribute.",
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"multi_valued": schema.BoolAttribute{
@@ -2555,6 +2753,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Optional:            true,
 											Description:         "Name of the attribute.",
 											MarkdownDescription: "Name of the attribute.",
+											Validators: []validator.String{
+												stringvalidator.LengthAtLeast(1),
+											},
 										},
 										"sub_attributes": schema.SetAttribute{
 											ElementType:         types.StringType,
@@ -2574,8 +2775,12 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Computed: true,
 							},
 							"namespace": schema.StringAttribute{
-								Optional: true,
-								Computed: true,
+								Description: "Custom SCIM namespace.",
+								Optional:    true,
+								Computed:    true,
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
 							},
 						},
 						Required:            true,
@@ -2608,6 +2813,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 															Computed:            true,
 															Description:         "The name of this attribute.",
 															MarkdownDescription: "The name of this attribute.",
+															Validators: []validator.String{
+																stringvalidator.LengthAtLeast(1),
+															},
 														},
 													},
 												},
@@ -2633,6 +2841,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 															Required:            true,
 															Description:         "The name of this attribute.",
 															MarkdownDescription: "The name of this attribute.",
+															Validators: []validator.String{
+																stringvalidator.LengthAtLeast(1),
+															},
 														},
 													},
 												},
@@ -2654,11 +2865,14 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 															Optional:            true,
 															Description:         "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
 															MarkdownDescription: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+															Validators: []validator.String{
+																stringvalidator.LengthAtLeast(1),
+															},
 														},
 														"type": schema.StringAttribute{
 															Required:            true,
-															Description:         "The source type of this key.",
-															MarkdownDescription: "The source type of this key.",
+															Description:         "The source type of this key. Options are `ACTOR_TOKEN`, `ACCOUNT_LINK`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `EXPRESSION`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
+															MarkdownDescription: "The source type of this key. Options are `ACTOR_TOKEN`, `ACCOUNT_LINK`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `EXPRESSION`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
 															Validators: []validator.String{
 																stringvalidator.OneOf(
 																	"TOKEN_EXCHANGE_PROCESSOR_POLICY",
@@ -2706,6 +2920,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													Required:            true,
 													Description:         "The value for this attribute.",
 													MarkdownDescription: "The value for this attribute.",
+													Validators: []validator.String{
+														stringvalidator.LengthAtLeast(1),
+													},
 												},
 											},
 										},
@@ -2720,6 +2937,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													Required:            true,
 													Description:         "The name of this attribute.",
 													MarkdownDescription: "The name of this attribute.",
+													Validators: []validator.String{
+														stringvalidator.LengthAtLeast(1),
+													},
 												},
 											},
 										},
@@ -2743,11 +2963,14 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 															Optional:            true,
 															Description:         "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
 															MarkdownDescription: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+															Validators: []validator.String{
+																stringvalidator.LengthAtLeast(1),
+															},
 														},
 														"type": schema.StringAttribute{
 															Required:            true,
-															Description:         "The source type of this key.",
-															MarkdownDescription: "The source type of this key.",
+															Description:         "The source type of this key. Options are Options are `ACTOR_TOKEN`, `ACCOUNT_LINK`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `EXPRESSION`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
+															MarkdownDescription: "The source type of this key. Options are Options are `ACTOR_TOKEN`, `ACCOUNT_LINK`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `EXPRESSION`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
 															Validators: []validator.String{
 																stringvalidator.OneOf(
 																	"TOKEN_EXCHANGE_PROCESSOR_POLICY",
@@ -2795,6 +3018,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													Required:            true,
 													Description:         "The value for this attribute.",
 													MarkdownDescription: "The value for this attribute.",
+													Validators: []validator.String{
+														stringvalidator.LengthAtLeast(1),
+													},
 												},
 											},
 										},
@@ -2848,16 +3074,25 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										Optional:            true,
 										Description:         "The base DN to search from. If not specified, the search will start at the LDAP's root.",
 										MarkdownDescription: "The base DN to search from. If not specified, the search will start at the LDAP's root.",
+										Validators: []validator.String{
+											stringvalidator.LengthAtLeast(1),
+										},
 									},
 									"unique_user_id_filter": schema.StringAttribute{
 										Required:            true,
 										Description:         "The expression that results in a unique user identifier, when combined with the Base DN.",
 										MarkdownDescription: "The expression that results in a unique user identifier, when combined with the Base DN.",
+										Validators: []validator.String{
+											stringvalidator.LengthAtLeast(1),
+										},
 									},
 									"unique_group_id_filter": schema.StringAttribute{
 										Required:            true,
 										Description:         "The expression that results in a unique group identifier, when combined with the Base DN.",
 										MarkdownDescription: "The expression that results in a unique group identifier, when combined with the Base DN.",
+										Validators: []validator.String{
+											stringvalidator.LengthAtLeast(1),
+										},
 									},
 								},
 							},
@@ -2911,6 +3146,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 															Required:            true,
 															Description:         "The name of this attribute.",
 															MarkdownDescription: "The name of this attribute.",
+															Validators: []validator.String{
+																stringvalidator.LengthAtLeast(1),
+															},
 														},
 													},
 												},
@@ -2932,11 +3170,14 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 															Optional:            true,
 															Description:         "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
 															MarkdownDescription: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+															Validators: []validator.String{
+																stringvalidator.LengthAtLeast(1),
+															},
 														},
 														"type": schema.StringAttribute{
 															Required:            true,
-															Description:         "The source type of this key.",
-															MarkdownDescription: "The source type of this key.",
+															Description:         "The source type of this key. Options are `ACTOR_TOKEN`, `ACCOUNT_LINK`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `EXPRESSION`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
+															MarkdownDescription: "The source type of this key. Options are `ACTOR_TOKEN`, `ACCOUNT_LINK`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `EXPRESSION`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
 															Validators: []validator.String{
 																stringvalidator.OneOf(
 																	"TOKEN_EXCHANGE_PROCESSOR_POLICY",
@@ -2984,6 +3225,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													Required:            true,
 													Description:         "The value for this attribute.",
 													MarkdownDescription: "The value for this attribute.",
+													Validators: []validator.String{
+														stringvalidator.LengthAtLeast(1),
+													},
 												},
 											},
 										},
@@ -2998,6 +3242,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													Required:            true,
 													Description:         "The name of this attribute.",
 													MarkdownDescription: "The name of this attribute.",
+													Validators: []validator.String{
+														stringvalidator.LengthAtLeast(1),
+													},
 												},
 											},
 										},
@@ -3021,11 +3268,14 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 															Optional:            true,
 															Description:         "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
 															MarkdownDescription: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+															Validators: []validator.String{
+																stringvalidator.LengthAtLeast(1),
+															},
 														},
 														"type": schema.StringAttribute{
 															Required:            true,
-															Description:         "The source type of this key.",
-															MarkdownDescription: "The source type of this key.",
+															Description:         "The source type of this key. Options are `ACTOR_TOKEN`, `ACCOUNT_LINK`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `EXPRESSION`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
+															MarkdownDescription: "The source type of this key. Options are `ACTOR_TOKEN`, `ACCOUNT_LINK`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `EXPRESSION`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
 															Validators: []validator.String{
 																stringvalidator.OneOf(
 																	"TOKEN_EXCHANGE_PROCESSOR_POLICY",
@@ -3073,6 +3323,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 													Required:            true,
 													Description:         "The value for this attribute.",
 													MarkdownDescription: "The value for this attribute.",
+													Validators: []validator.String{
+														stringvalidator.LengthAtLeast(1),
+													},
 												},
 											},
 										},
@@ -3099,10 +3352,12 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Required:            true,
 				Description:         "The connection name.",
 				MarkdownDescription: "The connection name.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"license_connection_group": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
 				Description:         "The license connection group. If your PingFederate license is based on connection groups, each connection must be assigned to a group before it can be used.",
 				MarkdownDescription: "The license connection group. If your PingFederate license is based on connection groups, each connection must be assigned to a group before it can be used.",
 				Validators: []validator.String{
@@ -3112,8 +3367,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			"logging_mode": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The level of transaction logging applicable for this connection. Default is STANDARD.",
-				MarkdownDescription: "The level of transaction logging applicable for this connection. Default is STANDARD.",
+				Description:         "The level of transaction logging applicable for this connection. Default is `STANDARD`. Options are `ENHANCED`, `FULL`, `NONE`, `STANDARD`.",
+				MarkdownDescription: "The level of transaction logging applicable for this connection. Default is `STANDARD`. Options are `ENHANCED`, `FULL`, `NONE`, `STANDARD`.",
 				Default:             stringdefault.StaticString("STANDARD"),
 				Validators: []validator.String{
 					stringvalidator.OneOf("NONE", "STANDARD", "ENHANCED", "FULL"),
@@ -3145,6 +3400,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Required:            true,
 						Description:         "The OpenID Connect client identitification.",
 						MarkdownDescription: "The OpenID Connect client identitification.",
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"client_secret": schema.StringAttribute{
 						Required:            true,
@@ -3152,6 +3410,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						MarkdownDescription: "The OpenID Connect client secret. To update the client secret, specify the plaintext value in this field.  This field will not be populated for GET requests.",
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.RequiresReplace(),
+						},
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
 						},
 					},
 				},
@@ -3166,8 +3427,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Validators: []validator.String{
 					stringvalidator.OneOf("IDP", "SP"),
 				},
-				Description:         "The type of this connection. Default is 'IDP'.",
-				MarkdownDescription: "The type of this connection. Default is 'IDP'.",
+				Description:         "The type of this connection. Default is `IDP`.",
+				MarkdownDescription: "The type of this connection. Default is `IDP`.",
 			},
 			"virtual_entity_ids": schema.SetAttribute{
 				ElementType:         types.StringType,
@@ -3195,6 +3456,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Required:            true,
 											Description:         "The name of this attribute.",
 											MarkdownDescription: "The name of this attribute.",
+											Validators: []validator.String{
+												stringvalidator.LengthAtLeast(1),
+											},
 										},
 									},
 								},
@@ -3216,6 +3480,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 											Required:            true,
 											Description:         "The name of this attribute.",
 											MarkdownDescription: "The name of this attribute.",
+											Validators: []validator.String{
+												stringvalidator.LengthAtLeast(1),
+											},
 										},
 									},
 								},
@@ -3233,7 +3500,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Description:         "Indicates whether a local token needs to be generated. The default value is false.",
 						MarkdownDescription: "Indicates whether a local token needs to be generated. The default value is false.",
 					},
-					"token_generator_mappings": schema.ListNestedAttribute{
+					"token_generator_mappings": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"attribute_contract_fulfillment": schema.MapNestedAttribute{
@@ -3245,11 +3512,14 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 														Optional:            true,
 														Description:         "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
 														MarkdownDescription: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+														Validators: []validator.String{
+															configvalidators.PingFederateId(),
+														},
 													},
 													"type": schema.StringAttribute{
 														Required:            true,
-														Description:         "The source type of this key.",
-														MarkdownDescription: "The source type of this key.",
+														Description:         "The source type of this key. Options are `ACTOR_TOKEN`, `ACCOUNT_LINK`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `EXPRESSION`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
+														MarkdownDescription: "The source type of this key. Options are `ACTOR_TOKEN`, `ACCOUNT_LINK`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `EXPRESSION`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
 														Validators: []validator.String{
 															stringvalidator.OneOf(
 																"TOKEN_EXCHANGE_PROCESSOR_POLICY",
@@ -3330,9 +3600,6 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Optional:            true,
 						Description:         "A list of token generators to generate local tokens. Required if a local token needs to be generated.",
 						MarkdownDescription: "A list of token generators to generate local tokens. Required if a local token needs to be generated.",
-						Validators: []validator.List{
-							listvalidator.UniqueValues(),
-						},
 					},
 				},
 				Optional:            true,
@@ -3644,9 +3911,12 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 	state.MetadataReloadSettings, objDiags = types.ObjectValueFrom(ctx, metadataReloadSettingsAttrTypes, r.MetadataReloadSettings)
 	diags.Append(objDiags...)
 	state.Name = types.StringValue(r.Name)
-	state.OidcClientCredentials = types.ObjectNull(oidcClientCredentialsAttrTypes)
 	state.Type = types.StringPointerValue(r.Type)
 	state.VirtualEntityIds = internaltypes.GetStringSet(r.VirtualEntityIds)
+
+	//  OIDC Client Credentials
+	state.OidcClientCredentials, objDiags = types.ObjectValueFrom(ctx, oidcClientCredentialsAttrTypes, r.OidcClientCredentials)
+	diags = append(diags, objDiags...)
 
 	// LicenseConnectionGroup
 	if r.LicenseConnectionGroup != nil {
@@ -3656,24 +3926,30 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 	var credentialsValue types.Object
 	if r.Credentials != nil {
 		var credentialsCertsValues []attr.Value
-		if r.Credentials.Certs != nil && len(r.Credentials.Certs) > 0 {
-			for _, cert := range r.Credentials.Certs {
-				if plan.Credentials.Attributes()["certs"] != nil {
-					for _, certInPlan := range plan.Credentials.Attributes()["certs"].(types.List).Elements() {
-						x509FilePlanAttrs := certInPlan.(types.Object).Attributes()["x509_file"].(types.Object).Attributes()
-						x509FileIdPlan := x509FilePlanAttrs["id"].(types.String).ValueString()
-						if *cert.X509File.Id == x509FileIdPlan {
-							planFileData := x509FilePlanAttrs["file_data"].(types.String)
-							credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, planFileData, cert, &diags)
-							diags.Append(objDiags...)
-							credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
-						}
+		for _, cert := range r.Credentials.Certs {
+			if plan.Credentials.Attributes()["certs"] != nil {
+				certMatchFound := false
+				for _, certInPlan := range plan.Credentials.Attributes()["certs"].(types.List).Elements() {
+					x509FilePlanAttrs := certInPlan.(types.Object).Attributes()["x509_file"].(types.Object).Attributes()
+					x509FileIdPlan := x509FilePlanAttrs["id"].(types.String).ValueString()
+					if *cert.X509File.Id == x509FileIdPlan {
+						planFileData := x509FilePlanAttrs["file_data"].(types.String)
+						credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, planFileData, cert, &diags)
+						diags.Append(objDiags...)
+						credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
+						certMatchFound = true
+						break
 					}
-				} else {
+				}
+				if !certMatchFound {
 					credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), cert, &diags)
 					diags.Append(objDiags...)
 					credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
 				}
+			} else {
+				credentialsCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), cert, &diags)
+				diags.Append(objDiags...)
+				credentialsCertsValues = append(credentialsCertsValues, credentialsCertsObjValue)
 			}
 		}
 		credentialsCertsValue, objDiags := types.ListValue(connectioncert.ObjType(), credentialsCertsValues)
@@ -3694,6 +3970,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				var credentialsInboundBackChannelAuthCertsValues []attr.Value
 				for _, ibcaCert := range r.Credentials.InboundBackChannelAuth.Certs {
 					if plan.Credentials.Attributes()["inbound_back_channel_auth"] != nil {
+						ibaCertMatch := false
 						for _, ibcaCertInPlan := range plan.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["certs"].(types.List).Elements() {
 							ibcax509FilePlanAttrs := ibcaCertInPlan.(types.Object).Attributes()["x509_file"].(types.Object).Attributes()
 							ibcax509FileIdPlan := ibcax509FilePlanAttrs["id"].(types.String).ValueString()
@@ -3702,7 +3979,14 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 								planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, planIbcaX509FileFileData, ibcaCert, &diags)
 								diags.Append(objDiags...)
 								credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
+								ibaCertMatch = true
+								break
 							}
+						}
+						if !ibaCertMatch {
+							planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), ibcaCert, &diags)
+							diags.Append(objDiags...)
+							credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, planIbcaX509FileFileDataCertsObjValue)
 						}
 					} else {
 						planIbcaX509FileFileDataCertsObjValue, objDiags := connectioncert.ToState(ctx, types.StringNull(), ibcaCert, &diags)
@@ -3720,7 +4004,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				credentialsInboundBackChannelAuthHttpBasicCredentialsValue = types.ObjectNull(credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes)
 			} else {
 				var password string = ""
-				if plan != nil && plan.Credentials.Attributes()["inbound_back_channel_auth"] != nil {
+				if plan != nil && plan.Credentials.Attributes()["inbound_back_channel_auth"] != nil && plan.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
 					passwordFromPlan := plan.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String)
 					if internaltypes.IsDefined(passwordFromPlan) {
 						password = passwordFromPlan.ValueString()
@@ -3755,8 +4039,8 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			if r.Credentials.OutboundBackChannelAuth.HttpBasicCredentials == nil {
 				credentialsOutboundBackChannelAuthHttpBasicCredentialsValue = types.ObjectNull(credentialsOutboundBackChannelAuthHttpBasicCredentialsAttrTypes)
 			} else {
-				var password string = ""
-				if plan != nil && plan.Credentials.Attributes()["outbound_back_channel_auth"] != nil {
+				password := ""
+				if plan != nil && plan.Credentials.Attributes()["outbound_back_channel_auth"] != nil && plan.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
 					passwordFromPlan := plan.Credentials.Attributes()["outbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String)
 					if internaltypes.IsDefined(passwordFromPlan) {
 						password = passwordFromPlan.ValueString()
@@ -3801,7 +4085,9 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		} else {
 			var credentialsSigningSettingsAlternativeSigningKeyPairRefsValues []attr.Value
 			for _, credentialsSigningSettingsAlternativeSigningKeyPairRefsResponseValue := range r.Credentials.SigningSettings.AlternativeSigningKeyPairRefs {
-				credentialsSigningSettingsAlternativeSigningKeyPairRefsValue, objDiags := resourcelink.ToState(ctx, &credentialsSigningSettingsAlternativeSigningKeyPairRefsResponseValue)
+				credentialsSigningSettingsAlternativeSigningKeyPairRefsValueResourceLink := &client.ResourceLink{}
+				credentialsSigningSettingsAlternativeSigningKeyPairRefsValueResourceLink.Id = credentialsSigningSettingsAlternativeSigningKeyPairRefsResponseValue.Id
+				credentialsSigningSettingsAlternativeSigningKeyPairRefsValue, objDiags := resourcelink.ToState(ctx, credentialsSigningSettingsAlternativeSigningKeyPairRefsValueResourceLink)
 				diags.Append(objDiags...)
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValues = append(credentialsSigningSettingsAlternativeSigningKeyPairRefsValues, credentialsSigningSettingsAlternativeSigningKeyPairRefsValue)
 			}
@@ -3866,7 +4152,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		idpBrowserSsoValue = types.ObjectNull(idpBrowserSsoAttrTypes)
 	} else {
 		var idpBrowserSsoAdapterMappingsValues []attr.Value
-		var idpBrowserSsoAdapterMappingsValue types.List
+		var idpBrowserSsoAdapterMappingsValue types.Set
 		if r.IdpBrowserSso.AdapterMappings != nil {
 			for i, idpBrowserSsoAdapterMappingsResponseValue := range r.IdpBrowserSso.AdapterMappings {
 				var idpBrowserSsoAdapterMappingsAdapterOverrideSettingsValue types.Object
@@ -3904,7 +4190,8 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 						diags.Append(objDiags...)
 					}
 					adapterMapping := plan.IdpBrowserSso.Attributes()["adapter_mappings"].(types.Set).Elements()[i].(types.Object).Attributes()
-					idpBrowserSsoAdapterMappingsAdapterOverrideSettingsConfigurationValue, diags := pluginconfiguration.ToState(adapterMapping["adapter_override_settings"].(types.Object).Attributes()["configuration"].(types.Object), &idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.Configuration)
+					adapterOverrideSettingsConfiguration := idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.Configuration
+					idpBrowserSsoAdapterMappingsAdapterOverrideSettingsConfigurationValue, diags := pluginconfiguration.ToState(adapterMapping["adapter_override_settings"].(types.Object).Attributes()["configuration"].(types.Object), &adapterOverrideSettingsConfiguration)
 					diags.Append(objDiags...)
 					var idpBrowserSsoAdapterMappingsAdapterOverrideSettingsParentRefValue types.Object
 					if idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.ParentRef == nil {
@@ -3940,7 +4227,8 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					})
 					diags.Append(objDiags...)
 				}
-				idpBrowserSsoAdapterMappingsAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(ctx, &idpBrowserSsoAdapterMappingsResponseValue.AttributeContractFulfillment)
+				idpBrowserSsoAdapterMappingsResponseValueAttributeContractFulfillment := idpBrowserSsoAdapterMappingsResponseValue.AttributeContractFulfillment
+				idpBrowserSsoAdapterMappingsAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(ctx, &idpBrowserSsoAdapterMappingsResponseValueAttributeContractFulfillment)
 				diags.Append(objDiags...)
 
 				idpBrowserSsoAdapterMappingsAttributeSourcesValue, diags := attributesources.ToState(ctx, idpBrowserSsoAdapterMappingsResponseValue.AttributeSources)
@@ -3972,10 +4260,10 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 				diags.Append(objDiags...)
 				idpBrowserSsoAdapterMappingsValues = append(idpBrowserSsoAdapterMappingsValues, idpBrowserSsoAdapterMappingsValue)
 			}
-			idpBrowserSsoAdapterMappingsValue, diags = types.ListValue(idpBrowserSsoAdapterMappingsElementType, idpBrowserSsoAdapterMappingsValues)
+			idpBrowserSsoAdapterMappingsValue, diags = types.SetValue(idpBrowserSsoAdapterMappingsElementType, idpBrowserSsoAdapterMappingsValues)
 			diags.Append(objDiags...)
 		} else {
-			idpBrowserSsoAdapterMappingsValue = types.ListNull(idpBrowserSsoAdapterMappingsElementType)
+			idpBrowserSsoAdapterMappingsValue = types.SetNull(idpBrowserSsoAdapterMappingsElementType)
 		}
 
 		// IdpBrowserSSO Always Sign Artifact Response
@@ -4055,13 +4343,13 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			idpBrowserSsoSsoOauthMappingAttributeContractFulfillmentValue, objDiags := attributecontractfulfillment.ToState(ctx, &r.IdpBrowserSso.SsoOAuthMapping.AttributeContractFulfillment)
 			diags.Append(objDiags...)
 
-			var idpBrowserSsoSsoOauthMappingAttributeSourcesValue types.Set
+			idpBrowserSsoSsoOauthMappingAttributeSourcesValue := types.SetNull(types.ObjectType{AttrTypes: attributesources.AttrTypes()})
 			if r.IdpBrowserSso.SsoOAuthMapping.AttributeSources != nil {
 				idpBrowserSsoSsoOauthMappingAttributeSourcesValue, objDiags = attributesources.ToState(ctx, r.IdpBrowserSso.SsoOAuthMapping.AttributeSources)
 				diags.Append(objDiags...)
 			}
 
-			var idpBrowserSsoSsoOauthMappingIssuanceCriteriaValue types.Object
+			idpBrowserSsoSsoOauthMappingIssuanceCriteriaValue := types.ObjectNull(issuancecriteria.AttrTypes())
 			if r.IdpBrowserSso.SsoOAuthMapping.IssuanceCriteria != nil {
 				idpBrowserSsoSsoOauthMappingIssuanceCriteriaValue, objDiags = issuancecriteria.ToState(ctx, r.IdpBrowserSso.SsoOAuthMapping.IssuanceCriteria)
 				diags.Append(objDiags...)
@@ -4343,14 +4631,16 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 	if r.WsTrust != nil {
 		var tokenGeneratorMappings []basetypes.ObjectValue
 		for _, tokenGeneratorMapping := range r.WsTrust.TokenGeneratorMappings {
-			spTokenGeneratorRef, objDiags := resourcelink.ToState(ctx, &tokenGeneratorMapping.SpTokenGeneratorRef)
+			tokenGeneratorMappingSpTokenGeneratorRef := tokenGeneratorMapping.SpTokenGeneratorRef
+			spTokenGeneratorRef, objDiags := resourcelink.ToState(ctx, &tokenGeneratorMappingSpTokenGeneratorRef)
 			diags.Append(objDiags...)
 
 			var attributeSources basetypes.SetValue
 			attributeSources, objDiags = attributesources.ToState(ctx, tokenGeneratorMapping.AttributeSources)
 			diags.Append(objDiags...)
 
-			attributeContractFulfillment, objDiags := attributecontractfulfillment.ToState(ctx, &tokenGeneratorMapping.AttributeContractFulfillment)
+			tokenGeneratorMappingAttributeContractFulfillment := tokenGeneratorMapping.AttributeContractFulfillment
+			attributeContractFulfillment, objDiags := attributecontractfulfillment.ToState(ctx, &tokenGeneratorMappingAttributeContractFulfillment)
 			diags.Append(objDiags...)
 
 			issuanceCriteria, objDiags := issuancecriteria.ToState(ctx, tokenGeneratorMapping.IssuanceCriteria)
@@ -4394,16 +4684,16 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		}, r.WsTrust.AttributeContract)
 		diags.Append(objDiags...)
 
-		var tokenGeneratorMappingsList types.List
+		var tokenGeneratorMappingsSet types.Set
 		if tokenGeneratorMappings != nil {
-			tokenGeneratorMappingsList, objDiags = types.ListValueFrom(ctx, types.ObjectType{AttrTypes: tokenGeneratorAttrTypes}, tokenGeneratorMappings)
+			tokenGeneratorMappingsSet, objDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: tokenGeneratorAttrTypes}, tokenGeneratorMappings)
 			diags.Append(objDiags...)
 		}
 
 		wsTrustAttrValues := map[string]attr.Value{
 			"attribute_contract":       attributeContract,
 			"generate_local_token":     types.BoolValue(r.WsTrust.GenerateLocalToken),
-			"token_generator_mappings": tokenGeneratorMappingsList,
+			"token_generator_mappings": tokenGeneratorMappingsSet,
 		}
 
 		state.WsTrust, objDiags = types.ObjectValue(wsTrustAttrTypes, wsTrustAttrValues)
