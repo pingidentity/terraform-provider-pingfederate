@@ -110,7 +110,7 @@ func (r *authenticationPolicyContractResource) Schema(ctx context.Context, req r
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 

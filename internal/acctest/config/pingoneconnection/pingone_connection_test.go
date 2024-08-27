@@ -1,4 +1,4 @@
-package acctest_test
+package pingoneconnection_test
 
 import (
 	"fmt"
@@ -66,18 +66,18 @@ func TestAccPingOneConnection(t *testing.T) {
 				Config: testAccPingOneConnection(resourceName, updatedResourceModel),
 				Check:  resource.ComposeTestCheckFunc(testAccCheckExpectedPingOneConnectionAttributes(updatedResourceModel)),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_ping_one_connection.%s", resourceName), tfjsonpath.New("creation_date"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_ping_one_connection.%s", resourceName), tfjsonpath.New("credential_id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_ping_one_connection.%s", resourceName), tfjsonpath.New("environment_id"), knownvalue.StringExact(pingOneEnvironmentId)),
-					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_ping_one_connection.%s", resourceName), tfjsonpath.New("region"), knownvalue.StringExact("North America")),
-					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_ping_one_connection.%s", resourceName), tfjsonpath.New("ping_one_authentication_api_endpoint"), knownvalue.StringExact("https://auth.pingone.com")),
-					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_ping_one_connection.%s", resourceName), tfjsonpath.New("ping_one_management_api_endpoint"), knownvalue.StringExact("https://api.pingone.com")),
+					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_pingone_connection.%s", resourceName), tfjsonpath.New("creation_date"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_pingone_connection.%s", resourceName), tfjsonpath.New("credential_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_pingone_connection.%s", resourceName), tfjsonpath.New("environment_id"), knownvalue.StringExact(pingOneEnvironmentId)),
+					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_pingone_connection.%s", resourceName), tfjsonpath.New("region"), knownvalue.StringExact("North America")),
+					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_pingone_connection.%s", resourceName), tfjsonpath.New("ping_one_authentication_api_endpoint"), knownvalue.StringExact("https://auth.pingone.com")),
+					statecheck.ExpectKnownValue(fmt.Sprintf("pingfederate_pingone_connection.%s", resourceName), tfjsonpath.New("ping_one_management_api_endpoint"), knownvalue.StringExact("https://api.pingone.com")),
 				},
 			},
 			{
 				// Test importing the resource
 				Config:                  testAccPingOneConnection(resourceName, updatedResourceModel),
-				ResourceName:            "pingfederate_ping_one_connection." + resourceName,
+				ResourceName:            "pingfederate_pingone_connection." + resourceName,
 				ImportStateId:           pingOneConnectionId,
 				ImportState:             true,
 				ImportStateVerify:       true,
@@ -115,7 +115,7 @@ func optionalHcl(model pingOneConnectionResourceModel) string {
 
 func testAccPingOneConnection(resourceName string, resourceModel pingOneConnectionResourceModel) string {
 	return fmt.Sprintf(`
-resource "pingfederate_ping_one_connection" "%[1]s" {
+resource "pingfederate_pingone_connection" "%[1]s" {
   connection_id = "%[2]s"
   name          = "%[3]s"
   credential    = "%[4]s"

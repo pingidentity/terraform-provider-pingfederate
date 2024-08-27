@@ -205,7 +205,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	id.ToSchemaCustomId(&schema,
 		"adapter_id",
 		true,

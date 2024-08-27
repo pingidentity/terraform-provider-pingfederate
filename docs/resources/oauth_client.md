@@ -253,7 +253,7 @@ RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11
 
 - `client_secret_changed_time` (String) The time at which the client secret was last changed.
 - `creation_date` (String) The time at which the client was created. This property is read only.
-- `id` (String) The ID of this resource.
+- `id` (String, Deprecated) The ID of this resource.
 - `modification_date` (String) The time at which the client was last changed. This property is read only.
 
 <a id="nestedatt--client_auth"></a>

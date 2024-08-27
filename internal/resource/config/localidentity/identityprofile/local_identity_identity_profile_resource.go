@@ -40,6 +40,14 @@ func (r *localIdentityIdentityProfileResource) Configure(ctx context.Context, re
 	r.impl.Configure(ctx, req, resp)
 }
 
+func (r *localIdentityIdentityProfileResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	r.impl.ModifyPlan(ctx, req, resp)
+}
+
+func (r *localIdentityIdentityProfileResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	r.impl.ValidateConfig(ctx, req, resp)
+}
+
 func (r *localIdentityIdentityProfileResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	r.impl.Create(ctx, req, resp)
 }

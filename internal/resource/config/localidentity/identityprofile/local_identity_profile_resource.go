@@ -518,7 +518,7 @@ func (r *localIdentityProfileResource) Schema(ctx context.Context, req resource.
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 

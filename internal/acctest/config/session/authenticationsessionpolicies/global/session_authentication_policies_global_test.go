@@ -14,7 +14,7 @@ import (
 )
 
 // Attributes to test with. Add optional properties to test here if desired.
-type sessionAuthenticationSessionPoliciesGlobalResourceModel struct {
+type sessionAuthenticationPoliciesGlobalResourceModel struct {
 	enableSessions             bool
 	persistentSessions         *bool
 	hashUniqueUserKeyAttribute *bool
@@ -24,12 +24,12 @@ type sessionAuthenticationSessionPoliciesGlobalResourceModel struct {
 	maxTimeoutDisplayUnit      *string
 }
 
-func TestAccSessionAuthenticationSessionPoliciesGlobal(t *testing.T) {
-	resourceName := "mySessionAuthenticationSessionPoliciesGlobal"
-	initialResourceModel := sessionAuthenticationSessionPoliciesGlobalResourceModel{
+func TestAccSessionAuthenticationPoliciesGlobal(t *testing.T) {
+	resourceName := "mySessionAuthenticationPoliciesGlobal"
+	initialResourceModel := sessionAuthenticationPoliciesGlobalResourceModel{
 		enableSessions: true,
 	}
-	updatedResourceModel := sessionAuthenticationSessionPoliciesGlobalResourceModel{
+	updatedResourceModel := sessionAuthenticationPoliciesGlobalResourceModel{
 		enableSessions:             false,
 		persistentSessions:         pointers.Bool(false),
 		hashUniqueUserKeyAttribute: pointers.Bool(false),
@@ -46,40 +46,40 @@ func TestAccSessionAuthenticationSessionPoliciesGlobal(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSessionAuthenticationSessionPoliciesGlobal(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedSessionAuthenticationSessionPoliciesGlobalAttributes(initialResourceModel),
+				Config: testAccSessionAuthenticationPoliciesGlobal(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedSessionAuthenticationPoliciesGlobalAttributes(initialResourceModel),
 			},
 			{
 				// Test updating some fields
-				Config: testAccSessionAuthenticationSessionPoliciesGlobal(resourceName, updatedResourceModel),
+				Config: testAccSessionAuthenticationPoliciesGlobal(resourceName, updatedResourceModel),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckExpectedSessionAuthenticationSessionPoliciesGlobalAttributes(updatedResourceModel),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_authentication_session_policies_global.%s", resourceName), "enable_sessions", fmt.Sprintf("%t", updatedResourceModel.enableSessions)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_authentication_session_policies_global.%s", resourceName), "persistent_sessions", fmt.Sprintf("%t", *updatedResourceModel.persistentSessions)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_authentication_session_policies_global.%s", resourceName), "hash_unique_user_key_attribute", fmt.Sprintf("%t", *updatedResourceModel.hashUniqueUserKeyAttribute)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_authentication_session_policies_global.%s", resourceName), "idle_timeout_mins", fmt.Sprintf("%d", *updatedResourceModel.idleTimeoutMins)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_authentication_session_policies_global.%s", resourceName), "idle_timeout_display_unit", *updatedResourceModel.idleTimeoutDisplayUnit),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_authentication_session_policies_global.%s", resourceName), "max_timeout_mins", fmt.Sprintf("%d", *updatedResourceModel.maxTimeoutMins)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_authentication_session_policies_global.%s", resourceName), "max_timeout_display_unit", *updatedResourceModel.maxTimeoutDisplayUnit),
+					testAccCheckExpectedSessionAuthenticationPoliciesGlobalAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_authentication_policies_global.%s", resourceName), "enable_sessions", fmt.Sprintf("%t", updatedResourceModel.enableSessions)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_authentication_policies_global.%s", resourceName), "persistent_sessions", fmt.Sprintf("%t", *updatedResourceModel.persistentSessions)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_authentication_policies_global.%s", resourceName), "hash_unique_user_key_attribute", fmt.Sprintf("%t", *updatedResourceModel.hashUniqueUserKeyAttribute)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_authentication_policies_global.%s", resourceName), "idle_timeout_mins", fmt.Sprintf("%d", *updatedResourceModel.idleTimeoutMins)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_authentication_policies_global.%s", resourceName), "idle_timeout_display_unit", *updatedResourceModel.idleTimeoutDisplayUnit),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_authentication_policies_global.%s", resourceName), "max_timeout_mins", fmt.Sprintf("%d", *updatedResourceModel.maxTimeoutMins)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_session_authentication_policies_global.%s", resourceName), "max_timeout_display_unit", *updatedResourceModel.maxTimeoutDisplayUnit),
 				),
 			},
 			{
 				// Test importing the resource
-				Config:            testAccSessionAuthenticationSessionPoliciesGlobal(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_session_authentication_session_policies_global." + resourceName,
+				Config:            testAccSessionAuthenticationPoliciesGlobal(resourceName, updatedResourceModel),
+				ResourceName:      "pingfederate_session_authentication_policies_global." + resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
 			{
 				// Back to minimal model
-				Config: testAccSessionAuthenticationSessionPoliciesGlobal(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedSessionAuthenticationSessionPoliciesGlobalAttributes(initialResourceModel),
+				Config: testAccSessionAuthenticationPoliciesGlobal(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedSessionAuthenticationPoliciesGlobalAttributes(initialResourceModel),
 			},
 		},
 	})
 }
 
-func testAccSessionAuthenticationSessionPoliciesGlobal(resourceName string, resourceModel sessionAuthenticationSessionPoliciesGlobalResourceModel) string {
+func testAccSessionAuthenticationPoliciesGlobal(resourceName string, resourceModel sessionAuthenticationPoliciesGlobalResourceModel) string {
 	optionalHcl := ""
 	// Just assuming that if the first one is set, the rest will be for this test
 	if resourceModel.persistentSessions != nil {
@@ -99,13 +99,13 @@ func testAccSessionAuthenticationSessionPoliciesGlobal(resourceName string, reso
 	}
 
 	return fmt.Sprintf(`
-resource "pingfederate_session_authentication_session_policies_global" "%s" {
+resource "pingfederate_session_authentication_policies_global" "%s" {
   enable_sessions = %t
   %s
 }
 
-data "pingfederate_session_authentication_session_policies_global" "%[1]s" {
-  depends_on = [pingfederate_session_authentication_session_policies_global.%[1]s]
+data "pingfederate_session_authentication_policies_global" "%[1]s" {
+  depends_on = [pingfederate_session_authentication_policies_global.%[1]s]
 }`, resourceName,
 		resourceModel.enableSessions,
 		optionalHcl,
@@ -113,9 +113,9 @@ data "pingfederate_session_authentication_session_policies_global" "%[1]s" {
 }
 
 // Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedSessionAuthenticationSessionPoliciesGlobalAttributes(config sessionAuthenticationSessionPoliciesGlobalResourceModel) resource.TestCheckFunc {
+func testAccCheckExpectedSessionAuthenticationPoliciesGlobalAttributes(config sessionAuthenticationPoliciesGlobalResourceModel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resourceType := "SessionAuthenticationSessionPoliciesGlobal"
+		resourceType := "SessionAuthenticationPoliciesGlobal"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
 		response, _, err := testClient.SessionAPI.GetGlobalPolicy(ctx).Execute()

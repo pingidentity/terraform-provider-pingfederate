@@ -66,7 +66,7 @@ resource "pingfederate_authentication_selector" "samlAuthnContextExample" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String, Deprecated) The ID of this resource.
 
 <a id="nestedatt--configuration"></a>
 ### Nested Schema for `configuration`
