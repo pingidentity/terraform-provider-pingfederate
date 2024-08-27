@@ -40,6 +40,10 @@ func (r *oauthOpenIdConnectPolicyResource) Configure(ctx context.Context, req re
 	r.impl.Configure(ctx, req, resp)
 }
 
+func (r *oauthOpenIdConnectPolicyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	r.impl.ModifyPlan(ctx, req, resp)
+}
+
 func (r *oauthOpenIdConnectPolicyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	r.impl.Create(ctx, req, resp)
 }
