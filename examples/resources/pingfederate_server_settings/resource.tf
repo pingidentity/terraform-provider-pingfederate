@@ -1,4 +1,4 @@
-resource "pingfederate_server_settings" "serverSettingsExample" {
+resource "pingfederate_server_settings" "serverSettings" {
   contact_info = {
     company    = "example company"
     email      = "adminemail@example.com"
@@ -11,7 +11,7 @@ resource "pingfederate_server_settings" "serverSettingsExample" {
     license_events = {
       email_address = "license-events-email@example.com"
       notification_publisher_ref = {
-        id = "<uiInstanceID>"
+        id = pingfederate_notification_publisher.license_publisher.publisher_id
       }
     }
     certificate_expirations = {
@@ -19,17 +19,17 @@ resource "pingfederate_server_settings" "serverSettingsExample" {
       initial_warning_period = 45
       final_warning_period   = 7
       notification_publisher_ref = {
-        id = "<uiInstanceID>"
+        id = pingfederate_notification_publisher.cert_publisher.publisher_id
       }
     }
     notify_admin_user_password_changes = true
     account_changes_notification_publisher_ref = {
-      id = "<uiInstanceID>"
+      id = pingfederate_notification_publisher.account_changes_publisher.publisher_id
     }
     metadata_notification_settings = {
       email_address = "metadata-notification@example.com"
       notification_publisher_ref = {
-        id = "<uiInstanceID>"
+        id = pingfederate_notification_publisher.metadata_publisher.publisher_id
       }
     }
   }

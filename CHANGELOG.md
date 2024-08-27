@@ -8,6 +8,17 @@
 ### Bug Fixes
 * Fixed "inconsistent result after apply" issues with the `pingfederate_idp_sp_connection` resource, caused by usage of the `sp_browser_sso.incoming_bindings`, `sp_browser_sso.enabled_profiles`, and `extended_attributes` attributes.
 
+### Enhancements
+* Various documentations and schema improvements for resources released in previous versions.
+
+### Deprecated
+* The `pingfederate_session_application_session_policy` resource has been renamed. Use `pingfederate_session_application_policy` instead. `pingfederate_session_application_session_policy` will be removed in a future release. ([#343]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/343)))
+* The `pingfederate_local_identity_identity_profile` resource has been renamed. Use `pingfederate_local_identity_profile` instead. `pingfederate_local_identity_identity_profile` will be removed in a future release. ([#346]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/346)))
+* The `pingfederate_notification_publishers_settings` resource has been renamed. Use `pingfederate_notification_publisher_settings` instead. `pingfederate_notification_publishers_settings` will be removed in a future release. ([#346]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/346)))
+* The `pingfederate_open_id_connect_settings` resource has been renamed. Use `pingfederate_openid_connect_settings` instead. `pingfederate_open_id_connect_settings` will be removed in a future release. ([#346]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/346)))
+* The `pingfederate_oauth_auth_server_settings` resource has been renamed. Use `pingfederate_oauth_server_settings` instead. `pingfederate_oauth_auth_server_settings` will be removed in a future release. ([#346]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/346)))
+* The `pingfederate_server_settings_general_settings` resource has been renamed. Use `pingfederate_server_settings_general` instead. `pingfederate_server_settings_general_settings` will be removed in a future release. ([#346]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/346)))
+
 # v0.14.0 August 15, 2024
 ### Resources
 * **New Resource:** `pingfederate_keypairs_oauth_openid_connect_additional_key_set` ([#271]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/271)))

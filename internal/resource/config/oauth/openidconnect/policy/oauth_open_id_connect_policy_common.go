@@ -21,13 +21,13 @@ var (
 		"include_in_user_info": types.BoolType,
 		"multi_valued":         types.BoolType,
 	}
-	attributesListAttrType = types.ListType{
+	attributesSetAttrType = types.SetType{
 		ElemType: types.ObjectType{AttrTypes: attributeAttrTypes},
 	}
 
 	attributeContractAttrTypes = map[string]attr.Type{
-		"core_attributes":     attributesListAttrType,
-		"extended_attributes": attributesListAttrType,
+		"core_attributes":     attributesSetAttrType,
+		"extended_attributes": attributesSetAttrType,
 	}
 
 	scopeAttributeMappingsElemAttrTypes = map[string]attr.Type{
