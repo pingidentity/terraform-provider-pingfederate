@@ -52,7 +52,7 @@ func (r *oauthCibaServerPolicySettingsResource) Schema(ctx context.Context, req 
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 

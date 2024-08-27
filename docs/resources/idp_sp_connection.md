@@ -356,7 +356,7 @@ resource "pingfederate_idp_sp_connection" "samlSpBrowserSSOExample" {
 ### Read-Only
 
 - `creation_date` (String) The time at which the connection was created. This property is read only and is ignored on PUT and POST requests.
-- `id` (String) The ID of this resource.
+- `id` (String, Deprecated) The ID of this resource.
 - `type` (String) The type of this connection.
 
 <a id="nestedatt--additional_allowed_entities_configuration"></a>

@@ -9,6 +9,8 @@ description: |-
 
 Manages OpenID Connect configuration settings
 
+!> The `pingfederate_open_id_connect_settings` resource has been renamed and will be removed in a future release. Use the `pingfederate_openid_connect_settings` resource instead.
+
 ## Example Usage
 
 ```terraform

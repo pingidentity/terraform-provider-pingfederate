@@ -57,7 +57,7 @@ resource "pingfederate_redirect_validation" "redirectValidationExample" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String, Deprecated) The ID of this resource.
 
 <a id="nestedatt--redirect_validation_local_settings"></a>
 ### Nested Schema for `redirect_validation_local_settings`

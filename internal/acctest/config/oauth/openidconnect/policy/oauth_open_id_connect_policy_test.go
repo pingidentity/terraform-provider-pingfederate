@@ -47,8 +47,8 @@ func deleteOauthClient(t *testing.T) {
 	}
 }
 
-func TestAccOauthOpenIdConnectPolicies(t *testing.T) {
-	resourceName := "myOauthOpenIdConnectPolicies"
+func TestAccOpenidConnectPolicies(t *testing.T) {
+	resourceName := "myOpenidConnectPolicies"
 
 	initialResourceModel := oauthOpenIdConnectPoliciesResourceModel{
 		id:                        oauthOpenIdConnectPoliciesId,
@@ -73,38 +73,38 @@ func TestAccOauthOpenIdConnectPolicies(t *testing.T) {
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
-		CheckDestroy: testAccCheckOauthOpenIdConnectPoliciesDestroy,
+		CheckDestroy: testAccCheckOpenidConnectPoliciesDestroy,
 		Steps: []resource.TestStep{
 			{
 				PreConfig: func() { deleteOauthClient(t) },
-				Config:    testAccOauthOpenIdConnectPolicies(resourceName, initialResourceModel),
-				Check:     testAccCheckExpectedOauthOpenIdConnectPoliciesAttributes(initialResourceModel),
+				Config:    testAccOpenidConnectPolicies(resourceName, initialResourceModel),
+				Check:     testAccCheckExpectedOpenidConnectPoliciesAttributes(initialResourceModel),
 			},
 			{
 				// Test updating some fields
-				Config: testAccOauthOpenIdConnectPolicies(resourceName, updatedResourceModel),
+				Config: testAccOpenidConnectPolicies(resourceName, updatedResourceModel),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckExpectedOauthOpenIdConnectPoliciesAttributes(updatedResourceModel),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_open_id_connect_policy.%s", resourceName), "id_token_lifetime", fmt.Sprintf("%d", *updatedResourceModel.idTokenLifetime)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_open_id_connect_policy.%s", resourceName), "include_sri_in_id_token", fmt.Sprintf("%t", *updatedResourceModel.includeSriInIdToken)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_open_id_connect_policy.%s", resourceName), "include_user_info_in_id_token", fmt.Sprintf("%t", *updatedResourceModel.includeUserInfoInIdToken)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_open_id_connect_policy.%s", resourceName), "include_s_hash_in_id_token", fmt.Sprintf("%t", *updatedResourceModel.includeSHashInIdToken)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_open_id_connect_policy.%s", resourceName), "return_id_token_on_refresh_grant", fmt.Sprintf("%t", *updatedResourceModel.returnIdTokenOnRefreshGrant)),
-					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_oauth_open_id_connect_policy.%s", resourceName), "reissue_id_token_in_hybrid_flow", fmt.Sprintf("%t", *updatedResourceModel.reissueIdTokenInHybridFlow)),
+					testAccCheckExpectedOpenidConnectPoliciesAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_openid_connect_policy.%s", resourceName), "id_token_lifetime", fmt.Sprintf("%d", *updatedResourceModel.idTokenLifetime)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_openid_connect_policy.%s", resourceName), "include_sri_in_id_token", fmt.Sprintf("%t", *updatedResourceModel.includeSriInIdToken)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_openid_connect_policy.%s", resourceName), "include_user_info_in_id_token", fmt.Sprintf("%t", *updatedResourceModel.includeUserInfoInIdToken)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_openid_connect_policy.%s", resourceName), "include_s_hash_in_id_token", fmt.Sprintf("%t", *updatedResourceModel.includeSHashInIdToken)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_openid_connect_policy.%s", resourceName), "return_id_token_on_refresh_grant", fmt.Sprintf("%t", *updatedResourceModel.returnIdTokenOnRefreshGrant)),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_openid_connect_policy.%s", resourceName), "reissue_id_token_in_hybrid_flow", fmt.Sprintf("%t", *updatedResourceModel.reissueIdTokenInHybridFlow)),
 				),
 			},
 			{
 				// Test importing the resource
-				Config:            testAccOauthOpenIdConnectPolicies(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_oauth_open_id_connect_policy." + resourceName,
+				Config:            testAccOpenidConnectPolicies(resourceName, updatedResourceModel),
+				ResourceName:      "pingfederate_openid_connect_policy." + resourceName,
 				ImportStateId:     oauthOpenIdConnectPoliciesId,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
 			{
 				// Back to minimal model
-				Config: testAccOauthOpenIdConnectPolicies(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedOauthOpenIdConnectPoliciesAttributes(initialResourceModel),
+				Config: testAccOpenidConnectPolicies(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedOpenidConnectPoliciesAttributes(initialResourceModel),
 			},
 			{
 				PreConfig: func() {
@@ -119,8 +119,8 @@ func TestAccOauthOpenIdConnectPolicies(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccOauthOpenIdConnectPolicies(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedOauthOpenIdConnectPoliciesAttributes(initialResourceModel),
+				Config: testAccOpenidConnectPolicies(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedOpenidConnectPoliciesAttributes(initialResourceModel),
 			},
 		},
 	})
@@ -214,7 +214,7 @@ func attributeMappingHcl(resourceModel oauthOpenIdConnectPoliciesResourceModel) 
 	`, attributesources.Hcl(nil, resourceModel.attributeSource), issuanceCriteriaHcl)
 }
 
-func testAccOauthOpenIdConnectPolicies(resourceName string, resourceModel oauthOpenIdConnectPoliciesResourceModel) string {
+func testAccOpenidConnectPolicies(resourceName string, resourceModel oauthOpenIdConnectPoliciesResourceModel) string {
 	optionalHcl := ""
 	if resourceModel.includeOptionalAttributes {
 		optionalHcl = fmt.Sprintf(`
@@ -243,7 +243,7 @@ func testAccOauthOpenIdConnectPolicies(resourceName string, resourceModel oauthO
 
 	return fmt.Sprintf(`
 	%s
-resource "pingfederate_oauth_open_id_connect_policy" "%s" {
+resource "pingfederate_openid_connect_policy" "%s" {
   policy_id = "%s"
   name      = "%s"
   access_token_manager_ref = {
@@ -256,8 +256,8 @@ resource "pingfederate_oauth_open_id_connect_policy" "%s" {
 	%s
 }
 
-data "pingfederate_oauth_open_id_connect_policy" "%[2]s" {
-  policy_id = pingfederate_oauth_open_id_connect_policy.%[2]s.policy_id
+data "pingfederate_openid_connect_policy" "%[2]s" {
+  policy_id = pingfederate_openid_connect_policy.%[2]s.policy_id
 }`, accessTokenManagerHcl(),
 		resourceName,
 		oauthOpenIdConnectPoliciesId,
@@ -268,9 +268,9 @@ data "pingfederate_oauth_open_id_connect_policy" "%[2]s" {
 }
 
 // Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedOauthOpenIdConnectPoliciesAttributes(config oauthOpenIdConnectPoliciesResourceModel) resource.TestCheckFunc {
+func testAccCheckExpectedOpenidConnectPoliciesAttributes(config oauthOpenIdConnectPoliciesResourceModel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resourceType := "OauthOpenIdConnectPolicy"
+		resourceType := "OpenidConnectPolicy"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
 		response, _, err := testClient.OauthOpenIdConnectAPI.GetOIDCPolicy(ctx, oauthOpenIdConnectPoliciesId).Execute()
@@ -325,12 +325,12 @@ func testAccCheckExpectedOauthOpenIdConnectPoliciesAttributes(config oauthOpenId
 }
 
 // Test that any objects created by the test are destroyed
-func testAccCheckOauthOpenIdConnectPoliciesDestroy(s *terraform.State) error {
+func testAccCheckOpenidConnectPoliciesDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
 	_, err := testClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(ctx, oauthOpenIdConnectPoliciesId).Execute()
 	if err == nil {
-		return acctest.ExpectedDestroyError("OauthOpenIdConnectPolicy", oauthOpenIdConnectPoliciesId)
+		return acctest.ExpectedDestroyError("OpenidConnectPolicy", oauthOpenIdConnectPoliciesId)
 	}
 	return nil
 }

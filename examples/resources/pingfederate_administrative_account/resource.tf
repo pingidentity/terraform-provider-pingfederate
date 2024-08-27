@@ -1,6 +1,6 @@
 resource "pingfederate_administrative_account" "administrativeAccount" {
-  username    = "example"
+  username    = "username"
   description = "description"
-  password    = "2FederateM0re"
+  password    = var.pingfederate_administrative_account_password
   roles       = ["USER_ADMINISTRATOR"]
 }

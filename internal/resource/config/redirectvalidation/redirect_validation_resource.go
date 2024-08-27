@@ -250,7 +250,7 @@ func (r *redirectValidationResource) Schema(ctx context.Context, req resource.Sc
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 

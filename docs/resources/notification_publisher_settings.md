@@ -96,7 +96,7 @@ resource "pingfederate_notification_publisher_settings" "publisherSettings" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String, Deprecated) The ID of this resource.
 
 <a id="nestedatt--default_notification_publisher_ref"></a>
 ### Nested Schema for `default_notification_publisher_ref`

@@ -107,7 +107,7 @@ func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req re
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	id.ToSchemaCustomId(&schema,
 		"validator_id",
 		true,

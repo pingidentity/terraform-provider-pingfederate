@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
@@ -52,6 +53,7 @@ type oauthAccessTokenMappingResource struct {
 
 type oauthAccessTokenMappingResourceModel struct {
 	Id                           types.String `tfsdk:"id"`
+	MappingId                    types.String `tfsdk:"mapping_id"`
 	Context                      types.Object `tfsdk:"context"`
 	AccessTokenManagerRef        types.Object `tfsdk:"access_token_manager_ref"`
 	AttributeSources             types.Set    `tfsdk:"attribute_sources"`
@@ -114,9 +116,16 @@ func (r *oauthAccessTokenMappingResource) Schema(ctx context.Context, req resour
 				},
 			},
 			"issuance_criteria": issuancecriteria.ToSchema(),
+			"mapping_id": schema.StringAttribute{
+				Description: "The id of the Access Token Mapping.",
+				Computed:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 	}
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -140,6 +149,7 @@ func readOauthAccessTokenMappingsResponse(ctx context.Context, r *client.AccessT
 	var diags, objDiags diag.Diagnostics
 
 	state.Id = types.StringPointerValue(r.Id)
+	state.MappingId = types.StringPointerValue(r.Id)
 
 	contextRefObjValue, objDiags := resourcelink.ToState(ctx, &r.Context.ContextRef)
 	diags.Append(objDiags...)

@@ -44,7 +44,7 @@ resource "pingfederate_authentication_api_settings" "apiSettings" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String, Deprecated) The ID of this resource.
 
 <a id="nestedatt--default_application_ref"></a>
 ### Nested Schema for `default_application_ref`

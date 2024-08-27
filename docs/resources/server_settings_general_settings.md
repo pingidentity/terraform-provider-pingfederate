@@ -9,6 +9,8 @@ description: |-
 
 Manages the general server settings.
 
+!> The `pingfederate_server_settings_general_settings` resource has been renamed and will be removed in a future release. Use the `pingfederate_server_settings_general` resource instead.
+
 ## Example Usage
 
 ```terraform
