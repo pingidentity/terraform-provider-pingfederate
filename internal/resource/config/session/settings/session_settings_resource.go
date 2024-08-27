@@ -38,26 +38,26 @@ func (r *sessionSettingsResource) Schema(ctx context.Context, req resource.Schem
 		Description: "Manages the settings for general session management.",
 		Attributes: map[string]schema.Attribute{
 			"track_adapter_sessions_for_logout": schema.BoolAttribute{
-				Description: "Determines whether adapter sessions are tracked for cleanup during single logout. The default is false.",
+				Description: "Determines whether adapter sessions are tracked for cleanup during single logout. The default is `false`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"revoke_user_session_on_logout": schema.BoolAttribute{
-				Description: "Determines whether the user's session is revoked on logout. If this property is not provided on a PUT, the setting is left unchanged.",
+				Description: "Determines whether the user's session is revoked on logout. The default is `true`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(true),
 			},
 			"session_revocation_lifetime": schema.Int64Attribute{
-				Description: "How long a session revocation is tracked and stored, in minutes. If this property is not provided on a PUT, the setting is left unchanged.",
+				Description: "How long a session revocation is tracked and stored, in minutes. The default is `40`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     int64default.StaticInt64(40),
 			},
 		},
 	}
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 

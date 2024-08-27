@@ -58,11 +58,11 @@ Read-Only:
 
 Optional:
 
-- `extended_attributes` (Attributes List) A list of additional attributes. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
+- `extended_attributes` (Attributes Set) A list of additional attributes. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
 
 Read-Only:
 
-- `core_attributes` (Attributes List) A list of read-only attributes (for example, sub) that are automatically populated by PingFederate. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
+- `core_attributes` (Attributes Set) A list of read-only attributes (for example, sub) that are automatically populated by PingFederate. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
 
 <a id="nestedatt--attribute_contract--extended_attributes"></a>
 ### Nested Schema for `attribute_contract.extended_attributes`

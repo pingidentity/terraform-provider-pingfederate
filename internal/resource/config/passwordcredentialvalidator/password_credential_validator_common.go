@@ -18,11 +18,11 @@ var (
 	}
 
 	attributeContractTypes = map[string]attr.Type{
-		"core_attributes":     types.ListType{ElemType: types.ObjectType{AttrTypes: attrType}},
-		"extended_attributes": types.ListType{ElemType: types.ObjectType{AttrTypes: attrType}},
+		"core_attributes":     types.SetType{ElemType: types.ObjectType{AttrTypes: attrType}},
+		"extended_attributes": types.SetType{ElemType: types.ObjectType{AttrTypes: attrType}},
 	}
 
-	emptyAttrList, _ = types.ListValue(types.ObjectType{AttrTypes: attrType}, nil)
+	emptyAttrSet, _ = types.SetValue(types.ObjectType{AttrTypes: attrType}, nil)
 )
 
 type passwordCredentialValidatorModel struct {
@@ -65,7 +65,7 @@ func readPasswordCredentialValidatorResponse(ctx context.Context, r *client.Pass
 			coreAttribute.Name = ca.Name
 			coreAttrs = append(coreAttrs, coreAttribute)
 		}
-		attributeContractCoreAttributes, respDiags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: attrType}, coreAttrs)
+		attributeContractCoreAttributes, respDiags := types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attrType}, coreAttrs)
 		diags.Append(respDiags...)
 
 		// state.AttributeContract extended_attributes
@@ -76,7 +76,7 @@ func readPasswordCredentialValidatorResponse(ctx context.Context, r *client.Pass
 			extendedAttr.Name = ea.Name
 			extdAttrs = append(extdAttrs, extendedAttr)
 		}
-		attributeContractExtendedAttributes, respDiags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: attrType}, extdAttrs)
+		attributeContractExtendedAttributes, respDiags := types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attrType}, extdAttrs)
 		diags.Append(respDiags...)
 
 		attributeContractValues := map[string]attr.Value{
