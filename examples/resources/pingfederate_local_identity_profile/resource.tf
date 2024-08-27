@@ -72,7 +72,7 @@ resource "pingfederate_notification_publisher" "notificationPublisher" {
   }
 }
 
-resource "pingfederate_local_identity_identity_profile" "identityProfileExample" {
+resource "pingfederate_local_identity_profile" "identityProfileExample" {
   name       = "identityProfileName"
   profile_id = "profileId"
   apc_id = {

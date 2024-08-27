@@ -1,4 +1,4 @@
-package localidentityidentityprofile_test
+package localidentityprofile_test
 
 import (
 	"fmt"
@@ -15,10 +15,10 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/provider"
 )
 
-const localIdentityIdentityProfilesId = "testLocalIdProfile"
+const localIdentityProfilesId = "testLocalIdProfile"
 
 // Attributes to test with. Add optional properties to test here if desired.
-type localIdentityIdentityProfilesResourceModel struct {
+type localIdentityProfilesResourceModel struct {
 	id                      string
 	name                    string
 	registrationEnabled     bool
@@ -354,18 +354,18 @@ func dataStoreConfigHcl(config *client.LdapDataStoreConfig) string {
 		dataStoreMapping.String())
 }
 
-func TestAccLocalIdentityIdentityProfiles(t *testing.T) {
-	resourceName := "myLocalIdentityIdentityProfiles"
-	initialResourceModel := localIdentityIdentityProfilesResourceModel{
+func TestAccLocalIdentityProfiles(t *testing.T) {
+	resourceName := "myLocalIdentityProfiles"
+	initialResourceModel := localIdentityProfilesResourceModel{
 		// Test is only run on attributes that do not require a PD dataStore.
-		id:                  localIdentityIdentityProfilesId,
+		id:                  localIdentityProfilesId,
 		name:                "example",
 		registrationEnabled: false,
 		profileEnabled:      false,
 	}
 
-	updatedResourceModel := localIdentityIdentityProfilesResourceModel{
-		id:                      localIdentityIdentityProfilesId,
+	updatedResourceModel := localIdentityProfilesResourceModel{
+		id:                      localIdentityProfilesId,
 		name:                    "example1",
 		registrationEnabled:     true,
 		profileEnabled:          true,
@@ -382,41 +382,41 @@ func TestAccLocalIdentityIdentityProfiles(t *testing.T) {
 		ProtoV6ProviderFactories: map[string]func() (tfprotov6.ProviderServer, error){
 			"pingfederate": providerserver.NewProtocol6WithError(provider.NewTestProvider()),
 		},
-		CheckDestroy: testAccCheckLocalIdentityIdentityProfilesDestroy,
+		CheckDestroy: testAccCheckLocalIdentityProfilesDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccLocalIdentityIdentityProfiles(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(initialResourceModel),
+				Config: testAccLocalIdentityProfiles(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedLocalIdentityProfilesAttributes(initialResourceModel),
 			},
 			{
 				// Test updating some fields
-				Config: testAccLocalIdentityIdentityProfiles(resourceName, updatedResourceModel),
+				Config: testAccLocalIdentityProfiles(resourceName, updatedResourceModel),
 				Check: resource.ComposeTestCheckFunc(
-					testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(updatedResourceModel),
-					resource.TestCheckResourceAttr("pingfederate_local_identity_identity_profile.myLocalIdentityIdentityProfiles", "auth_source_update_policy.store_attributes", fmt.Sprintf("%t", *updatedResourceModel.authSourceUpdatePolicy.StoreAttributes)),
-					resource.TestCheckResourceAttr("pingfederate_local_identity_identity_profile.myLocalIdentityIdentityProfiles", "auth_source_update_policy.retain_attributes", fmt.Sprintf("%t", *updatedResourceModel.authSourceUpdatePolicy.RetainAttributes)),
-					resource.TestCheckResourceAttr("pingfederate_local_identity_identity_profile.myLocalIdentityIdentityProfiles", "auth_source_update_policy.update_attributes", fmt.Sprintf("%t", *updatedResourceModel.authSourceUpdatePolicy.UpdateAttributes)),
-					resource.TestCheckResourceAttr("pingfederate_local_identity_identity_profile.myLocalIdentityIdentityProfiles", "auth_source_update_policy.update_interval", "0"),
+					testAccCheckExpectedLocalIdentityProfilesAttributes(updatedResourceModel),
+					resource.TestCheckResourceAttr("pingfederate_local_identity_profile.myLocalIdentityProfiles", "auth_source_update_policy.store_attributes", fmt.Sprintf("%t", *updatedResourceModel.authSourceUpdatePolicy.StoreAttributes)),
+					resource.TestCheckResourceAttr("pingfederate_local_identity_profile.myLocalIdentityProfiles", "auth_source_update_policy.retain_attributes", fmt.Sprintf("%t", *updatedResourceModel.authSourceUpdatePolicy.RetainAttributes)),
+					resource.TestCheckResourceAttr("pingfederate_local_identity_profile.myLocalIdentityProfiles", "auth_source_update_policy.update_attributes", fmt.Sprintf("%t", *updatedResourceModel.authSourceUpdatePolicy.UpdateAttributes)),
+					resource.TestCheckResourceAttr("pingfederate_local_identity_profile.myLocalIdentityProfiles", "auth_source_update_policy.update_interval", "0"),
 				),
 			},
 			{
 				// Test importing the resource
-				Config:            testAccLocalIdentityIdentityProfiles(resourceName, updatedResourceModel),
-				ResourceName:      "pingfederate_local_identity_identity_profile." + resourceName,
-				ImportStateId:     localIdentityIdentityProfilesId,
+				Config:            testAccLocalIdentityProfiles(resourceName, updatedResourceModel),
+				ResourceName:      "pingfederate_local_identity_profile." + resourceName,
+				ImportStateId:     localIdentityProfilesId,
 				ImportState:       true,
 				ImportStateVerify: true,
 			},
 			{
 				// Back to minimal model
-				Config: testAccLocalIdentityIdentityProfiles(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(initialResourceModel),
+				Config: testAccLocalIdentityProfiles(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedLocalIdentityProfilesAttributes(initialResourceModel),
 			},
 			{
 				PreConfig: func() {
 					testClient := acctest.TestClient()
 					ctx := acctest.TestBasicAuthContext()
-					_, err := testClient.LocalIdentityIdentityProfilesAPI.DeleteIdentityProfile(ctx, localIdentityIdentityProfilesId).Execute()
+					_, err := testClient.LocalIdentityIdentityProfilesAPI.DeleteIdentityProfile(ctx, localIdentityProfilesId).Execute()
 					if err != nil {
 						t.Fatalf("Failed to delete config: %v", err)
 					}
@@ -425,14 +425,14 @@ func TestAccLocalIdentityIdentityProfiles(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 			},
 			{
-				Config: testAccLocalIdentityIdentityProfiles(resourceName, initialResourceModel),
-				Check:  testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(initialResourceModel),
+				Config: testAccLocalIdentityProfiles(resourceName, initialResourceModel),
+				Check:  testAccCheckExpectedLocalIdentityProfilesAttributes(initialResourceModel),
 			},
 		},
 	})
 }
 
-func testAccLocalIdentityIdentityProfiles(resourceName string, resourceModel localIdentityIdentityProfilesResourceModel) string {
+func testAccLocalIdentityProfiles(resourceName string, resourceModel localIdentityProfilesResourceModel) string {
 	return fmt.Sprintf(`
 resource "pingfederate_authentication_policy_contract" "authenticationPolicyContractsExample" {
   contract_id         = "%[2]s"
@@ -440,7 +440,7 @@ resource "pingfederate_authentication_policy_contract" "authenticationPolicyCont
   name                = "%[2]s"
 }
 
-resource "pingfederate_local_identity_identity_profile" "%[1]s" {
+resource "pingfederate_local_identity_profile" "%[1]s" {
   profile_id = "%[2]s"
   name       = "%[3]s"
   apc_id = {
@@ -457,8 +457,8 @@ resource "pingfederate_local_identity_identity_profile" "%[1]s" {
   %[12]s
 }
 
-data "pingfederate_local_identity_identity_profile" "%[1]s" {
-  profile_id = pingfederate_local_identity_identity_profile.%[1]s.id
+data "pingfederate_local_identity_profile" "%[1]s" {
+  profile_id = pingfederate_local_identity_profile.%[1]s.id
 }`, resourceName,
 		resourceModel.id,
 		resourceModel.name,
@@ -475,12 +475,12 @@ data "pingfederate_local_identity_identity_profile" "%[1]s" {
 }
 
 // Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(config localIdentityIdentityProfilesResourceModel) resource.TestCheckFunc {
+func testAccCheckExpectedLocalIdentityProfilesAttributes(config localIdentityProfilesResourceModel) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resourceType := "LocalIdentityIdentityProfiles"
+		resourceType := "LocalIdentityProfiles"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
-		response, _, err := testClient.LocalIdentityIdentityProfilesAPI.GetIdentityProfile(ctx, localIdentityIdentityProfilesId).Execute()
+		response, _, err := testClient.LocalIdentityIdentityProfilesAPI.GetIdentityProfile(ctx, localIdentityProfilesId).Execute()
 		if err != nil {
 			return err
 		}
@@ -554,13 +554,12 @@ func testAccCheckExpectedLocalIdentityIdentityProfilesAttributes(config localIde
 }
 
 // Test that any objects created by the test are destroyed
-func testAccCheckLocalIdentityIdentityProfilesDestroy(s *terraform.State) error {
-
+func testAccCheckLocalIdentityProfilesDestroy(s *terraform.State) error {
 	testClient := acctest.TestClient()
 	ctx := acctest.TestBasicAuthContext()
-	_, err := testClient.LocalIdentityIdentityProfilesAPI.DeleteIdentityProfile(ctx, localIdentityIdentityProfilesId).Execute()
+	_, err := testClient.LocalIdentityIdentityProfilesAPI.DeleteIdentityProfile(ctx, localIdentityProfilesId).Execute()
 	if err == nil {
-		return acctest.ExpectedDestroyError("LocalIdentityIdentityProfiles", localIdentityIdentityProfilesId)
+		return acctest.ExpectedDestroyError("LocalIdentityProfiles", localIdentityProfilesId)
 	}
 	return nil
 }

@@ -1,11 +1,11 @@
 ---
-page_title: "pingfederate_local_identity_identity_profile Resource - terraform-provider-pingfederate"
+page_title: "pingfederate_local_identity_profile Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
   Manages a configured local identity profile
 ---
 
-# pingfederate_local_identity_identity_profile (Resource)
+# pingfederate_local_identity_profile (Resource)
 
 Manages a configured local identity profile
 
@@ -86,7 +86,7 @@ resource "pingfederate_notification_publisher" "notificationPublisher" {
   }
 }
 
-resource "pingfederate_local_identity_identity_profile" "identityProfileExample" {
+resource "pingfederate_local_identity_profile" "identityProfileExample" {
   name       = "identityProfileName"
   profile_id = "profileId"
   apc_id = {
@@ -415,5 +415,5 @@ Import is supported using the following syntax:
 ~> "profileId" should be the id of the Local Identity Profile to be imported
 
 ```shell
-terraform import pingfederate_local_identity_identity_profile.identityProfileExample profileId
+terraform import pingfederate_local_identity_profile.identityProfileExample profileId
 ```
