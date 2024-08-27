@@ -243,7 +243,8 @@ resource "pingfederate_oauth_access_token_mapping" "oauthAccessTokenMappingExamp
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String, Deprecated) The ID of this resource.
+- `mapping_id` (String) The id of the Access Token Mapping.
 
 <a id="nestedatt--access_token_manager_ref"></a>
 ### Nested Schema for `access_token_manager_ref`

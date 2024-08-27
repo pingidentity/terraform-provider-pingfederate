@@ -150,7 +150,7 @@ resource "pingfederate_oauth_auth_server_settings" "oauthAuthServerSettings" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String, Deprecated) The ID of this resource.
 
 <a id="nestedatt--admin_web_service_pcv_ref"></a>
 ### Nested Schema for `admin_web_service_pcv_ref`
