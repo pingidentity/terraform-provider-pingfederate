@@ -785,6 +785,19 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					stringvalidator.LengthAtLeast(1),
 				},
 			},
+			"connection_id": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The persistent, unique ID for the connection. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.",
+				Validators: []validator.String{
+					configvalidators.PingFederateId(),
+					stringvalidator.LengthAtLeast(1),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
 			"contact_info": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"company": schema.StringAttribute{
@@ -3602,7 +3615,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 	}
 
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, "connection_id", false, false, "The persistent, unique ID for the connection. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.")
+
 	resp.Schema = schema
 }
 
