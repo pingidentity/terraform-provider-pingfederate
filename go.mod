@@ -5,7 +5,7 @@ go 1.22.2
 toolchain go1.22.3
 
 require (
-	github.com/bflad/tfproviderlint v0.29.0
+	github.com/bflad/tfproviderlint v0.30.0
 	github.com/golangci/golangci-lint v1.56.1
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/terraform-plugin-docs v0.19.3
@@ -283,7 +283,7 @@ require (
 	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/text v0.15.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
-	golang.org/x/tools v0.20.0 // indirect
+	golang.org/x/tools v0.21.0 // indirect
 	google.golang.org/api v0.162.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto v0.0.0-20240227224415-6ceb2ff114de // indirect
