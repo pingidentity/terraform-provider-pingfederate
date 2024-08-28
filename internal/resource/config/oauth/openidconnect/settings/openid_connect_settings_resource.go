@@ -184,7 +184,7 @@ func (r *openidConnectSettingsResource) Create(ctx context.Context, req resource
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OpenID Connect settings", err.Error())
 		return
 	}
-	apiCreateOpenidConnectSettings := r.apiClient.OauthOpenIdConnectAPI.UpdateOIDCSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateOpenidConnectSettings := r.apiClient.OauthOpenIdConnectAPI.UpdateOIDCSettings(config.AuthContext(ctx, r.providerConfig))
 	apiCreateOpenidConnectSettings = apiCreateOpenidConnectSettings.Body(*createOpenidConnectSettings)
 	openidConnectSettingsResponse, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.UpdateOIDCSettingsExecute(apiCreateOpenidConnectSettings)
 	if err != nil {
@@ -209,7 +209,7 @@ func (r *openidConnectSettingsResource) Read(ctx context.Context, req resource.R
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOpenidConnectSettings, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.GetOIDCSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadOpenidConnectSettings, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.GetOIDCSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -245,7 +245,7 @@ func (r *openidConnectSettingsResource) Update(ctx context.Context, req resource
 		return
 	}
 
-	updateOpenidConnectSettings := r.apiClient.OauthOpenIdConnectAPI.UpdateOIDCSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateOpenidConnectSettings := r.apiClient.OauthOpenIdConnectAPI.UpdateOIDCSettings(config.AuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewOpenIdConnectSettings()
 	err := addOptionalOpenidConnectSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {

@@ -225,7 +225,7 @@ func (r *authenticationSelectorResource) Create(ctx context.Context, req resourc
 		return
 	}
 
-	apiCreateAuthenticationSelectors := r.apiClient.AuthenticationSelectorsAPI.CreateAuthenticationSelector(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateAuthenticationSelectors := r.apiClient.AuthenticationSelectorsAPI.CreateAuthenticationSelector(config.AuthContext(ctx, r.providerConfig))
 	apiCreateAuthenticationSelectors = apiCreateAuthenticationSelectors.Body(*createAuthenticationSelectors)
 	authenticationSelectorResponse, httpResp, err := r.apiClient.AuthenticationSelectorsAPI.CreateAuthenticationSelectorExecute(apiCreateAuthenticationSelectors)
 	if err != nil {
@@ -250,7 +250,7 @@ func (r *authenticationSelectorResource) Read(ctx context.Context, req resource.
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadAuthenticationSelectors, httpResp, err := r.apiClient.AuthenticationSelectorsAPI.GetAuthenticationSelector(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.SelectorId.ValueString()).Execute()
+	apiReadAuthenticationSelectors, httpResp, err := r.apiClient.AuthenticationSelectorsAPI.GetAuthenticationSelector(config.AuthContext(ctx, r.providerConfig), state.SelectorId.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -303,7 +303,7 @@ func (r *authenticationSelectorResource) Update(ctx context.Context, req resourc
 		return
 	}
 
-	updateAuthenticationSelectors := r.apiClient.AuthenticationSelectorsAPI.UpdateAuthenticationSelector(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.SelectorId.ValueString())
+	updateAuthenticationSelectors := r.apiClient.AuthenticationSelectorsAPI.UpdateAuthenticationSelector(config.AuthContext(ctx, r.providerConfig), plan.SelectorId.ValueString())
 	createUpdateRequest := client.NewAuthenticationSelector(plan.SelectorId.ValueString(), plan.Name.ValueString(), *pluginDescriptorRef, configuration)
 	err = addOptionalAuthenticationSelectorsFields(createUpdateRequest, plan)
 	if err != nil {
