@@ -60,7 +60,7 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopeResource) Schema(ctx context
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 

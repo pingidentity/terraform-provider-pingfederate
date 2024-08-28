@@ -9,6 +9,8 @@ description: |-
 
 Manages a configured local identity profile
 
+!> The `pingfederate_local_identity_identity_profile` resource has been renamed and will be removed in a future release. Use the `pingfederate_local_identity_profile` resource instead.
+
 ## Example Usage
 
 ```terraform
@@ -236,7 +238,7 @@ resource "pingfederate_local_identity_identity_profile" "identityProfileExample"
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String, Deprecated) The ID of this resource.
 
 <a id="nestedatt--apc_id"></a>
 ### Nested Schema for `apc_id`

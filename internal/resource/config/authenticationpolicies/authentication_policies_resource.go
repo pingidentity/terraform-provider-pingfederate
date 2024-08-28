@@ -154,7 +154,7 @@ func (r *authenticationPoliciesResource) Schema(ctx context.Context, req resourc
 			},
 		},
 	}
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 

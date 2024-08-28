@@ -28,7 +28,7 @@ resource "pingfederate_oauth_ciba_server_policy_settings" "policySettings" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String, Deprecated) The ID of this resource.
 
 <a id="nestedatt--default_request_policy_ref"></a>
 ### Nested Schema for `default_request_policy_ref`

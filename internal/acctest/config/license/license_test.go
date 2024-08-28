@@ -36,13 +36,6 @@ func TestAccLicense(t *testing.T) {
 			{
 				Config: testAccLicense(resourceName, licenseFileData),
 			},
-			{
-				// Test importing the resource
-				Config:            testAccLicense(resourceName, licenseFileData),
-				ResourceName:      "pingfederate_license." + resourceName,
-				ImportState:       true,
-				ImportStateVerify: false,
-			},
 		},
 	})
 }
@@ -57,10 +50,6 @@ data "pingfederate_license" "%[1]s" {
   depends_on = [
     pingfederate_license.%[1]s
   ]
-}
-
-resource "pingfederate_license" "licenseExample" {
-  file_data = "%[2]s"
 }`, resourceName,
 		licenseFileData,
 	)

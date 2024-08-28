@@ -9,6 +9,8 @@ description: |-
 
 Manages an OpenID Connect Policy.
 
+!> The `pingfederate_oauth_open_id_connect_policy` resource has been renamed and will be removed in a future release. Use the `pingfederate_openid_connect_policy` resource instead.
+
 ## Example Usage
 
 ```terraform
@@ -229,7 +231,7 @@ resource "pingfederate_oauth_open_id_connect_policy" "oauthOIDCPolicyExample" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String, Deprecated) The ID of this resource.
 
 <a id="nestedatt--access_token_manager_ref"></a>
 ### Nested Schema for `access_token_manager_ref`

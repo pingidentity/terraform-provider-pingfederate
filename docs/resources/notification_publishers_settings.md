@@ -9,6 +9,8 @@ description: |-
 
 Manages Notification Publisher Settings
 
+!> The `pingfederate_notification_publishers_settings` resource has been renamed and will be removed in a future release. Use the `pingfederate_notification_publisher_settings` resource instead.
+
 ## Example Usage
 
 ```terraform
@@ -96,7 +98,7 @@ resource "pingfederate_notification_publishers_settings" "publisherSettings" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String, Deprecated) The ID of this resource.
 
 <a id="nestedatt--default_notification_publisher_ref"></a>
 ### Nested Schema for `default_notification_publisher_ref`

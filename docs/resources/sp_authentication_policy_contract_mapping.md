@@ -79,7 +79,8 @@ resource "pingfederate_sp_authentication_policy_contract_mapping" "spAuthenticat
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String, Deprecated) The ID of this resource.
+- `mapping_id` (String) The id of the APC-to-SP Adapter mapping.
 
 <a id="nestedatt--attribute_contract_fulfillment"></a>
 ### Nested Schema for `attribute_contract_fulfillment`
