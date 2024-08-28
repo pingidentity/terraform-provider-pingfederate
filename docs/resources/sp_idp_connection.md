@@ -305,10 +305,10 @@ Required:
 
 Optional:
 
-- `active_verification_cert` (Boolean) Indicates if this is the active verification certificate. Default is false.
-- `encryption_cert` (Boolean) Indicates if this is the encryption certificate. Default is false.
-- `primary_verification_cert` (Boolean) Indicates if this is the primary verification certificate. Default is false.
-- `secondary_verification_cert` (Boolean) Indicates if this is the secondary verification certificate. Default is false.
+- `active_verification_cert` (Boolean) Indicates if this is the active verification certificate. Default is `false`.
+- `encryption_cert` (Boolean) Indicates if this is the encryption certificate. Default is `false`.
+- `primary_verification_cert` (Boolean) Indicates if this is the primary verification certificate. Default is `false`.
+- `secondary_verification_cert` (Boolean) Indicates if this is the secondary verification certificate. Default is `false`.
 
 Read-Only:
 
@@ -387,10 +387,10 @@ Required:
 
 Optional:
 
-- `active_verification_cert` (Boolean) Indicates if this is the active verification certificate. Default is false.
-- `encryption_cert` (Boolean) Indicates if this is the encryption certificate. Default is false.
-- `primary_verification_cert` (Boolean) Indicates if this is the primary verification certificate. Default is false.
-- `secondary_verification_cert` (Boolean) Indicates if this is the secondary verification certificate. Default is false.
+- `active_verification_cert` (Boolean) Indicates if this is the active verification certificate. Default is `false`.
+- `encryption_cert` (Boolean) Indicates if this is the encryption certificate. Default is `false`.
+- `primary_verification_cert` (Boolean) Indicates if this is the primary verification certificate. Default is `false`.
+- `secondary_verification_cert` (Boolean) Indicates if this is the secondary verification certificate. Default is `false`.
 
 Read-Only:
 
@@ -441,7 +441,7 @@ Read-Only:
 
 Optional:
 
-- `password` (String, Sensitive) User password. To update the password, specify the plaintext value in this field.
+- `password` (String, Sensitive) User password.
 - `username` (String) The username.
 
 
@@ -465,7 +465,7 @@ Optional:
 
 Optional:
 
-- `password` (String, Sensitive) User password. To update the password, specify the plaintext value in this field.
+- `password` (String, Sensitive) User password.
 - `username` (String) The username.
 
 
@@ -534,7 +534,7 @@ Required:
 Optional:
 
 - `adapter_mappings` (Attributes Set) A list of adapters that map to incoming assertions. (see [below for nested schema](#nestedatt--idp_browser_sso--adapter_mappings))
-- `always_sign_artifact_response` (Boolean) Specify to always sign the SAML ArtifactResponse. Default is false.
+- `always_sign_artifact_response` (Boolean) Specify to always sign the SAML ArtifactResponse. Default is `false`.
 - `artifact` (Attributes) The settings for an Artifact binding. (see [below for nested schema](#nestedatt--idp_browser_sso--artifact))
 - `assertions_signed` (Boolean) Specify whether the incoming SAML assertions are signed rather than the entire SAML response being signed.
 - `attribute_contract` (Attributes) A set of user attributes that the IdP sends in the SAML assertion. (see [below for nested schema](#nestedatt--idp_browser_sso--attribute_contract))
@@ -550,10 +550,13 @@ Optional:
 - `oidc_provider_settings` (Attributes) The OpenID Provider settings. (see [below for nested schema](#nestedatt--idp_browser_sso--oidc_provider_settings))
 - `sign_authn_requests` (Boolean) Determines whether SAML authentication requests should be signed.
 - `slo_service_endpoints` (Attributes Set) A list of possible endpoints to send SLO requests and responses. (see [below for nested schema](#nestedatt--idp_browser_sso--slo_service_endpoints))
-- `sso_application_endpoint` (String) Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter.
 - `sso_oauth_mapping` (Attributes) IdP Browser SSO OAuth Attribute Mapping (see [below for nested schema](#nestedatt--idp_browser_sso--sso_oauth_mapping))
 - `sso_service_endpoints` (Attributes Set) The IdP SSO endpoints that define where to send your authentication requests. Only required for SP initiated SSO. This is required for SAML x.x and WS-FED Connections. (see [below for nested schema](#nestedatt--idp_browser_sso--sso_service_endpoints))
 - `url_whitelist_entries` (Attributes Set) For WS-Federation connections, a whitelist of additional allowed domains and paths used to validate wreply for SLO, if enabled. (see [below for nested schema](#nestedatt--idp_browser_sso--url_whitelist_entries))
+
+Read-Only:
+
+- `sso_application_endpoint` (String) Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter.
 
 <a id="nestedatt--idp_browser_sso--adapter_mappings"></a>
 ### Nested Schema for `idp_browser_sso.adapter_mappings`
@@ -1450,7 +1453,7 @@ Optional:
 
 Optional:
 
-- `stored_procedure` (Attributes) The Stored Procedure SQL method. The procedure is always called for all SSO tokens and "eventTrigger" will always be 'ALL_SAML_ASSERTIONS'. (see [below for nested schema](#nestedatt--idp_browser_sso--jit_provisioning--user_repository--ldap--sql_method--stored_procedure))
+- `stored_procedure` (Attributes) The Stored Procedure SQL method. The procedure is always called for all SSO tokens and `event_trigger` will always be `ALL_SAML_ASSERTIONS`. (see [below for nested schema](#nestedatt--idp_browser_sso--jit_provisioning--user_repository--ldap--sql_method--stored_procedure))
 - `table` (Attributes) The Table SQL method. (see [below for nested schema](#nestedatt--idp_browser_sso--jit_provisioning--user_repository--ldap--sql_method--table))
 
 <a id="nestedatt--idp_browser_sso--jit_provisioning--user_repository--ldap--sql_method--stored_procedure"></a>
@@ -1508,7 +1511,7 @@ Required:
 
 Required:
 
-- `type` (String) The source type of this key.
+- `type` (String) The source type of this key. Options are `ACCOUNT_LINK`, `ACTOR_TOKEN`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXPRESSION`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.
 
 Optional:
 
@@ -1555,16 +1558,19 @@ Optional:
 - `authentication_signing_algorithm` (String) The authentication signing algorithm for token endpoint PRIVATE_KEY_JWT or CLIENT_SECRET_JWT authentication. Asymmetric algorithms are allowed for PRIVATE_KEY_JWT and symmetric algorithms are allowed for CLIENT_SECRET_JWT. For RSASSA-PSS signing algorithm, PingFederate must be integrated with a hardware security module (HSM) or Java 11. Options are `NONE`, `ES256`, `ES384`, `ES512`, `HS256`, `HS384`, `HS512`, `PS256`, `PS384`, `PS512` `RS256`, `RS384`, `RS512`.
 - `back_channel_logout_uri` (String) The Back-Channel Logout URI. This read-only parameter is available when user sessions are tracked for logout.
 - `enable_pkce` (Boolean) Enable Proof Key for Code Exchange (PKCE). When enabled, the client sends an SHA-256 code challenge and corresponding code verifier to the OpenID Provider during the authorization code flow.
-- `front_channel_logout_uri` (String) The Front-Channel Logout URI. This is a read-only parameter.
 - `logout_endpoint` (String) URL of the OpenID Provider's RP-Initiated Logout Endpoint.
-- `post_logout_redirect_uri` (String) The Post-Logout Redirect URI, where the OpenID Provider may redirect the user when RP-Initiated Logout has completed. This is a read-only parameter.
 - `pushed_authorization_request_endpoint` (String) URL of the OpenID Provider's OAuth 2.0 Pushed Authorization Request Endpoint.
-- `redirect_uri` (String) The redirect URI. This is a read-only parameter.
 - `request_parameters` (Attributes Set) A list of request parameters. Request parameters with same name but different attribute values are treated as a multi-valued request parameter. (see [below for nested schema](#nestedatt--idp_browser_sso--oidc_provider_settings--request_parameters))
 - `request_signing_algorithm` (String) The request signing algorithm. Required only if you wish to use signed requests. Only asymmetric algorithms are allowed. For RSASSA-PSS signing algorithm, PingFederate must be integrated with a hardware security module (HSM) or Java 11. Options are `ES256`, `ES384`, `ES512`, `HS256`, `HS384`, `HS512`, `NONE`, `PS256`, `PS384`, `PS512`, `RS256`, `RS384`, `RS512`.
 - `token_endpoint` (String) URL of the OpenID Provider's OAuth 2.0 Token Endpoint.
 - `track_user_sessions_for_logout` (Boolean) Determines whether PingFederate tracks a logout entry when a user signs in, so that the user session can later be terminated via a logout request from the OP. This setting must also be enabled in order for PingFederate to send an RP-initiated logout request to the OP during SLO.
 - `user_info_endpoint` (String) URL of the OpenID Provider's UserInfo Endpoint.
+
+Read-Only:
+
+- `front_channel_logout_uri` (String) The Front-Channel Logout URI. This is a read-only parameter.
+- `post_logout_redirect_uri` (String) The Post-Logout Redirect URI, where the OpenID Provider may redirect the user when RP-Initiated Logout has completed. This is a read-only parameter.
+- `redirect_uri` (String) The redirect URI. This is a read-only parameter.
 
 <a id="nestedatt--idp_browser_sso--oidc_provider_settings--request_parameters"></a>
 ### Nested Schema for `idp_browser_sso.oidc_provider_settings.request_parameters`
@@ -2528,7 +2534,7 @@ Required:
 
 Required:
 
-- `type` (String) The source type of this key. Options are Options are `ACTOR_TOKEN`, `ACCOUNT_LINK`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `EXPRESSION`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.
+- `type` (String) The source type of this key. Options are `ACTOR_TOKEN`, `ACCOUNT_LINK`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `EXPRESSION`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.
 
 Optional:
 
@@ -2565,7 +2571,7 @@ Required:
 Required:
 
 - `client_id` (String) The OpenID Connect client identitification.
-- `client_secret` (String) The OpenID Connect client secret. To update the client secret, specify the plaintext value in this field.  This field will not be populated for GET requests.
+- `client_secret` (String) The OpenID Connect client secret.
 
 
 <a id="nestedatt--ws_trust"></a>

@@ -18,7 +18,7 @@ func FromValue(value attr.Value, skipNullOrUnknownAttrs bool) string {
 	if ok {
 		jsonString.WriteRune('"')
 		// Ensure any escaped quotes in the string are handled so that the resulting json includes a backslash,
-		// escaped new lines are removed
+		// new lines are escaped
 		stringReplacer := strings.NewReplacer("\"", "\\\"", "\n", "\\n")
 		jsonString.WriteString(stringReplacer.Replace(strvalue.ValueString()))
 		jsonString.WriteRune('"')

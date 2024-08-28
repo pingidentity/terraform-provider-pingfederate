@@ -943,8 +943,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									"password": schema.StringAttribute{
 										Optional:            true,
 										Sensitive:           true,
-										Description:         "User password. To update the password, specify the plaintext value in this field.",
-										MarkdownDescription: "User password. To update the password, specify the plaintext value in this field.",
+										Description:         "User password.",
+										MarkdownDescription: "User password.",
 										Validators: []validator.String{
 											stringvalidator.LengthAtLeast(1),
 										},
@@ -1000,8 +1000,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									"password": schema.StringAttribute{
 										Optional:            true,
 										Sensitive:           true,
-										Description:         "User password. To update the password, specify the plaintext value in this field.",
-										MarkdownDescription: "User password. To update the password, specify the plaintext value in this field.",
+										Description:         "User password.",
+										MarkdownDescription: "User password.",
 										Validators: []validator.String{
 											stringvalidator.LengthAtLeast(1),
 										},
@@ -1273,8 +1273,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Computed:            true,
 						Optional:            true,
 						Default:             booldefault.StaticBool(false),
-						Description:         "Specify to always sign the SAML ArtifactResponse. Default is false.",
-						MarkdownDescription: "Specify to always sign the SAML ArtifactResponse. Default is false.",
+						Description:         "Specify to always sign the SAML ArtifactResponse. Default is `false`.",
+						MarkdownDescription: "Specify to always sign the SAML ArtifactResponse. Default is `false`.",
 					},
 					"artifact": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
@@ -1898,7 +1898,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 														},
 													},
 													"stored_procedure": schema.SingleNestedAttribute{
-														Description: "The Stored Procedure SQL method. The procedure is always called for all SSO tokens and \"eventTrigger\" will always be 'ALL_SAML_ASSERTIONS'.",
+														Description: "The Stored Procedure SQL method. The procedure is always called for all SSO tokens and `event_trigger` will always be `ALL_SAML_ASSERTIONS`.",
 														Optional:    true,
 														Attributes: map[string]schema.Attribute{
 															"schema": schema.StringAttribute{
@@ -1949,8 +1949,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 																},
 																"type": schema.StringAttribute{
 																	Required:            true,
-																	Description:         "The source type of this key.",
-																	MarkdownDescription: "The source type of this key.",
+																	Description:         "The source type of this key. Options are `ACCOUNT_LINK`, `ACTOR_TOKEN`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXPRESSION`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
+																	MarkdownDescription: "The source type of this key. Options are `ACCOUNT_LINK`, `ACTOR_TOKEN`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXPRESSION`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
 																	Validators: []validator.String{
 																		stringvalidator.OneOf(
 																			"TOKEN_EXCHANGE_PROCESSOR_POLICY",
@@ -2133,12 +2133,10 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								MarkdownDescription: "Enable Proof Key for Code Exchange (PKCE). When enabled, the client sends an SHA-256 code challenge and corresponding code verifier to the OpenID Provider during the authorization code flow.",
 							},
 							"front_channel_logout_uri": schema.StringAttribute{
-								Optional:            true,
+								Optional:            false,
+								Computed:            true,
 								Description:         "The Front-Channel Logout URI. This is a read-only parameter.",
 								MarkdownDescription: "The Front-Channel Logout URI. This is a read-only parameter.",
-								Validators: []validator.String{
-									stringvalidator.LengthAtLeast(1),
-								},
 							},
 							"jwks_url": schema.StringAttribute{
 								Required:            true,
@@ -2169,12 +2167,10 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 							},
 							"post_logout_redirect_uri": schema.StringAttribute{
-								Optional:            true,
+								Optional:            false,
+								Computed:            true,
 								Description:         "The Post-Logout Redirect URI, where the OpenID Provider may redirect the user when RP-Initiated Logout has completed. This is a read-only parameter.",
 								MarkdownDescription: "The Post-Logout Redirect URI, where the OpenID Provider may redirect the user when RP-Initiated Logout has completed. This is a read-only parameter.",
-								Validators: []validator.String{
-									stringvalidator.LengthAtLeast(1),
-								},
 							},
 							"pushed_authorization_request_endpoint": schema.StringAttribute{
 								Optional:            true,
@@ -2185,12 +2181,10 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 							},
 							"redirect_uri": schema.StringAttribute{
-								Optional:            true,
+								Optional:            false,
+								Computed:            true,
 								Description:         "The redirect URI. This is a read-only parameter.",
 								MarkdownDescription: "The redirect URI. This is a read-only parameter.",
-								Validators: []validator.String{
-									stringvalidator.LengthAtLeast(1),
-								},
 							},
 							"request_parameters": schema.SetNestedAttribute{
 								NestedObject: schema.NestedAttributeObject{
@@ -2409,12 +2403,10 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						MarkdownDescription: "A list of possible endpoints to send SLO requests and responses.",
 					},
 					"sso_application_endpoint": schema.StringAttribute{
-						Optional:            true,
+						Optional:            false,
+						Computed:            true,
 						Description:         "Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter.",
 						MarkdownDescription: "Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter.",
-						Validators: []validator.String{
-							stringvalidator.LengthAtLeast(1),
-						},
 					},
 					"sso_oauth_mapping": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
@@ -2969,8 +2961,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 														},
 														"type": schema.StringAttribute{
 															Required:            true,
-															Description:         "The source type of this key. Options are Options are `ACTOR_TOKEN`, `ACCOUNT_LINK`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `EXPRESSION`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
-															MarkdownDescription: "The source type of this key. Options are Options are `ACTOR_TOKEN`, `ACCOUNT_LINK`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `EXPRESSION`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
+															Description:         "The source type of this key. Options are `ACTOR_TOKEN`, `ACCOUNT_LINK`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `EXPRESSION`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
+															MarkdownDescription: "The source type of this key. Options are `ACTOR_TOKEN`, `ACCOUNT_LINK`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `EXPRESSION`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
 															Validators: []validator.String{
 																stringvalidator.OneOf(
 																	"TOKEN_EXCHANGE_PROCESSOR_POLICY",
@@ -3406,8 +3398,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"client_secret": schema.StringAttribute{
 						Required:            true,
-						Description:         "The OpenID Connect client secret. To update the client secret, specify the plaintext value in this field.  This field will not be populated for GET requests.",
-						MarkdownDescription: "The OpenID Connect client secret. To update the client secret, specify the plaintext value in this field.  This field will not be populated for GET requests.",
+						Description:         "The OpenID Connect client secret.",
+						MarkdownDescription: "The OpenID Connect client secret.",
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.RequiresReplace(),
 						},
@@ -3654,7 +3646,6 @@ func (r *spIdpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 			}
 		}
 	}
-	resp.Diagnostics.Append(resp.Plan.Set(ctx, &plan)...)
 }
 
 func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.IdpConnection, plan spIdpConnectionResourceModel) error {
@@ -4003,7 +3994,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			if r.Credentials.InboundBackChannelAuth.HttpBasicCredentials == nil {
 				credentialsInboundBackChannelAuthHttpBasicCredentialsValue = types.ObjectNull(credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes)
 			} else {
-				var password string = ""
+				password := ""
 				if plan != nil && plan.Credentials.Attributes()["inbound_back_channel_auth"] != nil && plan.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"] != nil {
 					passwordFromPlan := plan.Credentials.Attributes()["inbound_back_channel_auth"].(types.Object).Attributes()["http_basic_credentials"].(types.Object).Attributes()["password"].(types.String)
 					if internaltypes.IsDefined(passwordFromPlan) {
