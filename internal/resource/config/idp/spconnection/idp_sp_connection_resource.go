@@ -171,8 +171,8 @@ var (
 		"protocol":          types.StringType,
 		"ws_fed_token_type": types.StringType,
 		"ws_trust_version":  types.StringType,
-		"enabled_profiles":  types.ListType{ElemType: types.StringType},
-		"incoming_bindings": types.ListType{ElemType: types.StringType},
+		"enabled_profiles":  types.SetType{ElemType: types.StringType},
+		"incoming_bindings": types.SetType{ElemType: types.StringType},
 		"message_customizations": types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
 			"context_name":       types.StringType,
 			"message_expression": types.StringType,
@@ -216,8 +216,8 @@ var (
 			"slo_subject_name_id_encrypted": types.BoolType,
 		}},
 		"attribute_contract": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"core_attributes":     types.ListType{ElemType: spBrowserSsoAttributeAttrType},
-			"extended_attributes": types.ListType{ElemType: spBrowserSsoAttributeAttrType},
+			"core_attributes":     types.SetType{ElemType: spBrowserSsoAttributeAttrType},
+			"extended_attributes": types.SetType{ElemType: spBrowserSsoAttributeAttrType},
 		}},
 		"adapter_mappings": types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
 			"idp_adapter_ref":               resourceLinkObjectType,
@@ -236,8 +236,8 @@ var (
 					"issuance_criteria":              issuanceCriteriaAttrType,
 				}},
 				"attribute_contract": types.ObjectType{AttrTypes: map[string]attr.Type{
-					"core_attributes":           types.ListType{ElemType: idpAdapterAttributeAttrType},
-					"extended_attributes":       types.ListType{ElemType: idpAdapterAttributeAttrType},
+					"core_attributes":           types.SetType{ElemType: idpAdapterAttributeAttrType},
+					"extended_attributes":       types.SetType{ElemType: idpAdapterAttributeAttrType},
 					"unique_user_key_attribute": types.StringType,
 					"mask_ognl_values":          types.BoolType,
 				}},
@@ -286,8 +286,8 @@ var (
 		"minutes_before":           types.Int64Type,
 		"minutes_after":            types.Int64Type,
 		"attribute_contract": types.ObjectType{AttrTypes: map[string]attr.Type{
-			"core_attributes":     types.ListType{ElemType: spWsTrustAttributeAttrType},
-			"extended_attributes": types.ListType{ElemType: spWsTrustAttributeAttrType},
+			"core_attributes":     types.SetType{ElemType: spWsTrustAttributeAttrType},
+			"extended_attributes": types.SetType{ElemType: spWsTrustAttributeAttrType},
 		}},
 		"token_processor_mappings": types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
 			"idp_token_processor_ref":        resourceLinkObjectType,
@@ -340,6 +340,10 @@ var (
 		"group_dn":      types.StringNull(),
 		"nested_search": types.BoolValue(false),
 	})
+
+	browserSsoAttributeEmptyDefault, _ = types.SetValue(spBrowserSsoAttributeAttrType, nil)
+	adapterAttributeEmptyDefault, _    = types.SetValue(idpAdapterAttributeAttrType, nil)
+	wsTrustAttributeEmptyDefault, _    = types.SetValue(spWsTrustAttributeAttrType, nil)
 )
 
 // IdpSpConnectionResource is a helper function to simplify the provider implementation.
@@ -1230,14 +1234,16 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Attributes: map[string]schema.Attribute{
 										"attribute_contract": schema.SingleNestedAttribute{
 											Attributes: map[string]schema.Attribute{
-												"core_attributes": schema.ListNestedAttribute{
+												"core_attributes": schema.SetNestedAttribute{
 													NestedObject: adapterOverrideSettingsAttribute,
 													Required:     true,
 													Description:  "A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type.",
 												},
-												"extended_attributes": schema.ListNestedAttribute{
+												"extended_attributes": schema.SetNestedAttribute{
 													NestedObject: adapterOverrideSettingsAttribute,
 													Optional:     true,
+													Computed:     true,
+													Default:      setdefault.StaticValue(adapterAttributeEmptyDefault),
 													Description:  "A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them.",
 												},
 												"mask_ognl_values": schema.BoolAttribute{
@@ -1347,14 +1353,16 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"attribute_contract": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
-							"core_attributes": schema.ListNestedAttribute{
+							"core_attributes": schema.SetNestedAttribute{
 								NestedObject: spBrowserSSOAttribute,
 								Optional:     true,
 								Description:  "A list of read-only assertion attributes (for example, SAML_SUBJECT) that are automatically populated by PingFederate.",
 							},
-							"extended_attributes": schema.ListNestedAttribute{
+							"extended_attributes": schema.SetNestedAttribute{
 								NestedObject: spBrowserSSOAttribute,
 								Optional:     true,
+								Computed:     true,
+								Default:      setdefault.StaticValue(browserSsoAttributeEmptyDefault),
 								Description:  "A list of additional attributes that are added to the outgoing assertion.",
 							},
 						},
@@ -1390,13 +1398,10 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Optional:    true,
 						Description: "Default Target URL for SAML1.x connections. For SP connections, this default URL represents the destination on the SP where the user will be directed. For IdP connections, entering a URL in the Default Target URL field overrides the SP Default URL SSO setting.",
 					},
-					"enabled_profiles": schema.ListAttribute{
+					"enabled_profiles": schema.SetAttribute{
 						ElementType: types.StringType,
 						Optional:    true,
 						Description: "The profiles that are enabled for browser-based SSO. SAML 2.0 supports all profiles whereas SAML 1.x IdP connections support both IdP and SP (non-standard) initiated SSO. This is required for SAMLx.x Connections. ",
-						Validators: []validator.List{
-							listvalidator.UniqueValues(),
-						},
 					},
 					"encryption_policy": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
@@ -1421,13 +1426,10 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Optional:    true,
 						Description: "Defines what to encrypt in the browser-based SSO profile.",
 					},
-					"incoming_bindings": schema.ListAttribute{
+					"incoming_bindings": schema.SetAttribute{
 						ElementType: types.StringType,
 						Optional:    true,
 						Description: "The SAML bindings that are enabled for browser-based SSO. This is required for SAML 2.0 connections when the enabled profiles contain the SP-initiated SSO profile or either SLO profile. For SAML 1.x based connections, it is not used for SP Connections and it is optional for IdP Connections.",
-						Validators: []validator.List{
-							listvalidator.UniqueValues(),
-						},
 					},
 					"message_customizations": schema.ListNestedAttribute{
 						NestedObject: messageCustomizationsNestedObject,
@@ -1614,14 +1616,16 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"attribute_contract": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
-							"core_attributes": schema.ListNestedAttribute{
+							"core_attributes": schema.SetNestedAttribute{
 								NestedObject: wsTrustAttribute,
 								Optional:     true,
 								Description:  "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 							},
-							"extended_attributes": schema.ListNestedAttribute{
+							"extended_attributes": schema.SetNestedAttribute{
 								NestedObject: wsTrustAttribute,
 								Optional:     true,
+								Computed:     true,
+								Default:      setdefault.StaticValue(wsTrustAttributeEmptyDefault),
 								Description:  "A list of additional attributes that are added to the outgoing assertion.",
 							},
 						},

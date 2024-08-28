@@ -5,6 +5,9 @@
 * **New Resource:** `pingfederate_certificates_revocation_settings` ([#280]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/280)))
 * **New Resource:** `pingfederate_idp_sts_request_parameters_contract` ([#281]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/281)))
 
+### Bug Fixes
+* Fixed "inconsistent result after apply" issues with the `pingfederate_idp_sp_connection` resource, caused by usage of the `sp_browser_sso.incoming_bindings`, `sp_browser_sso.enabled_profiles`, and `extended_attributes` attributes.
+
 ### Enhancements
 * Various documentations and schema improvements for resources released in previous versions.
 
