@@ -104,7 +104,7 @@ func (r *notificationPublisherSettingsResource) Create(ctx context.Context, req 
 		return
 	}
 
-	apiCreateNotificationPublisherSettings := r.apiClient.NotificationPublishersAPI.UpdateNotificationPublishersSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateNotificationPublisherSettings := r.apiClient.NotificationPublishersAPI.UpdateNotificationPublishersSettings(config.AuthContext(ctx, r.providerConfig))
 	apiCreateNotificationPublisherSettings = apiCreateNotificationPublisherSettings.Body(*createNotificationPublisherSettings)
 	notificationPublisherSettingsResponse, httpResp, err := r.apiClient.NotificationPublishersAPI.UpdateNotificationPublishersSettingsExecute(apiCreateNotificationPublisherSettings)
 	if err != nil {
@@ -129,7 +129,7 @@ func (r *notificationPublisherSettingsResource) Read(ctx context.Context, req re
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadNotificationPublisherSettings, httpResp, err := r.apiClient.NotificationPublishersAPI.GetNotificationPublishersSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadNotificationPublisherSettings, httpResp, err := r.apiClient.NotificationPublishersAPI.GetNotificationPublishersSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -170,7 +170,7 @@ func (r *notificationPublisherSettingsResource) Update(ctx context.Context, req 
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for Notification Publishers Settings", err.Error())
 		return
 	}
-	updateNotificationPublisherSettings := r.apiClient.NotificationPublishersAPI.UpdateNotificationPublishersSettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateNotificationPublisherSettings := r.apiClient.NotificationPublishersAPI.UpdateNotificationPublishersSettings(config.AuthContext(ctx, r.providerConfig))
 	updateNotificationPublisherSettings = updateNotificationPublisherSettings.Body(*createUpdateRequest)
 	updateNotificationPublisherSettingsResponse, httpResp, err := r.apiClient.NotificationPublishersAPI.UpdateNotificationPublishersSettingsExecute(updateNotificationPublisherSettings)
 	if err != nil {

@@ -248,7 +248,7 @@ func (r *oauthAccessTokenMappingResource) Create(ctx context.Context, req resour
 		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Mapping", err.Error())
 		return
 	}
-	apiCreateOauthAccessTokenMappings := r.apiClient.OauthAccessTokenMappingsAPI.CreateMapping(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateOauthAccessTokenMappings := r.apiClient.OauthAccessTokenMappingsAPI.CreateMapping(config.AuthContext(ctx, r.providerConfig))
 	apiCreateOauthAccessTokenMappings = apiCreateOauthAccessTokenMappings.Body(*createOauthAccessTokenMappings)
 	oauthAccessTokenMappingsResponse, httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.CreateMappingExecute(apiCreateOauthAccessTokenMappings)
 	if err != nil {
@@ -273,7 +273,7 @@ func (r *oauthAccessTokenMappingResource) Read(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadOauthAccessTokenMappings, httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.GetMapping(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadOauthAccessTokenMappings, httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.GetMapping(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -338,7 +338,7 @@ func (r *oauthAccessTokenMappingResource) Update(ctx context.Context, req resour
 		return
 	}
 
-	apiUpdateOauthAccessTokenMappings := r.apiClient.OauthAccessTokenMappingsAPI.UpdateMapping(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Id.ValueString())
+	apiUpdateOauthAccessTokenMappings := r.apiClient.OauthAccessTokenMappingsAPI.UpdateMapping(config.AuthContext(ctx, r.providerConfig), plan.Id.ValueString())
 	apiUpdateOauthAccessTokenMappings = apiUpdateOauthAccessTokenMappings.Body(*updateOauthAccessTokenMappings)
 	updateOauthAccessTokenMappingsResponse, httpResp, err := r.apiClient.OauthAccessTokenMappingsAPI.UpdateMappingExecute(apiUpdateOauthAccessTokenMappings)
 	if err != nil {

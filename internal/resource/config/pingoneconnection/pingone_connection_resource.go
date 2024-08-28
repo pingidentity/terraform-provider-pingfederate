@@ -200,7 +200,7 @@ func (r *pingoneConnectionResource) Create(ctx context.Context, req resource.Cre
 		return
 	}
 
-	apiCreatePingOneConnection := r.apiClient.PingOneConnectionsAPI.CreatePingOneConnection(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreatePingOneConnection := r.apiClient.PingOneConnectionsAPI.CreatePingOneConnection(config.AuthContext(ctx, r.providerConfig))
 	apiCreatePingOneConnection = apiCreatePingOneConnection.Body(*createPingOneConnection)
 	pingOneConnectionResponse, httpResp, err := r.apiClient.PingOneConnectionsAPI.CreatePingOneConnectionExecute(apiCreatePingOneConnection)
 	if err != nil {
@@ -225,7 +225,7 @@ func (r *pingoneConnectionResource) Read(ctx context.Context, req resource.ReadR
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadPingOneConnection, httpResp, err := r.apiClient.PingOneConnectionsAPI.GetPingOneConnection(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	apiReadPingOneConnection, httpResp, err := r.apiClient.PingOneConnectionsAPI.GetPingOneConnection(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -255,7 +255,7 @@ func (r *pingoneConnectionResource) Update(ctx context.Context, req resource.Upd
 		return
 	}
 
-	updatePingOneConnection := r.apiClient.PingOneConnectionsAPI.UpdatePingOneConnection(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.Id.ValueString())
+	updatePingOneConnection := r.apiClient.PingOneConnectionsAPI.UpdatePingOneConnection(config.AuthContext(ctx, r.providerConfig), plan.Id.ValueString())
 	createUpdateRequest := client.NewPingOneConnection(plan.Name.ValueString())
 	err := addOptionalPingOneConnectionFields(ctx, createUpdateRequest, plan)
 	if err != nil {
@@ -287,7 +287,7 @@ func (r *pingoneConnectionResource) Delete(ctx context.Context, req resource.Del
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.PingOneConnectionsAPI.DeletePingOneConnection(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	httpResp, err := r.apiClient.PingOneConnectionsAPI.DeletePingOneConnection(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the PingOne Connection", err, httpResp)
 	}
