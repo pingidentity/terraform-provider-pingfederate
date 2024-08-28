@@ -6,6 +6,7 @@
 * **New Resource:** `pingfederate_idp_sts_request_parameters_contract` ([#281]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/281)))
 
 ### Bug Fixes
+* Fixed "inconsistent result after apply" issues with resources using `attribute_sources.ldap_attribute_source.binary_attribute_settings`.
 * Fixed "inconsistent result after apply" issues with the `pingfederate_idp_sp_connection` resource, caused by usage of the `sp_browser_sso.incoming_bindings`, `sp_browser_sso.enabled_profiles`, and `extended_attributes` attributes.
 
 ### Enhancements
