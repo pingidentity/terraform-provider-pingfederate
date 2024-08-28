@@ -332,20 +332,25 @@ func (r *redirectValidationResource) Configure(_ context.Context, req resource.C
 
 }
 
-func (m *redirectValidationModel) buildDefaultClientStruct() *client.RedirectValidationSettings {
-	return &client.RedirectValidationSettings{
+func (m *redirectValidationModel) buildDefaultClientStruct(productVersion version.SupportedVersion) *client.RedirectValidationSettings {
+	result := &client.RedirectValidationSettings{
 		RedirectValidationLocalSettings: &client.RedirectValidationLocalSettings{
 			EnableTargetResourceValidationForSSO:          utils.Pointer(false),
 			EnableTargetResourceValidationForSLO:          utils.Pointer(false),
 			EnableTargetResourceValidationForIdpDiscovery: utils.Pointer(false),
 			EnableInErrorResourceValidation:               utils.Pointer(false),
 			WhiteList:                                     []client.RedirectValidationSettingsWhitelistEntry{},
-			UriAllowList:                                  []client.RedirectValidationSettingsUriAllowlistEntry{},
 		},
 		RedirectValidationPartnerSettings: &client.RedirectValidationPartnerSettings{
 			EnableWreplyValidationSLO: utils.Pointer(false),
 		},
 	}
+	compare, err := version.Compare(productVersion, version.PingFederate1210)
+	pfVersionAtLeast121 := compare >= 0
+	if err == nil && pfVersionAtLeast121 {
+		result.RedirectValidationLocalSettings.UriAllowList = []client.RedirectValidationSettingsUriAllowlistEntry{}
+	}
+	return result
 }
 
 func (r *redirectValidationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -458,7 +463,7 @@ func (r *redirectValidationResource) Delete(ctx context.Context, req resource.De
 	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
 	// Instead this delete will reset the configuration back to the "default" value used by PingFederate.
 	var model redirectValidationModel
-	clientData := model.buildDefaultClientStruct()
+	clientData := model.buildDefaultClientStruct(r.providerConfig.ProductVersion)
 	apiUpdateRequest := r.apiClient.RedirectValidationAPI.UpdateRedirectValidationSettings(config.AuthContext(ctx, r.providerConfig))
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
 	_, httpResp, err := r.apiClient.RedirectValidationAPI.UpdateRedirectValidationSettingsExecute(apiUpdateRequest)
