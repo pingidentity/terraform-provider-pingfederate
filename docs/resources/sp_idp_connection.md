@@ -189,11 +189,11 @@ resource "pingfederate_sp_idp_connection" "spIdpConnection" {
 
 ### Optional
 
-- `active` (Boolean) Specifies whether the connection is active and ready to process incoming requests. The default value is false.
+- `active` (Boolean) Specifies whether the connection is active and ready to process incoming requests. The default value is `false`.
 - `additional_allowed_entities_configuration` (Attributes) Additional allowed entities or issuers configuration. Currently only used in OIDC IdP (RP) connection. (see [below for nested schema](#nestedatt--additional_allowed_entities_configuration))
 - `attribute_query` (Attributes) The attribute query profile supports local applications in requesting user attributes from an attribute authority. (see [below for nested schema](#nestedatt--attribute_query))
 - `base_url` (String) The fully-qualified hostname and port on which your partner's federation deployment runs.
-- `connection_id` (String) The persistent, unique ID for the connection. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.
+- `connection_id` (String) The persistent, unique ID for the connection. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.
 - `contact_info` (Attributes) Contact information. (see [below for nested schema](#nestedatt--contact_info))
 - `credentials` (Attributes) The certificates and settings for encryption, signing, and signature verification. (see [below for nested schema](#nestedatt--credentials))
 - `default_virtual_entity_id` (String) The default alternate entity ID that identifies the local server to this partner. It is required when `virtual_entity_ids` is not empty and must be included in that list.
@@ -1047,7 +1047,7 @@ Required:
 
 Optional:
 
-- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to false.
+- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.
 
 
 <a id="nestedatt--idp_browser_sso--attribute_contract--core_attributes"></a>
@@ -1059,7 +1059,7 @@ Optional:
 
 Read-Only:
 
-- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to false.
+- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.
 
 
 
@@ -1398,7 +1398,7 @@ Required:
 
 Optional:
 
-- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to false.
+- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.
 
 
 
@@ -2225,7 +2225,7 @@ Required:
 
 Optional:
 
-- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to false.
+- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.
 
 
 <a id="nestedatt--idp_oauth_grant_attribute_mapping--idp_oauth_attribute_contract--core_attributes"></a>
@@ -2233,7 +2233,7 @@ Optional:
 
 Read-Only:
 
-- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to false.
+- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.
 - `name` (String) The name of this attribute.
 
 
@@ -2358,7 +2358,7 @@ Required:
 
 Optional:
 
-- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to false.
+- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.
 
 
 <a id="nestedatt--inbound_provisioning--users--read_users--attributes--core_attributes"></a>
@@ -2366,7 +2366,7 @@ Optional:
 
 Read-Only:
 
-- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to false.
+- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.
 - `name` (String) The name of this attribute.
 
 
@@ -2468,7 +2468,7 @@ Required:
 
 Optional:
 
-- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to false.
+- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.
 
 
 <a id="nestedatt--inbound_provisioning--groups--read_groups--attributes--core_attributes"></a>
@@ -2480,7 +2480,7 @@ Optional:
 
 Read-Only:
 
-- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to false.
+- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.
 
 
 
@@ -2554,7 +2554,7 @@ Required:
 
 Optional:
 
-- `enable_auto_metadata_update` (Boolean) Specifies whether the metadata of the connection will be automatically reloaded. The default value is true.
+- `enable_auto_metadata_update` (Boolean) Specifies whether the metadata of the connection will be automatically reloaded. The default value is `true`.
 
 <a id="nestedatt--metadata_reload_settings--metadata_url_ref"></a>
 ### Nested Schema for `metadata_reload_settings.metadata_url_ref`
@@ -2580,7 +2580,7 @@ Required:
 Required:
 
 - `attribute_contract` (Attributes) A set of user attributes that this server will receive in the token. (see [below for nested schema](#nestedatt--ws_trust--attribute_contract))
-- `generate_local_token` (Boolean) Indicates whether a local token needs to be generated. The default value is false.
+- `generate_local_token` (Boolean) Indicates whether a local token needs to be generated. The default value is `false`.
 
 Optional:
 
@@ -2603,7 +2603,7 @@ Required:
 
 Optional:
 
-- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to false.
+- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.
 
 
 <a id="nestedatt--ws_trust--attribute_contract--extended_attributes"></a>
@@ -2615,7 +2615,7 @@ Required:
 
 Optional:
 
-- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to false.
+- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.
 
 
 
@@ -2630,7 +2630,7 @@ Required:
 Optional:
 
 - `attribute_sources` (Attributes Set) A list of configured data stores to look up attributes from. (see [below for nested schema](#nestedatt--ws_trust--token_generator_mappings--attribute_sources))
-- `default_mapping` (Boolean) Indicates whether the token generator mapping is the default mapping. The default value is false.
+- `default_mapping` (Boolean) Indicates whether the token generator mapping is the default mapping. The default value is `false`.
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--ws_trust--token_generator_mappings--issuance_criteria))
 - `restricted_virtual_entity_ids` (Set of String) The list of virtual server IDs that this mapping is restricted to.
 

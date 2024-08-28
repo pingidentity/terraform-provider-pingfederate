@@ -648,8 +648,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			"active": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Specifies whether the connection is active and ready to process incoming requests. The default value is false.",
-				MarkdownDescription: "Specifies whether the connection is active and ready to process incoming requests. The default value is false.",
+				Description:         "Specifies whether the connection is active and ready to process incoming requests. The default value is `false`.",
+				MarkdownDescription: "Specifies whether the connection is active and ready to process incoming requests. The default value is `false`.",
 				Default:             booldefault.StaticBool(false),
 			},
 			"additional_allowed_entities_configuration": schema.SingleNestedAttribute{
@@ -1331,8 +1331,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										"masked": schema.BoolAttribute{
 											Optional:            false,
 											Computed:            true,
-											Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
-											MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
+											Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
+											MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
 											Default:             booldefault.StaticBool(false),
 										},
 										"name": schema.StringAttribute{
@@ -1360,8 +1360,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										"masked": schema.BoolAttribute{
 											Optional:            true,
 											Computed:            true,
-											Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
-											MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
+											Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
+											MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
 											Default:             booldefault.StaticBool(false),
 										},
 										"name": schema.StringAttribute{
@@ -1751,8 +1751,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 												"masked": schema.BoolAttribute{
 													Optional:            true,
 													Computed:            true,
-													Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
-													MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
+													Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
+													MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
 													Default:             booldefault.StaticBool(false),
 												},
 												"name": schema.StringAttribute{
@@ -2660,8 +2660,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										"masked": schema.BoolAttribute{
 											Optional:            false,
 											Computed:            true,
-											Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
-											MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
+											Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
+											MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
 											Default:             booldefault.StaticBool(false),
 										},
 										"name": schema.StringAttribute{
@@ -2689,8 +2689,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										"masked": schema.BoolAttribute{
 											Optional:            true,
 											Computed:            true,
-											Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
-											MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
+											Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
+											MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
 											Default:             booldefault.StaticBool(false),
 										},
 										"name": schema.StringAttribute{
@@ -2796,8 +2796,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 														"masked": schema.BoolAttribute{
 															Optional:            false,
 															Computed:            true,
-															Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
-															MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
+															Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
+															MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
 															Default:             booldefault.StaticBool(false),
 														},
 														"name": schema.StringAttribute{
@@ -2825,8 +2825,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 														"masked": schema.BoolAttribute{
 															Optional:            true,
 															Computed:            true,
-															Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
-															MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
+															Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
+															MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
 															Default:             booldefault.StaticBool(false),
 														},
 														"name": schema.StringAttribute{
@@ -3105,8 +3105,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 														"masked": schema.BoolAttribute{
 															Optional:            false,
 															Computed:            true,
-															Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
-															MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
+															Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
+															MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
 														},
 														"name": schema.StringAttribute{
 															Optional:            false,
@@ -3130,8 +3130,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 														"masked": schema.BoolAttribute{
 															Optional:            true,
 															Computed:            true,
-															Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
-															MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
+															Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
+															MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
 															Default:             booldefault.StaticBool(false),
 														},
 														"name": schema.StringAttribute{
@@ -3380,8 +3380,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					"enable_auto_metadata_update": schema.BoolAttribute{
 						Optional:            true,
 						Computed:            true,
-						Description:         "Specifies whether the metadata of the connection will be automatically reloaded. The default value is true.",
-						MarkdownDescription: "Specifies whether the metadata of the connection will be automatically reloaded. The default value is true.",
+						Description:         "Specifies whether the metadata of the connection will be automatically reloaded. The default value is `true`.",
+						MarkdownDescription: "Specifies whether the metadata of the connection will be automatically reloaded. The default value is `true`.",
 						Default:             booldefault.StaticBool(true),
 					},
 				},
@@ -3440,8 +3440,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										"masked": schema.BoolAttribute{
 											Optional:            true,
 											Computed:            true,
-											Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
-											MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
+											Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
+											MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
 											Default:             booldefault.StaticBool(false),
 										},
 										"name": schema.StringAttribute{
@@ -3464,8 +3464,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 										"masked": schema.BoolAttribute{
 											Optional:            true,
 											Computed:            true,
-											Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
-											MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
+											Description:         "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
+											MarkdownDescription: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
 											Default:             booldefault.StaticBool(false),
 										},
 										"name": schema.StringAttribute{
@@ -3489,8 +3489,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"generate_local_token": schema.BoolAttribute{
 						Required:            true,
-						Description:         "Indicates whether a local token needs to be generated. The default value is false.",
-						MarkdownDescription: "Indicates whether a local token needs to be generated. The default value is false.",
+						Description:         "Indicates whether a local token needs to be generated. The default value is `false`.",
+						MarkdownDescription: "Indicates whether a local token needs to be generated. The default value is `false`.",
 					},
 					"token_generator_mappings": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -3571,8 +3571,8 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								"attribute_sources": attributesources.ToSchema(0, false),
 								"default_mapping": schema.BoolAttribute{
 									Optional:            true,
-									Description:         "Indicates whether the token generator mapping is the default mapping. The default value is false.",
-									MarkdownDescription: "Indicates whether the token generator mapping is the default mapping. The default value is false.",
+									Description:         "Indicates whether the token generator mapping is the default mapping. The default value is `false`.",
+									MarkdownDescription: "Indicates whether the token generator mapping is the default mapping. The default value is `false`.",
 								},
 								"issuance_criteria": issuancecriteria.ToSchema(),
 								"restricted_virtual_entity_ids": schema.SetAttribute{
@@ -3602,7 +3602,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 	}
 
 	id.ToSchema(&schema)
-	id.ToSchemaCustomId(&schema, "connection_id", false, false, "The persistent, unique ID for the connection. It can be any combination of [a-zA-Z0-9._-]. This property is system-assigned if not specified.")
+	id.ToSchemaCustomId(&schema, "connection_id", false, false, "The persistent, unique ID for the connection. It can be any combination of `[a-zA-Z0-9._-]`. This property is system-assigned if not specified.")
 	resp.Schema = schema
 }
 
