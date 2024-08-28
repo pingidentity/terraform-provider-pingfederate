@@ -88,7 +88,6 @@ func (r *authenticationApiApplicationResource) Schema(ctx context.Context, req r
 				Default:     setdefault.StaticValue(emptyStringSet),
 				ElementType: types.StringType,
 				Validators: []validator.Set{
-					setvalidator.SizeAtLeast(1),
 					setvalidator.ValueStringsAre(
 						configvalidators.ValidUrl(),
 					),
