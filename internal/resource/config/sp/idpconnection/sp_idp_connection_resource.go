@@ -4725,7 +4725,7 @@ func (r *spIdpConnectionResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	apiCreateSpIdpConnection := r.apiClient.SpIdpConnectionsAPI.CreateConnection(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateSpIdpConnection := r.apiClient.SpIdpConnectionsAPI.CreateConnection(config.AuthContext(ctx, r.providerConfig))
 	apiCreateSpIdpConnection = apiCreateSpIdpConnection.Body(*createSpIdpConnection)
 	spIdpConnectionResponse, httpResp, err := r.apiClient.SpIdpConnectionsAPI.CreateConnectionExecute(apiCreateSpIdpConnection)
 	if err != nil {
@@ -4747,7 +4747,7 @@ func (r *spIdpConnectionResource) Read(ctx context.Context, req resource.ReadReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadSpIdpConnection, httpResp, err := r.apiClient.SpIdpConnectionsAPI.GetConnection(config.ProviderBasicAuthContext(ctx, r.providerConfig), state.ConnectionId.ValueString()).Execute()
+	apiReadSpIdpConnection, httpResp, err := r.apiClient.SpIdpConnectionsAPI.GetConnection(config.AuthContext(ctx, r.providerConfig), state.ConnectionId.ValueString()).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -4778,7 +4778,7 @@ func (r *spIdpConnectionResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	updateSpIdpConnection := r.apiClient.SpIdpConnectionsAPI.UpdateConnection(config.ProviderBasicAuthContext(ctx, r.providerConfig), plan.ConnectionId.ValueString())
+	updateSpIdpConnection := r.apiClient.SpIdpConnectionsAPI.UpdateConnection(config.AuthContext(ctx, r.providerConfig), plan.ConnectionId.ValueString())
 	createUpdateRequest := client.NewIdpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
 	err := addOptionalSpIdpConnectionFields(ctx, createUpdateRequest, plan)
 	if err != nil {
