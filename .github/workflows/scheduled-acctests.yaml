@@ -19,7 +19,7 @@ jobs:
         # Cover oldest and newest patch release of the major-minor releases we support
         pingfederate:
           - "11.2.7"
-          - "11.3.0"
+          - "11.3.1"
           - "11.3.7"
           - "12.0.3"
           - "12.1.0"
@@ -34,6 +34,12 @@ jobs:
         with:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
+      - run: mkdir -p $HOME/.pingidentity/ && echo "$CONFIG" >> $HOME/.pingidentity/config && grep -E "[a-zA-Z]" $HOME/.pingidentity/config || exit 1 && make spincontainer && make testaccclustered && make removetestcontainer
+        env:
+          TF_ACC: "1"
+          CONFIG: ${{ secrets.Config }}
+          PINGFEDERATE_PROVIDER_PRODUCT_VERSION: ${{ matrix.pingfederate }}
+          OPERATIONAL_MODE: "CLUSTERED_CONSOLE"
       - run: mkdir -p $HOME/.pingidentity/ && echo "$CONFIG" >> $HOME/.pingidentity/config && grep -E "[a-zA-Z]" $HOME/.pingidentity/config || exit 1 && make testacccomplete && make removetestcontainer
         env:
           TF_ACC: "1"

@@ -52,7 +52,7 @@ func (r *oauthCibaServerPolicySettingsResource) Schema(ctx context.Context, req 
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -194,6 +194,8 @@ func (r *oauthCibaServerPolicySettingsResource) Update(ctx context.Context, req 
 
 // This config object is edit-only, so Terraform can't delete it.
 func (r *oauthCibaServerPolicySettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
+	resp.Diagnostics.AddWarning("Configuration cannot be returned to original state.  The resource has been removed from Terraform state but the configuration remains applied to the environment.", "")
 }
 
 func (r *oauthCibaServerPolicySettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

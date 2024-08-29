@@ -13,9 +13,6 @@ Manages a file for importing an SSL key pair.
 ## Example Usage
 
 ```terraform
-# WARNING! You will need to secure your state file properly when using this resource! #
-# Please refer to the link below on how to best store state files and data within. #
-# https://developer.hashicorp.com/terraform/plugin/best-practices/sensitive-state #
 resource "pingfederate_key_pair_ssl_server_import" "keyPairsSslServerImport" {
   import_id = "keyPairSSLServerImport"
   file_data = "example"
@@ -42,7 +39,7 @@ resource "pingfederate_key_pair_ssl_server_import" "keyPairsSslServerImport" {
 ### Read-Only
 
 - `expires` (String) The end date up until which the item is valid, in ISO 8601 format (UTC)
-- `id` (String) The ID of this resource.
+- `id` (String, Deprecated) The ID of this resource.
 - `issuer_dn` (String) The issuer's distinguished name
 - `key_algorithm` (String) The public key algorithm
 - `key_size` (Number) The public key size
