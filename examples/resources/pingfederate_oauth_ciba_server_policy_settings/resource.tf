@@ -1,5 +1,5 @@
-resource "pingfederate_oauth_ciba_server_policy_settings" "oauthCibaServerPolicySettingsExample" {
+resource "pingfederate_oauth_ciba_server_policy_settings" "policySettings" {
   default_request_policy_ref = {
-    id = "exampleOauthCibaServerPolicy"
+    id = pingfederate_oauth_ciba_server_policy.examplePolicy.policy_id
   }
 }

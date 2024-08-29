@@ -942,13 +942,13 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 									Attributes: map[string]schema.Attribute{
 										"attribute_contract": schema.SingleNestedAttribute{
 											Attributes: map[string]schema.Attribute{
-												"core_attributes": schema.ListNestedAttribute{
+												"core_attributes": schema.SetNestedAttribute{
 													NestedObject: adapterOverrideSettingsAttribute,
 													Computed:     true,
 													Optional:     false,
 													Description:  "A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type.",
 												},
-												"extended_attributes": schema.ListNestedAttribute{
+												"extended_attributes": schema.SetNestedAttribute{
 													NestedObject: adapterOverrideSettingsAttribute,
 													Computed:     true,
 													Optional:     false,
@@ -1082,13 +1082,13 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 					},
 					"attribute_contract": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
-							"core_attributes": schema.ListNestedAttribute{
+							"core_attributes": schema.SetNestedAttribute{
 								NestedObject: spBrowserSSOAttribute,
 								Computed:     true,
 								Optional:     false,
 								Description:  "A list of read-only assertion attributes (for example, SAML_SUBJECT) that are automatically populated by PingFederate.",
 							},
-							"extended_attributes": schema.ListNestedAttribute{
+							"extended_attributes": schema.SetNestedAttribute{
 								NestedObject: spBrowserSSOAttribute,
 								Computed:     true,
 								Optional:     false,
@@ -1133,7 +1133,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Optional:    false,
 						Description: "Default Target URL for SAML1.x connections.",
 					},
-					"enabled_profiles": schema.ListAttribute{
+					"enabled_profiles": schema.SetAttribute{
 						ElementType: types.StringType,
 						Computed:    true,
 						Optional:    false,
@@ -1167,7 +1167,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Optional:    false,
 						Description: "Defines what to encrypt in the browser-based SSO profile.",
 					},
-					"incoming_bindings": schema.ListAttribute{
+					"incoming_bindings": schema.SetAttribute{
 						ElementType: types.StringType,
 						Computed:    true,
 						Optional:    false,
@@ -1331,13 +1331,13 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 					},
 					"attribute_contract": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
-							"core_attributes": schema.ListNestedAttribute{
+							"core_attributes": schema.SetNestedAttribute{
 								NestedObject: wsTrustAttribute,
 								Computed:     true,
 								Optional:     false,
 								Description:  "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 							},
-							"extended_attributes": schema.ListNestedAttribute{
+							"extended_attributes": schema.SetNestedAttribute{
 								NestedObject: wsTrustAttribute,
 								Computed:     true,
 								Optional:     false,
