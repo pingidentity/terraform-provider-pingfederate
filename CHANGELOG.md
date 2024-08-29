@@ -1,4 +1,6 @@
-# v0.15.0 (Unreleased)
+# v0.16.0 (Unreleased)
+
+# v0.15.0 August 29, 2024
 ### Resources
 * **New Resource:** `pingfederate_secret_manager` ([#291]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/291)))
 * **New Resource:** `pingfederate_cluster_settings` ([#339]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/339)))
