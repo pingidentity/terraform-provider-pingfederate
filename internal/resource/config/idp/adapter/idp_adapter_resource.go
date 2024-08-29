@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -54,10 +55,16 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"authn_ctx_class_ref": schema.StringAttribute{
 				Description: "The fixed value that indicates how the user was authenticated.",
 				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"name": schema.StringAttribute{
 				Description: "The plugin instance name. The name can be modified once the instance is created.",
 				Required:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
 				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created.",
@@ -82,16 +89,19 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 								"name": schema.StringAttribute{
 									Description: "The name of this attribute.",
 									Required:    true,
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 								"pseudonym": schema.BoolAttribute{
-									Description: "Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to false.",
+									Description: "Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to `false`.",
 									Optional:    true,
 									Computed:    true,
 									// These defaults cause issues with unexpected plans - see https://github.com/hashicorp/terraform-plugin-framework/issues/867
 									// Default: booldefault.StaticBool(false),
 								},
 								"masked": schema.BoolAttribute{
-									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
+									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
 									Optional:    true,
 									Computed:    true,
 									// These defaults cause issues with unexpected plans - see https://github.com/hashicorp/terraform-plugin-framework/issues/867
@@ -111,15 +121,15 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
 									Description: "The name of this attribute.",
-									Required:    true,
+									Computed:    true,
 								},
 								"pseudonym": schema.BoolAttribute{
-									Description: "Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to false.",
-									Required:    true,
+									Description: "Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to `false`.",
+									Computed:    true,
 								},
 								"masked": schema.BoolAttribute{
-									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
-									Required:    true,
+									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
+									Computed:    true,
 								},
 							},
 						},
@@ -136,13 +146,13 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 									Required:    true,
 								},
 								"pseudonym": schema.BoolAttribute{
-									Description: "Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to false.",
+									Description: "Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to `false`.",
 									Optional:    true,
 									Computed:    true,
 									Default:     booldefault.StaticBool(false),
 								},
 								"masked": schema.BoolAttribute{
-									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to false.",
+									Description: "Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.",
 									Optional:    true,
 									Computed:    true,
 									Default:     booldefault.StaticBool(false),
@@ -153,9 +163,12 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 					"unique_user_key_attribute": schema.StringAttribute{
 						Description: "The attribute to use for uniquely identify a user's authentication sessions.",
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"mask_ognl_values": schema.BoolAttribute{
-						Description: "Whether or not all OGNL expressions used to fulfill an outgoing assertion contract should be masked in the logs. Defaults to false.",
+						Description: "Whether or not all OGNL expressions used to fulfill an outgoing assertion contract should be masked in the logs. Defaults to `false`.",
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
@@ -192,7 +205,7 @@ func (r *idpAdapterResource) Schema(ctx context.Context, req resource.SchemaRequ
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	id.ToSchemaCustomId(&schema,
 		"adapter_id",
 		true,

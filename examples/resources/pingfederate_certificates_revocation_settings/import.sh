@@ -1,0 +1,1 @@
+terraform import pingfederate_certificates_revocation_settings.revocationSettings id

@@ -11,7 +11,7 @@ import (
 
 type virtualHostNamesModel struct {
 	Id               types.String `tfsdk:"id"`
-	VirtualHostNames types.List   `tfsdk:"virtual_host_names"`
+	VirtualHostNames types.Set    `tfsdk:"virtual_host_names"`
 }
 
 // Read a VirtualHostNamesResponse object into the model struct
@@ -21,5 +21,5 @@ func readVirtualHostNamesResponse(ctx context.Context, r *client.VirtualHostName
 	} else {
 		state.Id = id.GenerateUUIDToState(existingId)
 	}
-	state.VirtualHostNames = internaltypes.GetStringList(r.VirtualHostNames)
+	state.VirtualHostNames = internaltypes.GetStringSet(r.VirtualHostNames)
 }

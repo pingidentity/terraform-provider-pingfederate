@@ -1,0 +1,1 @@
+terraform import pingfederate_cluster_settings.clusterSettings id
