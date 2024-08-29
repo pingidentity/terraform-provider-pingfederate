@@ -1,5 +1,6 @@
 # v0.15.0 (Unreleased)
 ### Resources
+* **New Resource:** `pingfederate_cluster_settings` ([#339]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/339)))
 * **New Resource:** `pingfederate_metadata_url` ([#282]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/282)))
 * **New Resource:** `pingfederate_captcha_provider_settings` ([#283](https://github.com/pingidentity/terraform-provider-pingfederate/pull/283))
 * **New Resource:** `pingfederate_certificates_revocation_settings` ([#280]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/280)))
