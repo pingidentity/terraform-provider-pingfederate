@@ -724,9 +724,9 @@ Read-Only:
 - `attribute_contract` (Attributes) A set of user attributes that the IdP sends in the SAML assertion. (see [below for nested schema](#nestedatt--sp_browser_sso--attribute_contract))
 - `authentication_policy_contract_assertion_mappings` (Attributes List) A list of authentication policy contracts that map to outgoing assertions. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings))
 - `default_target_url` (String) Default Target URL for SAML1.x connections.
-- `enabled_profiles` (List of String) The profiles that are enabled for browser-based SSO. SAML 2.0 supports all profiles whereas SAML 1.x IdP connections support both IdP and SP (non-standard) initiated SSO.
+- `enabled_profiles` (Set of String) The profiles that are enabled for browser-based SSO. SAML 2.0 supports all profiles whereas SAML 1.x IdP connections support both IdP and SP (non-standard) initiated SSO.
 - `encryption_policy` (Attributes) Defines what to encrypt in the browser-based SSO profile. (see [below for nested schema](#nestedatt--sp_browser_sso--encryption_policy))
-- `incoming_bindings` (List of String) The SAML bindings that are enabled for browser-based SSO.
+- `incoming_bindings` (Set of String) The SAML bindings that are enabled for browser-based SSO.
 - `message_customizations` (Attributes List) The message customizations for browser-based SSO. (see [below for nested schema](#nestedatt--sp_browser_sso--message_customizations))
 - `protocol` (String) The browser-based SSO protocol to use.
 - `require_signed_authn_requests` (Boolean) Require AuthN requests to be signed when received via the POST or Redirect bindings.
@@ -869,8 +869,8 @@ Required:
 
 Read-Only:
 
-- `core_attributes` (Attributes List) A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--core_attributes))
-- `extended_attributes` (Attributes List) A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--extended_attributes))
+- `core_attributes` (Attributes Set) A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--core_attributes))
+- `extended_attributes` (Attributes Set) A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--extended_attributes))
 - `mask_ognl_values` (Boolean) Whether or not all OGNL expressions used to fulfill an outgoing assertion contract should be masked in the logs.
 - `unique_user_key_attribute` (String) The attribute to use for uniquely identify a user's authentication sessions.
 
@@ -1388,8 +1388,8 @@ Read-Only:
 
 Read-Only:
 
-- `core_attributes` (Attributes List) A list of read-only assertion attributes (for example, SAML_SUBJECT) that are automatically populated by PingFederate. (see [below for nested schema](#nestedatt--sp_browser_sso--attribute_contract--core_attributes))
-- `extended_attributes` (Attributes List) A list of additional attributes that are added to the outgoing assertion. (see [below for nested schema](#nestedatt--sp_browser_sso--attribute_contract--extended_attributes))
+- `core_attributes` (Attributes Set) A list of read-only assertion attributes (for example, SAML_SUBJECT) that are automatically populated by PingFederate. (see [below for nested schema](#nestedatt--sp_browser_sso--attribute_contract--core_attributes))
+- `extended_attributes` (Attributes Set) A list of additional attributes that are added to the outgoing assertion. (see [below for nested schema](#nestedatt--sp_browser_sso--attribute_contract--extended_attributes))
 
 <a id="nestedatt--sp_browser_sso--attribute_contract--core_attributes"></a>
 ### Nested Schema for `sp_browser_sso.attribute_contract.core_attributes`
@@ -1720,8 +1720,8 @@ Read-Only:
 
 Read-Only:
 
-- `core_attributes` (Attributes List) A list of read-only assertion attributes that are automatically populated by PingFederate. (see [below for nested schema](#nestedatt--ws_trust--attribute_contract--core_attributes))
-- `extended_attributes` (Attributes List) A list of additional attributes that are added to the outgoing assertion. (see [below for nested schema](#nestedatt--ws_trust--attribute_contract--extended_attributes))
+- `core_attributes` (Attributes Set) A list of read-only assertion attributes that are automatically populated by PingFederate. (see [below for nested schema](#nestedatt--ws_trust--attribute_contract--core_attributes))
+- `extended_attributes` (Attributes Set) A list of additional attributes that are added to the outgoing assertion. (see [below for nested schema](#nestedatt--ws_trust--attribute_contract--extended_attributes))
 
 <a id="nestedatt--ws_trust--attribute_contract--core_attributes"></a>
 ### Nested Schema for `ws_trust.attribute_contract.core_attributes`

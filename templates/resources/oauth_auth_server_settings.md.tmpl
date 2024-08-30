@@ -9,6 +9,8 @@ description: |-
 
 {{ .Description | trimspace }}
 
+!> The `pingfederate_oauth_auth_server_settings` resource has been renamed and will be removed in a future release. Use the `pingfederate_oauth_server_settings` resource instead.
+
 ## Example Usage
 
 {{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource.tf") }}

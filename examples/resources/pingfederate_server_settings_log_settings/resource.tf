@@ -1,8 +1,8 @@
-resource "pingfederate_server_settings_log_settings" "serverSettingsLogSettingsExample" {
+resource "pingfederate_server_settings_log_settings" "logSettings" {
   log_categories = [
     {
       id      = "core"
-      enabled = false
+      enabled = true
     },
     {
       id      = "policytree"
@@ -18,7 +18,7 @@ resource "pingfederate_server_settings_log_settings" "serverSettingsLogSettingsE
     },
     {
       id      = "requestheaders"
-      enabled = false
+      enabled = true
     },
     {
       id      = "requestparams"

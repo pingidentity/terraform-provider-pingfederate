@@ -180,3 +180,12 @@ func AddUnsupportedAttributeError(attr string, actualVersion, requiredVersion Su
 	diags.AddError(fmt.Sprintf("Attribute '%s' not supported by PingFederate version %s", attr, string(actualVersion)),
 		fmt.Sprintf("PingFederate version %s or later is required for this attribute. PingFederate version %s was provided via the 'product_version' field in your provider configuration or the 'PINGFEDERATE_PROVIDER_PRODUCT_VERSION' environment variable.", string(requiredVersion), string(actualVersion)))
 }
+
+func AddUnsupportedResourceError(resource string, actualVersion, requiredVersion SupportedVersion, diags *diag.Diagnostics) {
+	if diags == nil {
+		return
+	}
+
+	diags.AddError(fmt.Sprintf("Resource '%s' not supported by PingFederate version %s", resource, string(actualVersion)),
+		fmt.Sprintf("PingFederate version %s or later is required for this resource. PingFederate version %s was provided via the 'product_version' field in your provider configuration or the 'PINGFEDERATE_PROVIDER_PRODUCT_VERSION' environment variable.", string(requiredVersion), string(actualVersion)))
+}

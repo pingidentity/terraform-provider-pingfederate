@@ -9,6 +9,8 @@ description: |-
 
 Manages the OAuth authorization server settings.
 
+!> The `pingfederate_oauth_auth_server_settings` resource has been renamed and will be removed in a future release. Use the `pingfederate_oauth_server_settings` resource instead.
+
 ## Example Usage
 
 ```terraform
@@ -282,5 +284,9 @@ Import is supported using the following syntax:
 ~> This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
 
 ```shell
+<<<<<<< HEAD
 terraform import pingfederate_oauth_auth_server_settings.oauthAuthServerSettings id
+=======
+terraform import pingfederate_oauth_auth_server_settings.oauthAuthServerSettings oauthAuthServerSettingsId
+>>>>>>> main
 ```

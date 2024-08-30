@@ -236,7 +236,7 @@ func (r *keyPairsSslServerImportResource) Schema(ctx context.Context, req resour
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	id.ToSchemaCustomId(&schema,
 		"import_id",
 		true,
