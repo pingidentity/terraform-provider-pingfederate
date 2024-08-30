@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -626,13 +627,14 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					stringvalidator.LengthAtLeast(1),
 				},
 			},
+			// Defaults can't be set here due to issues related to https://github.com/hashicorp/terraform-plugin-framework/issues/783
 			"saas_field_info": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"attribute_names": schema.ListAttribute{
 						ElementType: types.StringType,
 						Optional:    true,
 						Computed:    true,
-						Default:     listdefault.StaticValue(emptyStringList),
+						//Default:     listdefault.StaticValue(emptyStringList),
 						Description: "The list of source attribute names used to generate or map to a target field",
 						Validators: []validator.List{
 							listvalidator.UniqueValues(),
@@ -1589,7 +1591,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Attributes: map[string]schema.Attribute{
 							"core_attributes": schema.SetNestedAttribute{
 								NestedObject: spBrowserSSOAttribute,
-								Computed:     true,
+								Optional:     true,
 								Description:  "A list of read-only assertion attributes (for example, SAML_SUBJECT) that are automatically populated by PingFederate.",
 							},
 							"extended_attributes": schema.SetNestedAttribute{
@@ -1640,9 +1642,10 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					"enabled_profiles": schema.SetAttribute{
 						ElementType: types.StringType,
 						Optional:    true,
-						Computed:    true,
-						Default:     setdefault.StaticValue(emptyStringSet),
 						Description: "The profiles that are enabled for browser-based SSO. SAML 2.0 supports all profiles whereas SAML 1.x IdP connections support both IdP and SP (non-standard) initiated SSO. This is required for SAMLx.x Connections. ",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"encryption_policy": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
@@ -1672,9 +1675,10 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					"incoming_bindings": schema.SetAttribute{
 						ElementType: types.StringType,
 						Optional:    true,
-						Computed:    true,
-						Default:     setdefault.StaticValue(emptyStringSet),
 						Description: "The SAML bindings that are enabled for browser-based SSO. This is required for SAML 2.0 connections when the enabled profiles contain the SP-initiated SSO profile or either SLO profile. For SAML 1.x based connections, it is not used for SP Connections and it is optional for IdP Connections.",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"message_customizations": schema.ListNestedAttribute{
 						NestedObject: messageCustomizationsNestedObject,
@@ -1823,9 +1827,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 							},
 						},
-						Optional:    true,
-						Computed:    true,
-						Default:     listdefault.StaticValue(types.ListValueMust(urlWhitelistEntriesElemType, nil)),
+						Optional: true,
+						//Computed:    true,
+						//Default:     listdefault.StaticValue(types.ListValueMust(urlWhitelistEntriesElemType, nil)),
 						Description: "For WS-Federation connections, a whitelist of additional allowed domains and paths used to validate wreply for SLO, if enabled.",
 					},
 					"ws_fed_token_type": schema.StringAttribute{
@@ -1886,7 +1890,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Attributes: map[string]schema.Attribute{
 							"core_attributes": schema.SetNestedAttribute{
 								NestedObject: wsTrustAttribute,
-								Computed:     true,
+								Optional:     true,
 								Description:  "A list of read-only assertion attributes that are automatically populated by PingFederate.",
 							},
 							"extended_attributes": schema.SetNestedAttribute{
@@ -2763,10 +2767,15 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				"id": types.StringValue(response.Credentials.SigningSettings.SigningKeyPairRef.Id),
 			})
 			respDiags.Append(diags...)
+			// PF will return nil for include_cert_in_signature if it is false
+			includeCertInSignature := types.BoolValue(false)
+			if response.Credentials.SigningSettings.IncludeCertInSignature != nil {
+				includeCertInSignature = types.BoolPointerValue(response.Credentials.SigningSettings.IncludeCertInSignature)
+			}
 			credentialsSigningSettingsValue, diags = types.ObjectValue(credentialsSigningSettingsAttrTypes, map[string]attr.Value{
 				"algorithm":                         types.StringPointerValue(response.Credentials.SigningSettings.Algorithm),
 				"alternative_signing_key_pair_refs": credentialsSigningSettingsAlternativeSigningKeyPairRefsValue,
-				"include_cert_in_signature":         types.BoolPointerValue(response.Credentials.SigningSettings.IncludeCertInSignature),
+				"include_cert_in_signature":         includeCertInSignature,
 				"include_raw_key_in_signature":      types.BoolPointerValue(response.Credentials.SigningSettings.IncludeRawKeyInSignature),
 				"signing_key_pair_ref":              credentialsSigningSettingsSigningKeyPairRefValue,
 			})
@@ -3468,10 +3477,15 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		respDiags.Append(diags...)
 		var spBrowserSsoSsoServiceEndpointsValues []attr.Value
 		for _, spBrowserSsoSsoServiceEndpointsResponseValue := range response.SpBrowserSso.SsoServiceEndpoints {
+			// PF will return nil for false for the is_default boolean
+			isDefault := types.BoolValue(false)
+			if spBrowserSsoSsoServiceEndpointsResponseValue.IsDefault != nil {
+				isDefault = types.BoolPointerValue(spBrowserSsoSsoServiceEndpointsResponseValue.IsDefault)
+			}
 			spBrowserSsoSsoServiceEndpointsValue, diags := types.ObjectValue(spBrowserSsoSsoServiceEndpointsAttrTypes, map[string]attr.Value{
 				"binding":    types.StringPointerValue(spBrowserSsoSsoServiceEndpointsResponseValue.Binding),
 				"index":      types.Int64PointerValue(spBrowserSsoSsoServiceEndpointsResponseValue.Index),
-				"is_default": types.BoolPointerValue(spBrowserSsoSsoServiceEndpointsResponseValue.IsDefault),
+				"is_default": isDefault,
 				"url":        types.StringValue(spBrowserSsoSsoServiceEndpointsResponseValue.Url),
 			})
 			respDiags.Append(diags...)
@@ -3479,19 +3493,24 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		}
 		spBrowserSsoSsoServiceEndpointsValue, diags := types.ListValue(spBrowserSsoSsoServiceEndpointsElementType, spBrowserSsoSsoServiceEndpointsValues)
 		respDiags.Append(diags...)
-		var spBrowserSsoUrlWhitelistEntriesValues []attr.Value
-		for _, spBrowserSsoUrlWhitelistEntriesResponseValue := range response.SpBrowserSso.UrlWhitelistEntries {
-			spBrowserSsoUrlWhitelistEntriesValue, diags := types.ObjectValue(spBrowserSsoUrlWhitelistEntriesAttrTypes, map[string]attr.Value{
-				"allow_query_and_fragment": types.BoolPointerValue(spBrowserSsoUrlWhitelistEntriesResponseValue.AllowQueryAndFragment),
-				"require_https":            types.BoolPointerValue(spBrowserSsoUrlWhitelistEntriesResponseValue.RequireHttps),
-				"valid_domain":             types.StringPointerValue(spBrowserSsoUrlWhitelistEntriesResponseValue.ValidDomain),
-				"valid_path":               types.StringPointerValue(spBrowserSsoUrlWhitelistEntriesResponseValue.ValidPath),
-			})
+		var spBrowserSsoUrlWhitelistEntriesValue types.List
+		if response.SpBrowserSso.UrlWhitelistEntries == nil {
+			spBrowserSsoUrlWhitelistEntriesValue = types.ListNull(spBrowserSsoUrlWhitelistEntriesElementType)
+		} else {
+			var spBrowserSsoUrlWhitelistEntriesValues []attr.Value
+			for _, spBrowserSsoUrlWhitelistEntriesResponseValue := range response.SpBrowserSso.UrlWhitelistEntries {
+				spBrowserSsoUrlWhitelistEntriesValue, diags := types.ObjectValue(spBrowserSsoUrlWhitelistEntriesAttrTypes, map[string]attr.Value{
+					"allow_query_and_fragment": types.BoolPointerValue(spBrowserSsoUrlWhitelistEntriesResponseValue.AllowQueryAndFragment),
+					"require_https":            types.BoolPointerValue(spBrowserSsoUrlWhitelistEntriesResponseValue.RequireHttps),
+					"valid_domain":             types.StringPointerValue(spBrowserSsoUrlWhitelistEntriesResponseValue.ValidDomain),
+					"valid_path":               types.StringPointerValue(spBrowserSsoUrlWhitelistEntriesResponseValue.ValidPath),
+				})
+				respDiags.Append(diags...)
+				spBrowserSsoUrlWhitelistEntriesValues = append(spBrowserSsoUrlWhitelistEntriesValues, spBrowserSsoUrlWhitelistEntriesValue)
+			}
+			spBrowserSsoUrlWhitelistEntriesValue, diags = types.ListValue(spBrowserSsoUrlWhitelistEntriesElementType, spBrowserSsoUrlWhitelistEntriesValues)
 			respDiags.Append(diags...)
-			spBrowserSsoUrlWhitelistEntriesValues = append(spBrowserSsoUrlWhitelistEntriesValues, spBrowserSsoUrlWhitelistEntriesValue)
 		}
-		spBrowserSsoUrlWhitelistEntriesValue, diags := types.ListValue(spBrowserSsoUrlWhitelistEntriesElementType, spBrowserSsoUrlWhitelistEntriesValues)
-		respDiags.Append(diags...)
 		spBrowserSsoValue, diags = types.ObjectValue(spBrowserSsoAttrTypes, map[string]attr.Value{
 			"adapter_mappings":              spBrowserSsoAdapterMappingsValue,
 			"always_sign_artifact_response": types.BoolPointerValue(response.SpBrowserSso.AlwaysSignArtifactResponse),
