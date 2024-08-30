@@ -47,14 +47,16 @@ var (
 		"attribute_sources":              types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
 	}
 
+	attributesElemType = types.ObjectType{AttrTypes: map[string]attr.Type{
+		"name":           types.StringType,
+		"multi_valued":   types.BoolType,
+		"types":          types.ListType{ElemType: types.StringType},
+		"sub_attributes": types.ListType{ElemType: types.StringType},
+	}}
+
 	customSchemaAttrTypes = map[string]attr.Type{
-		"namespace": types.StringType,
-		"attributes": types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
-			"name":           types.StringType,
-			"multi_valued":   types.BoolType,
-			"types":          types.ListType{ElemType: types.StringType},
-			"sub_attributes": types.ListType{ElemType: types.StringType},
-		}}},
+		"namespace":  types.StringType,
+		"attributes": types.ListType{ElemType: attributesElemType},
 	}
 
 	saasFieldInfoAttrTypes = map[string]attr.Type{

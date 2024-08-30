@@ -328,25 +328,25 @@ resource "pingfederate_idp_sp_connection" "samlSpBrowserSSOExample" {
 
 ### Required
 
-- `connection_id` (String) The persistent, unique ID for the connection. It can be any combination of [a-zA-Z0-9._-].
+- `connection_id` (String) The persistent, unique ID for the connection. It can be any combination of `[a-zA-Z0-9._-]`.
 - `entity_id` (String) The partner's entity ID (connection ID) or issuer value (for OIDC Connections).
 - `name` (String) The connection name.
 
 ### Optional
 
-- `active` (Boolean) Specifies whether the connection is active and ready to process incoming requests. The default value is false.
+- `active` (Boolean) Specifies whether the connection is active and ready to process incoming requests. The default value is `false`.
 - `additional_allowed_entities_configuration` (Attributes) Additional allowed entities or issuers configuration. Currently only used in OIDC IdP (RP) connection. (see [below for nested schema](#nestedatt--additional_allowed_entities_configuration))
 - `application_icon_url` (String) The application icon url.
 - `application_name` (String) The application name.
 - `attribute_query` (Attributes) The attribute query profile supports SPs in requesting user attributes. (see [below for nested schema](#nestedatt--attribute_query))
 - `base_url` (String) The fully-qualified hostname and port on which your partner's federation deployment runs.
-- `connection_target_type` (String) The connection target type. This field is intended for bulk import/export usage. Changing its value may result in unexpected behavior.
+- `connection_target_type` (String) The connection target type. This field is intended for bulk import/export usage. Changing its value may result in unexpected behavior. The default value is `STANDARD`. Options are `STANDARD`, `SALESFORCE`, `SALESFORCE_CP`, `SALESFORCE_PP`, `PINGONE_SCIM11`.
 - `contact_info` (Attributes) Contact information. (see [below for nested schema](#nestedatt--contact_info))
 - `credentials` (Attributes) The certificates and settings for encryption, signing, and signature verification. (see [below for nested schema](#nestedatt--credentials))
 - `default_virtual_entity_id` (String) The default alternate entity ID that identifies the local server to this partner. It is required when virtualEntityIds is not empty and must be included in that list.
 - `extended_properties` (Attributes Map) Extended Properties allows to store additional information for IdP/SP Connections. The names of these extended properties should be defined in /extendedProperties. (see [below for nested schema](#nestedatt--extended_properties))
 - `license_connection_group` (String) The license connection group. If your PingFederate license is based on connection groups, each connection must be assigned to a group before it can be used.
-- `logging_mode` (String) The level of transaction logging applicable for this connection. Default is STANDARD.
+- `logging_mode` (String) The level of transaction logging applicable for this connection. Default is `STANDARD`. Options are `NONE`, `STANDARD`, `ENHANCED`, `FULL`.
 - `metadata_reload_settings` (Attributes) Configuration settings to enable automatic reload of partner's metadata. (see [below for nested schema](#nestedatt--metadata_reload_settings))
 - `outbound_provision` (Attributes) Outbound Provisioning allows an IdP to create and maintain user accounts at standards-based partner sites using SCIM as well as select-proprietary provisioning partner sites that are protocol-enabled. (see [below for nested schema](#nestedatt--outbound_provision))
 - `sp_browser_sso` (Attributes) The SAML settings used to enable secure browser-based SSO to resources at your partner's site. (see [below for nested schema](#nestedatt--sp_browser_sso))
@@ -355,9 +355,9 @@ resource "pingfederate_idp_sp_connection" "samlSpBrowserSSOExample" {
 
 ### Read-Only
 
-- `creation_date` (String) The time at which the connection was created. This property is read only and is ignored on PUT and POST requests.
+- `creation_date` (String) The time at which the connection was created. This property is read only.
 - `id` (String, Deprecated) The ID of this resource.
-- `type` (String) The type of this connection.
+- `type` (String, Deprecated) The type of this connection.
 
 <a id="nestedatt--additional_allowed_entities_configuration"></a>
 ### Nested Schema for `additional_allowed_entities_configuration`
@@ -682,7 +682,7 @@ Optional:
 
 Optional:
 
-- `block_encryption_algorithm` (String) The algorithm used to encrypt assertions sent to this partner. AES_128, AES_256, AES_128_GCM, AES_192_GCM, AES_256_GCM and Triple_DES are supported.
+- `block_encryption_algorithm` (String) The algorithm used to encrypt assertions sent to this partner. `AES_128`, `AES_256`, `AES_128_GCM`, `AES_192_GCM`, `AES_256_GCM` and `Triple_DES` are supported.
 - `certs` (Attributes List) The certificates used for signature verification and XML encryption. (see [below for nested schema](#nestedatt--credentials--certs))
 - `decryption_key_pair_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--credentials--decryption_key_pair_ref))
 - `inbound_back_channel_auth` (Attributes) (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth))
@@ -703,10 +703,13 @@ Required:
 Optional:
 
 - `active_verification_cert` (Boolean) Indicates whether this is an active signature verification certificate.
-- `cert_view` (Attributes) Certificate details. (see [below for nested schema](#nestedatt--credentials--certs--cert_view))
 - `encryption_cert` (Boolean) Indicates whether to use this cert to encrypt outgoing assertions. Only one certificate in the collection can have this flag set.
 - `primary_verification_cert` (Boolean) Indicates whether this is the primary signature verification certificate. Only one certificate in the collection can have this flag set.
 - `secondary_verification_cert` (Boolean) Indicates whether this is the secondary signature verification certificate. Only one certificate in the collection can have this flag set.
+
+Read-Only:
+
+- `cert_view` (Attributes) Certificate details. (see [below for nested schema](#nestedatt--credentials--certs--cert_view))
 
 <a id="nestedatt--credentials--certs--x509file"></a>
 ### Nested Schema for `credentials.certs.x509file`
@@ -717,16 +720,16 @@ Required:
 
 Optional:
 
-- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.
-- `id` (String) The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.
+- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Options are `LOCAL`, `HSM`.
+- `id` (String) The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.
 
 
 <a id="nestedatt--credentials--certs--cert_view"></a>
 ### Nested Schema for `credentials.certs.cert_view`
 
-Optional:
+Read-Only:
 
-- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.
+- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Options are `LOCAL`, `HSM`.
 - `expires` (String) The end date up until which the item is valid, in ISO 8601 format (UTC).
 - `id` (String) The persistent, unique ID for the certificate.
 - `issuer_dn` (String) The issuer's distinguished name.
@@ -736,7 +739,7 @@ Optional:
 - `sha1fingerprint` (String) SHA-1 fingerprint in Hex encoding.
 - `sha256fingerprint` (String) SHA-256 fingerprint in Hex encoding.
 - `signature_algorithm` (String) The signature algorithm.
-- `status` (String) Status of the item.
+- `status` (String) Status of the item. Options are `VALID`, `EXPIRED`, `NOT_YET_VALID`, `REVOKED`.
 - `subject_alternative_names` (List of String) The subject alternative names (SAN).
 - `subject_dn` (String) The subject's distinguished name.
 - `valid_from` (String) The start date from which the item is valid, in ISO 8601 format (UTC).
@@ -757,7 +760,7 @@ Required:
 
 Required:
 
-- `type` (String) The back channel authentication type.
+- `type` (String) The back channel authentication type. Options are `INBOUND`, `OUTBOUND`.
 
 Optional:
 
@@ -778,10 +781,13 @@ Required:
 Optional:
 
 - `active_verification_cert` (Boolean) Indicates whether this is an active signature verification certificate.
-- `cert_view` (Attributes) Certificate details. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs--cert_view))
 - `encryption_cert` (Boolean) Indicates whether to use this cert to encrypt outgoing assertions. Only one certificate in the collection can have this flag set.
 - `primary_verification_cert` (Boolean) Indicates whether this is the primary signature verification certificate. Only one certificate in the collection can have this flag set.
 - `secondary_verification_cert` (Boolean) Indicates whether this is the secondary signature verification certificate. Only one certificate in the collection can have this flag set.
+
+Read-Only:
+
+- `cert_view` (Attributes) Certificate details. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs--cert_view))
 
 <a id="nestedatt--credentials--inbound_back_channel_auth--certs--x509file"></a>
 ### Nested Schema for `credentials.inbound_back_channel_auth.certs.x509file`
@@ -792,16 +798,16 @@ Required:
 
 Optional:
 
-- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.
-- `id` (String) The persistent, unique ID for the certificate. It can be any combination of [a-z0-9._-]. This property is system-assigned if not specified.
+- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Options are `LOCAL`, `HSM`.
+- `id` (String) The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified.
 
 
 <a id="nestedatt--credentials--inbound_back_channel_auth--certs--cert_view"></a>
 ### Nested Schema for `credentials.inbound_back_channel_auth.certs.cert_view`
 
-Optional:
+Read-Only:
 
-- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true.
+- `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Options are `LOCAL`, `HSM`.
 - `expires` (String) The end date up until which the item is valid, in ISO 8601 format (UTC).
 - `id` (String) The persistent, unique ID for the certificate.
 - `issuer_dn` (String) The issuer's distinguished name.
@@ -811,7 +817,7 @@ Optional:
 - `sha1fingerprint` (String) SHA-1 fingerprint in Hex encoding.
 - `sha256fingerprint` (String) SHA-256 fingerprint in Hex encoding.
 - `signature_algorithm` (String) The signature algorithm.
-- `status` (String) Status of the item.
+- `status` (String) Status of the item. Options are `VALID`, `EXPIRED`, `NOT_YET_VALID`, `REVOKED`.
 - `subject_alternative_names` (List of String) The subject alternative names (SAN).
 - `subject_dn` (String) The subject's distinguished name.
 - `valid_from` (String) The start date from which the item is valid, in ISO 8601 format (UTC).
@@ -824,8 +830,8 @@ Optional:
 
 Optional:
 
-- `encrypted_password` (String) For GET requests, this field contains the encrypted password, if one exists.  For POST and PUT requests, if you wish to reuse the existing password, this field should be passed back unchanged.
-- `password` (String) User password.  To update the password, specify the plaintext value in this field.  This field will not be populated for GET requests.
+- `encrypted_password` (String, Deprecated) For GET requests, this field contains the encrypted password, if one exists.
+- `password` (String, Sensitive) User password.
 - `username` (String) The username.
 
 
@@ -835,22 +841,22 @@ Optional:
 
 Required:
 
-- `type` (String) The back channel authentication type.
+- `type` (String) The back channel authentication type. Options are `INBOUND`, `OUTBOUND`.
 
 Optional:
 
 - `digital_signature` (Boolean) If incoming or outgoing messages must be signed.
 - `http_basic_credentials` (Attributes) Username and password credentials. (see [below for nested schema](#nestedatt--credentials--outbound_back_channel_auth--http_basic_credentials))
 - `ssl_auth_key_pair_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--credentials--outbound_back_channel_auth--ssl_auth_key_pair_ref))
-- `validate_partner_cert` (Boolean) Validate the partner server certificate. Default is true.
+- `validate_partner_cert` (Boolean) Validate the partner server certificate. Default is `true`.
 
 <a id="nestedatt--credentials--outbound_back_channel_auth--http_basic_credentials"></a>
 ### Nested Schema for `credentials.outbound_back_channel_auth.http_basic_credentials`
 
 Optional:
 
-- `encrypted_password` (String) For GET requests, this field contains the encrypted password, if one exists.  For POST and PUT requests, if you wish to reuse the existing password, this field should be passed back unchanged.
-- `password` (String) User password.  To update the password, specify the plaintext value in this field.  This field will not be populated for GET requests.
+- `encrypted_password` (String, Deprecated) For GET requests, this field contains the encrypted password, if one exists.
+- `password` (String, Sensitive) User password.
 - `username` (String) The username.
 
 
@@ -878,7 +884,7 @@ Optional:
 
 - `algorithm` (String) The algorithm used to sign messages sent to this partner. The default is SHA1withDSA for DSA certs, SHA256withRSA for RSA certs, and SHA256withECDSA for EC certs. For RSA certs, SHA1withRSA, SHA384withRSA, SHA512withRSA, SHA256withRSAandMGF1, SHA384withRSAandMGF1 and SHA512withRSAandMGF1 are also supported. For EC certs, SHA384withECDSA and SHA512withECDSA are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512
 - `alternative_signing_key_pair_refs` (Attributes List) The list of IDs of alternative key pairs used to sign messages sent to this partner. The ID of the key pair is also known as the alias and can be found by viewing the corresponding certificate under 'Signing & Decryption Keys & Certificates' in the PingFederate admin console. (see [below for nested schema](#nestedatt--credentials--signing_settings--alternative_signing_key_pair_refs))
-- `include_cert_in_signature` (Boolean) Determines whether the signing certificate is included in the signature <KeyInfo> element.
+- `include_cert_in_signature` (Boolean) Determines whether the signing certificate is included in the signature <KeyInfo> element. Default is `false`.
 - `include_raw_key_in_signature` (Boolean) Determines whether the <KeyValue> element with the raw public key is included in the signature <KeyInfo> element.
 - `signing_key_pair_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--credentials--signing_settings--signing_key_pair_ref))
 
@@ -913,7 +919,7 @@ Optional:
 
 Optional:
 
-- `enable_auto_metadata_update` (Boolean) Specifies whether the metadata of the connection will be automatically reloaded. The default value is true.
+- `enable_auto_metadata_update` (Boolean) Specifies whether the metadata of the connection will be automatically reloaded. The default value is `true`.
 - `metadata_url_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--metadata_reload_settings--metadata_url_ref))
 
 <a id="nestedatt--metadata_reload_settings--metadata_url_ref"></a>
@@ -954,8 +960,8 @@ Required:
 
 Optional:
 
-- `max_threads` (Number) The number of processing threads. The default value is 1.
-- `timeout` (Number) Timeout, in seconds, for individual user and group provisioning operations on the target service provider. The default value is 60.
+- `max_threads` (Number) The number of processing threads. The default value is `1`.
+- `timeout` (Number) Timeout, in seconds, for individual user and group provisioning operations on the target service provider. The default value is `60`.
 
 Read-Only:
 
@@ -980,7 +986,7 @@ Optional:
 - `default_value` (String) The default value for the target field
 - `expression` (String) An OGNL expression to obtain a value.
 - `masked` (Boolean) Indicates whether the attribute should be masked in server logs.
-- `parser` (String) Indicates how the field shall be parsed.
+- `parser` (String) Indicates how the field shall be parsed. Options are `NONE`, `EXTRACT_CN_FROM_DN`, `EXTRACT_USERNAME_FROM_EMAIL`.
 - `trim` (Boolean) Indicates whether field should be trimmed before provisioning.
 
 
@@ -1008,9 +1014,7 @@ Optional:
 
 Required:
 
-- `account_status_algorithm` (String) The account status algorithm name. 
-ACCOUNT_STATUS_ALGORITHM_AD -  Algorithm name for Active Directory, which uses a bitmap for each user entry. 
-ACCOUNT_STATUS_ALGORITHM_FLAG - Algorithm name for Oracle Directory Server and other LDAP directories that use a separate attribute to store the user's status. When this option is selected, the Flag Comparison Value and Flag Comparison Status fields should be used.
+- `account_status_algorithm` (String) The account status algorithm name. Options are `ACCOUNT_STATUS_ALGORITHM_AD`, `ACCOUNT_STATUS_ALGORITHM_FLAG`. `ACCOUNT_STATUS_ALGORITHM_AD` -  Algorithm name for Active Directory, which uses a bitmap for each user entry. `ACCOUNT_STATUS_ALGORITHM_FLAG` - Algorithm name for Oracle Directory Server and other LDAP directories that use a separate attribute to store the user's status. When this option is selected, the Flag Comparison Value and Flag Comparison Status fields should be used.
 - `account_status_attribute_name` (String) The account status attribute name.
 
 Optional:
@@ -1025,10 +1029,7 @@ Optional:
 
 Required:
 
-- `changed_users_algorithm` (String) The changed user algorithm. 
-ACTIVE_DIRECTORY_USN - For Active Directory only, this algorithm queries for update sequence numbers on user records that are larger than the last time records were checked. 
-TIMESTAMP - Queries for timestamps on user records that are not older than the last time records were checked. This check is more efficient from the point of view of the PingFederate provisioner but can be more time consuming on the LDAP side, particularly with the Oracle Directory Server. 
-TIMESTAMP_NO_NEGATION - Queries for timestamps on user records that are newer than the last time records were checked. This algorithm is recommended for the Oracle Directory Server.
+- `changed_users_algorithm` (String) The changed user algorithm. Options are `ACTIVE_DIRECTORY_USN`, `TIMESTAMP`, `TIMESTAMP_NO_NEGATION`. `ACTIVE_DIRECTORY_USN` - For Active Directory only, this algorithm queries for update sequence numbers on user records that are larger than the last time records were checked. `TIMESTAMP` - Queries for timestamps on user records that are not older than the last time records were checked. This check is more efficient from the point of view of the PingFederate provisioner but can be more time consuming on the LDAP side, particularly with the Oracle Directory Server. `TIMESTAMP_NO_NEGATION` - Queries for timestamps on user records that are newer than the last time records were checked. This algorithm is recommended for the Oracle Directory Server.
 - `group_object_class` (String) The group object class.
 - `time_stamp_attribute_name` (String) The timestamp attribute name.
 - `user_object_class` (String) The user object class.
@@ -1062,7 +1063,7 @@ Optional:
 
 - `filter` (String) An LDAP filter.
 - `group_dn` (String) The group DN for users or groups.
-- `nested_search` (Boolean) Indicates whether the search is nested.
+- `nested_search` (Boolean) Indicates whether the search is nested. Default is `false`.
 
 
 <a id="nestedatt--outbound_provision--channels--channel_source--group_source_location"></a>
@@ -1072,7 +1073,7 @@ Optional:
 
 - `filter` (String) An LDAP filter.
 - `group_dn` (String) The group DN for users or groups.
-- `nested_search` (Boolean) Indicates whether the search is nested.
+- `nested_search` (Boolean) Indicates whether the search is nested. The default value is `false`.
 
 
 
@@ -1095,7 +1096,7 @@ Optional:
 - `default_value` (String) The default value for the target field
 - `expression` (String) An OGNL expression to obtain a value.
 - `masked` (Boolean) Indicates whether the attribute should be masked in server logs.
-- `parser` (String) Indicates how the field shall be parsed.
+- `parser` (String) Indicates how the field shall be parsed. Options are `NONE`, `EXTRACT_CN_FROM_DN`, `EXTRACT_USERNAME_FROM_EMAIL`.
 - `trim` (Boolean) Indicates whether field should be trimmed before provisioning.
 
 
@@ -1110,7 +1111,7 @@ Required:
 
 Optional:
 
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
 
 
 <a id="nestedatt--outbound_provision--custom_schema"></a>
@@ -1142,7 +1143,7 @@ Required:
 
 Optional:
 
-- `value` (String) The value for the configuration field. For encrypted or hashed fields, GETs will not return this attribute. To update an encrypted or hashed field, specify the new value in this attribute.
+- `value` (String) The value for the configuration field.
 
 
 
@@ -1154,7 +1155,7 @@ Required:
 - `adapter_mappings` (Attributes List) A list of adapters that map to outgoing assertions. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings))
 - `assertion_lifetime` (Attributes) The timeframe of validity before and after the issuance of the assertion. (see [below for nested schema](#nestedatt--sp_browser_sso--assertion_lifetime))
 - `attribute_contract` (Attributes) A set of user attributes that the IdP sends in the SAML assertion. (see [below for nested schema](#nestedatt--sp_browser_sso--attribute_contract))
-- `protocol` (String) The browser-based SSO protocol to use.
+- `protocol` (String) The browser-based SSO protocol to use. Options are `SAML20`, `WSFED`, `SAML11`, `SAML10`, `OIDC`.
 - `sso_service_endpoints` (Attributes List) A list of possible endpoints to send assertions to. (see [below for nested schema](#nestedatt--sp_browser_sso--sso_service_endpoints))
 
 Optional:
@@ -1169,17 +1170,17 @@ Optional:
 - `message_customizations` (Attributes List) The message customizations for browser-based SSO. Depending on server settings, connection type, and protocol this may or may not be supported. (see [below for nested schema](#nestedatt--sp_browser_sso--message_customizations))
 - `require_signed_authn_requests` (Boolean) Require AuthN requests to be signed when received via the POST or Redirect bindings.
 - `sign_assertions` (Boolean) Always sign the SAML Assertion.
-- `sign_response_as_required` (Boolean) Sign SAML Response as required by the associated binding and encryption policy. Applicable to SAML2.0 only and is defaulted to true. It can be set to false only on SAML2.0 connections when signAssertions is set to true.
+- `sign_response_as_required` (Boolean) Sign SAML Response as required by the associated binding and encryption policy. Applicable to SAML2.0 only and is defaulted to `true`. It can be set to `false` only on SAML2.0 connections when `sign_assertions` is set to `true`.
 - `slo_service_endpoints` (Attributes List) A list of possible endpoints to send SLO requests and responses. (see [below for nested schema](#nestedatt--sp_browser_sso--slo_service_endpoints))
-- `sp_saml_identity_mapping` (String) Process in which users authenticated by the IdP are associated with user accounts local to the SP.
-- `sp_ws_fed_identity_mapping` (String) Process in which users authenticated by the IdP are associated with user accounts local to the SP for WS-Federation connection types.
+- `sp_saml_identity_mapping` (String) Process in which users authenticated by the IdP are associated with user accounts local to the SP. Options are `PSEUDONYM`, `STANDARD`, `TRANSIENT`.
+- `sp_ws_fed_identity_mapping` (String) Process in which users authenticated by the IdP are associated with user accounts local to the SP for WS-Federation connection types. Options are `EMAIL_ADDRESS`, `USER_PRINCIPLE_NAME`, `COMMON_NAME`.
 - `url_whitelist_entries` (Attributes List) For WS-Federation connections, a whitelist of additional allowed domains and paths used to validate wreply for SLO, if enabled. (see [below for nested schema](#nestedatt--sp_browser_sso--url_whitelist_entries))
-- `ws_fed_token_type` (String) The WS-Federation Token Type to use.
-- `ws_trust_version` (String) The WS-Trust version for a WS-Federation connection. The default version is WSTRUST12.
+- `ws_fed_token_type` (String) The WS-Federation Token Type to use. Options are `SAML11`, `SAML20`, `JWT`.
+- `ws_trust_version` (String) The WS-Trust version for a WS-Federation connection. The default version is `WSTRUST12`. Options are `WSTRUST12`, `WSTRUST13`.
 
 Read-Only:
 
-- `sso_application_endpoint` (String) Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter. Supported in PF version 11.3 or later.
+- `sso_application_endpoint` (String) Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter. Supported in PF version `11.3` or later.
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings"></a>
 ### Nested Schema for `sp_browser_sso.adapter_mappings`
@@ -1349,7 +1350,7 @@ Required:
 Optional:
 
 - `extended_attributes` (Attributes Set) A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--extended_attributes))
-- `mask_ognl_values` (Boolean) Whether or not all OGNL expressions used to fulfill an outgoing assertion contract should be masked in the logs. Defaults to false.
+- `mask_ognl_values` (Boolean) Whether or not all OGNL expressions used to fulfill an outgoing assertion contract should be masked in the logs. Defaults to `false`.
 - `unique_user_key_attribute` (String) The attribute to use for uniquely identify a user's authentication sessions.
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--core_attributes"></a>
@@ -1361,8 +1362,8 @@ Required:
 
 Optional:
 
-- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to false.
-- `pseudonym` (Boolean) Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to false.
+- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.
+- `pseudonym` (Boolean) Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to `false`.
 
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--parent_ref--extended_attributes"></a>
@@ -1374,8 +1375,8 @@ Required:
 
 Optional:
 
-- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to false.
-- `pseudonym` (Boolean) Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to false.
+- `masked` (Boolean) Specifies whether this attribute is masked in PingFederate logs. Defaults to `false`.
+- `pseudonym` (Boolean) Specifies whether this attribute is used to construct a pseudonym for the SP. Defaults to `false`.
 
 
 
@@ -1957,9 +1958,9 @@ Required:
 
 Optional:
 
-- `binding` (String) The binding of this endpoint, if applicable - usually only required for SAML 2.0 endpoints.  Supported bindings are Artifact and POST.
+- `binding` (String) The binding of this endpoint, if applicable - usually only required for SAML 2.0 endpoints. Options are `ARTIFACT`, `POST`.
 - `index` (Number) The priority of the endpoint.
-- `is_default` (Boolean) Whether or not this endpoint is the default endpoint. Defaults to false.
+- `is_default` (Boolean) Whether or not this endpoint is the default endpoint. Defaults to `false`.
 
 
 <a id="nestedatt--sp_browser_sso--artifact"></a>
@@ -2294,7 +2295,7 @@ Optional:
 
 Required:
 
-- `binding` (String) The binding of this endpoint, if applicable - usually only required for SAML 2.0 endpoints.
+- `binding` (String) The binding of this endpoint, if applicable - usually only required for SAML 2.0 endpoints. Options are `ARTIFACT`, `POST`, `REDIRECT`, `SOAP`.
 - `url` (String) The absolute or relative URL of the endpoint. A relative URL can be specified if a base URL for the connection has been defined.
 
 Optional:
@@ -2310,7 +2311,7 @@ Optional:
 - `allow_query_and_fragment` (Boolean) Allow Any Query/Fragment
 - `require_https` (Boolean) Require HTTPS
 - `valid_domain` (String) Valid Domain Name (leading wildcard '*.' allowed)
-- `valid_path` (String) Valid Path (leave blank to allow any path)
+- `valid_path` (String) Valid Path (leave undefined to allow any path)
 
 
 
@@ -2326,12 +2327,12 @@ Required:
 Optional:
 
 - `abort_if_not_fulfilled_from_request` (Boolean) If the attribute contract cannot be fulfilled using data from the Request, abort the transaction.
-- `default_token_type` (String) The default token type when a web service client (WSC) does not specify in the token request which token type the STS should issue. Defaults to SAML 2.0.
+- `default_token_type` (String) The default token type when a web service client (WSC) does not specify in the token request which token type the STS should issue. Options are `SAML20`, `SAML11`, `SAML11_O365`. Defaults to `SAML20`.
 - `encrypt_saml2_assertion` (Boolean) When selected, the STS encrypts the SAML 2.0 assertion. Applicable only to SAML 2.0 security token.  This option does not apply to OAuth assertion profiles.
 - `generate_key` (Boolean) When selected, the STS generates a symmetric key to be used in conjunction with the "Holder of Key" (HoK) designation for the assertion's Subject Confirmation Method.  This option does not apply to OAuth assertion profiles.
 - `message_customizations` (Attributes List) The message customizations for WS-Trust. Depending on server settings, connection type, and protocol this may or may not be supported. (see [below for nested schema](#nestedatt--ws_trust--message_customizations))
-- `minutes_after` (Number) The amount of time after the SAML token was issued during which it is to be considered valid. The default value is 30.
-- `minutes_before` (Number) The amount of time before the SAML token was issued during which it is to be considered valid. The default value is 5.
+- `minutes_after` (Number) The amount of time after the SAML token was issued during which it is to be considered valid. The default value is `30`.
+- `minutes_before` (Number) The amount of time before the SAML token was issued during which it is to be considered valid. The default value is `5`.
 - `oauth_assertion_profiles` (Boolean) When selected, four additional token-type requests become available.
 - `request_contract_ref` (Attributes) Request Contract to be used to map attribute values into the security token. (see [below for nested schema](#nestedatt--ws_trust--request_contract_ref))
 
