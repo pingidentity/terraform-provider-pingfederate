@@ -1853,9 +1853,6 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								"WSTRUST13",
 							),
 						},
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
-						},
 					},
 					"sso_application_endpoint": schema.StringAttribute{
 						Optional:    false,
