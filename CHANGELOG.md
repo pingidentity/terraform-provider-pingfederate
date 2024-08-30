@@ -1,4 +1,6 @@
 # v0.16.0 (Unreleased)
+### Enhancements
+* Various documentations and schema improvements for resources released in previous versions.
 
 # v0.15.0 August 29, 2024
 ### Resources
