@@ -1,9 +1,11 @@
 resource "pingfederate_password_credential_validator" "radiusUsernamePasswordCredentialValidatorExample" {
   validator_id = "radiusUnPwPCV"
-  name         = "radiusUsernamePasswordCredentialValidator"
+  name         = "RADIUS Username Password Credential Validator"
+
   plugin_descriptor_ref = {
     id = "org.sourceid.saml20.domain.RadiusUsernamePasswordCredentialValidator"
   }
+
   configuration = {
     tables = [
       {

@@ -1,9 +1,11 @@
 resource "pingfederate_password_credential_validator" "pingOneForEnterpriseDirectoryPasswordCredentialValidatorExample" {
   validator_id = "pingOneForEnterpriseDirectoryPCV"
-  name         = "pingOneForEnterpriseDirectoryPasswordCredentialValidatorExample"
+  name         = "PingOne for Enterprise Directory Password Credential Validator"
+
   plugin_descriptor_ref = {
     id = "com.pingconnect.alexandria.pingfed.pcv.PingOnePasswordValidator"
   }
+
   configuration = {
     fields = [
       {
