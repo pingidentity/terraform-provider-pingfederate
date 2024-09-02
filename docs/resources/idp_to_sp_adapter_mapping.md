@@ -386,8 +386,8 @@ Optional:
 
 Import is supported using the following syntax:
 
-~> "idpAdapter|spAdapter" should be the id of the Idp to Sp Adapter Mapping to be imported
+~> "idpAdapterId|spAdapterId" is a composite ID, that should be the adapter id of the Idp adapter concatenated with the adapter id of the SP adapter, separated by a pipe character.
 
 ```shell
-terraform import pingfederate_idp_to_sp_adapter_mapping.idpToSpAdapterMapping "idpAdapter|spAdapter"
+terraform import pingfederate_idp_to_sp_adapter_mapping.idpToSpAdapterMapping "idpAdapterId|spAdapterId"
 ```
