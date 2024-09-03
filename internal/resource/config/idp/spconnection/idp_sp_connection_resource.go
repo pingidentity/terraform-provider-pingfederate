@@ -87,7 +87,7 @@ var (
 	}
 	signingSettingsAttrTypes = map[string]attr.Type{
 		"signing_key_pair_ref":              resourceLinkObjectType,
-		"alternative_signing_key_pair_refs": types.ListType{ElemType: resourceLinkObjectType},
+		"alternative_signing_key_pair_refs": types.SetType{ElemType: resourceLinkObjectType},
 		"algorithm":                         types.StringType,
 		"include_cert_in_signature":         types.BoolType,
 		"include_raw_key_in_signature":      types.BoolType,
@@ -143,7 +143,7 @@ var (
 	additionalAllowedEntitiesConfigurationAttrTypes = map[string]attr.Type{
 		"allow_additional_entities":   types.BoolType,
 		"allow_all_entities":          types.BoolType,
-		"additional_allowed_entities": types.ListType{ElemType: additionalAllowedEntitiesElemType},
+		"additional_allowed_entities": types.SetType{ElemType: additionalAllowedEntitiesElemType},
 	}
 
 	extendedPropertiesElemAttrTypes = map[string]attr.Type{
@@ -754,7 +754,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"additional_allowed_entities_configuration": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"additional_allowed_entities": schema.ListNestedAttribute{
+					"additional_allowed_entities": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"entity_description": schema.StringAttribute{
@@ -775,7 +775,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						},
 						Optional:    true,
 						Computed:    true,
-						Default:     listdefault.StaticValue(types.ListValueMust(additionalAllowedEntitiesElemType, nil)),
+						Default:     setdefault.StaticValue(types.SetValueMust(additionalAllowedEntitiesElemType, nil)),
 						Description: "An array of additional allowed entities or issuers to be accepted during entity or issuer validation.",
 					},
 					"allow_additional_entities": schema.BoolAttribute{
@@ -1019,13 +1019,13 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									stringvalidator.LengthAtLeast(1),
 								},
 							},
-							"alternative_signing_key_pair_refs": schema.ListNestedAttribute{
+							"alternative_signing_key_pair_refs": schema.SetNestedAttribute{
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: resourcelink.ToSchema(),
 								},
 								Optional:    true,
 								Computed:    true,
-								Default:     listdefault.StaticValue(types.ListValueMust(types.ObjectType{AttrTypes: resourcelink.AttrType()}, nil)),
+								Default:     setdefault.StaticValue(types.SetValueMust(types.ObjectType{AttrTypes: resourcelink.AttrType()}, nil)),
 								Description: "The list of IDs of alternative key pairs used to sign messages sent to this partner. The ID of the key pair is also known as the alias and can be found by viewing the corresponding certificate under 'Signing & Decryption Keys & Certificates' in the PingFederate admin console.",
 							},
 							"include_cert_in_signature": schema.BoolAttribute{
@@ -2339,7 +2339,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	}
 	additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesElementType := types.ObjectType{AttrTypes: additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesAttrTypes}
 	additionalAllowedEntitiesConfigurationAttrTypes := map[string]attr.Type{
-		"additional_allowed_entities": types.ListType{ElemType: additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesElementType},
+		"additional_allowed_entities": types.SetType{ElemType: additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesElementType},
 		"allow_additional_entities":   types.BoolType,
 		"allow_all_entities":          types.BoolType,
 	}
@@ -2356,7 +2356,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			respDiags.Append(diags...)
 			additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesValues = append(additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesValues, additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesValue)
 		}
-		additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesValue, diags := types.ListValue(additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesElementType, additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesValues)
+		additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesValue, diags := types.SetValue(additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesElementType, additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesValues)
 		respDiags.Append(diags...)
 		additionalAllowedEntitiesConfigurationValue, diags = types.ObjectValue(additionalAllowedEntitiesConfigurationAttrTypes, map[string]attr.Value{
 			"additional_allowed_entities": additionalAllowedEntitiesConfigurationAdditionalAllowedEntitiesValue,
@@ -2566,7 +2566,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	}
 	credentialsSigningSettingsAttrTypes := map[string]attr.Type{
 		"algorithm":                         types.StringType,
-		"alternative_signing_key_pair_refs": types.ListType{ElemType: credentialsSigningSettingsAlternativeSigningKeyPairRefsElementType},
+		"alternative_signing_key_pair_refs": types.SetType{ElemType: credentialsSigningSettingsAlternativeSigningKeyPairRefsElementType},
 		"include_cert_in_signature":         types.BoolType,
 		"include_raw_key_in_signature":      types.BoolType,
 		"signing_key_pair_ref":              types.ObjectType{AttrTypes: credentialsSigningSettingsSigningKeyPairRefAttrTypes},
@@ -2768,7 +2768,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				respDiags.Append(diags...)
 				credentialsSigningSettingsAlternativeSigningKeyPairRefsValues = append(credentialsSigningSettingsAlternativeSigningKeyPairRefsValues, credentialsSigningSettingsAlternativeSigningKeyPairRefsValue)
 			}
-			credentialsSigningSettingsAlternativeSigningKeyPairRefsValue, diags := types.ListValue(credentialsSigningSettingsAlternativeSigningKeyPairRefsElementType, credentialsSigningSettingsAlternativeSigningKeyPairRefsValues)
+			credentialsSigningSettingsAlternativeSigningKeyPairRefsValue, diags := types.SetValue(credentialsSigningSettingsAlternativeSigningKeyPairRefsElementType, credentialsSigningSettingsAlternativeSigningKeyPairRefsValues)
 			respDiags.Append(diags...)
 			credentialsSigningSettingsSigningKeyPairRefValue, diags := types.ObjectValue(credentialsSigningSettingsSigningKeyPairRefAttrTypes, map[string]attr.Value{
 				"id": types.StringValue(response.Credentials.SigningSettings.SigningKeyPairRef.Id),
