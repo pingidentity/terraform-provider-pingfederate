@@ -930,7 +930,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 			},
 			"sp_browser_sso": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
-					"adapter_mappings": schema.ListNestedAttribute{
+					"adapter_mappings": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"abort_sso_transaction_as_fail_safe": schema.BoolAttribute{
@@ -1034,7 +1034,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 								Optional:    false,
 								Description: "The lifetime of the artifact in seconds.",
 							},
-							"resolver_locations": schema.ListNestedAttribute{
+							"resolver_locations": schema.SetNestedAttribute{
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"index": schema.Int64Attribute{
@@ -1099,7 +1099,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Optional:    false,
 						Description: "A set of user attributes that the IdP sends in the SAML assertion.",
 					},
-					"authentication_policy_contract_assertion_mappings": schema.ListNestedAttribute{
+					"authentication_policy_contract_assertion_mappings": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"abort_sso_transaction_as_fail_safe": schema.BoolAttribute{
@@ -1173,7 +1173,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Optional:    false,
 						Description: "The SAML bindings that are enabled for browser-based SSO.",
 					},
-					"message_customizations": schema.ListNestedAttribute{
+					"message_customizations": schema.SetNestedAttribute{
 						NestedObject: messageCustomizationsNestedObject,
 						Computed:     true,
 						Optional:     false,
@@ -1363,7 +1363,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Optional:    false,
 						Description: "When selected, the STS generates a symmetric key to be used in conjunction with the \"Holder of Key\" (HoK) designation for the assertion's Subject Confirmation Method.  This option does not apply to OAuth assertion profiles.",
 					},
-					"message_customizations": schema.ListNestedAttribute{
+					"message_customizations": schema.SetNestedAttribute{
 						NestedObject: messageCustomizationsNestedObject,
 						Computed:     true,
 						Optional:     false,
