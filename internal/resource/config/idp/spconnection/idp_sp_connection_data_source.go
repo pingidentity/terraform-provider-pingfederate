@@ -1199,7 +1199,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Optional:    false,
 						Description: "Sign SAML Response as required by the associated binding and encryption policy.",
 					},
-					"slo_service_endpoints": schema.ListNestedAttribute{
+					"slo_service_endpoints": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"binding": schema.StringAttribute{
@@ -1233,7 +1233,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Optional:    false,
 						Description: "Process in which users authenticated by the IdP are associated with user accounts local to the SP for WS-Federation connection types.",
 					},
-					"sso_service_endpoints": schema.ListNestedAttribute{
+					"sso_service_endpoints": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"binding": schema.StringAttribute{
@@ -1262,7 +1262,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Optional:    false,
 						Description: "A list of possible endpoints to send assertions to.",
 					},
-					"url_whitelist_entries": schema.ListNestedAttribute{
+					"url_whitelist_entries": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"allow_query_and_fragment": schema.BoolAttribute{
@@ -1391,7 +1391,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Description: "The partner service identifiers.",
 					},
 					"request_contract_ref": datasourceresourcelink.ToDataSourceSchemaSingleNestedAttributeCustomDescription("Request Contract to be used to map attribute values into the security token."),
-					"token_processor_mappings": schema.ListNestedAttribute{
+					"token_processor_mappings": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"attribute_contract_fulfillment": datasourceattributecontractfulfillment.ToDataSourceSchema(),

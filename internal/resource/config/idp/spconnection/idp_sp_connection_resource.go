@@ -16,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
@@ -202,7 +201,7 @@ var (
 			"context_name":       types.StringType,
 			"message_expression": types.StringType,
 		}}},
-		"url_whitelist_entries": types.ListType{ElemType: urlWhitelistEntriesElemType},
+		"url_whitelist_entries": types.SetType{ElemType: urlWhitelistEntriesElemType},
 		"artifact": types.ObjectType{AttrTypes: map[string]attr.Type{
 			"lifetime": types.Int64Type,
 			"resolver_locations": types.SetType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
@@ -211,10 +210,10 @@ var (
 			}}},
 			"source_id": types.StringType,
 		}},
-		"slo_service_endpoints":         types.ListType{ElemType: sloServiceEndpointsElemType},
+		"slo_service_endpoints":         types.SetType{ElemType: sloServiceEndpointsElemType},
 		"default_target_url":            types.StringType,
 		"always_sign_artifact_response": types.BoolType,
-		"sso_service_endpoints": types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
+		"sso_service_endpoints": types.SetType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
 			"binding":    types.StringType,
 			"url":        types.StringType,
 			"is_default": types.BoolType,
@@ -301,7 +300,7 @@ var (
 			"core_attributes":     types.SetType{ElemType: spWsTrustAttributeAttrType},
 			"extended_attributes": types.SetType{ElemType: spWsTrustAttributeAttrType},
 		}},
-		"token_processor_mappings": types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
+		"token_processor_mappings": types.SetType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
 			"idp_token_processor_ref":        resourceLinkObjectType,
 			"restricted_virtual_entity_ids":  types.SetType{ElemType: types.StringType},
 			"attribute_sources":              types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
@@ -1718,7 +1717,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Computed:    true,
 						Description: "Sign SAML Response as required by the associated binding and encryption policy. Applicable to SAML2.0 only and is defaulted to `true`. It can be set to `false` only on SAML2.0 connections when `sign_assertions` is set to `true`.",
 					},
-					"slo_service_endpoints": schema.ListNestedAttribute{
+					"slo_service_endpoints": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"binding": schema.StringAttribute{
@@ -1745,7 +1744,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						},
 						Optional:    true,
 						Computed:    true,
-						Default:     listdefault.StaticValue(types.ListValueMust(sloServiceEndpointsElemType, nil)),
+						Default:     setdefault.StaticValue(types.SetValueMust(sloServiceEndpointsElemType, nil)),
 						Description: "A list of possible endpoints to send SLO requests and responses.",
 					},
 					"sp_saml_identity_mapping": schema.StringAttribute{
@@ -1770,7 +1769,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							),
 						},
 					},
-					"sso_service_endpoints": schema.ListNestedAttribute{
+					"sso_service_endpoints": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"binding": schema.StringAttribute{
@@ -1805,7 +1804,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Required:    true,
 						Description: "A list of possible endpoints to send assertions to.",
 					},
-					"url_whitelist_entries": schema.ListNestedAttribute{
+					"url_whitelist_entries": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"allow_query_and_fragment": schema.BoolAttribute{
@@ -1954,7 +1953,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Description: "The partner service identifiers.",
 					},
 					"request_contract_ref": resourcelink.CompleteSingleNestedAttribute(true, false, false, "Request Contract to be used to map attribute values into the security token."),
-					"token_processor_mappings": schema.ListNestedAttribute{
+					"token_processor_mappings": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
@@ -3227,12 +3226,12 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		"require_signed_authn_requests": types.BoolType,
 		"sign_assertions":               types.BoolType,
 		"sign_response_as_required":     types.BoolType,
-		"slo_service_endpoints":         types.ListType{ElemType: spBrowserSsoSloServiceEndpointsElementType},
+		"slo_service_endpoints":         types.SetType{ElemType: spBrowserSsoSloServiceEndpointsElementType},
 		"sp_saml_identity_mapping":      types.StringType,
 		"sp_ws_fed_identity_mapping":    types.StringType,
 		"sso_application_endpoint":      types.StringType,
-		"sso_service_endpoints":         types.ListType{ElemType: spBrowserSsoSsoServiceEndpointsElementType},
-		"url_whitelist_entries":         types.ListType{ElemType: spBrowserSsoUrlWhitelistEntriesElementType},
+		"sso_service_endpoints":         types.SetType{ElemType: spBrowserSsoSsoServiceEndpointsElementType},
+		"url_whitelist_entries":         types.SetType{ElemType: spBrowserSsoUrlWhitelistEntriesElementType},
 		"ws_fed_token_type":             types.StringType,
 		"ws_trust_version":              types.StringType,
 	}
@@ -3479,7 +3478,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			respDiags.Append(diags...)
 			spBrowserSsoSloServiceEndpointsValues = append(spBrowserSsoSloServiceEndpointsValues, spBrowserSsoSloServiceEndpointsValue)
 		}
-		spBrowserSsoSloServiceEndpointsValue, diags := types.ListValue(spBrowserSsoSloServiceEndpointsElementType, spBrowserSsoSloServiceEndpointsValues)
+		spBrowserSsoSloServiceEndpointsValue, diags := types.SetValue(spBrowserSsoSloServiceEndpointsElementType, spBrowserSsoSloServiceEndpointsValues)
 		respDiags.Append(diags...)
 		var spBrowserSsoSsoServiceEndpointsValues []attr.Value
 		for _, spBrowserSsoSsoServiceEndpointsResponseValue := range response.SpBrowserSso.SsoServiceEndpoints {
@@ -3497,11 +3496,11 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			respDiags.Append(diags...)
 			spBrowserSsoSsoServiceEndpointsValues = append(spBrowserSsoSsoServiceEndpointsValues, spBrowserSsoSsoServiceEndpointsValue)
 		}
-		spBrowserSsoSsoServiceEndpointsValue, diags := types.ListValue(spBrowserSsoSsoServiceEndpointsElementType, spBrowserSsoSsoServiceEndpointsValues)
+		spBrowserSsoSsoServiceEndpointsValue, diags := types.SetValue(spBrowserSsoSsoServiceEndpointsElementType, spBrowserSsoSsoServiceEndpointsValues)
 		respDiags.Append(diags...)
-		var spBrowserSsoUrlWhitelistEntriesValue types.List
+		var spBrowserSsoUrlWhitelistEntriesValue types.Set
 		if response.SpBrowserSso.UrlWhitelistEntries == nil {
-			spBrowserSsoUrlWhitelistEntriesValue = types.ListNull(spBrowserSsoUrlWhitelistEntriesElementType)
+			spBrowserSsoUrlWhitelistEntriesValue = types.SetNull(spBrowserSsoUrlWhitelistEntriesElementType)
 		} else {
 			var spBrowserSsoUrlWhitelistEntriesValues []attr.Value
 			for _, spBrowserSsoUrlWhitelistEntriesResponseValue := range response.SpBrowserSso.UrlWhitelistEntries {
@@ -3514,7 +3513,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				respDiags.Append(diags...)
 				spBrowserSsoUrlWhitelistEntriesValues = append(spBrowserSsoUrlWhitelistEntriesValues, spBrowserSsoUrlWhitelistEntriesValue)
 			}
-			spBrowserSsoUrlWhitelistEntriesValue, diags = types.ListValue(spBrowserSsoUrlWhitelistEntriesElementType, spBrowserSsoUrlWhitelistEntriesValues)
+			spBrowserSsoUrlWhitelistEntriesValue, diags = types.SetValue(spBrowserSsoUrlWhitelistEntriesElementType, spBrowserSsoUrlWhitelistEntriesValues)
 			respDiags.Append(diags...)
 		}
 		spBrowserSsoValue, diags = types.ObjectValue(spBrowserSsoAttrTypes, map[string]attr.Value{
@@ -3602,7 +3601,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		"oauth_assertion_profiles":            types.BoolType,
 		"partner_service_ids":                 types.SetType{ElemType: types.StringType},
 		"request_contract_ref":                types.ObjectType{AttrTypes: wsTrustRequestContractRefAttrTypes},
-		"token_processor_mappings":            types.ListType{ElemType: wsTrustTokenProcessorMappingsElementType},
+		"token_processor_mappings":            types.SetType{ElemType: wsTrustTokenProcessorMappingsElementType},
 	}
 	var wsTrustValue types.Object
 	if response.WsTrust == nil {
@@ -3681,7 +3680,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			respDiags.Append(diags...)
 			wsTrustTokenProcessorMappingsValues = append(wsTrustTokenProcessorMappingsValues, wsTrustTokenProcessorMappingsValue)
 		}
-		wsTrustTokenProcessorMappingsValue, diags := types.ListValue(wsTrustTokenProcessorMappingsElementType, wsTrustTokenProcessorMappingsValues)
+		wsTrustTokenProcessorMappingsValue, diags := types.SetValue(wsTrustTokenProcessorMappingsElementType, wsTrustTokenProcessorMappingsValues)
 		respDiags.Append(diags...)
 		wsTrustValue, diags = types.ObjectValue(wsTrustAttrTypes, map[string]attr.Value{
 			"abort_if_not_fulfilled_from_request": types.BoolPointerValue(response.WsTrust.AbortIfNotFulfilledFromRequest),
