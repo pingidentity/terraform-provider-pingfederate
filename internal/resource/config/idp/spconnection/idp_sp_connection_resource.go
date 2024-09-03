@@ -723,6 +723,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"value": schema.StringAttribute{
 				Optional:    true,
+				Sensitive:   true,
 				Description: "The value for the configuration field.",
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
@@ -2293,23 +2294,29 @@ func (state *idpSpConnectionModel) buildAttributeMappingAttrs(channelName string
 // includes any values added in the response by PingFed
 func (state *idpSpConnectionModel) buildTargetSettingsAttrs(responseTargetSettings []client.ConfigField) (types.List, types.List, diag.Diagnostics) {
 	// Get a list of target_setting names that were expected based on the state
-	var expectedTargetSettingsNames []string
+	expectedTargetSettingsValues := map[string]string{}
 	if internaltypes.IsDefined(state.OutboundProvision) {
 		for _, targetSetting := range state.OutboundProvision.Attributes()["target_settings"].(types.List).Elements() {
-			expectedTargetSettingsNames = append(expectedTargetSettingsNames, targetSetting.(types.Object).Attributes()["name"].(types.String).ValueString())
+			targetSettingsAttrs := targetSetting.(types.Object).Attributes()
+			expectedTargetSettingsValues[targetSettingsAttrs["name"].(types.String).ValueString()] = targetSettingsAttrs["value"].(types.String).ValueString()
 		}
 	}
 
 	var respDiags diag.Diagnostics
 	var allTargetSettings, expectedTargetSettings []attr.Value
 	for _, outboundProvisionTargetSettingsResponseValue := range responseTargetSettings {
+		expectedValue, settingInPlan := expectedTargetSettingsValues[outboundProvisionTargetSettingsResponseValue.Name]
+		responseValue := types.StringPointerValue(outboundProvisionTargetSettingsResponseValue.Value)
+		if settingInPlan && outboundProvisionTargetSettingsResponseValue.Value == nil {
+			responseValue = types.StringValue(expectedValue)
+		}
 		outboundProvisionTargetSettingsValue, diags := types.ObjectValue(targetSettingsElemAttrType.AttrTypes, map[string]attr.Value{
 			"name":  types.StringValue(outboundProvisionTargetSettingsResponseValue.Name),
-			"value": types.StringPointerValue(outboundProvisionTargetSettingsResponseValue.Value),
+			"value": responseValue,
 		})
 		respDiags.Append(diags...)
 		allTargetSettings = append(allTargetSettings, outboundProvisionTargetSettingsValue)
-		if slices.Contains(expectedTargetSettingsNames, outboundProvisionTargetSettingsResponseValue.Name) {
+		if settingInPlan {
 			expectedTargetSettings = append(expectedTargetSettings, outboundProvisionTargetSettingsValue)
 		}
 	}
