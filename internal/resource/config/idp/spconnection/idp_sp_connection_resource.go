@@ -609,7 +609,10 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 		Attributes: map[string]schema.Attribute{
 			"context_name": schema.StringAttribute{
 				Optional:    true,
-				Description: "The context in which the customization will be applied. Depending on the connection type and protocol, this can either be 'assertion', 'authn-response' or 'authn-request'.",
+				Description: "The context in which the customization will be applied. Depending on the connection type and protocol, this can either be `assertion`, `authn-response` or `authn-request`.",
+				Validators: []validator.String{
+					stringvalidator.OneOf("assertion", "authn-response", "authn-request"),
+				},
 			},
 			"message_expression": schema.StringAttribute{
 				Optional:    true,
@@ -913,9 +916,6 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
-				Validators: []validator.String{
-					stringvalidator.LengthAtLeast(1),
-				},
 				Description: "The time at which the connection was created. This property is read only.",
 			},
 			"credentials": schema.SingleNestedAttribute{
@@ -977,9 +977,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"key_transport_algorithm": schema.StringAttribute{
 						Optional:    true,
-						Description: "The algorithm used to transport keys to this partner. RSA_OAEP, RSA_OAEP_256 and RSA_v15 are supported.",
+						Description: "The algorithm used to transport keys to this partner. `RSA_OAEP`, `RSA_OAEP_256` and `RSA_v15` are supported.",
 						Validators: []validator.String{
-							stringvalidator.LengthAtLeast(1),
+							stringvalidator.OneOf("RSA_OAEP", "RSA_OAEP_256", "RSA_v15"),
 						},
 					},
 					"outbound_back_channel_auth": schema.SingleNestedAttribute{
@@ -1063,7 +1063,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"default_virtual_entity_id": schema.StringAttribute{
 				Optional:    true,
-				Description: "The default alternate entity ID that identifies the local server to this partner. It is required when virtualEntityIds is not empty and must be included in that list.",
+				Description: "The default alternate entity ID that identifies the local server to this partner. It is required when `virtual_entity_ids` is not empty and must be included in that list.",
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
@@ -1448,7 +1448,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							Attributes: map[string]schema.Attribute{
 								"abort_sso_transaction_as_fail_safe": schema.BoolAttribute{
 									Optional:    true,
-									Description: "If set to true, SSO transaction will be aborted as a fail-safe when the data-store's attribute mappings fail to complete the attribute contract. Otherwise, the attribute contract with default values is used. By default, this value is false.",
+									Computed:    true,
+									Default:     booldefault.StaticBool(false),
+									Description: "If set to true, SSO transaction will be aborted as a fail-safe when the data-store's attribute mappings fail to complete the attribute contract. Otherwise, the attribute contract with default values is used. By default, this value is `false`.",
 								},
 								"adapter_override_settings": schema.SingleNestedAttribute{
 									Attributes: map[string]schema.Attribute{
@@ -1610,7 +1612,9 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							Attributes: map[string]schema.Attribute{
 								"abort_sso_transaction_as_fail_safe": schema.BoolAttribute{
 									Optional:    true,
-									Description: "If set to true, SSO transaction will be aborted as a fail-safe when the data-store's attribute mappings fail to complete the attribute contract. Otherwise, the attribute contract with default values is used. By default, this value is false.",
+									Computed:    true,
+									Default:     booldefault.StaticBool(false),
+									Description: "If set to true, SSO transaction will be aborted as a fail-safe when the data-store's attribute mappings fail to complete the attribute contract. Otherwise, the attribute contract with default values is used. By default, this value is `false`.",
 								},
 								"attribute_contract_fulfillment":     attributecontractfulfillment.ToSchema(true, false, false),
 								"attribute_sources":                  attributesources.ToSchema(0, false),
@@ -1634,7 +1638,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"default_target_url": schema.StringAttribute{
 						Optional:    true,
-						Description: "Default Target URL for SAML1.x connections. For SP connections, this default URL represents the destination on the SP where the user will be directed. For IdP connections, entering a URL in the Default Target URL field overrides the SP Default URL SSO setting.",
+						Description: "Default Target URL for SAML1.x connections. This default URL represents the destination on the SP where the user will be directed.",
 						Validators: []validator.String{
 							stringvalidator.LengthAtLeast(1),
 						},
@@ -1662,7 +1666,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Optional:    true,
 								Computed:    true,
 								Default:     listdefault.StaticValue(emptyStringList),
-								Description: "The list of outgoing SAML assertion attributes that will be encrypted. The 'encryptAssertion' property takes precedence over this.",
+								Description: "The list of outgoing SAML assertion attributes that will be encrypted. The `encrypt_assertion` property takes precedence over this.",
 							},
 							"slo_subject_name_id_encrypted": schema.BoolAttribute{
 								Optional:    true,
@@ -1675,7 +1679,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					"incoming_bindings": schema.SetAttribute{
 						ElementType: types.StringType,
 						Optional:    true,
-						Description: "The SAML bindings that are enabled for browser-based SSO. This is required for SAML 2.0 connections when the enabled profiles contain the SP-initiated SSO profile or either SLO profile. For SAML 1.x based connections, it is not used for SP Connections and it is optional for IdP Connections.",
+						Description: "The SAML bindings that are enabled for browser-based SSO. This is required for SAML 2.0 connections when the enabled profiles contain the SP-initiated SSO profile or either SLO profile. For SAML 1.x based connections, it is not used for SP Connections.",
 						Validators: []validator.Set{
 							setvalidator.SizeAtLeast(1),
 						},
@@ -1827,9 +1831,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 							},
 						},
-						Optional: true,
-						//Computed:    true,
-						//Default:     listdefault.StaticValue(types.ListValueMust(urlWhitelistEntriesElemType, nil)),
+						Optional:    true,
 						Description: "For WS-Federation connections, a whitelist of additional allowed domains and paths used to validate wreply for SLO, if enabled.",
 					},
 					"ws_fed_token_type": schema.StringAttribute{
