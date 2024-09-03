@@ -40,7 +40,7 @@ type idpSpConnectionModel struct {
 
 var (
 	attributeQueryAttrTypes = map[string]attr.Type{
-		"attributes":                     types.ListType{ElemType: types.StringType},
+		"attributes":                     types.SetType{ElemType: types.StringType},
 		"attribute_contract_fulfillment": attributeContractFulfillmentAttrType,
 		"issuance_criteria":              issuanceCriteriaAttrType,
 		"policy":                         types.ObjectType{AttrTypes: policyAttrTypes},
@@ -50,8 +50,8 @@ var (
 	attributesElemType = types.ObjectType{AttrTypes: map[string]attr.Type{
 		"name":           types.StringType,
 		"multi_valued":   types.BoolType,
-		"types":          types.ListType{ElemType: types.StringType},
-		"sub_attributes": types.ListType{ElemType: types.StringType},
+		"types":          types.SetType{ElemType: types.StringType},
+		"sub_attributes": types.SetType{ElemType: types.StringType},
 	}}
 
 	customSchemaAttrTypes = map[string]attr.Type{

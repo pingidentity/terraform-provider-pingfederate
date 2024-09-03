@@ -127,7 +127,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 							Computed: true,
 							Optional: false,
 						},
-						"subject_alternative_names": schema.ListAttribute{
+						"subject_alternative_names": schema.SetAttribute{
 							ElementType: types.StringType,
 							Computed:    true,
 							Optional:    false,
@@ -421,7 +421,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 				Attributes: map[string]schema.Attribute{
 					"attribute_contract_fulfillment": datasourceattributecontractfulfillment.ToDataSourceSchema(),
 					"attribute_sources":              datasourceattributesources.ToDataSourceSchema(),
-					"attributes": schema.ListAttribute{
+					"attributes": schema.SetAttribute{
 						ElementType: types.StringType,
 						Computed:    true,
 						Optional:    false,
@@ -641,7 +641,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 			"extended_properties": schema.MapNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"values": schema.ListAttribute{
+						"values": schema.SetAttribute{
 							ElementType: types.StringType,
 							Computed:    true,
 							Optional:    false,
@@ -886,13 +886,13 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 											Optional:    false,
 											Description: "Name of the attribute.",
 										},
-										"sub_attributes": schema.ListAttribute{
+										"sub_attributes": schema.SetAttribute{
 											ElementType: types.StringType,
 											Computed:    true,
 											Optional:    false,
 											Description: "List of sub-attributes for an attribute.",
 										},
-										"types": schema.ListAttribute{
+										"types": schema.SetAttribute{
 											ElementType: types.StringType,
 											Computed:    true,
 											Optional:    false,
@@ -1010,7 +1010,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 									Optional:    false,
 									Description: "Restricts this mapping to specific virtual entity IDs.",
 								},
-								"restricted_virtual_entity_ids": schema.ListAttribute{
+								"restricted_virtual_entity_ids": schema.SetAttribute{
 									ElementType: types.StringType,
 									Computed:    true,
 									Optional:    false,
@@ -1116,7 +1116,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 									Optional:    false,
 									Description: "Restricts this mapping to specific virtual entity IDs.",
 								},
-								"restricted_virtual_entity_ids": schema.ListAttribute{
+								"restricted_virtual_entity_ids": schema.SetAttribute{
 									ElementType: types.StringType,
 									Computed:    true,
 									Optional:    false,
@@ -1151,7 +1151,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 								Optional:    false,
 								Description: "Encrypt the name-identifier attribute in outbound SLO messages.",
 							},
-							"encrypted_attributes": schema.ListAttribute{
+							"encrypted_attributes": schema.SetAttribute{
 								ElementType: types.StringType,
 								Computed:    true,
 								Optional:    false,
@@ -1384,7 +1384,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Optional:    false,
 						Description: "When selected, four additional token-type requests become available.",
 					},
-					"partner_service_ids": schema.ListAttribute{
+					"partner_service_ids": schema.SetAttribute{
 						ElementType: types.StringType,
 						Computed:    true,
 						Optional:    false,
@@ -1398,7 +1398,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 								"attribute_sources":              datasourceattributesources.ToDataSourceSchema(),
 								"idp_token_processor_ref":        datasourceresourcelink.ToDataSourceSchemaSingleNestedAttributeCustomDescription("Reference to the associated token processor."),
 								"issuance_criteria":              datasourceissuancecriteria.ToDataSourceSchema(),
-								"restricted_virtual_entity_ids": schema.ListAttribute{
+								"restricted_virtual_entity_ids": schema.SetAttribute{
 									ElementType: types.StringType,
 									Computed:    true,
 									Optional:    false,

@@ -61,7 +61,7 @@ var (
 				"id":                        types.StringType,
 				"serial_number":             types.StringType,
 				"subject_dn":                types.StringType,
-				"subject_alternative_names": types.ListType{ElemType: types.StringType},
+				"subject_alternative_names": types.SetType{ElemType: types.StringType},
 				"issuer_dn":                 types.StringType,
 				"valid_from":                types.StringType,
 				"expires":                   types.StringType,
@@ -147,7 +147,7 @@ var (
 	}
 
 	extendedPropertiesElemAttrTypes = map[string]attr.Type{
-		"values": types.ListType{ElemType: types.StringType},
+		"values": types.SetType{ElemType: types.StringType},
 	}
 
 	spBrowserSsoAttributeAttrType = types.ObjectType{
@@ -176,7 +176,7 @@ var (
 	authenticationPolicyContractAssertionMappingsElemType = types.ObjectType{AttrTypes: map[string]attr.Type{
 		"authentication_policy_contract_ref": resourceLinkObjectType,
 		"restrict_virtual_entity_ids":        types.BoolType,
-		"restricted_virtual_entity_ids":      types.ListType{ElemType: types.StringType},
+		"restricted_virtual_entity_ids":      types.SetType{ElemType: types.StringType},
 		"abort_sso_transaction_as_fail_safe": types.BoolType,
 		"attribute_sources":                  types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
 		"attribute_contract_fulfillment":     attributeContractFulfillmentAttrType,
@@ -228,7 +228,7 @@ var (
 		"require_signed_authn_requests": types.BoolType,
 		"encryption_policy": types.ObjectType{AttrTypes: map[string]attr.Type{
 			"encrypt_assertion":             types.BoolType,
-			"encrypted_attributes":          types.ListType{ElemType: types.StringType},
+			"encrypted_attributes":          types.SetType{ElemType: types.StringType},
 			"encrypt_slo_subject_name_id":   types.BoolType,
 			"slo_subject_name_id_encrypted": types.BoolType,
 		}},
@@ -239,7 +239,7 @@ var (
 		"adapter_mappings": types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
 			"idp_adapter_ref":               resourceLinkObjectType,
 			"restrict_virtual_entity_ids":   types.BoolType,
-			"restricted_virtual_entity_ids": types.ListType{ElemType: types.StringType},
+			"restricted_virtual_entity_ids": types.SetType{ElemType: types.StringType},
 			"adapter_override_settings": types.ObjectType{AttrTypes: map[string]attr.Type{
 				"id":                    types.StringType,
 				"name":                  types.StringType,
@@ -291,7 +291,7 @@ var (
 		"message_expression": types.StringType,
 	}}
 	wsTrustAttrTypes = map[string]attr.Type{
-		"partner_service_ids":      types.ListType{ElemType: types.StringType},
+		"partner_service_ids":      types.SetType{ElemType: types.StringType},
 		"oauth_assertion_profiles": types.BoolType,
 		"default_token_type":       types.StringType,
 		"generate_key":             types.BoolType,
@@ -304,7 +304,7 @@ var (
 		}},
 		"token_processor_mappings": types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
 			"idp_token_processor_ref":        resourceLinkObjectType,
-			"restricted_virtual_entity_ids":  types.ListType{ElemType: types.StringType},
+			"restricted_virtual_entity_ids":  types.SetType{ElemType: types.StringType},
 			"attribute_sources":              types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
 			"attribute_contract_fulfillment": attributeContractFulfillmentAttrType,
 			"issuance_criteria":              issuanceCriteriaAttrType,
@@ -437,7 +437,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								),
 							},
 						},
-						"subject_alternative_names": schema.ListAttribute{
+						"subject_alternative_names": schema.SetAttribute{
 							ElementType: types.StringType,
 							Computed:    true,
 							Description: "The subject alternative names (SAN).",
@@ -808,13 +808,12 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 				Attributes: map[string]schema.Attribute{
 					"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
 					"attribute_sources":              attributesources.ToSchema(1, false),
-					"attributes": schema.ListAttribute{
+					"attributes": schema.SetAttribute{
 						ElementType: types.StringType,
 						Required:    true,
 						Description: "The list of attributes that may be returned to the SP in the response to an attribute request.",
-						Validators: []validator.List{
-							listvalidator.UniqueValues(),
-							listvalidator.SizeAtLeast(1),
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
 						},
 					},
 					"issuance_criteria": issuancecriteria.ToSchema(),
@@ -1079,11 +1078,11 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 			"extended_properties": schema.MapNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
-						"values": schema.ListAttribute{
+						"values": schema.SetAttribute{
 							ElementType: types.StringType,
 							Optional:    true,
 							Computed:    true,
-							Default:     listdefault.StaticValue(emptyStringList),
+							Default:     setdefault.StaticValue(emptyStringSet),
 							Description: "A List of values",
 						},
 					},
@@ -1387,18 +1386,18 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 												stringvalidator.LengthAtLeast(1),
 											},
 										},
-										"sub_attributes": schema.ListAttribute{
+										"sub_attributes": schema.SetAttribute{
 											ElementType: types.StringType,
 											Optional:    true,
 											Computed:    true,
-											Default:     listdefault.StaticValue(emptyStringList),
+											Default:     setdefault.StaticValue(emptyStringSet),
 											Description: "List of sub-attributes for an attribute.",
 										},
-										"types": schema.ListAttribute{
+										"types": schema.SetAttribute{
 											ElementType: types.StringType,
 											Optional:    true,
 											Computed:    true,
-											Default:     listdefault.StaticValue(emptyStringList),
+											Default:     setdefault.StaticValue(emptyStringSet),
 											Description: "Represents the name of each attribute type in case of multi-valued attribute.",
 										},
 									},
@@ -1527,11 +1526,11 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Optional:    true,
 									Description: "Restricts this mapping to specific virtual entity IDs.",
 								},
-								"restricted_virtual_entity_ids": schema.ListAttribute{
+								"restricted_virtual_entity_ids": schema.SetAttribute{
 									ElementType: types.StringType,
 									Optional:    true,
 									Computed:    true,
-									Default:     listdefault.StaticValue(emptyStringList),
+									Default:     setdefault.StaticValue(emptyStringSet),
 									Description: "The list of virtual server IDs that this mapping is restricted to.",
 								},
 							},
@@ -1625,9 +1624,11 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Optional:    true,
 									Description: "Restricts this mapping to specific virtual entity IDs.",
 								},
-								"restricted_virtual_entity_ids": schema.ListAttribute{
+								"restricted_virtual_entity_ids": schema.SetAttribute{
 									ElementType: types.StringType,
 									Optional:    true,
+									Computed:    true,
+									Default:     setdefault.StaticValue(emptyStringSet),
 									Description: "The list of virtual server IDs that this mapping is restricted to.",
 								},
 							},
@@ -1662,11 +1663,11 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Optional:    true,
 								Description: "Encrypt the name-identifier attribute in outbound SLO messages.  This can be set if the name id is encrypted.",
 							},
-							"encrypted_attributes": schema.ListAttribute{
+							"encrypted_attributes": schema.SetAttribute{
 								ElementType: types.StringType,
 								Optional:    true,
 								Computed:    true,
-								Default:     listdefault.StaticValue(emptyStringList),
+								Default:     setdefault.StaticValue(emptyStringSet),
 								Description: "The list of outgoing SAML assertion attributes that will be encrypted. The `encrypt_assertion` property takes precedence over this.",
 							},
 							"slo_subject_name_id_encrypted": schema.BoolAttribute{
@@ -1948,7 +1949,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Optional:    true,
 						Description: "When selected, four additional token-type requests become available.",
 					},
-					"partner_service_ids": schema.ListAttribute{
+					"partner_service_ids": schema.SetAttribute{
 						ElementType: types.StringType,
 						Required:    true,
 						Description: "The partner service identifiers.",
@@ -1961,11 +1962,11 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								"attribute_sources":              attributesources.ToSchema(0, false),
 								"idp_token_processor_ref":        resourcelink.CompleteSingleNestedAttribute(false, false, true, "Reference to the associated token processor."),
 								"issuance_criteria":              issuancecriteria.ToSchema(),
-								"restricted_virtual_entity_ids": schema.ListAttribute{
+								"restricted_virtual_entity_ids": schema.SetAttribute{
 									ElementType: types.StringType,
 									Optional:    true,
 									Computed:    true,
-									Default:     listdefault.StaticValue(emptyStringList),
+									Default:     setdefault.StaticValue(emptyStringSet),
 									Description: "The list of virtual server IDs that this mapping is restricted to.",
 								},
 							},
@@ -2174,7 +2175,7 @@ func addOptionalIdpSpconnectionFields(ctx context.Context, addRequest *client.Sp
 		addRequest.AttributeQuery = &client.SpAttributeQuery{}
 
 		addRequest.AttributeQuery.Attributes = []string{}
-		for _, attribute := range plan.AttributeQuery.Attributes()["attributes"].(types.List).Elements() {
+		for _, attribute := range plan.AttributeQuery.Attributes()["attributes"].(types.Set).Elements() {
 			addRequest.AttributeQuery.Attributes = append(addRequest.AttributeQuery.Attributes, attribute.(types.String).ValueString())
 		}
 
@@ -2386,7 +2387,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	attributeQueryAttrTypes := map[string]attr.Type{
 		"attribute_contract_fulfillment": types.MapType{ElemType: attributeQueryAttributeContractFulfillmentElementType},
 		"attribute_sources":              types.SetType{ElemType: attributeQueryAttributeSourcesElementType},
-		"attributes":                     types.ListType{ElemType: types.StringType},
+		"attributes":                     types.SetType{ElemType: types.StringType},
 		"issuance_criteria":              types.ObjectType{AttrTypes: attributeQueryIssuanceCriteriaAttrTypes},
 		"policy":                         types.ObjectType{AttrTypes: attributeQueryPolicyAttrTypes},
 	}
@@ -2398,7 +2399,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		respDiags.Append(diags...)
 		attributeQueryAttributeSourcesValue, diags := attributesources.ToState(context.Background(), response.AttributeQuery.AttributeSources)
 		respDiags.Append(diags...)
-		attributeQueryAttributesValue, diags := types.ListValueFrom(context.Background(), types.StringType, response.AttributeQuery.Attributes)
+		attributeQueryAttributesValue, diags := types.SetValueFrom(context.Background(), types.StringType, response.AttributeQuery.Attributes)
 		respDiags.Append(diags...)
 		attributeQueryIssuanceCriteriaValue, diags := issuancecriteria.ToState(context.Background(), response.AttributeQuery.IssuanceCriteria)
 		respDiags.Append(diags...)
@@ -2471,7 +2472,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		"sha256fingerprint":         types.StringType,
 		"signature_algorithm":       types.StringType,
 		"status":                    types.StringType,
-		"subject_alternative_names": types.ListType{ElemType: types.StringType},
+		"subject_alternative_names": types.SetType{ElemType: types.StringType},
 		"subject_dn":                types.StringType,
 		"valid_from":                types.StringType,
 		"version":                   types.Int64Type,
@@ -2505,7 +2506,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		"sha256fingerprint":         types.StringType,
 		"signature_algorithm":       types.StringType,
 		"status":                    types.StringType,
-		"subject_alternative_names": types.ListType{ElemType: types.StringType},
+		"subject_alternative_names": types.SetType{ElemType: types.StringType},
 		"subject_dn":                types.StringType,
 		"valid_from":                types.StringType,
 		"version":                   types.Int64Type,
@@ -2592,7 +2593,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			if credentialsCertsResponseValue.CertView == nil {
 				credentialsCertsCertViewValue = types.ObjectNull(credentialsCertsCertViewAttrTypes)
 			} else {
-				credentialsCertsCertViewSubjectAlternativeNamesValue, diags := types.ListValueFrom(context.Background(), types.StringType, credentialsCertsResponseValue.CertView.SubjectAlternativeNames)
+				credentialsCertsCertViewSubjectAlternativeNamesValue, diags := types.SetValueFrom(context.Background(), types.StringType, credentialsCertsResponseValue.CertView.SubjectAlternativeNames)
 				respDiags.Append(diags...)
 				credentialsCertsCertViewValue, diags = types.ObjectValue(credentialsCertsCertViewAttrTypes, map[string]attr.Value{
 					"crypto_provider":           types.StringPointerValue(credentialsCertsResponseValue.CertView.CryptoProvider),
@@ -2651,7 +2652,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				if credentialsInboundBackChannelAuthCertsResponseValue.CertView == nil {
 					credentialsInboundBackChannelAuthCertsCertViewValue = types.ObjectNull(credentialsInboundBackChannelAuthCertsCertViewAttrTypes)
 				} else {
-					credentialsInboundBackChannelAuthCertsCertViewSubjectAlternativeNamesValue, diags := types.ListValueFrom(context.Background(), types.StringType, credentialsInboundBackChannelAuthCertsResponseValue.CertView.SubjectAlternativeNames)
+					credentialsInboundBackChannelAuthCertsCertViewSubjectAlternativeNamesValue, diags := types.SetValueFrom(context.Background(), types.StringType, credentialsInboundBackChannelAuthCertsResponseValue.CertView.SubjectAlternativeNames)
 					respDiags.Append(diags...)
 					credentialsInboundBackChannelAuthCertsCertViewValue, diags = types.ObjectValue(credentialsInboundBackChannelAuthCertsCertViewAttrTypes, map[string]attr.Value{
 						"crypto_provider":           types.StringPointerValue(credentialsInboundBackChannelAuthCertsResponseValue.CertView.CryptoProvider),
@@ -2809,7 +2810,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	state.EntityId = types.StringValue(response.EntityId)
 	// extended_properties
 	extendedPropertiesAttrTypes := map[string]attr.Type{
-		"values": types.ListType{ElemType: types.StringType},
+		"values": types.SetType{ElemType: types.StringType},
 	}
 	extendedPropertiesElementType := types.ObjectType{AttrTypes: extendedPropertiesAttrTypes}
 	var extendedPropertiesValue types.Map
@@ -2818,7 +2819,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	} else {
 		extendedPropertiesValues := make(map[string]attr.Value)
 		for key, extendedPropertiesResponseValue := range *response.ExtendedProperties {
-			extendedPropertiesValuesValue, diags := types.ListValueFrom(context.Background(), types.StringType, extendedPropertiesResponseValue.Values)
+			extendedPropertiesValuesValue, diags := types.SetValueFrom(context.Background(), types.StringType, extendedPropertiesResponseValue.Values)
 			respDiags.Append(diags...)
 			extendedPropertiesValue, diags := types.ObjectValue(extendedPropertiesAttrTypes, map[string]attr.Value{
 				"values": extendedPropertiesValuesValue,
@@ -2932,8 +2933,8 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	outboundProvisionCustomSchemaAttributesAttrTypes := map[string]attr.Type{
 		"multi_valued":   types.BoolType,
 		"name":           types.StringType,
-		"sub_attributes": types.ListType{ElemType: types.StringType},
-		"types":          types.ListType{ElemType: types.StringType},
+		"sub_attributes": types.SetType{ElemType: types.StringType},
+		"types":          types.SetType{ElemType: types.StringType},
 	}
 	outboundProvisionCustomSchemaAttributesElementType := types.ObjectType{AttrTypes: outboundProvisionCustomSchemaAttributesAttrTypes}
 	outboundProvisionCustomSchemaAttrTypes := map[string]attr.Type{
@@ -3035,9 +3036,9 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		} else {
 			var outboundProvisionCustomSchemaAttributesValues []attr.Value
 			for _, outboundProvisionCustomSchemaAttributesResponseValue := range response.OutboundProvision.CustomSchema.Attributes {
-				outboundProvisionCustomSchemaAttributesSubAttributesValue, diags := types.ListValueFrom(context.Background(), types.StringType, outboundProvisionCustomSchemaAttributesResponseValue.SubAttributes)
+				outboundProvisionCustomSchemaAttributesSubAttributesValue, diags := types.SetValueFrom(context.Background(), types.StringType, outboundProvisionCustomSchemaAttributesResponseValue.SubAttributes)
 				respDiags.Append(diags...)
-				outboundProvisionCustomSchemaAttributesTypesValue, diags := types.ListValueFrom(context.Background(), types.StringType, outboundProvisionCustomSchemaAttributesResponseValue.Types)
+				outboundProvisionCustomSchemaAttributesTypesValue, diags := types.SetValueFrom(context.Background(), types.StringType, outboundProvisionCustomSchemaAttributesResponseValue.Types)
 				respDiags.Append(diags...)
 				outboundProvisionCustomSchemaAttributesValue, diags := types.ObjectValue(outboundProvisionCustomSchemaAttributesAttrTypes, map[string]attr.Value{
 					"multi_valued":   types.BoolPointerValue(outboundProvisionCustomSchemaAttributesResponseValue.MultiValued),
@@ -3131,7 +3132,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		"idp_adapter_ref":                    types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsIdpAdapterRefAttrTypes},
 		"issuance_criteria":                  types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsIssuanceCriteriaAttrTypes},
 		"restrict_virtual_entity_ids":        types.BoolType,
-		"restricted_virtual_entity_ids":      types.ListType{ElemType: types.StringType},
+		"restricted_virtual_entity_ids":      types.SetType{ElemType: types.StringType},
 	}
 	spBrowserSsoAdapterMappingsElementType := types.ObjectType{AttrTypes: spBrowserSsoAdapterMappingsAttrTypes}
 	spBrowserSsoArtifactResolverLocationsAttrTypes := map[string]attr.Type{
@@ -3177,13 +3178,13 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		"authentication_policy_contract_ref": types.ObjectType{AttrTypes: spBrowserSsoAuthenticationPolicyContractAssertionMappingsAuthenticationPolicyContractRefAttrTypes},
 		"issuance_criteria":                  types.ObjectType{AttrTypes: spBrowserSsoAuthenticationPolicyContractAssertionMappingsIssuanceCriteriaAttrTypes},
 		"restrict_virtual_entity_ids":        types.BoolType,
-		"restricted_virtual_entity_ids":      types.ListType{ElemType: types.StringType},
+		"restricted_virtual_entity_ids":      types.SetType{ElemType: types.StringType},
 	}
 	spBrowserSsoAuthenticationPolicyContractAssertionMappingsElementType := types.ObjectType{AttrTypes: spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttrTypes}
 	spBrowserSsoEncryptionPolicyAttrTypes := map[string]attr.Type{
 		"encrypt_assertion":             types.BoolType,
 		"encrypt_slo_subject_name_id":   types.BoolType,
-		"encrypted_attributes":          types.ListType{ElemType: types.StringType},
+		"encrypted_attributes":          types.SetType{ElemType: types.StringType},
 		"slo_subject_name_id_encrypted": types.BoolType,
 	}
 	spBrowserSsoMessageCustomizationsAttrTypes := map[string]attr.Type{
@@ -3341,7 +3342,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			}
 			spBrowserSsoAdapterMappingsIssuanceCriteriaValue, diags := issuancecriteria.ToState(context.Background(), spBrowserSsoAdapterMappingsResponseValue.IssuanceCriteria)
 			respDiags.Append(diags...)
-			spBrowserSsoAdapterMappingsRestrictedVirtualEntityIdsValue, diags := types.ListValueFrom(context.Background(), types.StringType, spBrowserSsoAdapterMappingsResponseValue.RestrictedVirtualEntityIds)
+			spBrowserSsoAdapterMappingsRestrictedVirtualEntityIdsValue, diags := types.SetValueFrom(context.Background(), types.StringType, spBrowserSsoAdapterMappingsResponseValue.RestrictedVirtualEntityIds)
 			respDiags.Append(diags...)
 			spBrowserSsoAdapterMappingsValue, diags := types.ObjectValue(spBrowserSsoAdapterMappingsAttrTypes, map[string]attr.Value{
 				"abort_sso_transaction_as_fail_safe": types.BoolPointerValue(spBrowserSsoAdapterMappingsResponseValue.AbortSsoTransactionAsFailSafe),
@@ -3424,7 +3425,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			respDiags.Append(diags...)
 			spBrowserSsoAuthenticationPolicyContractAssertionMappingsIssuanceCriteriaValue, diags := issuancecriteria.ToState(context.Background(), spBrowserSsoAuthenticationPolicyContractAssertionMappingsResponseValue.IssuanceCriteria)
 			respDiags.Append(diags...)
-			spBrowserSsoAuthenticationPolicyContractAssertionMappingsRestrictedVirtualEntityIdsValue, diags := types.ListValueFrom(context.Background(), types.StringType, spBrowserSsoAuthenticationPolicyContractAssertionMappingsResponseValue.RestrictedVirtualEntityIds)
+			spBrowserSsoAuthenticationPolicyContractAssertionMappingsRestrictedVirtualEntityIdsValue, diags := types.SetValueFrom(context.Background(), types.StringType, spBrowserSsoAuthenticationPolicyContractAssertionMappingsResponseValue.RestrictedVirtualEntityIds)
 			respDiags.Append(diags...)
 			spBrowserSsoAuthenticationPolicyContractAssertionMappingsValue, diags := types.ObjectValue(spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttrTypes, map[string]attr.Value{
 				"abort_sso_transaction_as_fail_safe": types.BoolPointerValue(spBrowserSsoAuthenticationPolicyContractAssertionMappingsResponseValue.AbortSsoTransactionAsFailSafe),
@@ -3446,7 +3447,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		if response.SpBrowserSso.EncryptionPolicy == nil {
 			spBrowserSsoEncryptionPolicyValue = types.ObjectNull(spBrowserSsoEncryptionPolicyAttrTypes)
 		} else {
-			spBrowserSsoEncryptionPolicyEncryptedAttributesValue, diags := types.ListValueFrom(context.Background(), types.StringType, response.SpBrowserSso.EncryptionPolicy.EncryptedAttributes)
+			spBrowserSsoEncryptionPolicyEncryptedAttributesValue, diags := types.SetValueFrom(context.Background(), types.StringType, response.SpBrowserSso.EncryptionPolicy.EncryptedAttributes)
 			respDiags.Append(diags...)
 			spBrowserSsoEncryptionPolicyValue, diags = types.ObjectValue(spBrowserSsoEncryptionPolicyAttrTypes, map[string]attr.Value{
 				"encrypt_assertion":             types.BoolPointerValue(response.SpBrowserSso.EncryptionPolicy.EncryptAssertion),
@@ -3587,7 +3588,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		"attribute_sources":              types.SetType{ElemType: wsTrustTokenProcessorMappingsAttributeSourcesElementType},
 		"idp_token_processor_ref":        types.ObjectType{AttrTypes: wsTrustTokenProcessorMappingsIdpTokenProcessorRefAttrTypes},
 		"issuance_criteria":              types.ObjectType{AttrTypes: wsTrustTokenProcessorMappingsIssuanceCriteriaAttrTypes},
-		"restricted_virtual_entity_ids":  types.ListType{ElemType: types.StringType},
+		"restricted_virtual_entity_ids":  types.SetType{ElemType: types.StringType},
 	}
 	wsTrustTokenProcessorMappingsElementType := types.ObjectType{AttrTypes: wsTrustTokenProcessorMappingsAttrTypes}
 	wsTrustAttrTypes := map[string]attr.Type{
@@ -3600,7 +3601,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		"minutes_after":                       types.Int64Type,
 		"minutes_before":                      types.Int64Type,
 		"oauth_assertion_profiles":            types.BoolType,
-		"partner_service_ids":                 types.ListType{ElemType: types.StringType},
+		"partner_service_ids":                 types.SetType{ElemType: types.StringType},
 		"request_contract_ref":                types.ObjectType{AttrTypes: wsTrustRequestContractRefAttrTypes},
 		"token_processor_mappings":            types.ListType{ElemType: wsTrustTokenProcessorMappingsElementType},
 	}
@@ -3646,7 +3647,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		}
 		wsTrustMessageCustomizationsValue, diags := types.ListValue(wsTrustMessageCustomizationsElementType, wsTrustMessageCustomizationsValues)
 		respDiags.Append(diags...)
-		wsTrustPartnerServiceIdsValue, diags := types.ListValueFrom(context.Background(), types.StringType, response.WsTrust.PartnerServiceIds)
+		wsTrustPartnerServiceIdsValue, diags := types.SetValueFrom(context.Background(), types.StringType, response.WsTrust.PartnerServiceIds)
 		respDiags.Append(diags...)
 		var wsTrustRequestContractRefValue types.Object
 		if response.WsTrust.RequestContractRef == nil {
@@ -3669,7 +3670,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			respDiags.Append(diags...)
 			wsTrustTokenProcessorMappingsIssuanceCriteriaValue, diags := issuancecriteria.ToState(context.Background(), wsTrustTokenProcessorMappingsResponseValue.IssuanceCriteria)
 			respDiags.Append(diags...)
-			wsTrustTokenProcessorMappingsRestrictedVirtualEntityIdsValue, diags := types.ListValueFrom(context.Background(), types.StringType, wsTrustTokenProcessorMappingsResponseValue.RestrictedVirtualEntityIds)
+			wsTrustTokenProcessorMappingsRestrictedVirtualEntityIdsValue, diags := types.SetValueFrom(context.Background(), types.StringType, wsTrustTokenProcessorMappingsResponseValue.RestrictedVirtualEntityIds)
 			respDiags.Append(diags...)
 			wsTrustTokenProcessorMappingsValue, diags := types.ObjectValue(wsTrustTokenProcessorMappingsAttrTypes, map[string]attr.Value{
 				"attribute_contract_fulfillment": wsTrustTokenProcessorMappingsAttributeContractFulfillmentValue,
@@ -3703,170 +3704,6 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	state.WsTrust = wsTrustValue
 	return respDiags
 }
-
-/*func readIdpSpconnectionResourceResponse(ctx context.Context, r *client.SpConnection, state *idpSpConnectionModel, plan *idpSpConnectionModel) diag.Diagnostics {
-	var diags, respDiags diag.Diagnostics
-	diags.Append(readIdpSpconnectionResponseCommon(ctx, r, state)...)
-
-	if r.AttributeQuery != nil {
-		attributeQueryValues := map[string]attr.Value{}
-		attributeQueryValues["attributes"], respDiags = types.ListValueFrom(ctx, types.StringType, r.AttributeQuery.Attributes)
-		diags.Append(respDiags...)
-
-		attributeQueryValues["attribute_contract_fulfillment"], respDiags = types.MapValueFrom(ctx, attributeContractFulfillmentElemAttrType, r.AttributeQuery.AttributeContractFulfillment)
-		diags.Append(respDiags...)
-
-		attributeQueryValues["issuance_criteria"], respDiags = issuancecriteria.ToState(ctx, r.AttributeQuery.IssuanceCriteria)
-		diags.Append(respDiags...)
-
-		attributeQueryValues["policy"], respDiags = types.ObjectValueFrom(ctx, policyAttrTypes, r.AttributeQuery.Policy)
-		diags.Append(respDiags...)
-
-		attributeQueryValues["attribute_sources"], respDiags = attributesources.ToState(ctx, r.AttributeQuery.AttributeSources)
-		diags.Append(respDiags...)
-
-		state.AttributeQuery, respDiags = types.ObjectValueFrom(ctx, attributeQueryAttrTypes, r.AttributeQuery)
-		diags.Append(respDiags...)
-	} else {
-		state.AttributeQuery = types.ObjectNull(attributeQueryAttrTypes)
-	}
-
-	if r.OutboundProvision != nil {
-		outboundProvisionAttrs := map[string]attr.Value{
-			"type": types.StringValue(r.OutboundProvision.Type),
-		}
-
-		// PF can return extra target_settings that were not included in the request
-		plannedTargetSettingsNames := []string{}
-		plannedTargetSettingsValues := map[string]string{}
-		if internaltypes.IsDefined(plan.OutboundProvision) {
-			targetSettings := plan.OutboundProvision.Attributes()["target_settings"].(types.List)
-			for _, plannedTargetSettings := range targetSettings.Elements() {
-				nameStrVal := plannedTargetSettings.(types.Object).Attributes()["name"].(types.String)
-				if internaltypes.IsDefined(nameStrVal) {
-					plannedTargetSettingsNames = append(plannedTargetSettingsNames, nameStrVal.ValueString())
-
-					valueStrVal := plannedTargetSettings.(types.Object).Attributes()["value"].(types.String)
-					plannedTargetSettingsValues[nameStrVal.ValueString()] = valueStrVal.ValueString()
-				}
-			}
-		}
-
-		targetSettingsSlice := []attr.Value{}
-		targetSettingsAllSlice := []attr.Value{}
-		for _, targetSettings := range r.OutboundProvision.TargetSettings {
-			value := types.StringPointerValue(targetSettings.Value)
-
-			// Check if this object was in the plan
-			inPlan := false
-			for _, name := range plannedTargetSettingsNames {
-				if name == targetSettings.Name {
-					inPlan = true
-
-					// If PF returns nil for the value, then it must be encrypted. Just use the value from the plan in that case
-					if targetSettings.Value == nil {
-						value = types.StringValue(plannedTargetSettingsValues[targetSettings.Name])
-					}
-					break
-				}
-			}
-			targetSettingsObj, respDiags := types.ObjectValue(targetSettingsElemAttrType.AttrTypes, map[string]attr.Value{
-				"name":  types.StringValue(targetSettings.Name),
-				"value": value,
-			})
-			diags.Append(respDiags...)
-			if inPlan {
-				targetSettingsSlice = append(targetSettingsSlice, targetSettingsObj)
-			}
-			targetSettingsAllSlice = append(targetSettingsAllSlice, targetSettingsObj)
-		}
-		outboundProvisionAttrs["target_settings"], respDiags = types.ListValue(targetSettingsElemAttrType, targetSettingsSlice)
-		diags.Append(respDiags...)
-		outboundProvisionAttrs["target_settings_all"], respDiags = types.ListValue(targetSettingsElemAttrType, targetSettingsAllSlice)
-		diags.Append(respDiags...)
-
-		outboundProvisionAttrs["custom_schema"], respDiags = types.ObjectValueFrom(ctx, customSchemaAttrTypes, r.OutboundProvision.CustomSchema)
-		diags.Append(respDiags...)
-
-		channels := []types.Object{}
-		plannedChannels := []attr.Value{}
-		plannedChannelsAttr := plan.OutboundProvision.Attributes()["channels"]
-		if plannedChannelsAttr != nil {
-			plannedChannels = plannedChannelsAttr.(types.List).Elements()
-		}
-		numPlannedChannels := len(plannedChannels)
-		for i, channel := range r.OutboundProvision.Channels {
-			channelAttrs := map[string]attr.Value{
-				"active":      types.BoolValue(channel.Active),
-				"name":        types.StringValue(channel.Name),
-				"max_threads": types.Int64Value(channel.MaxThreads),
-				"timeout":     types.Int64Value(channel.Timeout),
-			}
-
-			channelAttrs["channel_source"], respDiags = types.ObjectValueFrom(ctx, channelSourceAttrTypes, channel.ChannelSource)
-			diags.Append(respDiags...)
-
-			// PF can return extra attribute_mapping elements that were not included in the request
-			attributeMappingNamesInPlan := []string{}
-			if i < numPlannedChannels {
-				plannedChannel := plannedChannels[i].(types.Object)
-				plannedMapping := plannedChannel.Attributes()["attribute_mapping"].(types.Set)
-				if internaltypes.IsDefined(plannedMapping) {
-					for _, mapping := range plannedMapping.Elements() {
-						mappingObj := mapping.(types.Object)
-						if internaltypes.IsDefined(mappingObj) {
-							attributeMappingNamesInPlan = append(attributeMappingNamesInPlan, mappingObj.Attributes()["field_name"].(types.String).ValueString())
-						}
-					}
-				}
-			}
-
-			attributeMappingSlice := []attr.Value{}
-			attributeMappingAllSlice := []attr.Value{}
-			for _, attributeMapping := range channel.AttributeMapping {
-				attributeMappingAttrValues := map[string]attr.Value{
-					"field_name": types.StringValue(attributeMapping.FieldName),
-				}
-
-				attributeMappingAttrValues["saas_field_info"], respDiags = types.ObjectValueFrom(ctx, saasFieldInfoAttrTypes, attributeMapping.SaasFieldInfo)
-				diags.Append(respDiags...)
-
-				attributeMappingObj, respDiags := types.ObjectValue(attributeMappingElemAttrTypes.AttrTypes, attributeMappingAttrValues)
-				diags.Append(respDiags...)
-
-				// Check if this object was in the plan
-				inPlan := false
-				for _, attributeMappingNameInPlan := range attributeMappingNamesInPlan {
-					if attributeMappingNameInPlan == attributeMapping.FieldName {
-						inPlan = true
-						break
-					}
-				}
-				if inPlan {
-					attributeMappingSlice = append(attributeMappingSlice, attributeMappingObj)
-				}
-				attributeMappingAllSlice = append(attributeMappingAllSlice, attributeMappingObj)
-			}
-			channelAttrs["attribute_mapping"], respDiags = types.SetValue(attributeMappingElemAttrTypes, attributeMappingSlice)
-			diags.Append(respDiags...)
-			channelAttrs["attribute_mapping_all"], respDiags = types.SetValue(attributeMappingElemAttrTypes, attributeMappingAllSlice)
-			diags.Append(respDiags...)
-
-			channelObj, respDiags := types.ObjectValue(channelsElemAttrType.AttrTypes, channelAttrs)
-			diags.Append(respDiags...)
-			channels = append(channels, channelObj)
-		}
-		outboundProvisionAttrs["channels"], respDiags = types.ListValueFrom(ctx, channelsElemAttrType, channels)
-		diags.Append(respDiags...)
-
-		state.OutboundProvision, respDiags = types.ObjectValue(outboundProvisionAttrTypes, outboundProvisionAttrs)
-		diags.Append(respDiags...)
-	} else {
-		state.OutboundProvision = types.ObjectNull(outboundProvisionAttrTypes)
-	}
-
-	return diags
-}*/
 
 func (r *idpSpConnectionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan idpSpConnectionModel
