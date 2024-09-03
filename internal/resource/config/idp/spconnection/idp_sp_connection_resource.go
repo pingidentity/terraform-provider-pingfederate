@@ -1656,7 +1656,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							},
 							"encrypt_slo_subject_name_id": schema.BoolAttribute{
 								Optional:    true,
-								Description: "Encrypt the name-identifier attribute in outbound SLO messages.  This can be set if the name id is encrypted.",
+								Description: "Encrypt the name-identifier attribute in outbound SLO messages. This can be set if the name id is encrypted.",
 							},
 							"encrypted_attributes": schema.SetAttribute{
 								ElementType: types.StringType,
@@ -2019,6 +2019,27 @@ func (r *idpSpConnectionResource) ValidateConfig(ctx context.Context, req resour
 		}
 	} else if len(virtualIds) > 0 && config.DefaultVirtualEntityId.IsNull() {
 		resp.Diagnostics.AddError("The 'default_virtual_entity_id' attribute must be set when 'virtual_entity_ids' is non-empty.", "")
+	}
+
+	if internaltypes.IsDefined(config.SpBrowserSso) {
+		encryptionPolicy := config.SpBrowserSso.Attributes()["encryption_policy"].(types.Object)
+		if internaltypes.IsDefined(encryptionPolicy) {
+			encryptAssertion := encryptionPolicy.Attributes()["encrypt_assertion"].(types.Bool)
+			encryptionAttributes := encryptionPolicy.Attributes()["encrypted_attributes"].(types.Set)
+			if encryptAssertion.ValueBool() && len(encryptionAttributes.Elements()) > 0 {
+				resp.Diagnostics.AddError("The 'encrypted_attributes' attribute cannot be configured when 'encrypt_assertion' is set to true.", "")
+			}
+		}
+
+		protocol := config.SpBrowserSso.Attributes()["protocol"].(types.String).ValueString()
+		if protocol == "SAML20" {
+			signResponseAsRequired := config.SpBrowserSso.Attributes()["sign_response_as_required"].(types.Bool)
+			signAssertions := config.SpBrowserSso.Attributes()["sign_assertions"].(types.Bool)
+			// Exactly one of the two booleans must be true for SAML20 connections
+			if !signResponseAsRequired.IsUnknown() && !signAssertions.IsUnknown() && signResponseAsRequired.ValueBool() == signAssertions.ValueBool() {
+				resp.Diagnostics.AddError("Exactly one of 'sign_response_as_required' and 'sign_assertions' must be true for SAML 2.0 connections.", "")
+			}
+		}
 	}
 }
 
