@@ -3,6 +3,7 @@ package idpspconnection
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"slices"
 	"time"
 
@@ -947,20 +948,17 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Description: "Incoming HTTP transmissions must use a secure channel.",
 							},
 							"type": schema.StringAttribute{
-								Required:    true,
-								Description: "The back channel authentication type. Options are `INBOUND`, `OUTBOUND`.",
-								Validators: []validator.String{
-									stringvalidator.OneOf(
-										"INBOUND",
-										"OUTBOUND",
-									),
-								},
+								Computed:           true,
+								Default:            stringdefault.StaticString("INBOUND"),
+								Description:        "The back channel authentication type.",
+								DeprecationMessage: "This field is deprecated and will be removed in a future release.",
 							},
 							"verification_issuer_dn": schema.StringAttribute{
 								Optional:    true,
-								Description: "If a verification Subject DN is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
+								Description: "If `verification_subject_dn` is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
 								Validators: []validator.String{
 									stringvalidator.LengthAtLeast(1),
+									stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("verification_subject_dn")),
 								},
 							},
 							"verification_subject_dn": schema.StringAttribute{
@@ -971,7 +969,8 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 							},
 						},
-						Optional: true,
+						Optional:    true,
+						Description: "The SOAP authentication methods when sending or receiving a message using SOAP back channel.",
 					},
 					"key_transport_algorithm": schema.StringAttribute{
 						Optional:    true,
@@ -989,14 +988,10 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 							"http_basic_credentials": httpBasicCredentialsSchema,
 							"ssl_auth_key_pair_ref":  resourcelink.SingleNestedAttribute(),
 							"type": schema.StringAttribute{
-								Required:    true,
-								Description: "The back channel authentication type. Options are `INBOUND`, `OUTBOUND`.",
-								Validators: []validator.String{
-									stringvalidator.OneOf(
-										"INBOUND",
-										"OUTBOUND",
-									),
-								},
+								Computed:           true,
+								Default:            stringdefault.StaticString("OUTBOUND"),
+								Description:        "The back channel authentication type.",
+								DeprecationMessage: "This field is deprecated and will be removed in a future release.",
 							},
 							"validate_partner_cert": schema.BoolAttribute{
 								Optional:    true,
@@ -1005,14 +1000,15 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								Description: "Validate the partner server certificate. Default is `true`.",
 							},
 						},
-						Optional: true,
+						Optional:    true,
+						Description: "The SOAP authentication methods when sending or receiving a message using SOAP back channel.",
 					},
 					"secondary_decryption_key_pair_ref": resourcelink.SingleNestedAttribute(),
 					"signing_settings": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
 							"algorithm": schema.StringAttribute{
 								Optional:    true,
-								Description: "The algorithm used to sign messages sent to this partner. The default is SHA1withDSA for DSA certs, SHA256withRSA for RSA certs, and SHA256withECDSA for EC certs. For RSA certs, SHA1withRSA, SHA384withRSA, SHA512withRSA, SHA256withRSAandMGF1, SHA384withRSAandMGF1 and SHA512withRSAandMGF1 are also supported. For EC certs, SHA384withECDSA and SHA512withECDSA are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512",
+								Description: "The algorithm used to sign messages sent to this partner. The default is `SHA1withDSA` for DSA certs, `SHA256withRSA` for RSA certs, and `SHA256withECDSA` for EC certs. For RSA certs, `SHA1withRSA`, `SHA384withRSA`, `SHA512withRSA`, `SHA256withRSAandMGF1`, `SHA384withRSAandMGF1` and `SHA512withRSAandMGF1` are also supported. For EC certs, `SHA384withECDSA` and `SHA512withECDSA` are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512",
 								Validators: []validator.String{
 									stringvalidator.LengthAtLeast(1),
 								},
@@ -1046,6 +1042,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Description: "If a verification Subject DN is provided, you can optionally restrict the issuer to a specific trusted CA by specifying its DN in this field.",
 						Validators: []validator.String{
 							stringvalidator.LengthAtLeast(1),
+							stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("verification_subject_dn")),
 						},
 					},
 					"verification_subject_dn": schema.StringAttribute{
@@ -1996,6 +1993,33 @@ func (r *idpSpConnectionResource) Configure(_ context.Context, req resource.Conf
 	providerCfg := req.ProviderData.(internaltypes.ResourceConfiguration)
 	r.providerConfig = providerCfg.ProviderConfig
 	r.apiClient = providerCfg.ApiClient
+}
+
+func (r *idpSpConnectionResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var config *idpSpConnectionModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if config == nil {
+		return
+	}
+
+	virtualIds := config.VirtualEntityIds.Elements()
+	if internaltypes.IsDefined(config.DefaultVirtualEntityId) {
+		defaultId := config.DefaultVirtualEntityId.ValueString()
+		found := false
+		for _, id := range virtualIds {
+			if defaultId == id.(types.String).ValueString() {
+				found = true
+				break
+			}
+		}
+		if !found {
+			resp.Diagnostics.AddError("The value provided for 'default_virtual_entity_id' must be included in the 'virtual_entity_ids' list.",
+				fmt.Sprintf("The value '%s' is not included in the 'virtual_entity_ids' list.", defaultId))
+		}
+	} else if len(virtualIds) > 0 && config.DefaultVirtualEntityId.IsNull() {
+		resp.Diagnostics.AddError("The 'default_virtual_entity_id' attribute must be set when 'virtual_entity_ids' is non-empty.", "")
+	}
 }
 
 func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
