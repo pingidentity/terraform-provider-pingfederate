@@ -1721,7 +1721,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"binding": schema.StringAttribute{
-									Required:    true,
+									Optional:    true,
 									Description: "The binding of this endpoint, if applicable - usually only required for SAML 2.0 endpoints. Options are `ARTIFACT`, `POST`, `REDIRECT`, `SOAP`.",
 									Validators: []validator.String{
 										stringvalidator.OneOf(
