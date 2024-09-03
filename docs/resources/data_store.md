@@ -56,18 +56,22 @@ resource "pingfederate_data_store" "pingDirectoryLdapDataStore" {
 ## Example Usage - PingOne LDAP gateway data store
 
 ```terraform
+resource "pingfederate_pingone_connection" "example" {
+  name       = "My PingOne Tenant"
+  credential = var.pingone_connection_credential
+}
+
 resource "pingfederate_data_store" "pingOneLdapDataStore" {
-  mask_attribute_values = false
   ping_one_ldap_gateway_data_store = {
-    name      = "PingOne Gateway Data Store"
+    name      = "PingOne LDAP Gateway"
     ldap_type = "PING_DIRECTORY"
 
     ping_one_connection_ref = {
-      id = var.pingone_connection_id
+      id = pingfederate_pingone_connection.example.id
     }
 
     ping_one_environment_id  = var.pingone_environment_id
-    ping_one_ldap_gateway_id = var.pingone_ldap_gateway_id
+    ping_one_ldap_gateway_id = var.pingone_gateway_id
 
     use_ssl = true
   }
