@@ -108,7 +108,7 @@ resource "pingfederate_data_store" "jdbcDataStore" {
 }
 ```
 
-## Example Usage - PingOne data store
+## Example Usage - PingOne Directory data store
 
 ```terraform
 resource "pingfederate_pingone_connection" "example" {
@@ -185,7 +185,7 @@ resource "pingfederate_data_store" "pingOneDataStore" {
 }
 ```
 
-## Example Usage - Custom data store
+## Example Usage - Custom REST API data store
 
 ```terraform
 resource "pingfederate_data_store" "customDataStore" {
