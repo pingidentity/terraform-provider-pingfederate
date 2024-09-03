@@ -190,7 +190,6 @@ resource "pingfederate_sp_idp_connection" "example" {
     ]
     default_target_url            = "https://example.com"
     always_sign_artifact_response = false
-    sso_service_endpoints         = []
     decryption_policy = {
       assertion_encrypted           = false
       subject_name_id_encrypted     = false

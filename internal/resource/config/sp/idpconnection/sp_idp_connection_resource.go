@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -377,7 +378,7 @@ var (
 		"artifact":                                 types.ObjectType{AttrTypes: idpBrowserSsoArtifactAttrTypes},
 		"assertions_signed":                        types.BoolType,
 		"attribute_contract":                       types.ObjectType{AttrTypes: idpBrowserSsoAttributeContractAttrTypes},
-		"authentication_policy_contract_mappings":  types.SetType{ElemType: idpBrowserSsoAuthenticationPolicyContractMappingsElementType},
+		"authentication_policy_contract_mappings":  types.ListType{ElemType: idpBrowserSsoAuthenticationPolicyContractMappingsElementType},
 		"authn_context_mappings":                   types.SetType{ElemType: idpBrowserSsoAuthnContextMappingsElementType},
 		"decryption_policy":                        types.ObjectType{AttrTypes: idpBrowserSsoDecryptionPolicyAttrTypes},
 		"default_target_url":                       types.StringType,
@@ -643,7 +644,7 @@ type spIdpConnectionResourceModel struct {
 // GetSchema defines the schema for the resource.
 func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	schema := schema.Schema{
-		Description: "Resource to create and manage a SP Idp Connection",
+		Description: "Manages a partner Identity Provider connection",
 		Attributes: map[string]schema.Attribute{
 			"active": schema.BoolAttribute{
 				Optional:            true,
@@ -1388,90 +1389,96 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									},
 								},
 								Optional:            true,
+								Computed:            true,
 								Description:         "A list of additional attributes that are present in the incoming assertion.",
 								MarkdownDescription: "A list of additional attributes that are present in the incoming assertion.",
+								Default:             setdefault.StaticValue(types.SetValueMust(types.ObjectType{AttrTypes: idpBrowserSsoAttributeContractExtendedAttributesAttrTypes}, nil)),
 							},
 						},
 						Optional:            true,
+						Computed:            true,
 						Description:         "A set of user attributes that the IdP sends in the SAML assertion.",
 						MarkdownDescription: "A set of user attributes that the IdP sends in the SAML assertion.",
 					},
-					"authentication_policy_contract_mappings": schema.SetNestedAttribute{
+					"authentication_policy_contract_mappings": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
-								"attribute_contract_fulfillment": schema.MapNestedAttribute{
-									NestedObject: schema.NestedAttributeObject{
-										Attributes: map[string]schema.Attribute{
-											"source": schema.SingleNestedAttribute{
-												Attributes: map[string]schema.Attribute{
-													"id": schema.StringAttribute{
-														Optional:            true,
-														Description:         "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-														MarkdownDescription: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-														Validators: []validator.String{
-															stringvalidator.LengthAtLeast(1),
-														},
-													},
-													"type": schema.StringAttribute{
-														Required:            true,
-														Description:         "The source type of this key. Options are `ACCOUNT_LINK`, `ACTOR_TOKEN`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXPRESSION`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
-														MarkdownDescription: "The source type of this key. Options are `ACCOUNT_LINK`, `ACTOR_TOKEN`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXPRESSION`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
-														Validators: []validator.String{
-															stringvalidator.OneOf(
-																"TOKEN_EXCHANGE_PROCESSOR_POLICY",
-																"ACCOUNT_LINK",
-																"ADAPTER",
-																"ASSERTION",
-																"CONTEXT",
-																"CUSTOM_DATA_STORE",
-																"EXPRESSION",
-																"JDBC_DATA_STORE",
-																"LDAP_DATA_STORE",
-																"PING_ONE_LDAP_GATEWAY_DATA_STORE",
-																"MAPPED_ATTRIBUTES",
-																"NO_MAPPING",
-																"TEXT",
-																"TOKEN",
-																"REQUEST",
-																"OAUTH_PERSISTENT_GRANT",
-																"SUBJECT_TOKEN",
-																"ACTOR_TOKEN",
-																"PASSWORD_CREDENTIAL_VALIDATOR",
-																"IDP_CONNECTION",
-																"AUTHENTICATION_POLICY_CONTRACT",
-																"CLAIMS",
-																"LOCAL_IDENTITY_PROFILE",
-																"EXTENDED_CLIENT_METADATA",
-																"EXTENDED_PROPERTIES",
-																"TRACKED_HTTP_PARAMS",
-																"FRAGMENT",
-																"INPUTS",
-																"ATTRIBUTE_QUERY",
-																"IDENTITY_STORE_USER",
-																"IDENTITY_STORE_GROUP",
-																"SCIM_USER",
-																"SCIM_GROUP",
-															),
-														},
-													},
-												},
-												Required:            true,
-												Description:         "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
-												MarkdownDescription: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
-											},
-											"value": schema.StringAttribute{
-												Computed:            true,
-												Optional:            true,
-												Description:         "The value for this attribute.",
-												MarkdownDescription: "The value for this attribute.",
-												Default:             stringdefault.StaticString(""),
-											},
-										},
-									},
-									Required:            true,
-									Description:         "A list of mappings from attribute names to their fulfillment values.",
-									MarkdownDescription: "A list of mappings from attribute names to their fulfillment values.",
-								},
+								"attribute_contract_fulfillment": attributecontractfulfillment.ToSchema(true, false, false),
+								// 	NestedObject: schema.NestedAttributeObject{
+								// 		Attributes: map[string]schema.Attribute{
+								// 			"source": schema.SingleNestedAttribute{
+								// 				Attributes: map[string]schema.Attribute{
+								// 					"id": schema.StringAttribute{
+								// 						Optional:            true,
+								// 						Description:         "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+								// 						MarkdownDescription: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
+								// 						Validators: []validator.String{
+								// 							stringvalidator.LengthAtLeast(1),
+								// 						},
+								// 					},
+								// 					"type": schema.StringAttribute{
+								// 						Required:            true,
+								// 						Description:         "The source type of this key. Options are `ACCOUNT_LINK`, `ACTOR_TOKEN`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXPRESSION`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
+								// 						MarkdownDescription: "The source type of this key. Options are `ACCOUNT_LINK`, `ACTOR_TOKEN`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXPRESSION`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
+								// 						Validators: []validator.String{
+								// 							stringvalidator.OneOf(
+								// 								"TOKEN_EXCHANGE_PROCESSOR_POLICY",
+								// 								"ACCOUNT_LINK",
+								// 								"ADAPTER",
+								// 								"ASSERTION",
+								// 								"CONTEXT",
+								// 								"CUSTOM_DATA_STORE",
+								// 								"EXPRESSION",
+								// 								"JDBC_DATA_STORE",
+								// 								"LDAP_DATA_STORE",
+								// 								"PING_ONE_LDAP_GATEWAY_DATA_STORE",
+								// 								"MAPPED_ATTRIBUTES",
+								// 								"NO_MAPPING",
+								// 								"TEXT",
+								// 								"TOKEN",
+								// 								"REQUEST",
+								// 								"OAUTH_PERSISTENT_GRANT",
+								// 								"SUBJECT_TOKEN",
+								// 								"ACTOR_TOKEN",
+								// 								"PASSWORD_CREDENTIAL_VALIDATOR",
+								// 								"IDP_CONNECTION",
+								// 								"AUTHENTICATION_POLICY_CONTRACT",
+								// 								"CLAIMS",
+								// 								"LOCAL_IDENTITY_PROFILE",
+								// 								"EXTENDED_CLIENT_METADATA",
+								// 								"EXTENDED_PROPERTIES",
+								// 								"TRACKED_HTTP_PARAMS",
+								// 								"FRAGMENT",
+								// 								"INPUTS",
+								// 								"ATTRIBUTE_QUERY",
+								// 								"IDENTITY_STORE_USER",
+								// 								"IDENTITY_STORE_GROUP",
+								// 								"SCIM_USER",
+								// 								"SCIM_GROUP",
+								// 							),
+								// 						},
+								// 					},
+								// 				},
+								// 				Required:            true,
+								// 				Description:         "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
+								// 				MarkdownDescription: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
+								// 			},
+								// 			"value": schema.StringAttribute{
+								// 				Optional:            true,
+								// 				Computed:            true,
+								// 				Description:         "The value for this attribute.",
+								// 				MarkdownDescription: "The value for this attribute.",
+								// 				Default:             stringdefault.StaticString(""),
+								// 				// Validators: []validator.String{
+								// 				// 	stringvalidator.LengthAtLeast(1),
+								// 				// },
+								// 			},
+								// 		},
+								// 	},
+								// 	Required:            true,
+								// 	Description:         "A list of mappings from attribute names to their fulfillment values.",
+								// 	MarkdownDescription: "A list of mappings from attribute names to their fulfillment values.",
+								// },
 								"attribute_sources": attributesources.ToSchema(0, false),
 								"authentication_policy_contract_ref": schema.SingleNestedAttribute{
 									Attributes:          resourcelink.ToSchema(),
@@ -1479,149 +1486,7 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 									Description:         "A reference to a resource.",
 									MarkdownDescription: "A reference to a resource.",
 								},
-								"issuance_criteria": schema.SingleNestedAttribute{
-									Attributes: map[string]schema.Attribute{
-										"conditional_criteria": schema.SetNestedAttribute{
-											NestedObject: schema.NestedAttributeObject{
-												Attributes: map[string]schema.Attribute{
-													"attribute_name": schema.StringAttribute{
-														Required:            true,
-														Description:         "The name of the attribute to use in this issuance criterion.",
-														MarkdownDescription: "The name of the attribute to use in this issuance criterion.",
-														Validators: []validator.String{
-															stringvalidator.LengthAtLeast(1),
-														},
-													},
-													"condition": schema.StringAttribute{
-														Required:            true,
-														Description:         "The condition that will be applied to the source attribute's value and the expected value. Options are `EQUALS`, `EQUALS_CASE_INSENSITIVE`, `EQUALS_DN`, `NOT_EQUAL`, `NOT_EQUAL_CASE_INSENSITIVE`, `NOT_EQUAL_DN`, `MULTIVALUE_CONTAINS`, `MULTIVALUE_CONTAINS_CASE_INSENSITIVE`, `MULTIVALUE_CONTAINS_DN`, `MULTIVALUE_DOES_NOT_CONTAIN`, `MULTIVALUE_DOES_NOT_CONTAIN_CASE_INSENSITIVE`, `MULTIVALUE_DOES_NOT_CONTAIN_DN`.",
-														MarkdownDescription: "The condition that will be applied to the source attribute's value and the expected value. Options are `EQUALS`, `EQUALS_CASE_INSENSITIVE`, `EQUALS_DN`, `NOT_EQUAL`, `NOT_EQUAL_CASE_INSENSITIVE`, `NOT_EQUAL_DN`, `MULTIVALUE_CONTAINS`, `MULTIVALUE_CONTAINS_CASE_INSENSITIVE`, `MULTIVALUE_CONTAINS_DN`, `MULTIVALUE_DOES_NOT_CONTAIN`, `MULTIVALUE_DOES_NOT_CONTAIN_CASE_INSENSITIVE`, `MULTIVALUE_DOES_NOT_CONTAIN_DN`.",
-														Validators: []validator.String{
-															stringvalidator.OneOf(
-																"EQUALS",
-																"EQUALS_CASE_INSENSITIVE",
-																"EQUALS_DN",
-																"NOT_EQUAL",
-																"NOT_EQUAL_CASE_INSENSITIVE",
-																"NOT_EQUAL_DN",
-																"MULTIVALUE_CONTAINS",
-																"MULTIVALUE_CONTAINS_CASE_INSENSITIVE",
-																"MULTIVALUE_CONTAINS_DN",
-																"MULTIVALUE_DOES_NOT_CONTAIN",
-																"MULTIVALUE_DOES_NOT_CONTAIN_CASE_INSENSITIVE",
-																"MULTIVALUE_DOES_NOT_CONTAIN_DN",
-															),
-														},
-													},
-													"error_result": schema.StringAttribute{
-														Optional:            true,
-														Description:         "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-														MarkdownDescription: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-														Validators: []validator.String{
-															stringvalidator.LengthAtLeast(1),
-														},
-													},
-													"source": schema.SingleNestedAttribute{
-														Attributes: map[string]schema.Attribute{
-															"id": schema.StringAttribute{
-																Optional:            true,
-																Description:         "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-																MarkdownDescription: "The attribute source ID that refers to the attribute source that this key references. In some resources, the ID is optional and will be ignored. In these cases the ID should be omitted. If the source type is not an attribute source then the ID can be omitted.",
-																Validators: []validator.String{
-																	stringvalidator.LengthAtLeast(1),
-																},
-															},
-															"type": schema.StringAttribute{
-																Required:            true,
-																Description:         "The source type of this key. Options are `ACCOUNT_LINK`, `ACTOR_TOKEN`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXPRESSION`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
-																MarkdownDescription: "The source type of this key. Options are `ACCOUNT_LINK`, `ACTOR_TOKEN`, `ADAPTER`, `ASSERTION`, `ATTRIBUTE_QUERY`, `AUTHENTICATION_POLICY_CONTRACT`, `CLAIMS`, `CONTEXT`, `CUSTOM_DATA_STORE`, `EXPRESSION`, `EXTENDED_CLIENT_METADATA`, `EXTENDED_PROPERTIES`, `FRAGMENT`, `IDENTITY_STORE_GROUP`, `IDENTITY_STORE_USER`, `IDP_CONNECTION`, `INPUTS`, `JDBC_DATA_STORE`, `LDAP_DATA_STORE`, `LOCAL_IDENTITY_PROFILE`, `MAPPED_ATTRIBUTES`, `NO_MAPPING`, `OAUTH_PERSISTENT_GRANT`, `PASSWORD_CREDENTIAL_VALIDATOR`, `PING_ONE_LDAP_GATEWAY_DATA_STORE`, `REQUEST`, `SCIM_GROUP`, `SCIM_USER`, `SUBJECT_TOKEN`, `TEXT`, `TOKEN`, `TOKEN_EXCHANGE_PROCESSOR_POLICY`, `TRACKED_HTTP_PARAMS`.",
-																Validators: []validator.String{
-																	stringvalidator.OneOf(
-																		"TOKEN_EXCHANGE_PROCESSOR_POLICY",
-																		"ACCOUNT_LINK",
-																		"ADAPTER",
-																		"ASSERTION",
-																		"CONTEXT",
-																		"CUSTOM_DATA_STORE",
-																		"EXPRESSION",
-																		"JDBC_DATA_STORE",
-																		"LDAP_DATA_STORE",
-																		"PING_ONE_LDAP_GATEWAY_DATA_STORE",
-																		"MAPPED_ATTRIBUTES",
-																		"NO_MAPPING",
-																		"TEXT",
-																		"TOKEN",
-																		"REQUEST",
-																		"OAUTH_PERSISTENT_GRANT",
-																		"SUBJECT_TOKEN",
-																		"ACTOR_TOKEN",
-																		"PASSWORD_CREDENTIAL_VALIDATOR",
-																		"IDP_CONNECTION",
-																		"AUTHENTICATION_POLICY_CONTRACT",
-																		"CLAIMS",
-																		"LOCAL_IDENTITY_PROFILE",
-																		"EXTENDED_CLIENT_METADATA",
-																		"EXTENDED_PROPERTIES",
-																		"TRACKED_HTTP_PARAMS",
-																		"FRAGMENT",
-																		"INPUTS",
-																		"ATTRIBUTE_QUERY",
-																		"IDENTITY_STORE_USER",
-																		"IDENTITY_STORE_GROUP",
-																		"SCIM_USER",
-																		"SCIM_GROUP",
-																	),
-																},
-															},
-														},
-														Required:            true,
-														Description:         "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
-														MarkdownDescription: "A key that is meant to reference a source from which an attribute can be retrieved. This model is usually paired with a value which, depending on the SourceType, can be a hardcoded value or a reference to an attribute name specific to that SourceType. Not all values are applicable - a validation error will be returned for incorrect values.<br>For each SourceType, the value should be:<br>ACCOUNT_LINK - If account linking was enabled for the browser SSO, the value must be 'Local User ID', unless it has been overridden in PingFederate's server configuration.<br>ADAPTER - The value is one of the attributes of the IdP Adapter.<br>ASSERTION - The value is one of the attributes coming from the SAML assertion.<br>AUTHENTICATION_POLICY_CONTRACT - The value is one of the attributes coming from an authentication policy contract.<br>LOCAL_IDENTITY_PROFILE - The value is one of the fields coming from a local identity profile.<br>CONTEXT - The value must be one of the following ['TargetResource' or 'OAuthScopes' or 'ClientId' or 'AuthenticationCtx' or 'ClientIp' or 'Locale' or 'StsBasicAuthUsername' or 'StsSSLClientCertSubjectDN' or 'StsSSLClientCertChain' or 'VirtualServerId' or 'AuthenticatingAuthority' or 'DefaultPersistentGrantLifetime'.]<br>CLAIMS - Attributes provided by the OIDC Provider.<br>CUSTOM_DATA_STORE - The value is one of the attributes returned by this custom data store.<br>EXPRESSION - The value is an OGNL expression.<br>EXTENDED_CLIENT_METADATA - The value is from an OAuth extended client metadata parameter. This source type is deprecated and has been replaced by EXTENDED_PROPERTIES.<br>EXTENDED_PROPERTIES - The value is from an OAuth Client's extended property.<br>IDP_CONNECTION - The value is one of the attributes passed in by the IdP connection.<br>JDBC_DATA_STORE - The value is one of the column names returned from the JDBC attribute source.<br>LDAP_DATA_STORE - The value is one of the LDAP attributes supported by your LDAP data store.<br>MAPPED_ATTRIBUTES - The value is the name of one of the mapped attributes that is defined in the associated attribute mapping.<br>OAUTH_PERSISTENT_GRANT - The value is one of the attributes from the persistent grant.<br>PASSWORD_CREDENTIAL_VALIDATOR - The value is one of the attributes of the PCV.<br>NO_MAPPING - A placeholder value to indicate that an attribute currently has no mapped source.TEXT - A hardcoded value that is used to populate the corresponding attribute.<br>TOKEN - The value is one of the token attributes.<br>REQUEST - The value is from the request context such as the CIBA identity hint contract or the request contract for Ws-Trust.<br>TRACKED_HTTP_PARAMS - The value is from the original request parameters.<br>SUBJECT_TOKEN - The value is one of the OAuth 2.0 Token exchange subject_token attributes.<br>ACTOR_TOKEN - The value is one of the OAuth 2.0 Token exchange actor_token attributes.<br>TOKEN_EXCHANGE_PROCESSOR_POLICY - The value is one of the attributes coming from a Token Exchange Processor policy.<br>FRAGMENT - The value is one of the attributes coming from an authentication policy fragment.<br>INPUTS - The value is one of the attributes coming from an attribute defined in the input authentication policy contract for an authentication policy fragment.<br>ATTRIBUTE_QUERY - The value is one of the user attributes queried from an Attribute Authority.<br>IDENTITY_STORE_USER - The value is one of the attributes from a user identity store provisioner for SCIM processing.<br>IDENTITY_STORE_GROUP - The value is one of the attributes from a group identity store provisioner for SCIM processing.<br>SCIM_USER - The value is one of the attributes passed in from the SCIM user request.<br>SCIM_GROUP - The value is one of the attributes passed in from the SCIM group request.<br>",
-													},
-													"value": schema.StringAttribute{
-														Required:            true,
-														Description:         "The expected value of this issuance criterion.",
-														MarkdownDescription: "The expected value of this issuance criterion.",
-														Validators: []validator.String{
-															stringvalidator.LengthAtLeast(1),
-														},
-													},
-												},
-											},
-											Optional:            true,
-											Description:         "A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue.",
-											MarkdownDescription: "A list of conditional issuance criteria where existing attributes must satisfy their conditions against expected values in order for the transaction to continue.",
-										},
-										"expression_criteria": schema.SetNestedAttribute{
-											NestedObject: schema.NestedAttributeObject{
-												Attributes: map[string]schema.Attribute{
-													"error_result": schema.StringAttribute{
-														Optional:            true,
-														Description:         "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-														MarkdownDescription: "The error result to return if this issuance criterion fails. This error result will show up in the PingFederate server logs.",
-														Validators: []validator.String{
-															stringvalidator.LengthAtLeast(1),
-														},
-													},
-													"expression": schema.StringAttribute{
-														Required:            true,
-														Description:         "The OGNL expression to evaluate.",
-														MarkdownDescription: "The OGNL expression to evaluate.",
-														Validators: []validator.String{
-															stringvalidator.LengthAtLeast(1),
-														},
-													},
-												},
-											},
-											Optional:            true,
-											Description:         "A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue.",
-											MarkdownDescription: "A list of expression issuance criteria where the OGNL expressions must evaluate to true in order for the transaction to continue.",
-										},
-									},
-									Optional:            true,
-									Description:         "A list of criteria that determines whether a transaction (usually a SSO transaction) is continued. All criteria must pass in order for the transaction to continue.",
-									MarkdownDescription: "A list of criteria that determines whether a transaction (usually a SSO transaction) is continued. All criteria must pass in order for the transaction to continue.",
-								},
+								"issuance_criteria": issuancecriteria.ToSchema(),
 								"restrict_virtual_server_ids": schema.BoolAttribute{
 									Optional:            true,
 									Description:         "Restricts this mapping to specific virtual entity IDs.",
@@ -2532,6 +2397,9 @@ func (r *spIdpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Optional:            true,
 						Description:         "The IdP SSO endpoints that define where to send your authentication requests. Only required for SP initiated SSO. This is required for SAML x.x and WS-FED Connections.",
 						MarkdownDescription: "The IdP SSO endpoints that define where to send your authentication requests. Only required for SP initiated SSO. This is required for SAML x.x and WS-FED Connections.",
+						Validators: []validator.Set{
+							setvalidator.SizeAtLeast(1),
+						},
 					},
 					"url_whitelist_entries": schema.SetNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -3731,7 +3599,7 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 		addRequest.IdpBrowserSso = &client.IdpBrowserSso{}
 
 		userRepository := plan.IdpBrowserSso.Attributes()["jit_provisioning"].(types.Object).Attributes()["user_repository"]
-		if userRepository != nil {
+		if userRepository != nil && internaltypes.IsDefined(userRepository) {
 			jdbcDataStoreRepository := plan.IdpBrowserSso.Attributes()["jit_provisioning"].(types.Object).Attributes()["user_repository"].(types.Object).Attributes()["jdbc"]
 			ldapDataStoreRepository := plan.IdpBrowserSso.Attributes()["jit_provisioning"].(types.Object).Attributes()["user_repository"].(types.Object).Attributes()["ldap"]
 			if jdbcDataStoreRepository != nil {
@@ -3750,7 +3618,7 @@ func addOptionalSpIdpConnectionFields(ctx context.Context, addRequest *client.Id
 		}
 
 		ssoOAuthMapping := plan.IdpBrowserSso.Attributes()["sso_oauth_mapping"]
-		if ssoOAuthMapping != nil {
+		if internaltypes.IsDefined(ssoOAuthMapping) {
 			addRequest.IdpBrowserSso.SsoOAuthMapping = &client.SsoOAuthMapping{}
 
 			attributeSources := ssoOAuthMapping.(types.Object).Attributes()["attribute_sources"]
@@ -4156,8 +4024,8 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		idpBrowserSsoValue = types.ObjectNull(idpBrowserSsoAttrTypes)
 	} else {
 		var idpBrowserSsoAdapterMappingsValues []attr.Value
-		var idpBrowserSsoAdapterMappingsValue types.Set
-		if r.IdpBrowserSso.AdapterMappings != nil {
+		idpBrowserSsoAdapterMappingsValue := types.SetNull(idpBrowserSsoAdapterMappingsElementType)
+		if r.IdpBrowserSso.AdapterMappings != nil && len(r.IdpBrowserSso.AdapterMappings) > 0 {
 			for i, idpBrowserSsoAdapterMappingsResponseValue := range r.IdpBrowserSso.AdapterMappings {
 				var idpBrowserSsoAdapterMappingsAdapterOverrideSettingsValue types.Object
 				if idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings == nil {
@@ -4266,8 +4134,6 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 			}
 			idpBrowserSsoAdapterMappingsValue, diags = types.SetValue(idpBrowserSsoAdapterMappingsElementType, idpBrowserSsoAdapterMappingsValues)
 			diags.Append(objDiags...)
-		} else {
-			idpBrowserSsoAdapterMappingsValue = types.SetNull(idpBrowserSsoAdapterMappingsElementType)
 		}
 
 		// IdpBrowserSSO Always Sign Artifact Response
@@ -4287,7 +4153,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		diags.Append(objDiags...)
 
 		// IdpBrowserSSO Authentication Policy Contract Mappings
-		idpBrowserSsoAuthenticationPolicyContractMappingsValue, objDiags := types.SetValueFrom(ctx, idpBrowserSsoAuthenticationPolicyContractMappingsElementType, r.IdpBrowserSso.AuthenticationPolicyContractMappings)
+		idpBrowserSsoAuthenticationPolicyContractMappingsValue, objDiags := types.ListValueFrom(ctx, idpBrowserSsoAuthenticationPolicyContractMappingsElementType, r.IdpBrowserSso.AuthenticationPolicyContractMappings)
 		diags.Append(objDiags...)
 
 		// IdpBrowserSSO AuthnContextMappings
@@ -4332,8 +4198,11 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 		diags.Append(objDiags...)
 
 		// IdpBrowserSSO SSO Service Endpoints
-		idpBrowserSsoSsoServiceEndpointsValue, objDiags := types.SetValueFrom(ctx, idpBrowserSsoSsoServiceEndpointsElementType, r.IdpBrowserSso.SsoServiceEndpoints)
-		diags.Append(objDiags...)
+		idpBrowserSsoSsoServiceEndpointsValue := types.SetNull(idpBrowserSsoSsoServiceEndpointsElementType)
+		if r.IdpBrowserSso.SsoServiceEndpoints != nil && len(r.IdpBrowserSso.SsoServiceEndpoints) > 0 {
+			idpBrowserSsoSsoServiceEndpointsValue, objDiags = types.SetValueFrom(ctx, idpBrowserSsoSsoServiceEndpointsElementType, r.IdpBrowserSso.SsoServiceEndpoints)
+			diags.Append(objDiags...)
+		}
 
 		// IdpBrowserSSO URL Whitelist Entries
 		idpBrowserSsoUrlWhitelistEntriesValue, objDiags := types.SetValueFrom(ctx, idpBrowserSsoUrlWhitelistEntriesElementType, r.IdpBrowserSso.UrlWhitelistEntries)
