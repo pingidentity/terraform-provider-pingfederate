@@ -20,6 +20,7 @@ provider "pingfederate" {
 
 
 resource "pingfederate_idp_sp_connection" "wsFedSpBrowserSSOExample" {
+#   name          = "wsfedspconn1"
   connection_id = "connectionId"
   name          = "wsfedspconn1"
   entity_id     = "wsfed1"

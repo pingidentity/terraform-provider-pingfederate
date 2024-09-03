@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
@@ -337,8 +336,8 @@ var (
 	}}
 	outboundProvisionAttrTypes = map[string]attr.Type{
 		"type":                types.StringType,
-		"target_settings":     types.ListType{ElemType: targetSettingsElemAttrType},
-		"target_settings_all": types.ListType{ElemType: targetSettingsElemAttrType},
+		"target_settings":     types.SetType{ElemType: targetSettingsElemAttrType},
+		"target_settings_all": types.SetType{ElemType: targetSettingsElemAttrType},
 		"custom_schema":       types.ObjectType{AttrTypes: customSchemaAttrTypes},
 		"channels":            types.ListType{ElemType: channelsElemAttrType},
 	}
@@ -1372,7 +1371,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 					},
 					"custom_schema": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
-							"attributes": schema.ListNestedAttribute{
+							"attributes": schema.SetNestedAttribute{
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"multi_valued": schema.BoolAttribute{
@@ -1404,7 +1403,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 								},
 								Optional: true,
 								Computed: true,
-								Default:  listdefault.StaticValue(types.ListValueMust(attributesElemType, nil)),
+								Default:  setdefault.StaticValue(types.SetValueMust(attributesElemType, nil)),
 							},
 							"namespace": schema.StringAttribute{
 								Optional: true,
@@ -1416,16 +1415,16 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 						Optional:    true,
 						Description: "Custom SCIM Attributes configuration.",
 					},
-					"target_settings_all": schema.ListNestedAttribute{
+					"target_settings_all": schema.SetNestedAttribute{
 						NestedObject: outboundProvisionTargetSettingsNestedObject,
 						Optional:     false,
 						Computed:     true,
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.UseStateForUnknown(),
+						PlanModifiers: []planmodifier.Set{
+							setplanmodifier.UseStateForUnknown(),
 						},
 						Description: "Configuration fields that includes credentials to target SaaS application. This attribute will include any values set by default by PingFederate.",
 					},
-					"target_settings": schema.ListNestedAttribute{
+					"target_settings": schema.SetNestedAttribute{
 						NestedObject: outboundProvisionTargetSettingsNestedObject,
 						Required:     true,
 						Description:  "Configuration fields that includes credentials to target SaaS application.",
@@ -2014,10 +2013,10 @@ func (r *idpSpConnectionResource) ModifyPlan(ctx context.Context, req resource.M
 		// If the plan for target_settings has changed, then set target_settings_all to Unknown.
 		planAttrs := plan.OutboundProvision.Attributes()
 		stateAttrs := state.OutboundProvision.Attributes()
-		planTargetSettings := planAttrs["target_settings"].(types.List)
-		stateTargetSettings := stateAttrs["target_settings"].(types.List)
+		planTargetSettings := planAttrs["target_settings"].(types.Set)
+		stateTargetSettings := stateAttrs["target_settings"].(types.Set)
 		if !planTargetSettings.Equal(stateTargetSettings) {
-			planAttrs["target_settings_all"] = types.ListUnknown(targetSettingsElemAttrType)
+			planAttrs["target_settings_all"] = types.SetUnknown(targetSettingsElemAttrType)
 		}
 
 		// If the plan for channels has changed, then set attribute_mapping_all to Unknown.
@@ -2293,11 +2292,11 @@ func (state *idpSpConnectionModel) buildAttributeMappingAttrs(channelName string
 
 // Returns the target_settings and target_settings_all attributes, where the _all attribute
 // includes any values added in the response by PingFed
-func (state *idpSpConnectionModel) buildTargetSettingsAttrs(responseTargetSettings []client.ConfigField) (types.List, types.List, diag.Diagnostics) {
+func (state *idpSpConnectionModel) buildTargetSettingsAttrs(responseTargetSettings []client.ConfigField) (types.Set, types.Set, diag.Diagnostics) {
 	// Get a list of target_setting names that were expected based on the state
 	expectedTargetSettingsValues := map[string]string{}
 	if internaltypes.IsDefined(state.OutboundProvision) {
-		for _, targetSetting := range state.OutboundProvision.Attributes()["target_settings"].(types.List).Elements() {
+		for _, targetSetting := range state.OutboundProvision.Attributes()["target_settings"].(types.Set).Elements() {
 			targetSettingsAttrs := targetSetting.(types.Object).Attributes()
 			expectedTargetSettingsValues[targetSettingsAttrs["name"].(types.String).ValueString()] = targetSettingsAttrs["value"].(types.String).ValueString()
 		}
@@ -2321,9 +2320,9 @@ func (state *idpSpConnectionModel) buildTargetSettingsAttrs(responseTargetSettin
 			expectedTargetSettings = append(expectedTargetSettings, outboundProvisionTargetSettingsValue)
 		}
 	}
-	targetSettingsAll, diags := types.ListValue(targetSettingsElemAttrType, allTargetSettings)
+	targetSettingsAll, diags := types.SetValue(targetSettingsElemAttrType, allTargetSettings)
 	respDiags.Append(diags...)
-	targetSettings, diags := types.ListValue(targetSettingsElemAttrType, expectedTargetSettings)
+	targetSettings, diags := types.SetValue(targetSettingsElemAttrType, expectedTargetSettings)
 	respDiags.Append(diags...)
 	return targetSettings, targetSettingsAll, respDiags
 }
@@ -2938,7 +2937,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	}
 	outboundProvisionCustomSchemaAttributesElementType := types.ObjectType{AttrTypes: outboundProvisionCustomSchemaAttributesAttrTypes}
 	outboundProvisionCustomSchemaAttrTypes := map[string]attr.Type{
-		"attributes": types.ListType{ElemType: outboundProvisionCustomSchemaAttributesElementType},
+		"attributes": types.SetType{ElemType: outboundProvisionCustomSchemaAttributesElementType},
 		"namespace":  types.StringType,
 	}
 	outboundProvisionTargetSettingsAttrTypes := map[string]attr.Type{
@@ -2949,8 +2948,8 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	outboundProvisionAttrTypes := map[string]attr.Type{
 		"channels":            types.ListType{ElemType: outboundProvisionChannelsElementType},
 		"custom_schema":       types.ObjectType{AttrTypes: outboundProvisionCustomSchemaAttrTypes},
-		"target_settings":     types.ListType{ElemType: outboundProvisionTargetSettingsElementType},
-		"target_settings_all": types.ListType{ElemType: outboundProvisionTargetSettingsElementType},
+		"target_settings":     types.SetType{ElemType: outboundProvisionTargetSettingsElementType},
+		"target_settings_all": types.SetType{ElemType: outboundProvisionTargetSettingsElementType},
 		"type":                types.StringType,
 	}
 	var outboundProvisionValue types.Object
@@ -3049,7 +3048,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				respDiags.Append(diags...)
 				outboundProvisionCustomSchemaAttributesValues = append(outboundProvisionCustomSchemaAttributesValues, outboundProvisionCustomSchemaAttributesValue)
 			}
-			outboundProvisionCustomSchemaAttributesValue, diags := types.ListValue(outboundProvisionCustomSchemaAttributesElementType, outboundProvisionCustomSchemaAttributesValues)
+			outboundProvisionCustomSchemaAttributesValue, diags := types.SetValue(outboundProvisionCustomSchemaAttributesElementType, outboundProvisionCustomSchemaAttributesValues)
 			respDiags.Append(diags...)
 			outboundProvisionCustomSchemaValue, diags = types.ObjectValue(outboundProvisionCustomSchemaAttrTypes, map[string]attr.Value{
 				"attributes": outboundProvisionCustomSchemaAttributesValue,

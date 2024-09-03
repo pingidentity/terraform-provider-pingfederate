@@ -56,7 +56,7 @@ var (
 
 	customSchemaAttrTypes = map[string]attr.Type{
 		"namespace":  types.StringType,
-		"attributes": types.ListType{ElemType: attributesElemType},
+		"attributes": types.SetType{ElemType: attributesElemType},
 	}
 
 	saasFieldInfoAttrTypes = map[string]attr.Type{

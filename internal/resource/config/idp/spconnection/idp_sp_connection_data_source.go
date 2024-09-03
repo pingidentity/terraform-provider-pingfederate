@@ -44,7 +44,7 @@ var (
 
 	outboundProvisionDataSourceAttrTypes = map[string]attr.Type{
 		"type":            types.StringType,
-		"target_settings": types.ListType{ElemType: targetSettingsDataSourceElemAttrType},
+		"target_settings": types.SetType{ElemType: targetSettingsDataSourceElemAttrType},
 		"custom_schema":   types.ObjectType{AttrTypes: customSchemaAttrTypes},
 		"channels":        types.ListType{ElemType: channelsElemDataSourceAttrType},
 	}
@@ -873,7 +873,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 					},
 					"custom_schema": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
-							"attributes": schema.ListNestedAttribute{
+							"attributes": schema.SetNestedAttribute{
 								NestedObject: schema.NestedAttributeObject{
 									Attributes: map[string]schema.Attribute{
 										"multi_valued": schema.BoolAttribute{
@@ -912,7 +912,7 @@ func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.S
 						Optional:    false,
 						Description: "Custom SCIM Attributes configuration.",
 					},
-					"target_settings": schema.ListNestedAttribute{
+					"target_settings": schema.SetNestedAttribute{
 						NestedObject: outboundProvisionTargetSettingsNestedObject,
 						Computed:     true,
 						Optional:     false,
