@@ -63,7 +63,7 @@ type idpSpConnectionDataSource struct {
 
 // GetSchema defines the schema for the datasource.
 func (r *idpSpConnectionDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	certsSchema := schema.ListNestedAttribute{
+	certsSchema := schema.SetNestedAttribute{
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
 				"active_verification_cert": schema.BoolAttribute{

@@ -99,7 +99,7 @@ var (
 		"user_source_location":  channelSourceLocationAttrType,
 		"group_source_location": channelSourceLocationAttrType,
 	}
-	certsDefault, _ = types.ListValue(certsListType.ElemType, nil)
+	certsDefault, _ = types.SetValue(certsListType.ElemType, nil)
 )
 
 func readIdpSpconnectionResponseCommon(ctx context.Context, r *client.SpConnection, state *idpSpConnectionModel) diag.Diagnostics {

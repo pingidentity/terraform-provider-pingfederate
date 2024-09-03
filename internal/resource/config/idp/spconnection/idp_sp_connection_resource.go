@@ -55,7 +55,7 @@ var (
 		"metadata_url_ref":            resourceLinkObjectType,
 	}
 
-	certsListType = types.ListType{
+	certsListType = types.SetType{
 		ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
 			"cert_view": types.ObjectType{AttrTypes: map[string]attr.Type{
 				"id":                        types.StringType,
@@ -370,7 +370,7 @@ type idpSpConnectionResource struct {
 
 // GetSchema defines the schema for the resource.
 func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
-	certsSchema := schema.ListNestedAttribute{
+	certsSchema := schema.SetNestedAttribute{
 		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
 				"active_verification_cert": schema.BoolAttribute{
@@ -509,7 +509,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 		},
 		Optional:    true,
 		Computed:    true,
-		Default:     listdefault.StaticValue(certsDefault),
+		Default:     setdefault.StaticValue(certsDefault),
 		Description: "The certificates used for signature verification and XML encryption.",
 	}
 
@@ -2531,7 +2531,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		"username":           types.StringType,
 	}
 	credentialsInboundBackChannelAuthAttrTypes := map[string]attr.Type{
-		"certs":                   types.ListType{ElemType: credentialsInboundBackChannelAuthCertsElementType},
+		"certs":                   types.SetType{ElemType: credentialsInboundBackChannelAuthCertsElementType},
 		"digital_signature":       types.BoolType,
 		"http_basic_credentials":  types.ObjectType{AttrTypes: credentialsInboundBackChannelAuthHttpBasicCredentialsAttrTypes},
 		"require_ssl":             types.BoolType,
@@ -2573,7 +2573,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 	}
 	credentialsAttrTypes := map[string]attr.Type{
 		"block_encryption_algorithm":        types.StringType,
-		"certs":                             types.ListType{ElemType: credentialsCertsElementType},
+		"certs":                             types.SetType{ElemType: credentialsCertsElementType},
 		"decryption_key_pair_ref":           types.ObjectType{AttrTypes: credentialsDecryptionKeyPairRefAttrTypes},
 		"inbound_back_channel_auth":         types.ObjectType{AttrTypes: credentialsInboundBackChannelAuthAttrTypes},
 		"key_transport_algorithm":           types.StringType,
@@ -2631,7 +2631,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			respDiags.Append(diags...)
 			credentialsCertsValues = append(credentialsCertsValues, credentialsCertsValue)
 		}
-		credentialsCertsValue, diags := types.ListValue(credentialsCertsElementType, credentialsCertsValues)
+		credentialsCertsValue, diags := types.SetValue(credentialsCertsElementType, credentialsCertsValues)
 		respDiags.Append(diags...)
 		var credentialsDecryptionKeyPairRefValue types.Object
 		if response.Credentials.DecryptionKeyPairRef == nil {
@@ -2690,7 +2690,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				respDiags.Append(diags...)
 				credentialsInboundBackChannelAuthCertsValues = append(credentialsInboundBackChannelAuthCertsValues, credentialsInboundBackChannelAuthCertsValue)
 			}
-			credentialsInboundBackChannelAuthCertsValue, diags := types.ListValue(credentialsInboundBackChannelAuthCertsElementType, credentialsInboundBackChannelAuthCertsValues)
+			credentialsInboundBackChannelAuthCertsValue, diags := types.SetValue(credentialsInboundBackChannelAuthCertsElementType, credentialsInboundBackChannelAuthCertsValues)
 			respDiags.Append(diags...)
 			var credentialsInboundBackChannelAuthHttpBasicCredentialsValue types.Object
 			if response.Credentials.InboundBackChannelAuth.HttpBasicCredentials == nil {
