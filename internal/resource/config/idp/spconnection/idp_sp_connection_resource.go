@@ -342,8 +342,7 @@ var (
 		"channels":            types.ListType{ElemType: channelsElemAttrType},
 	}
 
-	emptyStringSet, _  = types.SetValue(types.StringType, nil)
-	emptyStringList, _ = types.ListValue(types.StringType, nil)
+	emptyStringSet, _ = types.SetValue(types.StringType, nil)
 
 	groupSourceLocationDefault, _ = types.ObjectValue(channelSourceLocationAttrType.AttrTypes, map[string]attr.Value{
 		"filter":        types.StringNull(),
@@ -3330,7 +3329,8 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				if spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.AttributeMapping == nil {
 					spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingValue = types.ObjectNull(spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttrTypes)
 				} else {
-					spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.AttributeMapping.AttributeContractFulfillment)
+					contractFulfillment := spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.AttributeMapping.AttributeContractFulfillment
+					spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &contractFulfillment)
 					respDiags.Append(diags...)
 					spBrowserSsoAdapterMappingsAdapterOverrideSettingsAttributeMappingAttributeSourcesValue, diags := attributesources.ToState(context.Background(), spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.AttributeMapping.AttributeSources)
 					respDiags.Append(diags...)
@@ -3343,7 +3343,8 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 					})
 					respDiags.Append(diags...)
 				}
-				spBrowserSsoAdapterMappingsAdapterOverrideSettingsConfigurationValue, diags := pluginconfiguration.ToState(state.getSpBrowserSsoAdapterMappingsAdapterOverrideSettingsConfiguration(adapterMappingIndex), &spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.Configuration)
+				overrideSettingsConfiguration := spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.Configuration
+				spBrowserSsoAdapterMappingsAdapterOverrideSettingsConfigurationValue, diags := pluginconfiguration.ToState(state.getSpBrowserSsoAdapterMappingsAdapterOverrideSettingsConfiguration(adapterMappingIndex), &overrideSettingsConfiguration)
 				respDiags.Append(diags...)
 				var spBrowserSsoAdapterMappingsAdapterOverrideSettingsParentRefValue types.Object
 				if spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.ParentRef == nil {
@@ -3370,7 +3371,8 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 				})
 				respDiags.Append(diags...)
 			}
-			spBrowserSsoAdapterMappingsAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &spBrowserSsoAdapterMappingsResponseValue.AttributeContractFulfillment)
+			contractFulfillment := spBrowserSsoAdapterMappingsResponseValue.AttributeContractFulfillment
+			spBrowserSsoAdapterMappingsAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &contractFulfillment)
 			respDiags.Append(diags...)
 			spBrowserSsoAdapterMappingsAttributeSourcesValue, diags := attributesources.ToState(context.Background(), spBrowserSsoAdapterMappingsResponseValue.AttributeSources)
 			respDiags.Append(diags...)
@@ -3458,7 +3460,8 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		respDiags.Append(diags...)
 		var spBrowserSsoAuthenticationPolicyContractAssertionMappingsValues []attr.Value
 		for _, spBrowserSsoAuthenticationPolicyContractAssertionMappingsResponseValue := range response.SpBrowserSso.AuthenticationPolicyContractAssertionMappings {
-			spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &spBrowserSsoAuthenticationPolicyContractAssertionMappingsResponseValue.AttributeContractFulfillment)
+			contractFulfillment := spBrowserSsoAuthenticationPolicyContractAssertionMappingsResponseValue.AttributeContractFulfillment
+			spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &contractFulfillment)
 			respDiags.Append(diags...)
 			spBrowserSsoAuthenticationPolicyContractAssertionMappingsAttributeSourcesValue, diags := attributesources.ToState(context.Background(), spBrowserSsoAuthenticationPolicyContractAssertionMappingsResponseValue.AttributeSources)
 			respDiags.Append(diags...)
@@ -3703,7 +3706,8 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		}
 		var wsTrustTokenProcessorMappingsValues []attr.Value
 		for _, wsTrustTokenProcessorMappingsResponseValue := range response.WsTrust.TokenProcessorMappings {
-			wsTrustTokenProcessorMappingsAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &wsTrustTokenProcessorMappingsResponseValue.AttributeContractFulfillment)
+			contractFulfillment := wsTrustTokenProcessorMappingsResponseValue.AttributeContractFulfillment
+			wsTrustTokenProcessorMappingsAttributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &contractFulfillment)
 			respDiags.Append(diags...)
 			wsTrustTokenProcessorMappingsAttributeSourcesValue, diags := attributesources.ToState(context.Background(), wsTrustTokenProcessorMappingsResponseValue.AttributeSources)
 			respDiags.Append(diags...)
