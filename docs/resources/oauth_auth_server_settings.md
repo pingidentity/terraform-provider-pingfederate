@@ -14,76 +14,120 @@ Manages the OAuth authorization server settings.
 ## Example Usage
 
 ```terraform
-resource "pingfederate_oauth_auth_server_settings" "oauthAuthServerSettings" {
-  authorization_code_entropy          = 20
-  authorization_code_timeout          = 50
-  bypass_activation_code_confirmation = false
-  default_scope_description           = "example"
-  device_polling_interval             = 1
-  pending_authorization_timeout       = 550
-  refresh_rolling_interval            = 1
-  refresh_token_length                = 40
-  registered_authorization_path       = "/example"
-  scopes = [
-    {
-      name        = "examplescope",
-      description = "example scope",
-      dynamic     = false
-    }
-  ]
-  scope_groups = [
-    {
-      name        = "examplescopegroup",
-      description = "example scope group"
-      scopes      = ["examplescope"]
-    }
-  ]
-  exclusive_scopes = [
-    {
-      name        = "exampleexclusivescope",
-      description = "example scope",
-      dynamic     = false
-    }
-  ]
-  exclusive_scope_groups = [
-    {
-      name        = "exampleexclusivescopegroup",
-      description = "example exclusive scope group"
-      scopes      = ["exampleexclusivescope"]
-    }
-  ]
+resource "pingfederate_oauth_auth_server_settings" "example" {
+  authorization_code_entropy               = 20
+  authorization_code_timeout               = 50
   disallow_plain_pkce                      = false
   include_issuer_in_authorization_response = false
-  persistent_grant_lifetime                = -1
-  persistent_grant_lifetime_unit           = "DAYS"
-  persistent_grant_idle_timeout            = 30
-  persistent_grant_idle_timeout_time_unit  = "DAYS"
-  roll_refresh_token_values                = true
-  refresh_token_rolling_grace_period       = 0
-  persistent_grant_reuse_grant_types       = []
+  track_user_sessions_for_logout           = false
+  client_secret_retention_period           = 0
+
+  # Pushed Authorization Request (PAR) Settings
+  par_status            = "ENABLED"
+  par_reference_timeout = 60
+  par_reference_length  = 24
+
+  # Refresh Token and Persistent Grant Settings
+  persistent_grant_lifetime                  = -1
+  persistent_grant_lifetime_unit             = "DAYS"
+  persistent_grant_idle_timeout              = 30
+  persistent_grant_idle_timeout_time_unit    = "DAYS"
+  refresh_token_length                       = 40
+  roll_refresh_token_values                  = true
+  refresh_rolling_interval                   = 1
+  refresh_token_rolling_grace_period         = 0
+  allow_unidentified_client_ro_creds         = false
+  allow_unidentified_client_extension_grants = false
+
+  # Persistent Grant Extended Attributes
   persistent_grant_contract = {
     extended_attributes = [
       {
-        name = "example_extended_attribute"
-      }
+        name = "Persistent Grant Attribute 1"
+      },
+      {
+        name = "Persistent Grant Attribute 2"
+      },
     ]
   }
-  bypass_authorization_for_approved_grants         = false
-  allow_unidentified_client_ro_creds               = false
-  allow_unidentified_client_extension_grants       = false
-  token_endpoint_base_url                          = ""
-  user_authorization_url                           = ""
-  activation_code_check_mode                       = "BEFORE_AUTHENTICATION"
-  user_authorization_consent_page_setting          = "INTERNAL"
-  atm_id_for_oauth_grant_management                = ""
-  scope_for_oauth_grant_management                 = ""
-  allowed_origins                                  = []
-  track_user_sessions_for_logout                   = false
-  par_reference_timeout                            = 60
-  par_reference_length                             = 24
-  par_status                                       = "ENABLED"
-  client_secret_retention_period                   = 0
+
+  # Authorization Consent
+  bypass_authorization_for_approved_grants   = false
+  bypass_authorization_for_approved_consents = false
+  user_authorization_consent_page_setting    = "INTERNAL"
+
+  # Cross-Origin Resource Sharing Settings
+  allowed_origins = [
+    "https://bxretail.org/path1/*",
+    "https://bxretail.org/path/*",
+    "https://bxretail.org/*",
+  ]
+
+  # Device Authorization Grant Settings
+  user_authorization_url              = "https://bxretail.org/device"
+  registered_authorization_path       = "/deviceAuthz"
+  pending_authorization_timeout       = 550
+  device_polling_interval             = 1
+  activation_code_check_mode          = "BEFORE_AUTHENTICATION"
+  bypass_activation_code_confirmation = false
+
+  # JWT Secured Authorization Response Mode (JARM)
   jwt_secured_authorization_response_mode_lifetime = 600
+
+  # Demonstrating Proof-of-Possession (DPoP)
+  dpop_proof_require_nonce             = false
+  dpop_proof_enforce_replay_prevention = false
+
+  # Scopes
+  scopes = [
+    {
+      name        = "my_custom_user_data",
+      description = "A scope to represent the user's custom data in an application",
+    },
+    {
+      name        = "delegated_custom_user_data",
+      description = "A scope to represent the other user's custom data in an application, that the current user has access to",
+    },
+    {
+      name        = "custom_app_data_*",
+      description = "A scope to represent dynamic custom application data in an application",
+      dynamic     = true
+    }
+  ]
+
+  scope_groups = [
+    {
+      name        = "custom_user_data",
+      description = "A scope group that represents all custom user data in an application that a user should have access to"
+      scopes = [
+        "delegated_custom_user_data",
+        "my_custom_user_data",
+      ]
+    }
+  ]
+
+  # Exclusive Scopes
+  exclusive_scopes = [
+    {
+      name        = "data_app1_a",
+      description = "A scope to represent data that is exclusive to the app1 client",
+    },
+    {
+      name        = "data_app1_b",
+      description = "A scope to represent additional data that is exclusive to the app1 client",
+    },
+  ]
+
+  exclusive_scope_groups = [
+    {
+      name        = "data_app1",
+      description = "A scope group to represent all the scoped data that is exclusive to the app1 client"
+      scopes = [
+        "data_app1_a",
+        "data_app1_b",
+      ]
+    }
+  ]
 }
 ```
 
@@ -99,53 +143,53 @@ resource "pingfederate_oauth_auth_server_settings" "oauthAuthServerSettings" {
 
 ### Optional
 
-- `activation_code_check_mode` (String) Determines whether the user is prompted to enter or confirm the activation code after authenticating or before. The default is AFTER_AUTHENTICATION.
+- `activation_code_check_mode` (String) Determines whether the user is prompted to enter or confirm the activation code after authenticating or before. Supported values are `AFTER_AUTHENTICATION` and `BEFORE_AUTHENTICATION`. The default value is `AFTER_AUTHENTICATION`.
 - `admin_web_service_pcv_ref` (Attributes) The password credential validator reference that is used for authenticating access to the OAuth Administrative Web Service. (see [below for nested schema](#nestedatt--admin_web_service_pcv_ref))
-- `allow_unidentified_client_extension_grants` (Boolean) Allow unidentified clients to request extension grants. The default value is false.
-- `allow_unidentified_client_ro_creds` (Boolean) Allow unidentified clients to request resource owner password credentials grants. The default value is false.
-- `allowed_origins` (List of String) The list of allowed origins.
+- `allow_unidentified_client_extension_grants` (Boolean) Allow unidentified clients to request extension grants. The default value is `false`.
+- `allow_unidentified_client_ro_creds` (Boolean) Allow unidentified clients to request resource owner password credentials grants. The default value is `false`.
+- `allowed_origins` (Set of String) The list of allowed origins.
 - `approved_authorization_detail_attribute` (String) Attribute from the external consent adapter's contract, intended for storing approved authorization details returned by the external consent page.
 - `approved_scopes_attribute` (String) Attribute from the external consent adapter's contract, intended for storing approved scopes returned by the external consent page.
 - `atm_id_for_oauth_grant_management` (String) The ID of the Access Token Manager used for OAuth enabled grant management.
-- `bypass_activation_code_confirmation` (Boolean) Indicates if the Activation Code Confirmation page should be bypassed if 'verification_url_complete' is used by the end user to authorize a device. The default is false.
-- `bypass_authorization_for_approved_consents` (Boolean) Bypass authorization for previously approved consents. The default value is false. Supported in PF version 12.0 or later.
-- `bypass_authorization_for_approved_grants` (Boolean) Bypass authorization for previously approved persistent grants. The default value is false.
-- `client_secret_retention_period` (Number) The length of time in minutes that client secrets will be retained as secondary secrets after secret change. The default value is 0, which will disable secondary client secret retention.
-- `consent_lifetime_days` (Number) The consent lifetime in days. The default value is indefinite. -1 indicates an indefinite amount of time. Supported in PF version 12.0 or later.
+- `bypass_activation_code_confirmation` (Boolean) Indicates if the Activation Code Confirmation page should be bypassed if 'verification_url_complete' is used by the end user to authorize a device. The default is `false`.
+- `bypass_authorization_for_approved_consents` (Boolean) Bypass authorization for previously approved consents. The default value is `false`. Supported in PF version `12.0` or later.
+- `bypass_authorization_for_approved_grants` (Boolean) Bypass authorization for previously approved persistent grants. The default value is `false`.
+- `client_secret_retention_period` (Number) The length of time in minutes that client secrets will be retained as secondary secrets after secret change. The default value is `0`, which will disable secondary client secret retention.
+- `consent_lifetime_days` (Number) The consent lifetime in days. The default value is `-1`, which indicates an indefinite amount of time. Supported in PF version `12.0` or later.
 - `default_scope_description` (String) The default scope description.
-- `device_polling_interval` (Number) The amount of time client should wait between polling requests, in seconds. The default is 5 seconds.
-- `disallow_plain_pkce` (Boolean) Determines whether PKCE's 'plain' code challenge method will be disallowed. The default value is false.
-- `dpop_proof_enforce_replay_prevention` (Boolean) Determines whether Demonstrating Proof-of-Possession (DPoP) proof JWT replay prevention is enforced. The default value is false. Supported in PF version 11.3 or later.
-- `dpop_proof_lifetime_seconds` (Number) The lifetime, in seconds, of the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is 120. Supported in PF version 11.3 or later.
-- `dpop_proof_require_nonce` (Boolean) Determines whether nonce is required in the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is false. Supported in PF version 11.3 or later.
-- `enable_cookieless_user_authorization_authentication_api` (Boolean) Indicates if cookies should be used for state tracking when the user authorization endpoint is operating in authentication API redirectless mode
+- `device_polling_interval` (Number) The amount of time client should wait between polling requests, in seconds. The default is `5` seconds.
+- `disallow_plain_pkce` (Boolean) Determines whether PKCE's 'plain' code challenge method will be disallowed. The default value is `false`.
+- `dpop_proof_enforce_replay_prevention` (Boolean) Determines whether Demonstrating Proof-of-Possession (DPoP) proof JWT replay prevention is enforced. The default value is `false`. Supported in PF version `11.3` or later.
+- `dpop_proof_lifetime_seconds` (Number) The lifetime, in seconds, of the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is `120`. Supported in PF version `11.3` or later.
+- `dpop_proof_require_nonce` (Boolean) Determines whether nonce is required in the Demonstrating Proof-of-Possession (DPoP) proof JWT. The default value is `false`. Supported in PF version `11.3` or later.
+- `enable_cookieless_user_authorization_authentication_api` (Boolean) Indicates if cookies should be used for state tracking when the user authorization endpoint is operating in authentication API redirectless mode. The default is `false`. Supported in PF version `12.1` or later.
 - `exclusive_scope_groups` (Attributes Set) The list of exclusive scope groups. (see [below for nested schema](#nestedatt--exclusive_scope_groups))
 - `exclusive_scopes` (Attributes Set) The list of exclusive scopes. (see [below for nested schema](#nestedatt--exclusive_scopes))
-- `include_issuer_in_authorization_response` (Boolean) Determines whether the authorization server's issuer value is added to the authorization response or not. The default value is false.
-- `jwt_secured_authorization_response_mode_lifetime` (Number) The lifetime, in seconds, of the JWT Secured authorization response. The default value is 600.
-- `offline_access_require_consent_prompt` (Boolean) Determines whether offline_access requires the prompt parameter value be 'consent' or not. The value will be reset to default if the 'requireOfflineAccessScopeToIssueRefreshTokens' attribute is set to false. The default value is false.
-- `par_reference_length` (Number) The entropy of pushed authorization request references, in bytes. The default value is 24.
-- `par_reference_timeout` (Number) The timeout, in seconds, of the pushed authorization request reference. The default value is 60.
-- `par_status` (String) The status of pushed authorization request support. The default value is ENABLED.
-- `pending_authorization_timeout` (Number) The 'device_code' and 'user_code' timeout, in seconds. The default is 600 seconds.
+- `include_issuer_in_authorization_response` (Boolean) Determines whether the authorization server's issuer value is added to the authorization response or not. The default value is `false`.
+- `jwt_secured_authorization_response_mode_lifetime` (Number) The lifetime, in seconds, of the JWT Secured authorization response. The default value is `600`.
+- `offline_access_require_consent_prompt` (Boolean) Determines whether offline_access requires the prompt parameter value be 'consent' or not. The value will be reset to default if the `require_offline_access_scope_to_issue_refresh_tokens` attribute is set to `false`. The default value is `false`. Supported in PF version `12.1` or later.
+- `par_reference_length` (Number) The entropy of pushed authorization request references, in bytes. The default value is `24`.
+- `par_reference_timeout` (Number) The timeout, in seconds, of the pushed authorization request reference. The default value is `60`.
+- `par_status` (String) The status of pushed authorization request support. Supported values are `DISABLED`, `ENABLED`, and `REQUIRED`. The default value is `ENABLED`.
+- `pending_authorization_timeout` (Number) The 'device_code' and 'user_code' timeout, in seconds. The default is `600` seconds.
 - `persistent_grant_contract` (Attributes) The persistent grant contract defines attributes that are associated with OAuth persistent grants. (see [below for nested schema](#nestedatt--persistent_grant_contract))
-- `persistent_grant_idle_timeout` (Number) The persistent grant idle timeout. The default value is 30 (days). -1 indicates an indefinite amount of time.
-- `persistent_grant_idle_timeout_time_unit` (String) The persistent grant idle timeout time unit. The default value is DAYS
-- `persistent_grant_lifetime` (Number) The persistent grant lifetime. The default value is indefinite. -1 indicates an indefinite amount of time.
-- `persistent_grant_lifetime_unit` (String) The persistent grant lifetime unit.
-- `persistent_grant_reuse_grant_types` (Set of String) The grant types that the OAuth AS can reuse rather than creating a new grant for each request. Only 'IMPLICIT' or 'AUTHORIZATION_CODE' or 'RESOURCE_OWNER_CREDENTIALS' are valid grant types.
-- `refresh_rolling_interval_time_unit` (String) The refresh token rolling interval time unit. The default unit is HOURS.
-- `refresh_token_rolling_grace_period` (Number) The grace period that a rolled refresh token remains valid in seconds. The default value is 60.
+- `persistent_grant_idle_timeout` (Number) The persistent grant idle timeout. The default value is `30` (days). `-1` indicates an indefinite amount of time.
+- `persistent_grant_idle_timeout_time_unit` (String) The persistent grant idle timeout time unit. Supported values are `MINUTES`, `DAYS`, and `HOURS`. The default value is `DAYS`.
+- `persistent_grant_lifetime` (Number) The persistent grant lifetime. The default value is `-1`, which indicates an indefinite amount of time.
+- `persistent_grant_lifetime_unit` (String) The persistent grant lifetime unit. Supported values are `MINUTES`, `DAYS`, and `HOURS`. The default value is `DAYS`.
+- `persistent_grant_reuse_grant_types` (Set of String) The grant types that the OAuth AS can reuse rather than creating a new grant for each request. Only `IMPLICIT` or `AUTHORIZATION_CODE` or `RESOURCE_OWNER_CREDENTIALS` are valid grant types.
+- `refresh_rolling_interval_time_unit` (String) The refresh token rolling interval time unit. Supported values are `SECONDS`, `MINUTES`, and `HOURS`. The default value is `HOURS`. Supported in PF version `12.1` or later.
+- `refresh_token_rolling_grace_period` (Number) The grace period that a rolled refresh token remains valid in seconds. The default value is `60`.
 - `registered_authorization_path` (String) The Registered Authorization Path is concatenated to PingFederate base URL to generate 'verification_url' and 'verification_url_complete' values in a Device Authorization request. PingFederate listens to this path if specified
-- `require_offline_access_scope_to_issue_refresh_tokens` (Boolean) Determines whether offline_access scope is required to issue refresh tokens or not. The default value is false.
-- `roll_refresh_token_values` (Boolean) The roll refresh token values default policy. The default value is false.
+- `require_offline_access_scope_to_issue_refresh_tokens` (Boolean) Determines whether offline_access scope is required to issue refresh tokens or not. The default value is `false`. Supported in PF version `12.1` or later.
+- `roll_refresh_token_values` (Boolean) The roll refresh token values default policy. The default value is `false`.
 - `scope_for_oauth_grant_management` (String) The OAuth scope to validate when accessing grant management service.
 - `scope_groups` (Attributes Set) The list of common scope groups. (see [below for nested schema](#nestedatt--scope_groups))
 - `scopes` (Attributes Set) The list of common scopes. (see [below for nested schema](#nestedatt--scopes))
 - `token_endpoint_base_url` (String) The token endpoint base URL used to validate the 'aud' claim during Private Key JWT Client Authentication.
-- `track_user_sessions_for_logout` (Boolean) Determines whether user sessions are tracked for logout. If this property is not provided on a PUT, the setting is left unchanged.
+- `track_user_sessions_for_logout` (Boolean) Determines whether user sessions are tracked for logout. The default value is `false`.
 - `user_authorization_consent_adapter` (String) Adapter ID of the external consent adapter to be used for the consent page user interface.
-- `user_authorization_consent_page_setting` (String) User Authorization Consent Page setting to use PingFederate's internal consent page or an external system
+- `user_authorization_consent_page_setting` (String) User Authorization Consent Page setting to use PingFederate's internal consent page or an external system. Supported values are `INTERNAL` and `ADAPTER`. The default value is `INTERNAL`.
 - `user_authorization_url` (String) The URL used to generate 'verification_url' and 'verification_url_complete' values in a Device Authorization request
 
 ### Read-Only
@@ -180,7 +224,7 @@ Required:
 
 Optional:
 
-- `dynamic` (Boolean) True if the scope is dynamic. (Defaults to false)
+- `dynamic` (Boolean) True if the scope is dynamic. The default is `false`.
 
 
 <a id="nestedatt--persistent_grant_contract"></a>
@@ -192,7 +236,7 @@ Optional:
 
 Read-Only:
 
-- `core_attributes` (Attributes Set) This is a read-only list of persistent grant attributes and includes USER_KEY and USER_NAME. Changes to this field will be ignored. (see [below for nested schema](#nestedatt--persistent_grant_contract--core_attributes))
+- `core_attributes` (Attributes Set) This is a read-only list of persistent grant attributes and includes `USER_KEY` and `USER_NAME`. (see [below for nested schema](#nestedatt--persistent_grant_contract--core_attributes))
 
 <a id="nestedatt--persistent_grant_contract--extended_attributes"></a>
 ### Nested Schema for `persistent_grant_contract.extended_attributes`
@@ -231,7 +275,7 @@ Required:
 
 Optional:
 
-- `dynamic` (Boolean) True if the scope is dynamic. (Defaults to false)
+- `dynamic` (Boolean) True if the scope is dynamic. The default is `false`.
 
 ## Import
 
@@ -240,5 +284,9 @@ Import is supported using the following syntax:
 ~> This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
 
 ```shell
+<<<<<<< HEAD
+terraform import pingfederate_oauth_auth_server_settings.oauthAuthServerSettings id
+=======
 terraform import pingfederate_oauth_auth_server_settings.oauthAuthServerSettings oauthAuthServerSettingsId
+>>>>>>> main
 ```

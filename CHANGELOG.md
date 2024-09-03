@@ -1,4 +1,9 @@
 # v0.16.0 (Unreleased)
+### Resources
+* **New Resource:** `pingfederate_idp_to_sp_adapter_mapping` ([#264]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/264)))
+
+### Enhancements
+* Various documentations and schema improvements for resources released in previous versions.
 
 # v0.15.0 August 29, 2024
 ### Resources
