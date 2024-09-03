@@ -58,7 +58,7 @@ func (r *passwordCredentialValidatorDataSource) Schema(ctx context.Context, req 
 				Optional:    false,
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
-					"core_attributes": schema.ListNestedAttribute{
+					"core_attributes": schema.SetNestedAttribute{
 						Description: "A list of read-only attributes that are automatically populated by the password credential validator descriptor.",
 						Optional:    false,
 						Computed:    true,
@@ -72,7 +72,7 @@ func (r *passwordCredentialValidatorDataSource) Schema(ctx context.Context, req 
 							},
 						},
 					},
-					"extended_attributes": schema.ListNestedAttribute{
+					"extended_attributes": schema.SetNestedAttribute{
 						Description: "A list of additional attributes that can be returned by the password credential validator. The extended attributes are only used if the adapter supports them.",
 						Optional:    false,
 						Computed:    true,

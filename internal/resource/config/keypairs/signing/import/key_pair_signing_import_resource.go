@@ -236,7 +236,7 @@ func (r *keyPairsSigningImportResource) Schema(ctx context.Context, req resource
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	id.ToSchemaCustomId(&schema,
 		"import_id",
 		true,

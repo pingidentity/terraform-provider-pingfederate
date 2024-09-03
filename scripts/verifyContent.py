@@ -8,7 +8,8 @@ no_import_dirs = set()
 missing_changelog_entries = set()
 
 noImportResources = [
-  "pingfederate_connection_metadata_export"
+  "pingfederate_connection_metadata_export",
+  "pingfederate_license"
 ]
 
 dirs = glob("./examples/resources/*/", recursive=True)

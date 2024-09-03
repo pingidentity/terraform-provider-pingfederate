@@ -55,7 +55,7 @@ func (r *authenticationPoliciesFragmentResource) Schema(ctx context.Context, req
 			"inputs": schema.SingleNestedAttribute{
 				Attributes:  resourcelink.ToSchema(),
 				Optional:    true,
-				Description: "A reference to a resource.",
+				Description: "The reference to the authentication policy contract to use as the attribute inputs for this authentication policy fragment.",
 			},
 			"name": schema.StringAttribute{
 				Required:    true,
@@ -64,12 +64,12 @@ func (r *authenticationPoliciesFragmentResource) Schema(ctx context.Context, req
 			"outputs": schema.SingleNestedAttribute{
 				Attributes:  resourcelink.ToSchema(),
 				Optional:    true,
-				Description: "A reference to a resource.",
+				Description: "The reference to the authentication policy contract to use as the attribute outputs for this authentication policy fragment.",
 			},
 			"root_node": authenticationpolicytreenode.ToSchema("The beginning action for the authentication fragment policy."),
 		},
 	}
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	id.ToSchemaCustomId(&schema, "fragment_id", false, false, "The authentication policy fragment ID. ID is unique.")
 	resp.Schema = schema
 }

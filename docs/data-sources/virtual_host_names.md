@@ -22,5 +22,5 @@ data "pingfederate_virtual_host_names" "myVirtualHostNamesExample" {
 
 ### Read-Only
 
-- `id` (String) ID of this resource.
-- `virtual_host_names` (List of String) List of virtual host names.
+- `id` (String, Deprecated) ID of this resource.
+- `virtual_host_names` (Set of String) List of virtual host names.
