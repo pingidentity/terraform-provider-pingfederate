@@ -20,6 +20,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -335,7 +336,7 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 	// Read the response into the state
 	var state idpAdapterModel
 
-	readResponseDiags := readIdpAdapterResponse(ctx, idpAdapterResponse, &state, &plan)
+	readResponseDiags := readIdpAdapterResponse(ctx, idpAdapterResponse, &state, &plan, false)
 	resp.Diagnostics.Append(readResponseDiags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
@@ -349,6 +350,10 @@ func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	apiReadIdpAdapter, httpResp, err := r.apiClient.IdpAdaptersAPI.GetIdpAdapter(config.AuthContext(ctx, r.providerConfig), state.AdapterId.ValueString()).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -361,7 +366,7 @@ func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	// Read the response into the state
-	readResponseDiags := readIdpAdapterResponse(ctx, apiReadIdpAdapter, &state, &state)
+	readResponseDiags := readIdpAdapterResponse(ctx, apiReadIdpAdapter, &state, &state, isImportRead)
 	resp.Diagnostics.Append(readResponseDiags...)
 
 	// Set refreshed state
@@ -413,7 +418,7 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	// Read the response
 	var state idpAdapterModel
-	readResponseDiags := readIdpAdapterResponse(ctx, updateIdpAdapterResponse, &state, &plan)
+	readResponseDiags := readIdpAdapterResponse(ctx, updateIdpAdapterResponse, &state, &plan, false)
 	resp.Diagnostics.Append(readResponseDiags...)
 
 	// Update computed values
@@ -440,4 +445,5 @@ func (r *idpAdapterResource) Delete(ctx context.Context, req resource.DeleteRequ
 func (r *idpAdapterResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to adapter_id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("adapter_id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }
