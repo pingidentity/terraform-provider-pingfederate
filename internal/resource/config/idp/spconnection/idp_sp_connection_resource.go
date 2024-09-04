@@ -30,6 +30,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
@@ -2283,7 +2284,7 @@ func (state *idpSpConnectionModel) getSpBrowserSsoAdapterMappingsAdapterOverride
 
 // Returns the attribute_mapping and attribute_mapping_all attributes, where the _all attribute
 // includes any values added in the response by PingFed
-func (state *idpSpConnectionModel) buildAttributeMappingAttrs(channelName string, responseAttributeMappings []client.SaasAttributeMapping) (types.Set, types.Set, diag.Diagnostics) {
+func (state *idpSpConnectionModel) buildAttributeMappingAttrs(channelName string, responseAttributeMappings []client.SaasAttributeMapping, isImportRead bool) (types.Set, types.Set, diag.Diagnostics) {
 	// Get a list of field_name values that were expected based on the state
 	var expectedFieldNames []string
 	if internaltypes.IsDefined(state.OutboundProvision) && internaltypes.IsDefined(state.OutboundProvision.Attributes()["channels"]) {
@@ -2328,14 +2329,21 @@ func (state *idpSpConnectionModel) buildAttributeMappingAttrs(channelName string
 	}
 	attributeMappingAll, diags := types.SetValue(attributeMappingElemAttrTypes, allAttributeMappings)
 	respDiags.Append(diags...)
-	attributeMapping, diags := types.SetValue(attributeMappingElemAttrTypes, expectedAttributeMappings)
-	respDiags.Append(diags...)
+	var attributeMapping types.Set
+	// On import, just read the attribute mappings into attribute_mapping directly
+	if isImportRead {
+		attributeMapping, diags = types.SetValue(attributeMappingElemAttrTypes, allAttributeMappings)
+		respDiags.Append(diags...)
+	} else {
+		attributeMapping, diags = types.SetValue(attributeMappingElemAttrTypes, expectedAttributeMappings)
+		respDiags.Append(diags...)
+	}
 	return attributeMapping, attributeMappingAll, respDiags
 }
 
 // Returns the target_settings and target_settings_all attributes, where the _all attribute
 // includes any values added in the response by PingFed
-func (state *idpSpConnectionModel) buildTargetSettingsAttrs(responseTargetSettings []client.ConfigField) (types.Set, types.Set, diag.Diagnostics) {
+func (state *idpSpConnectionModel) buildTargetSettingsAttrs(responseTargetSettings []client.ConfigField, isImportRead bool) (types.Set, types.Set, diag.Diagnostics) {
 	// Get a list of target_setting names that were expected based on the state
 	expectedTargetSettingsValues := map[string]string{}
 	if internaltypes.IsDefined(state.OutboundProvision) {
@@ -2365,12 +2373,19 @@ func (state *idpSpConnectionModel) buildTargetSettingsAttrs(responseTargetSettin
 	}
 	targetSettingsAll, diags := types.SetValue(targetSettingsElemAttrType, allTargetSettings)
 	respDiags.Append(diags...)
-	targetSettings, diags := types.SetValue(targetSettingsElemAttrType, expectedTargetSettings)
-	respDiags.Append(diags...)
+	var targetSettings types.Set
+	if isImportRead {
+		// On import, just read the target settings into target_settings directly
+		targetSettings, diags = types.SetValue(targetSettingsElemAttrType, allTargetSettings)
+		respDiags.Append(diags...)
+	} else {
+		targetSettings, diags = types.SetValue(targetSettingsElemAttrType, expectedTargetSettings)
+		respDiags.Append(diags...)
+	}
 	return targetSettings, targetSettingsAll, respDiags
 }
 
-func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnection) diag.Diagnostics {
+func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnection, isImportRead bool) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
 	// active
 	state.Active = types.BoolPointerValue(response.Active)
@@ -3002,7 +3017,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 		var outboundProvisionChannelsValues []attr.Value
 		for _, outboundProvisionChannelsResponseValue := range response.OutboundProvision.Channels {
 			attributeMapping, attributeMappingAll, diags := state.buildAttributeMappingAttrs(
-				outboundProvisionChannelsResponseValue.Name, outboundProvisionChannelsResponseValue.AttributeMapping)
+				outboundProvisionChannelsResponseValue.Name, outboundProvisionChannelsResponseValue.AttributeMapping, isImportRead)
 			respDiags.Append(diags...)
 			outboundProvisionChannelsChannelSourceAccountManagementSettingsValue, diags := types.ObjectValue(outboundProvisionChannelsChannelSourceAccountManagementSettingsAttrTypes, map[string]attr.Value{
 				"account_status_algorithm":      types.StringValue(outboundProvisionChannelsResponseValue.ChannelSource.AccountManagementSettings.AccountStatusAlgorithm),
@@ -3099,7 +3114,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 			})
 			respDiags.Append(diags...)
 		}
-		targetSettings, targetSettingsAll, diags := state.buildTargetSettingsAttrs(response.OutboundProvision.TargetSettings)
+		targetSettings, targetSettingsAll, diags := state.buildTargetSettingsAttrs(response.OutboundProvision.TargetSettings, isImportRead)
 		respDiags.Append(diags...)
 		outboundProvisionValue, diags = types.ObjectValue(outboundProvisionAttrTypes, map[string]attr.Value{
 			"channels":            outboundProvisionChannelsValue,
@@ -3777,7 +3792,7 @@ func (r *idpSpConnectionResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	// Read the response into the state
-	diags = plan.readClientResponse(idpSpconnectionResponse)
+	diags = plan.readClientResponse(idpSpconnectionResponse, false)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, plan)
 	resp.Diagnostics.Append(diags...)
@@ -3791,6 +3806,9 @@ func (r *idpSpConnectionResource) Read(ctx context.Context, req resource.ReadReq
 	if resp.Diagnostics.HasError() {
 		return
 	}
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	apiReadIdpSpconnection, httpResp, err := r.apiClient.IdpSpConnectionsAPI.GetSpConnection(config.AuthContext(ctx, r.providerConfig), state.ConnectionId.ValueString()).Execute()
 
 	if err != nil {
@@ -3804,7 +3822,7 @@ func (r *idpSpConnectionResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	// Read the response into the state
-	diags = state.readClientResponse(apiReadIdpSpconnection)
+	diags = state.readClientResponse(apiReadIdpSpconnection, isImportRead)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -3837,7 +3855,7 @@ func (r *idpSpConnectionResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	// Read the response
-	diags = plan.readClientResponse(updateIdpSpconnectionResponse)
+	diags = plan.readClientResponse(updateIdpSpconnectionResponse, false)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -3862,4 +3880,5 @@ func (r *idpSpConnectionResource) Delete(ctx context.Context, req resource.Delet
 func (r *idpSpConnectionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to connection_id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("connection_id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }
