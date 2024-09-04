@@ -30,13 +30,10 @@ resource "pingfederate_server_settings_system_keys" "systemKeys" {
 - `current` (Attributes) Current SystemKeys Secrets that are used in cryptographic operations to generate and consume internal tokens. (see [below for nested schema](#nestedatt--current))
 - `pending` (Attributes) Pending SystemKeys Secrets that are used in cryptographic operations to generate and consume internal tokens. (see [below for nested schema](#nestedatt--pending))
 
-### Optional
-
-- `previous` (Attributes) Previous SystemKeys Secrets that are used in cryptographic operations to generate and consume internal tokens. (see [below for nested schema](#nestedatt--previous))
-
 ### Read-Only
 
 - `id` (String, Deprecated) The ID of this resource.
+- `previous` (Attributes) Previous SystemKeys Secrets that are used in cryptographic operations to generate and consume internal tokens. (see [below for nested schema](#nestedatt--previous))
 
 <a id="nestedatt--current"></a>
 ### Nested Schema for `current`
@@ -67,14 +64,10 @@ Read-Only:
 <a id="nestedatt--previous"></a>
 ### Nested Schema for `previous`
 
-Optional:
-
-- `encrypted_key_data` (String) The system key encrypted.
-- `key_data` (String) The clear text system key base 64 encoded. The system key must be 32 bytes before base 64 encoding
-
 Read-Only:
 
 - `creation_date` (String) Creation time of the key.
+- `encrypted_key_data` (String) The system key encrypted.
 
 ## Import
 
