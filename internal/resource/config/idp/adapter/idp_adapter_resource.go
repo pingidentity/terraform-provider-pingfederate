@@ -343,16 +343,16 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 }
 
 func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var state idpAdapterModel
 
-	diags := req.State.Get(ctx, &state)
+	diags = req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
-	resp.Diagnostics.Append(diags...)
 
 	apiReadIdpAdapter, httpResp, err := r.apiClient.IdpAdaptersAPI.GetIdpAdapter(config.AuthContext(ctx, r.providerConfig), state.AdapterId.ValueString()).Execute()
 	if err != nil {

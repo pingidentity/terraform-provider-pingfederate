@@ -267,15 +267,16 @@ func (r *serverSettingsLoggingResource) Create(ctx context.Context, req resource
 }
 
 func (r *serverSettingsLoggingResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var state serverSettingsLoggingResourceModel
 
-	diags := req.State.Get(ctx, &state)
+	diags = req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
-	resp.Diagnostics.Append(diags...)
 
 	apiReadServerSettingsLogging, httpResp, err := r.apiClient.ServerSettingsAPI.GetLogSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {

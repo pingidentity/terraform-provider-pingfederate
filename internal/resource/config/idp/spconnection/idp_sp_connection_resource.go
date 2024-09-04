@@ -3799,15 +3799,16 @@ func (r *idpSpConnectionResource) Create(ctx context.Context, req resource.Creat
 }
 
 func (r *idpSpConnectionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var state idpSpConnectionModel
 
-	diags := req.State.Get(ctx, &state)
+	diags = req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
-	resp.Diagnostics.Append(diags...)
 
 	apiReadIdpSpconnection, httpResp, err := r.apiClient.IdpSpConnectionsAPI.GetSpConnection(config.AuthContext(ctx, r.providerConfig), state.ConnectionId.ValueString()).Execute()
 
