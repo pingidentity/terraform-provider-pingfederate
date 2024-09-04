@@ -80,7 +80,7 @@ func (r *dataStoreDataSource) Read(ctx context.Context, req datasource.ReadReque
 	}
 
 	if dataStoreGetReq.CustomDataStore != nil {
-		diags = readCustomDataStoreResponse(ctx, dataStoreGetReq, &state, &state.CustomDataStore, false)
+		diags = readCustomDataStoreResponse(ctx, dataStoreGetReq, &state, &state.CustomDataStore, false, false)
 		resp.Diagnostics.Append(diags...)
 	}
 

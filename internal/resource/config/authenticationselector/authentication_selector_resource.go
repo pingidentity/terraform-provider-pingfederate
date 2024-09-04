@@ -17,6 +17,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -168,7 +169,7 @@ func (r *authenticationSelectorResource) ModifyPlan(ctx context.Context, req res
 	resp.Plan.Set(ctx, plan)
 }
 
-func readAuthenticationSelectorsResponse(ctx context.Context, r *client.AuthenticationSelector, state *authenticationSelectorResourceModel, configurationFromPlan types.Object) diag.Diagnostics {
+func readAuthenticationSelectorsResponse(ctx context.Context, r *client.AuthenticationSelector, state *authenticationSelectorResourceModel, configurationFromPlan types.Object, isImportRead bool) diag.Diagnostics {
 	var diags, objDiags diag.Diagnostics
 
 	state.AttributeContract, objDiags = types.ObjectValueFrom(ctx, attributeContractAttrType, r.AttributeContract)
@@ -180,7 +181,7 @@ func readAuthenticationSelectorsResponse(ctx context.Context, r *client.Authenti
 	diags = append(diags, objDiags...)
 	state.PluginDescriptorRef, objDiags = resourcelink.ToState(ctx, &r.PluginDescriptorRef)
 	diags = append(diags, objDiags...)
-	state.Configuration, objDiags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration)
+	state.Configuration, objDiags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration, isImportRead)
 	diags = append(diags, objDiags...)
 
 	// make sure all object type building appends diags
@@ -236,16 +237,19 @@ func (r *authenticationSelectorResource) Create(ctx context.Context, req resourc
 	// Read the response into the state
 	var state authenticationSelectorResourceModel
 
-	diags = readAuthenticationSelectorsResponse(ctx, authenticationSelectorResponse, &state, plan.Configuration)
+	diags = readAuthenticationSelectorsResponse(ctx, authenticationSelectorResponse, &state, plan.Configuration, false)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
 func (r *authenticationSelectorResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var state authenticationSelectorResourceModel
 
-	diags := req.State.Get(ctx, &state)
+	diags = req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -263,7 +267,7 @@ func (r *authenticationSelectorResource) Read(ctx context.Context, req resource.
 	}
 
 	// Read the response into the state
-	diags = readAuthenticationSelectorsResponse(ctx, apiReadAuthenticationSelectors, &state, state.Configuration)
+	diags = readAuthenticationSelectorsResponse(ctx, apiReadAuthenticationSelectors, &state, state.Configuration, isImportRead)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -320,7 +324,7 @@ func (r *authenticationSelectorResource) Update(ctx context.Context, req resourc
 
 	// Read the response
 	var state authenticationSelectorResourceModel
-	diags = readAuthenticationSelectorsResponse(ctx, updateAuthenticationSelectorsResponse, &state, plan.Configuration)
+	diags = readAuthenticationSelectorsResponse(ctx, updateAuthenticationSelectorsResponse, &state, plan.Configuration, false)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -345,4 +349,5 @@ func (r *authenticationSelectorResource) Delete(ctx context.Context, req resourc
 func (r *authenticationSelectorResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("selector_id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }

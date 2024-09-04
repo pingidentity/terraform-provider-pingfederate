@@ -3359,7 +3359,7 @@ func (state *idpSpConnectionModel) readClientResponse(response *client.SpConnect
 					respDiags.Append(diags...)
 				}
 				overrideSettingsConfiguration := spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.Configuration
-				spBrowserSsoAdapterMappingsAdapterOverrideSettingsConfigurationValue, diags := pluginconfiguration.ToState(state.getSpBrowserSsoAdapterMappingsAdapterOverrideSettingsConfiguration(adapterMappingIndex), &overrideSettingsConfiguration)
+				spBrowserSsoAdapterMappingsAdapterOverrideSettingsConfigurationValue, diags := pluginconfiguration.ToState(state.getSpBrowserSsoAdapterMappingsAdapterOverrideSettingsConfiguration(adapterMappingIndex), &overrideSettingsConfiguration, isImportRead)
 				respDiags.Append(diags...)
 				var spBrowserSsoAdapterMappingsAdapterOverrideSettingsParentRefValue types.Object
 				if spBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.ParentRef == nil {

@@ -101,7 +101,7 @@ func readIdpAdapterResponse(ctx context.Context, r *client.IdpAdapter, state *id
 	respDiags.Append(diags...)
 	// Configuration
 	if plan != nil {
-		state.Configuration, diags = pluginconfiguration.ToState(plan.Configuration, &r.Configuration)
+		state.Configuration, diags = pluginconfiguration.ToState(plan.Configuration, &r.Configuration, isImportRead)
 		respDiags.Append(diags...)
 	} else {
 		state.Configuration, diags = datasourcepluginconfiguration.ToDataSourceState(ctx, &r.Configuration)
