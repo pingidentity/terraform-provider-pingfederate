@@ -1,4 +1,7 @@
 # v0.16.0 (Unreleased)
+### Breaking changes
+* The `pingfederate_server_settings_system_keys` attribute `previous` has been changed to read-only. ([#362]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/362)))
+
 ### Resources
 * **New Resource:** `pingfederate_idp_to_sp_adapter_mapping` ([#264]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/264)))
 
