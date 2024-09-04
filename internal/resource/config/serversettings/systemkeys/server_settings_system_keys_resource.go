@@ -10,8 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -31,6 +29,11 @@ var (
 		"creation_date":      types.StringType,
 		"encrypted_key_data": types.StringType,
 		"key_data":           types.StringType,
+	}
+
+	previousSystemKeyAttrTypes = map[string]attr.Type{
+		"creation_date":      types.StringType,
+		"encrypted_key_data": types.StringType,
 	}
 )
 
@@ -81,11 +84,7 @@ func (r *serverSettingsSystemKeysResource) Schema(ctx context.Context, req resou
 			},
 			"previous": schema.SingleNestedAttribute{
 				Description: "Previous SystemKeys Secrets that are used in cryptographic operations to generate and consume internal tokens.",
-				Optional:    true,
 				Computed:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
 				Attributes: map[string]schema.Attribute{
 					"creation_date": schema.StringAttribute{
 						Description: "Creation time of the key.",
@@ -93,21 +92,7 @@ func (r *serverSettingsSystemKeysResource) Schema(ctx context.Context, req resou
 					},
 					"encrypted_key_data": schema.StringAttribute{
 						Description: "The system key encrypted.",
-						Optional:    true,
 						Computed:    true,
-						Default:     stringdefault.StaticString(""),
-						Validators: []validator.String{
-							stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("key_data")),
-						},
-					},
-					"key_data": schema.StringAttribute{
-						Description: "The clear text system key base 64 encoded. The system key must be 32 bytes before base 64 encoding",
-						Optional:    true,
-						Computed:    true,
-						Default:     stringdefault.StaticString(""),
-						Validators: []validator.String{
-							stringvalidator.ExactlyOneOf(path.MatchRelative().AtParent().AtName("encrypted_key_data")),
-						},
 					},
 				},
 			},
@@ -159,18 +144,6 @@ func addServerSettingsSystemKeysFields(ctx context.Context, addRequest *client.S
 			addRequest.Current.KeyData = keyData.ValueStringPointer()
 		}
 	}
-	if internaltypes.IsDefined(plan.Previous) {
-		previousAttrs := plan.Previous.Attributes()
-		encryptedKeyDataAttrPrevious := previousAttrs["encrypted_key_data"].(types.String)
-		keyData := previousAttrs["key_data"].(types.String)
-		if internaltypes.IsNonEmptyString(encryptedKeyDataAttrPrevious) {
-			addRequest.Previous = client.NewSystemKey()
-			if !encryptedKeyDataAttrPrevious.IsUnknown() {
-				addRequest.Previous.EncryptedKeyData = encryptedKeyDataAttrPrevious.ValueStringPointer()
-			}
-			addRequest.Previous.KeyData = keyData.ValueStringPointer()
-		}
-	}
 	if internaltypes.IsDefined(plan.Pending) {
 		pendingAttrs := plan.Pending.Attributes()
 		encryptedKeyDataAttrPending := pendingAttrs["encrypted_key_data"].(types.String)
@@ -209,10 +182,9 @@ func readServerSettingsSystemKeysResourceResponse(ctx context.Context, r *client
 		state.Id = id.GenerateUUIDToState(existingId)
 	}
 	// Maintain key_data values from state
-	var keyDataCurrent, keyDataPrevious, keyDataPending string
+	var keyDataCurrent, keyDataPending string
 	if internaltypes.IsDefined(state.Current) {
 		keyDataCurrent = state.Current.Attributes()["key_data"].(types.String).ValueString()
-		keyDataPrevious = state.Previous.Attributes()["key_data"].(types.String).ValueString()
 		keyDataPending = state.Pending.Attributes()["key_data"].(types.String).ValueString()
 	}
 
@@ -229,9 +201,8 @@ func readServerSettingsSystemKeysResourceResponse(ctx context.Context, r *client
 	previousAttrVals := map[string]attr.Value{
 		"creation_date":      types.StringValue(previousAttrs.GetCreationDate().Format(time.RFC3339Nano)),
 		"encrypted_key_data": types.StringValue(previousAttrs.GetEncryptedKeyData()),
-		"key_data":           types.StringValue(keyDataPrevious),
 	}
-	previousAttrsObjVal, respDiags := types.ObjectValue(systemKeyAttrTypes, previousAttrVals)
+	previousAttrsObjVal, respDiags := types.ObjectValue(previousSystemKeyAttrTypes, previousAttrVals)
 	diags = append(diags, respDiags...)
 
 	pendingAttrs := r.GetPending()
