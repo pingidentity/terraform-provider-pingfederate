@@ -12,6 +12,9 @@
 ### Bug fixes
 * Fixed terraform plan error after generating import HCL for `pingfederate_oauth_client` due to `persistent_grant_expiration_time` and `persistent_grant_expiration_time_unit` attributes. ([#365]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/365)))
 
+### Deprecated
+* The `id` attribute that was formerly deprecated in non-singleton-resources is no longer deprecated. ([#367]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/367)))
+
 # v0.15.0 August 29, 2024
 ### Resources
 * **New Resource:** `pingfederate_secret_manager` ([#291]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/291)))
