@@ -18,6 +18,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -322,16 +323,19 @@ func (r *passwordCredentialValidatorResource) Create(ctx context.Context, req re
 	// Read the response into the state
 	var state passwordCredentialValidatorModel
 
-	diags = readPasswordCredentialValidatorResponse(ctx, passwordCredentialValidatorsResponse, &state, plan.Configuration, true)
+	diags = readPasswordCredentialValidatorResponse(ctx, passwordCredentialValidatorsResponse, &state, plan.Configuration, true, false)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
 func (r *passwordCredentialValidatorResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var state passwordCredentialValidatorModel
 
-	diags := req.State.Get(ctx, &state)
+	diags = req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -348,7 +352,7 @@ func (r *passwordCredentialValidatorResource) Read(ctx context.Context, req reso
 	}
 
 	// Read the response into the state
-	diags = readPasswordCredentialValidatorResponse(ctx, apiReadPasswordCredentialValidators, &state, state.Configuration, true)
+	diags = readPasswordCredentialValidatorResponse(ctx, apiReadPasswordCredentialValidators, &state, state.Configuration, true, isImportRead)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -396,7 +400,7 @@ func (r *passwordCredentialValidatorResource) Update(ctx context.Context, req re
 	}
 
 	// Read the response
-	diags = readPasswordCredentialValidatorResponse(ctx, updatePasswordCredentialValidatorsResponse, &plan, plan.Configuration, true)
+	diags = readPasswordCredentialValidatorResponse(ctx, updatePasswordCredentialValidatorsResponse, &plan, plan.Configuration, true, false)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -421,4 +425,5 @@ func (r *passwordCredentialValidatorResource) Delete(ctx context.Context, req re
 func (r *passwordCredentialValidatorResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("validator_id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }

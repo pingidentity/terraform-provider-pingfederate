@@ -39,12 +39,10 @@ func TestAccServerSettingsLogging(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:       testAccServerSettingsLogging(resourceName, logCategoriesEnabled, true),
-				ResourceName: "pingfederate_server_settings_logging." + resourceName,
-				ImportState:  true,
-				// There's only log_categories and log_categories_all in this resource, so import can't be verified,
-				// since all categories will be imported into the log_categories_all attribute.
-				ImportStateVerify: false,
+				Config:            testAccServerSettingsLogging(resourceName, logCategoriesEnabled, true),
+				ResourceName:      "pingfederate_server_settings_logging." + resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				// Back to minimal model
@@ -98,6 +96,14 @@ log_categories = [
 			logCategoriesHcl += `
 		{
 			id = "protocolrequestresponse"
+			enabled = false
+		},
+			`
+		}
+		if acctest.VersionAtLeast(version.PingFederate1210) {
+			logCategoriesHcl += `
+		{
+			id = "dsresponsetime"
 			enabled = false
 		},
 			`

@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -158,10 +159,10 @@ func (model *secretManagerResourceModel) buildClientStruct() (*client.SecretMana
 	return result, respDiags
 }
 
-func (state *secretManagerResourceModel) readClientResponse(response *client.SecretManager) diag.Diagnostics {
+func (state *secretManagerResourceModel) readClientResponse(response *client.SecretManager, isImportRead bool) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
 	// configuration
-	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration)
+	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration, isImportRead)
 	respDiags.Append(diags...)
 
 	state.Configuration = configurationValue
@@ -219,13 +220,16 @@ func (r *secretManagerResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, false)...)
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *secretManagerResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var data secretManagerResourceModel
 
 	// Read Terraform prior state data into the model
@@ -248,7 +252,7 @@ func (r *secretManagerResource) Read(ctx context.Context, req resource.ReadReque
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, isImportRead)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -276,7 +280,7 @@ func (r *secretManagerResource) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, false)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -302,4 +306,5 @@ func (r *secretManagerResource) Delete(ctx context.Context, req resource.DeleteR
 func (r *secretManagerResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to manager_id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("manager_id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }

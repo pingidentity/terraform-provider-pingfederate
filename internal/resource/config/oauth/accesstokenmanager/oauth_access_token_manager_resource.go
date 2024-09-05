@@ -23,6 +23,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -368,7 +369,7 @@ func (r *oauthAccessTokenManagerResource) ModifyPlan(ctx context.Context, req re
 	resp.Plan.Set(ctx, plan)
 }
 
-func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagerResourceModel, configurationFromPlan types.Object) diag.Diagnostics {
+func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTokenManager, state *oauthAccessTokenManagerResourceModel, configurationFromPlan types.Object, isImportRead bool) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 
 	state.Id = types.StringValue(r.Id)
@@ -378,7 +379,7 @@ func readOauthAccessTokenManagerResponse(ctx context.Context, r *client.AccessTo
 	diags.Append(respDiags...)
 	state.ParentRef, respDiags = resourcelink.ToState(ctx, r.ParentRef)
 	diags.Append(respDiags...)
-	state.Configuration, respDiags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration)
+	state.Configuration, respDiags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration, isImportRead)
 	diags.Append(respDiags...)
 
 	// state.AttributeContract
@@ -511,7 +512,7 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 	// Read the response into the state
 	var state oauthAccessTokenManagerResourceModel
 
-	diags = readOauthAccessTokenManagerResponse(ctx, oauthAccessTokenManagerResponse, &state, plan.Configuration)
+	diags = readOauthAccessTokenManagerResponse(ctx, oauthAccessTokenManagerResponse, &state, plan.Configuration, false)
 	resp.Diagnostics.Append(diags...)
 
 	diags = resp.State.Set(ctx, state)
@@ -519,9 +520,12 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 }
 
 func (r *oauthAccessTokenManagerResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var state oauthAccessTokenManagerResourceModel
 
-	diags := req.State.Get(ctx, &state)
+	diags = req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -539,7 +543,7 @@ func (r *oauthAccessTokenManagerResource) Read(ctx context.Context, req resource
 	}
 
 	// Read the response into the state
-	diags = readOauthAccessTokenManagerResponse(ctx, apiReadOauthAccessTokenManager, &state, state.Configuration)
+	diags = readOauthAccessTokenManagerResponse(ctx, apiReadOauthAccessTokenManager, &state, state.Configuration, isImportRead)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -594,7 +598,7 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 	}
 
 	// Read the response
-	diags = readOauthAccessTokenManagerResponse(ctx, updateOauthAccessTokenManagerResponse, &state, state.Configuration)
+	diags = readOauthAccessTokenManagerResponse(ctx, updateOauthAccessTokenManagerResponse, &state, state.Configuration, false)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		return
@@ -621,4 +625,5 @@ func (r *oauthAccessTokenManagerResource) Delete(ctx context.Context, req resour
 func (r *oauthAccessTokenManagerResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("manager_id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }

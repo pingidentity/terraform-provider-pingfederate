@@ -130,7 +130,7 @@ func (r *passwordCredentialValidatorDataSource) Read(ctx context.Context, req da
 	}
 
 	// Read the response into the state
-	diags = readPasswordCredentialValidatorResponse(ctx, apiReadPasswordCredentialValidators, &state, state.Configuration, false)
+	diags = readPasswordCredentialValidatorResponse(ctx, apiReadPasswordCredentialValidators, &state, state.Configuration, false, false)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state

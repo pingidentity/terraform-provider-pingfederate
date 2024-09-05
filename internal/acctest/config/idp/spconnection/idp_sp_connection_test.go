@@ -82,11 +82,17 @@ func TestAccIdpSpConnection(t *testing.T) {
 				ImportStateId:     spConnectionId,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// These attributes have "_all" versions where values will be imported instead
+				// These attributes have many extra values not being set in the test used in this HCL, so those extra values
+				// will change these attributes on import.
 				ImportStateVerifyIgnore: []string{
 					"outbound_provision.channels.0.attribute_mapping",
 					"outbound_provision.target_settings",
 				},
+				// Ensure that the both versions of the attributes have values set
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_idp_sp_connection.%s", spConnectionId), "outbound_provision.channels.0.attribute_mapping.#", "38"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_idp_sp_connection.%s", spConnectionId), "outbound_provision.target_settings", "9"),
+				),
 			},
 			{
 				// Back to Outbound Provision connection, minimal

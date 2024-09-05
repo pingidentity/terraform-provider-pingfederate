@@ -35,7 +35,7 @@ type passwordCredentialValidatorModel struct {
 	Configuration       types.Object `tfsdk:"configuration"`
 }
 
-func readPasswordCredentialValidatorResponse(ctx context.Context, r *client.PasswordCredentialValidator, state *passwordCredentialValidatorModel, configurationFromPlan types.Object, isResource bool) diag.Diagnostics {
+func readPasswordCredentialValidatorResponse(ctx context.Context, r *client.PasswordCredentialValidator, state *passwordCredentialValidatorModel, configurationFromPlan types.Object, isResource, isImportRead bool) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.Id = types.StringValue(r.Id)
 	state.ValidatorId = types.StringValue(r.Id)
@@ -45,7 +45,7 @@ func readPasswordCredentialValidatorResponse(ctx context.Context, r *client.Pass
 	state.ParentRef, respDiags = resourcelink.ToState(ctx, r.ParentRef)
 	diags.Append(respDiags...)
 	if isResource {
-		state.Configuration, respDiags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration)
+		state.Configuration, respDiags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration, isImportRead)
 		diags.Append(respDiags...)
 	} else {
 		state.Configuration, respDiags = pluginconfigurationdatasource.ToDataSourceState(ctx, &r.Configuration)

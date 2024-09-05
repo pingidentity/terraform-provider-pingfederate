@@ -18,6 +18,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -189,7 +190,7 @@ func (r *serverSettingsLoggingResource) Configure(_ context.Context, req resourc
 
 }
 
-func readServerSettingsLoggingResourceResponse(ctx context.Context, r *client.LogSettings, plan *serverSettingsLoggingResourceModel, state *serverSettingsLoggingResourceModel, existingId *string) diag.Diagnostics {
+func readServerSettingsLoggingResourceResponse(ctx context.Context, r *client.LogSettings, plan *serverSettingsLoggingResourceModel, state *serverSettingsLoggingResourceModel, existingId *string, isImport bool) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	if existingId != nil {
 		state.Id = types.StringValue(*existingId)
@@ -215,14 +216,19 @@ func readServerSettingsLoggingResourceResponse(ctx context.Context, r *client.Lo
 		_, isInPlan := plannedIds[resultCategory.Id]
 		if isInPlan {
 			plannedCategories = append(plannedCategories, resultCategory)
-		} else {
-			unplannedCategories = append(unplannedCategories, resultCategory)
 		}
+		unplannedCategories = append(unplannedCategories, resultCategory)
 	}
 
 	// Build results
-	state.LogCategories, respDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: logCategoriesAttrTypes}, plannedCategories)
-	diags.Append(respDiags...)
+	// On import, just read directly into log_categories
+	if isImport {
+		state.LogCategories, respDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: logCategoriesAttrTypes}, unplannedCategories)
+		diags.Append(respDiags...)
+	} else {
+		state.LogCategories, respDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: logCategoriesAttrTypes}, plannedCategories)
+		diags.Append(respDiags...)
+	}
 	state.LogCategoriesAll, respDiags = types.SetValueFrom(ctx, types.ObjectType{AttrTypes: logCategoriesAttrTypes}, unplannedCategories)
 	diags.Append(respDiags...)
 	return diags
@@ -254,20 +260,24 @@ func (r *serverSettingsLoggingResource) Create(ctx context.Context, req resource
 
 	// Read the response into the state
 	var state serverSettingsLoggingResourceModel
-	diags = readServerSettingsLoggingResourceResponse(ctx, serverSettingsLoggingResponse, &plan, &state, nil)
+	diags = readServerSettingsLoggingResourceResponse(ctx, serverSettingsLoggingResponse, &plan, &state, nil, false)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
 func (r *serverSettingsLoggingResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var state serverSettingsLoggingResourceModel
 
-	diags := req.State.Get(ctx, &state)
+	diags = req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
 	apiReadServerSettingsLogging, httpResp, err := r.apiClient.ServerSettingsAPI.GetLogSettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -285,7 +295,7 @@ func (r *serverSettingsLoggingResource) Read(ctx context.Context, req resource.R
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	diags = readServerSettingsLoggingResourceResponse(ctx, apiReadServerSettingsLogging, &state, &state, id)
+	diags = readServerSettingsLoggingResourceResponse(ctx, apiReadServerSettingsLogging, &state, &state, id, isImportRead)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -325,7 +335,7 @@ func (r *serverSettingsLoggingResource) Update(ctx context.Context, req resource
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	diags = readServerSettingsLoggingResourceResponse(ctx, updateServerSettingsLoggingResponse, &plan, &state, id)
+	diags = readServerSettingsLoggingResourceResponse(ctx, updateServerSettingsLoggingResponse, &plan, &state, id, false)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -342,4 +352,5 @@ func (r *serverSettingsLoggingResource) Delete(ctx context.Context, req resource
 func (r *serverSettingsLoggingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }
