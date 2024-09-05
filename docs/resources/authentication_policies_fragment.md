@@ -12,17 +12,44 @@ Manages an Authentication Policy Fragment
 ## Example Usage
 
 ```terraform
+resource "pingfederate_idp_adapter" "idpAdapterExample" {
+  adapter_id = "HTMLForm"
+  name       = "HTML Form Adapter Example"
+
+  plugin_descriptor_ref = {
+    id = "com.pingidentity.adapters.htmlform.idp.HtmlFormIdpAuthnAdapter"
+  }
+
+  # ... other required fields
+}
+
+resource "pingfederate_authentication_policy_contract" "registration" {
+  name = "User Registration"
+  extended_attributes = [
+    { name = "email" },
+    { name = "given_name" },
+    { name = "family_name" }
+  ]
+}
+
 resource "pingfederate_authentication_policies_fragment" "policyFragment" {
-  fragment_id = "fragment"
-  name        = "Verify_Register"
+  name        = "Registration"
   description = "Sample Registration"
+
+  inputs = {
+    id = pingfederate_authentication_policy_contract.registration.id
+  }
+  outputs = {
+    id = pingfederate_authentication_policy_contract.registration.id
+  }
+
   root_node = {
     action = {
       authn_source_policy_action = {
         authentication_source = {
           type = "IDP_ADAPTER"
           source_ref = {
-            id = "adapter"
+            id = pingfederate_idp_adapter.idpAdapterExample.id
           }
         }
         input_user_id_mapping = {
@@ -48,7 +75,7 @@ resource "pingfederate_authentication_policies_fragment" "policyFragment" {
           apc_mapping_policy_action = {
             context = "Success"
             authentication_policy_contract_ref = {
-              id = "policyContract"
+              id = pingfederate_authentication_policy_contract.registration.id
             }
             attribute_mapping = {
               attribute_sources = []
@@ -56,21 +83,21 @@ resource "pingfederate_authentication_policies_fragment" "policyFragment" {
                 "firstName" : {
                   source = {
                     type = "ADAPTER",
-                    id   = "adapter"
+                    id   = pingfederate_idp_adapter.idpAdapterExample.id
                   }
                   value = "firstName"
                 }
                 "lastName" : {
                   source = {
                     type = "ADAPTER",
-                    id   = "adapter"
+                    id   = pingfederate_idp_adapter.idpAdapterExample.id
                   }
                   value = "lastName"
                 }
                 "subject" : {
                   source = {
                     type = "ADAPTER",
-                    id   = "adapter"
+                    id   = pingfederate_idp_adapter.idpAdapterExample.id
                   }
                   value = "subject"
                 }
@@ -83,7 +110,7 @@ resource "pingfederate_authentication_policies_fragment" "policyFragment" {
                 "photo" : {
                   source = {
                     type = "ADAPTER",
-                    id   = "adapter"
+                    id   = pingfederate_idp_adapter.idpAdapterExample.id
                   }
                   value = "photo"
                 }
@@ -101,13 +128,6 @@ resource "pingfederate_authentication_policies_fragment" "policyFragment" {
       }
     ]
   }
-  inputs = {
-    id = "policyContract"
-  }
-  outputs = {
-    id = "policyContract"
-  }
-
 }
 ```
 
