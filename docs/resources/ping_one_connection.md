@@ -2,12 +2,14 @@
 page_title: "pingfederate_ping_one_connection Resource - terraform-provider-pingfederate"
 subcategory: ""
 description: |-
-  Manages a Ping One Connection
+  Manages a PingOne Connection
 ---
 
 # pingfederate_ping_one_connection (Resource)
 
-Manages a Ping One Connection
+Manages a PingOne Connection
+
+!> The `pingfederate_ping_one_connection` resource has been renamed and will be removed in a future release. Use the `pingfederate_pingone_connection` resource instead.
 
 ## Example Usage
 
@@ -37,7 +39,7 @@ resource "pingfederate_ping_one_connection" "example" {
 - `creation_date` (String) The creation date of the PingOne connection. This field is read only.
 - `credential_id` (String) The ID of the PingOne credential. This field is read only.
 - `environment_id` (String) The ID of the environment of the PingOne credential. This field is read only.
-- `id` (String) The ID of this resource.
+- `id` (String, Deprecated) The ID of this resource.
 - `organization_name` (String) The name of the organization associated with this PingOne connection. This field is read only.
 - `ping_one_authentication_api_endpoint` (String) The PingOne Authentication API endpoint. This field is read only.
 - `ping_one_connection_id` (String) The ID of the PingOne connection. This field is read only.

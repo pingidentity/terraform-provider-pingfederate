@@ -268,7 +268,7 @@ resource "pingfederate_oauth_access_token_manager" "jwt_example" {
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String, Deprecated) The ID of this resource.
 - `sequence_number` (Number) Number added to an access token to identify which Access Token Manager issued the token.
 
 <a id="nestedatt--attribute_contract"></a>

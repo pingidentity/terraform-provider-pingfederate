@@ -56,7 +56,7 @@ data "pingfederate_idp_sp_connection" "myIdpSpConnection" {
 
 Read-Only:
 
-- `additional_allowed_entities` (Attributes List) An array of additional allowed entities or issuers to be accepted during entity or issuer validation. (see [below for nested schema](#nestedatt--additional_allowed_entities_configuration--additional_allowed_entities))
+- `additional_allowed_entities` (Attributes Set) An array of additional allowed entities or issuers to be accepted during entity or issuer validation. (see [below for nested schema](#nestedatt--additional_allowed_entities_configuration--additional_allowed_entities))
 - `allow_additional_entities` (Boolean) Set to true to configure additional entities or issuers to be accepted during entity or issuer validation.
 - `allow_all_entities` (Boolean) Set to true to accept any entity or issuer during entity or issuer validation.
 
@@ -77,7 +77,7 @@ Read-Only:
 
 - `attribute_contract_fulfillment` (Attributes Map) Defines how an attribute in an attribute contract should be populated. (see [below for nested schema](#nestedatt--attribute_query--attribute_contract_fulfillment))
 - `attribute_sources` (Attributes Set) (see [below for nested schema](#nestedatt--attribute_query--attribute_sources))
-- `attributes` (List of String) The list of attributes that may be returned to the SP in the response to an attribute request.
+- `attributes` (Set of String) The list of attributes that may be returned to the SP in the response to an attribute request.
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--attribute_query--issuance_criteria))
 - `policy` (Attributes) The attribute query profile's security policy. (see [below for nested schema](#nestedatt--attribute_query--policy))
 
@@ -329,7 +329,7 @@ Optional:
 Read-Only:
 
 - `block_encryption_algorithm` (String) The algorithm used to encrypt assertions sent to this partner.
-- `certs` (Attributes List) The certificates used for signature verification and XML encryption. (see [below for nested schema](#nestedatt--credentials--certs))
+- `certs` (Attributes Set) The certificates used for signature verification and XML encryption. (see [below for nested schema](#nestedatt--credentials--certs))
 - `inbound_back_channel_auth` (Attributes) (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth))
 - `key_transport_algorithm` (String) The algorithm used to transport keys to this partner.
 - `secondary_decryption_key_pair_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--credentials--secondary_decryption_key_pair_ref))
@@ -403,7 +403,7 @@ Read-Only:
 - `sha256fingerprint` (String) SHA-256 fingerprint in Hex encoding.
 - `signature_algorithm` (String) The signature algorithm.
 - `status` (String)
-- `subject_alternative_names` (List of String) The subject alternative names (SAN).
+- `subject_alternative_names` (Set of String) The subject alternative names (SAN).
 - `subject_dn` (String) The subject's distinguished name.
 - `valid_from` (String) The start date from which the item is valid, in ISO 8601 format (UTC).
 - `version` (Number) The X.509 version to which the item conforms.
@@ -425,7 +425,7 @@ Read-Only:
 
 Read-Only:
 
-- `certs` (Attributes List) The certificates used for signature verification and XML encryption. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs))
+- `certs` (Attributes Set) The certificates used for signature verification and XML encryption. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--certs))
 - `digital_signature` (Boolean) If incoming or outgoing messages must be signed.
 - `http_basic_credentials` (Attributes) Username and password credentials. (see [below for nested schema](#nestedatt--credentials--inbound_back_channel_auth--http_basic_credentials))
 - `require_ssl` (Boolean) Incoming HTTP transmissions must use a secure channel.
@@ -461,7 +461,7 @@ Read-Only:
 - `sha256fingerprint` (String) SHA-256 fingerprint in Hex encoding.
 - `signature_algorithm` (String) The signature algorithm.
 - `status` (String)
-- `subject_alternative_names` (List of String) The subject alternative names (SAN).
+- `subject_alternative_names` (Set of String) The subject alternative names (SAN).
 - `subject_dn` (String) The subject's distinguished name.
 - `valid_from` (String) The start date from which the item is valid, in ISO 8601 format (UTC).
 - `version` (Number) The X.509 version to which the item conforms.
@@ -503,7 +503,7 @@ Read-Only:
 Read-Only:
 
 - `algorithm` (String) The algorithm used to sign messages sent to this partner. The default is SHA1withDSA for DSA certs, SHA256withRSA for RSA certs, and SHA256withECDSA for EC certs. For RSA certs, SHA1withRSA, SHA384withRSA, SHA512withRSA, SHA256withRSAandMGF1, SHA384withRSAandMGF1 and SHA512withRSAandMGF1 are also supported. For EC certs, SHA384withECDSA and SHA512withECDSA are also supported. If the connection is WS-Federation with JWT token type, then the possible values are RSA SHA256, RSA SHA384, RSA SHA512, RSASSA-PSS SHA256, RSASSA-PSS SHA384, RSASSA-PSS SHA512, ECDSA SHA256, ECDSA SHA384, ECDSA SHA512
-- `alternative_signing_key_pair_refs` (Attributes List) The list of IDs of alternative key pairs used to sign messages sent to this partner. The ID of the key pair is also known as the alias and can be found by viewing the corresponding certificate under 'Signing & Decryption Keys & Certificates' in the PingFederate admin console. (see [below for nested schema](#nestedatt--credentials--signing_settings--alternative_signing_key_pair_refs))
+- `alternative_signing_key_pair_refs` (Attributes Set) The list of IDs of alternative key pairs used to sign messages sent to this partner. The ID of the key pair is also known as the alias and can be found by viewing the corresponding certificate under 'Signing & Decryption Keys & Certificates' in the PingFederate admin console. (see [below for nested schema](#nestedatt--credentials--signing_settings--alternative_signing_key_pair_refs))
 - `include_cert_in_signature` (Boolean) Determines whether the signing certificate is included in the signature <KeyInfo> element.
 - `include_raw_key_in_signature` (Boolean) Determines whether the <KeyValue> element with the raw public key is included in the signature <KeyInfo> element.
 - `signing_key_pair_ref` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--credentials--signing_settings--signing_key_pair_ref))
@@ -531,7 +531,7 @@ Read-Only:
 
 Read-Only:
 
-- `values` (List of String) A List of values
+- `values` (Set of String) A List of values
 
 
 <a id="nestedatt--metadata_reload_settings"></a>
@@ -558,7 +558,7 @@ Read-Only:
 
 - `channels` (Attributes List) Includes settings of a source data store, managing provisioning threads and mapping of attributes. (see [below for nested schema](#nestedatt--outbound_provision--channels))
 - `custom_schema` (Attributes) Custom SCIM Attributes configuration. (see [below for nested schema](#nestedatt--outbound_provision--custom_schema))
-- `target_settings` (Attributes List) Configuration fields that includes credentials to target SaaS application. (see [below for nested schema](#nestedatt--outbound_provision--target_settings))
+- `target_settings` (Attributes Set) Configuration fields that includes credentials to target SaaS application. (see [below for nested schema](#nestedatt--outbound_provision--target_settings))
 - `type` (String) The SaaS plugin type.
 
 <a id="nestedatt--outbound_provision--channels"></a>
@@ -686,7 +686,7 @@ Read-Only:
 
 Read-Only:
 
-- `attributes` (Attributes List) (see [below for nested schema](#nestedatt--outbound_provision--custom_schema--attributes))
+- `attributes` (Attributes Set) (see [below for nested schema](#nestedatt--outbound_provision--custom_schema--attributes))
 - `namespace` (String)
 
 <a id="nestedatt--outbound_provision--custom_schema--attributes"></a>
@@ -696,8 +696,8 @@ Read-Only:
 
 - `multi_valued` (Boolean) Indicates whether the attribute is multi-valued.
 - `name` (String) Name of the attribute.
-- `sub_attributes` (List of String) List of sub-attributes for an attribute.
-- `types` (List of String) Represents the name of each attribute type in case of multi-valued attribute.
+- `sub_attributes` (Set of String) List of sub-attributes for an attribute.
+- `types` (Set of String) Represents the name of each attribute type in case of multi-valued attribute.
 
 
 
@@ -717,27 +717,27 @@ Read-Only:
 
 Read-Only:
 
-- `adapter_mappings` (Attributes List) A list of adapters that map to outgoing assertions. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings))
+- `adapter_mappings` (Attributes Set) A list of adapters that map to outgoing assertions. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings))
 - `always_sign_artifact_response` (Boolean) Specify to always sign the SAML ArtifactResponse.
 - `artifact` (Attributes) The settings for an Artifact binding. (see [below for nested schema](#nestedatt--sp_browser_sso--artifact))
 - `assertion_lifetime` (Attributes) The timeframe of validity before and after the issuance of the assertion. (see [below for nested schema](#nestedatt--sp_browser_sso--assertion_lifetime))
 - `attribute_contract` (Attributes) A set of user attributes that the IdP sends in the SAML assertion. (see [below for nested schema](#nestedatt--sp_browser_sso--attribute_contract))
-- `authentication_policy_contract_assertion_mappings` (Attributes List) A list of authentication policy contracts that map to outgoing assertions. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings))
+- `authentication_policy_contract_assertion_mappings` (Attributes Set) A list of authentication policy contracts that map to outgoing assertions. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings))
 - `default_target_url` (String) Default Target URL for SAML1.x connections.
-- `enabled_profiles` (List of String) The profiles that are enabled for browser-based SSO. SAML 2.0 supports all profiles whereas SAML 1.x IdP connections support both IdP and SP (non-standard) initiated SSO.
+- `enabled_profiles` (Set of String) The profiles that are enabled for browser-based SSO. SAML 2.0 supports all profiles whereas SAML 1.x IdP connections support both IdP and SP (non-standard) initiated SSO.
 - `encryption_policy` (Attributes) Defines what to encrypt in the browser-based SSO profile. (see [below for nested schema](#nestedatt--sp_browser_sso--encryption_policy))
-- `incoming_bindings` (List of String) The SAML bindings that are enabled for browser-based SSO.
-- `message_customizations` (Attributes List) The message customizations for browser-based SSO. (see [below for nested schema](#nestedatt--sp_browser_sso--message_customizations))
+- `incoming_bindings` (Set of String) The SAML bindings that are enabled for browser-based SSO.
+- `message_customizations` (Attributes Set) The message customizations for browser-based SSO. (see [below for nested schema](#nestedatt--sp_browser_sso--message_customizations))
 - `protocol` (String) The browser-based SSO protocol to use.
 - `require_signed_authn_requests` (Boolean) Require AuthN requests to be signed when received via the POST or Redirect bindings.
 - `sign_assertions` (Boolean) Always sign the SAML Assertion.
 - `sign_response_as_required` (Boolean) Sign SAML Response as required by the associated binding and encryption policy.
-- `slo_service_endpoints` (Attributes List) A list of possible endpoints to send SLO requests and responses. (see [below for nested schema](#nestedatt--sp_browser_sso--slo_service_endpoints))
+- `slo_service_endpoints` (Attributes Set) A list of possible endpoints to send SLO requests and responses. (see [below for nested schema](#nestedatt--sp_browser_sso--slo_service_endpoints))
 - `sp_saml_identity_mapping` (String) Process in which users authenticated by the IdP are associated with user accounts local to the SP.
 - `sp_ws_fed_identity_mapping` (String) Process in which users authenticated by the IdP are associated with user accounts local to the SP for WS-Federation connection types.
 - `sso_application_endpoint` (String) Application endpoint that can be used to invoke single sign-on (SSO) for the connection. This is a read-only parameter. Supported in PF version 11.3 or later.
-- `sso_service_endpoints` (Attributes List) A list of possible endpoints to send assertions to. (see [below for nested schema](#nestedatt--sp_browser_sso--sso_service_endpoints))
-- `url_whitelist_entries` (Attributes List) For WS-Federation connections, a whitelist of additional allowed domains and paths used to validate wreply for SLO, if enabled. (see [below for nested schema](#nestedatt--sp_browser_sso--url_whitelist_entries))
+- `sso_service_endpoints` (Attributes Set) A list of possible endpoints to send assertions to. (see [below for nested schema](#nestedatt--sp_browser_sso--sso_service_endpoints))
+- `url_whitelist_entries` (Attributes Set) For WS-Federation connections, a whitelist of additional allowed domains and paths used to validate wreply for SLO, if enabled. (see [below for nested schema](#nestedatt--sp_browser_sso--url_whitelist_entries))
 - `ws_fed_token_type` (String) The WS-Federation Token Type to use.
 - `ws_trust_version` (String) The WS-Trust version for a WS-Federation connection.
 
@@ -753,7 +753,7 @@ Read-Only:
 - `idp_adapter_ref` (Attributes) Reference to the associated IdP adapter. Note: This is ignored if adapter overrides for this mapping exists. In this case, the override's parent adapter reference is used. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--idp_adapter_ref))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--issuance_criteria))
 - `restrict_virtual_entity_ids` (Boolean) Restricts this mapping to specific virtual entity IDs.
-- `restricted_virtual_entity_ids` (List of String) The list of virtual server IDs that this mapping is restricted to.
+- `restricted_virtual_entity_ids` (Set of String) The list of virtual server IDs that this mapping is restricted to.
 
 <a id="nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings"></a>
 ### Nested Schema for `sp_browser_sso.adapter_mappings.adapter_override_settings`
@@ -869,8 +869,8 @@ Required:
 
 Read-Only:
 
-- `core_attributes` (Attributes List) A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--core_attributes))
-- `extended_attributes` (Attributes List) A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--extended_attributes))
+- `core_attributes` (Attributes Set) A list of IdP adapter attributes that correspond to the attributes exposed by the IdP adapter type. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--core_attributes))
+- `extended_attributes` (Attributes Set) A list of additional attributes that can be returned by the IdP adapter. The extended attributes are only used if the adapter supports them. (see [below for nested schema](#nestedatt--sp_browser_sso--adapter_mappings--adapter_override_settings--plugin_descriptor_ref--extended_attributes))
 - `mask_ognl_values` (Boolean) Whether or not all OGNL expressions used to fulfill an outgoing assertion contract should be masked in the logs.
 - `unique_user_key_attribute` (String) The attribute to use for uniquely identify a user's authentication sessions.
 
@@ -1361,7 +1361,7 @@ Read-Only:
 Read-Only:
 
 - `lifetime` (Number) The lifetime of the artifact in seconds.
-- `resolver_locations` (Attributes List) Remote party URLs that you will use to resolve/translate the artifact and get the actual protocol message (see [below for nested schema](#nestedatt--sp_browser_sso--artifact--resolver_locations))
+- `resolver_locations` (Attributes Set) Remote party URLs that you will use to resolve/translate the artifact and get the actual protocol message (see [below for nested schema](#nestedatt--sp_browser_sso--artifact--resolver_locations))
 - `source_id` (String) Source ID for SAML1.x connections
 
 <a id="nestedatt--sp_browser_sso--artifact--resolver_locations"></a>
@@ -1388,8 +1388,8 @@ Read-Only:
 
 Read-Only:
 
-- `core_attributes` (Attributes List) A list of read-only assertion attributes (for example, SAML_SUBJECT) that are automatically populated by PingFederate. (see [below for nested schema](#nestedatt--sp_browser_sso--attribute_contract--core_attributes))
-- `extended_attributes` (Attributes List) A list of additional attributes that are added to the outgoing assertion. (see [below for nested schema](#nestedatt--sp_browser_sso--attribute_contract--extended_attributes))
+- `core_attributes` (Attributes Set) A list of read-only assertion attributes (for example, SAML_SUBJECT) that are automatically populated by PingFederate. (see [below for nested schema](#nestedatt--sp_browser_sso--attribute_contract--core_attributes))
+- `extended_attributes` (Attributes Set) A list of additional attributes that are added to the outgoing assertion. (see [below for nested schema](#nestedatt--sp_browser_sso--attribute_contract--extended_attributes))
 
 <a id="nestedatt--sp_browser_sso--attribute_contract--core_attributes"></a>
 ### Nested Schema for `sp_browser_sso.attribute_contract.core_attributes`
@@ -1421,7 +1421,7 @@ Read-Only:
 - `authentication_policy_contract_ref` (Attributes) Reference to the associated Authentication Policy Contract. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--authentication_policy_contract_ref))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--issuance_criteria))
 - `restrict_virtual_entity_ids` (Boolean) Restricts this mapping to specific virtual entity IDs.
-- `restricted_virtual_entity_ids` (List of String) The list of virtual server IDs that this mapping is restricted to.
+- `restricted_virtual_entity_ids` (Set of String) The list of virtual server IDs that this mapping is restricted to.
 
 <a id="nestedatt--sp_browser_sso--authentication_policy_contract_assertion_mappings--attribute_contract_fulfillment"></a>
 ### Nested Schema for `sp_browser_sso.authentication_policy_contract_assertion_mappings.attribute_contract_fulfillment`
@@ -1651,7 +1651,7 @@ Read-Only:
 
 - `encrypt_assertion` (Boolean) Whether the outgoing SAML assertion will be encrypted.
 - `encrypt_slo_subject_name_id` (Boolean) Encrypt the name-identifier attribute in outbound SLO messages.
-- `encrypted_attributes` (List of String) The list of outgoing SAML assertion attributes that will be encrypted.
+- `encrypted_attributes` (Set of String) The list of outgoing SAML assertion attributes that will be encrypted.
 - `slo_subject_name_id_encrypted` (Boolean) Allow the encryption of the name-identifier attribute for inbound SLO messages.
 
 
@@ -1707,21 +1707,21 @@ Read-Only:
 - `default_token_type` (String) The default token type when a web service client (WSC) does not specify in the token request which token type the STS should issue. Defaults to SAML 2.0.
 - `encrypt_saml2_assertion` (Boolean) When selected, the STS encrypts the SAML 2.0 assertion. Applicable only to SAML 2.0 security token.  This option does not apply to OAuth assertion profiles.
 - `generate_key` (Boolean) When selected, the STS generates a symmetric key to be used in conjunction with the "Holder of Key" (HoK) designation for the assertion's Subject Confirmation Method.  This option does not apply to OAuth assertion profiles.
-- `message_customizations` (Attributes List) The message customizations for WS-Trust. Depending on server settings, connection type, and protocol this may or may not be supported. (see [below for nested schema](#nestedatt--ws_trust--message_customizations))
+- `message_customizations` (Attributes Set) The message customizations for WS-Trust. Depending on server settings, connection type, and protocol this may or may not be supported. (see [below for nested schema](#nestedatt--ws_trust--message_customizations))
 - `minutes_after` (Number) The amount of time after the SAML token was issued during which it is to be considered valid.
 - `minutes_before` (Number) The amount of time before the SAML token was issued during which it is to be considered valid.
 - `oauth_assertion_profiles` (Boolean) When selected, four additional token-type requests become available.
-- `partner_service_ids` (List of String) The partner service identifiers.
+- `partner_service_ids` (Set of String) The partner service identifiers.
 - `request_contract_ref` (Attributes) Request Contract to be used to map attribute values into the security token. (see [below for nested schema](#nestedatt--ws_trust--request_contract_ref))
-- `token_processor_mappings` (Attributes List) A list of token processors to validate incoming tokens. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings))
+- `token_processor_mappings` (Attributes Set) A list of token processors to validate incoming tokens. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings))
 
 <a id="nestedatt--ws_trust--attribute_contract"></a>
 ### Nested Schema for `ws_trust.attribute_contract`
 
 Read-Only:
 
-- `core_attributes` (Attributes List) A list of read-only assertion attributes that are automatically populated by PingFederate. (see [below for nested schema](#nestedatt--ws_trust--attribute_contract--core_attributes))
-- `extended_attributes` (Attributes List) A list of additional attributes that are added to the outgoing assertion. (see [below for nested schema](#nestedatt--ws_trust--attribute_contract--extended_attributes))
+- `core_attributes` (Attributes Set) A list of read-only assertion attributes that are automatically populated by PingFederate. (see [below for nested schema](#nestedatt--ws_trust--attribute_contract--core_attributes))
+- `extended_attributes` (Attributes Set) A list of additional attributes that are added to the outgoing assertion. (see [below for nested schema](#nestedatt--ws_trust--attribute_contract--extended_attributes))
 
 <a id="nestedatt--ws_trust--attribute_contract--core_attributes"></a>
 ### Nested Schema for `ws_trust.attribute_contract.core_attributes`
@@ -1768,7 +1768,7 @@ Read-Only:
 - `attribute_sources` (Attributes Set) (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--attribute_sources))
 - `idp_token_processor_ref` (Attributes) Reference to the associated token processor. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--idp_token_processor_ref))
 - `issuance_criteria` (Attributes) The issuance criteria that this transaction must meet before the corresponding attribute contract is fulfilled. (see [below for nested schema](#nestedatt--ws_trust--token_processor_mappings--issuance_criteria))
-- `restricted_virtual_entity_ids` (List of String) The list of virtual server IDs that this mapping is restricted to.
+- `restricted_virtual_entity_ids` (Set of String) The list of virtual server IDs that this mapping is restricted to.
 
 <a id="nestedatt--ws_trust--token_processor_mappings--attribute_contract_fulfillment"></a>
 ### Nested Schema for `ws_trust.token_processor_mappings.attribute_contract_fulfillment`

@@ -130,7 +130,7 @@ func (r *kerberosRealmsResource) Schema(ctx context.Context, req resource.Schema
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 

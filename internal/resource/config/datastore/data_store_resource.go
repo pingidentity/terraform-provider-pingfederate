@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
@@ -70,7 +71,7 @@ func (r *dataStoreResource) Schema(ctx context.Context, req resource.SchemaReque
 			"ping_one_ldap_gateway_data_store": toSchemaPingOneLdapGatewayDataStore(),
 		},
 	}
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 
 	resp.Schema = schema
 }
@@ -386,9 +387,12 @@ func (r *dataStoreResource) Create(ctx context.Context, req resource.CreateReque
 }
 
 func (r *dataStoreResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var state dataStoreModel
 
-	diags := req.State.Get(ctx, &state)
+	diags = req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -405,7 +409,7 @@ func (r *dataStoreResource) Read(ctx context.Context, req resource.ReadRequest, 
 	}
 
 	if dataStoreGetReq.CustomDataStore != nil {
-		diags = readCustomDataStoreResponse(ctx, dataStoreGetReq, &state, &state.CustomDataStore, true)
+		diags = readCustomDataStoreResponse(ctx, dataStoreGetReq, &state, &state.CustomDataStore, true, isImportRead)
 		resp.Diagnostics.Append(diags...)
 	}
 
@@ -481,4 +485,5 @@ func (r *dataStoreResource) Delete(ctx context.Context, req resource.DeleteReque
 func (r *dataStoreResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }

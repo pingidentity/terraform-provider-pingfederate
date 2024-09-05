@@ -154,7 +154,7 @@ func (r *authenticationPoliciesResource) Schema(ctx context.Context, req resourc
 			},
 		},
 	}
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -311,7 +311,7 @@ func (r *authenticationPoliciesResource) Create(ctx context.Context, req resourc
 		return
 	}
 
-	apiCreatePolicy := r.apiClient.AuthenticationPoliciesAPI.UpdateDefaultAuthenticationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreatePolicy := r.apiClient.AuthenticationPoliciesAPI.UpdateDefaultAuthenticationPolicy(config.AuthContext(ctx, r.providerConfig))
 	apiCreatePolicy = apiCreatePolicy.Body(*newPolicy)
 	policyResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.UpdateDefaultAuthenticationPolicyExecute(apiCreatePolicy)
 	if err != nil {
@@ -334,7 +334,7 @@ func (r *authenticationPoliciesResource) Read(ctx context.Context, req resource.
 		return
 	}
 
-	policyResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.GetDefaultAuthenticationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	policyResponse, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.GetDefaultAuthenticationPolicy(config.AuthContext(ctx, r.providerConfig)).Execute()
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Authentication Policies", httpResp)
@@ -368,7 +368,7 @@ func (r *authenticationPoliciesResource) Update(ctx context.Context, req resourc
 		return
 	}
 
-	updatePolicyRequest := r.apiClient.AuthenticationPoliciesAPI.UpdateDefaultAuthenticationPolicy(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updatePolicyRequest := r.apiClient.AuthenticationPoliciesAPI.UpdateDefaultAuthenticationPolicy(config.AuthContext(ctx, r.providerConfig))
 	updatedPolicies := client.NewAuthenticationPolicy()
 	err := addOptionalAuthenticationPolicyFields(updatedPolicies, plan)
 	if err != nil {
