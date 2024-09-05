@@ -259,7 +259,6 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Default:     setdefault.StaticValue(emptyStringSet),
 				ElementType: types.StringType,
 				Validators: []validator.Set{
-					setvalidator.SizeAtLeast(1),
 					setvalidator.ValueStringsAre(
 						stringvalidator.OneOf("IMPLICIT",
 							"AUTHORIZATION_CODE",
@@ -315,9 +314,6 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional:    true,
 				Default:     setdefault.StaticValue(emptyStringSet),
 				ElementType: types.StringType,
-				Validators: []validator.Set{
-					setvalidator.SizeAtLeast(1),
-				},
 			},
 			"authorization_detail_types": schema.SetAttribute{
 				Description: "The authorization detail types available for this client.",
@@ -325,9 +321,6 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional:    true,
 				Default:     setdefault.StaticValue(emptyStringSet),
 				ElementType: types.StringType,
-				Validators: []validator.Set{
-					setvalidator.SizeAtLeast(1),
-				},
 			},
 			"restricted_response_types": schema.SetAttribute{
 				Description: "The response types allowed for this client. If omitted all response types are available to the client.",
@@ -335,9 +328,6 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional:    true,
 				ElementType: types.StringType,
 				Default:     setdefault.StaticValue(emptyStringSet),
-				Validators: []validator.Set{
-					setvalidator.SizeAtLeast(1),
-				},
 			},
 			"require_pushed_authorization_requests": schema.BoolAttribute{
 				Description: "Determines whether pushed authorization requests are required when initiating an authorization request. The default is `false`.",
