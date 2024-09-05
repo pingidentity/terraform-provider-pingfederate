@@ -9,6 +9,7 @@ missing_changelog_entries = set()
 
 noImportResources = [
   "pingfederate_connection_metadata_export",
+  "pingfederate_keypairs_signing_key",
   "pingfederate_license"
 ]
 
