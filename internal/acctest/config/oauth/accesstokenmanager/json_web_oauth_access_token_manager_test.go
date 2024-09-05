@@ -68,11 +68,13 @@ func TestAccJsonWebTokenOauthAccessTokenManager(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:                  testAccJsonWebOauthAccessTokenManager(resourceName, updatedResourceModel),
-				ResourceName:            "pingfederate_oauth_access_token_manager." + resourceName,
-				ImportStateId:           jsonWebTokenOauthAccessTokenManagerId,
-				ImportState:             true,
-				ImportStateVerifyIgnore: []string{"configuration.fields.value"},
+				Config:            testAccJsonWebOauthAccessTokenManager(resourceName, updatedResourceModel),
+				ResourceName:      "pingfederate_oauth_access_token_manager." + resourceName,
+				ImportStateId:     jsonWebTokenOauthAccessTokenManagerId,
+				ImportState:       true,
+				ImportStateVerify: true,
+				// Some configuration fields and tables are sensitive or are not set in this test, so they can't be verified here.
+				ImportStateVerifyIgnore: []string{"configuration.fields", "configuration.tables.1", "configuration.tables_all.1"},
 			},
 			{
 				// Back to minimal model

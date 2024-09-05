@@ -76,9 +76,11 @@ func LdapHcl(attrSource *client.LdapAttributeSource) string {
 		binaryAttributeSettingsHcl := ""
 		for key, setting := range *attrSource.BinaryAttributeSettings {
 			binaryAttributeSettingsHcl += fmt.Sprintf(`
+					binary_attribute_settings = {
 			    "%[1]s" = {
 					binary_encoding = "%[2]s"
 				},
+		}
 			`, key, *setting.BinaryEncoding)
 		}
 
@@ -96,9 +98,7 @@ func LdapHcl(attrSource *client.LdapAttributeSource) string {
 					description       = "%s"
 					base_dn           = "%s"
 					search_attributes = %s
-					binary_attribute_settings = {
-						%s
-					}
+					%s
 				}
 			},
 	`

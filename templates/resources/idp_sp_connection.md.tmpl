@@ -1,0 +1,36 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.RenderedProviderName}}"
+subcategory: ""
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage - WS Fed SP Browser SSO
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-ws-fed-sp-browser-sso.tf") }}
+
+## Example Usage - SAML SP Browser SSO
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-saml-sp-browser-sso.tf") }}
+
+## Example Usage - Outbound Provision
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-outbound-provision.tf") }}
+
+## Example Usage - WS Trust
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource-ws-trust.tf") }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the following syntax:
+
+~> "connectionId" should be the id of the SP Connection to be imported
+
+{{ codefile "shell" (printf "%s%s%s" "examples/resources/" .Name "/import.sh") }}
