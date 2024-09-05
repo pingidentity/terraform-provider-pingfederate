@@ -29,6 +29,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
@@ -1223,9 +1224,9 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 	}
 }
 
-func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state *oauthClientModel, productVersion version.SupportedVersion) diag.Diagnostics {
+func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state *oauthClientModel, productVersion version.SupportedVersion, isImportRead bool) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	diags = readOauthClientResponseCommon(ctx, r, state, plan, productVersion)
+	diags = readOauthClientResponseCommon(ctx, r, state, plan, productVersion, isImportRead)
 
 	// state.ClientAuth
 	var clientAuthToState types.Object
@@ -1452,16 +1453,19 @@ func (r *oauthClientResource) Create(ctx context.Context, req resource.CreateReq
 	// Read the response into the state
 	var state oauthClientModel
 
-	diags = readOauthClientResponse(ctx, oauthClientResponse, &plan, &state, r.providerConfig.ProductVersion)
+	diags = readOauthClientResponse(ctx, oauthClientResponse, &plan, &state, r.providerConfig.ProductVersion, false)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
 func (r *oauthClientResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var state oauthClientModel
 
-	diags := req.State.Get(ctx, &state)
+	diags = req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -1479,7 +1483,7 @@ func (r *oauthClientResource) Read(ctx context.Context, req resource.ReadRequest
 	}
 
 	// Read the response into the state
-	diags = readOauthClientResponse(ctx, apiReadOauthClient, &state, &state, r.providerConfig.ProductVersion)
+	diags = readOauthClientResponse(ctx, apiReadOauthClient, &state, &state, r.providerConfig.ProductVersion, isImportRead)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -1514,7 +1518,7 @@ func (r *oauthClientResource) Update(ctx context.Context, req resource.UpdateReq
 
 	// Read the response
 	var state oauthClientModel
-	diags = readOauthClientResponse(ctx, updateOauthClientResponse, &plan, &state, r.providerConfig.ProductVersion)
+	diags = readOauthClientResponse(ctx, updateOauthClientResponse, &plan, &state, r.providerConfig.ProductVersion, false)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -1539,4 +1543,5 @@ func (r *oauthClientResource) Delete(ctx context.Context, req resource.DeleteReq
 func (r *oauthClientResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("client_id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }
