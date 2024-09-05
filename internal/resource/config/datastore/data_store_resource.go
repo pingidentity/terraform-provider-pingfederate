@@ -71,7 +71,7 @@ func (r *dataStoreResource) Schema(ctx context.Context, req resource.SchemaReque
 			"ping_one_ldap_gateway_data_store": toSchemaPingOneLdapGatewayDataStore(),
 		},
 	}
-	id.ToSchemaDeprecated(&schema, true)
+	id.ToSchema(&schema)
 
 	resp.Schema = schema
 }

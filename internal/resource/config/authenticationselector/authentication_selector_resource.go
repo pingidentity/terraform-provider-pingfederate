@@ -110,7 +110,7 @@ func (r *authenticationSelectorResource) Schema(ctx context.Context, req resourc
 			},
 		},
 	}
-	id.ToSchemaDeprecated(&schema, true)
+	id.ToSchema(&schema)
 	id.ToSchemaCustomId(&schema, "selector_id", true, true,
 		"The ID of the plugin instance. The ID cannot be modified once the instance is created.")
 	resp.Schema = schema

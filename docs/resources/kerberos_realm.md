@@ -41,7 +41,7 @@ resource "pingfederate_kerberos_realm" "kerberos_realm" {
 
 ### Read-Only
 
-- `id` (String, Deprecated) The ID of this resource.
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--ldap_gateway_data_store_ref"></a>
 ### Nested Schema for `ldap_gateway_data_store_ref`

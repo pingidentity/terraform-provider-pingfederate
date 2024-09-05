@@ -37,7 +37,7 @@ resource "pingfederate_authentication_policy_contract" "example" {
 ### Read-Only
 
 - `core_attributes` (Attributes List) A list of read-only assertion attributes (for example, subject) that are automatically populated by PingFederate. (see [below for nested schema](#nestedatt--core_attributes))
-- `id` (String, Deprecated) The ID of this resource.
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--extended_attributes"></a>
 ### Nested Schema for `extended_attributes`

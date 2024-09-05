@@ -91,7 +91,7 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Schema(ctx context.Conte
 			},
 		},
 	}
-	id.ToSchemaDeprecated(&schema, true)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 

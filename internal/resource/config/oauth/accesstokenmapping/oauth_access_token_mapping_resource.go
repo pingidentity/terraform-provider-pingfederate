@@ -125,7 +125,7 @@ func (r *oauthAccessTokenMappingResource) Schema(ctx context.Context, req resour
 			},
 		},
 	}
-	id.ToSchemaDeprecated(&schema, true)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 

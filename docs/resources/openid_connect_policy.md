@@ -229,7 +229,7 @@ resource "pingfederate_openid_connect_policy" "OIDCPolicy" {
 
 ### Read-Only
 
-- `id` (String, Deprecated) The ID of this resource.
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--access_token_manager_ref"></a>
 ### Nested Schema for `access_token_manager_ref`

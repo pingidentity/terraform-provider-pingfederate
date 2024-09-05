@@ -494,7 +494,7 @@ resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCre
 
 ### Read-Only
 
-- `id` (String, Deprecated) The ID of this resource.
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--configuration"></a>
 ### Nested Schema for `configuration`

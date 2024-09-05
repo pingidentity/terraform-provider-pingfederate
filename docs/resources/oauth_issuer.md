@@ -37,7 +37,7 @@ resource "pingfederate_oauth_issuer" "oauthIssuer" {
 
 ### Read-Only
 
-- `id` (String, Deprecated) The ID of this resource.
+- `id` (String) The ID of this resource.
 
 ## Import
 

@@ -236,7 +236,7 @@ resource "pingfederate_local_identity_profile" "identityProfileExample" {
 
 ### Read-Only
 
-- `id` (String, Deprecated) The ID of this resource.
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--apc_id"></a>
 ### Nested Schema for `apc_id`
