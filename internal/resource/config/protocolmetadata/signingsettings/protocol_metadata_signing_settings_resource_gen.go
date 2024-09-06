@@ -57,7 +57,7 @@ func (r *protocolMetadataSigningSettingsResource) Schema(ctx context.Context, re
 		Attributes: map[string]schema.Attribute{
 			"signature_algorithm": schema.StringAttribute{
 				Optional:    true,
-				Description: "Signature algorithm. If this property is unset, the default signature algorithm for the key algorithm will be used. Supported signature algorithms are available through the /keyPairs/keyAlgorithms endpoint.",
+				Description: "Signature algorithm. If this property is unset, the default signature algorithm for the key algorithm will be used. Supported signature algorithms are available through the /keyPairs/keyAlgorithms endpoint. Typically supported values are `SHA1withRSA`, `SHA256withRSA`, `SHA384withRSA`, `SHA512withRSA`, `SHA256withRSAandMGF1`, `SHA384withRSAandMGF1`, and `SHA512withRSAandMGF1` for RSA keys, and `SHA256withECDSA`, `SHA384withECDSA`, and `SHA512withECDSA` for EC keys.",
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},

@@ -25,7 +25,7 @@ resource "pingfederate_protocol_metadata_signing_settings" "signingSettings" {
 
 ### Optional
 
-- `signature_algorithm` (String) Signature algorithm. If this property is unset, the default signature algorithm for the key algorithm will be used. Supported signature algorithms are available through the /keyPairs/keyAlgorithms endpoint.
+- `signature_algorithm` (String) Signature algorithm. If this property is unset, the default signature algorithm for the key algorithm will be used. Supported signature algorithms are available through the /keyPairs/keyAlgorithms endpoint. Typically supported values are `SHA1withRSA`, `SHA256withRSA`, `SHA384withRSA`, `SHA512withRSA`, `SHA256withRSAandMGF1`, `SHA384withRSAandMGF1`, and `SHA512withRSAandMGF1` for RSA keys, and `SHA256withECDSA`, `SHA384withECDSA`, and `SHA512withECDSA` for EC keys.
 - `signing_key_ref` (Attributes) Reference to the key used for metadata signing. Refer to /keyPair/signing to get the list of available signing key pairs. (see [below for nested schema](#nestedatt--signing_key_ref))
 
 <a id="nestedatt--signing_key_ref"></a>
