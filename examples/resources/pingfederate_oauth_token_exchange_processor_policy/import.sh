@@ -1,0 +1,1 @@
+terraform import pingfederate_oauth_token_exchange_processor_policy.processorPolicy policyId
