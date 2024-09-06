@@ -1,9 +1,11 @@
 resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCredentialValidatorExample" {
   validator_id = "simpleUsernamePCV"
-  name         = "simpleUsernamePasswordCredentialValidator"
+  name         = "Simple Username Password Credential Validator"
+
   plugin_descriptor_ref = {
     id = "org.sourceid.saml20.domain.SimpleUsernamePasswordCredentialValidator"
   }
+
   configuration = {
     tables = [
       {
