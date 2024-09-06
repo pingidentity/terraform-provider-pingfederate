@@ -16,6 +16,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -52,6 +54,7 @@ func (r *oauthAuthorizationDetailProcessorResource) Configure(_ context.Context,
 
 type oauthAuthorizationDetailProcessorResourceModel struct {
 	Configuration       types.Object `tfsdk:"configuration"`
+	Id                  types.String `tfsdk:"id"`
 	Name                types.String `tfsdk:"name"`
 	ParentRef           types.Object `tfsdk:"parent_ref"`
 	PluginDescriptorRef types.Object `tfsdk:"plugin_descriptor_ref"`
@@ -112,6 +115,7 @@ func (r *oauthAuthorizationDetailProcessorResource) Schema(ctx context.Context, 
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (r *oauthAuthorizationDetailProcessorResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -164,10 +168,12 @@ func (model *oauthAuthorizationDetailProcessorResourceModel) buildClientStruct()
 	return result, respDiags
 }
 
-func (state *oauthAuthorizationDetailProcessorResourceModel) readClientResponse(response *client.AuthorizationDetailProcessor) diag.Diagnostics {
+func (state *oauthAuthorizationDetailProcessorResourceModel) readClientResponse(response *client.AuthorizationDetailProcessor, isImportRead bool) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringValue(response.Id)
 	// configuration
-	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration)
+	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration, isImportRead)
 	respDiags.Append(diags...)
 
 	state.Configuration = configurationValue
@@ -225,13 +231,16 @@ func (r *oauthAuthorizationDetailProcessorResource) Create(ctx context.Context, 
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, false)...)
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *oauthAuthorizationDetailProcessorResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var data oauthAuthorizationDetailProcessorResourceModel
 
 	// Read Terraform prior state data into the model
@@ -254,7 +263,7 @@ func (r *oauthAuthorizationDetailProcessorResource) Read(ctx context.Context, re
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, isImportRead)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -282,7 +291,7 @@ func (r *oauthAuthorizationDetailProcessorResource) Update(ctx context.Context, 
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, false)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -308,4 +317,5 @@ func (r *oauthAuthorizationDetailProcessorResource) Delete(ctx context.Context, 
 func (r *oauthAuthorizationDetailProcessorResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to processor_id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("processor_id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }

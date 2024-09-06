@@ -43,6 +43,10 @@ resource "pingfederate_oauth_authorization_detail_processor" "processor" {
 
 - `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. (see [below for nested schema](#nestedatt--parent_ref))
 
+### Read-Only
+
+- `id` (String) The ID of this resource.
+
 <a id="nestedatt--configuration"></a>
 ### Nested Schema for `configuration`
 

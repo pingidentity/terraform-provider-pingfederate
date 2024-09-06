@@ -81,10 +81,6 @@ func TestAccOauthAuthorizationDetailProcessor_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "processor_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
-				ImportStateVerifyIgnore: []string{
-					"configuration.tables",
-					"configuration.fields",
-				},
 			},
 		},
 	})
@@ -136,6 +132,7 @@ resource "pingfederate_oauth_authorization_detail_processor" "example" {
 // Validate any computed values when applying minimal HCL
 func oauthAuthorizationDetailProcessor_CheckComputedValues() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_oauth_authorization_detail_processor.example", "id", oauthAuthorizationDetailProcessorProcessorId),
 		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_authorization_detail_processor.example", "configuration.fields_all.*", map[string]string{
 			"name":  "enrichment value",
 			"value": "default",
