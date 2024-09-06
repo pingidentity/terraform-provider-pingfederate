@@ -152,12 +152,12 @@ resource "pingfederate_idp_token_processor" "example" {
         ]
       }
     ]
-	fields = [
-	  {
-	    name = "Authentication Attempts"
-		value = "3"
-	  }
-	]
+    fields = [
+      {
+        name  = "Authentication Attempts"
+        value = "3"
+      }
+    ]
   }
   name = "My updated token processor"
   plugin_descriptor_ref = {
