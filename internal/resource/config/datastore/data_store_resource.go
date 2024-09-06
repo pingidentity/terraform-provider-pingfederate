@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/api"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
@@ -476,7 +477,8 @@ func (r *dataStoreResource) Delete(ctx context.Context, req resource.DeleteReque
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	httpResp, err := r.apiClient.DataStoresAPI.DeleteDataStore(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
+	httpResp, err := api.ExponentialBackOffRetryDelete([]int{422},
+		r.apiClient.DataStoresAPI.DeleteDataStore(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute)
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a data store", err, httpResp)
 	}
