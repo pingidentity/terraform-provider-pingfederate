@@ -81,10 +81,6 @@ func TestAccOauthClientRegistrationPolicy_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "policy_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
-				ImportStateVerifyIgnore: []string{
-					"configuration.tables",
-					"configuration.fields",
-				},
 			},
 		},
 	})
@@ -184,6 +180,7 @@ resource "pingfederate_oauth_client_registration_policy" "example" {
 // Validate any computed values when applying minimal HCL
 func oauthClientRegistrationPolicy_CheckComputedValues() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_oauth_client_registration_policy.example", "id", oauthClientRegistrationPolicyPolicyId),
 		resource.TestCheckResourceAttr("pingfederate_oauth_client_registration_policy.example", "configuration.fields_all.#", "7"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_client_registration_policy.example", "configuration.tables_all.#", "0"),
 	)
