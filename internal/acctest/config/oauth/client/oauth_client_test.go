@@ -190,10 +190,16 @@ func TestAccOauthClient(t *testing.T) {
 				ImportStateId:     oauthClientId,
 				ImportState:       true,
 				ImportStateVerify: true,
+				// Sensitive fields can't be imported.
+				// When persistent_grant_expiration_type is set to "SERVER_DEFAULT", the
+				// persistent_grant_expiration_time and persistent_grant_expiration_time_unit fields
+				// are imported as null, since they can only be configured when overriding the server default.
 				ImportStateVerifyIgnore: []string{
 					"client_auth.secret",
 					"client_secret_changed_time",
 					"modification_date",
+					"persistent_grant_expiration_time",
+					"persistent_grant_expiration_time_unit",
 				},
 			},
 			{
