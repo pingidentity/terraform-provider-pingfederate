@@ -28,3 +28,4 @@ data "pingfederate_certificates_ca_export" "caExport" {
 ### Read-Only
 
 - `exported_certificate` (String) The exported PEM-encoded certificate.
+- `id` (String) ID of this resource.

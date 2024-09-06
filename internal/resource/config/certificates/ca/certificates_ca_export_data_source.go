@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -42,6 +43,7 @@ func (r *certificatesCAExportDataSource) Configure(_ context.Context, req dataso
 type certificatesCAExportDataSourceModel struct {
 	CaId                types.String `tfsdk:"ca_id"`
 	ExportedCertificate types.String `tfsdk:"exported_certificate"`
+	Id                  types.String `tfsdk:"id"`
 }
 
 func (r *certificatesCAExportDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -58,6 +60,7 @@ func (r *certificatesCAExportDataSource) Schema(ctx context.Context, req datasou
 			},
 		},
 	}
+	id.ToDataSourceSchema(&resp.Schema)
 }
 
 func (r *certificatesCAExportDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
@@ -78,6 +81,7 @@ func (r *certificatesCAExportDataSource) Read(ctx context.Context, req datasourc
 	}
 
 	// Set the exported metadata
+	data.Id = types.StringValue(data.CaId.ValueString())
 	data.ExportedCertificate = types.StringValue(responseData)
 
 	// Save updated data into Terraform state

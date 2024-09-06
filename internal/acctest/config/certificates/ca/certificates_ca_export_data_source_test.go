@@ -39,5 +39,6 @@ data "pingfederate_certificates_ca_export" "example" {
 func certificatesCAExport_CheckComputedValues() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttrSet("data.pingfederate_certificates_ca_export.example", "exported_certificate"),
+		resource.TestCheckResourceAttr("data.pingfederate_certificates_ca_export.example", "id", "gdxuvcw6p95rex3go7eb3ctsb"),
 	)
 }
