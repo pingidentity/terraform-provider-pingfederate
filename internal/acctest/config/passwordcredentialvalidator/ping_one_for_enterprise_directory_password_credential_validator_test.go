@@ -66,7 +66,7 @@ func TestAccPingOneForEnterpriseDirectoryPasswordCredentialValidators(t *testing
 				ImportStateId:     pingOneForEnterpriseDirectoryPasswordCredentialValidatorsId,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// Have to ignore fields because they get imported into fields_all
+				// Sensitive field values can't be imported so they can't be verified
 				ImportStateVerifyIgnore: []string{"configuration.fields"},
 			},
 			{

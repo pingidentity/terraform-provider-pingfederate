@@ -57,11 +57,11 @@ func TestAccInternallyManagedReferenceOauthAccessTokenManager(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:                  testAccInternallyManagedReferenceOauthAccessTokenManager(resourceName, updatedResourceModel),
-				ResourceName:            "pingfederate_oauth_access_token_manager." + resourceName,
-				ImportStateId:           internallyManagedReferenceOauthAccessTokenManagerId,
-				ImportState:             true,
-				ImportStateVerifyIgnore: []string{"configuration.fields.value"},
+				Config:            testAccInternallyManagedReferenceOauthAccessTokenManager(resourceName, updatedResourceModel),
+				ResourceName:      "pingfederate_oauth_access_token_manager." + resourceName,
+				ImportStateId:     internallyManagedReferenceOauthAccessTokenManagerId,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				// Back to minimal model

@@ -1,0 +1,1 @@
+terraform import pingfederate_server_settings_logging.logSettings id

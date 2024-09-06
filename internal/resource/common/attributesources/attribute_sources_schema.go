@@ -1,6 +1,7 @@
 package attributesources
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/mapvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -146,6 +147,9 @@ func LdapAttributeSourceSchemaAttributes(optionalAndComputedNestedAttributeContr
 					},
 				},
 			},
+		},
+		Validators: []validator.Map{
+			mapvalidator.SizeAtLeast(1),
 		},
 	}
 	return ldapAttributeSourceSchema
