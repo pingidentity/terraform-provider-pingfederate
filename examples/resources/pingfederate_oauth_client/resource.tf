@@ -1,7 +1,3 @@
-# WARNING! You may need to secure your state file properly when using this resource! #
-# Please refer to the link below on how to best store state files and data within. #
-# https://developer.hashicorp.com/terraform/plugin/best-practices/sensitive-state #
-
 resource "pingfederate_oauth_client" "oauthClient" {
   client_id = "oauthClientId"
   grant_types = [
@@ -25,10 +21,10 @@ resource "pingfederate_oauth_client" "oauthClient" {
   ciba_notification_endpoint    = "https://example.com"
   client_auth = {
     type   = "SECRET"
-    secret = "secretValue"
+    secret = var.oauth_client_auth_secret
     secondary_secrets = [
       {
-        secret      = "otherSecretValue"
+        secret      = var.oauth_client_secondary_auth_secret
         expiry_time = "2030-01-02T15:24:00Z"
       }
     ]

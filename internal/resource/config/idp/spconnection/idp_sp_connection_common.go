@@ -40,21 +40,23 @@ type idpSpConnectionModel struct {
 
 var (
 	attributeQueryAttrTypes = map[string]attr.Type{
-		"attributes":                     types.ListType{ElemType: types.StringType},
+		"attributes":                     types.SetType{ElemType: types.StringType},
 		"attribute_contract_fulfillment": attributeContractFulfillmentAttrType,
 		"issuance_criteria":              issuanceCriteriaAttrType,
 		"policy":                         types.ObjectType{AttrTypes: policyAttrTypes},
 		"attribute_sources":              types.SetType{ElemType: types.ObjectType{AttrTypes: attributesources.AttrTypes()}},
 	}
 
+	attributesElemType = types.ObjectType{AttrTypes: map[string]attr.Type{
+		"name":           types.StringType,
+		"multi_valued":   types.BoolType,
+		"types":          types.SetType{ElemType: types.StringType},
+		"sub_attributes": types.SetType{ElemType: types.StringType},
+	}}
+
 	customSchemaAttrTypes = map[string]attr.Type{
-		"namespace": types.StringType,
-		"attributes": types.ListType{ElemType: types.ObjectType{AttrTypes: map[string]attr.Type{
-			"name":           types.StringType,
-			"multi_valued":   types.BoolType,
-			"types":          types.ListType{ElemType: types.StringType},
-			"sub_attributes": types.ListType{ElemType: types.StringType},
-		}}},
+		"namespace":  types.StringType,
+		"attributes": types.SetType{ElemType: attributesElemType},
 	}
 
 	saasFieldInfoAttrTypes = map[string]attr.Type{
@@ -97,7 +99,7 @@ var (
 		"user_source_location":  channelSourceLocationAttrType,
 		"group_source_location": channelSourceLocationAttrType,
 	}
-	certsDefault, _ = types.ListValue(certsListType.ElemType, nil)
+	certsDefault, _ = types.SetValue(certsListType.ElemType, nil)
 )
 
 func readIdpSpconnectionResponseCommon(ctx context.Context, r *client.SpConnection, state *idpSpConnectionModel) diag.Diagnostics {

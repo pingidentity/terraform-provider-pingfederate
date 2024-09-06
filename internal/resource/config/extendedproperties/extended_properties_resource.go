@@ -151,7 +151,7 @@ func (r *extendedPropertiesResource) Create(ctx context.Context, req resource.Cr
 		return
 	}
 
-	apiCreateExtendedProperties := r.apiClient.ExtendedPropertiesAPI.UpdateExtendedProperties(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateExtendedProperties := r.apiClient.ExtendedPropertiesAPI.UpdateExtendedProperties(config.AuthContext(ctx, r.providerConfig))
 	apiCreateExtendedProperties = apiCreateExtendedProperties.Body(*createExtendedProperties)
 	extendedPropertiesResponse, httpResp, err := r.apiClient.ExtendedPropertiesAPI.UpdateExtendedPropertiesExecute(apiCreateExtendedProperties)
 	if err != nil {
@@ -176,7 +176,7 @@ func (r *extendedPropertiesResource) Read(ctx context.Context, req resource.Read
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadExtendedProperties, httpResp, err := r.apiClient.ExtendedPropertiesAPI.GetExtendedProperties(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadExtendedProperties, httpResp, err := r.apiClient.ExtendedPropertiesAPI.GetExtendedProperties(config.AuthContext(ctx, r.providerConfig)).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -212,7 +212,7 @@ func (r *extendedPropertiesResource) Update(ctx context.Context, req resource.Up
 		return
 	}
 
-	updateExtendedProperties := r.apiClient.ExtendedPropertiesAPI.UpdateExtendedProperties(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateExtendedProperties := r.apiClient.ExtendedPropertiesAPI.UpdateExtendedProperties(config.AuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewExtendedProperties()
 	err := addExtendedPropertiesFields(ctx, createUpdateRequest, plan)
 	if err != nil {
