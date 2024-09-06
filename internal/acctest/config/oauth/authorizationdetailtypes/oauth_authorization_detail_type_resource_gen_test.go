@@ -137,6 +137,7 @@ resource "pingfederate_oauth_authorization_detail_type" "example" {
 // Validate any computed values when applying minimal HCL
 func oauthAuthorizationDetailType_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_oauth_authorization_detail_type.example", "id", oauthAuthorizationDetailTypeTypeId),
 		resource.TestCheckResourceAttr("pingfederate_oauth_authorization_detail_type.example", "active", "true"),
 	)
 }

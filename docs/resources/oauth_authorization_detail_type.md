@@ -53,6 +53,10 @@ resource "pingfederate_oauth_authorization_detail_type" "detailType" {
 - `description` (String) The description of the authorization detail type.
 - `type_id` (String) The ID of the authorization detail type. The ID will be system-assigned if not specified.
 
+### Read-Only
+
+- `id` (String) The ID of this resource.
+
 <a id="nestedatt--authorization_detail_processor_ref"></a>
 ### Nested Schema for `authorization_detail_processor_ref`
 

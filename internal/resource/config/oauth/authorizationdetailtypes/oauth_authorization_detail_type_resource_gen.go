@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -54,6 +55,7 @@ type oauthAuthorizationDetailTypeResourceModel struct {
 	Active                          types.Bool   `tfsdk:"active"`
 	AuthorizationDetailProcessorRef types.Object `tfsdk:"authorization_detail_processor_ref"`
 	Description                     types.String `tfsdk:"description"`
+	Id                              types.String `tfsdk:"id"`
 	Type                            types.String `tfsdk:"type"`
 	TypeId                          types.String `tfsdk:"type_id"`
 }
@@ -109,6 +111,7 @@ func (r *oauthAuthorizationDetailTypeResource) Schema(ctx context.Context, req r
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (model *oauthAuthorizationDetailTypeResourceModel) buildClientStruct() (*client.AuthorizationDetailType, diag.Diagnostics) {
@@ -132,6 +135,8 @@ func (model *oauthAuthorizationDetailTypeResourceModel) buildClientStruct() (*cl
 
 func (state *oauthAuthorizationDetailTypeResourceModel) readClientResponse(response *client.AuthorizationDetailType) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringPointerValue(response.Id)
 	// active
 	state.Active = types.BoolPointerValue(response.Active)
 	// authorization_detail_processor_ref
