@@ -61,7 +61,7 @@ func (r *idpDefaultUrlsResource) Schema(ctx context.Context, req resource.Schema
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
