@@ -1,10 +1,17 @@
-resource "pingfederate_authentication_api_settings" "authenticationApiSettings" {
+resource "pingfederate_authentication_api_application" "authenticationApiApplicationExample" {
+  application_id             = "example"
+  name                       = "example"
+  url                        = "https://example.com"
+  description                = "example"
+  additional_allowed_origins = ["https://example.com"]
+}
+
+resource "pingfederate_authentication_api_settings" "apiSettings" {
   api_enabled                          = true
   enable_api_descriptions              = false
   restrict_access_to_redirectless_mode = false
   include_request_context              = true
-  # To remove a previously added default application ref, change id and location values to empty strings
   default_application_ref = {
-    id = ""
+    id = pingfederate_authentication_api_application.authenticationApiApplicationExample.application_id
   }
 }

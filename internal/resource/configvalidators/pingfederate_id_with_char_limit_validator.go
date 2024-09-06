@@ -13,7 +13,7 @@ var _ validator.String = &pingFederateIdWithCharLimitValidator{}
 type pingFederateIdWithCharLimitValidator struct{}
 
 func (v pingFederateIdWithCharLimitValidator) Description(ctx context.Context) string {
-	return "Verifies custom_id contains more than 33 characters, contain no spaces, and be alphanumeric"
+	return "Verifies custom_id contains less than 33 characters, contains no spaces, and is alphanumeric"
 }
 
 func (v pingFederateIdWithCharLimitValidator) MarkdownDescription(ctx context.Context) string {
@@ -31,8 +31,8 @@ func (v pingFederateIdWithCharLimitValidator) ValidateString(ctx context.Context
 	if !isMatch {
 		resp.Diagnostics.AddAttributeError(
 			req.Path,
-			"Invalid custom_id Value",
-			fmt.Sprintf("The custom_id of %s must be less than 33 characters, contain no spaces, and be alphanumeric", req.ConfigValue),
+			"Invalid id value",
+			fmt.Sprintf("The id of %s must be less than 33 characters, contain no spaces, and be alphanumeric", req.ConfigValue),
 		)
 	}
 }

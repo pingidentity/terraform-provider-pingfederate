@@ -1,6 +1,7 @@
 package id
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -37,10 +38,11 @@ func ToSchemaCustomId(s *schema.Schema, idName string, required, characterLimit 
 	customId.Required = required
 	customId.Optional = !required
 	customId.Computed = !required
+	customId.Validators = []validator.String{
+		stringvalidator.LengthAtLeast(1),
+	}
 	if characterLimit {
-		customId.Validators = []validator.String{
-			configvalidators.PingFederateIdWithCharLimit(),
-		}
+		customId.Validators = append(customId.Validators, configvalidators.PingFederateIdWithCharLimit())
 	}
 	s.Attributes[idName] = customId
 }
