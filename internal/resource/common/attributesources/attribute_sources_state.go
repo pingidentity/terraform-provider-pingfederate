@@ -128,7 +128,7 @@ func ToState(con context.Context, attributeSourcesFromClient []client.AttributeS
 			ldapAttrSourceValues["search_filter"] = types.StringValue(attrSource.LdapAttributeSource.SearchFilter)
 			ldapAttrSourceValues["search_attributes"], valueFromDiags = types.SetValueFrom(con, types.StringType, attrSource.LdapAttributeSource.SearchAttributes)
 			diags.Append(valueFromDiags...)
-			if attrSource.LdapAttributeSource.BinaryAttributeSettings == nil {
+			if attrSource.LdapAttributeSource.BinaryAttributeSettings == nil || len(*attrSource.LdapAttributeSource.BinaryAttributeSettings) == 0 {
 				ldapAttrSourceValues["binary_attribute_settings"] = types.MapNull(ldapAttrSourceAttrTypes["binary_attribute_settings"].(types.MapType).ElemType)
 			} else {
 				ldapAttrSourceValues["binary_attribute_settings"], valueFromDiags = types.MapValueFrom(con, ldapAttrSourceAttrTypes["binary_attribute_settings"].(types.MapType).ElemType, attrSource.LdapAttributeSource.BinaryAttributeSettings)

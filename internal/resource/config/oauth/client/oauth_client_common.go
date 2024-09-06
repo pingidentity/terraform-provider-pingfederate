@@ -155,7 +155,7 @@ type oauthClientModel struct {
 	OfflineAccessRequireConsentPrompt                             types.String `tfsdk:"offline_access_require_consent_prompt"`
 }
 
-func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state, plan *oauthClientModel, productVersion version.SupportedVersion) diag.Diagnostics {
+func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state, plan *oauthClientModel, productVersion version.SupportedVersion, isImportRead bool) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.Id = types.StringValue(r.ClientId)
 	state.ClientId = types.StringValue(r.ClientId)
@@ -177,28 +177,43 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state,
 	state.RestrictToDefaultAccessTokenManager = types.BoolPointerValue(r.RestrictToDefaultAccessTokenManager)
 	state.ValidateUsingAllEligibleAtms = types.BoolPointerValue(r.ValidateUsingAllEligibleAtms)
 	state.RefreshRolling = types.StringPointerValue(r.RefreshRolling)
+
+	// If this is an import read and the refresh_token_rolling_interval_type is set to "SERVER_DEFAULT", then set the other rolling refresh token fields to null,
+	// since they can only be configured when the type is set to "OVERRIDE_SERVER_DEFAULT"
 	state.RefreshTokenRollingIntervalType = types.StringPointerValue(r.RefreshTokenRollingIntervalType)
-	state.RefreshTokenRollingInterval = types.Int64PointerValue(r.RefreshTokenRollingInterval)
-
-	// This attribute is returned as empty string when set to its default, and it only exists on PF 12.1+
-	compare, err := version.Compare(productVersion, version.PingFederate1210)
-	if err != nil {
-		diags.AddError("Failed to compare PingFederate versions", err.Error())
-	}
-	pfVersionAtLeast121 := compare >= 0
-	if r.GetRefreshTokenRollingIntervalTimeUnit() == "" && pfVersionAtLeast121 {
-		state.RefreshTokenRollingIntervalTimeUnit = types.StringValue("HOURS")
+	if isImportRead && state.RefreshTokenRollingIntervalType.ValueString() == "SERVER_DEFAULT" {
+		state.RefreshTokenRollingInterval = types.Int64Null()
+		state.RefreshTokenRollingIntervalTimeUnit = types.StringNull()
 	} else {
-		state.RefreshTokenRollingIntervalTimeUnit = types.StringPointerValue(r.RefreshTokenRollingIntervalTimeUnit)
+		state.RefreshTokenRollingInterval = types.Int64PointerValue(r.RefreshTokenRollingInterval)
+		// This attribute is returned as empty string when set to its default, and it only exists on PF 12.1+
+		compare, err := version.Compare(productVersion, version.PingFederate1210)
+		if err != nil {
+			diags.AddError("Failed to compare PingFederate versions", err.Error())
+		}
+		pfVersionAtLeast121 := compare >= 0
+		if r.GetRefreshTokenRollingIntervalTimeUnit() == "" && pfVersionAtLeast121 {
+			state.RefreshTokenRollingIntervalTimeUnit = types.StringValue("HOURS")
+		} else {
+			state.RefreshTokenRollingIntervalTimeUnit = types.StringPointerValue(r.RefreshTokenRollingIntervalTimeUnit)
+		}
 	}
 
+	// If this is an import read and the persistent_grant_expiration_type is set to "SERVER_DEFAULT", then set the other persistent grant fields to null,
+	// since they can only be configured when the type is set to "OVERRIDE_SERVER_DEFAULT"
 	state.PersistentGrantExpirationType = types.StringPointerValue(r.PersistentGrantExpirationType)
-	state.PersistentGrantExpirationTime = types.Int64PointerValue(r.PersistentGrantExpirationTime)
-	if r.GetPersistentGrantExpirationTimeUnit() == "" {
-		state.PersistentGrantExpirationTimeUnit = types.StringValue("DAYS")
+	if isImportRead && state.PersistentGrantExpirationType.ValueString() == "SERVER_DEFAULT" {
+		state.PersistentGrantExpirationTime = types.Int64Null()
+		state.PersistentGrantExpirationTimeUnit = types.StringNull()
 	} else {
-		state.PersistentGrantExpirationTimeUnit = types.StringPointerValue(r.PersistentGrantExpirationTimeUnit)
+		state.PersistentGrantExpirationTime = types.Int64PointerValue(r.PersistentGrantExpirationTime)
+		if r.GetPersistentGrantExpirationTimeUnit() == "" {
+			state.PersistentGrantExpirationTimeUnit = types.StringValue("DAYS")
+		} else {
+			state.PersistentGrantExpirationTimeUnit = types.StringPointerValue(r.PersistentGrantExpirationTimeUnit)
+		}
 	}
+
 	state.PersistentGrantIdleTimeoutType = types.StringPointerValue(r.PersistentGrantIdleTimeoutType)
 	state.PersistentGrantIdleTimeout = types.Int64PointerValue(r.PersistentGrantIdleTimeout)
 	state.PersistentGrantIdleTimeoutTimeUnit = types.StringPointerValue(r.PersistentGrantIdleTimeoutTimeUnit)
