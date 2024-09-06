@@ -29,6 +29,7 @@ data "pingfederate_keypairs_ssl_client_key" "sslClientKey" {
 
 - `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Supported values are `LOCAL` and `HSM`.
 - `expires` (String) The end date up until which the item is valid, in ISO 8601 format (UTC)
+- `id` (String) ID of this resource.
 - `issuer_dn` (String) The issuer's distinguished name
 - `key_algorithm` (String) The public key algorithm.
 - `key_size` (Number) The public key size, in bits.

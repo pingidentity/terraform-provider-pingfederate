@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -46,6 +47,7 @@ type keypairsSslClientKeyResourceModel struct {
 	Expires                 types.String `tfsdk:"expires"`
 	FileData                types.String `tfsdk:"file_data"`
 	Format                  types.String `tfsdk:"format"`
+	Id                      types.String `tfsdk:"id"`
 	IssuerDn                types.String `tfsdk:"issuer_dn"`
 	KeyAlgorithm            types.String `tfsdk:"key_algorithm"`
 	KeyId                   types.String `tfsdk:"key_id"`
@@ -225,7 +227,7 @@ func (r *keypairsSslClientKeyResource) Schema(ctx context.Context, req resource.
 				Computed:    true,
 			},
 			"key_algorithm": schema.StringAttribute{
-				Description: "The public key algorithm. Required if `file_data` is not set, otherwise can't be configured. This field is immutable and will trigger a replace plan if changed.",
+				Description: "The public key algorithm. Required if `file_data` is not set, otherwise can't be configured. This field is immutable and will trigger a replace plan if changed. Typically supported values are `RSA` and `EC`.",
 				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.String{
@@ -236,7 +238,7 @@ func (r *keypairsSslClientKeyResource) Schema(ctx context.Context, req resource.
 				},
 			},
 			"key_size": schema.Int64Attribute{
-				Description: "The public key size, in bits. Can only be configured if `file_data` is not set. If not configured and `file_data` is not set, then the default size for the key algorithm will be used. This field is immutable and will trigger a replace plan if changed.",
+				Description: "The public key size, in bits. Can only be configured if `file_data` is not set. If not configured and `file_data` is not set, then the default size for the key algorithm will be used. This field is immutable and will trigger a replace plan if changed. Typically supported values are `256`, `384`, and `521` for EC keys and `1024`, `2048`, and `4096` for RSA keys.",
 				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.Int64{
@@ -244,7 +246,7 @@ func (r *keypairsSslClientKeyResource) Schema(ctx context.Context, req resource.
 				},
 			},
 			"signature_algorithm": schema.StringAttribute{
-				Description: "The signature algorithm. Can only be configured if `file_data` is not set. If not configured and `file_data` is not set, then the default signature algorithm for the key algorithm will be used. This field is immutable and will trigger a replace plan if changed.",
+				Description: "The signature algorithm. Can only be configured if `file_data` is not set. If not configured and `file_data` is not set, then the default signature algorithm for the key algorithm will be used. This field is immutable and will trigger a replace plan if changed. Typically supported values are `SHA256withECDSA`, `SHA384withECDSA`, and `SHA512withECDSA` for EC keys, and `SHA256withRSA`, `SHA384withRSA`, and `SHA512withRSA` for RSA keys.",
 				Computed:    true,
 				Optional:    true,
 				PlanModifiers: []planmodifier.String{
@@ -272,6 +274,7 @@ func (r *keypairsSslClientKeyResource) Schema(ctx context.Context, req resource.
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (r *keypairsSslClientKeyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -329,19 +332,19 @@ func (r *keypairsSslClientKeyResource) ModifyPlan(ctx context.Context, req resou
 		if internaltypes.IsDefined(plan.Password) {
 			resp.Diagnostics.AddError("password cannot be configured when file_data is not set", "")
 		}
-		if plan.CommonName.IsNull() {
+		if !internaltypes.IsDefined(plan.CommonName) {
 			resp.Diagnostics.AddError("common_name must be configured when file_data is not set", "")
 		}
-		if plan.Organization.IsNull() {
+		if !internaltypes.IsDefined(plan.Organization) {
 			resp.Diagnostics.AddError("organization must be configured when file_data is not set", "")
 		}
-		if plan.Country.IsNull() {
+		if !internaltypes.IsDefined(plan.Country) {
 			resp.Diagnostics.AddError("country must be configured when file_data is not set", "")
 		}
-		if plan.ValidDays.IsNull() {
+		if !internaltypes.IsDefined(plan.ValidDays) {
 			resp.Diagnostics.AddError("valid_days must be configured when file_data is not set", "")
 		}
-		if plan.KeyAlgorithm.IsNull() {
+		if !internaltypes.IsDefined(plan.KeyAlgorithm) {
 			resp.Diagnostics.AddError("key_algorithm must be configured when file_data is not set", "")
 		}
 	}
@@ -403,6 +406,8 @@ func (model *keypairsSslClientKeyResourceModel) buildImportClientStruct() (*clie
 
 func (state *keypairsSslClientKeyResourceModel) readClientResponse(response *client.KeyPairView) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringPointerValue(response.Id)
 	// crypto_provider
 	state.CryptoProvider = types.StringPointerValue(response.CryptoProvider)
 	// expires

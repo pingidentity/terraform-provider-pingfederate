@@ -32,13 +32,13 @@ resource "pingfederate_keypairs_ssl_client_key" "sslClientKey" {
 - `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is true. Supported values are `LOCAL` and `HSM`. This field is immutable and will trigger a replace plan if changed.
 - `file_data` (String) Base-64 encoded PKCS12 or PEM file data. In the case of PEM, the raw (non-base-64) data is also accepted. In BCFIPS mode, only PEM with PBES2 and AES or Triple DES encryption is accepted and 128-bit salt is required. If not configured, the new key will be generated. This field is immutable and will trigger a replace plan if changed.
 - `format` (String) Key pair file format. If specified, this field will control what file format is expected, otherwise the format will be auto-detected. In BCFIPS mode, only `PEM` is supported. Supported values are `PKCS12` and `PEM`. Can only be configured if `file_data` is set. This field is immutable and will trigger a replace plan if changed.
-- `key_algorithm` (String) The public key algorithm. Required if `file_data` is not set, otherwise can't be configured. This field is immutable and will trigger a replace plan if changed.
+- `key_algorithm` (String) The public key algorithm. Required if `file_data` is not set, otherwise can't be configured. This field is immutable and will trigger a replace plan if changed. Typically supported values are `RSA` and `EC`.
 - `key_id` (String) The persistent, unique ID for the certificate. It can be any combination of `[a-z0-9._-]`. This property is system-assigned if not specified. This field is immutable and will trigger a replace plan if changed.
-- `key_size` (Number) The public key size, in bits. Can only be configured if `file_data` is not set. If not configured and `file_data` is not set, then the default size for the key algorithm will be used. This field is immutable and will trigger a replace plan if changed.
+- `key_size` (Number) The public key size, in bits. Can only be configured if `file_data` is not set. If not configured and `file_data` is not set, then the default size for the key algorithm will be used. This field is immutable and will trigger a replace plan if changed. Typically supported values are `256`, `384`, and `521` for EC keys and `1024`, `2048`, and `4096` for RSA keys.
 - `organization` (String) Organization for generating the key pair. Optional if `file_data` is not set, otherwise can't be configured. This field is immutable and will trigger a replace plan if changed.
 - `organization_unit` (String) Organization unit for generating the key pair. Optional if `file_data` is not set, otherwise can't be configured. This field is immutable and will trigger a replace plan if changed.
 - `password` (String, Sensitive) Password for the file. In BCFIPS mode, the password must be at least 14 characters. Must be configured if `file_data` is set, otherwise cannot be configured. This field is immutable and will trigger a replace plan if changed.
-- `signature_algorithm` (String) The signature algorithm. Can only be configured if `file_data` is not set. If not configured and `file_data` is not set, then the default signature algorithm for the key algorithm will be used. This field is immutable and will trigger a replace plan if changed.
+- `signature_algorithm` (String) The signature algorithm. Can only be configured if `file_data` is not set. If not configured and `file_data` is not set, then the default signature algorithm for the key algorithm will be used. This field is immutable and will trigger a replace plan if changed. Typically supported values are `SHA256withECDSA`, `SHA384withECDSA`, and `SHA512withECDSA` for EC keys, and `SHA256withRSA`, `SHA384withRSA`, and `SHA512withRSA` for RSA keys.
 - `state` (String) State for generating the key pair. Optional if `file_data` is not set, otherwise can't be configured. This field is immutable and will trigger a replace plan if changed.
 - `subject_alternative_names` (Set of String) The subject alternative names (SAN). Cannot be configured if `file_data` is set. This field is immutable and will trigger a replace plan if changed.
 - `valid_days` (Number) Number of days the key pair will be valid for. Required if `file_data` is not set, otherwise can't be configured. This field is immutable and will trigger a replace plan if changed.
@@ -46,6 +46,7 @@ resource "pingfederate_keypairs_ssl_client_key" "sslClientKey" {
 ### Read-Only
 
 - `expires` (String) The end date up until which the item is valid, in ISO 8601 format (UTC)
+- `id` (String) The ID of this resource.
 - `issuer_dn` (String) The issuer's distinguished name
 - `serial_number` (String) The serial number assigned by the CA
 - `sha1_fingerprint` (String) SHA-1 fingerprint in Hex encoding

@@ -183,6 +183,7 @@ func keypairsSslClientKey_CheckComputedValuesGenerateMinimal() resource.TestChec
 	for _, prefix := range []string{"", "data."} {
 		testChecks = append(testChecks,
 			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_ssl_client_key.example", "expires"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_ssl_client_key.example", "id", keypairsSslClientKeyGenerateKeyId),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_ssl_client_key.example", "issuer_dn", "CN=Example, O=Ping Identity, C=US"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_ssl_client_key.example", "key_size", "2048"),
 			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_ssl_client_key.example", "serial_number"),
@@ -208,6 +209,7 @@ func keypairsSslClientKey_CheckComputedValuesGenerateComplete() resource.TestChe
 	for _, prefix := range []string{"", "data."} {
 		testChecks = append(testChecks,
 			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_ssl_client_key.example", "expires"),
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_ssl_client_key.example", "id", keypairsSslClientKeyGenerateKeyId),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_ssl_client_key.example", "issuer_dn", "CN=Example, OU=Engineering, O=Ping Identity, L=Austin, ST=Texas, C=US"),
 			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_ssl_client_key.example", "serial_number"),
 			resource.TestCheckResourceAttrSet(prefix+"pingfederate_keypairs_ssl_client_key.example", "sha1_fingerprint"),
@@ -231,6 +233,7 @@ func keypairsSslClientKey_CheckComputedValuesImportMinimal() resource.TestCheckF
 	testChecks := []resource.TestCheckFunc{}
 	for _, prefix := range []string{"", "data."} {
 		testChecks = append(testChecks,
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_ssl_client_key.example", "id", keypairsSslClientKeyImportKeyId),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_ssl_client_key.example", "expires", "2044-07-24T15:46:27Z"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_ssl_client_key.example", "issuer_dn", "CN=Example Authority, O=Example Corporation, C=US"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_ssl_client_key.example", "key_size", "2048"),
@@ -256,6 +259,7 @@ func keypairsSslClientKey_CheckComputedValuesImportComplete() resource.TestCheck
 	testChecks := []resource.TestCheckFunc{}
 	for _, prefix := range []string{"", "data."} {
 		testChecks = append(testChecks,
+			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_ssl_client_key.example", "id", keypairsSslClientKeyImportKeyId),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_ssl_client_key.example", "expires", "2025-08-01T15:16:44Z"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_ssl_client_key.example", "issuer_dn", "CN=Another Authority, O=Example Corporation, C=US"),
 			resource.TestCheckResourceAttr(prefix+"pingfederate_keypairs_ssl_client_key.example", "key_size", "2048"),
