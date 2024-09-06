@@ -37,10 +37,14 @@ resource "pingfederate_keypairs_signing_key_rotation_settings" "keyRotationSetti
 
 ### Optional
 
-- `key_algorithm` (String) Key algorithm to be used while creating a new key pair. If this property is unset, the key algorithm of the original key pair will be used. Supported algorithms are available through the /keyPairs/keyAlgorithms endpoint.
-- `key_size` (Number) Key size, in bits. If this property is unset, the key size of the original key pair will be used. Supported key sizes are available through the /keyPairs/keyAlgorithms endpoint.
-- `signature_algorithm` (String) Required if the original key pair used SHA1 algorithm. If this property is unset, the default signature algorithm of the original key pair will be used. Supported signature algorithms are available through the /keyPairs/keyAlgorithms endpoint.
+- `key_algorithm` (String) Key algorithm to be used while creating a new key pair. If this property is unset, the key algorithm of the original key pair will be used. Supported algorithms are available through the /keyPairs/keyAlgorithms endpoint. Typically supported values are `RSA` and `EC`.
+- `key_size` (Number) Key size, in bits. If this property is unset, the key size of the original key pair will be used. Supported key sizes are available through the /keyPairs/keyAlgorithms endpoint. Typically supported values are `256`, `384`, and `521` for EC keys and `1024`, `2048`, and `4096` for RSA keys.
+- `signature_algorithm` (String) Required if the original key pair used SHA1 algorithm. If this property is unset, the default signature algorithm of the original key pair will be used. Supported signature algorithms are available through the /keyPairs/keyAlgorithms endpoint. Typically supported values are `SHA256withECDSA`, `SHA384withECDSA`, and `SHA512withECDSA` for EC keys, and `SHA256withRSA`, `SHA384withRSA`, and `SHA512withRSA` for RSA keys.
 - `valid_days` (Number) Valid days for the new key pair to be created. If this property is unset, the validity days of the original key pair will be used.
+
+### Read-Only
+
+- `id` (String) The ID of this resource.
 
 ## Import
 

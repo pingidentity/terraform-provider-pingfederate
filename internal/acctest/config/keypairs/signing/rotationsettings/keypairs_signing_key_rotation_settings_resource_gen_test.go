@@ -115,6 +115,7 @@ resource "pingfederate_keypairs_signing_key_rotation_settings" "example" {
 // Validate any computed values when applying minimal HCL
 func keypairsSigningKeyRotationSettings_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key_rotation_settings.example", "id", keypairsSigningKeyRotationSettingsSettingsId),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key_rotation_settings.example", "key_algorithm", "RSA"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key_rotation_settings.example", "key_size", "2048"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key_rotation_settings.example", "signature_algorithm", "SHA256withRSA"),
@@ -125,6 +126,7 @@ func keypairsSigningKeyRotationSettings_CheckComputedValuesMinimal() resource.Te
 // Validate any computed values when applying minimal HCL the second time
 func keypairsSigningKeyRotationSettings_CheckComputedValuesBackToMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key_rotation_settings.example", "id", keypairsSigningKeyRotationSettingsSettingsId),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key_rotation_settings.example", "key_algorithm", "RSA"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key_rotation_settings.example", "key_size", "4096"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_key_rotation_settings.example", "signature_algorithm", "SHA512withRSA"),

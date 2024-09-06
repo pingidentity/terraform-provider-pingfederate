@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -53,6 +54,7 @@ func (r *keypairsSigningKeyRotationSettingsResource) Configure(_ context.Context
 type keypairsSigningKeyRotationSettingsResourceModel struct {
 	ActivationBufferDays types.Int64  `tfsdk:"activation_buffer_days"`
 	CreationBufferDays   types.Int64  `tfsdk:"creation_buffer_days"`
+	Id                   types.String `tfsdk:"id"`
 	KeyAlgorithm         types.String `tfsdk:"key_algorithm"`
 	KeySize              types.Int64  `tfsdk:"key_size"`
 	KeyPairId            types.String `tfsdk:"key_pair_id"`
@@ -84,7 +86,7 @@ func (r *keypairsSigningKeyRotationSettingsResource) Schema(ctx context.Context,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
-				Description: "Key algorithm to be used while creating a new key pair. If this property is unset, the key algorithm of the original key pair will be used. Supported algorithms are available through the /keyPairs/keyAlgorithms endpoint.",
+				Description: "Key algorithm to be used while creating a new key pair. If this property is unset, the key algorithm of the original key pair will be used. Supported algorithms are available through the /keyPairs/keyAlgorithms endpoint. Typically supported values are `RSA` and `EC`.",
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
@@ -95,7 +97,7 @@ func (r *keypairsSigningKeyRotationSettingsResource) Schema(ctx context.Context,
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
 				},
-				Description: "Key size, in bits. If this property is unset, the key size of the original key pair will be used. Supported key sizes are available through the /keyPairs/keyAlgorithms endpoint.",
+				Description: "Key size, in bits. If this property is unset, the key size of the original key pair will be used. Supported key sizes are available through the /keyPairs/keyAlgorithms endpoint. Typically supported values are `256`, `384`, and `521` for EC keys and `1024`, `2048`, and `4096` for RSA keys.",
 			},
 			"key_pair_id": schema.StringAttribute{
 				Required:    true,
@@ -114,7 +116,7 @@ func (r *keypairsSigningKeyRotationSettingsResource) Schema(ctx context.Context,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
-				Description: "Required if the original key pair used SHA1 algorithm. If this property is unset, the default signature algorithm of the original key pair will be used. Supported signature algorithms are available through the /keyPairs/keyAlgorithms endpoint.",
+				Description: "Required if the original key pair used SHA1 algorithm. If this property is unset, the default signature algorithm of the original key pair will be used. Supported signature algorithms are available through the /keyPairs/keyAlgorithms endpoint. Typically supported values are `SHA256withECDSA`, `SHA384withECDSA`, and `SHA512withECDSA` for EC keys, and `SHA256withRSA`, `SHA384withRSA`, and `SHA512withRSA` for RSA keys.",
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
@@ -132,6 +134,7 @@ func (r *keypairsSigningKeyRotationSettingsResource) Schema(ctx context.Context,
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (model *keypairsSigningKeyRotationSettingsResourceModel) buildClientStruct() (*client.KeyPairRotationSettings, diag.Diagnostics) {
@@ -162,6 +165,8 @@ func (model *keypairsSigningKeyRotationSettingsResourceModel) buildClientStruct(
 }
 
 func (state *keypairsSigningKeyRotationSettingsResourceModel) readClientResponse(response *client.KeyPairRotationSettings) diag.Diagnostics {
+	// id
+	state.Id = types.StringValue(state.KeyPairId.ValueString())
 	// activation_buffer_days
 	state.ActivationBufferDays = types.Int64Value(response.ActivationBufferDays)
 	// creation_buffer_days
