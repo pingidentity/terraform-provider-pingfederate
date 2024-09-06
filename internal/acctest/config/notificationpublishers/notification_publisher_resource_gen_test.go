@@ -81,10 +81,6 @@ func TestAccNotificationPublisher_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "publisher_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
-				ImportStateVerifyIgnore: []string{
-					"configuration.tables",
-					"configuration.fields",
-				},
 			},
 		},
 	})

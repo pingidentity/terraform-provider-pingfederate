@@ -1,3 +1,4 @@
-resource "pingfederate_ping_one_connection" "pingOneConnectionExample" {
-  name = "pingOneConnection"
+resource "pingfederate_ping_one_connection" "example" {
+  name       = "My PingOne Environment"
+  credential = var.pingone_connection_credential
 }

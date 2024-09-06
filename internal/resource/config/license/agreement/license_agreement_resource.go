@@ -46,7 +46,7 @@ func (r *licenseAgreementResource) Schema(ctx context.Context, req resource.Sche
 				},
 			},
 			"accepted": schema.BoolAttribute{
-				Description: "Indicates whether license agreement has been accepted. The default value is false.",
+				Description: "Indicates whether license agreement has been accepted. The default value is `false`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
@@ -54,7 +54,7 @@ func (r *licenseAgreementResource) Schema(ctx context.Context, req resource.Sche
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -192,6 +192,8 @@ func (r *licenseAgreementResource) Update(ctx context.Context, req resource.Upda
 
 // This config object is edit-only, so Terraform can't delete it.
 func (r *licenseAgreementResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
+	resp.Diagnostics.AddWarning("Configuration cannot be returned to original state.  The resource has been removed from Terraform state but the configuration remains applied to the environment.", "")
 }
 
 func (r *licenseAgreementResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
