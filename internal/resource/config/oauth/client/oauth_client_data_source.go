@@ -586,7 +586,7 @@ func (r *oauthClientDataSource) Configure(_ context.Context, req datasource.Conf
 // Read a OauthClientResponse object into the model struct
 func readOauthClientResponseDataSource(ctx context.Context, r *client.Client, state *oauthClientModel, productVersion version.SupportedVersion) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	diags = readOauthClientResponseCommon(ctx, r, state, nil, productVersion)
+	diags = readOauthClientResponseCommon(ctx, r, state, nil, productVersion, false)
 
 	// state.ClientAuth
 	var secondarySecretsSetSlice []attr.Value

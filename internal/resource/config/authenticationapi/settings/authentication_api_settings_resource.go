@@ -12,6 +12,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -38,13 +39,13 @@ func (r *authenticationApiSettingsResource) Schema(ctx context.Context, req reso
 		Description: "Manages the Authentication API application settings.",
 		Attributes: map[string]schema.Attribute{
 			"api_enabled": schema.BoolAttribute{
-				Description: "Enable Authentication API",
+				Description: "Enable Authentication API. The default is `false`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"enable_api_descriptions": schema.BoolAttribute{
-				Description: "Enable API descriptions",
+				Description: "Enable API descriptions. The default is `false`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
@@ -55,13 +56,13 @@ func (r *authenticationApiSettingsResource) Schema(ctx context.Context, req reso
 				Attributes:  resourcelink.ToSchema(),
 			},
 			"restrict_access_to_redirectless_mode": schema.BoolAttribute{
-				Description: "Enable restrict access to redirectless mode",
+				Description: "Enable restrict access to redirectless mode. The default is `false`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"include_request_context": schema.BoolAttribute{
-				Description: "Includes request context in API responses",
+				Description: "Includes request context in API responses. The default is `false`.",
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
@@ -69,7 +70,7 @@ func (r *authenticationApiSettingsResource) Schema(ctx context.Context, req reso
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -111,6 +112,15 @@ func (r *authenticationApiSettingsResource) Configure(_ context.Context, req res
 	r.providerConfig = providerCfg.ProviderConfig
 	r.apiClient = providerCfg.ApiClient
 
+}
+
+func (m *authenticationApiSettingsModel) buildDefaultClientStruct() *client.AuthnApiSettings {
+	return &client.AuthnApiSettings{
+		ApiEnabled:                       utils.Pointer(false),
+		EnableApiDescriptions:            utils.Pointer(false),
+		RestrictAccessToRedirectlessMode: utils.Pointer(false),
+		IncludeRequestContext:            utils.Pointer(false),
+	}
 }
 
 func (r *authenticationApiSettingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -222,6 +232,16 @@ func (r *authenticationApiSettingsResource) Update(ctx context.Context, req reso
 // Delete deletes the resource and removes the Terraform state on success.
 // This config object is edit-only, so Terraform can't delete it.
 func (r *authenticationApiSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
+	// Instead this delete will reset the configuration back to the "default" value used by PingFederate.
+	var model authenticationApiSettingsModel
+	clientData := model.buildDefaultClientStruct()
+	apiUpdateRequest := r.apiClient.AuthenticationApiAPI.UpdateAuthenticationApiSettings(config.AuthContext(ctx, r.providerConfig))
+	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
+	_, httpResp, err := r.apiClient.AuthenticationApiAPI.UpdateAuthenticationApiSettingsExecute(apiUpdateRequest)
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while resetting the authentication API settings", err, httpResp)
+	}
 }
 
 func (r *authenticationApiSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

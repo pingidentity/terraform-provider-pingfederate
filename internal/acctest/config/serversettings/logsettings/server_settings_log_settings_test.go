@@ -14,11 +14,11 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
 
-func TestAccServerSettingsLogSettings(t *testing.T) {
-	resourceName := "myServerSettingsLogSettings"
+func TestAccServerSettingsLogging(t *testing.T) {
+	resourceName := "myServerSettingsLogging"
 	//TODO when the plugin framework fixes issues with Set plans, we can test this resource with a
 	// minimal model. For now, just testing setting all values. See the schema
-	// in server_settings_log_settings_resource.go for details.
+	// in server_settings_logging_resource.go for details.
 	logCategoriesEnabledInitial := pointers.Bool(true)
 	logCategoriesEnabled := pointers.Bool(true)
 
@@ -29,33 +29,31 @@ func TestAccServerSettingsLogSettings(t *testing.T) {
 		},
 		Steps: []resource.TestStep{
 			{
-				Config: testAccServerSettingsLogSettings(resourceName, logCategoriesEnabledInitial, false),
-				Check:  testAccCheckExpectedServerSettingsLogSettingsAttributes(logCategoriesEnabledInitial),
+				Config: testAccServerSettingsLogging(resourceName, logCategoriesEnabledInitial, false),
+				Check:  testAccCheckExpectedServerSettingsLoggingAttributes(logCategoriesEnabledInitial),
 			},
 			{
 				// Test updating some fields
-				Config: testAccServerSettingsLogSettings(resourceName, logCategoriesEnabled, true),
-				Check:  testAccCheckExpectedServerSettingsLogSettingsAttributes(logCategoriesEnabled),
+				Config: testAccServerSettingsLogging(resourceName, logCategoriesEnabled, true),
+				Check:  testAccCheckExpectedServerSettingsLoggingAttributes(logCategoriesEnabled),
 			},
 			{
 				// Test importing the resource
-				Config:       testAccServerSettingsLogSettings(resourceName, logCategoriesEnabled, true),
-				ResourceName: "pingfederate_server_settings_log_settings." + resourceName,
-				ImportState:  true,
-				// There's only log_categories and log_categories_all in this resource, so import can't be verified,
-				// since all categories will be imported into the log_categories_all attribute.
-				ImportStateVerify: false,
+				Config:            testAccServerSettingsLogging(resourceName, logCategoriesEnabled, true),
+				ResourceName:      "pingfederate_server_settings_logging." + resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				// Back to minimal model
-				Config: testAccServerSettingsLogSettings(resourceName, logCategoriesEnabledInitial, false),
-				Check:  testAccCheckExpectedServerSettingsLogSettingsAttributes(logCategoriesEnabledInitial),
+				Config: testAccServerSettingsLogging(resourceName, logCategoriesEnabledInitial, false),
+				Check:  testAccCheckExpectedServerSettingsLoggingAttributes(logCategoriesEnabledInitial),
 			},
 		},
 	})
 }
 
-func testAccServerSettingsLogSettings(resourceName string, logCategoriesEnabled *bool, includeAllCategories bool) string {
+func testAccServerSettingsLogging(resourceName string, logCategoriesEnabled *bool, includeAllCategories bool) string {
 	logCategoriesHcl := ""
 	if logCategoriesEnabled != nil {
 		logCategoriesHcl = fmt.Sprintf(`
@@ -102,27 +100,35 @@ log_categories = [
 		},
 			`
 		}
+		if acctest.VersionAtLeast(version.PingFederate1210) {
+			logCategoriesHcl += `
+		{
+			id = "dsresponsetime"
+			enabled = false
+		},
+			`
+		}
 		logCategoriesHcl += `
 	]
 	`
 	}
 
 	return fmt.Sprintf(`
-resource "pingfederate_server_settings_log_settings" "%s" {
+resource "pingfederate_server_settings_logging" "%s" {
 	%s
 }
 
-data "pingfederate_server_settings_log_settings" "%[1]s" {
-  depends_on = [pingfederate_server_settings_log_settings.%[1]s]
+data "pingfederate_server_settings_logging" "%[1]s" {
+  depends_on = [pingfederate_server_settings_logging.%[1]s]
 }`, resourceName,
 		logCategoriesHcl,
 	)
 }
 
 // Test that the expected attributes are set on the PingFederate server
-func testAccCheckExpectedServerSettingsLogSettingsAttributes(logCategoriesEnabled *bool) resource.TestCheckFunc {
+func testAccCheckExpectedServerSettingsLoggingAttributes(logCategoriesEnabled *bool) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		resourceType := "ServerSettingsLogSettings"
+		resourceType := "ServerSettingsLogging"
 		testClient := acctest.TestClient()
 		ctx := acctest.TestBasicAuthContext()
 		response, _, err := testClient.ServerSettingsAPI.GetLogSettings(ctx).Execute()
