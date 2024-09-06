@@ -39,6 +39,7 @@ data "pingfederate_keypairs_ssl_server_certificate" "example" {
 // Validate any computed values when applying HCL
 func keypairsSslServerCertificate_CheckComputedValues() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("data.pingfederate_keypairs_ssl_server_certificate.example", "id", "sslservercert"),
 		resource.TestCheckResourceAttrSet("data.pingfederate_keypairs_ssl_server_certificate.example", "exported_certificate"),
 	)
 }
