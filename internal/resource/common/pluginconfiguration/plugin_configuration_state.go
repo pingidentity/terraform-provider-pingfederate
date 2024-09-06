@@ -37,7 +37,7 @@ func AttrTypes() map[string]attr.Type {
 }
 
 // Creates state values for fields. Returns one value that only includes values specified in the plan, and a second value that includes all fields values
-func ToFieldsSetValue(fields []client.ConfigField, planFields *types.Set, diags *diag.Diagnostics) (types.Set, types.Set) {
+func toFieldsSetValue(fields []client.ConfigField, planFields *types.Set, isImportRead bool, diags *diag.Diagnostics) (types.Set, types.Set) {
 	plannedObjValues := []attr.Value{}
 	allObjValues := []attr.Value{}
 	planFieldsValues := map[string]*string{}
@@ -81,14 +81,23 @@ func ToFieldsSetValue(fields []client.ConfigField, planFields *types.Set, diags 
 		AttrTypes: fieldAttrTypes,
 	}, allObjValues)
 	diags.Append(newDiags...)
-	plannedSetVal, newDiags := types.SetValue(types.ObjectType{
-		AttrTypes: fieldAttrTypes,
-	}, plannedObjValues)
-	diags.Append(newDiags...)
+	var plannedSetVal types.Set
+	if isImportRead {
+		// On imports, just read everything directly into the "fields" attribute
+		plannedSetVal, newDiags = types.SetValue(types.ObjectType{
+			AttrTypes: fieldAttrTypes,
+		}, allObjValues)
+		diags.Append(newDiags...)
+	} else {
+		plannedSetVal, newDiags = types.SetValue(types.ObjectType{
+			AttrTypes: fieldAttrTypes,
+		}, plannedObjValues)
+		diags.Append(newDiags...)
+	}
 	return plannedSetVal, allSetVal
 }
 
-func ToRowsListValue(rows []client.ConfigRow, planRows *types.List, diags *diag.Diagnostics) types.List {
+func toRowsListValue(rows []client.ConfigRow, planRows *types.List, isImportRead bool, diags *diag.Diagnostics) types.List {
 	objValues := []attr.Value{}
 	if planRows == nil || planRows.IsNull() {
 		if len(rows) == 0 {
@@ -100,7 +109,7 @@ func ToRowsListValue(rows []client.ConfigRow, planRows *types.List, diags *diag.
 		for _, row := range rows {
 			attrValues := map[string]attr.Value{}
 			attrValues["default_row"] = types.BoolPointerValue(row.DefaultRow)
-			_, attrValues["fields"] = ToFieldsSetValue(row.Fields, nil, diags)
+			_, attrValues["fields"] = toFieldsSetValue(row.Fields, nil, isImportRead, diags)
 			rowObjVal, newDiags := types.ObjectValue(rowAttrTypes, attrValues)
 			diags.Append(newDiags...)
 			objValues = append(objValues, rowObjVal)
@@ -120,7 +129,7 @@ func ToRowsListValue(rows []client.ConfigRow, planRows *types.List, diags *diag.
 				setVal := planRowFieldsVal.(types.Set)
 				planRowFields = &setVal
 			}
-			attrValues["fields"], _ = ToFieldsSetValue(rows[i].Fields, planRowFields, diags)
+			attrValues["fields"], _ = toFieldsSetValue(rows[i].Fields, planRowFields, isImportRead, diags)
 			rowObjVal, newDiags := types.ObjectValue(rowAttrTypes, attrValues)
 			diags.Append(newDiags...)
 			objValues = append(objValues, rowObjVal)
@@ -134,7 +143,7 @@ func ToRowsListValue(rows []client.ConfigRow, planRows *types.List, diags *diag.
 }
 
 // Creates state values for tables. Returns one value that only includes values specified in the plan, and a second value that includes all tables values
-func ToTablesSetValue(tables []client.ConfigTable, planTables *types.Set, diags *diag.Diagnostics) (types.Set, types.Set) {
+func toTablesSetValue(tables []client.ConfigTable, planTables *types.Set, isImportRead bool, diags *diag.Diagnostics) (types.Set, types.Set) {
 	// List of *all* tables values to return
 	finalTablesAllObjValues := []attr.Value{}
 	// List of tables values to return that were expected based on the plan
@@ -145,7 +154,7 @@ func ToTablesSetValue(tables []client.ConfigTable, planTables *types.Set, diags 
 		for _, table := range tables {
 			attrValues := map[string]attr.Value{}
 			attrValues["name"] = types.StringValue(table.Name)
-			attrValues["rows"] = ToRowsListValue(table.Rows, nil, diags)
+			attrValues["rows"] = toRowsListValue(table.Rows, nil, isImportRead, diags)
 			tableObjValue, newDiags := types.ObjectValue(tableAttrTypes, attrValues)
 			diags.Append(newDiags...)
 			finalTablesAllObjValues = append(finalTablesAllObjValues, tableObjValue)
@@ -171,7 +180,7 @@ func ToTablesSetValue(tables []client.ConfigTable, planTables *types.Set, diags 
 					planTableRows = &listValue
 				}
 			}
-			attrValues["rows"] = ToRowsListValue(tables[i].Rows, planTableRows, diags)
+			attrValues["rows"] = toRowsListValue(tables[i].Rows, planTableRows, isImportRead, diags)
 			tableObjValue, newDiags := types.ObjectValue(tableAttrTypes, attrValues)
 			diags.Append(newDiags...)
 			finalTablesAllObjValues = append(finalTablesAllObjValues, tableObjValue)
@@ -180,18 +189,27 @@ func ToTablesSetValue(tables []client.ConfigTable, planTables *types.Set, diags 
 			}
 		}
 	}
-	plannedTables, newDiags := types.SetValue(types.ObjectType{
-		AttrTypes: tableAttrTypes,
-	}, finalTablesObjValues)
-	diags.Append(newDiags...)
 	allTables, newDiags := types.SetValue(types.ObjectType{
 		AttrTypes: tableAttrTypes,
 	}, finalTablesAllObjValues)
 	diags.Append(newDiags...)
+	var plannedTables types.Set
+	if isImportRead {
+		// On imports, just read everything directly into the "tables" attribute
+		plannedTables, newDiags = types.SetValue(types.ObjectType{
+			AttrTypes: tableAttrTypes,
+		}, finalTablesAllObjValues)
+		diags.Append(newDiags...)
+	} else {
+		plannedTables, newDiags = types.SetValue(types.ObjectType{
+			AttrTypes: tableAttrTypes,
+		}, finalTablesObjValues)
+		diags.Append(newDiags...)
+	}
 	return plannedTables, allTables
 }
 
-func ToState(configFromPlan types.Object, configuration *client.PluginConfiguration) (types.Object, diag.Diagnostics) {
+func ToState(configFromPlan types.Object, configuration *client.PluginConfiguration, isImportRead bool) (types.Object, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	var planFields, planTables *types.Set
 
@@ -206,8 +224,8 @@ func ToState(configFromPlan types.Object, configuration *client.PluginConfigurat
 		planTables = &setVal
 	}
 
-	fieldsAttrValue, fieldsAllAttrValue := ToFieldsSetValue(configuration.Fields, planFields, &diags)
-	tablesAttrValue, tablesAllAttrValue := ToTablesSetValue(configuration.Tables, planTables, &diags)
+	fieldsAttrValue, fieldsAllAttrValue := toFieldsSetValue(configuration.Fields, planFields, isImportRead, &diags)
+	tablesAttrValue, tablesAllAttrValue := toTablesSetValue(configuration.Tables, planTables, isImportRead, &diags)
 
 	configurationAttrValue := map[string]attr.Value{
 		"fields":     fieldsAttrValue,

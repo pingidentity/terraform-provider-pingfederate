@@ -2,12 +2,17 @@ package serversettingssystemkeys
 
 import (
 	"context"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
+	resourceid "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -16,6 +21,11 @@ import (
 var (
 	_ datasource.DataSource              = &serverSettingsSystemKeysDataSource{}
 	_ datasource.DataSourceWithConfigure = &serverSettingsSystemKeysDataSource{}
+
+	systemKeyDataSourceAttrTypes = map[string]attr.Type{
+		"creation_date":      types.StringType,
+		"encrypted_key_data": types.StringType,
+	}
 )
 
 // ServerSettingsSystemKeysDataSource is a helper function to simplify the provider implementation.
@@ -49,11 +59,6 @@ func (r *serverSettingsSystemKeysDataSource) Schema(ctx context.Context, req dat
 						Computed:    true,
 						Optional:    false,
 					},
-					"key_data": schema.StringAttribute{
-						Description: "The clear text system key base 64 encoded. The system key must be 32 bytes before base 64 encoding",
-						Computed:    true,
-						Optional:    false,
-					},
 				},
 			},
 			"previous": schema.SingleNestedAttribute{
@@ -68,11 +73,6 @@ func (r *serverSettingsSystemKeysDataSource) Schema(ctx context.Context, req dat
 					},
 					"encrypted_key_data": schema.StringAttribute{
 						Description: "The system key encrypted.",
-						Computed:    true,
-						Optional:    false,
-					},
-					"key_data": schema.StringAttribute{
-						Description: "The clear text system key base 64 encoded. The system key must be 32 bytes before base 64 encoding",
 						Computed:    true,
 						Optional:    false,
 					},
@@ -93,17 +93,12 @@ func (r *serverSettingsSystemKeysDataSource) Schema(ctx context.Context, req dat
 						Computed:    true,
 						Optional:    false,
 					},
-					"key_data": schema.StringAttribute{
-						Description: "The clear text system key base 64 encoded. The system key must be 32 bytes before base 64 encoding",
-						Computed:    true,
-						Optional:    false,
-					},
 				},
 			},
 		},
 	}
 
-	id.ToDataSourceSchema(&schema)
+	id.ToDataSourceSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -123,6 +118,43 @@ func (r *serverSettingsSystemKeysDataSource) Configure(_ context.Context, req da
 
 }
 
+func readServerSettingsSystemKeysDataSourceResponse(ctx context.Context, r *client.SystemKeys, state *serverSettingsSystemKeysModel, existingId *string) diag.Diagnostics {
+	var diags diag.Diagnostics
+	if existingId != nil {
+		state.Id = types.StringValue(*existingId)
+	} else {
+		state.Id = resourceid.GenerateUUIDToState(existingId)
+	}
+	currentAttrs := r.GetCurrent()
+	currentAttrVals := map[string]attr.Value{
+		"creation_date":      types.StringValue(currentAttrs.GetCreationDate().Format(time.RFC3339Nano)),
+		"encrypted_key_data": types.StringValue(currentAttrs.GetEncryptedKeyData()),
+	}
+	currentAttrsObjVal, respDiags := types.ObjectValue(systemKeyDataSourceAttrTypes, currentAttrVals)
+	diags = append(diags, respDiags...)
+
+	previousAttrs := r.GetPrevious()
+	previousAttrVals := map[string]attr.Value{
+		"creation_date":      types.StringValue(previousAttrs.GetCreationDate().Format(time.RFC3339Nano)),
+		"encrypted_key_data": types.StringValue(previousAttrs.GetEncryptedKeyData()),
+	}
+	previousAttrsObjVal, respDiags := types.ObjectValue(systemKeyDataSourceAttrTypes, previousAttrVals)
+	diags = append(diags, respDiags...)
+
+	pendingAttrs := r.GetPending()
+	pendingAttrVals := map[string]attr.Value{
+		"creation_date":      types.StringValue(pendingAttrs.GetCreationDate().Format(time.RFC3339Nano)),
+		"encrypted_key_data": types.StringValue(pendingAttrs.GetEncryptedKeyData()),
+	}
+	pendingAttrsObjVal, respDiags := types.ObjectValue(systemKeyDataSourceAttrTypes, pendingAttrVals)
+	diags = append(diags, respDiags...)
+
+	state.Current = currentAttrsObjVal
+	state.Pending = pendingAttrsObjVal
+	state.Previous = previousAttrsObjVal
+	return diags
+}
+
 func (r *serverSettingsSystemKeysDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state serverSettingsSystemKeysModel
 
@@ -139,7 +171,7 @@ func (r *serverSettingsSystemKeysDataSource) Read(ctx context.Context, req datas
 	}
 
 	// Read the response into the state
-	diags = readServerSettingsSystemKeysResponse(ctx, apiReadServerSettingsSystemKeys, &state, pointers.String("server_settings_system_keys_id"))
+	diags = readServerSettingsSystemKeysDataSourceResponse(ctx, apiReadServerSettingsSystemKeys, &state, pointers.String("server_settings_system_keys_id"))
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state

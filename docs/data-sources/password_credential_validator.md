@@ -39,8 +39,8 @@ data "pingfederate_password_credential_validator" "myPasswordCredentialValidator
 
 Read-Only:
 
-- `core_attributes` (Attributes List) A list of read-only attributes that are automatically populated by the password credential validator descriptor. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
-- `extended_attributes` (Attributes List) A list of additional attributes that can be returned by the password credential validator. The extended attributes are only used if the adapter supports them. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
+- `core_attributes` (Attributes Set) A list of read-only attributes that are automatically populated by the password credential validator descriptor. (see [below for nested schema](#nestedatt--attribute_contract--core_attributes))
+- `extended_attributes` (Attributes Set) A list of additional attributes that can be returned by the password credential validator. The extended attributes are only used if the adapter supports them. (see [below for nested schema](#nestedatt--attribute_contract--extended_attributes))
 
 <a id="nestedatt--attribute_contract--core_attributes"></a>
 ### Nested Schema for `attribute_contract.core_attributes`

@@ -128,7 +128,7 @@ func toDataSourceSchemaCustomDataStore() datasourceschema.SingleNestedAttribute 
 	return customDataStoreSchema
 }
 
-func toStateCustomDataStore(con context.Context, clientValue *client.DataStoreAggregation, plan types.Object, isResource bool) (types.Object, diag.Diagnostics) {
+func toStateCustomDataStore(con context.Context, clientValue *client.DataStoreAggregation, plan types.Object, isResource, isImportRead bool) (types.Object, diag.Diagnostics) {
 	var diags, allDiags diag.Diagnostics
 
 	if clientValue.CustomDataStore == nil {
@@ -153,10 +153,10 @@ func toStateCustomDataStore(con context.Context, clientValue *client.DataStoreAg
 	if isResource {
 		planConfiguration, ok := plan.Attributes()["configuration"]
 		if ok {
-			configurationObject, diags = pluginconfiguration.ToState(planConfiguration.(types.Object), &customDataStore.Configuration)
+			configurationObject, diags = pluginconfiguration.ToState(planConfiguration.(types.Object), &customDataStore.Configuration, isImportRead)
 			allDiags = append(allDiags, diags...)
 		} else {
-			configurationObject, diags = pluginconfiguration.ToState(types.ObjectNull(pluginconfiguration.AttrTypes()), &customDataStore.Configuration)
+			configurationObject, diags = pluginconfiguration.ToState(types.ObjectNull(pluginconfiguration.AttrTypes()), &customDataStore.Configuration, isImportRead)
 			allDiags = append(allDiags, diags...)
 		}
 		customDataStoreVal["configuration"] = configurationObject
@@ -172,7 +172,7 @@ func toStateCustomDataStore(con context.Context, clientValue *client.DataStoreAg
 	return customDataStoreObj, allDiags
 }
 
-func readCustomDataStoreResponse(ctx context.Context, r *client.DataStoreAggregation, state *dataStoreModel, plan *types.Object, isResource bool) diag.Diagnostics {
+func readCustomDataStoreResponse(ctx context.Context, r *client.DataStoreAggregation, state *dataStoreModel, plan *types.Object, isResource, isImportRead bool) diag.Diagnostics {
 	var diags diag.Diagnostics
 	state.Id = types.StringPointerValue(r.CustomDataStore.Id)
 	state.DataStoreId = types.StringPointerValue(r.CustomDataStore.Id)
@@ -180,11 +180,11 @@ func readCustomDataStoreResponse(ctx context.Context, r *client.DataStoreAggrega
 	state.PingOneLdapGatewayDataStore = pingOneLdapGatewayDataStoreEmptyStateObj
 	if isResource {
 		state.JdbcDataStore = jdbcDataStoreEmptyStateObj
-		state.CustomDataStore, diags = toStateCustomDataStore(ctx, r, *plan, true)
+		state.CustomDataStore, diags = toStateCustomDataStore(ctx, r, *plan, true, isImportRead)
 		state.LdapDataStore = ldapDataStoreEmptyStateObj
 	} else {
 		state.JdbcDataStore = jdbcDataStoreEmptyDataSourceStateObj
-		state.CustomDataStore, diags = toStateCustomDataStore(ctx, r, *plan, false)
+		state.CustomDataStore, diags = toStateCustomDataStore(ctx, r, *plan, false, isImportRead)
 		state.LdapDataStore = ldapDataStoreEmptyDataSourceStateObj
 	}
 	return diags
@@ -241,7 +241,7 @@ func createCustomDataStore(plan dataStoreModel, con context.Context, req resourc
 	}
 	// Read the response into the state
 	var state dataStoreModel
-	diags = readCustomDataStoreResponse(con, response, &state, &plan.CustomDataStore, true)
+	diags = readCustomDataStoreResponse(con, response, &state, &plan.CustomDataStore, true, false)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(con, state)
 	resp.Diagnostics.Append(diags...)
@@ -280,7 +280,7 @@ func updateCustomDataStore(plan dataStoreModel, con context.Context, req resourc
 	}
 	// Read the response
 	var state dataStoreModel
-	diags = readCustomDataStoreResponse(con, response, &state, &plan.CustomDataStore, true)
+	diags = readCustomDataStoreResponse(con, response, &state, &plan.CustomDataStore, true, false)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values

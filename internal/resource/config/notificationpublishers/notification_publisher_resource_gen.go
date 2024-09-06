@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -157,10 +158,10 @@ func (model *notificationPublisherResourceModel) buildClientStruct() (*client.No
 	return result, respDiags
 }
 
-func (state *notificationPublisherResourceModel) readClientResponse(response *client.NotificationPublisher) diag.Diagnostics {
+func (state *notificationPublisherResourceModel) readClientResponse(response *client.NotificationPublisher, isImportRead bool) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
 	// configuration
-	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration)
+	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration, isImportRead)
 	respDiags.Append(diags...)
 
 	state.Configuration = configurationValue
@@ -218,13 +219,16 @@ func (r *notificationPublisherResource) Create(ctx context.Context, req resource
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, false)...)
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *notificationPublisherResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var data notificationPublisherResourceModel
 
 	// Read Terraform prior state data into the model
@@ -247,7 +251,7 @@ func (r *notificationPublisherResource) Read(ctx context.Context, req resource.R
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, isImportRead)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -275,7 +279,7 @@ func (r *notificationPublisherResource) Update(ctx context.Context, req resource
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, false)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -301,4 +305,5 @@ func (r *notificationPublisherResource) Delete(ctx context.Context, req resource
 func (r *notificationPublisherResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to publisher_id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("publisher_id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }

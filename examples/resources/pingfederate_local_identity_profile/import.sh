@@ -1,0 +1,1 @@
+terraform import pingfederate_local_identity_profile.identityProfileExample profileId
