@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
@@ -55,6 +56,7 @@ type identityStoreProvisionerResourceModel struct {
 	AttributeContract      types.Object `tfsdk:"attribute_contract"`
 	Configuration          types.Object `tfsdk:"configuration"`
 	GroupAttributeContract types.Object `tfsdk:"group_attribute_contract"`
+	Id                     types.String `tfsdk:"id"`
 	Name                   types.String `tfsdk:"name"`
 	ParentRef              types.Object `tfsdk:"parent_ref"`
 	PluginDescriptorRef    types.Object `tfsdk:"plugin_descriptor_ref"`
@@ -194,6 +196,7 @@ func (r *identityStoreProvisionerResource) Schema(ctx context.Context, req resou
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (r *identityStoreProvisionerResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -290,6 +293,8 @@ func (model *identityStoreProvisionerResourceModel) buildClientStruct() (*client
 
 func (state *identityStoreProvisionerResourceModel) readClientResponse(response *client.IdentityStoreProvisioner) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringValue(response.Id)
 	// configuration
 	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration)
 	respDiags.Append(diags...)
