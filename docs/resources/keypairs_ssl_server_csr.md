@@ -31,6 +31,7 @@ resource "pingfederate_keypairs_ssl_server_csr" "example" {
 
 - `crypto_provider` (String) Cryptographic Provider. This is only applicable if Hybrid HSM mode is `true`. Options are `LOCAL` or `HSM`.
 - `expires` (String) The end date up until which the item is valid, in ISO 8601 format (UTC).
+- `id` (String) The ID of this resource.
 - `issuer_dn` (String) The issuer's distinguished name.
 - `key_algorithm` (String) The public key algorithm.
 - `key_size` (Number) The public key size.

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -44,6 +45,7 @@ func (r *keypairsSslServerCsrExportResource) Configure(_ context.Context, req re
 }
 
 type keypairsSslServerCsrExportResourceModel struct {
+	Id          types.String `tfsdk:"id"`
 	KeypairId   types.String `tfsdk:"keypair_id"`
 	ExportedCsr types.String `tfsdk:"exported_csr"`
 }
@@ -68,6 +70,7 @@ func (r *keypairsSslServerCsrExportResource) Schema(ctx context.Context, req res
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (r *keypairsSslServerCsrExportResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -88,6 +91,7 @@ func (r *keypairsSslServerCsrExportResource) Create(ctx context.Context, req res
 	}
 
 	// Set the exported metadata
+	data.Id = types.StringValue(data.KeypairId.ValueString())
 	data.ExportedCsr = types.StringValue(responseData)
 
 	// Save updated data into Terraform state
