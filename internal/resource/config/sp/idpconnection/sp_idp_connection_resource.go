@@ -28,6 +28,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/connectioncert"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/datastorerepository"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/inboundprovisioninguserrepository"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
@@ -3761,7 +3762,7 @@ func (r *spIdpConnectionResource) Configure(_ context.Context, req resource.Conf
 
 }
 
-func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, plan, state *spIdpConnectionResourceModel) diag.Diagnostics {
+func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, plan, state *spIdpConnectionResourceModel, isImportRead bool) diag.Diagnostics {
 	var diags, objDiags diag.Diagnostics
 
 	state.Active = types.BoolPointerValue(r.Active)
@@ -4063,7 +4064,7 @@ func readSpIdpConnectionResponse(ctx context.Context, r *client.IdpConnection, p
 					}
 					adapterMapping := plan.IdpBrowserSso.Attributes()["adapter_mappings"].(types.Set).Elements()[i].(types.Object).Attributes()
 					adapterOverrideSettingsConfiguration := idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.Configuration
-					idpBrowserSsoAdapterMappingsAdapterOverrideSettingsConfigurationValue, diags := pluginconfiguration.ToState(adapterMapping["adapter_override_settings"].(types.Object).Attributes()["configuration"].(types.Object), &adapterOverrideSettingsConfiguration)
+					idpBrowserSsoAdapterMappingsAdapterOverrideSettingsConfigurationValue, diags := pluginconfiguration.ToState(adapterMapping["adapter_override_settings"].(types.Object).Attributes()["configuration"].(types.Object), &adapterOverrideSettingsConfiguration, isImportRead)
 					diags.Append(objDiags...)
 					var idpBrowserSsoAdapterMappingsAdapterOverrideSettingsParentRefValue types.Object
 					if idpBrowserSsoAdapterMappingsResponseValue.AdapterOverrideSettings.ParentRef == nil {
@@ -4602,16 +4603,19 @@ func (r *spIdpConnectionResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	diags = readSpIdpConnectionResponse(ctx, spIdpConnectionResponse, &plan, &state)
+	diags = readSpIdpConnectionResponse(ctx, spIdpConnectionResponse, &plan, &state, false)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
 func (r *spIdpConnectionResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var state spIdpConnectionResourceModel
 
-	diags := req.State.Get(ctx, &state)
+	diags = req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -4629,7 +4633,7 @@ func (r *spIdpConnectionResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	// Read the response into the state
-	diags = readSpIdpConnectionResponse(ctx, apiReadSpIdpConnection, &state, &state)
+	diags = readSpIdpConnectionResponse(ctx, apiReadSpIdpConnection, &state, &state, isImportRead)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -4664,7 +4668,7 @@ func (r *spIdpConnectionResource) Update(ctx context.Context, req resource.Updat
 
 	// Read the response
 	var state spIdpConnectionResourceModel
-	diags = readSpIdpConnectionResponse(ctx, updateSpIdpConnectionResponse, &plan, &state)
+	diags = readSpIdpConnectionResponse(ctx, updateSpIdpConnectionResponse, &plan, &state, false)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
