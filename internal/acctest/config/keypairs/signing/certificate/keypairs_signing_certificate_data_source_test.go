@@ -39,5 +39,6 @@ data "pingfederate_keypairs_signing_certificate" "example" {
 func keypairsSigningCertificate_CheckComputedValues() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttrSet("data.pingfederate_keypairs_signing_certificate.example", "exported_certificate"),
+		resource.TestCheckResourceAttr("data.pingfederate_keypairs_signing_certificate.example", "id", "419x9yg43rlawqwq9v6az997k"),
 	)
 }

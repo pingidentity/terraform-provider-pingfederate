@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -40,6 +41,7 @@ func (r *keypairsSigningCertificateDataSource) Configure(_ context.Context, req 
 }
 
 type keypairsSigningCertificateDataSourceModel struct {
+	Id                  types.String `tfsdk:"id"`
 	KeyId               types.String `tfsdk:"key_id"`
 	ExportedCertificate types.String `tfsdk:"exported_certificate"`
 }
@@ -59,6 +61,7 @@ func (r *keypairsSigningCertificateDataSource) Schema(ctx context.Context, req d
 			},
 		},
 	}
+	id.ToDataSourceSchema(&resp.Schema)
 }
 
 func (r *keypairsSigningCertificateDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
@@ -79,6 +82,7 @@ func (r *keypairsSigningCertificateDataSource) Read(ctx context.Context, req dat
 	}
 
 	// Set the exported metadata
+	data.Id = types.StringValue(data.KeyId.ValueString())
 	data.ExportedCertificate = types.StringValue(responseData)
 
 	// Save updated data into Terraform state
