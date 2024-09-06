@@ -13,37 +13,42 @@ Resource to create and manage data stores.
 
 ```terraform
 resource "pingfederate_data_store" "pingDirectoryLdapDataStore" {
-  data_store_id = "pingDirectoryLdapDataStore"
   ldap_data_store = {
-    ldap_type          = "PING_DIRECTORY"
-    bind_anonymously   = false
-    user_dn            = var.ping_directory_user_dn
-    password           = var.ping_directory_password
-    use_ssl            = false
+    name      = "PingDirectory LDAP Data Store"
+    ldap_type = "PING_DIRECTORY"
+
+    bind_anonymously = false
+    user_dn          = var.pingdirectory_bind_dn
+    password         = var.pingdirectory_bind_dn_password
+
+    use_ssl       = true
+    use_start_tls = false
+
     use_dns_srv_record = false
-    name               = "pingDirectoryLdapDataStore"
+
     hostnames = [
-      "pingdirectory:1389"
+      "pingdirectory:636"
     ]
     hostnames_tags = [
       {
         hostnames = [
-          "pingdirectory:1389"
+          "pingdirectory:636"
         ]
         default_source = true
       }
     ]
-    test_on_borrow         = true
+
+    test_on_borrow         = false
     test_on_return         = false
     create_if_necessary    = true
     verify_host            = true
     min_connections        = 10
     max_connections        = 100
     max_wait               = -1
-    time_between_evictions = 6000
-    read_timeout           = 300
-    connection_timeout     = 300
-    dns_ttl                = 6000
+    time_between_evictions = 60000
+    read_timeout           = 3000
+    connection_timeout     = 3000
+    dns_ttl                = 60000
   }
 }
 ```
@@ -51,18 +56,24 @@ resource "pingfederate_data_store" "pingDirectoryLdapDataStore" {
 ## Example Usage - PingOne LDAP gateway data store
 
 ```terraform
+resource "pingfederate_pingone_connection" "example" {
+  name       = "My PingOne Tenant"
+  credential = var.pingone_connection_credential
+}
+
 resource "pingfederate_data_store" "pingOneLdapDataStore" {
-  data_store_id         = "pingOneLdapDataStore"
-  mask_attribute_values = false
   ping_one_ldap_gateway_data_store = {
+    name      = "PingOne LDAP Gateway"
     ldap_type = "PING_DIRECTORY"
-    name      = "pingOneLdapDataStore"
+
     ping_one_connection_ref = {
-      id = var.ping_one_connection_id
-    },
-    ping_one_environment_id  = var.ping_one_environment_id
-    ping_one_ldap_gateway_id = var.ping_one_ldap_gateway_id
-    use_ssl                  = true
+      id = pingfederate_pingone_connection.example.id
+    }
+
+    ping_one_environment_id  = var.pingone_environment_id
+    ping_one_ldap_gateway_id = var.pingone_gateway_id
+
+    use_ssl = true
   }
 }
 ```
@@ -71,21 +82,24 @@ resource "pingfederate_data_store" "pingOneLdapDataStore" {
 
 ```terraform
 resource "pingfederate_data_store" "jdbcDataStore" {
-  data_store_id         = "jdbcDataStore"
-  mask_attribute_values = false
   jdbc_data_store = {
-    name                         = "jdbcDataStore"
-    connection_url               = "jdbc:hsqldb:$${pf.server.data.dir}$${/}hypersonic$${/}ProvisionerDefaultDB;hsqldb.lock_file=false"
-    driver_class                 = "org.hsqldb.jdbcDriver"
-    user_name                    = "sa"
-    password                     = var.jdbc_data_store_password
+    name = "JDBC Data Store"
+
+    connection_url = "jdbc:sqlserver://localhost;encrypt=true;integratedSecurity=true;"
+    driver_class   = "org.hsqldb.jdbcDriver"
+
+    user_name = var.jdbc_data_store_username
+    password  = var.jdbc_data_store_password
+
     allow_multi_value_attributes = false
+
     connection_url_tags = [
       {
-        connection_url = "jdbc:hsqldb:$${pf.server.data.dir}$${/}hypersonic$${/}ProvisionerDefaultDB;hsqldb.lock_file=false",
+        connection_url = "jdbc:sqlserver://localhost;encrypt=true;integratedSecurity=true;"
         default_source = true
       }
     ]
+
     min_pool_size    = 10
     max_pool_size    = 100
     blocking_timeout = 5000
@@ -94,16 +108,22 @@ resource "pingfederate_data_store" "jdbcDataStore" {
 }
 ```
 
-## Example Usage - PingOne data store
+## Example Usage - PingOne Directory data store
 
 ```terraform
+resource "pingfederate_pingone_connection" "example" {
+  name       = "My PingOne Tenant"
+  credential = var.pingone_connection_credential
+}
+
 resource "pingfederate_data_store" "pingOneDataStore" {
-  data_store_id = "pingOneDataStore"
   custom_data_store = {
-    name = "pingOneDataStore"
+    name = format("PingOne Data Store (%s)", var.pingone_environment_name)
+
     plugin_descriptor_ref = {
       id = "com.pingidentity.plugins.datastore.p14c.PingOneForCustomersDataStore"
     }
+
     configuration = {
       tables = [
         {
@@ -128,7 +148,7 @@ resource "pingfederate_data_store" "pingOneDataStore" {
       fields = [
         {
           name  = "PingOne Environment",
-          value = ""
+          value = format("%s|%s", pingfederate_pingone_connection.example.id, var.pingone_environment_id)
         },
         {
           name  = "Connection Timeout",
@@ -165,16 +185,17 @@ resource "pingfederate_data_store" "pingOneDataStore" {
 }
 ```
 
-## Example Usage - Custom data store
+## Example Usage - Custom REST API data store
 
 ```terraform
 resource "pingfederate_data_store" "customDataStore" {
-  data_store_id = "customDataStore"
   custom_data_store = {
-    name = "customDataStore"
+    name = "Custom REST Data Store"
+
     plugin_descriptor_ref = {
       id = "com.pingidentity.pf.datastore.other.RestDataSourceDriver"
     }
+
     configuration = {
       tables = [
         {
@@ -184,11 +205,11 @@ resource "pingfederate_data_store" "customDataStore" {
               fields = [
                 {
                   name  = "Base URL"
-                  value = "http://localhost"
+                  value = "https://my_rest_datasource.bxretail.org/api/v1/users"
                 },
                 {
                   name  = "Tags"
-                  value = "tag"
+                  value = "production"
                 }
               ],
               default_row = true
@@ -220,11 +241,50 @@ resource "pingfederate_data_store" "customDataStore" {
               fields = [
                 {
                   name  = "Local Attribute"
-                  value = "attribute"
+                  value = "givenName"
                 },
                 {
                   name  = "JSON Response Attribute Path"
-                  value = "/json_response_attr_path"
+                  value = "/givenName"
+                }
+              ],
+              default_row = false
+            },
+            {
+              fields = [
+                {
+                  name  = "Local Attribute"
+                  value = "familyName"
+                },
+                {
+                  name  = "JSON Response Attribute Path"
+                  value = "/familyName"
+                }
+              ],
+              default_row = false
+            },
+            {
+              fields = [
+                {
+                  name  = "Local Attribute"
+                  value = "email"
+                },
+                {
+                  name  = "JSON Response Attribute Path"
+                  value = "/email"
+                }
+              ],
+              default_row = false
+            },
+            {
+              fields = [
+                {
+                  name  = "Local Attribute"
+                  value = "password"
+                },
+                {
+                  name  = "JSON Response Attribute Path"
+                  value = "/password"
                 }
               ],
               default_row = false
@@ -235,7 +295,7 @@ resource "pingfederate_data_store" "customDataStore" {
       fields = [
         {
           name  = "Authentication Method"
-          value = "Basic Authentication"
+          value = "OAuth 2.0 Bearer Token"
         },
         {
           name  = "HTTP Method"
@@ -243,11 +303,11 @@ resource "pingfederate_data_store" "customDataStore" {
         },
         {
           name  = "Username"
-          value = "Administrator"
+          value = var.rest_data_store_basic_auth_username
         },
         {
           name  = "Password"
-          value = "2FederateM0re"
+          value = var.rest_data_store_basic_auth_password
         },
         {
           name  = "Password Reference"
@@ -255,19 +315,19 @@ resource "pingfederate_data_store" "customDataStore" {
         },
         {
           name  = "OAuth Token Endpoint"
-          value = "https://example.com"
+          value = "https://authservices.bxretail.org/as/token"
         },
         {
           name  = "OAuth Scope"
-          value = "scope"
+          value = "restapiscope"
         },
         {
           name  = "Client ID"
-          value = "client_id"
+          value = var.rest_data_store_oauth2_client_id
         },
         {
           name  = "Client Secret"
-          value = "2FederateM0re"
+          value = var.rest_data_store_oauth2_client_secret
         },
         {
           name  = "Client Secret Reference"
@@ -303,11 +363,11 @@ resource "pingfederate_data_store" "customDataStore" {
         },
         {
           name  = "Test Connection URL"
-          value = "https://example.com"
+          value = "https://my_rest_datasource.bxretail.org/api/v1/connectiontest"
         },
         {
           name  = "Test Connection Body"
-          value = "body"
+          value = "{\"foo\":\"bar\"}"
         }
       ]
     }
