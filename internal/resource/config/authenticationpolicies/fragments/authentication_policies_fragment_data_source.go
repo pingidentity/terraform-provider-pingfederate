@@ -44,7 +44,7 @@ func (r *authenticationPoliciesFragmentDataSource) Schema(ctx context.Context, r
 				Attributes:  resourcelink.ToDataSourceSchema(),
 				Computed:    true,
 				Optional:    false,
-				Description: "A reference to a resource.",
+				Description: "The reference to the authentication policy contract to use as the attribute inputs for this authentication policy fragment.",
 			},
 			"name": schema.StringAttribute{
 				Computed:    true,
@@ -55,7 +55,7 @@ func (r *authenticationPoliciesFragmentDataSource) Schema(ctx context.Context, r
 				Attributes:  resourcelink.ToDataSourceSchema(),
 				Computed:    true,
 				Optional:    false,
-				Description: "A reference to a resource.",
+				Description: "The reference to the authentication policy contract to use as the attribute outputs for this authentication policy fragment.",
 			},
 			"root_node": authenticationpolicytreenode.DataSourceSchema(),
 		},
