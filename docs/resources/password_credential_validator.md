@@ -12,12 +12,30 @@ Manages a password credential validator plugin instance.
 ## Example Usage - LDAP Username Password Credential Validator
 
 ```terraform
+resource "pingfederate_data_store" "pingDirectoryLdapDataStore" {
+  ldap_data_store = {
+    name      = "PingDirectory LDAP Data Store"
+    ldap_type = "PING_DIRECTORY"
+
+    user_dn  = var.pingdirectory_bind_dn
+    password = var.pingdirectory_bind_dn_password
+
+    use_ssl = true
+
+    hostnames = [
+      "pingdirectory:636"
+    ]
+  }
+}
+
 resource "pingfederate_password_credential_validator" "ldapUsernamePasswordCredentialValidatorExample" {
   validator_id = "ldapUnPwPCV"
-  name         = "ldapUsernamePasswordCredentialValidatorExample"
+  name         = "LDAP Username Password Credential Validator"
+
   plugin_descriptor_ref = {
     id = "org.sourceid.saml20.domain.LDAPUsernamePasswordCredentialValidator"
   }
+
   configuration = {
     tables = [
       {
@@ -28,7 +46,7 @@ resource "pingfederate_password_credential_validator" "ldapUsernamePasswordCrede
     fields = [
       {
         name  = "LDAP Datastore"
-        value = "mydatastore"
+        value = pingfederate_data_store.pingDirectoryLdapDataStore.id
       },
       {
         name  = "Search Base"
@@ -76,10 +94,12 @@ resource "pingfederate_password_credential_validator" "ldapUsernamePasswordCrede
 ```terraform
 resource "pingfederate_password_credential_validator" "pingIdPasswordCredentialValidatorExample" {
   validator_id = "pingIdPCV"
-  name         = "pingIdPasswordCredentialValidatorExample"
+  name         = "PingID Password Credential Validator"
+
   plugin_descriptor_ref = {
     id = "com.pingidentity.plugins.pcvs.pingid.PingIdPCV"
   }
+
   configuration = {
     tables = [
       {
@@ -269,15 +289,42 @@ resource "pingfederate_password_credential_validator" "pingIdPasswordCredentialV
 }
 ```
 
-## Example Usage - PingOne for Customers Password Credential Validator
+## Example Usage - PingOne Directory Password Credential Validator
 
 ```terraform
+resource "pingfederate_pingone_connection" "example" {
+  name       = "My PingOne Tenant"
+  credential = var.pingone_connection_credential
+}
+
+resource "pingfederate_data_store" "pingOneDataStore" {
+  custom_data_store = {
+    name = format("PingOne Data Store (%s)", var.pingone_environment_name)
+
+    plugin_descriptor_ref = {
+      id = "com.pingidentity.plugins.datastore.p14c.PingOneForCustomersDataStore"
+    }
+
+    configuration = {
+      fields = [
+        {
+          name  = "PingOne Environment",
+          value = format("%s|%s", pingfederate_pingone_connection.example.id, var.pingone_environment_id)
+        }
+      ]
+    }
+    mask_attribute_values = false
+  }
+}
+
 resource "pingfederate_password_credential_validator" "pingOnePasswordCredentialValidatorExample" {
   validator_id = "pingOnePCV"
-  name         = "pingOnePasswordCredentialValidatorExample"
+  name         = "PingOne Directory Password Credential Validator"
+
   plugin_descriptor_ref = {
     id = "com.pingidentity.plugins.pcvs.p14c.PingOneForCustomersPCV"
   }
+
   configuration = {
     tables = [
       {
@@ -288,7 +335,7 @@ resource "pingfederate_password_credential_validator" "pingOnePasswordCredential
     fields = [
       {
         name  = "PingOne For Customers Datastore"
-        value = "mydatastore"
+        value = pingfederate_data_store.pingOneDataStore.id
       },
       {
         name  = "Case-Sensitive Matching"
@@ -304,10 +351,12 @@ resource "pingfederate_password_credential_validator" "pingOnePasswordCredential
 ```terraform
 resource "pingfederate_password_credential_validator" "pingOneForEnterpriseDirectoryPasswordCredentialValidatorExample" {
   validator_id = "pingOneForEnterpriseDirectoryPCV"
-  name         = "pingOneForEnterpriseDirectoryPasswordCredentialValidatorExample"
+  name         = "PingOne for Enterprise Directory Password Credential Validator"
+
   plugin_descriptor_ref = {
     id = "com.pingconnect.alexandria.pingfed.pcv.PingOnePasswordValidator"
   }
+
   configuration = {
     fields = [
       {
@@ -352,10 +401,12 @@ resource "pingfederate_password_credential_validator" "pingOneForEnterpriseDirec
 ```terraform
 resource "pingfederate_password_credential_validator" "radiusUsernamePasswordCredentialValidatorExample" {
   validator_id = "radiusUnPwPCV"
-  name         = "radiusUsernamePasswordCredentialValidator"
+  name         = "RADIUS Username Password Credential Validator"
+
   plugin_descriptor_ref = {
     id = "org.sourceid.saml20.domain.RadiusUsernamePasswordCredentialValidator"
   }
+
   configuration = {
     tables = [
       {
@@ -419,10 +470,12 @@ resource "pingfederate_password_credential_validator" "radiusUsernamePasswordCre
 ```terraform
 resource "pingfederate_password_credential_validator" "simpleUsernamePasswordCredentialValidatorExample" {
   validator_id = "simpleUsernamePCV"
-  name         = "simpleUsernamePasswordCredentialValidator"
+  name         = "Simple Username Password Credential Validator"
+
   plugin_descriptor_ref = {
     id = "org.sourceid.saml20.domain.SimpleUsernamePasswordCredentialValidator"
   }
+
   configuration = {
     tables = [
       {

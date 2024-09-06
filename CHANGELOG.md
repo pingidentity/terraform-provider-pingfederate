@@ -3,7 +3,13 @@
 * The `pingfederate_server_settings_system_keys` attribute `previous` has been changed to read-only. ([#362]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/362)))
 
 ### Resources
+* **New Resource:** `pingfederate_keypairs_signing_key` ([#313]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/313)))
+* **New Resource:** `pingfederate_keypairs_ssl_server_key` ([#314]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/314)))
 * **New Resource:** `pingfederate_idp_to_sp_adapter_mapping` ([#264]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/264)))
+
+### Data sources
+* **New Data source:** `pingfederate_keypairs_signing_key` ([#313]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/313)))
+* **New Data source:** `pingfederate_keypairs_ssl_server_key` ([#314]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/314)))
 
 ### Enhancements
 * Updated resources using read-only `_all` attributes to read to the non-`_all` attribute on import. This includes common attributes such as `configuration.fields` and `configuration.tables`. ([#365]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/365)))
@@ -14,6 +20,8 @@
 
 ### Deprecated
 * The `id` attribute that was formerly deprecated in non-singleton-resources is no longer deprecated. ([#367]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/367)))
+* The `pingfederate_key_pair_ssl_server_import` resource and data source have been renamed. Use `pingfederate_keypairs_ssl_server_key` instead. `pingfederate_key_pair_ssl_server_import` will be removed in a future release. ([#314]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/314)))
+* The `pingfederate_key_pair_signing_import` resource and data source have been renamed. Use `pingfederate_keypairs_signing_key` instead. `pingfederate_key_pair_signing_import` will be removed in a future release. ([#313]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/313)))
 
 # v0.15.0 August 29, 2024
 ### Resources

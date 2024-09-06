@@ -1,9 +1,27 @@
+resource "pingfederate_data_store" "pingDirectoryLdapDataStore" {
+  ldap_data_store = {
+    name      = "PingDirectory LDAP Data Store"
+    ldap_type = "PING_DIRECTORY"
+
+    user_dn  = var.pingdirectory_bind_dn
+    password = var.pingdirectory_bind_dn_password
+
+    use_ssl = true
+
+    hostnames = [
+      "pingdirectory:636"
+    ]
+  }
+}
+
 resource "pingfederate_password_credential_validator" "ldapUsernamePasswordCredentialValidatorExample" {
   validator_id = "ldapUnPwPCV"
-  name         = "ldapUsernamePasswordCredentialValidatorExample"
+  name         = "LDAP Username Password Credential Validator"
+
   plugin_descriptor_ref = {
     id = "org.sourceid.saml20.domain.LDAPUsernamePasswordCredentialValidator"
   }
+
   configuration = {
     tables = [
       {
@@ -14,7 +32,7 @@ resource "pingfederate_password_credential_validator" "ldapUsernamePasswordCrede
     fields = [
       {
         name  = "LDAP Datastore"
-        value = "mydatastore"
+        value = pingfederate_data_store.pingDirectoryLdapDataStore.id
       },
       {
         name  = "Search Base"

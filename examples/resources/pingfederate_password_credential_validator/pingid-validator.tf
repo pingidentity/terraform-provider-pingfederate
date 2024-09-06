@@ -1,9 +1,11 @@
 resource "pingfederate_password_credential_validator" "pingIdPasswordCredentialValidatorExample" {
   validator_id = "pingIdPCV"
-  name         = "pingIdPasswordCredentialValidatorExample"
+  name         = "PingID Password Credential Validator"
+
   plugin_descriptor_ref = {
     id = "com.pingidentity.plugins.pcvs.pingid.PingIdPCV"
   }
+
   configuration = {
     tables = [
       {
