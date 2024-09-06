@@ -5,19 +5,20 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -50,6 +51,9 @@ func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req re
 			"name": schema.StringAttribute{
 				Description: "The plugin instance name. The name can be modified once the instance is created.",
 				Required:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"plugin_descriptor_ref": schema.SingleNestedAttribute{
 				Description: "Reference to the plugin descriptor for this instance. The plugin descriptor cannot be modified once the instance is created.",
@@ -57,12 +61,9 @@ func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req re
 				Attributes:  resourcelink.ToSchema(),
 			},
 			"parent_ref": schema.SingleNestedAttribute{
-				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides)",
+				Description: "The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances.",
 				Optional:    true,
-				PlanModifiers: []planmodifier.Object{
-					objectplanmodifier.UseStateForUnknown(),
-				},
-				Attributes: resourcelink.ToSchema(),
+				Attributes:  resourcelink.ToSchema(),
 			},
 			"configuration": pluginconfiguration.ToSchema(),
 			"attribute_contract": schema.SingleNestedAttribute{
@@ -70,35 +71,33 @@ func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req re
 				Computed:    true,
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
-					"core_attributes": schema.ListNestedAttribute{
+					"core_attributes": schema.SetNestedAttribute{
 						Description: "A list of read-only attributes that are automatically populated by the password credential validator descriptor.",
 						Computed:    true,
-						Optional:    false,
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.UseStateForUnknown(),
+						PlanModifiers: []planmodifier.Set{
+							setplanmodifier.UseStateForUnknown(),
 						},
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
 									Description: "The name of this attribute.",
 									Computed:    true,
-									Optional:    false,
 								},
 							},
 						},
 					},
-					"extended_attributes": schema.ListNestedAttribute{
+					"extended_attributes": schema.SetNestedAttribute{
 						Description: "A list of additional attributes that can be returned by the password credential validator. The extended attributes are only used if the adapter supports them.",
 						Computed:    true,
 						Optional:    true,
-						Default:     listdefault.StaticValue(emptyAttrList),
+						Default:     setdefault.StaticValue(emptyAttrSet),
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"name": schema.StringAttribute{
 									Description: "The name of this attribute.",
 									Required:    true,
-									PlanModifiers: []planmodifier.String{
-										stringplanmodifier.UseStateForUnknown(),
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
 									},
 								},
 							},
@@ -114,7 +113,7 @@ func (r *passwordCredentialValidatorResource) Schema(ctx context.Context, req re
 		"validator_id",
 		true,
 		true,
-		"The ID of the plugin instance. The ID cannot be modified once the instance is created.")
+		"The ID of the plugin instance. The ID cannot be modified once the instance is created. Must be less than 33 characters, contain no spaces, and be alphanumeric.")
 	resp.Schema = schema
 }
 
@@ -274,7 +273,7 @@ func addOptionalPasswordCredentialValidatorFields(ctx context.Context, addReques
 		if err != nil {
 			return err
 		}
-		extendedAttrsLength := len(plan.AttributeContract.Attributes()["extended_attributes"].(types.List).Elements())
+		extendedAttrsLength := len(plan.AttributeContract.Attributes()["extended_attributes"].(types.Set).Elements())
 		if extendedAttrsLength == 0 {
 			addRequest.AttributeContract.ExtendedAttributes = nil
 		}
@@ -324,16 +323,19 @@ func (r *passwordCredentialValidatorResource) Create(ctx context.Context, req re
 	// Read the response into the state
 	var state passwordCredentialValidatorModel
 
-	diags = readPasswordCredentialValidatorResponse(ctx, passwordCredentialValidatorsResponse, &state, plan.Configuration, true)
+	diags = readPasswordCredentialValidatorResponse(ctx, passwordCredentialValidatorsResponse, &state, plan.Configuration, true, false)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
 func (r *passwordCredentialValidatorResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var state passwordCredentialValidatorModel
 
-	diags := req.State.Get(ctx, &state)
+	diags = req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -350,7 +352,7 @@ func (r *passwordCredentialValidatorResource) Read(ctx context.Context, req reso
 	}
 
 	// Read the response into the state
-	diags = readPasswordCredentialValidatorResponse(ctx, apiReadPasswordCredentialValidators, &state, state.Configuration, true)
+	diags = readPasswordCredentialValidatorResponse(ctx, apiReadPasswordCredentialValidators, &state, state.Configuration, true, isImportRead)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -398,7 +400,7 @@ func (r *passwordCredentialValidatorResource) Update(ctx context.Context, req re
 	}
 
 	// Read the response
-	diags = readPasswordCredentialValidatorResponse(ctx, updatePasswordCredentialValidatorsResponse, &plan, plan.Configuration, true)
+	diags = readPasswordCredentialValidatorResponse(ctx, updatePasswordCredentialValidatorsResponse, &plan, plan.Configuration, true, false)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -423,4 +425,5 @@ func (r *passwordCredentialValidatorResource) Delete(ctx context.Context, req re
 func (r *passwordCredentialValidatorResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("validator_id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }

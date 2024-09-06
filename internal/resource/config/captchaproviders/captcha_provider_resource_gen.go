@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -159,10 +160,10 @@ func (model *captchaProviderResourceModel) buildClientStruct() (*client.CaptchaP
 	return result, respDiags
 }
 
-func (state *captchaProviderResourceModel) readClientResponse(response *client.CaptchaProvider) diag.Diagnostics {
+func (state *captchaProviderResourceModel) readClientResponse(response *client.CaptchaProvider, isImportRead bool) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
 	// configuration
-	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration)
+	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration, isImportRead)
 	respDiags.Append(diags...)
 
 	state.Configuration = configurationValue
@@ -220,13 +221,16 @@ func (r *captchaProviderResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, false)...)
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *captchaProviderResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var data captchaProviderResourceModel
 
 	// Read Terraform prior state data into the model
@@ -249,7 +253,7 @@ func (r *captchaProviderResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, isImportRead)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -277,7 +281,7 @@ func (r *captchaProviderResource) Update(ctx context.Context, req resource.Updat
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, false)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -303,4 +307,5 @@ func (r *captchaProviderResource) Delete(ctx context.Context, req resource.Delet
 func (r *captchaProviderResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to provider_id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("provider_id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }
