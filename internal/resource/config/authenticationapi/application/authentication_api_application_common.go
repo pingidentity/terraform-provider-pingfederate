@@ -16,7 +16,7 @@ type authenticationApiApplicationModel struct {
 	Name                         types.String `tfsdk:"name"`
 	Url                          types.String `tfsdk:"url"`
 	Description                  types.String `tfsdk:"description"`
-	AdditionalAllowedOrigins     types.List   `tfsdk:"additional_allowed_origins"`
+	AdditionalAllowedOrigins     types.Set    `tfsdk:"additional_allowed_origins"`
 	ClientForRedirectlessModeRef types.Object `tfsdk:"client_for_redirectless_mode_ref"`
 }
 
@@ -28,7 +28,7 @@ func readAuthenticationApiApplicationResponse(ctx context.Context, r *client.Aut
 	state.Name = types.StringValue(r.Name)
 	state.Url = types.StringValue(r.Url)
 	state.Description = types.StringPointerValue(r.Description)
-	state.AdditionalAllowedOrigins = internaltypes.GetStringList(r.AdditionalAllowedOrigins)
+	state.AdditionalAllowedOrigins = internaltypes.GetStringSet(r.AdditionalAllowedOrigins)
 	state.ClientForRedirectlessModeRef, diags = resourcelink.ToState(ctx, r.ClientForRedirectlessModeRef)
 
 	return diags

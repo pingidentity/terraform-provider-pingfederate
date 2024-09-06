@@ -183,9 +183,8 @@ func TestAccIdpAdapter(t *testing.T) {
 				ImportStateId:     idpAdapterId,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// Can't verify tables, fields, and core_attributes because the computed ones from the server will go into the
-				// corresponding tables_all, fields_all, and core_attributes_all fields
-				ImportStateVerifyIgnore: []string{"configuration.tables", "configuration.fields", "attribute_contract.core_attributes"},
+				// Many fields aren't set by the HCL in this test, so they can't be verified on import here
+				ImportStateVerifyIgnore: []string{"configuration.fields"},
 			},
 			{
 				// Back to the initial minimal model

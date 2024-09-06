@@ -96,8 +96,8 @@ func TestAccCaptchaProvider_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "provider_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
+				// Some configuration fields are sensitive, so they can't be verified here
 				ImportStateVerifyIgnore: []string{
-					"configuration.tables",
 					"configuration.fields",
 				},
 			},
