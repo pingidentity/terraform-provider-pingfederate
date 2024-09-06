@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
@@ -291,12 +292,12 @@ func (model *identityStoreProvisionerResourceModel) buildClientStruct() (*client
 	return result, respDiags
 }
 
-func (state *identityStoreProvisionerResourceModel) readClientResponse(response *client.IdentityStoreProvisioner) diag.Diagnostics {
+func (state *identityStoreProvisionerResourceModel) readClientResponse(response *client.IdentityStoreProvisioner, isImportRead bool) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
 	// id
 	state.Id = types.StringValue(response.Id)
 	// configuration
-	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration)
+	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration, isImportRead)
 	respDiags.Append(diags...)
 
 	state.Configuration = configurationValue
@@ -330,7 +331,7 @@ func (state *identityStoreProvisionerResourceModel) readClientResponse(response 
 	// provisioner_id
 	state.ProvisionerId = types.StringValue(response.Id)
 	// attribute_contract and group_attribute_contract
-	respDiags.Append(state.readClientResponseAttributeContracts(response)...)
+	respDiags.Append(state.readClientResponseAttributeContracts(response, isImportRead)...)
 	return respDiags
 }
 
@@ -356,13 +357,16 @@ func (r *identityStoreProvisionerResource) Create(ctx context.Context, req resou
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, false)...)
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *identityStoreProvisionerResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var data identityStoreProvisionerResourceModel
 
 	// Read Terraform prior state data into the model
@@ -385,7 +389,7 @@ func (r *identityStoreProvisionerResource) Read(ctx context.Context, req resourc
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, isImportRead)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -413,7 +417,7 @@ func (r *identityStoreProvisionerResource) Update(ctx context.Context, req resou
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, false)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -439,4 +443,5 @@ func (r *identityStoreProvisionerResource) Delete(ctx context.Context, req resou
 func (r *identityStoreProvisionerResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to provisioner_id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("provisioner_id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }

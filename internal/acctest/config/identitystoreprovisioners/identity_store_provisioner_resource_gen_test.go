@@ -81,13 +81,6 @@ func TestAccIdentityStoreProvisioner_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "provisioner_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
-				// These attributes are imported into the corresponding "_all" attributes
-				ImportStateVerifyIgnore: []string{
-					"configuration.tables",
-					"configuration.fields",
-					"attribute_contract.core_attributes",
-					"group_attribute_contract.core_attributes",
-				},
 			},
 		},
 	})

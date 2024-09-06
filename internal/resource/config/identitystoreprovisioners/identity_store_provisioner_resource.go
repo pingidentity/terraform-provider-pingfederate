@@ -10,7 +10,7 @@ import (
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
-func (state *identityStoreProvisionerResourceModel) readClientResponseAttributeContracts(response *client.IdentityStoreProvisioner) diag.Diagnostics {
+func (state *identityStoreProvisionerResourceModel) readClientResponseAttributeContracts(response *client.IdentityStoreProvisioner, isImportRead bool) diag.Diagnostics {
 	var respDiags diag.Diagnostics
 	// attribute_contract
 	attributeContractCoreAttributesAttrTypes := map[string]attr.Type{
@@ -33,7 +33,8 @@ func (state *identityStoreProvisionerResourceModel) readClientResponseAttributeC
 		var attributeContractCoreAttributesAllValues []attr.Value
 		var attributeContractCoreAttributesValues []attr.Value
 		coreAttributeNamesInPlan := []string{}
-		// Only include core_attributes set in the plan in the state core_attributes value.
+		// Only include core_attributes set in the plan in the state core_attributes value, unless this is an import read.
+		// On import reads, just read everything into the core_attributes value.
 		if internaltypes.IsDefined(state.AttributeContract) {
 			for _, coreAttr := range state.AttributeContract.Attributes()["core_attributes"].(types.List).Elements() {
 				coreAttributeNamesInPlan = append(coreAttributeNamesInPlan, coreAttr.(types.Object).Attributes()["name"].(types.String).ValueString())
@@ -45,7 +46,7 @@ func (state *identityStoreProvisionerResourceModel) readClientResponseAttributeC
 			})
 			respDiags.Append(diags...)
 			attributeContractCoreAttributesAllValues = append(attributeContractCoreAttributesAllValues, attributeContractCoreAttributesValue)
-			if slices.Contains(coreAttributeNamesInPlan, attributeContractCoreAttributesResponseValue.Name) {
+			if isImportRead || slices.Contains(coreAttributeNamesInPlan, attributeContractCoreAttributesResponseValue.Name) {
 				attributeContractCoreAttributesValues = append(attributeContractCoreAttributesValues, attributeContractCoreAttributesValue)
 			}
 		}
@@ -80,7 +81,8 @@ func (state *identityStoreProvisionerResourceModel) readClientResponseAttributeC
 		var groupAttributeContractCoreAttributesAllValues []attr.Value
 		var groupAttributeContractCoreAttributesValues []attr.Value
 		coreAttributeNamesInPlan := []string{}
-		// Only include core_attributes set in the plan in the state core_attributes value.
+		// Only include core_attributes set in the plan in the state core_attributes value, unless this is an import read.
+		// On import reads, just read everything into the core_attributes value.
 		if internaltypes.IsDefined(state.GroupAttributeContract) {
 			for _, coreAttr := range state.GroupAttributeContract.Attributes()["core_attributes"].(types.List).Elements() {
 				coreAttributeNamesInPlan = append(coreAttributeNamesInPlan, coreAttr.(types.Object).Attributes()["name"].(types.String).ValueString())
@@ -92,7 +94,7 @@ func (state *identityStoreProvisionerResourceModel) readClientResponseAttributeC
 			})
 			respDiags.Append(diags...)
 			groupAttributeContractCoreAttributesAllValues = append(groupAttributeContractCoreAttributesAllValues, groupAttributeContractCoreAttributesValue)
-			if slices.Contains(coreAttributeNamesInPlan, groupAttributeContractCoreAttributesResponseValue.Name) {
+			if isImportRead || slices.Contains(coreAttributeNamesInPlan, groupAttributeContractCoreAttributesResponseValue.Name) {
 				groupAttributeContractCoreAttributesValues = append(groupAttributeContractCoreAttributesValues, groupAttributeContractCoreAttributesValue)
 			}
 		}
