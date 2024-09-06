@@ -23,7 +23,7 @@ data "pingfederate_server_settings_system_keys" "myServerSettingsSystemKeysExamp
 ### Read-Only
 
 - `current` (Attributes) Current SystemKeys Secrets that are used in cryptographic operations to generate and consume internal tokens. (see [below for nested schema](#nestedatt--current))
-- `id` (String) ID of this resource.
+- `id` (String, Deprecated) ID of this resource.
 - `pending` (Attributes) Pending SystemKeys Secrets that are used in cryptographic operations to generate and consume internal tokens. (see [below for nested schema](#nestedatt--pending))
 - `previous` (Attributes) Previous SystemKeys Secrets that are used in cryptographic operations to generate and consume internal tokens. (see [below for nested schema](#nestedatt--previous))
 
@@ -34,7 +34,6 @@ Read-Only:
 
 - `creation_date` (String) Creation time of the key.
 - `encrypted_key_data` (String) The system key encrypted.
-- `key_data` (String) The clear text system key base 64 encoded. The system key must be 32 bytes before base 64 encoding
 
 
 <a id="nestedatt--pending"></a>
@@ -44,7 +43,6 @@ Read-Only:
 
 - `creation_date` (String) Creation time of the key.
 - `encrypted_key_data` (String) The system key encrypted.
-- `key_data` (String) The clear text system key base 64 encoded. The system key must be 32 bytes before base 64 encoding
 
 
 <a id="nestedatt--previous"></a>
@@ -54,4 +52,3 @@ Read-Only:
 
 - `creation_date` (String) Creation time of the key.
 - `encrypted_key_data` (String) The system key encrypted.
-- `key_data` (String) The clear text system key base 64 encoded. The system key must be 32 bytes before base 64 encoding

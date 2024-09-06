@@ -35,7 +35,7 @@ resource "pingfederate_oauth_auth_server_settings_scopes_exclusive_scope" "oauth
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String, Deprecated) The ID of this resource.
 
 ## Import
 

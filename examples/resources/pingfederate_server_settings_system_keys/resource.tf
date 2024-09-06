@@ -1,12 +1,8 @@
-# WARNING! You will need to secure your state file properly when using this resource! #
-# Please refer to the link below on how to best store state files and data within. #
-# https://developer.hashicorp.com/terraform/plugin/best-practices/sensitive-state #
-
-resource "pingfederate_server_settings_system_keys" "serverSettingsSystemKeysExample" {
+resource "pingfederate_server_settings_system_keys" "systemKeys" {
   current = {
-    encrypted_key_data = ""
+    encrypted_key_data = var.current_server_encrypted_key_data
   }
   pending = {
-    encrypted_key_data = ""
+    encrypted_key_data = var.pending_server_encrypted_key_data
   }
 }
