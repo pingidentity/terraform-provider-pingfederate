@@ -3,6 +3,7 @@
 * The `pingfederate_server_settings_system_keys` attribute `previous` has been changed to read-only. ([#362]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/362)))
 
 ### Resources
+* **New Resource:** `pingfederate_idp_token_processor` ([#277]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/277)))
 * **New Resource:** `pingfederate_oauth_token_exchange_processor_policy` ([#333](https://github.com/pingidentity/terraform-provider-pingfederate/pull/333))
 * **New Resource:** `pingfederate_oauth_token_exchange_processor_settings` ([#333](https://github.com/pingidentity/terraform-provider-pingfederate/pull/333))
 * **New Resource:** `pingfederate_keypairs_signing_key` ([#313]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/313)))
@@ -59,7 +60,6 @@
 
 # v0.14.0 August 15, 2024
 ### Resources
-* **New Resource:** `pingfederate_idp_token_processor` ([#277]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/277)))
 * **New Resource:** `pingfederate_keypairs_oauth_openid_connect_additional_key_set` ([#271]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/271)))
 * **New Resource:** `pingfederate_captcha_provider` ([#275]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/275)))
 * **New Resource:** `pingfederate_oauth_access_token_manager_settings` ([#274]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/274)))

@@ -81,10 +81,6 @@ func TestAccIdpTokenProcessor_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "processor_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
-				ImportStateVerifyIgnore: []string{
-					"configuration.tables",
-					"configuration.fields",
-				},
 			},
 		},
 	})
@@ -156,6 +152,12 @@ resource "pingfederate_idp_token_processor" "example" {
         ]
       }
     ]
+	fields = [
+	  {
+	    name = "Authentication Attempts"
+		value = "3"
+	  }
+	]
   }
   name = "My updated token processor"
   plugin_descriptor_ref = {
@@ -168,6 +170,7 @@ resource "pingfederate_idp_token_processor" "example" {
 // Validate any computed values when applying minimal HCL
 func idpTokenProcessor_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_idp_token_processor.example", "id", idpTokenProcessorProcessorId),
 		resource.TestCheckResourceAttr("pingfederate_idp_token_processor.example", "attribute_contract.core_attributes.0.masked", "false"),
 		resource.TestCheckResourceAttr("pingfederate_idp_token_processor.example", "attribute_contract.extended_attributes.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_idp_token_processor.example", "attribute_contract.mask_ognl_values", "false"),
@@ -179,6 +182,7 @@ func idpTokenProcessor_CheckComputedValuesMinimal() resource.TestCheckFunc {
 // Validate any computed values when applying complete HCL
 func idpTokenProcessor_CheckComputedValuesComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_idp_token_processor.example", "id", idpTokenProcessorProcessorId),
 		resource.TestCheckResourceAttr("pingfederate_idp_token_processor.example", "attribute_contract.core_attributes.0.masked", "false"),
 		resource.TestCheckResourceAttr("pingfederate_idp_token_processor.example", "attribute_contract.extended_attributes.1.masked", "false"),
 	)
