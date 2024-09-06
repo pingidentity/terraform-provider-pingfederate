@@ -108,8 +108,8 @@ func TestAccCustomDataStore(t *testing.T) {
 				ImportStateId:     customDataStoreId,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// fields and tables attributes get imported into _all versions
-				ImportStateVerifyIgnore: []string{"custom_data_store.configuration.fields", "custom_data_store.configuration.tables"},
+				// Some configuration fields are sensitive, so they can't be verified here
+				ImportStateVerifyIgnore: []string{"custom_data_store.configuration.fields"},
 			},
 			{
 				// Back to the initial minimal model

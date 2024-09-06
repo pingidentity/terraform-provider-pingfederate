@@ -1,0 +1,1 @@
+terraform import pingfederate_idp_sts_request_parameters_contract.requestParametersContract contractId
