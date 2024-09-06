@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
@@ -57,6 +58,7 @@ type spAdapterResourceModel struct {
 	AdapterId             types.String `tfsdk:"adapter_id"`
 	AttributeContract     types.Object `tfsdk:"attribute_contract"`
 	Configuration         types.Object `tfsdk:"configuration"`
+	Id                    types.String `tfsdk:"id"`
 	Name                  types.String `tfsdk:"name"`
 	ParentRef             types.Object `tfsdk:"parent_ref"`
 	PluginDescriptorRef   types.Object `tfsdk:"plugin_descriptor_ref"`
@@ -173,6 +175,7 @@ func (r *spAdapterResource) Schema(ctx context.Context, req resource.SchemaReque
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (model *spAdapterResourceModel) buildClientStruct() (*client.SpAdapter, error) {
@@ -231,6 +234,8 @@ func (model *spAdapterResourceModel) buildClientStruct() (*client.SpAdapter, err
 
 func (state *spAdapterResourceModel) readClientResponse(response *client.SpAdapter) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringValue(response.Id)
 	// adapter_id
 	state.AdapterId = types.StringValue(response.Id)
 	// attribute_contract
