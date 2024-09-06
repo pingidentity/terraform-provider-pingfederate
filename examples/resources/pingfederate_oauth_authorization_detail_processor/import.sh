@@ -1,0 +1,1 @@
+terraform import pingfederate_oauth_authorization_detail_processor.processor processorId

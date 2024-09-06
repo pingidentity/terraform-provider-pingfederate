@@ -64,6 +64,8 @@ import (
 	oauthaccesstokenmanagerssettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/accesstokenmanagers/settings"
 	oauthaccesstokenmapping "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/accesstokenmapping"
 	oauthauthenticationpolicycontractmappings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authenticationpolicycontractmappings"
+	oauthauthorizationdetailprocessors "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authorizationdetailprocessors"
+	oauthauthorizationdetailtypes "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authorizationdetailtypes"
 	oauthauthserversettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authserversettings"
 	oauthauthserversettingsscopescommonscope "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authserversettings/scopes/commonscope"
 	oauthauthserversettingsscopesexclusivescope "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/oauth/authserversettings/scopes/exclusivescope"
@@ -779,6 +781,8 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		oauthaccesstokenmanagerssettings.OauthAccessTokenManagerSettingsResource,
 		oauthaccesstokenmapping.OauthAccessTokenMappingResource,
 		oauthauthenticationpolicycontractmappings.OauthAuthenticationPolicyContractMappingResource,
+		oauthauthorizationdetailprocessors.OauthAuthorizationDetailProcessorResource,
+		oauthauthorizationdetailtypes.OauthAuthorizationDetailTypeResource,
 		oauthauthserversettings.OauthAuthServerSettingsResource,
 		oauthauthserversettings.OauthServerSettingsResource,
 		oauthauthserversettingsscopescommonscope.OauthAuthServerSettingsScopesCommonScopeResource,

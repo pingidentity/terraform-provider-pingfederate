@@ -3,6 +3,8 @@
 * The `pingfederate_server_settings_system_keys` attribute `previous` has been changed to read-only. ([#362]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/362)))
 
 ### Resources
+* **New Resource:** `pingfederate_oauth_authorization_detail_processor` ([#329](https://github.com/pingidentity/terraform-provider-pingfederate/pull/329))
+* **New Resource:** `pingfederate_oauth_authorization_detail_type` ([#329](https://github.com/pingidentity/terraform-provider-pingfederate/pull/329))
 * **New Resource:** `pingfederate_keypairs_signing_key` ([#313]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/313)))
 * **New Resource:** `pingfederate_keypairs_ssl_server_key` ([#314]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/314)))
 * **New Resource:** `pingfederate_idp_to_sp_adapter_mapping` ([#264]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/264)))
