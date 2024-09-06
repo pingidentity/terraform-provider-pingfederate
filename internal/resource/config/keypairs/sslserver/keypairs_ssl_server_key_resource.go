@@ -26,6 +26,8 @@ import (
 var (
 	_ resource.Resource              = &keypairsSslServerKeyResource{}
 	_ resource.ResourceWithConfigure = &keypairsSslServerKeyResource{}
+
+	customId = "key_id"
 )
 
 // KeypairsSslServerKeyResource is a helper function to simplify the provider implementation.
@@ -540,7 +542,7 @@ func (r *keypairsSslServerKeyResource) Create(ctx context.Context, req resource.
 		apiCreateRequest = apiCreateRequest.Body(*clientData)
 		responseData, httpResp, err = r.apiClient.KeyPairsSslServerAPI.CreateSslServerKeyPairExecute(apiCreateRequest)
 		if err != nil {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while generating the ssl server key", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while generating the ssl server key", err, httpResp, &customId)
 			return
 		}
 	} else {
@@ -550,7 +552,7 @@ func (r *keypairsSslServerKeyResource) Create(ctx context.Context, req resource.
 		apiCreateRequest = apiCreateRequest.Body(*clientData)
 		responseData, httpResp, err = r.apiClient.KeyPairsSslServerAPI.ImportSslServerKeyPairExecute(apiCreateRequest)
 		if err != nil {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while importing the ssl server key", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while importing the ssl server key", err, httpResp, &customId)
 			return
 		}
 	}
@@ -579,7 +581,7 @@ func (r *keypairsSslServerKeyResource) Read(ctx context.Context, req resource.Re
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "SSL Server Key Pair", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the key pair", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the key pair", err, httpResp, &customId)
 		}
 		return
 	}
@@ -610,6 +612,6 @@ func (r *keypairsSslServerKeyResource) Delete(ctx context.Context, req resource.
 	// Delete API call logic
 	httpResp, err := r.apiClient.KeyPairsSslServerAPI.DeleteSslServerKeyPair(config.AuthContext(ctx, r.providerConfig), data.KeyId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the ssl server key", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the ssl server key", err, httpResp, &customId)
 	}
 }

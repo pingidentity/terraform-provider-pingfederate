@@ -288,7 +288,7 @@ func createPingOneLdapGatewayDataStore(plan dataStoreModel, con context.Context,
 
 	response, httpResponse, err := createDataStore(createPingOneLdapGatewayDataStore, dsr, con, resp)
 	if err != nil {
-		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while creating the DataStore", err, httpResponse)
+		config.ReportHttpErrorCustomId(con, &resp.Diagnostics, "An error occurred while creating the DataStore", err, httpResponse, &customId)
 		return
 	}
 
@@ -329,7 +329,7 @@ func updatePingOneLdapGatewayDataStore(plan dataStoreModel, con context.Context,
 
 	response, httpResp, err := updateDataStore(updatePingOneLdapGatewayDataStore, dsr, con, resp, plan.Id.ValueString())
 	if err != nil {
-		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while updating the DataStore", err, httpResp)
+		config.ReportHttpErrorCustomId(con, &resp.Diagnostics, "An error occurred while updating the DataStore", err, httpResp, &customId)
 		return
 	}
 

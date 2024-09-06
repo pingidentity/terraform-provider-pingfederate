@@ -34,6 +34,8 @@ var (
 	_ resource.Resource                = &openidConnectPolicyResource{}
 	_ resource.ResourceWithConfigure   = &openidConnectPolicyResource{}
 	_ resource.ResourceWithImportState = &openidConnectPolicyResource{}
+
+	customId = "policy_id"
 )
 
 // OpenidConnectPolicyResource is a helper function to simplify the provider implementation.
@@ -347,7 +349,7 @@ func (r *openidConnectPolicyResource) Create(ctx context.Context, req resource.C
 	apiCreateOIDCPolicy = apiCreateOIDCPolicy.Body(*newOIDCPolicy)
 	oidcPolicyResponse, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.CreateOIDCPolicyExecute(apiCreateOIDCPolicy)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OIDC Policy", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the OIDC Policy", err, httpResp, &customId)
 		return
 	}
 
@@ -373,7 +375,7 @@ func (r *openidConnectPolicyResource) Read(ctx context.Context, req resource.Rea
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OIDC Policy", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OIDC Policy", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting an OIDC Policy", err, httpResp, &customId)
 		}
 		return
 	}
@@ -416,7 +418,7 @@ func (r *openidConnectPolicyResource) Update(ctx context.Context, req resource.U
 	updateOIDCPolicyRequest = updateOIDCPolicyRequest.Body(*updatedPolicy)
 	updateResponse, httpResp, err := r.apiClient.OauthOpenIdConnectAPI.UpdateOIDCPolicyExecute(updateOIDCPolicyRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the OIDC Policy", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the OIDC Policy", err, httpResp, &customId)
 		return
 	}
 
@@ -441,7 +443,7 @@ func (r *openidConnectPolicyResource) Delete(ctx context.Context, req resource.D
 	}
 	httpResp, err := r.apiClient.OauthOpenIdConnectAPI.DeleteOIDCPolicy(config.AuthContext(ctx, r.providerConfig), state.PolicyId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the OIDC Policy", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the OIDC Policy", err, httpResp, &customId)
 	}
 }
 

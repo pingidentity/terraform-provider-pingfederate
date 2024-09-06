@@ -29,6 +29,7 @@ var (
 	_ resource.ResourceWithImportState = &authenticationApiApplicationResource{}
 
 	emptyStringSet, _ = types.SetValue(types.StringType, nil)
+	customId          = "application_id"
 )
 
 // AuthenticationApiApplicationResource is a helper function to simplify the provider implementation.
@@ -162,7 +163,7 @@ func (r *authenticationApiApplicationResource) Create(ctx context.Context, req r
 	apiCreateAuthenticationApiApplication = apiCreateAuthenticationApiApplication.Body(*createAuthenticationApiApplication)
 	authenticationApiApplicationResponse, httpResp, err := r.apiClient.AuthenticationApiAPI.CreateApplicationExecute(apiCreateAuthenticationApiApplication)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating an Authentication Api Application", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating an Authentication Api Application", err, httpResp, &customId)
 		return
 	}
 
@@ -172,7 +173,7 @@ func (r *authenticationApiApplicationResource) Create(ctx context.Context, req r
 	if internaltypes.IsDefined(plan.ClientForRedirectlessModeRef) {
 		authenticationApiApplicationResponse, httpResp, err = r.apiClient.AuthenticationApiAPI.GetApplication(config.AuthContext(ctx, r.providerConfig), plan.ApplicationId.ValueString()).Execute()
 		if err != nil {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp, &customId)
 		}
 	}
 
@@ -199,7 +200,7 @@ func (r *authenticationApiApplicationResource) Read(ctx context.Context, req res
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Authentication API Application", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp, &customId)
 		}
 		return
 	}
@@ -233,7 +234,7 @@ func (r *authenticationApiApplicationResource) Update(ctx context.Context, req r
 	updateAuthenticationApiApplication = updateAuthenticationApiApplication.Body(*createUpdateRequest)
 	updateAuthenticationApiApplicationResponse, httpResp, err := r.apiClient.AuthenticationApiAPI.UpdateApplicationExecute(updateAuthenticationApiApplication)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an Authentication Api Application", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating an Authentication Api Application", err, httpResp, &customId)
 		return
 	}
 
@@ -243,7 +244,7 @@ func (r *authenticationApiApplicationResource) Update(ctx context.Context, req r
 	if internaltypes.IsDefined(plan.ClientForRedirectlessModeRef) {
 		updateAuthenticationApiApplicationResponse, httpResp, err = r.apiClient.AuthenticationApiAPI.GetApplication(config.AuthContext(ctx, r.providerConfig), plan.ApplicationId.ValueString()).Execute()
 		if err != nil {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting an Authentication Api Application", err, httpResp, &customId)
 		}
 	}
 
@@ -266,7 +267,7 @@ func (r *authenticationApiApplicationResource) Delete(ctx context.Context, req r
 	}
 	httpResp, err := r.apiClient.AuthenticationApiAPI.DeleteApplication(config.AuthContext(ctx, r.providerConfig), state.ApplicationId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an Authentication Api Application", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting an Authentication Api Application", err, httpResp, &customId)
 		return
 	}
 

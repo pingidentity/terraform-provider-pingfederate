@@ -36,6 +36,8 @@ var (
 	_ resource.Resource                = &localIdentityProfileResource{}
 	_ resource.ResourceWithConfigure   = &localIdentityProfileResource{}
 	_ resource.ResourceWithImportState = &localIdentityProfileResource{}
+
+	customId = "profile_id"
 )
 
 var (
@@ -1043,7 +1045,7 @@ func (r *localIdentityProfileResource) Create(ctx context.Context, req resource.
 	apiCreateLocalIdentityProfiles = apiCreateLocalIdentityProfiles.Body(*createLocalIdentityProfiles)
 	localIdentityProfilesResponse, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.CreateIdentityProfileExecute(apiCreateLocalIdentityProfiles)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the local identity profiles", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the local identity profiles", err, httpResp, &customId)
 		return
 	}
 
@@ -1070,7 +1072,7 @@ func (r *localIdentityProfileResource) Read(ctx context.Context, req resource.Re
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Local Identity Profile", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the local identity profile", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting the local identity profile", err, httpResp, &customId)
 		}
 		return
 	}
@@ -1108,7 +1110,7 @@ func (r *localIdentityProfileResource) Update(ctx context.Context, req resource.
 	updateLocalIdentityProfiles = updateLocalIdentityProfiles.Body(*createUpdateRequest)
 	updateLocalIdentityProfilesResponse, httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.UpdateIdentityProfileExecute(updateLocalIdentityProfiles)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating a local identity profile", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating a local identity profile", err, httpResp, &customId)
 		return
 	}
 
@@ -1131,7 +1133,7 @@ func (r *localIdentityProfileResource) Delete(ctx context.Context, req resource.
 	}
 	httpResp, err := r.apiClient.LocalIdentityIdentityProfilesAPI.DeleteIdentityProfile(config.AuthContext(ctx, r.providerConfig), state.ProfileId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the local identity profile", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the local identity profile", err, httpResp, &customId)
 	}
 
 }
