@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -54,6 +55,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Configure(_ context
 
 type keypairsOauthOpenidConnectAdditionalKeySetResourceModel struct {
 	Description types.String `tfsdk:"description"`
+	Id          types.String `tfsdk:"id"`
 	Issuers     types.Set    `tfsdk:"issuers"`
 	Name        types.String `tfsdk:"name"`
 	SetId       types.String `tfsdk:"set_id"`
@@ -271,6 +273,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Schema(ctx context.
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -454,6 +457,8 @@ func (model *keypairsOauthOpenidConnectAdditionalKeySetResourceModel) buildClien
 
 func (state *keypairsOauthOpenidConnectAdditionalKeySetResourceModel) readClientResponse(response *client.AdditionalKeySet, versionAtLeast1201 bool) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringPointerValue(response.Id)
 	// description
 	state.Description = types.StringPointerValue(response.Description)
 	// issuers

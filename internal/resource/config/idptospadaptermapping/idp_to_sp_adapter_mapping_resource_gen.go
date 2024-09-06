@@ -17,6 +17,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
@@ -58,6 +59,7 @@ type idpToSpAdapterMappingResourceModel struct {
 	AttributeContractFulfillment     types.Map    `tfsdk:"attribute_contract_fulfillment"`
 	AttributeSources                 types.Set    `tfsdk:"attribute_sources"`
 	DefaultTargetResource            types.String `tfsdk:"default_target_resource"`
+	Id                               types.String `tfsdk:"id"`
 	IssuanceCriteria                 types.Object `tfsdk:"issuance_criteria"`
 	LicenseConnectionGroupAssignment types.String `tfsdk:"license_connection_group_assignment"`
 	MappingId                        types.String `tfsdk:"mapping_id"`
@@ -132,6 +134,7 @@ func (r *idpToSpAdapterMappingResource) Schema(ctx context.Context, req resource
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (model *idpToSpAdapterMappingResourceModel) buildClientStruct() (*client.IdpToSpAdapterMapping, error) {
@@ -172,6 +175,8 @@ func (model *idpToSpAdapterMappingResourceModel) buildClientStruct() (*client.Id
 
 func (state *idpToSpAdapterMappingResourceModel) readClientResponse(response *client.IdpToSpAdapterMapping) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringPointerValue(response.Id)
 	// application_icon_url
 	state.ApplicationIconUrl = types.StringPointerValue(response.ApplicationIconUrl)
 	// application_name

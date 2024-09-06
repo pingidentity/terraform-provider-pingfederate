@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -54,6 +55,7 @@ func (r *metadataUrlResource) Configure(_ context.Context, req resource.Configur
 
 type metadataUrlResourceModel struct {
 	CertView          types.Object `tfsdk:"cert_view"`
+	Id                types.String `tfsdk:"id"`
 	Name              types.String `tfsdk:"name"`
 	Url               types.String `tfsdk:"url"`
 	UrlId             types.String `tfsdk:"url_id"`
@@ -212,6 +214,7 @@ func (r *metadataUrlResource) Schema(ctx context.Context, req resource.SchemaReq
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (model *metadataUrlResourceModel) buildClientStruct() (*client.MetadataUrl, diag.Diagnostics) {
@@ -239,6 +242,8 @@ func (model *metadataUrlResourceModel) buildClientStruct() (*client.MetadataUrl,
 
 func (state *metadataUrlResourceModel) readClientResponse(response *client.MetadataUrl) diag.Diagnostics {
 	var respDiags diag.Diagnostics
+	// id
+	state.Id = types.StringPointerValue(response.Id)
 	// cert_view
 	certViewAttrTypes := map[string]attr.Type{
 		"crypto_provider":           types.StringType,

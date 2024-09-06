@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -53,6 +54,7 @@ func (r *secretManagerResource) Configure(_ context.Context, req resource.Config
 
 type secretManagerResourceModel struct {
 	Configuration       types.Object `tfsdk:"configuration"`
+	Id                  types.String `tfsdk:"id"`
 	ManagerId           types.String `tfsdk:"manager_id"`
 	Name                types.String `tfsdk:"name"`
 	ParentRef           types.Object `tfsdk:"parent_ref"`
@@ -107,6 +109,7 @@ func (r *secretManagerResource) Schema(ctx context.Context, req resource.SchemaR
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (r *secretManagerResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -161,6 +164,8 @@ func (model *secretManagerResourceModel) buildClientStruct() (*client.SecretMana
 
 func (state *secretManagerResourceModel) readClientResponse(response *client.SecretManager, isImportRead bool) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringValue(response.Id)
 	// configuration
 	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration, isImportRead)
 	respDiags.Append(diags...)

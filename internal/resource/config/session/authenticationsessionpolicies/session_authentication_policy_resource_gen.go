@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -57,6 +58,7 @@ type sessionAuthenticationPolicyResourceModel struct {
 	AuthenticationSource  types.Object `tfsdk:"authentication_source"`
 	AuthnContextSensitive types.Bool   `tfsdk:"authn_context_sensitive"`
 	EnableSessions        types.Bool   `tfsdk:"enable_sessions"`
+	Id                    types.String `tfsdk:"id"`
 	IdleTimeoutMins       types.Int64  `tfsdk:"idle_timeout_mins"`
 	MaxTimeoutMins        types.Int64  `tfsdk:"max_timeout_mins"`
 	Persistent            types.Bool   `tfsdk:"persistent"`
@@ -162,6 +164,7 @@ func (r *sessionAuthenticationPolicyResource) Schema(ctx context.Context, req re
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (r *sessionAuthenticationPolicyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -227,6 +230,8 @@ func (model *sessionAuthenticationPolicyResourceModel) buildClientStruct() *clie
 
 func (state *sessionAuthenticationPolicyResourceModel) readClientResponse(response *client.AuthenticationSessionPolicy) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringPointerValue(response.Id)
 	// authentication_source
 	authenticationSourceSourceRefAttrTypes := map[string]attr.Type{
 		"id": types.StringType,

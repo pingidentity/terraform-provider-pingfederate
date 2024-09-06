@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -51,6 +52,7 @@ func (r *idpStsRequestParametersContractResource) Configure(_ context.Context, r
 
 type idpStsRequestParametersContractResourceModel struct {
 	ContractId types.String `tfsdk:"contract_id"`
+	Id         types.String `tfsdk:"id"`
 	Name       types.String `tfsdk:"name"`
 	Parameters types.Set    `tfsdk:"parameters"`
 }
@@ -90,6 +92,7 @@ func (r *idpStsRequestParametersContractResource) Schema(ctx context.Context, re
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (model *idpStsRequestParametersContractResourceModel) buildClientStruct() (*client.StsRequestParametersContract, diag.Diagnostics) {
@@ -109,6 +112,8 @@ func (model *idpStsRequestParametersContractResourceModel) buildClientStruct() (
 
 func (state *idpStsRequestParametersContractResourceModel) readClientResponse(response *client.StsRequestParametersContract) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringValue(response.Id)
 	// contract_id
 	state.ContractId = types.StringValue(response.Id)
 	// name
