@@ -71,6 +71,10 @@ resource "pingfederate_oauth_token_exchange_processor_policy" "processorPolicy" 
 - `actor_token_required` (Boolean) Require an Actor token on a OAuth 2.0 Token Exchange request. Defaults to `false`.
 - `attribute_contract` (Attributes) A set of attributes exposed by an OAuth 2.0 Token Exchange Processor policy. (see [below for nested schema](#nestedatt--attribute_contract))
 
+### Read-Only
+
+- `id` (String) The ID of this resource.
+
 <a id="nestedatt--processor_mappings"></a>
 ### Nested Schema for `processor_mappings`
 

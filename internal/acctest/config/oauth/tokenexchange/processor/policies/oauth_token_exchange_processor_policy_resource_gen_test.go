@@ -197,6 +197,7 @@ resource "pingfederate_oauth_token_exchange_processor_policy" "example" {
 // Validate any computed values when applying minimal HCL
 func oauthTokenExchangeProcessorPolicy_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_oauth_token_exchange_processor_policy.example", "id", oauthTokenExchangeProcessorPolicyPolicyId),
 		resource.TestCheckResourceAttr("pingfederate_oauth_token_exchange_processor_policy.example", "actor_token_required", "false"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_token_exchange_processor_policy.example", "attribute_contract.core_attributes.0.name", "subject"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_token_exchange_processor_policy.example", "attribute_contract.extended_attributes.#", "0"),
@@ -208,6 +209,7 @@ func oauthTokenExchangeProcessorPolicy_CheckComputedValuesMinimal() resource.Tes
 // Validate any computed values when applying complete HCL
 func oauthTokenExchangeProcessorPolicy_CheckComputedValuesComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_oauth_token_exchange_processor_policy.example", "id", oauthTokenExchangeProcessorPolicyPolicyId),
 		resource.TestCheckResourceAttr("pingfederate_oauth_token_exchange_processor_policy.example", "attribute_contract.core_attributes.0.name", "subject"),
 	)
 }

@@ -22,6 +22,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/api"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -59,6 +60,7 @@ func (r *oauthTokenExchangeProcessorPolicyResource) Configure(_ context.Context,
 type oauthTokenExchangeProcessorPolicyResourceModel struct {
 	ActorTokenRequired types.Bool   `tfsdk:"actor_token_required"`
 	AttributeContract  types.Object `tfsdk:"attribute_contract"`
+	Id                 types.String `tfsdk:"id"`
 	Name               types.String `tfsdk:"name"`
 	PolicyId           types.String `tfsdk:"policy_id"`
 	ProcessorMappings  types.List   `tfsdk:"processor_mappings"`
@@ -198,6 +200,7 @@ func (r *oauthTokenExchangeProcessorPolicyResource) Schema(ctx context.Context, 
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (model *oauthTokenExchangeProcessorPolicyResourceModel) buildClientStruct() (*client.TokenExchangeProcessorPolicy, diag.Diagnostics) {
@@ -261,6 +264,8 @@ func (model *oauthTokenExchangeProcessorPolicyResourceModel) buildClientStruct()
 
 func (state *oauthTokenExchangeProcessorPolicyResourceModel) readClientResponse(response *client.TokenExchangeProcessorPolicy) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringValue(response.Id)
 	// actor_token_required
 	state.ActorTokenRequired = types.BoolPointerValue(response.ActorTokenRequired)
 	// attribute_contract
