@@ -41,7 +41,7 @@ resource "pingfederate_administrative_account" "administrativeAccount" {
 ### Read-Only
 
 - `encrypted_password` (String, Sensitive, Deprecated) Read-only attribute. This field holds the value returned from PingFederate and used for updating an existing Administrative Account.
-- `id` (String, Deprecated) The ID of this resource.
+- `id` (String) The ID of this resource.
 
 ## Import
 

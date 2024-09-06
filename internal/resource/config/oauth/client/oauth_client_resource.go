@@ -907,7 +907,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 		},
 	}
 
-	id.ToSchemaDeprecated(&schema, true)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 

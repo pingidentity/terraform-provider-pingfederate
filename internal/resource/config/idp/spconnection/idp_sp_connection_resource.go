@@ -1976,7 +1976,7 @@ func (r *idpSpConnectionResource) Schema(ctx context.Context, req resource.Schem
 		},
 	}
 
-	id.ToSchemaDeprecated(&schema, true)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 

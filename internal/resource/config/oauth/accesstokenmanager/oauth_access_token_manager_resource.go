@@ -276,7 +276,7 @@ func oauthAccessTokenManagerResourceSchema(ctx context.Context, req resource.Sch
 		},
 	}
 
-	id.ToSchemaDeprecated(&schema, true)
+	id.ToSchema(&schema)
 	id.ToSchemaCustomId(&schema,
 		"manager_id",
 		true,

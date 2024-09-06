@@ -367,7 +367,7 @@ resource "pingfederate_idp_sp_connection" "wsTrustExample" {
 ### Read-Only
 
 - `creation_date` (String) The time at which the connection was created. This property is read only.
-- `id` (String, Deprecated) The ID of this resource.
+- `id` (String) The ID of this resource.
 - `type` (String, Deprecated) The type of this connection.
 
 <a id="nestedatt--additional_allowed_entities_configuration"></a>

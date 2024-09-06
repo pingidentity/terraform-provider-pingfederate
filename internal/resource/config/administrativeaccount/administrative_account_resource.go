@@ -118,7 +118,7 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 		},
 	}
 
-	id.ToSchemaDeprecated(&schema, true)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 

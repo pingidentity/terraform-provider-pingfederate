@@ -196,7 +196,7 @@ func (r *openidConnectPolicyResource) Schema(ctx context.Context, req resource.S
 			},
 		},
 	}
-	id.ToSchemaDeprecated(&schema, true)
+	id.ToSchema(&schema)
 	id.ToSchemaCustomId(&schema, "policy_id", true, false, "The policy ID used internally.")
 	resp.Schema = schema
 }

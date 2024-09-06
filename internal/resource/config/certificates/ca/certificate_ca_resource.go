@@ -152,7 +152,7 @@ func (r *certificateCAResource) Schema(ctx context.Context, req resource.SchemaR
 		},
 	}
 
-	id.ToSchemaDeprecated(&schema, true)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 

@@ -158,7 +158,7 @@ resource "pingfederate_token_processor_to_token_generator_mapping" "tokenProcess
 
 ### Read-Only
 
-- `id` (String, Deprecated) The ID of this resource.
+- `id` (String) The ID of this resource.
 - `mapping_id` (String) The id of the Token Processor to Token Generator Mapping.
 
 <a id="nestedatt--attribute_contract_fulfillment"></a>

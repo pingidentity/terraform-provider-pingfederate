@@ -39,7 +39,7 @@ resource "pingfederate_key_pair_ssl_server_import" "keyPairsSslServerImport" {
 ### Read-Only
 
 - `expires` (String) The end date up until which the item is valid, in ISO 8601 format (UTC)
-- `id` (String, Deprecated) The ID of this resource.
+- `id` (String) The ID of this resource.
 - `issuer_dn` (String) The issuer's distinguished name
 - `key_algorithm` (String) The public key algorithm
 - `key_size` (Number) The public key size

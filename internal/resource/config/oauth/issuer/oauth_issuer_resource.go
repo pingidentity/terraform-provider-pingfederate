@@ -85,7 +85,7 @@ func (r *oauthIssuerResource) Schema(ctx context.Context, req resource.SchemaReq
 		},
 	}
 
-	id.ToSchemaDeprecated(&schema, true)
+	id.ToSchema(&schema)
 	resp.Schema = schema
 }
 func addOptionalOauthIssuerFields(ctx context.Context, addRequest *client.Issuer, plan oauthIssuerModel) error {

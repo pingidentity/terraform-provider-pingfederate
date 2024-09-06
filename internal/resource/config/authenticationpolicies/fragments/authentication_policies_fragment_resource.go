@@ -69,7 +69,7 @@ func (r *authenticationPoliciesFragmentResource) Schema(ctx context.Context, req
 			"root_node": authenticationpolicytreenode.ToSchema("The beginning action for the authentication fragment policy."),
 		},
 	}
-	id.ToSchemaDeprecated(&schema, true)
+	id.ToSchema(&schema)
 	id.ToSchemaCustomId(&schema, "fragment_id", false, false, "The authentication policy fragment ID. ID is unique.")
 	resp.Schema = schema
 }

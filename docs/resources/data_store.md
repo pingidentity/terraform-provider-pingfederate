@@ -389,7 +389,7 @@ resource "pingfederate_data_store" "customDataStore" {
 
 ### Read-Only
 
-- `id` (String, Deprecated) The ID of this resource.
+- `id` (String) The ID of this resource.
 
 <a id="nestedatt--custom_data_store"></a>
 ### Nested Schema for `custom_data_store`
