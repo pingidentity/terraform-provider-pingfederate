@@ -57,6 +57,11 @@ func TestAccIdpSpConnection(t *testing.T) {
 				Check:  testAccCheckExpectedSpConnectionAttributesBrowserSSO(true),
 			},
 			{
+				// Browser SSO SAML connection reproducing inconsistent result bug
+				// https://github.com/pingidentity/terraform-provider-pingfederate/issues/319
+				Config: testAccSpConnectionBrowserSsoInconsistentResult(spConnectionId),
+			},
+			{
 				// WS Trust connection, minimal
 				Config: testAccSpConnectionWsTrust(spConnectionId),
 				Check:  testAccCheckExpectedSpConnectionAttributesWsTrust(),
@@ -77,11 +82,17 @@ func TestAccIdpSpConnection(t *testing.T) {
 				ImportStateId:     spConnectionId,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// These attributes have "_all" versions where values will be imported instead
+				// These attributes have many extra values not being set in the test used in this HCL, so those extra values
+				// will change these attributes on import.
 				ImportStateVerifyIgnore: []string{
 					"outbound_provision.channels.0.attribute_mapping",
 					"outbound_provision.target_settings",
 				},
+				// Ensure that the both versions of the attributes have values set
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_idp_sp_connection.%s", spConnectionId), "outbound_provision.channels.0.attribute_mapping.#", "38"),
+					resource.TestCheckResourceAttr(fmt.Sprintf("pingfederate_idp_sp_connection.%s", spConnectionId), "outbound_provision.target_settings", "9"),
+				),
 			},
 			{
 				// Back to Outbound Provision connection, minimal
@@ -413,6 +424,82 @@ data "pingfederate_idp_sp_connection" "%[1]s" {
 }`, resourceName,
 		baseHcl(resourceName),
 		browserHcl,
+	)
+}
+
+func testAccSpConnectionBrowserSsoInconsistentResult(resourceName string) string {
+	return fmt.Sprintf(`
+resource "pingfederate_idp_sp_connection" "%[1]s" {
+  %s
+  sp_browser_sso = {
+    protocol                      = "SAML20"
+    require_signed_authn_requests = false
+    sp_saml_identity_mapping      = "STANDARD"
+    sign_assertions               = false
+    authentication_policy_contract_assertion_mappings = [
+      {
+        abort_sso_transaction_as_fail_safe = false
+        authentication_policy_contract_ref = {
+          id = "QGxlec5CX693lBQL"
+        }
+        restricted_virtual_entity_ids = []
+        attribute_contract_fulfillment = {
+          "SAML_SUBJECT" = {
+            source = {
+              type = "AUTHENTICATION_POLICY_CONTRACT"
+            }
+            value = "subject"
+          }
+        }
+        restrict_virtual_entity_ids = false
+        attribute_sources           = []
+        issuance_criteria = {
+          conditional_criteria = []
+        }
+      }
+    ]
+    encryption_policy = {
+      encrypt_slo_subject_name_id   = false
+      encrypt_assertion             = false
+      encrypted_attributes          = []
+      slo_subject_name_id_encrypted = false
+    }
+    enabled_profiles = [
+      "IDP_INITIATED_SSO",
+      "SP_INITIATED_SSO",
+    ]
+    incoming_bindings = [
+      "REDIRECT",
+      "POST"
+    ]
+    sign_response_as_required = true
+    sso_service_endpoints = [
+      {
+        is_default = true
+        binding    = "POST"
+        index      = 0
+        url        = "https://httpbin.org/anything"
+      }
+    ]
+    adapter_mappings = []
+    assertion_lifetime = {
+      minutes_after  = 5
+      minutes_before = 5
+    }
+    attribute_contract = {
+      core_attributes = [
+        {
+          name_format = "urn:oasis:names:tc:SAML:1.1:nameid-format:unspecified",
+          name        = "SAML_SUBJECT"
+        }
+      ]
+    }
+  }
+}
+data "pingfederate_idp_sp_connection" "%[1]s" {
+  connection_id = pingfederate_idp_sp_connection.%[1]s.connection_id
+}`, resourceName,
+		baseHcl(resourceName),
 	)
 }
 

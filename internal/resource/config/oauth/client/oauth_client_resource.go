@@ -29,6 +29,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
@@ -67,27 +68,30 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 		Description: "Manages an Oauth Client",
 		Attributes: map[string]schema.Attribute{
 			"client_id": schema.StringAttribute{
-				Description: "A unique identifier the client provides to the Resource Server to identify itself. This identifier is included with every request the client makes. For PUT requests, this field is optional and it will be overridden by the 'id' parameter of the PUT request.",
+				Description: "A unique identifier the client provides to the Resource Server to identify itself. This identifier is included with every request the client makes.",
 				Required:    true,
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"enabled": schema.BoolAttribute{
-				Description: "Specifies whether the client is enabled. The default value is true.",
+				Description: "Specifies whether the client is enabled. The default value is `true`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(true),
 			},
 			"redirect_uris": schema.SetAttribute{
-				Description: "URIs to which the OAuth AS may redirect the resource owner's user agent after authorization is obtained. A redirection URI is used with the Authorization Code and Implicit grant types. Wildcards are allowed. However, for security reasons, make the URL as restrictive as possible.For example: https://.company.com/ Important: If more than one URI is added or if a single URI uses wildcards, then Authorization Code grant and token requests must contain a specific matching redirect uri parameter.",
+				Description: "URIs to which the OAuth AS may redirect the resource owner's user agent after authorization is obtained. A redirection URI is used with the Authorization Code and Implicit grant types. Wildcards are allowed. However, for security reasons, make the URL as restrictive as possible. For example: https://.company.com/ Important: If more than one URI is added or if a single URI uses wildcards, then Authorization Code grant and token requests must contain a specific matching redirect uri parameter.",
 				Computed:    true,
 				Optional:    true,
 				ElementType: types.StringType,
 				Default:     setdefault.StaticValue(emptyStringSet),
 			},
 			"grant_types": schema.SetAttribute{
-				Description: "The grant types allowed for this client. The EXTENSION grant type applies to SAML/JWT assertion grants.",
+				Description: "The grant types allowed for this client. The `EXTENSION` grant type applies to SAML/JWT assertion grants. Supported values are `IMPLICIT`, `AUTHORIZATION_CODE`, `RESOURCE_OWNER_CREDENTIALS`, `CLIENT_CREDENTIALS`, `REFRESH_TOKEN`, `EXTENSION`, `DEVICE_CODE`, `ACCESS_TOKEN_VALIDATION`, `CIBA`, and `TOKEN_EXCHANGE`.",
 				Required:    true,
 				ElementType: types.StringType,
 				Validators: []validator.Set{
@@ -110,10 +114,16 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 			"name": schema.StringAttribute{
 				Description: "A descriptive name for the client instance. This name appears when the user is prompted for authorization.",
 				Required:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"description": schema.StringAttribute{
 				Description: "A description of what the client application does. This description appears when the user is prompted for authorization.",
 				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"modification_date": schema.StringAttribute{
 				Description: "The time at which the client was last changed. This property is read only.",
@@ -144,19 +154,19 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Attributes:  resourcelink.ToSchema(),
 			},
 			"restrict_to_default_access_token_manager": schema.BoolAttribute{
-				Description: "Determines whether the client is restricted to using only its default access token manager. The default is false.",
+				Description: "Determines whether the client is restricted to using only its default access token manager. The default is `false`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"validate_using_all_eligible_atms": schema.BoolAttribute{
-				Description: "Validates token using all eligible access token managers for the client. This setting is ignored if 'restrictToDefaultAccessTokenManager' is set to true.",
+				Description: "Validates token using all eligible access token managers for the client. This setting is ignored if 'restrict_to_default_access_token_manager' is set to `true`. The default is `false`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"refresh_rolling": schema.StringAttribute{
-				Description: "Use ROLL or DONT_ROLL to override the Roll Refresh Token Values setting on the Authorization Server Settings. SERVER_DEFAULT will default to the Roll Refresh Token Values setting on the Authorization Server Setting screen. Defaults to SERVER_DEFAULT.",
+				Description: "Use `ROLL` or `DONT_ROLL` to override the Roll Refresh Token Values setting on the Authorization Server Settings. `SERVER_DEFAULT` will default to the Roll Refresh Token Values setting on the Authorization Server Setting screen. Defaults to `SERVER_DEFAULT`. Supported values are `ROLL`, `DONT_ROLL`, and `SERVER_DEFAULT`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     stringdefault.StaticString("SERVER_DEFAULT"),
@@ -165,7 +175,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"refresh_token_rolling_interval_type": schema.StringAttribute{
-				Description: "Use OVERRIDE_SERVER_DEFAULT to override the Refresh Token Rolling Interval value on the Authorization Server Settings. SERVER_DEFAULT will default to the Refresh Token Rolling Interval value on the Authorization Server Setting. Defaults to SERVER_DEFAULT.",
+				Description: "Use `OVERRIDE_SERVER_DEFAULT` to override the Refresh Token Rolling Interval value on the Authorization Server Settings. `SERVER_DEFAULT` will default to the Refresh Token Rolling Interval value on the Authorization Server Setting. Defaults to `SERVER_DEFAULT`. Supported values are `OVERRIDE_SERVER_DEFAULT` and `SERVER_DEFAULT`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     stringdefault.StaticString("SERVER_DEFAULT"),
@@ -178,7 +188,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional:    true,
 			},
 			"refresh_token_rolling_interval_time_unit": schema.StringAttribute{
-				Description: "The refresh token rolling interval time unit. Defaults to HOURS.",
+				Description: "The refresh token rolling interval time unit. Defaults to `HOURS`. Supported values are `MINUTES`, `HOURS`, and `DAYS`. Supported in PF version `12.1` or later.",
 				Computed:    true,
 				Optional:    true,
 				Validators: []validator.String{
@@ -186,19 +196,22 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"persistent_grant_expiration_type": schema.StringAttribute{
-				Description: "Allows an administrator to override the Persistent Grant Lifetime set globally for the OAuth AS. Defaults to SERVER_DEFAULT.",
+				Description: "Allows an administrator to override the Persistent Grant Lifetime set globally for the OAuth AS. Defaults to `SERVER_DEFAULT`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     stringdefault.StaticString("SERVER_DEFAULT"),
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"persistent_grant_expiration_time": schema.Int64Attribute{
-				Description: "The persistent grant expiration time. -1 indicates an indefinite amount of time.",
+				Description: "The persistent grant expiration time. `-1` indicates an indefinite amount of time. Defaults to `0`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     int64default.StaticInt64(0),
 			},
 			"persistent_grant_expiration_time_unit": schema.StringAttribute{
-				Description: "The persistent grant expiration time unit.",
+				Description: "The persistent grant expiration time unit. Defaults to `DAYS`. Supported values are `MINUTES`, `HOURS`, and `DAYS`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     stringdefault.StaticString("DAYS"),
@@ -207,19 +220,22 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"persistent_grant_idle_timeout_type": schema.StringAttribute{
-				Description: "Allows an administrator to override the Persistent Grant Idle Timeout set globally for the OAuth AS. Defaults to SERVER_DEFAULT.",
+				Description: "Allows an administrator to override the Persistent Grant Idle Timeout set globally for the OAuth AS. Defaults to `SERVER_DEFAULT`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     stringdefault.StaticString("SERVER_DEFAULT"),
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"persistent_grant_idle_timeout": schema.Int64Attribute{
-				Description: "The persistent grant idle timeout.",
+				Description: "The persistent grant idle timeout. Defaults to `0`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     int64default.StaticInt64(0),
 			},
 			"persistent_grant_idle_timeout_time_unit": schema.StringAttribute{
-				Description: "The persistent grant idle timeout time unit.",
+				Description: "The persistent grant idle timeout time unit. Defaults to `DAYS`. Supported values are `MINUTES`, `HOURS`, and `DAYS`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     stringdefault.StaticString("DAYS"),
@@ -228,7 +244,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"persistent_grant_reuse_type": schema.StringAttribute{
-				Description: "Allows and administrator to override the Reuse Existing Persistent Access Grants for Grant Types set globally for OAuth AS. Defaults to SERVER_DEFAULT",
+				Description: "Allows and administrator to override the Reuse Existing Persistent Access Grants for Grant Types set globally for OAuth AS. Defaults to `SERVER_DEFAULT`. Supported values are `SERVER_DEFAULT` and `OVERRIDE_SERVER_DEFAULT`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     stringdefault.StaticString("SERVER_DEFAULT"),
@@ -237,20 +253,20 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"persistent_grant_reuse_grant_types": schema.SetAttribute{
-				Description: "The grant types that the OAuth AS can reuse rather than creating a new grant for each request. This value will override the Reuse Existing Persistent Access Grants for Grant Types on the Authorization Server Settings. Only 'IMPLICIT' or 'AUTHORIZATION_CODE' or 'RESOURCE_OWNER_CREDENTIALS' are valid grant types.",
+				Description: "The grant types that the OAuth AS can reuse rather than creating a new grant for each request. This value will override the Reuse Existing Persistent Access Grants for Grant Types on the Authorization Server Settings. Only `IMPLICIT` or `AUTHORIZATION_CODE` or `RESOURCE_OWNER_CREDENTIALS` are valid grant types. Supported values are `IMPLICIT`, `AUTHORIZATION_CODE`, `RESOURCE_OWNER_CREDENTIALS`, `CLIENT_CREDENTIALS`, `REFRESH_TOKEN`, `EXTENSION`, `DEVICE_CODE`, `ACCESS_TOKEN_VALIDATION`, `CIBA`, and `TOKEN_EXCHANGE`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     setdefault.StaticValue(emptyStringSet),
 				ElementType: types.StringType,
 				Validators: []validator.Set{
-					setvalidator.SizeAtLeast(1),
 					setvalidator.ValueStringsAre(
 						stringvalidator.OneOf("IMPLICIT",
 							"AUTHORIZATION_CODE",
 							"RESOURCE_OWNER_CREDENTIALS",
 							"CLIENT_CREDENTIALS",
 							"REFRESH_TOKEN",
-							"EXTENSION, DEVICE_CODE",
+							"EXTENSION",
+							"DEVICE_CODE",
 							"ACCESS_TOKEN_VALIDATION",
 							"CIBA",
 							"TOKEN_EXCHANGE",
@@ -259,13 +275,13 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"allow_authentication_api_init": schema.BoolAttribute{
-				Description: "Set to true to allow this client to initiate the authentication API redirectless flow.",
+				Description: "Set to `true` to allow this client to initiate the authentication API redirectless flow. Defaults to `false`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"enable_cookieless_authentication_api": schema.BoolAttribute{
-				Description: "Set to true to allow the authentication API redirectless flow to function without requiring any cookies.",
+				Description: "Set to `true` to allow the authentication API redirectless flow to function without requiring any cookies. Defaults to `false`. Supported in PF version `12.1` or later.",
 				Optional:    true,
 				Computed:    true,
 			},
@@ -298,9 +314,6 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional:    true,
 				Default:     setdefault.StaticValue(emptyStringSet),
 				ElementType: types.StringType,
-				Validators: []validator.Set{
-					setvalidator.SizeAtLeast(1),
-				},
 			},
 			"authorization_detail_types": schema.SetAttribute{
 				Description: "The authorization detail types available for this client.",
@@ -308,9 +321,6 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional:    true,
 				Default:     setdefault.StaticValue(emptyStringSet),
 				ElementType: types.StringType,
-				Validators: []validator.Set{
-					setvalidator.SizeAtLeast(1),
-				},
 			},
 			"restricted_response_types": schema.SetAttribute{
 				Description: "The response types allowed for this client. If omitted all response types are available to the client.",
@@ -318,31 +328,28 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional:    true,
 				ElementType: types.StringType,
 				Default:     setdefault.StaticValue(emptyStringSet),
-				Validators: []validator.Set{
-					setvalidator.SizeAtLeast(1),
-				},
 			},
 			"require_pushed_authorization_requests": schema.BoolAttribute{
-				Description: "Determines whether pushed authorization requests are required when initiating an authorization request. The default is false.",
+				Description: "Determines whether pushed authorization requests are required when initiating an authorization request. The default is `false`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"require_jwt_secured_authorization_response_mode": schema.BoolAttribute{
-				Description: "Determines whether JWT secured authorization response mode is required when initiating an authorization request. The default is false.",
+				Description: "Determines whether JWT secured authorization response mode is required when initiating an authorization request. The default is `false`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"require_signed_requests": schema.BoolAttribute{
-				Description: "Determines whether JWT Secured authorization response mode is required when initiating an authorization request. The default is false.",
+				Description: "Determines whether JWT Secured authorization response mode is required when initiating an authorization request. The default is `false`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"request_object_signing_algorithm": schema.StringAttribute{
-				MarkdownDescription: "The JSON Web Signature [JWS] algorithm that must be used to sign the Request Object. All signing algorithms are allowed if value is not present\nRS256 - RSA using SHA-256\n\nRS384 - RSA using SHA-384\nRS512 - RSA using SHA-512\nES256 - ECDSA using P256 Curve and SHA-256\nES384 - ECDSA using P384 Curve and SHA-384\nES512 - ECDSA using P521 Curve and SHA-512\nPS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\nPS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\nPS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\nRSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.",
-				Description:         "The JSON Web Signature [JWS] algorithm that must be used to sign the Request Object. All signing algorithms are allowed if value is not present, RS256 - RSA using SHA-256, RS384 - RSA using SHA-384, RS512 - RSA using SHA-512, ES256 - ECDSA using P256 Curve and SHA-256, ES384 - ECDSA using P384 Curve and SHA-384, ES512 - ECDSA using P521 Curve and SHA-512, PS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256, PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384, PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512, RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.",
+				MarkdownDescription: "The JSON Web Signature [JWS] algorithm that must be used to sign the Request Object. All signing algorithms are allowed if value is not present\n`RS256` - RSA using SHA-256\n\n`RS384` - RSA using SHA-384\n`RS512` - RSA using SHA-512\n`ES256` - ECDSA using P256 Curve and SHA-256\n`ES384` - ECDSA using P384 Curve and SHA-384\n`ES512` - ECDSA using P521 Curve and SHA-512\n`PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\n`PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\n`PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\nRSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.",
+				Description:         "The JSON Web Signature [JWS] algorithm that must be used to sign the Request Object. All signing algorithms are allowed if value is not present, `RS256` - RSA using SHA-256, `RS384` - RSA using SHA-384, `RS512` - RSA using SHA-512, `ES256` - ECDSA using P256 Curve and SHA-256, `ES384` - ECDSA using P384 Curve and SHA-384, `ES512` - ECDSA using P521 Curve and SHA-512, `PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256, `PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384, `PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512, RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.OneOf("RS256",
@@ -364,8 +371,8 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Default:     objectdefault.StaticValue(oidcPolicyDefaultObj),
 				Attributes: map[string]schema.Attribute{
 					"id_token_signing_algorithm": schema.StringAttribute{
-						MarkdownDescription: "The JSON Web Signature [JWS] algorithm required for the ID Token.\nNONE - No signing algorithm\nHS256 - HMAC using SHA-256\nHS384 - HMAC using SHA-384\nHS512 - HMAC using SHA-512\nRS256 - RSA using SHA-256\nRS384 - RSA using SHA-384\nRS512 - RSA using SHA-512\nES256 - ECDSA using P256 Curve and SHA-256\nES384 - ECDSA using P384 Curve and SHA-384\nES512 - ECDSA using P521 Curve and SHA-512\nPS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\nPS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\nPS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\nA null value will represent the default algorithm which is RS256.\nRSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11",
-						Description:         "The JSON Web Signature [JWS] algorithm required for the ID Token. NONE - No signing algorithm, HS256 - HMAC using SHA-256, HS384 - HMAC using SHA-384, HS512 - HMAC using SHA-512, RS256 - RSA using SHA-256, RS384 - RSA using SHA-384, RS512 - RSA using SHA-512, ES256 - ECDSA using P256 Curve and SHA-256, ES384 - ECDSA using P384 Curve and SHA-384, ES512 - ECDSA using P521 Curve and SHA-512, PS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256, PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384, PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512, A null value will represent the default algorithm which is RS256. RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11",
+						MarkdownDescription: "The JSON Web Signature [JWS] algorithm required for the ID Token.\n`NONE` - No signing algorithm\n`HS256` - HMAC using SHA-256\n`HS384` - HMAC using SHA-384\n`HS512` - HMAC using SHA-512\n`RS256` - RSA using SHA-256\n`RS384` - RSA using SHA-384\n`RS512` - RSA using SHA-512\n`ES256 `- ECDSA using P256 Curve and SHA-256\n`ES384` - ECDSA using P384 Curve and SHA-384\n`ES512` - ECDSA using P521 Curve and SHA-512\n`PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\n`PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\n`PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\nA null value will represent the default algorithm which is RS256.\nRSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11",
+						Description:         "The JSON Web Signature [JWS] algorithm required for the ID Token. `NONE` - No signing algorithm, `HS256` - HMAC using SHA-256, `HS384` - HMAC using SHA-384, `HS512` - HMAC using SHA-512, `RS256` - RSA using SHA-256, `RS384` - RSA using SHA-384, `RS512` - RSA using SHA-512, `ES256` - ECDSA using P256 Curve and SHA-256, `ES384` - ECDSA using P384 Curve and SHA-384, `ES512` - ECDSA using P521 Curve and SHA-512, `PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256, `PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384, `PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512, A null value will represent the default algorithm which is RS256. RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11",
 						Optional:            true,
 						Validators: []validator.String{
 							stringvalidator.OneOf("NONE",
@@ -385,8 +392,8 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						},
 					},
 					"id_token_encryption_algorithm": schema.StringAttribute{
-						MarkdownDescription: "The JSON Web Encryption [JWE] encryption algorithm used to encrypt the content encryption key for the ID Token.\nDIR - Direct Encryption with symmetric key\nA128KW - AES-128 Key Wrap\nA192KW - AES-192 Key Wrap\nA256KW - AES-256 Key Wrap\nA128GCMKW - AES-GCM-128 key encryption\nA192GCMKW - AES-GCM-192 key encryption\nA256GCMKW - AES-GCM-256 key encryption\nECDH_ES - ECDH-ES\nECDH_ES_A128KW - ECDH-ES with AES-128 Key Wrap\nECDH_ES_A192KW - ECDH-ES with AES-192 Key Wrap\nECDH_ES_A256KW - ECDH-ES with AES-256 Key Wrap\nRSA_OAEP - RSAES OAEP\nRSA_OAEP_256 - RSAES OAEP using SHA-256 and MGF1 with SHA-256",
-						Description:         "The JSON Web Encryption [JWE] encryption algorithm used to encrypt the content encryption key for the ID Token. DIR - Direct Encryption with symmetric key, A128KW - AES-128 Key Wrap, A192KW - AES-192 Key Wrap, A256KW - AES-256 Key Wrap, A128GCMKW - AES-GCM-128 key encryption, A192GCMKW - AES-GCM-192 key encryption, A256GCMKW - AES-GCM-256 key encryption, ECDH_ES - ECDH-ES, ECDH_ES_A128KW - ECDH-ES with AES-128 Key Wrap, ECDH_ES_A192KW - ECDH-ES with AES-192 Key Wrap, ECDH_ES_A256KW - ECDH-ES with AES-256 Key Wrap, RSA_OAEP - RSAES OAEP, RSA_OAEP_256 - RSAES OAEP using SHA-256 and MGF1 with SHA-256",
+						MarkdownDescription: "The JSON Web Encryption [JWE] encryption algorithm used to encrypt the content encryption key for the ID Token.\n`DIR` - Direct Encryption with symmetric key\n`A128KW` - AES-128 Key Wrap\n`A192KW` - AES-192 Key Wrap\n`A256KW`- AES-256 Key Wrap\n`A128GCMKW` - AES-GCM-128 key encryption\n`A192GCMKW` - AES-GCM-192 key encryption\n`A256GCMKW` - AES-GCM-256 key encryption\n`ECDH_ES` - ECDH-ES\n`ECDH_ES_A128KW` - ECDH-ES with AES-128 Key Wrap\n`ECDH_ES_A192KW` - ECDH-ES with AES-192 Key Wrap\n`ECDH_ES_A256KW` - ECDH-ES with AES-256 Key Wrap\n`RSA_OAEP` - RSAES OAEP\n`RSA_OAEP_256` - RSAES OAEP using SHA-256 and MGF1 with SHA-256",
+						Description:         "The JSON Web Encryption [JWE] encryption algorithm used to encrypt the content encryption key for the ID Token. `DIR` - Direct Encryption with symmetric key, `A128KW` - AES-128 Key Wrap, `A192KW` - AES-192 Key Wrap, `A256KW` - AES-256 Key Wrap, `A128GCMKW` - AES-GCM-128 key encryption, `A192GCMKW` - AES-GCM-192 key encryption, `A256GCMKW` - AES-GCM-256 key encryption, `ECDH_ES` - ECDH-ES, `ECDH_ES_A128KW` - ECDH-ES with AES-128 Key Wrap, `ECDH_ES_A192KW` - ECDH-ES with AES-192 Key Wrap, `ECDH_ES_A256KW` - ECDH-ES with AES-256 Key Wrap, `RSA_OAEP` - RSAES OAEP, `RSA_OAEP_256` - RSAES OAEP using SHA-256 and MGF1 with SHA-256",
 						Optional:            true,
 						Validators: []validator.String{
 							stringvalidator.OneOf("DIR",
@@ -407,8 +414,8 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						},
 					},
 					"id_token_content_encryption_algorithm": schema.StringAttribute{
-						MarkdownDescription: "The JSON Web Encryption [JWE] content encryption algorithm for the ID Token.\nAES_128_CBC_HMAC_SHA_256 - Composite AES-CBC-128 HMAC-SHA-256\nAES_192_CBC_HMAC_SHA_384 - Composite AES-CBC-192 HMAC-SHA-384\nAES_256_CBC_HMAC_SHA_512 - Composite AES-CBC-256 HMAC-SHA-512\nAES_128_GCM - AES-GCM-128\nAES_192_GCM - AES-GCM-192\nAES_256_GCM - AES-GCM-256",
-						Description:         "The JSON Web Encryption [JWE] content encryption algorithm for the ID Token. AES_128_CBC_HMAC_SHA_256 - Composite AES-CBC-128 HMAC-SHA-256, AES_192_CBC_HMAC_SHA_384 - Composite AES-CBC-192 HMAC-SHA-384, AES_256_CBC_HMAC_SHA_512 - Composite AES-CBC-256 HMAC-SHA-512, AES_128_GCM - AES-GCM-128, AES_192_GCM - AES-GCM-192, AES_256_GCM - AES-GCM-256",
+						MarkdownDescription: "The JSON Web Encryption [JWE] content encryption algorithm for the ID Token.\n`AES_128_CBC_HMAC_SHA_256` - Composite AES-CBC-128 HMAC-SHA-256\n`AES_192_CBC_HMAC_SHA_384` - Composite AES-CBC-192 HMAC-SHA-384\n`AES_256_CBC_HMAC_SHA_512` - Composite AES-CBC-256 HMAC-SHA-512\n`AES_128_GCM` - AES-GCM-128\n`AES_192_GCM` - AES-GCM-192\n`AES_256_GCM` - AES-GCM-256",
+						Description:         "The JSON Web Encryption [JWE] content encryption algorithm for the ID Token. `AES_128_CBC_HMAC_SHA_256` - Composite AES-CBC-128 HMAC-SHA-256, `AES_192_CBC_HMAC_SHA_384` - Composite AES-CBC-192 HMAC-SHA-384, `AES_256_CBC_HMAC_SHA_512` - Composite AES-CBC-256 HMAC-SHA-512, `AES_128_GCM` - AES-GCM-128, `AES_192_GCM` - AES-GCM-192, `AES_256_GCM` - AES-GCM-256",
 						Optional:            true,
 						Validators: []validator.String{
 							stringvalidator.OneOf("AES_128_CBC_HMAC_SHA_256",
@@ -427,19 +434,19 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						Attributes:  resourcelink.ToSchema(),
 					},
 					"grant_access_session_revocation_api": schema.BoolAttribute{
-						Description: "Determines whether this client is allowed to access the Session Revocation API.",
+						Description: "Determines whether this client is allowed to access the Session Revocation API. The default is `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
 					},
 					"grant_access_session_session_management_api": schema.BoolAttribute{
-						Description: "Determines whether this client is allowed to access the Session Management API.",
+						Description: "Determines whether this client is allowed to access the Session Management API. The default is `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
 					},
 					"ping_access_logout_capable": schema.BoolAttribute{
-						Description: "Set this value to true if you wish to enable client application logout, and the client is PingAccess, or its logout endpoints follow the PingAccess path convention",
+						Description: "Set this value to `true` if you wish to enable client application logout, and the client is PingAccess, or its logout endpoints follow the PingAccess path convention. The default is `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
@@ -450,7 +457,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						Optional:    true,
 					},
 					"pairwise_identifier_user_type": schema.BoolAttribute{
-						Description: "Determines whether the subject identifier type is pairwise.",
+						Description: "Determines whether the subject identifier type is pairwise. The default is `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
@@ -463,7 +470,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						},
 					},
 					"logout_mode": schema.StringAttribute{
-						Description: "The logout mode for this client. The default is 'NONE'. Supported in PF version 11.3 or later.",
+						Description: "The logout mode for this client. The default is 'NONE'. Supported in PF version `11.3` or later. Supported values are `NONE`, `PING_FRONT_CHANNEL`, `OIDC_FRONT_CHANNEL`, and `OIDC_BACK_CHANNEL`.",
 						Optional:    true,
 						Computed:    true,
 						Validators: []validator.String{
@@ -476,11 +483,14 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						},
 					},
 					"back_channel_logout_uri": schema.StringAttribute{
-						Description: "The back-channel logout URI for this client. Supported in PF version 11.3 or later.",
+						Description: "The back-channel logout URI for this client. Supported in PF version `11.3` or later.",
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"post_logout_redirect_uris": schema.SetAttribute{
-						Description: "URIs to which the OIDC OP may redirect the resource owner's user agent after RP-initiated logout has completed. Wildcards are allowed. However, for security reasons, make the URL as restrictive as possible. Supported in PF version 12.0 or later.",
+						Description: "URIs to which the OIDC OP may redirect the resource owner's user agent after RP-initiated logout has completed. Wildcards are allowed. However, for security reasons, make the URL as restrictive as possible. Supported in PF version `12.0` or later.",
 						Optional:    true,
 						ElementType: types.StringType,
 					},
@@ -496,7 +506,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Default:     objectdefault.StaticValue(clientAuthDefaultObj),
 				Attributes: map[string]schema.Attribute{
 					"type": schema.StringAttribute{
-						Description: "Client authentication type. The required field for type SECRET is secret.	The required fields for type CERTIFICATE are client_cert_issuer_dn and client_cert_subject_dn. The required field for type PRIVATE_KEY_JWT is: either jwks or jwks_url.",
+						Description: "Client authentication type. The required field for type `SECRET` is secret.	The required fields for type `CERTIFICATE` are client_cert_issuer_dn and client_cert_subject_dn. The required field for type `PRIVATE_KEY_JWT` is: either jwks or jwks_url.",
 						Optional:    true,
 						Validators: []validator.String{
 							stringvalidator.OneOf("NONE",
@@ -510,6 +520,9 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 						Description: "Client secret for Basic Authentication. To update the client secret, specify the plaintext value in this field. This field will not be populated for GET requests.",
 						Optional:    true,
 						Sensitive:   true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"secondary_secrets": schema.SetNestedAttribute{
 						Description: "The list of secondary client secrets that are temporarily retained.",
@@ -522,10 +535,16 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 									Description: "Secondary client secret for Basic Authentication. To update the secondary client secret, specify the plaintext value in this field. This field will not be populated for GET requests.",
 									Required:    true,
 									Sensitive:   true,
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 								"expiry_time": schema.StringAttribute{
 									Description: "The expiry time of the secondary secret.",
 									Required:    true,
+									Validators: []validator.String{
+										stringvalidator.LengthAtLeast(1),
+									},
 								},
 							},
 						},
@@ -533,18 +552,24 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 					"client_cert_issuer_dn": schema.StringAttribute{
 						Description: "Client TLS Certificate Issuer DN.",
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"client_cert_subject_dn": schema.StringAttribute{
 						Description: "Client TLS Certificate Subject DN.",
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"enforce_replay_prevention": schema.BoolAttribute{
 						Description: "Enforce replay prevention on JSON Web Tokens. This field is applicable only for Private Key JWT Client and Client Secret JWT Authentication.",
 						Optional:    true,
 					},
 					"token_endpoint_auth_signing_algorithm": schema.StringAttribute{
-						MarkdownDescription: "The JSON Web Signature [JWS] algorithm that must be used to sign the JSON Web Tokens. This field is applicable only for Private Key JWT and Client Secret JWT Client Authentication. All asymmetric signing algorithms are allowed for Private Key JWT if value is not present. All symmetric signing algorithms are allowed for Client Secret JWT if value is not present\nRS256 - RSA using SHA-256\nRS384 - RSA using SHA-384\nRS512 - RSA using SHA-512\nES256 - ECDSA using P256 Curve and SHA-256\nES384 - ECDSA using P384 Curve and SHA-384\nES512 - ECDSA using P521 Curve and SHA-512\nPS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\nPS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\nPS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\nRSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.\nHS256 - HMAC using SHA-256\nHS384 - HMAC using SHA-384\nHS512 - HMAC using SHA-512.",
-						Description:         "The JSON Web Signature [JWS] algorithm that must be used to sign the JSON Web Tokens. This field is applicable only for Private Key JWT and Client Secret JWT Client Authentication. All asymmetric signing algorithms are allowed for Private Key JWT if value is not present. All symmetric signing algorithms are allowed for Client Secret JWT if value is not present RS256 - RSA using SHA-256, RS384 - RSA using SHA-384, RS512 - RSA using SHA-512, ES256 - ECDSA using P256 Curve and SHA-256, ES384 - ECDSA using P384 Curve and SHA-384, ES512 - ECDSA using P521 Curve and SHA-512, PS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256, PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384, PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512, RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11. HS256 - HMAC using SHA-256, HS384 - HMAC using SHA-384, HS512 - HMAC using SHA-512.",
+						MarkdownDescription: "The JSON Web Signature [JWS] algorithm that must be used to sign the JSON Web Tokens. This field is applicable only for Private Key JWT and Client Secret JWT Client Authentication. All asymmetric signing algorithms are allowed for Private Key JWT if value is not present. All symmetric signing algorithms are allowed for Client Secret JWT if value is not present\n`RS256` - RSA using SHA-256\n`RS384` - RSA using SHA-384\n`RS512` - RSA using SHA-512\n`ES256` - ECDSA using P256 Curve and SHA-256\n`ES384` - ECDSA using P384 Curve and SHA-384\n`ES512` - ECDSA using P521 Curve and SHA-512\n`PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\n`PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\n`PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\n`RSASSA-PSS` is only supported with SafeNet Luna, Thales nCipher or Java 11.\n`HS256` - HMAC using SHA-256\n`HS384` - HMAC using SHA-384\n`HS512` - HMAC using SHA-512.",
+						Description:         "The JSON Web Signature [JWS] algorithm that must be used to sign the JSON Web Tokens. This field is applicable only for Private Key JWT and Client Secret JWT Client Authentication. All asymmetric signing algorithms are allowed for Private Key JWT if value is not present. All symmetric signing algorithms are allowed for Client Secret JWT if value is not present `RS256` - RSA using SHA-256, `RS384` - RSA using SHA-384, `RS512` - RSA using SHA-512, `ES256` - ECDSA using P256 Curve and SHA-256, `ES384` - ECDSA using P384 Curve and SHA-384, `ES512` - ECDSA using P521 Curve and SHA-512, `PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256, `PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384, `PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512, RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11. `HS256` - HMAC using SHA-256, `HS384` - HMAC using SHA-384, `HS512` - HMAC using SHA-512.",
 						Optional:            true,
 						Validators: []validator.String{
 							stringvalidator.OneOf(
@@ -573,12 +598,18 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional:    true,
 				Attributes: map[string]schema.Attribute{
 					"jwks_url": schema.StringAttribute{
-						Description: "JSON Web Key Set (JWKS) URL of the OAuth client. Either 'jwks' or 'jwks_url' must be provided if private key JWT client authentication or signed requests is enabled. If the client signs its JWTs using an RSASSA-PSS signing algorithm, PingFederate must either use Java 11 or be integrated with a hardware security module (HSM) to process the digital signatures.",
+						Description: "JSON Web Key Set (JWKS) URL of the OAuth client. Either `jwks` or `jwks_url` must be provided if private key JWT client authentication or signed requests is enabled. If the client signs its JWTs using an RSASSA-PSS signing algorithm, PingFederate must either use Java 11 or be integrated with a hardware security module (HSM) to process the digital signatures.",
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"jwks": schema.StringAttribute{
-						Description: "JSON Web Key Set (JWKS) document of the OAuth client. Either 'jwks' or 'jwks_url' must be provided if private key JWT client authentication or signed requests is enabled. If the client signs its JWTs using an RSASSA-PSS signing algorithm, PingFederate must either use Java 11 or be integrated with a hardware security module (HSM) to process the digital signatures.",
+						Description: "JSON Web Key Set (JWKS) document of the OAuth client. Either `jwks` or `jwks_url` must be provided if private key JWT client authentication or signed requests is enabled. If the client signs its JWTs using an RSASSA-PSS signing algorithm, PingFederate must either use Java 11 or be integrated with a hardware security module (HSM) to process the digital signatures.",
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 				},
 			},
@@ -599,7 +630,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"device_flow_setting_type": schema.StringAttribute{
-				Description: "Allows an administrator to override the Device Authorization Settings set globally for the OAuth AS. Defaults to SERVER_DEFAULT.",
+				Description: "Allows an administrator to override the Device Authorization Settings set globally for the OAuth AS. Defaults to `SERVER_DEFAULT`. Supported values are `SERVER_DEFAULT` and `OVERRIDE_SERVER_DEFAULT`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     stringdefault.StaticString("SERVER_DEFAULT"),
@@ -608,32 +639,35 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"user_authorization_url_override": schema.StringAttribute{
-				Description: "The URL used as 'verification_url' and 'verification_url_complete' values in a Device Authorization request. This property overrides the 'user_authorization_url' value present in Authorization Server Settings.",
+				Description: "The URL used as `verification_url` and `verification_url_complete` values in a Device Authorization request. This property overrides the `user_authorization_url` value present in Authorization Server Settings.",
 				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"pending_authorization_timeout_override": schema.Int64Attribute{
-				Description: "The 'device_code' and 'user_code' timeout, in seconds. This overrides the 'pendingAuthorizationTimeout' value present in Authorization Server Settings.",
+				Description: "The `device_code` and `user_code` timeout, in seconds. This overrides the `pending_authorization_timeout` value present in Authorization Server Settings.",
 				Optional:    true,
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
 				},
 			},
 			"device_polling_interval_override": schema.Int64Attribute{
-				Description: "The amount of time client should wait between polling requests, in seconds. This overrides the 'devicePollingInterval' value present in Authorization Server Settings.",
+				Description: "The amount of time client should wait between polling requests, in seconds. This overrides the 'device_polling_interval' value present in Authorization Server Settings.",
 				Optional:    true,
 			},
 			"bypass_activation_code_confirmation_override": schema.BoolAttribute{
-				Description: "Indicates if the Activation Code Confirmation page should be bypassed if 'verification_url_complete' is used by the end user to authorize a device. This overrides the 'bypassUseCodeConfirmation' value present in Authorization Server Settings.",
+				Description: "Indicates if the Activation Code Confirmation page should be bypassed if `verification_url_complete` is used by the end user to authorize a device. This overrides the `bypass_use_code_confirmation` value present in Authorization Server Settings.",
 				Optional:    true,
 			},
 			"require_proof_key_for_code_exchange": schema.BoolAttribute{
-				Description: "Determines whether Proof Key for Code Exchange (PKCE) is required for this client.",
+				Description: "Determines whether Proof Key for Code Exchange (PKCE) is required for this client. Defaults to `false`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     booldefault.StaticBool(false),
 			},
 			"ciba_delivery_mode": schema.StringAttribute{
-				Description: "The token delivery mode for the client. The default value is 'POLL'.",
+				Description: "The token delivery mode for the client. The default value is `POLL`. Supported values are `POLL` and `PING`.",
 				Optional:    true,
 				Validators: []validator.String{
 					stringvalidator.OneOf("POLL", "PING"),
@@ -642,12 +676,15 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 			"ciba_notification_endpoint": schema.StringAttribute{
 				Description: "The endpoint the OP will call after a successful or failed end-user authentication.",
 				Optional:    true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"ciba_polling_interval": schema.Int64Attribute{
-				Description: "The minimum amount of time in seconds that the Client must wait between polling requests to the token endpoint. The default is 0 seconds.",
+				Description: "The minimum amount of time in seconds that the Client must wait between polling requests to the token endpoint. The default is `0` seconds. Must be between `0` and `3600` seconds.",
 				Optional:    true,
 				Validators: []validator.Int64{
-					int64validator.AtLeast(1),
+					int64validator.AtLeast(0),
 					int64validator.AtMost(3600),
 				},
 			},
@@ -656,8 +693,8 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional:    true,
 			},
 			"ciba_request_object_signing_algorithm": schema.StringAttribute{
-				MarkdownDescription: "The JSON Web Signature [JWS] algorithm that must be used to sign the CIBA Request Object. All signing algorithms are allowed if value is not present\nRS256 - RSA using SHA-256\nRS384 - RSA using SHA-384\nRS512 - RSA using SHA-512\nES256 - ECDSA using P256 Curve and SHA-256\nES384 - ECDSA using P384 Curve and SHA-384\nES512 - ECDSA using P521 Curve and SHA-512\nPS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\nPS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\nPS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\nRSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.",
-				Description:         "The JSON Web Signature [JWS] algorithm that must be used to sign the CIBA Request Object. All signing algorithms are allowed if value is not present, RS256 - RSA using SHA-256, RS384 - RSA using SHA-384, RS512 - RSA using SHA-512, ES256 - ECDSA using P256 Curve and SHA-256, ES384 - ECDSA using P384 Curve and SHA-384, ES512 - ECDSA using P521 Curve and SHA-512, PS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256, PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384, PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512, RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.",
+				MarkdownDescription: "The JSON Web Signature [JWS] algorithm that must be used to sign the CIBA Request Object. All signing algorithms are allowed if value is not present\n`RS256` - RSA using SHA-256\n`RS384` - RSA using SHA-384\n`RS512` - RSA using SHA-512\n`ES256` - ECDSA using P256 Curve and SHA-256\n`ES384` - ECDSA using P384 Curve and SHA-384\n`ES512` - ECDSA using P521 Curve and SHA-512\n`PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\n`PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\n`PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\nRSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.",
+				Description:         "The JSON Web Signature [JWS] algorithm that must be used to sign the CIBA Request Object. All signing algorithms are allowed if value is not present, `RS256` - RSA using SHA-256, `RS384` - RSA using SHA-384, `RS512` - RSA using SHA-512, `ES256` - ECDSA using P256 Curve and SHA-256, `ES384` - ECDSA using P384 Curve and SHA-384, `ES512` - ECDSA using P521 Curve and SHA-512, `PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256, `PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384, `PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512, RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11.",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.OneOf("RS256",
@@ -687,7 +724,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				Attributes:  resourcelink.ToSchema(),
 			},
 			"refresh_token_rolling_grace_period_type": schema.StringAttribute{
-				Description: "When specified, it overrides the global Refresh Token Grace Period defined in the Authorization Server Settings. The default value is SERVER_DEFAULT",
+				Description: "When specified, it overrides the global Refresh Token Grace Period defined in the Authorization Server Settings. The default value is `SERVER_DEFAULT`. Supported values are `SERVER_DEFAULT` and `OVERRIDE_SERVER_DEFAULT`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     stringdefault.StaticString("SERVER_DEFAULT"),
@@ -703,7 +740,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"client_secret_retention_period_type": schema.StringAttribute{
-				Description: "Use OVERRIDE_SERVER_DEFAULT to override the Client Secret Retention Period value on the Authorization Server Settings. SERVER_DEFAULT will default to the Client Secret Retention Period value on the Authorization Server Setting. Defaults to SERVER_DEFAULT.",
+				Description: "Use `OVERRIDE_SERVER_DEFAULT` to override the Client Secret Retention Period value on the Authorization Server Settings. `SERVER_DEFAULT` will default to the Client Secret Retention Period value on the Authorization Server Setting. Defaults to `SERVER_DEFAULT`. Supported values are `OVERRIDE_SERVER_DEFAULT` and `SERVER_DEFAULT`.",
 				Computed:    true,
 				Optional:    true,
 				Default:     stringdefault.StaticString("SERVER_DEFAULT"),
@@ -712,14 +749,14 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"client_secret_retention_period": schema.Int64Attribute{
-				Description: "The length of time in minutes that client secrets will be retained as secondary secrets after secret change. The default value is 0, which will disable secondary client secret retention. This value will override the Client Secret Retention Period value on the Authorization Server Settings.",
+				Description: "The length of time in minutes that client secrets will be retained as secondary secrets after secret change. The default value is `0`, which will disable secondary client secret retention. This value will override the Client Secret Retention Period value on the Authorization Server Settings.",
 				Optional:    true,
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
 				},
 			},
 			"client_secret_changed_time": schema.StringAttribute{
-				Description: "The time at which the client secret was last changed. This property is read only and is ignored on PUT and POST requests.",
+				Description: "The time at which the client secret was last changed.",
 				Computed:    true,
 				Optional:    false,
 				PlanModifiers: []planmodifier.String{
@@ -727,8 +764,8 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"token_introspection_signing_algorithm": schema.StringAttribute{
-				MarkdownDescription: "The JSON Web Signature [JWS] algorithm required to sign the Token Introspection Response.\nHS256 - HMAC using SHA-256\nHS384 - HMAC using SHA-384\nHS512 - HMAC using SHA-512\nRS256 - RSA using SHA-256\nRS384 - RSA using SHA-384\nRS512 - RSA using SHA-512\nES256 - ECDSA using P256 Curve and SHA-256\nES384 - ECDSA using P384 Curve and SHA-384\nES512 - ECDSA using P521 Curve and SHA-512\nPS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\nPS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\nPS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\nA null value will represent the default algorithm which is RS256.\nRSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11",
-				Description:         "The JSON Web Signature [JWS] algorithm required to sign the Token Introspection Response. HS256 - HMAC using SHA-256, HS384 - HMAC using SHA-384, HS512 - HMAC using SHA-512, RS256 - RSA using SHA-256, RS384 - RSA using SHA-384, RS512 - RSA using SHA-512, ES256 - ECDSA using P256 Curve and SHA-256, ES384 - ECDSA using P384 Curve and SHA-384, ES512 - ECDSA using P521 Curve and SHA-512, PS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256, PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384, PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512, A null value will represent the default algorithm which is RS256., RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11",
+				MarkdownDescription: "The JSON Web Signature [JWS] algorithm required to sign the Token Introspection Response.\n`HS256` - HMAC using SHA-256\n`HS384` - HMAC using SHA-384\n`HS512`- HMAC using SHA-512\n`RS256` - RSA using SHA-256\n`RS384` - RSA using SHA-384\n`RS512` - RSA using SHA-512\n`ES256` - ECDSA using P256 Curve and SHA-256\n`ES384` - ECDSA using P384 Curve and SHA-384\n`ES512` - ECDSA using P521 Curve and SHA-512\n`PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\n`PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\n`PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\nA null value will represent the default algorithm which is RS256.\nRSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11",
+				Description:         "The JSON Web Signature [JWS] algorithm required to sign the Token Introspection Response. `HS256` - HMAC using SHA-256, `HS384` - HMAC using SHA-384, `HS512` - HMAC using SHA-512, `RS256` - RSA using SHA-256, `RS384` - RSA using SHA-384, `RS512` - RSA using SHA-512, `ES256` - ECDSA using P256 Curve and SHA-256, `ES384` - ECDSA using P384 Curve and SHA-384, `ES512` - ECDSA using P521 Curve and SHA-512, `PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256, `PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384, `PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512, A null value will represent the default algorithm which is RS256., RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.OneOf("RS256",
@@ -747,8 +784,8 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"token_introspection_encryption_algorithm": schema.StringAttribute{
-				MarkdownDescription: "The JSON Web Encryption [JWE] encryption algorithm used to encrypt the content-encryption key of the Token Introspection Response.\nDIR - Direct Encryption with symmetric key\nA128KW - AES-128 Key Wrap\nA192KW - AES-192 Key Wrap\nA256KW - AES-256 Key Wrap\nA128GCMKW - AES-GCM-128 key encryption\nA192GCMKW - AES-GCM-192 key encryption\nA256GCMKW - AES-GCM-256 key encryption\nECDH_ES - ECDH-ES\nECDH_ES_A128KW - ECDH-ES with AES-128 Key Wrap\nECDH_ES_A192KW - ECDH-ES with AES-192 Key Wrap\nECDH_ES_A256KW - ECDH-ES with AES-256 Key Wrap\nRSA_OAEP - RSAES OAEP\nRSA_OAEP_256 - RSAES OAEP using SHA-256 and MGF1 with SHA-256",
-				Description:         "The JSON Web Encryption [JWE] encryption algorithm used to encrypt the content-encryption key of the Token Introspection Response. DIR - Direct Encryption with symmetric key, A128KW - AES-128 Key Wrap, A192KW - AES-192 Key Wrap, A256KW - AES-256 Key Wrap, A128GCMKW - AES-GCM-128 key encryption, A192GCMKW - AES-GCM-192 key encryption, A256GCMKW - AES-GCM-256 key encryption, ECDH_ES - ECDH-ES, ECDH_ES_A128KW - ECDH-ES with AES-128 Key Wrap, ECDH_ES_A192KW - ECDH-ES with AES-192 Key Wrap, ECDH_ES_A256KW - ECDH-ES with AES-256 Key Wrap, RSA_OAEP - RSAES OAEP, RSA_OAEP_256 - RSAES OAEP using SHA-256 and MGF1 with SHA-256",
+				MarkdownDescription: "The JSON Web Encryption [JWE] encryption algorithm used to encrypt the content-encryption key of the Token Introspection Response.\n`DIR` - Direct Encryption with symmetric key\n`A128KW` - AES-128 Key Wrap\n`A192KW` - AES-192 Key Wrap\n`A256KW` - AES-256 Key Wrap\n`A128GCMKW` - AES-GCM-128 key encryption\n`A192GCMKW` - AES-GCM-192 key encryption\n`A256GCMKW` - AES-GCM-256 key encryption\n`ECDH_ES` - ECDH-ES\n`ECDH_ES_A128KW`- ECDH-ES with AES-128 Key Wrap\n`ECDH_ES_A192KW` - ECDH-ES with AES-192 Key Wrap\n`ECDH_ES_A256KW` - ECDH-ES with AES-256 Key Wrap\n`RSA_OAEP` - RSAES OAEP\n`RSA_OAEP_256` - RSAES OAEP using SHA-256 and MGF1 with SHA-256",
+				Description:         "The JSON Web Encryption [JWE] encryption algorithm used to encrypt the content-encryption key of the Token Introspection Response. `DIR` - Direct Encryption with symmetric key, `A128KW` - AES-128 Key Wrap, `A192KW` - AES-192 Key Wrap, `A256KW` - AES-256 Key Wrap, `A128GCMKW` - AES-GCM-128 key encryption, `A192GCMKW` - AES-GCM-192 key encryption, `A256GCMKW` - AES-GCM-256 key encryption, `ECDH_ES` - ECDH-ES, `ECDH_ES_A128KW` - ECDH-ES with AES-128 Key Wrap, `ECDH_ES_A192KW` - ECDH-ES with AES-192 Key Wrap, `ECDH_ES_A256KW` - ECDH-ES with AES-256 Key Wrap, `RSA_OAEP` - RSAES OAEP, `RSA_OAEP_256` - RSAES OAEP using SHA-256 and MGF1 with SHA-256",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.OneOf("DIR",
@@ -768,8 +805,8 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"token_introspection_content_encryption_algorithm": schema.StringAttribute{
-				MarkdownDescription: "The JSON Web Encryption [JWE] content-encryption algorithm for the Token Introspection Response.\nAES_128_CBC_HMAC_SHA_256 - Composite AES-CBC-128 HMAC-SHA-256\nAES_192_CBC_HMAC_SHA_384 - Composite AES-CBC-192 HMAC-SHA-384\nAES_256_CBC_HMAC_SHA_512 - Composite AES-CBC-256 HMAC-SHA-512\nAES_128_GCM - AES-GCM-128\nAES_192_GCM - AES-GCM-192\nAES_256_GCM - AES-GCM-256",
-				Description:         "The JSON Web Encryption [JWE] content-encryption algorithm for the Token Introspection Response. AES_128_CBC_HMAC_SHA_256 - Composite AES-CBC-128 HMAC-SHA-256, AES_192_CBC_HMAC_SHA_384 - Composite AES-CBC-192 HMAC-SHA-384, AES_256_CBC_HMAC_SHA_512 - Composite AES-CBC-256 HMAC-SHA-512, AES_128_GCM - AES-GCM-128, AES_192_GCM - AES-GCM-192, AES_256_GCM - AES-GCM-256",
+				MarkdownDescription: "The JSON Web Encryption [JWE] content-encryption algorithm for the Token Introspection Response.\n`AES_128_CBC_HMAC_SHA_256` - Composite AES-CBC-128 HMAC-SHA-256\n`AES_192_CBC_HMAC_SHA_384` - Composite AES-CBC-192 HMAC-SHA-384\n`AES_256_CBC_HMAC_SHA_512` - Composite AES-CBC-256 HMAC-SHA-512\n`AES_128_GCM` - AES-GCM-128\n`AES_192_GCM` - AES-GCM-192\n`AES_256_GCM` - AES-GCM-256",
+				Description:         "The JSON Web Encryption [JWE] content-encryption algorithm for the Token Introspection Response. `AES_128_CBC_HMAC_SHA_256` - Composite AES-CBC-128 HMAC-SHA-256, `AES_192_CBC_HMAC_SHA_384` - Composite AES-CBC-192 HMAC-SHA-384, `AES_256_CBC_HMAC_SHA_512` - Composite AES-CBC-256 HMAC-SHA-512, `AES_128_GCM` - AES-GCM-128, `AES_192_GCM` - AES-GCM-192, `AES_256_GCM` - AES-GCM-256",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.OneOf("AES_128_CBC_HMAC_SHA_256",
@@ -782,8 +819,8 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"jwt_secured_authorization_response_mode_signing_algorithm": schema.StringAttribute{
-				MarkdownDescription: "The JSON Web Signature [JWS] algorithm required to sign the JWT Secured Authorization Response.\nHS256 - HMAC using SHA-256\nHS384 - HMAC using SHA-384\nHS512 - HMAC using SHA-512\nRS256 - RSA using SHA-256\nRS384 - RSA using SHA-384\nRS512 - RSA using SHA-512\nES256 - ECDSA using P256 Curve and SHA-256\nES384 - ECDSA using P384 Curve and SHA-384\nES512 - ECDSA using P521 Curve and SHA-512\nPS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\nPS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\nPS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\nA null value will represent the default algorithm which is RS256.\nRSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11",
-				Description:         "The JSON Web Signature [JWS] algorithm required to sign the JWT Secured Authorization Response. HS256 - HMAC using SHA-256, HS384 - HMAC using SHA-384, HS512 - HMAC using SHA-512, RS256 - RSA using SHA-256, RS384 - RSA using SHA-384, RS512 - RSA using SHA-512, ES256 - ECDSA using P256 Curve and SHA-256, ES384 - ECDSA using P384 Curve and SHA-384, ES512 - ECDSA using P521 Curve and SHA-512, PS256 - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256, PS384 - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384, PS512 - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512, A null value will represent the default algorithm which is RS256., RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11",
+				MarkdownDescription: "The JSON Web Signature [JWS] algorithm required to sign the JWT Secured Authorization Response.\n`HS256` - HMAC using SHA-256\n`HS384` - HMAC using SHA-384\n`HS512` - HMAC using SHA-512\n`RS256` - RSA using SHA-256\n`RS384` - RSA using SHA-384\n`RS512` - RSA using SHA-512\n`ES256` - ECDSA using P256 Curve and SHA-256\n`ES384` - ECDSA using P384 Curve and SHA-384\n`ES512` - ECDSA using P521 Curve and SHA-512\n`PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256\n`PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384\n`PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512\nA null value will represent the default algorithm which is RS256.\nRSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11",
+				Description:         "The JSON Web Signature [JWS] algorithm required to sign the JWT Secured Authorization Response. `HS256` - HMAC using SHA-256, `HS384` - HMAC using SHA-384, `HS512` - HMAC using SHA-512, `RS256` - RSA using SHA-256, `RS384` - RSA using SHA-384, `RS512` - RSA using SHA-512, `ES256` - ECDSA using P256 Curve and SHA-256, `ES384` - ECDSA using P384 Curve and SHA-384, `ES512` - ECDSA using P521 Curve and SHA-512, `PS256` - RSASSA-PSS using SHA-256 and MGF1 padding with SHA-256, `PS384` - RSASSA-PSS using SHA-384 and MGF1 padding with SHA-384, `PS512` - RSASSA-PSS using SHA-512 and MGF1 padding with SHA-512, A null value will represent the default algorithm which is RS256., RSASSA-PSS is only supported with SafeNet Luna, Thales nCipher or Java 11",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.OneOf("RS256",
@@ -802,8 +839,8 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"jwt_secured_authorization_response_mode_encryption_algorithm": schema.StringAttribute{
-				MarkdownDescription: "The JSON Web Encryption [JWE] encryption algorithm used to encrypt the content-encryption key of the JWT Secured Authorization Response.\nDIR - Direct Encryption with symmetric key\nA128KW - AES-128 Key Wrap\nA192KW - AES-192 Key Wrap\nA256KW - AES-256 Key Wrap\nA128GCMKW - AES-GCM-128 key encryption\nA192GCMKW - AES-GCM-192 key encryption\nA256GCMKW - AES-GCM-256 key encryption\nECDH_ES - ECDH-ES\nECDH_ES_A128KW - ECDH-ES with AES-128 Key Wrap\nECDH_ES_A192KW - ECDH-ES with AES-192 Key Wrap\nECDH_ES_A256KW - ECDH-ES with AES-256 Key Wrap\nRSA_OAEP - RSAES OAEP\nRSA_OAEP_256 - RSAES OAEP using SHA-256 and MGF1 with SHA-256",
-				Description:         "The JSON Web Encryption [JWE] encryption algorithm used to encrypt the content-encryption key of the JWT Secured Authorization Response. DIR - Direct Encryption with symmetric key, A128KW - AES-128 Key Wrap, A192KW - AES-192 Key Wrap, A256KW - AES-256 Key Wrap, A128GCMKW - AES-GCM-128 key encryption, A192GCMKW - AES-GCM-192 key encryption, A256GCMKW - AES-GCM-256 key encryption, ECDH_ES - ECDH-ES, ECDH_ES_A128KW - ECDH-ES with AES-128 Key Wrap, ECDH_ES_A192KW - ECDH-ES with AES-192 Key Wrap, ECDH_ES_A256KW - ECDH-ES with AES-256 Key Wrap, RSA_OAEP - RSAES OAEP, RSA_OAEP_256 - RSAES OAEP using SHA-256 and MGF1 with SHA-256",
+				MarkdownDescription: "The JSON Web Encryption [JWE] encryption algorithm used to encrypt the content-encryption key of the JWT Secured Authorization Response.\n`DIR` - Direct Encryption with symmetric key\n`A128KW` - AES-128 Key Wrap\n`A192KW` - AES-192 Key Wrap\n`A256KW` - AES-256 Key Wrap\n`A128GCMKW` - AES-GCM-128 key encryption\n`A192GCMKW` - AES-GCM-192 key encryption\n`A256GCMKW` - AES-GCM-256 key encryption\n`ECDH_ES` - ECDH-ES\n`ECDH_ES_A128KW` - ECDH-ES with AES-128 Key Wrap\n`ECDH_ES_A192KW` - ECDH-ES with AES-192 Key Wrap\n`ECDH_ES_A256KW` - ECDH-ES with AES-256 Key Wrap\n`RSA_OAEP` - RSAES OAEP\n`RSA_OAEP_256` - RSAES OAEP using SHA-256 and MGF1 with SHA-256",
+				Description:         "The JSON Web Encryption [JWE] encryption algorithm used to encrypt the content-encryption key of the JWT Secured Authorization Response. `DIR` - Direct Encryption with symmetric key, `A128KW` - AES-128 Key Wrap, `A192KW` - AES-192 Key Wrap, `A256KW` - AES-256 Key Wrap, `A128GCMKW` - AES-GCM-128 key encryption, `A192GCMKW` - AES-GCM-192 key encryption, `A256GCMKW` - AES-GCM-256 key encryption, `ECDH_ES` - ECDH-ES, `ECDH_ES_A128KW` - ECDH-ES with AES-128 Key Wrap, `ECDH_ES_A192KW` - ECDH-ES with AES-192 Key Wrap, `ECDH_ES_A256KW` - ECDH-ES with AES-256 Key Wrap, `RSA_OAEP` - RSAES OAEP, `RSA_OAEP_256` - RSAES OAEP using SHA-256 and MGF1 with SHA-256",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.OneOf("DIR",
@@ -823,8 +860,8 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"jwt_secured_authorization_response_mode_content_encryption_algorithm": schema.StringAttribute{
-				MarkdownDescription: "The JSON Web Encryption [JWE] content-encryption algorithm for the JWT Secured Authorization Response.\nAES_128_CBC_HMAC_SHA_256 - Composite AES-CBC-128 HMAC-SHA-256\nAES_192_CBC_HMAC_SHA_384 - Composite AES-CBC-192 HMAC-SHA-384\nAES_256_CBC_HMAC_SHA_512 - Composite AES-CBC-256 HMAC-SHA-512\nAES_128_GCM - AES-GCM-128\nAES_192_GCM - AES-GCM-192\nAES_256_GCM - AES-GCM-256",
-				Description:         "The JSON Web Encryption [JWE] content-encryption algorithm for the JWT Secured Authorization Response. AES_128_CBC_HMAC_SHA_256 - Composite AES-CBC-128 HMAC-SHA-256, AES_192_CBC_HMAC_SHA_384 - Composite AES-CBC-192 HMAC-SHA-384, AES_256_CBC_HMAC_SHA_512 - Composite AES-CBC-256 HMAC-SHA-512, AES_128_GCM - AES-GCM-128, AES_192_GCM - AES-GCM-192, AES_256_GCM - AES-GCM-256",
+				MarkdownDescription: "The JSON Web Encryption [JWE] content-encryption algorithm for the JWT Secured Authorization Response.\n`AES_128_CBC_HMAC_SHA_256` - Composite AES-CBC-128 HMAC-SHA-256\n`AES_192_CBC_HMAC_SHA_384` - Composite AES-CBC-192 HMAC-SHA-384\n`AES_256_CBC_HMAC_SHA_512` - Composite AES-CBC-256 HMAC-SHA-512\n`AES_128_GCM` - AES-GCM-128\n`AES_192_GCM` - AES-GCM-192\n`AES_256_GCM` - AES-GCM-256",
+				Description:         "The JSON Web Encryption [JWE] content-encryption algorithm for the JWT Secured Authorization Response. `AES_128_CBC_HMAC_SHA_256` - Composite AES-CBC-128 HMAC-SHA-256, `AES_192_CBC_HMAC_SHA_384` - Composite AES-CBC-192 HMAC-SHA-384, `AES_256_CBC_HMAC_SHA_512` - Composite AES-CBC-256 HMAC-SHA-512, `AES_128_GCM` - AES-GCM-128, `AES_192_GCM` - AES-GCM-192, `AES_256_GCM` - AES-GCM-256",
 				Optional:            true,
 				Validators: []validator.String{
 					stringvalidator.OneOf("AES_128_CBC_HMAC_SHA_256",
@@ -837,14 +874,14 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"require_dpop": schema.BoolAttribute{
-				MarkdownDescription: "Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Supported in PF version 11.3 or later.",
-				Description:         "Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Supported in PF version 11.3 or later.",
+				MarkdownDescription: "Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Supported in PF version `11.3` or later. Defaults to `false`.",
+				Description:         "Determines whether Demonstrating Proof-of-Possession (DPoP) is required for this client. Supported in PF version `11.3` or later. Defaults to `false`.",
 				Optional:            true,
 				Computed:            true,
 				// Default set when appropriate in ModifyPlan before
 			},
 			"require_offline_access_scope_to_issue_refresh_tokens": schema.StringAttribute{
-				Description: "Determines whether offline_access scope is required to issue refresh tokens by this client or not. 'SERVER_DEFAULT' is the default value.",
+				Description: "Determines whether offline_access scope is required to issue refresh tokens by this client or not. `SERVER_DEFAULT` is the default value. Supported values are `SERVER_DEFAULT`, `NO`, and `YES`. Supported in PF version `12.1` or later.",
 				Optional:    true,
 				Computed:    true,
 				Validators: []validator.String{
@@ -856,7 +893,7 @@ func (r *oauthClientResource) Schema(ctx context.Context, req resource.SchemaReq
 				},
 			},
 			"offline_access_require_consent_prompt": schema.StringAttribute{
-				Description: "Determines whether offline_access requires the prompt parameter value to be set to 'consent' by this client or not. The value will be reset to default if the 'requireOfflineAccessScopeToIssueRefreshTokens' attribute is set to 'SERVER_DEFAULT' or 'false'. 'SERVER_DEFAULT' is the default value.",
+				Description: "Determines whether offline_access requires the prompt parameter value to be set to 'consent' by this client or not. The value will be reset to default if the `require_offline_access_scope_to_issue_refresh_tokens` attribute is set to `SERVER_DEFAULT` or `false`. `SERVER_DEFAULT` is the default value. Supported values are `SERVER_DEFAULT`, `NO`, and `YES`. Supported in PF version `12.1` or later.",
 				Optional:    true,
 				Computed:    true,
 				Validators: []validator.String{
@@ -1177,9 +1214,9 @@ func (r *oauthClientResource) ModifyPlan(ctx context.Context, req resource.Modif
 	}
 }
 
-func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state *oauthClientModel, productVersion version.SupportedVersion) diag.Diagnostics {
+func readOauthClientResponse(ctx context.Context, r *client.Client, plan, state *oauthClientModel, productVersion version.SupportedVersion, isImportRead bool) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
-	diags = readOauthClientResponseCommon(ctx, r, state, plan, productVersion)
+	diags = readOauthClientResponseCommon(ctx, r, state, plan, productVersion, isImportRead)
 
 	// state.ClientAuth
 	var clientAuthToState types.Object
@@ -1406,16 +1443,19 @@ func (r *oauthClientResource) Create(ctx context.Context, req resource.CreateReq
 	// Read the response into the state
 	var state oauthClientModel
 
-	diags = readOauthClientResponse(ctx, oauthClientResponse, &plan, &state, r.providerConfig.ProductVersion)
+	diags = readOauthClientResponse(ctx, oauthClientResponse, &plan, &state, r.providerConfig.ProductVersion, false)
 	resp.Diagnostics.Append(diags...)
 	diags = resp.State.Set(ctx, state)
 	resp.Diagnostics.Append(diags...)
 }
 
 func (r *oauthClientResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var state oauthClientModel
 
-	diags := req.State.Get(ctx, &state)
+	diags = req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -1433,7 +1473,7 @@ func (r *oauthClientResource) Read(ctx context.Context, req resource.ReadRequest
 	}
 
 	// Read the response into the state
-	diags = readOauthClientResponse(ctx, apiReadOauthClient, &state, &state, r.providerConfig.ProductVersion)
+	diags = readOauthClientResponse(ctx, apiReadOauthClient, &state, &state, r.providerConfig.ProductVersion, isImportRead)
 	resp.Diagnostics.Append(diags...)
 
 	// Set refreshed state
@@ -1468,7 +1508,7 @@ func (r *oauthClientResource) Update(ctx context.Context, req resource.UpdateReq
 
 	// Read the response
 	var state oauthClientModel
-	diags = readOauthClientResponse(ctx, updateOauthClientResponse, &plan, &state, r.providerConfig.ProductVersion)
+	diags = readOauthClientResponse(ctx, updateOauthClientResponse, &plan, &state, r.providerConfig.ProductVersion, false)
 	resp.Diagnostics.Append(diags...)
 
 	// Update computed values
@@ -1493,4 +1533,5 @@ func (r *oauthClientResource) Delete(ctx context.Context, req resource.DeleteReq
 func (r *oauthClientResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("client_id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }

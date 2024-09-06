@@ -13,10 +13,8 @@ Manages a license summary object.
 ## Example Usage
 
 ```terraform
-# this resource does not support import
 resource "pingfederate_license" "license" {
-  # this property needs to contain base64 encoded value of your license.
-  file_data = ""
+  file_data = file("/path/to/license")
 }
 ```
 
@@ -34,7 +32,7 @@ resource "pingfederate_license" "license" {
 - `expiration_date` (String) The expiration date value from the license file (if applicable).
 - `features` (Attributes List) Other licence features, if applicable. (see [below for nested schema](#nestedatt--features))
 - `grace_period` (Number) Number of days provided as grace period, past the expiration date (if applicable).
-- `id` (String) The ID of this resource.
+- `id` (String, Deprecated) The ID of this resource.
 - `issue_date` (String) The issue date value from the license file.
 - `license_groups` (Attributes List) License connection groups, if applicable. (see [below for nested schema](#nestedatt--license_groups))
 - `max_connections` (Number) Maximum number of connections that can be created under this license (if applicable).
@@ -67,12 +65,3 @@ Read-Only:
 - `end_date` (String) End date for the group.
 - `name` (String) Group name from the license file.
 - `start_date` (String) Start date for the group.
-
-## Import
-
-Import is supported using the following syntax:
-
-```shell
-# This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
-terraform import pingfederate_license.license licenseId
-```

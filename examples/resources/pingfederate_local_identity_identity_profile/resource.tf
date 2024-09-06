@@ -1,8 +1,82 @@
-resource "pingfederate_local_identity_identity_profile" "localIdentityIdentityProfile" {
+resource "pingfederate_authentication_policy_contract" "authenticationPolicyContractsExample" {
+  contract_id         = "myContract"
+  extended_attributes = [{ name = "extended_attribute" }, { name = "extended_attribute2" }]
+  name                = "My Contract"
+}
+
+resource "pingfederate_notification_publisher" "notificationPublisher" {
+  publisher_id = "EmailSMTPPublisherSettings"
+  name         = "Email SMTP Publisher Settings"
+  configuration = {
+    fields = [
+      {
+        name  = "Email Server"
+        value = "localhost"
+      },
+      {
+        name  = "From Address"
+        value = "noreply@bxretail.org"
+      },
+      {
+        name  = "Sender Name"
+        value = "BXRetail"
+      },
+      {
+        name  = "SMTP Port"
+        value = "25"
+      },
+      {
+        name  = "Encryption Method"
+        value = "SSL"
+      },
+      {
+        name  = "SMTPS Port"
+        value = "465"
+      },
+      {
+        name  = "Username"
+        value = var.email_smtp_server_username
+      },
+      {
+        name  = "Password"
+        value = var.email_smtp_server_password
+      },
+      {
+        name  = "Verify Hostname"
+        value = "true"
+      },
+      {
+        name  = "UTF-8 Message Header Support"
+        value = "false"
+      },
+      {
+        name  = "Connection Timeout"
+        value = "30"
+      },
+      {
+        name  = "Retry Attempt"
+        value = "2"
+      },
+      {
+        name  = "Retry Delay"
+        value = "2"
+      },
+      {
+        name  = "Enable SMTP Debugging Messages"
+        value = "true"
+      }
+    ]
+  }
+  plugin_descriptor_ref = {
+    id = "com.pingidentity.email.SmtpNotificationPlugin"
+  }
+}
+
+resource "pingfederate_local_identity_identity_profile" "identityProfileExample" {
   name       = "identityProfileName"
   profile_id = "profileId"
   apc_id = {
-    id = "apcid"
+    id = pingfederate_authentication_policy_contract.authenticationPolicyContractsExample.contract_id
   }
   auth_sources = [
     {
@@ -18,12 +92,9 @@ resource "pingfederate_local_identity_identity_profile" "localIdentityIdentityPr
     update_attributes = false
     update_interval   = 0
   }
-  registration_enabled = true
+  registration_enabled = false
   registration_config = {
-    captcha_enabled = true
-    captcha_provider_ref = {
-      id = "testCaptchaAndRisk"
-    }
+
     template_name                           = "local.identity.registration.html"
     create_authn_session_after_registration = true
     username_field                          = "cn"
@@ -80,32 +151,27 @@ resource "pingfederate_local_identity_identity_profile" "localIdentityIdentityPr
     strip_space_from_unique_field = true
   }
   email_verification_config = {
-    email_verification_enabled = true
-    verify_email_template_name = "message-template-email-ownership-verification.html"
-    /* email_verification_sent_template_name = "local.identity.email.verification.sent.html"  */
+    email_verification_enabled               = true
+    verify_email_template_name               = "message-template-email-ownership-verification.html"
     email_verification_success_template_name = "local.identity.email.verification.success.html"
     email_verification_error_template_name   = "local.identity.email.verification.error.html"
-    /* TO ENABLE OTL as the email verification type, remove verification OTP template,otp_character_set, otp_retry attempts, otp_length attribute  and uncomment otl_time_to_live,email_verification_sent and require_verified email template*/
-    email_verification_type              = "OTP"
-    allowed_otp_character_set            = "23456789BCDFGHJKMNPQRSTVWXZbcdfghjkmnpqrstvwxz"
-    email_verification_otp_template_name = "message-template-email-ownership-verification.html"
-    otp_length                           = 8
-    otp_retry_attempts                   = 3
-    otp_time_to_live                     = 3
-    /* otl_time_to_live = 1440  */
-    field_for_email_to_verify         = "mail"
-    field_storing_verification_status = "entryUUID"
+    email_verification_type                  = "OTP"
+    allowed_otp_character_set                = "23456789BCDFGHJKMNPQRSTVWXZbcdfghjkmnpqrstvwxz"
+    email_verification_otp_template_name     = "message-template-email-ownership-verification.html"
+    otp_length                               = 8
+    otp_retry_attempts                       = 3
+    otp_time_to_live                         = 3
+    field_for_email_to_verify                = "mail"
+    field_storing_verification_status        = "entryUUID"
     notification_publisher_ref = {
-      id = "testnp",
+      id = pingfederate_notification_publisher.notificationPublisher.publisher_id
     }
     require_verified_email = true
-    /* require_verified_email_template_name = "local.identity.email.verification.required.html" */
   }
-  // Local Identity profile only support Directory as DataStore
   data_store_config = {
     type = "LDAP"
     data_store_ref = {
-      id = "directoryid"
+      id = "PDdatastore"
     }
     base_dn        = "ou=people,dc=example,dc=com",
     create_pattern = "uid=$${mail}",
