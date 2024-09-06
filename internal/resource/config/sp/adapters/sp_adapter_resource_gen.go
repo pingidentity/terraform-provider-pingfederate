@@ -19,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
@@ -232,7 +233,7 @@ func (model *spAdapterResourceModel) buildClientStruct() (*client.SpAdapter, err
 	return result, nil
 }
 
-func (state *spAdapterResourceModel) readClientResponse(response *client.SpAdapter) diag.Diagnostics {
+func (state *spAdapterResourceModel) readClientResponse(response *client.SpAdapter, isImportRead bool) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
 	// id
 	state.Id = types.StringValue(response.Id)
@@ -284,7 +285,7 @@ func (state *spAdapterResourceModel) readClientResponse(response *client.SpAdapt
 
 	state.AttributeContract = attributeContractValue
 	// configuration
-	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration)
+	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration, isImportRead)
 	respDiags.Append(diags...)
 
 	state.Configuration = configurationValue
@@ -360,13 +361,16 @@ func (r *spAdapterResource) Create(ctx context.Context, req resource.CreateReque
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, false)...)
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *spAdapterResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var data spAdapterResourceModel
 
 	// Read Terraform prior state data into the model
@@ -389,7 +393,7 @@ func (r *spAdapterResource) Read(ctx context.Context, req resource.ReadRequest, 
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, isImportRead)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -420,7 +424,7 @@ func (r *spAdapterResource) Update(ctx context.Context, req resource.UpdateReque
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, false)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -446,4 +450,5 @@ func (r *spAdapterResource) Delete(ctx context.Context, req resource.DeleteReque
 func (r *spAdapterResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to adapter_id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("adapter_id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }

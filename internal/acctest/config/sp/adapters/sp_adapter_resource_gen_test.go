@@ -81,9 +81,8 @@ func TestAccSpAdapter_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "adapter_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
-				// Can't verify tables and fields because the computed ones from the server will go into the
-				// corresponding tables_all and fields_all attributes
-				ImportStateVerifyIgnore: []string{"configuration.tables", "configuration.fields"},
+				// configuration.fields has some sensitive values which can't be imported
+				ImportStateVerifyIgnore: []string{"configuration.fields"},
 			},
 		},
 	})
