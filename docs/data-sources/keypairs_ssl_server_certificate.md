@@ -28,3 +28,4 @@ data "pingfederate_keypairs_ssl_server_certificate" "sslServerCert" {
 ### Read-Only
 
 - `exported_certificate` (String) The exported PEM-encoded certificate.
+- `id` (String) ID of this resource.
