@@ -81,10 +81,6 @@ func TestAccIdpTokenProcessor_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "processor_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
-				ImportStateVerifyIgnore: []string{
-					"configuration.tables",
-					"configuration.fields",
-				},
 			},
 		},
 	})
@@ -154,6 +150,12 @@ resource "pingfederate_idp_token_processor" "example" {
             ]
           }
         ]
+      }
+    ]
+    fields = [
+      {
+        name  = "Authentication Attempts",
+        value = "3"
       }
     ]
   }
