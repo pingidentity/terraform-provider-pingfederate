@@ -67,6 +67,10 @@ resource "pingfederate_oauth_ciba_server_policy_request_policy" "requestPolicy" 
 - `require_token_for_identity_hint` (Boolean) Require token for identity hint. Default value is `false`.
 - `user_code_pcv_ref` (Attributes) Reference to the associated password credential validator. (see [below for nested schema](#nestedatt--user_code_pcv_ref))
 
+### Read-Only
+
+- `id` (String) The ID of this resource.
+
 <a id="nestedatt--authenticator_ref"></a>
 ### Nested Schema for `authenticator_ref`
 

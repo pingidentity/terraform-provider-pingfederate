@@ -24,6 +24,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/api"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -62,6 +63,7 @@ type oauthCibaServerPolicyRequestPolicyResourceModel struct {
 	AllowUnsignedLoginHintToken      types.Bool   `tfsdk:"allow_unsigned_login_hint_token"`
 	AlternativeLoginHintTokenIssuers types.List   `tfsdk:"alternative_login_hint_token_issuers"`
 	AuthenticatorRef                 types.Object `tfsdk:"authenticator_ref"`
+	Id                               types.String `tfsdk:"id"`
 	IdentityHintContract             types.Object `tfsdk:"identity_hint_contract"`
 	IdentityHintContractFulfillment  types.Object `tfsdk:"identity_hint_contract_fulfillment"`
 	IdentityHintMapping              types.Object `tfsdk:"identity_hint_mapping"`
@@ -214,6 +216,7 @@ func (r *oauthCibaServerPolicyRequestPolicyResource) Schema(ctx context.Context,
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (model *oauthCibaServerPolicyRequestPolicyResourceModel) buildClientStruct() (*client.RequestPolicy, diag.Diagnostics) {
@@ -317,6 +320,8 @@ func (model *oauthCibaServerPolicyRequestPolicyResourceModel) buildClientStruct(
 
 func (state *oauthCibaServerPolicyRequestPolicyResourceModel) readClientResponse(response *client.RequestPolicy) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringValue(response.Id)
 	// allow_unsigned_login_hint_token
 	state.AllowUnsignedLoginHintToken = types.BoolPointerValue(response.AllowUnsignedLoginHintToken)
 	// alternative_login_hint_token_issuers
