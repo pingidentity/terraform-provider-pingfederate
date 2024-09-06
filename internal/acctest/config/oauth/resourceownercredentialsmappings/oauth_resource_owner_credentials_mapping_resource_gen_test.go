@@ -176,6 +176,7 @@ resource "pingfederate_oauth_resource_owner_credentials_mapping" "example" {
 // Validate any computed values when applying minimal HCL
 func oauthResourceOwnerCredentialsMapping_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_oauth_resource_owner_credentials_mapping.example", "id", oauthResourceOwnerCredentialsMappingMappingId),
 		resource.TestCheckResourceAttr("pingfederate_oauth_resource_owner_credentials_mapping.example", "password_validator_ref.id", oauthResourceOwnerCredentialsMappingMappingId),
 		resource.TestCheckResourceAttr("pingfederate_oauth_resource_owner_credentials_mapping.example", "attribute_sources.#", "0"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_resource_owner_credentials_mapping.example", "issuance_criteria.conditional_criteria.#", "0"),
@@ -185,6 +186,7 @@ func oauthResourceOwnerCredentialsMapping_CheckComputedValuesMinimal() resource.
 // Validate any computed values when applying complete HCL
 func oauthResourceOwnerCredentialsMapping_CheckComputedValuesComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_oauth_resource_owner_credentials_mapping.example", "id", oauthResourceOwnerCredentialsMappingMappingId),
 		resource.TestCheckResourceAttr("pingfederate_oauth_resource_owner_credentials_mapping.example", "password_validator_ref.id", oauthResourceOwnerCredentialsMappingMappingId),
 	)
 }

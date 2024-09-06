@@ -78,6 +78,7 @@ resource "pingfederate_oauth_resource_owner_credentials_mapping" "mapping" {
 
 ### Read-Only
 
+- `id` (String) The ID of this resource.
 - `password_validator_ref` (Attributes) Read-only reference to the associated Source Password Validator Instance. (see [below for nested schema](#nestedatt--password_validator_ref))
 
 <a id="nestedatt--attribute_contract_fulfillment"></a>

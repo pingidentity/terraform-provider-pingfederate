@@ -18,6 +18,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -55,6 +56,7 @@ func (r *oauthResourceOwnerCredentialsMappingResource) Configure(_ context.Conte
 type oauthResourceOwnerCredentialsMappingResourceModel struct {
 	AttributeContractFulfillment types.Map    `tfsdk:"attribute_contract_fulfillment"`
 	AttributeSources             types.Set    `tfsdk:"attribute_sources"`
+	Id                           types.String `tfsdk:"id"`
 	IssuanceCriteria             types.Object `tfsdk:"issuance_criteria"`
 	MappingId                    types.String `tfsdk:"mapping_id"`
 	PasswordValidatorRef         types.Object `tfsdk:"password_validator_ref"`
@@ -90,6 +92,7 @@ func (r *oauthResourceOwnerCredentialsMappingResource) Schema(ctx context.Contex
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (model *oauthResourceOwnerCredentialsMappingResourceModel) buildClientStruct() (*client.ResourceOwnerCredentialsMapping, diag.Diagnostics) {
@@ -122,6 +125,8 @@ func (model *oauthResourceOwnerCredentialsMappingResourceModel) buildClientStruc
 
 func (state *oauthResourceOwnerCredentialsMappingResourceModel) readClientResponse(response *client.ResourceOwnerCredentialsMapping) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringValue(response.Id)
 	// attribute_contract_fulfillment
 	attributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &response.AttributeContractFulfillment)
 	respDiags.Append(diags...)
