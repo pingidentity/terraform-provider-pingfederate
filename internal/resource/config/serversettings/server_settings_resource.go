@@ -12,11 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
@@ -61,25 +58,38 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 					"company": schema.StringAttribute{
 						Description: "Company name.",
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"email": schema.StringAttribute{
 						Description: "Contact email address.",
 						Optional:    true,
 						Validators: []validator.String{
 							configvalidators.ValidEmail(),
+							stringvalidator.LengthAtLeast(1),
 						},
 					},
 					"first_name": schema.StringAttribute{
 						Description: "Contact first name.",
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"last_name": schema.StringAttribute{
 						Description: "Contact last name.",
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"phone": schema.StringAttribute{
 						Description: "Contact phone number.",
 						Optional:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 				},
 			},
@@ -98,6 +108,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								Required:    true,
 								Validators: []validator.String{
 									configvalidators.ValidEmail(),
+									stringvalidator.LengthAtLeast(1),
 								},
 							},
 							"notification_publisher_ref": schema.SingleNestedAttribute{
@@ -116,6 +127,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								Required:    true,
 								Validators: []validator.String{
 									configvalidators.ValidEmail(),
+									stringvalidator.LengthAtLeast(1),
 								},
 							},
 							"initial_warning_period": schema.Int64Attribute{
@@ -123,7 +135,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								Optional:    true,
 							},
 							"final_warning_period": schema.Int64Attribute{
-								Description: "Time before certificate expiration when final warning is sent (in days).",
+								Description: "Time before certificate expiration when final warning is sent (in days). Must be between `1` and `99999` days.",
 								Required:    true,
 								Validators: []validator.Int64{
 									// final_warning_period must be between 1 and 99999 days, inclusive
@@ -136,7 +148,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								Attributes:  resourcelink.ToSchema(),
 							},
 							"notification_mode": schema.StringAttribute{
-								Description: "The mode of notification. Set to NOTIFICATION_PUBLISHER to enable email notifications and server log messages. Set to LOGGING_ONLY to enable server log messages. Defaults to NOTIFICATION_PUBLISHER. Supported in PF version 11.3 or later.",
+								Description: "The mode of notification. Supported values are `NOTIFICATION_PUBLISHER` and `LOGGING_ONLY`. Set to `NOTIFICATION_PUBLISHER` to enable email notifications and server log messages. Set to `LOGGING_ONLY` to enable server log messages. Defaults to `NOTIFICATION_PUBLISHER`. Supported in PF version `11.3` or later.",
 								Optional:    true,
 								Computed:    true,
 								// Default value is set in ModifyPlan below. When PF 11.3+ is all that is supported, the default can be moved to the schema here.
@@ -150,7 +162,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						},
 					},
 					"notify_admin_user_password_changes": schema.BoolAttribute{
-						Description: "Determines whether admin users are notified through email when their account is changed.",
+						Description: "Determines whether admin users are notified through email when their account is changed. Default value is `false`.",
 						Optional:    true,
 						Computed:    true,
 						Default:     booldefault.StaticBool(false),
@@ -169,6 +181,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								Required:    true,
 								Validators: []validator.String{
 									configvalidators.ValidEmail(),
+									stringvalidator.LengthAtLeast(1),
 								},
 							},
 							"notification_publisher_ref": schema.SingleNestedAttribute{
@@ -179,19 +192,19 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						},
 					},
 					"expired_certificate_administrative_console_warning_days": schema.Int64Attribute{
-						Description: "Indicates the number of days prior to certificate expiry date, the administrative console warning starts. The default value is 14 days. Supported in PF 12.0 or later.",
+						Description: "Indicates the number of days prior to certificate expiry date, the administrative console warning starts. The default value is `14` days. Supported in PF `12.0` or later.",
 						Optional:    true,
 						Computed:    true,
 						// Default will be set in ModifyPlan method. Once we drop support for pre-12.0 versions, we can set the default here instead.
 					},
 					"expiring_certificate_administrative_console_warning_days": schema.Int64Attribute{
-						Description: "Indicates the number of days past the certificate expiry date, the administrative console warning ends. The default value is 14 days. Supported in PF 12.0 or later.",
+						Description: "Indicates the number of days past the certificate expiry date, the administrative console warning ends. The default value is `14` days. Supported in PF `12.0` or later.",
 						Optional:    true,
 						Computed:    true,
 						// Default will be set in ModifyPlan method. Once we drop support for pre-12.0 versions, we can set the default here instead.
 					},
 					"thread_pool_exhaustion_notification_settings": schema.SingleNestedAttribute{
-						Description: "Notification settings for thread pool exhaustion events. Supported in PF 12.0 or later.",
+						Description: "Notification settings for thread pool exhaustion events. Supported in PF `12.0` or later.",
 						Optional:    true,
 						Computed:    true,
 						Default:     objectdefault.StaticValue(types.ObjectNull(threadPoolExhaustionNotificationSettingsAttrType)),
@@ -200,6 +213,9 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 							"email_address": schema.StringAttribute{
 								Description: "Email address where notifications are sent.",
 								Required:    true,
+								Validators: []validator.String{
+									stringvalidator.LengthAtLeast(1),
+								},
 							},
 							"thread_dump_enabled": schema.BoolAttribute{
 								Description: "Generate a thread dump when approaching thread pool exhaustion.",
@@ -211,7 +227,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								Attributes:  resourcelink.ToSchema(),
 							},
 							"notification_mode": schema.StringAttribute{
-								Description: "The mode of notification. Set to NOTIFICATION_PUBLISHER to enable email notifications and server log messages. Set to LOGGING_ONLY to enable server log messages. Defaults to LOGGING_ONLY.",
+								Description: "The mode of notification. Supported values are `NOTIFICATION_PUBLISHER` and `LOGGING_ONLY`. Set to `NOTIFICATION_PUBLISHER` to enable email notifications and server log messages. Set to `LOGGING_ONLY` to enable server log messages. Defaults to `LOGGING_ONLY`.",
 								Optional:    true,
 								Computed:    true,
 								Default:     stringdefault.StaticString("LOGGING_ONLY"),
@@ -240,7 +256,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								Attributes:  resourcelink.ToSchema(),
 							},
 							"notification_mode": schema.StringAttribute{
-								Description: "The mode of notification. Set to NOTIFICATION_PUBLISHER to enable email notifications and server log messages. Set to LOGGING_ONLY to enable server log messages. Defaults to LOGGING_ONLY.",
+								Description: "The mode of notification. Supported values are `NOTIFICATION_PUBLISHER` and `LOGGING_ONLY`. Set to `NOTIFICATION_PUBLISHER` to enable email notifications and server log messages. Set to `LOGGING_ONLY` to enable server log messages. Defaults to `LOGGING_ONLY`.",
 								Optional:    true,
 								Computed:    true,
 								Default:     stringdefault.StaticString("LOGGING_ONLY"),
@@ -252,7 +268,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								},
 							},
 							"thread_dump_enabled": schema.BoolAttribute{
-								Description: "Generate a thread dump when a bulkhead reaches its warning threshold or is full.",
+								Description: "Generate a thread dump when a bulkhead reaches its warning threshold or is full. Default is `true`.",
 								Optional:    true,
 								Computed:    true,
 								Default:     booldefault.StaticBool(true),
@@ -262,7 +278,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 				},
 			},
 			"roles_and_protocols": schema.SingleNestedAttribute{
-				Description: "Configure roles and protocols. As of PingFederate 12.0: This property has been deprecated and is no longer used. All Roles and protocols are always enabled.",
+				Description: "Configure roles and protocols. As of PingFederate `12.0`: This property has been deprecated and is no longer used. All Roles and protocols are always enabled.",
 				Computed:    true,
 				Optional:    false,
 				Default:     objectdefault.StaticValue(rolesAndProtocolsDefault),
@@ -274,13 +290,13 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Default:     objectdefault.StaticValue(oauthRoleDefault),
 						Attributes: map[string]schema.Attribute{
 							"enable_oauth": schema.BoolAttribute{
-								Description: "Enable OAuth 2.0 Authorization Server (AS) Role.",
+								Description: "Enable OAuth 2.0 Authorization Server (AS) Role. Default is `true`.",
 								Computed:    true,
 								Optional:    false,
 								Default:     booldefault.StaticBool(true),
 							},
 							"enable_open_id_connect": schema.BoolAttribute{
-								Description: "Enable Open ID Connect.",
+								Description: "Enable Open ID Connect. Default is `true`.",
 								Computed:    true,
 								Optional:    false,
 								Default:     booldefault.StaticBool(true),
@@ -294,31 +310,31 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Default:     objectdefault.StaticValue(idpRoleDefault),
 						Attributes: map[string]schema.Attribute{
 							"enable": schema.BoolAttribute{
-								Description: "Enable Identity Provider Role.",
+								Description: "Enable Identity Provider Role. Default is `true`.",
 								Computed:    true,
 								Optional:    false,
 								Default:     booldefault.StaticBool(true),
 							},
 							"enable_saml_1_1": schema.BoolAttribute{
-								Description: "Enable SAML 1.1.",
+								Description: "Enable SAML 1.1. Default is `true`.",
 								Computed:    true,
 								Optional:    false,
 								Default:     booldefault.StaticBool(true),
 							},
 							"enable_saml_1_0": schema.BoolAttribute{
-								Description: "Enable SAML 1.0.",
+								Description: "Enable SAML 1.0. Default is `true`.",
 								Computed:    true,
 								Optional:    false,
 								Default:     booldefault.StaticBool(true),
 							},
 							"enable_ws_fed": schema.BoolAttribute{
-								Description: "Enable WS Federation.",
+								Description: "Enable WS Federation. Default is `true`.",
 								Computed:    true,
 								Optional:    false,
 								Default:     booldefault.StaticBool(true),
 							},
 							"enable_ws_trust": schema.BoolAttribute{
-								Description: "Enable WS Trust.",
+								Description: "Enable WS Trust. Default is `true`.",
 								Computed:    true,
 								Optional:    false,
 								Default:     booldefault.StaticBool(true),
@@ -330,21 +346,22 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								Default:     objectdefault.StaticValue(idpSamlProfileDefault),
 								Attributes: map[string]schema.Attribute{
 									"enable": schema.BoolAttribute{
-										Description: "Enable SAML2.0 profile.",
+										Description: "Enable SAML2.0 profile. Default is `true`.",
 										Computed:    true,
 										Optional:    false,
 										Default:     booldefault.StaticBool(true),
 									},
 									"enable_auto_connect": schema.BoolAttribute{
-										Description: "This property has been deprecated and no longer used.",
-										Computed:    true,
-										Optional:    false,
-										Default:     booldefault.StaticBool(true),
+										Description:        "This property has been deprecated and is no longer used.",
+										DeprecationMessage: "This property has been deprecated and is no longer used.",
+										Computed:           true,
+										Optional:           false,
+										Default:            booldefault.StaticBool(true),
 									},
 								},
 							},
 							"enable_outbound_provisioning": schema.BoolAttribute{
-								Description: "Enable Outbound Provisioning.",
+								Description: "Enable Outbound Provisioning. Default is `true`.",
 								Computed:    true,
 								Optional:    false,
 								Default:     booldefault.StaticBool(true),
@@ -358,31 +375,31 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Default:     objectdefault.StaticValue(spRoleDefault),
 						Attributes: map[string]schema.Attribute{
 							"enable": schema.BoolAttribute{
-								Description: "Enable Service Provider Role.",
+								Description: "Enable Service Provider Role. Default is `true`.",
 								Computed:    true,
 								Optional:    false,
 								Default:     booldefault.StaticBool(true),
 							},
 							"enable_saml_1_1": schema.BoolAttribute{
-								Description: "Enable SAML 1.1.",
+								Description: "Enable SAML 1.1. Default is `true`.",
 								Computed:    true,
 								Optional:    false,
 								Default:     booldefault.StaticBool(true),
 							},
 							"enable_saml_1_0": schema.BoolAttribute{
-								Description: "Enable SAML 1.0.",
+								Description: "Enable SAML 1.0. Default is `true`.",
 								Computed:    true,
 								Optional:    false,
 								Default:     booldefault.StaticBool(true),
 							},
 							"enable_ws_fed": schema.BoolAttribute{
-								Description: "Enable WS Federation.",
+								Description: "Enable WS Federation. Default is `true`.",
 								Computed:    true,
 								Optional:    false,
 								Default:     booldefault.StaticBool(true),
 							},
 							"enable_ws_trust": schema.BoolAttribute{
-								Description: "Enable WS Trust.",
+								Description: "Enable WS Trust. Default is `true`.",
 								Computed:    true,
 								Optional:    false,
 								Default:     booldefault.StaticBool(true),
@@ -394,19 +411,19 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								Default:     objectdefault.StaticValue(spSamlProfileDefault),
 								Attributes: map[string]schema.Attribute{
 									"enable": schema.BoolAttribute{
-										Description: "Enable SAML2.0 profile.",
+										Description: "Enable SAML2.0 profile. Default is `true`.",
 										Computed:    true,
 										Optional:    false,
 										Default:     booldefault.StaticBool(true),
 									},
 									"enable_auto_connect": schema.BoolAttribute{
-										Description: "This property has been deprecated and no longer used.",
+										Description: "This property has been deprecated and no longer used. Default is `true`.",
 										Computed:    true,
 										Optional:    false,
 										Default:     booldefault.StaticBool(true),
 									},
 									"enable_xasp": schema.BoolAttribute{
-										Description: "Enable Attribute Requester Mapping for X.509 Attribute Sharing Profile (XASP)",
+										Description: "Enable Attribute Requester Mapping for X.509 Attribute Sharing Profile (XASP). Default is `true`.",
 										Computed:    true,
 										Optional:    false,
 										Default:     booldefault.StaticBool(true),
@@ -414,13 +431,13 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 								},
 							},
 							"enable_open_id_connect": schema.BoolAttribute{
-								Description: "Enable OpenID Connect.",
+								Description: "Enable OpenID Connect. Default is `true`.",
 								Computed:    true,
 								Optional:    false,
 								Default:     booldefault.StaticBool(true),
 							},
 							"enable_inbound_provisioning": schema.BoolAttribute{
-								Description: "Enable Inbound Provisioning.",
+								Description: "Enable Inbound Provisioning. Default is `true`.",
 								Computed:    true,
 								Optional:    false,
 								Default:     booldefault.StaticBool(true),
@@ -428,7 +445,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						},
 					},
 					"enable_idp_discovery": schema.BoolAttribute{
-						Description: "Enable IdP Discovery.",
+						Description: "Enable IdP Discovery. Default is `true`.",
 						Computed:    true,
 						Optional:    false,
 						Default:     booldefault.StaticBool(true),
@@ -444,17 +461,22 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Required:    true,
 						Validators: []validator.String{
 							configvalidators.ValidUrl(),
+							stringvalidator.LengthAtLeast(1),
 						},
 					},
 					"saml_2_entity_id": schema.StringAttribute{
 						Description: "This ID defines your organization as the entity operating the server for SAML 2.0 transactions. It is usually defined as an organization's URL or a DNS address; for example: pingidentity.com. The SAML SourceID used for artifact resolution is derived from this ID using SHA1.",
 						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"auto_connect_entity_id": schema.StringAttribute{
-						Description: "This property has been deprecated and no longer used",
-						Computed:    true,
-						Optional:    false,
-						Default:     stringdefault.StaticString(""),
+						Description:        "This property has been deprecated and is no longer used",
+						DeprecationMessage: "This property has been deprecated and is no longer used",
+						Computed:           true,
+						Optional:           false,
+						Default:            stringdefault.StaticString(""),
 					},
 					"saml_1x_issuer_id": schema.StringAttribute{
 						Description: "This ID identifies your federation server for SAML 1.x transactions. As with SAML 2.0, it is usually defined as an organization's URL or a DNS address. The SourceID used for artifact resolution is derived from this ID using SHA1.",
@@ -490,6 +512,7 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Required:    true,
 						Validators: []validator.String{
 							configvalidators.ValidEmail(),
+							stringvalidator.LengthAtLeast(1),
 						},
 					},
 					"email_server": schema.StringAttribute{
@@ -497,76 +520,74 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 						Required:    true,
 						Validators: []validator.String{
 							configvalidators.ValidHostnameOrIp(),
+							stringvalidator.LengthAtLeast(1),
 						},
 					},
 					"port": schema.Int64Attribute{
-						Description: "The SMTP port on your email server. Allowable values: 1 - 65535. The default value is 25.",
+						Description: "The SMTP port on your email server. Allowable values: `1` - `65535`. The default value is `25`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     int64default.StaticInt64(25),
+						Validators: []validator.Int64{
+							int64validator.Between(1, 65535),
+						},
 					},
 					"ssl_port": schema.Int64Attribute{
-						Description: "The secure SMTP port on your email server. This field is not active unless Use SSL is enabled. Allowable values: 1 - 65535. The default value is 465.",
+						Description: "The secure SMTP port on your email server. This field is not active unless Use SSL is enabled. Allowable values: `1` - `65535`. The default value is `465`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     int64default.StaticInt64(465),
-						PlanModifiers: []planmodifier.Int64{
-							int64planmodifier.UseStateForUnknown(),
+						Validators: []validator.Int64{
+							int64validator.Between(1, 65535),
 						},
 					},
 					"timeout": schema.Int64Attribute{
-						Description: "The amount of time in seconds that PingFederate will wait before it times out connecting to the SMTP server. Allowable values: 0 - 3600. The default value is 30.",
+						Description: "The amount of time in seconds that PingFederate will wait before it times out connecting to the SMTP server. Allowable values: `0` - `3600`. The default value is `30`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     int64default.StaticInt64(30),
-						PlanModifiers: []planmodifier.Int64{
-							int64planmodifier.UseStateForUnknown(),
+						Validators: []validator.Int64{
+							int64validator.Between(0, 3600),
 						},
 					},
 					"retry_attempts": schema.Int64Attribute{
-						Description: "The number of times PingFederate tries to resend an email upon unsuccessful delivery. The default value is 2.",
+						Description: "The number of times PingFederate tries to resend an email upon unsuccessful delivery. The default value is `2`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     int64default.StaticInt64(2),
-						PlanModifiers: []planmodifier.Int64{
-							int64planmodifier.UseStateForUnknown(),
-						},
 					},
 					"retry_delay": schema.Int64Attribute{
-						Description: "The number of minutes PingFederate waits before the next retry attempt. The default value is 2.",
+						Description: "The number of minutes PingFederate waits before the next retry attempt. The default value is `2`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     int64default.StaticInt64(2),
-						PlanModifiers: []planmodifier.Int64{
-							int64planmodifier.UseStateForUnknown(),
-						},
 					},
 					"use_ssl": schema.BoolAttribute{
-						Description: "Requires the use of SSL/TLS on the port specified by 'sslPort'. If this option is enabled, it overrides the 'useTLS' option.",
+						Description: "Requires the use of SSL/TLS on the port specified by `ssl_port`. If this option is enabled, it overrides the `use_tls` option. Default is `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
 					},
 					"use_tls": schema.BoolAttribute{
-						Description: "Requires the use of the STARTTLS protocol on the port specified by 'port'.",
+						Description: "Requires the use of the STARTTLS protocol on the port specified by `port`. Default is `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
 					},
 					"verify_hostname": schema.BoolAttribute{
-						Description: "If useSSL or useTLS is enabled, this flag determines whether the email server hostname is verified against the server's SMTPS certificate.",
+						Description: "If `use_ssl` or `use_tls` is enabled, this flag determines whether the email server hostname is verified against the server's SMTPS certificate. Default is `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
 					},
 					"enable_utf8_message_headers": schema.BoolAttribute{
-						Description: "Only set this flag to true if the email server supports UTF-8 characters in message headers. Otherwise, this is defaulted to false.",
+						Description: "Only set this flag to `true` if the email server supports UTF-8 characters in message headers. Default is `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
 					},
 					"use_debugging": schema.BoolAttribute{
-						Description: "Turns on detailed error messages for the PingFederate server log to help troubleshoot any problems.",
+						Description: "Turns on detailed error messages for the PingFederate server log to help troubleshoot any problems. Default is `false`.",
 						Computed:    true,
 						Optional:    true,
 						Default:     booldefault.StaticBool(false),
@@ -574,12 +595,12 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 					"username": schema.StringAttribute{
 						Description: "Authorized email username. Required if the password is provided.",
 						Optional:    true,
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.UseStateForUnknown(),
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
 						},
 					},
 					"password": schema.StringAttribute{
-						Description: "User password. To update the password, specify the plaintext value in this field. This field will not be populated for GET requests.",
+						Description: "User password.",
 						Computed:    true,
 						Optional:    true,
 						Sensitive:   true,
@@ -596,16 +617,23 @@ func (r *serverSettingsResource) Schema(ctx context.Context, req resource.Schema
 					"site_key": schema.StringAttribute{
 						Description: "Site key for reCAPTCHA.",
 						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 					"secret_key": schema.StringAttribute{
-						Description: "Secret key for reCAPTCHA. GETs will not return this attribute. To update this field, specify the new value in this attribute.",
+						Description: "Secret key for reCAPTCHA.",
+						Sensitive:   true,
 						Required:    true,
+						Validators: []validator.String{
+							stringvalidator.LengthAtLeast(1),
+						},
 					},
 				},
 			},
 		},
 	}
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -920,6 +948,8 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 
 // This config object is edit-only, so Terraform can't delete it.
 func (r *serverSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
+	resp.Diagnostics.AddWarning("Configuration cannot be returned to original state.  The resource has been removed from Terraform state but the configuration remains applied to the environment.", "")
 }
 
 func (r *serverSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

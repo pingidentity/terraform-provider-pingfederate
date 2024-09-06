@@ -1,2 +1,1 @@
-# "tokenProcessorToTokenGeneratorMappingId" should be the id of the Token Processor To Token Generator Mapping to be imported
-terraform import pingfederate_token_processor_to_token_generator_mapping.tokenProcessorToTokenGeneratorMapping tokenProcessorToTokenGeneratorMappingId
+terraform import pingfederate_token_processor_to_token_generator_mapping.tokenProcessorToTokenGeneratorMapping mappingId
