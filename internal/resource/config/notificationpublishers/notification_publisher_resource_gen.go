@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
@@ -53,6 +54,7 @@ func (r *notificationPublisherResource) Configure(_ context.Context, req resourc
 
 type notificationPublisherResourceModel struct {
 	Configuration       types.Object `tfsdk:"configuration"`
+	Id                  types.String `tfsdk:"id"`
 	Name                types.String `tfsdk:"name"`
 	ParentRef           types.Object `tfsdk:"parent_ref"`
 	PluginDescriptorRef types.Object `tfsdk:"plugin_descriptor_ref"`
@@ -106,6 +108,7 @@ func (r *notificationPublisherResource) Schema(ctx context.Context, req resource
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (r *notificationPublisherResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -160,6 +163,8 @@ func (model *notificationPublisherResourceModel) buildClientStruct() (*client.No
 
 func (state *notificationPublisherResourceModel) readClientResponse(response *client.NotificationPublisher, isImportRead bool) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringValue(response.Id)
 	// configuration
 	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration, isImportRead)
 	respDiags.Append(diags...)

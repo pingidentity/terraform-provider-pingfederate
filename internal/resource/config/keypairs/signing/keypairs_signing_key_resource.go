@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -47,6 +48,7 @@ type keypairsSigningKeyResourceModel struct {
 	Expires                 types.String `tfsdk:"expires"`
 	FileData                types.String `tfsdk:"file_data"`
 	Format                  types.String `tfsdk:"format"`
+	Id                      types.String `tfsdk:"id"`
 	IssuerDn                types.String `tfsdk:"issuer_dn"`
 	KeyAlgorithm            types.String `tfsdk:"key_algorithm"`
 	KeyId                   types.String `tfsdk:"key_id"`
@@ -308,6 +310,7 @@ func (r *keypairsSigningKeyResource) Schema(ctx context.Context, req resource.Sc
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (r *keypairsSigningKeyResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -439,6 +442,8 @@ func (model *keypairsSigningKeyResourceModel) buildImportClientStruct() (*client
 
 func (state *keypairsSigningKeyResourceModel) readClientResponse(response *client.KeyPairView) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringPointerValue(response.Id)
 	// crypto_provider
 	state.CryptoProvider = types.StringPointerValue(response.CryptoProvider)
 	// expires

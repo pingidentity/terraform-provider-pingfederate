@@ -16,6 +16,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributecontractfulfillment"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/attributesources"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -53,6 +54,7 @@ func (r *oauthIdpAdapterMappingResource) Configure(_ context.Context, req resour
 type oauthIdpAdapterMappingResourceModel struct {
 	AttributeContractFulfillment types.Map    `tfsdk:"attribute_contract_fulfillment"`
 	AttributeSources             types.Set    `tfsdk:"attribute_sources"`
+	Id                           types.String `tfsdk:"id"`
 	IdpAdapterRef                types.Object `tfsdk:"idp_adapter_ref"`
 	IssuanceCriteria             types.Object `tfsdk:"issuance_criteria"`
 	MappingId                    types.String `tfsdk:"mapping_id"`
@@ -89,6 +91,7 @@ func (r *oauthIdpAdapterMappingResource) Schema(ctx context.Context, req resourc
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (model *oauthIdpAdapterMappingResourceModel) buildClientStruct() (*client.IdpAdapterMapping, error) {
@@ -119,6 +122,8 @@ func (model *oauthIdpAdapterMappingResourceModel) buildClientStruct() (*client.I
 
 func (state *oauthIdpAdapterMappingResourceModel) readClientResponse(response *client.IdpAdapterMapping) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringValue(response.Id)
 	// attribute_contract_fulfillment
 	attributeContractFulfillmentValue, diags := attributecontractfulfillment.ToState(context.Background(), &response.AttributeContractFulfillment)
 	respDiags.Append(diags...)
