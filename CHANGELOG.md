@@ -1,7 +1,61 @@
-# v0.15.0 (Unreleased)
+# v0.16.0 (Unreleased)
+### Breaking changes
+* The `pingfederate_server_settings_system_keys` attribute `previous` has been changed to read-only. ([#362]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/362)))
+
 ### Resources
 * **New Resource:** `pingfederate_keypairs_ssl_client_csr` ([#335]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/335)))
 * **New Resource:** `pingfederate_keypairs_ssl_client_csr_export` ([#335]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/335)))
+* **New Resource:** `pingfederate_keypairs_signing_key` ([#313]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/313)))
+* **New Resource:** `pingfederate_keypairs_ssl_server_key` ([#314]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/314)))
+* **New Resource:** `pingfederate_idp_to_sp_adapter_mapping` ([#264]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/264)))
+
+### Data sources
+* **New Data source:** `pingfederate_keypairs_signing_key` ([#313]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/313)))
+* **New Data source:** `pingfederate_keypairs_ssl_server_key` ([#314]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/314)))
+
+### Enhancements
+* Updated resources using read-only `_all` attributes to read to the non-`_all` attribute on import. This includes common attributes such as `configuration.fields` and `configuration.tables`. ([#365]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/365)))
+* Various documentations and schema improvements for resources released in previous versions.
+
+### Bug fixes
+* Fixed terraform plan error after generating import HCL for `pingfederate_oauth_client` due to `persistent_grant_expiration_time` and `persistent_grant_expiration_time_unit` attributes. ([#365]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/365)))
+
+### Deprecated
+* The `id` attribute that was formerly deprecated in non-singleton-resources is no longer deprecated. ([#367]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/367)))
+* The `pingfederate_key_pair_ssl_server_import` resource and data source have been renamed. Use `pingfederate_keypairs_ssl_server_key` instead. `pingfederate_key_pair_ssl_server_import` will be removed in a future release. ([#314]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/314)))
+* The `pingfederate_key_pair_signing_import` resource and data source have been renamed. Use `pingfederate_keypairs_signing_key` instead. `pingfederate_key_pair_signing_import` will be removed in a future release. ([#313]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/313)))
+
+# v0.15.0 August 29, 2024
+### Resources
+* **New Resource:** `pingfederate_secret_manager` ([#291]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/291)))
+* **New Resource:** `pingfederate_cluster_settings` ([#339]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/339)))
+* **New Resource:** `pingfederate_metadata_url` ([#282]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/282)))
+* **New Resource:** `pingfederate_captcha_provider_settings` ([#283](https://github.com/pingidentity/terraform-provider-pingfederate/pull/283))
+* **New Resource:** `pingfederate_certificates_revocation_settings` ([#280]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/280)))
+* **New Resource:** `pingfederate_idp_sts_request_parameters_contract` ([#281]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/281)))
+
+### Data Sources
+* **New Data Source:** `pingfederate_cluster_status` ([#297](https://github.com/pingidentity/terraform-provider-pingfederate/pull/297))
+
+### Bug Fixes
+* Fixed "inconsistent result after apply" issues with resources using `attribute_sources.ldap_attribute_source.binary_attribute_settings`. ([#318](https://github.com/pingidentity/terraform-provider-pingfederate/issues/318))
+* Fixed "inconsistent result after apply" issues with the `pingfederate_idp_sp_connection` resource, caused by usage of the `sp_browser_sso.incoming_bindings`, `sp_browser_sso.enabled_profiles`, and `extended_attributes` attributes. ([#319](https://github.com/pingidentity/terraform-provider-pingfederate/issues/319))
+* Fixed panics when using OAuth in the provider configuration while configuring certain resources ([#352](https://github.com/pingidentity/terraform-provider-pingfederate/pull/352))
+
+### Enhancements
+* Various documentations and schema improvements for resources released in previous versions.
+
+### Deprecated
+* The `pingfederate_session_application_session_policy` resource and data source have been renamed. Use `pingfederate_session_application_policy` instead. `pingfederate_session_application_session_policy` will be removed in a future release. ([#343]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/343)))
+* The `pingfederate_local_identity_identity_profile` resource and data source have been renamed. Use `pingfederate_local_identity_profile` instead. `pingfederate_local_identity_identity_profile` will be removed in a future release. ([#346]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/346)))
+* The `pingfederate_notification_publishers_settings` resource and data source have been renamed. Use `pingfederate_notification_publisher_settings` instead. `pingfederate_notification_publishers_settings` will be removed in a future release. ([#346]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/346)))
+* The `pingfederate_open_id_connect_settings` resource and data source have been renamed. Use `pingfederate_openid_connect_settings` instead. `pingfederate_open_id_connect_settings` will be removed in a future release. ([#346]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/346)))
+* The `pingfederate_oauth_auth_server_settings` resource and data source have been renamed. Use `pingfederate_oauth_server_settings` instead. `pingfederate_oauth_auth_server_settings` will be removed in a future release. ([#346]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/346)))
+* The `pingfederate_server_settings_general_settings` resource and data source have been renamed. Use `pingfederate_server_settings_general` instead. `pingfederate_server_settings_general_settings` will be removed in a future release. ([#346]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/346)))
+* The `pingfederate_session_authentication_session_policies_global` resource and data source have been renamed. Use `pingfederate_session_authentication_policies_global` instead. `pingfederate_session_authentication_session_policies_global` will be removed in a future release. ([#347]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/347)))
+* The `pingfederate_server_settings_log_settings` resource and data source have been renamed. Use `pingfederate_server_settings_logging` instead. `pingfederate_server_settings_log_settings` will be removed in a future release. ([#347]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/347)))
+* The `pingfederate_oauth_open_id_connect_policy` resource and data source have been renamed. Use `pingfederate_openid_connect_policy` instead. `pingfederate_oauth_open_id_connect_policy` will be removed in a future release. ([#347]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/347)))
+* The `pingfederate_ping_one_connection` resource has been renamed. Use `pingfederate_pingone_connection` instead. `pingfederate_ping_one_connection` will be removed in a future release. ([#347]([https](https://github.com/pingidentity/terraform-provider-pingfederate/pull/347)))
 
 # v0.14.0 August 15, 2024
 ### Resources

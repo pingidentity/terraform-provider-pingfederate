@@ -23,9 +23,9 @@ Describes an Authentication Policy Fragment
 
 - `description` (String) A description for the authentication policy fragment.
 - `id` (String) ID of this resource.
-- `inputs` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--inputs))
+- `inputs` (Attributes) The reference to the authentication policy contract to use as the attribute inputs for this authentication policy fragment. (see [below for nested schema](#nestedatt--inputs))
 - `name` (String) The authentication policy fragment name. Name is unique.
-- `outputs` (Attributes) A reference to a resource. (see [below for nested schema](#nestedatt--outputs))
+- `outputs` (Attributes) The reference to the authentication policy contract to use as the attribute outputs for this authentication policy fragment. (see [below for nested schema](#nestedatt--outputs))
 - `root_node` (Attributes) The beginning action for the authentication fragment policy. (see [below for nested schema](#nestedatt--root_node))
 
 <a id="nestedatt--inputs"></a>
