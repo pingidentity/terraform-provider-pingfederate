@@ -4693,4 +4693,5 @@ func (r *spIdpConnectionResource) Delete(ctx context.Context, req resource.Delet
 func (r *spIdpConnectionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to connection_id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("connection_id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }
