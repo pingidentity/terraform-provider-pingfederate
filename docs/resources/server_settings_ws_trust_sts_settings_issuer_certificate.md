@@ -35,6 +35,7 @@ resource "pingfederate_server_settings_ws_trust_sts_settings_issuer_certificate"
 
 - `active` (Boolean) Indicates whether this an active certificate or not.
 - `expires` (String) The end date up until which the item is valid, in ISO 8601 format (UTC).
+- `id` (String) The ID of this resource.
 - `issuer_dn` (String) The issuer's distinguished name.
 - `key_algorithm` (String) The public key algorithm.
 - `key_size` (Number) The public key size.

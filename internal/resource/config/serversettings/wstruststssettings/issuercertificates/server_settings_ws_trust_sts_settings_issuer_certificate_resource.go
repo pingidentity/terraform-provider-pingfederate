@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -56,6 +57,7 @@ type serverSettingsWsTrustStsSettingsIssuerCertificateResourceModel struct {
 	Expires                 types.String `tfsdk:"expires"`
 	FileData                types.String `tfsdk:"file_data"`
 	CertificateId           types.String `tfsdk:"certificate_id"`
+	Id                      types.String `tfsdk:"id"`
 	IssuerDn                types.String `tfsdk:"issuer_dn"`
 	KeyAlgorithm            types.String `tfsdk:"key_algorithm"`
 	KeySize                 types.Int64  `tfsdk:"key_size"`
@@ -169,6 +171,7 @@ func (r *serverSettingsWsTrustStsSettingsIssuerCertificateResource) Schema(ctx c
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (model *serverSettingsWsTrustStsSettingsIssuerCertificateResourceModel) buildClientStruct() (*client.X509File, diag.Diagnostics) {
@@ -184,6 +187,8 @@ func (model *serverSettingsWsTrustStsSettingsIssuerCertificateResourceModel) bui
 
 func (state *serverSettingsWsTrustStsSettingsIssuerCertificateResourceModel) readClientResponse(response *client.IssuerCert) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringPointerValue(response.CertView.Id)
 	// active
 	state.Active = types.BoolPointerValue(response.Active)
 	// crypto_provider
