@@ -98,6 +98,7 @@ resource "pingfederate_keypairs_ssl_client_csr" "example" {
 func keypairsSslClientCsr_CheckComputedValuesInitial() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckNoResourceAttr("pingfederate_keypairs_ssl_client_csr.example", "crypto_provider"),
+		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr.example", "id", "419x9yg43rlawqwq9v6az997k"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr.example", "serial_number", "35870055780717650058227469919152395501"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr.example", "subject_dn", "CN=common, O=org, C=US"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr.example", "subject_alternative_names.#", "0"),
@@ -117,6 +118,7 @@ func keypairsSslClientCsr_CheckComputedValuesInitial() resource.TestCheckFunc {
 func keypairsSslClientCsr_CheckComputedValuesUpdated() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckNoResourceAttr("pingfederate_keypairs_ssl_client_csr.example", "crypto_provider"),
+		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr.example", "id", "419x9yg43rlawqwq9v6az997k"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr.example", "serial_number", "78860249853500415650095464700202533503"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr.example", "subject_dn", "CN=common, O=org, C=US"),
 		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr.example", "subject_alternative_names.#", "0"),

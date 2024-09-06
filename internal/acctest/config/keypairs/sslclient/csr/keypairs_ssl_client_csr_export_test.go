@@ -39,6 +39,7 @@ resource "pingfederate_keypairs_ssl_client_csr_export" "example" {
 // Validate any computed values when applying HCL
 func keypairsSslClientCsrExport_CheckComputedValues() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_keypairs_ssl_client_csr_export.example", "id", "419x9yg43rlawqwq9v6az997k"),
 		resource.TestCheckResourceAttrSet("pingfederate_keypairs_ssl_client_csr_export.example", "exported_csr"),
 	)
 }

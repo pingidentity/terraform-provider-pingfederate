@@ -28,3 +28,4 @@ resource "pingfederate_keypairs_ssl_client_csr_export" "example" {
 ### Read-Only
 
 - `exported_csr` (String) The exported PEM-encoded certificate signing request.
+- `id` (String) The ID of this resource.
