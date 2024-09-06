@@ -1,10 +1,16 @@
+resource "pingfederate_pingone_connection" "example" {
+  name       = "My PingOne Tenant"
+  credential = var.pingone_connection_credential
+}
+
 resource "pingfederate_data_store" "pingOneDataStore" {
-  data_store_id = "pingOneDataStore"
   custom_data_store = {
-    name = "pingOneDataStore"
+    name = format("PingOne Data Store (%s)", var.pingone_environment_name)
+
     plugin_descriptor_ref = {
       id = "com.pingidentity.plugins.datastore.p14c.PingOneForCustomersDataStore"
     }
+
     configuration = {
       tables = [
         {
@@ -29,7 +35,7 @@ resource "pingfederate_data_store" "pingOneDataStore" {
       fields = [
         {
           name  = "PingOne Environment",
-          value = ""
+          value = format("%s|%s", pingfederate_pingone_connection.example.id, var.pingone_environment_id)
         },
         {
           name  = "Connection Timeout",
