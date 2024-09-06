@@ -81,12 +81,11 @@ func TestAccAuthenticationSelector(t *testing.T) {
 			},
 			{
 				// Test importing the resource
-				Config:                  testAccAuthenticationSelector(resourceName, updatedResourceModel),
-				ResourceName:            "pingfederate_authentication_selector." + resourceName,
-				ImportStateId:           authenticationSelectorsId,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"configuration.fields"},
+				Config:            testAccAuthenticationSelector(resourceName, updatedResourceModel),
+				ResourceName:      "pingfederate_authentication_selector." + resourceName,
+				ImportStateId:     authenticationSelectorsId,
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 			{
 				Config: testAccAuthenticationSelector(resourceName, initialResourceModel),

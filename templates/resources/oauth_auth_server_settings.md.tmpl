@@ -1,0 +1,26 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.RenderedProviderName}}"
+subcategory: ""
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+!> The `pingfederate_oauth_auth_server_settings` resource has been renamed and will be removed in a future release. Use the `pingfederate_oauth_server_settings` resource instead.
+
+## Example Usage
+
+{{ tffile (printf "%s%s%s" "examples/resources/" .Name "/resource.tf") }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the following syntax:
+
+~> This resource is singleton, so the value of "id" doesn't matter - it is just a placeholder, and required by Terraform
+
+{{ codefile "shell" (printf "%s%s%s" "examples/resources/" .Name "/import.sh") }}

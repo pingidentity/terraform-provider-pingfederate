@@ -1,10 +1,11 @@
 resource "pingfederate_data_store" "customDataStore" {
-  data_store_id = "customDataStore"
   custom_data_store = {
-    name = "customDataStore"
+    name = "Custom REST Data Store"
+
     plugin_descriptor_ref = {
       id = "com.pingidentity.pf.datastore.other.RestDataSourceDriver"
     }
+
     configuration = {
       tables = [
         {
@@ -14,11 +15,11 @@ resource "pingfederate_data_store" "customDataStore" {
               fields = [
                 {
                   name  = "Base URL"
-                  value = "http://localhost"
+                  value = "https://my_rest_datasource.bxretail.org/api/v1/users"
                 },
                 {
                   name  = "Tags"
-                  value = "tag"
+                  value = "production"
                 }
               ],
               default_row = true
@@ -50,11 +51,50 @@ resource "pingfederate_data_store" "customDataStore" {
               fields = [
                 {
                   name  = "Local Attribute"
-                  value = "attribute"
+                  value = "givenName"
                 },
                 {
                   name  = "JSON Response Attribute Path"
-                  value = "/json_response_attr_path"
+                  value = "/givenName"
+                }
+              ],
+              default_row = false
+            },
+            {
+              fields = [
+                {
+                  name  = "Local Attribute"
+                  value = "familyName"
+                },
+                {
+                  name  = "JSON Response Attribute Path"
+                  value = "/familyName"
+                }
+              ],
+              default_row = false
+            },
+            {
+              fields = [
+                {
+                  name  = "Local Attribute"
+                  value = "email"
+                },
+                {
+                  name  = "JSON Response Attribute Path"
+                  value = "/email"
+                }
+              ],
+              default_row = false
+            },
+            {
+              fields = [
+                {
+                  name  = "Local Attribute"
+                  value = "password"
+                },
+                {
+                  name  = "JSON Response Attribute Path"
+                  value = "/password"
                 }
               ],
               default_row = false
@@ -65,7 +105,7 @@ resource "pingfederate_data_store" "customDataStore" {
       fields = [
         {
           name  = "Authentication Method"
-          value = "Basic Authentication"
+          value = "OAuth 2.0 Bearer Token"
         },
         {
           name  = "HTTP Method"
@@ -73,11 +113,11 @@ resource "pingfederate_data_store" "customDataStore" {
         },
         {
           name  = "Username"
-          value = "Administrator"
+          value = var.rest_data_store_basic_auth_username
         },
         {
           name  = "Password"
-          value = "2FederateM0re"
+          value = var.rest_data_store_basic_auth_password
         },
         {
           name  = "Password Reference"
@@ -85,19 +125,19 @@ resource "pingfederate_data_store" "customDataStore" {
         },
         {
           name  = "OAuth Token Endpoint"
-          value = "https://example.com"
+          value = "https://authservices.bxretail.org/as/token"
         },
         {
           name  = "OAuth Scope"
-          value = "scope"
+          value = "restapiscope"
         },
         {
           name  = "Client ID"
-          value = "client_id"
+          value = var.rest_data_store_oauth2_client_id
         },
         {
           name  = "Client Secret"
-          value = "2FederateM0re"
+          value = var.rest_data_store_oauth2_client_secret
         },
         {
           name  = "Client Secret Reference"
@@ -133,11 +173,11 @@ resource "pingfederate_data_store" "customDataStore" {
         },
         {
           name  = "Test Connection URL"
-          value = "https://example.com"
+          value = "https://my_rest_datasource.bxretail.org/api/v1/connectiontest"
         },
         {
           name  = "Test Connection Body"
-          value = "body"
+          value = "{\"foo\":\"bar\"}"
         }
       ]
     }
