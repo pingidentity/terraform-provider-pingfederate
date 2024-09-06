@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -55,6 +56,7 @@ type certificatesRevocationOcspCertificateResourceModel struct {
 	CryptoProvider          types.String `tfsdk:"crypto_provider"`
 	Expires                 types.String `tfsdk:"expires"`
 	FileData                types.String `tfsdk:"file_data"`
+	Id                      types.String `tfsdk:"id"`
 	IssuerDn                types.String `tfsdk:"issuer_dn"`
 	KeyAlgorithm            types.String `tfsdk:"key_algorithm"`
 	KeySize                 types.Int64  `tfsdk:"key_size"`
@@ -164,6 +166,7 @@ func (r *certificatesRevocationOcspCertificateResource) Schema(ctx context.Conte
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (model *certificatesRevocationOcspCertificateResourceModel) buildClientStruct() (*client.X509File, diag.Diagnostics) {
@@ -179,6 +182,8 @@ func (model *certificatesRevocationOcspCertificateResourceModel) buildClientStru
 
 func (state *certificatesRevocationOcspCertificateResourceModel) readClientResponse(response *client.CertView) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringPointerValue(response.Id)
 	// certificate_id
 	state.CertificateId = types.StringPointerValue(response.Id)
 	// crypto_provider

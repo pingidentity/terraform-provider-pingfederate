@@ -34,6 +34,7 @@ resource "pingfederate_certificates_revocation_ocsp_certificate" "certificate" {
 ### Read-Only
 
 - `expires` (String) The end date up until which the item is valid, in ISO 8601 format (UTC).
+- `id` (String) The ID of this resource.
 - `issuer_dn` (String) The issuer's distinguished name.
 - `key_algorithm` (String) The public key algorithm.
 - `key_size` (Number) The public key size.
