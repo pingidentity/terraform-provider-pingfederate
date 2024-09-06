@@ -17,6 +17,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -55,6 +57,7 @@ type spTokenGeneratorResourceModel struct {
 	AttributeContract   types.Object `tfsdk:"attribute_contract"`
 	Configuration       types.Object `tfsdk:"configuration"`
 	GeneratorId         types.String `tfsdk:"generator_id"`
+	Id                  types.String `tfsdk:"id"`
 	Name                types.String `tfsdk:"name"`
 	ParentRef           types.Object `tfsdk:"parent_ref"`
 	PluginDescriptorRef types.Object `tfsdk:"plugin_descriptor_ref"`
@@ -160,6 +163,7 @@ func (r *spTokenGeneratorResource) Schema(ctx context.Context, req resource.Sche
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (r *spTokenGeneratorResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -233,8 +237,10 @@ func (model *spTokenGeneratorResourceModel) buildClientStruct() (*client.TokenGe
 	return result, respDiags
 }
 
-func (state *spTokenGeneratorResourceModel) readClientResponse(response *client.TokenGenerator) diag.Diagnostics {
+func (state *spTokenGeneratorResourceModel) readClientResponse(response *client.TokenGenerator, isImportRead bool) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringValue(response.Id)
 	// attribute_contract
 	attributeContractCoreAttributesAttrTypes := map[string]attr.Type{
 		"name": types.StringType,
@@ -281,7 +287,7 @@ func (state *spTokenGeneratorResourceModel) readClientResponse(response *client.
 
 	state.AttributeContract = attributeContractValue
 	// configuration
-	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration)
+	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration, isImportRead)
 	respDiags.Append(diags...)
 
 	state.Configuration = configurationValue
@@ -339,13 +345,16 @@ func (r *spTokenGeneratorResource) Create(ctx context.Context, req resource.Crea
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, false)...)
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *spTokenGeneratorResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var data spTokenGeneratorResourceModel
 
 	// Read Terraform prior state data into the model
@@ -368,7 +377,7 @@ func (r *spTokenGeneratorResource) Read(ctx context.Context, req resource.ReadRe
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, isImportRead)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -396,7 +405,7 @@ func (r *spTokenGeneratorResource) Update(ctx context.Context, req resource.Upda
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, false)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -422,4 +431,5 @@ func (r *spTokenGeneratorResource) Delete(ctx context.Context, req resource.Dele
 func (r *spTokenGeneratorResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to generator_id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("generator_id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }

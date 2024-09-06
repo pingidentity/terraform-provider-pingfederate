@@ -103,6 +103,10 @@ resource "pingfederate_oauth_token_exchange_generator_group" "generatorGroup" {
 
 - `resource_uris` (Set of String) The list of resource URI's which map to this Token Exchange Generator group.
 
+### Read-Only
+
+- `id` (String) The ID of this resource.
+
 <a id="nestedatt--generator_mappings"></a>
 ### Nested Schema for `generator_mappings`
 

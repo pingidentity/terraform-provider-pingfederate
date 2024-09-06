@@ -20,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/api"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -56,6 +57,7 @@ func (r *oauthTokenExchangeGeneratorGroupResource) Configure(_ context.Context, 
 type oauthTokenExchangeGeneratorGroupResourceModel struct {
 	GeneratorMappings types.Set    `tfsdk:"generator_mappings"`
 	GroupId           types.String `tfsdk:"group_id"`
+	Id                types.String `tfsdk:"id"`
 	Name              types.String `tfsdk:"name"`
 	ResourceUris      types.Set    `tfsdk:"resource_uris"`
 }
@@ -132,6 +134,7 @@ func (r *oauthTokenExchangeGeneratorGroupResource) Schema(ctx context.Context, r
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (model *oauthTokenExchangeGeneratorGroupResourceModel) buildClientStruct() (*client.TokenExchangeGeneratorGroup, diag.Diagnostics) {
@@ -167,6 +170,8 @@ func (model *oauthTokenExchangeGeneratorGroupResourceModel) buildClientStruct() 
 
 func (state *oauthTokenExchangeGeneratorGroupResourceModel) readClientResponse(response *client.TokenExchangeGeneratorGroup) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringValue(response.Id)
 	// generator_mappings
 	generatorMappingsTokenGeneratorAttrTypes := map[string]attr.Type{
 		"id": types.StringType,

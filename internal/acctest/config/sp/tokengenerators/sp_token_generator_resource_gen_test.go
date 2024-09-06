@@ -81,10 +81,6 @@ func TestAccSpTokenGenerator_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "generator_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
-				ImportStateVerifyIgnore: []string{
-					"configuration.tables",
-					"configuration.fields",
-				},
 			},
 		},
 	})
@@ -227,6 +223,7 @@ resource "pingfederate_sp_token_generator" "example" {
 // Validate any computed values when applying minimal HCL
 func spTokenGenerator_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_sp_token_generator.example", "id", spTokenGeneratorGeneratorId),
 		resource.TestCheckResourceAttr("pingfederate_sp_token_generator.example", "configuration.fields_all.#", "11"),
 		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_sp_token_generator.example", "configuration.fields_all.*", map[string]string{
 			"name":  "Encryption Certificate",
@@ -244,6 +241,7 @@ func spTokenGenerator_CheckComputedValuesMinimal() resource.TestCheckFunc {
 // Validate any computed values when applying complete HCL
 func spTokenGenerator_CheckComputedValuesComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_sp_token_generator.example", "id", spTokenGeneratorGeneratorId),
 		resource.TestCheckResourceAttr("pingfederate_sp_token_generator.example", "configuration.fields_all.#", "11"),
 		resource.TestCheckResourceAttr("pingfederate_sp_token_generator.example", "configuration.tables_all.#", "0"),
 	)

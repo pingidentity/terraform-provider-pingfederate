@@ -251,6 +251,7 @@ resource "pingfederate_oauth_token_exchange_generator_group" "example" {
 // Validate any computed values when applying minimal HCL
 func oauthTokenExchangeGeneratorGroup_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_oauth_token_exchange_generator_group.example", "id", oauthTokenExchangeGeneratorGroupGroupId),
 		resource.TestCheckResourceAttr("pingfederate_oauth_token_exchange_generator_group.example", "resource_uris.#", "0"),
 	)
 }
@@ -258,6 +259,7 @@ func oauthTokenExchangeGeneratorGroup_CheckComputedValuesMinimal() resource.Test
 // Validate any computed values when applying complete HCL
 func oauthTokenExchangeGeneratorGroup_CheckComputedValuesComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_oauth_token_exchange_generator_group.example", "id", oauthTokenExchangeGeneratorGroupGroupId),
 		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_token_exchange_generator_group.example", "generator_mappings.*", map[string]string{
 			"default_mapping":      "false",
 			"requested_token_type": "urn:ietf:params:oauth:token-type:saml1",

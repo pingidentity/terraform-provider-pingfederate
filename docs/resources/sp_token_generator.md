@@ -91,6 +91,10 @@ resource "pingfederate_sp_token_generator" "tokenGenerator" {
 
 - `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. (see [below for nested schema](#nestedatt--parent_ref))
 
+### Read-Only
+
+- `id` (String) The ID of this resource.
+
 <a id="nestedatt--attribute_contract"></a>
 ### Nested Schema for `attribute_contract`
 
