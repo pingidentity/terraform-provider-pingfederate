@@ -114,10 +114,6 @@ func TestAccOauthOutOfBandAuthPlugin_MinimalMaximal(t *testing.T) {
 				ImportStateVerifyIdentifierAttribute: "plugin_id",
 				ImportState:                          true,
 				ImportStateVerify:                    true,
-				ImportStateVerifyIgnore: []string{
-					"configuration.tables",
-					"configuration.fields",
-				},
 			},
 		},
 	})
@@ -267,6 +263,7 @@ resource "pingfederate_oauth_out_of_band_auth_plugin" "example" {
 // Validate any computed values when applying minimal HCL
 func oauthOutOfBandAuthPlugin_CheckComputedValuesMinimal() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_oauth_out_of_band_auth_plugin.example", "id", oauthOutOfBandAuthPluginPluginId),
 		resource.TestCheckResourceAttr("pingfederate_oauth_out_of_band_auth_plugin.example", "configuration.fields_all.#", "12"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_out_of_band_auth_plugin.example", "configuration.tables_all.#", "1"),
 		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_out_of_band_auth_plugin.example", "configuration.fields_all.*", map[string]string{
@@ -288,6 +285,7 @@ func oauthOutOfBandAuthPlugin_CheckComputedValuesMinimal() resource.TestCheckFun
 // Validate any computed values when applying complete HCL
 func oauthOutOfBandAuthPlugin_CheckComputedValuesComplete() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
+		resource.TestCheckResourceAttr("pingfederate_oauth_out_of_band_auth_plugin.example", "id", oauthOutOfBandAuthPluginPluginId),
 		resource.TestCheckResourceAttr("pingfederate_oauth_out_of_band_auth_plugin.example", "configuration.fields_all.#", "12"),
 		resource.TestCheckResourceAttr("pingfederate_oauth_out_of_band_auth_plugin.example", "configuration.tables_all.#", "1"),
 		resource.TestCheckTypeSetElemNestedAttrs("pingfederate_oauth_out_of_band_auth_plugin.example", "configuration.fields_all.*", map[string]string{

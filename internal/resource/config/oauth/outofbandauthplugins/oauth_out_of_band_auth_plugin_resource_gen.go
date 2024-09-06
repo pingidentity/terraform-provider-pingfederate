@@ -19,6 +19,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/importprivatestate"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
@@ -56,6 +58,7 @@ func (r *oauthOutOfBandAuthPluginResource) Configure(_ context.Context, req reso
 type oauthOutOfBandAuthPluginResourceModel struct {
 	AttributeContract   types.Object `tfsdk:"attribute_contract"`
 	Configuration       types.Object `tfsdk:"configuration"`
+	Id                  types.String `tfsdk:"id"`
 	Name                types.String `tfsdk:"name"`
 	ParentRef           types.Object `tfsdk:"parent_ref"`
 	PluginDescriptorRef types.Object `tfsdk:"plugin_descriptor_ref"`
@@ -176,6 +179,7 @@ func (r *oauthOutOfBandAuthPluginResource) Schema(ctx context.Context, req resou
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (r *oauthOutOfBandAuthPluginResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
@@ -249,8 +253,10 @@ func (model *oauthOutOfBandAuthPluginResourceModel) buildClientStruct() (*client
 	return result, respDiags
 }
 
-func (state *oauthOutOfBandAuthPluginResourceModel) readClientResponse(response *client.OutOfBandAuthenticator) diag.Diagnostics {
+func (state *oauthOutOfBandAuthPluginResourceModel) readClientResponse(response *client.OutOfBandAuthenticator, isImportRead bool) diag.Diagnostics {
 	var respDiags, diags diag.Diagnostics
+	// id
+	state.Id = types.StringValue(response.Id)
 	// attribute_contract
 	attributeContractCoreAttributesAttrTypes := map[string]attr.Type{
 		"name": types.StringType,
@@ -297,7 +303,7 @@ func (state *oauthOutOfBandAuthPluginResourceModel) readClientResponse(response 
 
 	state.AttributeContract = attributeContractValue
 	// configuration
-	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration)
+	configurationValue, diags := pluginconfiguration.ToState(state.Configuration, &response.Configuration, isImportRead)
 	respDiags.Append(diags...)
 
 	state.Configuration = configurationValue
@@ -355,13 +361,16 @@ func (r *oauthOutOfBandAuthPluginResource) Create(ctx context.Context, req resou
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, false)...)
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *oauthOutOfBandAuthPluginResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	isImportRead, diags := importprivatestate.IsImportRead(ctx, req, resp)
+	resp.Diagnostics.Append(diags...)
+
 	var data oauthOutOfBandAuthPluginResourceModel
 
 	// Read Terraform prior state data into the model
@@ -384,7 +393,7 @@ func (r *oauthOutOfBandAuthPluginResource) Read(ctx context.Context, req resourc
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, isImportRead)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -412,7 +421,7 @@ func (r *oauthOutOfBandAuthPluginResource) Update(ctx context.Context, req resou
 	}
 
 	// Read response into the model
-	resp.Diagnostics.Append(data.readClientResponse(responseData)...)
+	resp.Diagnostics.Append(data.readClientResponse(responseData, false)...)
 
 	// Save updated data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -438,4 +447,5 @@ func (r *oauthOutOfBandAuthPluginResource) Delete(ctx context.Context, req resou
 func (r *oauthOutOfBandAuthPluginResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	// Retrieve import ID and save to plugin_id attribute
 	resource.ImportStatePassthroughID(ctx, path.Root("plugin_id"), req, resp)
+	importprivatestate.MarkPrivateStateForImport(ctx, resp)
 }
