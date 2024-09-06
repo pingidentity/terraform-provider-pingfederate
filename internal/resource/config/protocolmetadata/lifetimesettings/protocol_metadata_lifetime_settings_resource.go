@@ -11,6 +11,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -37,13 +38,13 @@ func (r *protocolMetadataLifetimeSettingsResource) Schema(ctx context.Context, r
 		Description: "Manages the settings for the metadata cache duration and reload delay for protocol metadata.",
 		Attributes: map[string]schema.Attribute{
 			"cache_duration": schema.Int64Attribute{
-				Description: "This field adjusts the validity of your metadata in minutes. The default value is 1440 (1 day).",
+				Description: "This field adjusts the validity of your metadata in minutes. The default value is `1440` (1 day).",
 				Computed:    true,
 				Optional:    true,
 				Default:     int64default.StaticInt64(1440),
 			},
 			"reload_delay": schema.Int64Attribute{
-				Description: "This field adjusts the frequency of automatic reloading of SAML metadata in minutes. The default value is 1440 (1 day).",
+				Description: "This field adjusts the frequency of automatic reloading of SAML metadata in minutes. The default value is `1440` (1 day).",
 				Computed:    true,
 				Optional:    true,
 				Default:     int64default.StaticInt64(1440),
@@ -51,7 +52,7 @@ func (r *protocolMetadataLifetimeSettingsResource) Schema(ctx context.Context, r
 		},
 	}
 
-	id.ToSchema(&schema)
+	id.ToSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 
@@ -80,7 +81,13 @@ func (r *protocolMetadataLifetimeSettingsResource) Configure(_ context.Context, 
 	providerCfg := req.ProviderData.(internaltypes.ResourceConfiguration)
 	r.providerConfig = providerCfg.ProviderConfig
 	r.apiClient = providerCfg.ApiClient
+}
 
+func (m *protocolMetadataLifetimeSettingsModel) buildDefaultClientStruct() *client.MetadataLifetimeSettings {
+	return &client.MetadataLifetimeSettings{
+		CacheDuration: utils.Pointer(int64(1440)),
+		ReloadDelay:   utils.Pointer(int64(1440)),
+	}
 }
 
 func (r *protocolMetadataLifetimeSettingsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -187,6 +194,16 @@ func (r *protocolMetadataLifetimeSettingsResource) Update(ctx context.Context, r
 
 // This config object is edit-only, so Terraform can't delete it.
 func (r *protocolMetadataLifetimeSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
+	// Instead this delete will reset the configuration back to the "default" value used by PingFederate.
+	var model protocolMetadataLifetimeSettingsModel
+	clientData := model.buildDefaultClientStruct()
+	apiUpdateRequest := r.apiClient.ProtocolMetadataAPI.UpdateLifetimeSettings(config.AuthContext(ctx, r.providerConfig))
+	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
+	_, httpResp, err := r.apiClient.ProtocolMetadataAPI.UpdateLifetimeSettingsExecute(apiUpdateRequest)
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while resetting the protocol metadata lifetime settings", err, httpResp)
+	}
 }
 
 func (r *protocolMetadataLifetimeSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

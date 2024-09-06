@@ -50,7 +50,7 @@ func (r *sessionSettingsDataSource) Schema(ctx context.Context, req datasource.S
 			},
 		},
 	}
-	id.ToDataSourceSchema(&schema)
+	id.ToDataSourceSchemaDeprecated(&schema, true)
 	resp.Schema = schema
 }
 

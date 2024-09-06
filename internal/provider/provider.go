@@ -35,6 +35,8 @@ import (
 	captchaproviderssettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/captchaproviders/settings"
 	certificate "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificates/ca"
 	certificatesrevocationsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/certificates/revocation/settings"
+	clustersettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/cluster/settings"
+	clusterstatus "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/cluster/status"
 	connectionmetadataexport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/connectionmetadata/export"
 	datastore "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/datastore"
 	extendedproperties "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/extendedproperties"
@@ -42,11 +44,14 @@ import (
 	idpdefaulturls "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/defaulturls"
 	idpspconnection "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/spconnection"
 	idpstsrequestparameterscontracts "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idp/stsrequestparameterscontracts"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/idptospadaptermapping"
 	incomingproxysettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/incomingproxysettings"
 	kerberosrealms "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/kerberos/realms"
 	kerberosrealmssettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/kerberos/realms/settings"
 	keypairsoauthopenidconnectadditionalkeysets "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/oauthopenidconnect/additionalkeysets"
+	keypairsigning "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing"
 	keypairsigningimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/signing/import"
+	keypairssslserver "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver"
 	keypairsslserverimport "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver/import"
 	keypairssslserversettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/keypairs/sslserver/settings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/license"
@@ -74,6 +79,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/pingoneconnection"
 	protocolmetadatalifetimesettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/protocolmetadata/lifetimesettings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/redirectvalidation"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/secretmanagers"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings"
 	serversettingsgeneralsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/generalsettings"
 	serversettingslogsettings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/serversettings/logsettings"
@@ -685,31 +691,41 @@ func (p *pingfederateProvider) DataSources(_ context.Context) []func() datasourc
 		authenticationpoliciessettings.AuthenticationPoliciesSettingsDataSource,
 		authenticationpolicycontract.AuthenticationPolicyContractDataSource,
 		certificate.CertificateDataSource,
+		clusterstatus.ClusterStatusDataSource,
 		datastore.DataStoreDataSource,
 		idpadapter.IdpAdapterDataSource,
 		idpdefaulturls.IdpDefaultUrlsDataSource,
 		idpspconnection.IdpSpConnectionDataSource,
+		keypairsigning.KeypairsSigningKeyDataSource,
 		keypairsigningimport.KeyPairsSigningImportDataSource,
+		keypairssslserver.KeypairsSslServerKeyDataSource,
 		keypairsslserverimport.KeyPairsSslServerImportDataSource,
 		license.LicenseDataSource,
 		licenseagreement.LicenseAgreementDataSource,
+		localidentity.LocalIdentityProfileDataSource,
 		localidentity.LocalIdentityIdentityProfileDataSource,
 		oauthaccesstokenmanager.OauthAccessTokenManagerDataSource,
 		oauthauthserversettings.OauthAuthServerSettingsDataSource,
+		oauthauthserversettings.OauthServerSettingsDataSource,
 		oauthauthserversettingsscopescommonscope.OauthAuthServerSettingsScopesCommonScopeDataSource,
 		oauthauthserversettingsscopesexclusivescope.OauthAuthServerSettingsScopesExclusiveScopeDataSource,
 		oauthclient.OauthClientDataSource,
 		oauthissuer.OauthIssuerDataSource,
 		oauthtokenexchangetokengeneratormapping.OauthTokenExchangeTokenGeneratorMappingDataSource,
+		oauthopenidconnectpolicy.OpenidConnectPolicyDataSource,
 		oauthopenidconnectpolicy.OauthOpenIdConnectPolicyDataSource,
 		passwordcredentialvalidator.PasswordCredentialValidatorDataSource,
 		protocolmetadatalifetimesettings.ProtocolMetadataLifetimeSettingsDataSource,
 		redirectvalidation.RedirectValidationDataSource,
 		serversettings.ServerSettingsDataSource,
+		serversettingsgeneralsettings.ServerSettingsGeneralDataSource,
 		serversettingsgeneralsettings.ServerSettingsGeneralSettingsDataSource,
+		serversettingslogsettings.ServerSettingsLoggingDataSource,
 		serversettingslogsettings.ServerSettingsLogSettingsDataSource,
 		serversettingssystemkeys.ServerSettingsSystemKeysDataSource,
+		sessionapplicationsessionpolicy.SessionApplicationPolicyDataSource,
 		sessionapplicationsessionpolicy.SessionApplicationSessionPolicyDataSource,
+		sessionauthenticationsessionpoliciesglobal.SessionAuthenticationPoliciesGlobalDataSource,
 		sessionauthenticationsessionpoliciesglobal.SessionAuthenticationSessionPoliciesGlobalDataSource,
 		sessionsettings.SessionSettingsDataSource,
 		spauthenticationpolicycontractmapping.SpAuthenticationPolicyContractMappingDataSource,
@@ -732,6 +748,7 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		captchaproviders.CaptchaProviderResource,
 		captchaproviderssettings.CaptchaProviderSettingsResource,
 		certificate.CertificateCAResource,
+		clustersettings.ClusterSettingsResource,
 		certificatesrevocationsettings.CertificatesRevocationSettingsResource,
 		connectionmetadataexport.ConnectionMetadataExportResource,
 		defaulturls.DefaultUrlsResource,
@@ -740,45 +757,59 @@ func (p *pingfederateProvider) Resources(_ context.Context) []func() resource.Re
 		idpdefaulturls.IdpDefaultUrlsResource,
 		idpspconnection.IdpSpConnectionResource,
 		idpstsrequestparameterscontracts.IdpStsRequestParametersContractResource,
+		idptospadaptermapping.IdpToSpAdapterMappingResource,
 		incomingproxysettings.IncomingProxySettingsResource,
 		kerberosrealms.KerberosRealmsResource,
 		kerberosrealmssettings.KerberosRealmSettingsResource,
 		keypairsoauthopenidconnectadditionalkeysets.KeypairsOauthOpenidConnectAdditionalKeySetResource,
+		keypairsigning.KeypairsSigningKeyResource,
 		keypairsigningimport.KeyPairsSigningImportResource,
+		keypairssslserver.KeypairsSslServerKeyResource,
 		keypairsslserverimport.KeyPairsSslServerImportResource,
 		keypairssslserversettings.KeypairsSslServerSettingsResource,
 		datastore.DataStoreResource,
 		license.LicenseResource,
 		licenseagreement.LicenseAgreementResource,
+		localidentity.LocalIdentityProfileResource,
 		localidentity.LocalIdentityIdentityProfileResource,
 		metadataurls.MetadataUrlResource,
+		notificationpublisherssettings.NotificationPublisherSettingsResource,
 		notificationpublisherssettings.NotificationPublishersSettingsResource,
 		notificationpublishers.NotificationPublisherResource,
 		oauthaccesstokenmanager.OauthAccessTokenManagerResource,
 		oauthaccesstokenmanagerssettings.OauthAccessTokenManagerSettingsResource,
-		oauthaccesstokenmapping.OauthAccessTokenMappingsResource,
+		oauthaccesstokenmapping.OauthAccessTokenMappingResource,
 		oauthauthenticationpolicycontractmappings.OauthAuthenticationPolicyContractMappingResource,
 		oauthauthserversettings.OauthAuthServerSettingsResource,
+		oauthauthserversettings.OauthServerSettingsResource,
 		oauthauthserversettingsscopescommonscope.OauthAuthServerSettingsScopesCommonScopeResource,
 		oauthauthserversettingsscopesexclusivescope.OauthAuthServerSettingsScopesExclusiveScopeResource,
 		oauthcibaserverpolicysettings.OauthCibaServerPolicySettingsResource,
 		oauthclient.OauthClientResource,
 		oauthidpadaptermappings.OauthIdpAdapterMappingResource,
 		oauthissuer.OauthIssuerResource,
+		oauthopenidconnectpolicy.OpenidConnectPolicyResource,
 		oauthopenidconnectpolicy.OauthOpenIdConnectPolicyResource,
-		oauthopenidconnectsettings.OauthOpenIdConnectSettingsResource,
+		oauthopenidconnectsettings.DeprecatedOidcResource,
+		oauthopenidconnectsettings.OpenidConnectSettingsResource,
 		oauthtokenexchangegeneratorsettings.OauthTokenExchangeGeneratorSettingsResource,
 		oauthtokenexchangetokengeneratormapping.OauthTokenExchangeTokenGeneratorMappingResource,
 		passwordcredentialvalidator.PasswordCredentialValidatorResource,
-		pingoneconnection.PingOneConnectionResource,
+		pingoneconnection.DeprecatedPingOneConnectionResource,
+		pingoneconnection.PingoneConnectionResource,
 		protocolmetadatalifetimesettings.ProtocolMetadataLifetimeSettingsResource,
 		redirectvalidation.RedirectValidationResource,
+		secretmanagers.SecretManagerResource,
 		serversettings.ServerSettingsResource,
+		serversettingsgeneralsettings.ServerSettingsGeneralResource,
 		serversettingsgeneralsettings.ServerSettingsGeneralSettingsResource,
+		serversettingslogsettings.ServerSettingsLoggingResource,
 		serversettingslogsettings.ServerSettingsLogSettingsResource,
 		serversettingssystemkeys.ServerSettingsSystemKeysResource,
+		sessionapplicationsessionpolicy.SessionApplicationPolicyResource,
 		sessionapplicationsessionpolicy.SessionApplicationSessionPolicyResource,
 		sessionauthenticationsessionpolicies.SessionAuthenticationPolicyResource,
+		sessionauthenticationsessionpoliciesglobal.SessionAuthenticationPoliciesGlobalResource,
 		sessionauthenticationsessionpoliciesglobal.SessionAuthenticationSessionPoliciesGlobalResource,
 		sessionsettings.SessionSettingsResource,
 		spidpconnection.SpIdpConnectionResource,

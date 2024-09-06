@@ -24,12 +24,14 @@ func (r *metadataUrlResource) ModifyPlan(ctx context.Context, req resource.Modif
 			planFileData := planX509Attrs["file_data"].(types.String).ValueString()
 			stateFormattedFileData := state.X509File.Attributes()["formatted_file_data"].(types.String).ValueString()
 			base64DecodedFileData, err := base64.StdEncoding.DecodeString(planFileData)
+			base64FileDataStr := ""
 			if err == nil {
-				// The plan value was base64-encoded, use the decoded value for comparison
-				planFileData = string(base64DecodedFileData)
+				// The plan value was base64-encoded, also compare the decoded value in case the whole cert was base 64 encoded
+				base64FileDataStr = string(base64DecodedFileData)
 			}
 			// If the single-line file_data values don't match, need to re-apply the resource
-			if stripNewLinesAndCertHeaderFooter(planFileData) != stripNewLinesAndCertHeaderFooter(stateFormattedFileData) {
+			if stripNewLinesAndCertHeaderFooter(planFileData) != stripNewLinesAndCertHeaderFooter(stateFormattedFileData) &&
+				stripNewLinesAndCertHeaderFooter(base64FileDataStr) != stripNewLinesAndCertHeaderFooter(stateFormattedFileData) {
 				planX509Attrs["formatted_file_data"] = types.StringUnknown()
 				var diags diag.Diagnostics
 				plan.X509File, diags = types.ObjectValue(plan.X509File.AttributeTypes(ctx), planX509Attrs)

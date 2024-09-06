@@ -1,2 +1,1 @@
-# "tokenExchangeTokenGeneratorMappingId" should be the id of the Token Exchange Token Generator Mapping to be imported
-terraform import pingfederate_oauth_token_exchange_token_generator_mapping.tokenExchangeProcessorokenGeneratorMapping tokenExchangeTokenGeneratorMappingId
+terraform import pingfederate_oauth_token_exchange_token_generator_mapping.exchangeGeneratorMapping mappingId

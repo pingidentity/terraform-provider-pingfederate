@@ -60,10 +60,8 @@ func TestAccSimpleUsernamePasswordCredentialValidators(t *testing.T) {
 				ImportStateId:     simpleUsernamePasswordPasswordCredentialValidatorsId,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// Tables get imported to tables_all, so can't verify them here
-				ImportStateVerifyIgnore: []string{
-					"configuration.tables",
-				},
+				// Sensitive table field values can't be imported so they can't be verified
+				ImportStateVerifyIgnore: []string{"configuration.tables", "configuration.tables_all"},
 			},
 			{
 				// Back to minimal model

@@ -37,5 +37,4 @@ func (r *certificatesRevocationSettingsResource) Delete(ctx context.Context, req
 	if err != nil {
 		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while resetting the certificatesRevocationSettings", err, httpResp)
 	}
-
 }
