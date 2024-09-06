@@ -5,8 +5,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
@@ -40,6 +43,7 @@ func (r *keypairsSigningCsrExportResource) Configure(_ context.Context, req reso
 }
 
 type keypairsSigningCsrExportResourceModel struct {
+	Id          types.String `tfsdk:"id"`
 	KeypairId   types.String `tfsdk:"keypair_id"`
 	ExportedCsr types.String `tfsdk:"exported_csr"`
 }
@@ -51,6 +55,9 @@ func (r *keypairsSigningCsrExportResource) Schema(ctx context.Context, req resou
 			"keypair_id": schema.StringAttribute{
 				Description: "The ID of the keypair.",
 				Required:    true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"exported_csr": schema.StringAttribute{
 				Description: "The exported PEM-encoded certificate signing request.",
@@ -58,6 +65,7 @@ func (r *keypairsSigningCsrExportResource) Schema(ctx context.Context, req resou
 			},
 		},
 	}
+	id.ToSchema(&resp.Schema)
 }
 
 func (r *keypairsSigningCsrExportResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -78,6 +86,7 @@ func (r *keypairsSigningCsrExportResource) Create(ctx context.Context, req resou
 	}
 
 	// Set the exported metadata
+	data.Id = types.StringValue(data.KeypairId.ValueString())
 	data.ExportedCsr = types.StringValue(responseData)
 
 	// Save updated data into Terraform state

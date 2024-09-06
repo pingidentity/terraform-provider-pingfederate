@@ -39,5 +39,6 @@ resource "pingfederate_keypairs_signing_csr_export" "example" {
 func keypairsSigningCsrExportResource_CheckComputedValues() resource.TestCheckFunc {
 	return resource.ComposeTestCheckFunc(
 		resource.TestCheckResourceAttrSet("pingfederate_keypairs_signing_csr_export.example", "exported_csr"),
+		resource.TestCheckResourceAttr("pingfederate_keypairs_signing_csr_export.example", "id", "419x9yg43rlawqwq9v6az997k"),
 	)
 }
