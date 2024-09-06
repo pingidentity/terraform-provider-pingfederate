@@ -158,6 +158,10 @@ resource "pingfederate_sp_adapter" "spAdapter" {
 - `parent_ref` (Attributes) The reference to this plugin's parent instance. The parent reference is only accepted if the plugin type supports parent instances. Note: This parent reference is required if this plugin instance is used as an overriding plugin (e.g. connection adapter overrides) (see [below for nested schema](#nestedatt--parent_ref))
 - `target_application_info` (Attributes) Target Application Information exposed by an SP adapter. (see [below for nested schema](#nestedatt--target_application_info))
 
+### Read-Only
+
+- `id` (String) The ID of this resource.
+
 <a id="nestedatt--configuration"></a>
 ### Nested Schema for `configuration`
 
