@@ -194,7 +194,7 @@ func (r *incomingProxySettingsResource) Create(ctx context.Context, req resource
 	createIncomingProxySettings := client.NewIncomingProxySettings()
 	addOptionalIncomingProxySettingsFields(ctx, createIncomingProxySettings, plan)
 
-	apiCreateIncomingProxySettings := r.apiClient.IncomingProxySettingsAPI.UpdateIncomingProxySettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	apiCreateIncomingProxySettings := r.apiClient.IncomingProxySettingsAPI.UpdateIncomingProxySettings(config.AuthContext(ctx, r.providerConfig))
 	apiCreateIncomingProxySettings = apiCreateIncomingProxySettings.Body(*createIncomingProxySettings)
 	incomingProxySettingsResponse, httpResp, err := r.apiClient.IncomingProxySettingsAPI.UpdateIncomingProxySettingsExecute(apiCreateIncomingProxySettings)
 	if err != nil {
@@ -219,7 +219,7 @@ func (r *incomingProxySettingsResource) Read(ctx context.Context, req resource.R
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	apiReadIncomingProxySettings, httpResp, err := r.apiClient.IncomingProxySettingsAPI.GetIncomingProxySettings(config.ProviderBasicAuthContext(ctx, r.providerConfig)).Execute()
+	apiReadIncomingProxySettings, httpResp, err := r.apiClient.IncomingProxySettingsAPI.GetIncomingProxySettings(config.AuthContext(ctx, r.providerConfig)).Execute()
 
 	if err != nil {
 		if httpResp != nil && httpResp.StatusCode == 404 {
@@ -255,7 +255,7 @@ func (r *incomingProxySettingsResource) Update(ctx context.Context, req resource
 		return
 	}
 
-	updateIncomingProxySettings := r.apiClient.IncomingProxySettingsAPI.UpdateIncomingProxySettings(config.ProviderBasicAuthContext(ctx, r.providerConfig))
+	updateIncomingProxySettings := r.apiClient.IncomingProxySettingsAPI.UpdateIncomingProxySettings(config.AuthContext(ctx, r.providerConfig))
 	createUpdateRequest := client.NewIncomingProxySettings()
 	addOptionalIncomingProxySettingsFields(ctx, createUpdateRequest, plan)
 

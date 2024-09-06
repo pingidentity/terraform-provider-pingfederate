@@ -18,11 +18,11 @@ var (
 	}
 
 	attributeContractTypes = map[string]attr.Type{
-		"core_attributes":     types.ListType{ElemType: types.ObjectType{AttrTypes: attrType}},
-		"extended_attributes": types.ListType{ElemType: types.ObjectType{AttrTypes: attrType}},
+		"core_attributes":     types.SetType{ElemType: types.ObjectType{AttrTypes: attrType}},
+		"extended_attributes": types.SetType{ElemType: types.ObjectType{AttrTypes: attrType}},
 	}
 
-	emptyAttrList, _ = types.ListValue(types.ObjectType{AttrTypes: attrType}, nil)
+	emptyAttrSet, _ = types.SetValue(types.ObjectType{AttrTypes: attrType}, nil)
 )
 
 type passwordCredentialValidatorModel struct {
@@ -35,7 +35,7 @@ type passwordCredentialValidatorModel struct {
 	Configuration       types.Object `tfsdk:"configuration"`
 }
 
-func readPasswordCredentialValidatorResponse(ctx context.Context, r *client.PasswordCredentialValidator, state *passwordCredentialValidatorModel, configurationFromPlan types.Object, isResource bool) diag.Diagnostics {
+func readPasswordCredentialValidatorResponse(ctx context.Context, r *client.PasswordCredentialValidator, state *passwordCredentialValidatorModel, configurationFromPlan types.Object, isResource, isImportRead bool) diag.Diagnostics {
 	var diags, respDiags diag.Diagnostics
 	state.Id = types.StringValue(r.Id)
 	state.ValidatorId = types.StringValue(r.Id)
@@ -45,7 +45,7 @@ func readPasswordCredentialValidatorResponse(ctx context.Context, r *client.Pass
 	state.ParentRef, respDiags = resourcelink.ToState(ctx, r.ParentRef)
 	diags.Append(respDiags...)
 	if isResource {
-		state.Configuration, respDiags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration)
+		state.Configuration, respDiags = pluginconfiguration.ToState(configurationFromPlan, &r.Configuration, isImportRead)
 		diags.Append(respDiags...)
 	} else {
 		state.Configuration, respDiags = pluginconfigurationdatasource.ToDataSourceState(ctx, &r.Configuration)
@@ -65,7 +65,7 @@ func readPasswordCredentialValidatorResponse(ctx context.Context, r *client.Pass
 			coreAttribute.Name = ca.Name
 			coreAttrs = append(coreAttrs, coreAttribute)
 		}
-		attributeContractCoreAttributes, respDiags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: attrType}, coreAttrs)
+		attributeContractCoreAttributes, respDiags := types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attrType}, coreAttrs)
 		diags.Append(respDiags...)
 
 		// state.AttributeContract extended_attributes
@@ -76,7 +76,7 @@ func readPasswordCredentialValidatorResponse(ctx context.Context, r *client.Pass
 			extendedAttr.Name = ea.Name
 			extdAttrs = append(extdAttrs, extendedAttr)
 		}
-		attributeContractExtendedAttributes, respDiags := types.ListValueFrom(ctx, types.ObjectType{AttrTypes: attrType}, extdAttrs)
+		attributeContractExtendedAttributes, respDiags := types.SetValueFrom(ctx, types.ObjectType{AttrTypes: attrType}, extdAttrs)
 		diags.Append(respDiags...)
 
 		attributeContractValues := map[string]attr.Value{

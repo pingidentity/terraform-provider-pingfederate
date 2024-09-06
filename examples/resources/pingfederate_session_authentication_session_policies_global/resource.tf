@@ -1,4 +1,4 @@
-resource "pingfederate_session_authentication_session_policies_global" "sessionAuthenticationSessionPoliciesGlobalExample" {
+resource "pingfederate_session_authentication_session_policies_global" "globalPolicy" {
   enable_sessions                = true
   persistent_sessions            = false
   hash_unique_user_key_attribute = true

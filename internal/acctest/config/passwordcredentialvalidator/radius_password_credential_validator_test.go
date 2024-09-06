@@ -68,11 +68,8 @@ func TestAccRadiusPasswordCredentialValidators(t *testing.T) {
 				ImportStateId:     radiusPasswordCredentialValidatorsId,
 				ImportState:       true,
 				ImportStateVerify: true,
-				// Fields get imported to fields_all, and tables to tables_all, so can't check them here.
-				ImportStateVerifyIgnore: []string{
-					"configuration.fields",
-					"configuration.tables",
-				},
+				// Sensitive table field values can't be imported so they can't be verified
+				ImportStateVerifyIgnore: []string{"configuration.tables", "configuration.tables_all"},
 			},
 			{
 				// Back to minimal model
