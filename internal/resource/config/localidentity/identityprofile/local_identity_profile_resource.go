@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -306,6 +307,20 @@ func (r *localIdentityProfileResource) Schema(ctx context.Context, req resource.
 									// Default set in ModifyPlan
 									ElementType: types.BoolType,
 								},
+								"options": schema.SetAttribute{
+									Description: "The list of options for this selection field.",
+									Computed:    true,
+									Optional:    true,
+									ElementType: types.StringType,
+									Validators: []validator.Set{
+										setvalidator.SizeAtLeast(1),
+									},
+								},
+								"default_value": schema.StringAttribute{
+									Description: "The default value for this field.",
+									Optional:    true,
+									Computed:    true,
+								},
 							},
 						},
 					},
@@ -578,7 +593,7 @@ func addOptionalLocalIdentityProfileFields(ctx context.Context, addRequest *clie
 
 	if internaltypes.IsDefined(plan.FieldConfig) {
 		addRequest.FieldConfig = client.NewFieldConfig()
-		err := json.Unmarshal([]byte(internaljson.FromValue(plan.FieldConfig, false)), addRequest.FieldConfig)
+		err := json.Unmarshal([]byte(internaljson.FromValue(plan.FieldConfig, true)), addRequest.FieldConfig)
 		if err != nil {
 			return err
 		}
@@ -965,6 +980,71 @@ func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req r
 		if (captchaEnabled.ValueBool() && captchaProviderRef.IsNull()) || (internaltypes.IsDefined(captchaEnabled) && !captchaEnabled.ValueBool() && internaltypes.IsDefined(captchaProviderRef)) {
 			resp.Diagnostics.AddError("Invalid registration captcha settings",
 				"If registration_config.captcha_enabled is set to true, then registration_config.captcha_provider_ref must be configured. If registration_config.captcha_enabled is false, then registration_config.captcha_provider_ref must not be configured.")
+		}
+	}
+
+	if internaltypes.IsDefined(model.FieldConfig) && internaltypes.IsDefined(model.FieldConfig.Attributes()["fields"]) {
+		fieldConfigFields := model.FieldConfig.Attributes()["fields"].(types.Set).Elements()
+		for _, field := range fieldConfigFields {
+			fieldAttrs := field.(types.Object).Attributes()
+			fieldType := fieldAttrs["type"].(types.String).ValueString()
+			hasDefault := internaltypes.IsDefined(fieldAttrs["default_value"])
+			hasOptions := internaltypes.IsDefined(fieldAttrs["options"])
+			fieldTypePath := path.Root("field_config").AtMapKey("fields")
+
+			switch fieldType {
+			case "CHECKBOX":
+				// check to make sure options isn't set
+				if hasOptions {
+					resp.Diagnostics.AddAttributeError(fieldTypePath, "Invalid attribute combination",
+						"\"options\" is not applicable for the \"CHECKBOX\" field type.")
+				}
+			case "CHECKBOX_GROUP":
+				// check to make sure default_value isn't set
+				if hasDefault {
+					resp.Diagnostics.AddAttributeError(fieldTypePath, "Invalid attribute combination",
+						"\"default_value\" is not applicable for the \"CHECKBOX_GROUP\" field type.")
+				}
+			case "DATE":
+				if hasOptions {
+					resp.Diagnostics.AddAttributeError(fieldTypePath, "Invalid attribute combination",
+						"\"options\" is not applicable for the \"DATE\" field type.")
+				}
+			// DROP_DOWN has all options, leaving this here in case of future use
+			// case "DROP_DOWN":
+			case "EMAIL":
+				if hasDefault {
+					resp.Diagnostics.AddAttributeError(fieldTypePath, "Invalid attribute combination",
+						"\"default_value\" is not applicable for the \"EMAIL\" field type.")
+				}
+				if hasOptions {
+					resp.Diagnostics.AddAttributeError(fieldTypePath, "Invalid attribute combination",
+						"\"options\" is not applicable for the \"EMAIL\" field type.")
+				}
+			case "HIDDEN":
+				if hasDefault {
+					resp.Diagnostics.AddAttributeError(fieldTypePath, "Invalid attribute combination",
+						"\"default_value\" is not applicable for the \"HIDDEN\" field type.")
+				}
+				if hasOptions {
+					resp.Diagnostics.AddAttributeError(fieldTypePath, "Invalid attribute combination",
+						"\"options\" is not applicable for the \"HIDDEN\" field type.")
+				}
+			case "PHONE":
+				if hasDefault {
+					resp.Diagnostics.AddAttributeError(fieldTypePath, "Invalid attribute combination",
+						"\"default_value\" is not applicable for the \"PHONE\" field type.")
+				}
+				if hasOptions {
+					resp.Diagnostics.AddAttributeError(fieldTypePath, "Invalid attribute combination",
+						"\"options\" is not applicable for the \"PHONE\" field type.")
+				}
+			case "TEXT":
+				if hasOptions {
+					resp.Diagnostics.AddAttributeError(fieldTypePath, "Invalid attribute combination",
+						"\"options\" is not applicable for the \"TEXT\" field type.")
+				}
+			}
 		}
 	}
 }

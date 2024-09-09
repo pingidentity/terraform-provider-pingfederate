@@ -42,6 +42,8 @@ var (
 		"registration_page_field": types.BoolType,
 		"profile_page_field":      types.BoolType,
 		"attributes":              types.MapType{ElemType: types.BoolType},
+		"options":                 types.SetType{ElemType: types.StringType},
+		"default_value":           types.StringType,
 	}
 
 	fieldConfigAttrTypes = map[string]attr.Type{
