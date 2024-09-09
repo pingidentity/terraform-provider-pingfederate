@@ -626,19 +626,19 @@ func (r *oauthServerSettingsResource) ModifyPlan(ctx context.Context, req resour
 	// Compare to versions 11.3, 12.0, and 12.1 of PF
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast113 := compare >= 0
 	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast120 := compare >= 0
 	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast121 := compare >= 0

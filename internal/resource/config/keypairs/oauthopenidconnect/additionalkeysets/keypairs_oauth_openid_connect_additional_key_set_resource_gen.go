@@ -20,6 +20,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -280,7 +281,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) ModifyPlan(ctx cont
 	// Compare to version 12.0.1 of PF
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1201)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast1201 := compare >= 0
@@ -688,7 +689,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Create(ctx context.
 	// Create API call logic
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1201)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast1201 := compare >= 0
@@ -733,7 +734,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Read(ctx context.Co
 	// Read response into the model
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1201)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast1201 := compare >= 0
@@ -756,7 +757,7 @@ func (r *keypairsOauthOpenidConnectAdditionalKeySetResource) Update(ctx context.
 	// Update API call logic
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1201)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast1201 := compare >= 0

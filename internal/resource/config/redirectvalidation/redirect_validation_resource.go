@@ -259,7 +259,7 @@ func (r *redirectValidationResource) ModifyPlan(ctx context.Context, req resourc
 	// Compare to version 12.1 of PF
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast121 := compare >= 0

@@ -206,7 +206,7 @@ func (r *openidConnectPolicyResource) ModifyPlan(ctx context.Context, req resour
 	// Compare to version 11.3 of PF
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast113 := compare >= 0

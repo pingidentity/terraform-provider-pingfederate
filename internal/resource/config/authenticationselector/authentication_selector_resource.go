@@ -212,7 +212,7 @@ func (r *authenticationSelectorResource) Create(ctx context.Context, req resourc
 
 	for err, hasErr := range hasObjectErrMap {
 		if hasErr {
-			resp.Diagnostics.AddError("Failed to create an Authentication Selector due to dependent object", err.Error())
+			resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to create an Authentication Selector due to dependent object: "+err.Error())
 		}
 	}
 
@@ -300,7 +300,7 @@ func (r *authenticationSelectorResource) Update(ctx context.Context, req resourc
 
 	for err, hasErr := range hasObjectErrMap {
 		if hasErr {
-			resp.Diagnostics.AddError("Failed to create an Authentication Selector due to dependent object", err.Error())
+			resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to create an Authentication Selector due to dependent object: "+err.Error())
 		}
 	}
 
