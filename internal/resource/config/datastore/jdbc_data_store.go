@@ -295,7 +295,7 @@ func toStateJdbcDataStore(con context.Context, jdbcDataStore *client.JdbcDataSto
 	var allDiags, diags diag.Diagnostics
 
 	if jdbcDataStore == nil {
-		diags.AddError("Failed to read JDBC data store from PingFederate.", "The response from PingFederate was nil.")
+		diags.AddError(providererror.InternalProviderError, "Failed to read JDBC data store from PingFederate. The response from PingFederate was nil.")
 		return types.ObjectNull(jdbcDataStoreAttrType), diags
 	}
 

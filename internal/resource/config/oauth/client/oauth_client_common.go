@@ -190,7 +190,7 @@ func readOauthClientResponseCommon(ctx context.Context, r *client.Client, state,
 		// This attribute is returned as empty string when set to its default, and it only exists on PF 12.1+
 		compare, err := version.Compare(productVersion, version.PingFederate1210)
 		if err != nil {
-			resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
+			diags.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		}
 		pfVersionAtLeast121 := compare >= 0
 		if r.GetRefreshTokenRollingIntervalTimeUnit() == "" && pfVersionAtLeast121 {

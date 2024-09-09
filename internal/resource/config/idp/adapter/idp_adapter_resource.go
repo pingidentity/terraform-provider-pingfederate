@@ -308,14 +308,14 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 	var pluginDescriptorRef client.ResourceLink
 	err := json.Unmarshal([]byte(internaljson.FromValue(plan.PluginDescriptorRef, false)), &pluginDescriptorRef)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to read plugin_descriptor_ref from plan", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to read plugin_descriptor_ref from plan: "+err.Error())
 		return
 	}
 
 	var configuration client.PluginConfiguration
 	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, false)), &configuration)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to read configuration from plan", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to read configuration from plan: "+err.Error())
 		return
 	}
 
@@ -391,14 +391,14 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 	var pluginDescriptorRef client.ResourceLink
 	err := json.Unmarshal([]byte(internaljson.FromValue(plan.PluginDescriptorRef, false)), &pluginDescriptorRef)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to read plugin_descriptor_ref from plan", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to read plugin_descriptor_ref from plan: "+err.Error())
 		return
 	}
 
 	var configuration client.PluginConfiguration
 	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, false)), &configuration)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to read configuration from plan", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to read configuration from plan: "+err.Error())
 		return
 	}
 

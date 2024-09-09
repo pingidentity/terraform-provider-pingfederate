@@ -179,7 +179,7 @@ func (r *spAuthenticationPolicyContractMappingResource) Create(ctx context.Conte
 	}
 	attributeContractFulfillment, err := attributecontractfulfillment.ClientStruct(plan.AttributeContractFulfillment)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to build attribute contract fulfillment request object:", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build attribute contract fulfillment request object: "+err.Error())
 		return
 	}
 	createSpAuthenticationPolicyContractMappingResource := client.NewApcToSpAdapterMapping(attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
@@ -246,7 +246,7 @@ func (r *spAuthenticationPolicyContractMappingResource) Update(ctx context.Conte
 	}
 	attributeContractFulfillment, err := attributecontractfulfillment.ClientStruct(plan.AttributeContractFulfillment)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to build attribute contract fulfillment request object:", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build attribute contract fulfillment request object: "+err.Error())
 		return
 	}
 	updateSpAuthenticationPolicyContractMappingResource := r.apiClient.SpAuthenticationPolicyContractMappingsAPI.UpdateApcToSpAdapterMappingById(config.AuthContext(ctx, r.providerConfig), plan.Id.ValueString())

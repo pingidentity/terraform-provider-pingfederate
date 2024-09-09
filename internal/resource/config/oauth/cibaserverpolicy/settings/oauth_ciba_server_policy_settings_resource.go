@@ -99,7 +99,7 @@ func (r *oauthCibaServerPolicySettingsResource) Create(ctx context.Context, req 
 	createOauthCibaServerPolicySettings := client.NewCibaServerPolicySettings()
 	createOauthCibaServerPolicySettings.DefaultRequestPolicyRef, err = resourcelink.ClientStruct(plan.DefaultRequestPolicyRef)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to default_request_policy_ref to add request for OAuth CIBA Server Policy Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add default_request_policy_ref to add request for OAuth CIBA Server Policy Settings: "+err.Error())
 		return
 	}
 
@@ -167,7 +167,7 @@ func (r *oauthCibaServerPolicySettingsResource) Update(ctx context.Context, req 
 	createUpdateRequest := client.NewCibaServerPolicySettings()
 	createUpdateRequest.DefaultRequestPolicyRef, err = resourcelink.ClientStruct(plan.DefaultRequestPolicyRef)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to default_request_policy_ref to add request for OAuth CIBA Server Policy Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add default_request_policy_ref to add request for OAuth CIBA Server Policy Settings: "+err.Error())
 		return
 	}
 

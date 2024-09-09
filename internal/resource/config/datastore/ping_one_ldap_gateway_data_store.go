@@ -182,7 +182,7 @@ func toStatePingOneLdapGatewayDataStore(con context.Context, pingOneLdapGDS *cli
 	var diags, allDiags diag.Diagnostics
 
 	if pingOneLdapGDS == nil {
-		diags.AddError("Failed to read PingOne LDAP Gateway data store from PingFederate.", "The response from PingFederate was nil.")
+		diags.AddError(providererror.InternalProviderError, "Failed to read PingOne LDAP Gateway data store from PingFederate. The response from PingFederate was nil.")
 		return pingOneLdapGatewayDataStoreEmptyStateObj, diags
 	}
 
@@ -269,7 +269,7 @@ func createPingOneLdapGatewayDataStore(plan dataStoreModel, con context.Context,
 	ldapType := pingOneLdapGatewayDsPlan["ldap_type"].(types.String).ValueString()
 	pingOneConnectionRef, err := resourcelink.ClientStruct(plan.PingOneLdapGatewayDataStore.Attributes()["ping_one_connection_ref"].(types.Object))
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to convert ping_one_connection_ref to PingOneConnectionRef", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to convert ping_one_connection_ref to PingOneConnectionRef: "+err.Error())
 		return
 	}
 	pingOneEnvId := pingOneLdapGatewayDsPlan["ping_one_environment_id"].(types.String).ValueString()
@@ -309,7 +309,7 @@ func updatePingOneLdapGatewayDataStore(plan dataStoreModel, con context.Context,
 	ldapType := pingOneLdapGatewayDsPlan["ldap_type"].(types.String).ValueString()
 	pingOneConnectionRef, err := resourcelink.ClientStruct(plan.PingOneLdapGatewayDataStore.Attributes()["ping_one_connection_ref"].(types.Object))
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to convert ping_one_connection_ref to PingOneConnectionRef", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to convert ping_one_connection_ref to PingOneConnectionRef: "+err.Error())
 		return
 	}
 	pingOneEnvId := pingOneLdapGatewayDsPlan["ping_one_environment_id"].(types.String).ValueString()

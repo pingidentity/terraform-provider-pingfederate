@@ -542,10 +542,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 	}
 
 	if productVersion == "" {
-		resp.Diagnostics.AddError(
-			"Unable to find PingFederate version",
-			"product_version cannot be an empty string. Either set it in the configuration or use the PINGFEDERATE_PROVIDER_PRODUCT_VERSION environment variable.",
-		)
+		addAttributeRequiredError("product_version", "PINGFEDERATE_PROVIDER_PRODUCT_VERSION", &resp.Diagnostics)
 	} else {
 		// Validate the PingFederate version
 		parsedProductVersion, diags = version.Parse(productVersion)

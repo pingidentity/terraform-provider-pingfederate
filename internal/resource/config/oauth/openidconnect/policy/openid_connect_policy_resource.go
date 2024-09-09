@@ -281,7 +281,7 @@ func getRequiredOauthOpenIDConnectPolicyFields(plan oauthOpenIdConnectPolicyMode
 	var accessTokenManagerRef client.ResourceLink
 	err := json.Unmarshal([]byte(internaljson.FromValue(plan.AccessTokenManagerRef, false)), &accessTokenManagerRef)
 	if err != nil {
-		diags.AddError("Failed to read access_token_manager_ref from plan", err.Error())
+		diags.AddError(providererror.InternalProviderError, "Failed to read access_token_manager_ref from plan: "+err.Error())
 		return nil, nil, nil
 	}
 
@@ -289,7 +289,7 @@ func getRequiredOauthOpenIDConnectPolicyFields(plan oauthOpenIdConnectPolicyMode
 	var attributeContract client.OpenIdConnectAttributeContract
 	err = json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContract, false)), &attributeContract)
 	if err != nil {
-		diags.AddError("Failed to read attribute_contract from plan", err.Error())
+		diags.AddError(providererror.InternalProviderError, "Failed to read attribute_contract from plan: "+err.Error())
 		return nil, nil, nil
 	}
 
@@ -300,14 +300,14 @@ func getRequiredOauthOpenIDConnectPolicyFields(plan oauthOpenIdConnectPolicyMode
 	attrContractFulfillmentAttr := planAttrs["attribute_contract_fulfillment"].(types.Map)
 	attributeMapping.AttributeContractFulfillment, err = attributecontractfulfillment.ClientStruct(attrContractFulfillmentAttr)
 	if err != nil {
-		diags.AddError("Failed to read attribute_mapping.attribute_contract_fulfillment from plan", err.Error())
+		diags.AddError(providererror.InternalProviderError, "Failed to read attribute_mapping.attribute_contract_fulfillment from plan: "+err.Error())
 		return nil, nil, nil
 	}
 
 	issuanceCriteriaAttr := planAttrs["issuance_criteria"].(types.Object)
 	attributeMapping.IssuanceCriteria, err = issuancecriteria.ClientStruct(issuanceCriteriaAttr)
 	if err != nil {
-		diags.AddError("Failed to read attribute_mapping.issuance_criteria from plan", err.Error())
+		diags.AddError(providererror.InternalProviderError, "Failed to read attribute_mapping.issuance_criteria from plan: "+err.Error())
 		return nil, nil, nil
 	}
 
@@ -315,7 +315,7 @@ func getRequiredOauthOpenIDConnectPolicyFields(plan oauthOpenIdConnectPolicyMode
 	attributeMapping.AttributeSources = []client.AttributeSourceAggregation{}
 	attributeMapping.AttributeSources, err = attributesources.ClientStruct(attributeSourcesAttr)
 	if err != nil {
-		diags.AddError("Failed to read attribute_mapping.attribute_sources from plan", err.Error())
+		diags.AddError(providererror.InternalProviderError, "Failed to read attribute_mapping.attribute_sources from plan: "+err.Error())
 		return nil, nil, nil
 	}
 

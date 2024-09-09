@@ -126,7 +126,7 @@ func getLatestPatchForMajorMinorVersion(majorMinorVersionString string) (string,
 	}
 	if versionIndex < 0 || versionIndex >= len(sortedVersions) {
 		// This should never happen
-		respDiags.AddError("Unexpected failure determining major-minor PingFederate version", "")
+		respDiags.AddError(providererror.InternalProviderError, "Unexpected failure determining major-minor PingFederate version")
 		return majorMinorVersionString, respDiags
 	}
 	return string(sortedVersions[versionIndex]), respDiags
@@ -135,7 +135,9 @@ func getLatestPatchForMajorMinorVersion(majorMinorVersionString string) (string,
 func Parse(versionString string) (SupportedVersion, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	if len(versionString) == 0 {
-		diags.AddError("failed to parse PingFederate version", "empty version string")
+		diags.AddAttributeError(
+			path.Root("product_version"),
+			providererror.InvalidProviderConfiguration, "failed to parse PingFederate version: empty version string")
 		return "", diags
 	}
 
@@ -143,13 +145,18 @@ func Parse(versionString string) (SupportedVersion, diag.Diagnostics) {
 	// Expect a version like "x.x" or "x.x.x"
 	// If only two digits are supplied, the last one will be assumed to be "0"
 	if len(versionDigits) != 2 && len(versionDigits) != 3 {
-		diags.AddError("failed to parse PingFederate version '"+versionString+"'", "Expected either two digits (e.g. '11.3') or three digits (e.g. '11.3.4')")
+		diags.AddAttributeError(
+			path.Root("product_version"),
+			providererror.InvalidProviderConfiguration, "failed to parse PingFederate version '"+versionString+"'. Expected either two digits (e.g. '11.3') or three digits (e.g. '11.3.4')")
 		return "", diags
 	}
 	if len(versionDigits) == 2 {
 		if !IsValid(versionString + ".0") {
 			// This major minor version isn't supported - fail now
-			diags.AddError("PingFederate version '"+versionString+"' is not supported in this version of the PingFederate terraform provider", getSortedVersionsMessage())
+			diags.AddAttributeError(
+				path.Root("product_version"),
+				providererror.InvalidProviderConfiguration,
+				"PingFederate version '"+versionString+"' is not supported in this version of the PingFederate terraform provider.\n"+getSortedVersionsMessage())
 			return "", diags
 		}
 		// Get the latest patch for the major minor version provided
@@ -161,7 +168,10 @@ func Parse(versionString string) (SupportedVersion, diag.Diagnostics) {
 		// Check if the major-minor version is valid
 		majorMinorVersionString := versionDigits[0] + "." + versionDigits[1] + ".0"
 		if !IsValid(majorMinorVersionString) {
-			diags.AddError("PingFederate version '"+versionString+"' is not supported in this version of the PingFederate terraform provider", getSortedVersionsMessage())
+			diags.AddAttributeError(
+				path.Root("product_version"),
+				providererror.InvalidProviderConfiguration,
+				"PingFederate version '"+versionString+"' is not supported in this version of the PingFederate terraform provider.\n"+getSortedVersionsMessage())
 			return "", diags
 		}
 		// The major-minor version is valid, only the patch is invalid. Warn but do not fail, assume the lastest patch version
@@ -169,7 +179,10 @@ func Parse(versionString string) (SupportedVersion, diag.Diagnostics) {
 		originalVersionString := versionString
 		versionString, respDiags = getLatestPatchForMajorMinorVersion(majorMinorVersionString)
 		diags.Append(respDiags...)
-		diags.AddWarning("Unrecognized PingFederate patch version", "PingFederate patch version '"+originalVersionString+"' is not recognized by this version of the PingFederate terraform provider. Assuming the latest patch version supported by the provider: '"+versionString+"'")
+		diags.AddAttributeWarning(
+			path.Root("product_version"),
+			"Unrecognized PingFederate patch version in 'product_version' field or 'PINGFEDERATE_PROVIDER_PRODUCT_VERSION' environment variable",
+			"PingFederate patch version '"+originalVersionString+"' is not recognized by this version of the PingFederate terraform provider. Assuming the latest patch version supported by the provider: '"+versionString+"'")
 	}
 	return SupportedVersion(versionString), diags
 }

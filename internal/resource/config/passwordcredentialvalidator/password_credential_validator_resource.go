@@ -294,7 +294,7 @@ func (r *passwordCredentialValidatorResource) Create(ctx context.Context, req re
 	// PluginDescriptorRef
 	pluginDescRefResLink, err := resourcelink.ClientStruct(plan.PluginDescriptorRef)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to build plugin descriptor ref request object:", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin descriptor ref request object: "+err.Error())
 		return
 	}
 
@@ -302,7 +302,7 @@ func (r *passwordCredentialValidatorResource) Create(ctx context.Context, req re
 	configuration := client.NewPluginConfigurationWithDefaults()
 	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, true)), configuration)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to build plugin configuration request object:", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin configuration request object: "+err.Error())
 		return
 	}
 
@@ -373,7 +373,7 @@ func (r *passwordCredentialValidatorResource) Update(ctx context.Context, req re
 	// PluginDescriptorRef
 	pluginDescRefResLink, err := resourcelink.ClientStruct(plan.PluginDescriptorRef)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to build plugin descriptor ref request object:", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin descriptor ref request object: "+err.Error())
 		return
 	}
 
@@ -381,7 +381,7 @@ func (r *passwordCredentialValidatorResource) Update(ctx context.Context, req re
 	configuration := client.NewPluginConfiguration()
 	err = json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, true)), configuration)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to build plugin configuration request object:", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin configuration request object: "+err.Error())
 		return
 	}
 

@@ -469,7 +469,7 @@ func toStateLdapDataStore(con context.Context, ldapDataStore *client.LdapDataSto
 	var diags, allDiags diag.Diagnostics
 
 	if ldapDataStore == nil {
-		diags.AddError("Failed to read Ldap data store from PingFederate.", "The response from PingFederate was nil.")
+		diags.AddError(providererror.InternalProviderError, "Failed to read Ldap data store from PingFederate. The response from PingFederate was nil.")
 		return ldapDataStoreEmptyStateObj, diags
 	}
 
@@ -564,7 +564,7 @@ func toDataSourceStateLdapDataStore(con context.Context, ldapDataStore *client.L
 	var diags, allDiags diag.Diagnostics
 
 	if ldapDataStore == nil {
-		diags.AddError("Failed to read Ldap data store from PingFederate.", "The response from PingFederate was nil.")
+		diags.AddError(providererror.InternalProviderError, "Failed to read Ldap data store from PingFederate. The response from PingFederate was nil.")
 		return ldapDataStoreEmptyStateObj, diags
 	}
 

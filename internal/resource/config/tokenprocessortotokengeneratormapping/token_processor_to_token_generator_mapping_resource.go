@@ -154,7 +154,7 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Create(ctx context.Conte
 
 	attributeContractFulfillment, err := attributecontractfulfillment.ClientStruct(plan.AttributeContractFulfillment)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to build attribute contract fulfillment request object:", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build attribute contract fulfillment request object: "+err.Error())
 		return
 	}
 	createTokenProcessorToTokenGeneratorMapping := client.NewTokenToTokenMapping(attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
@@ -224,7 +224,7 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Update(ctx context.Conte
 	attributeContractFulfillment := &map[string]client.AttributeFulfillmentValue{}
 	attributeContractFulfillmentErr := json.Unmarshal([]byte(internaljson.FromValue(plan.AttributeContractFulfillment, false)), attributeContractFulfillment)
 	if attributeContractFulfillmentErr != nil {
-		resp.Diagnostics.AddError("Failed to build attribute contract fulfillment request object:", attributeContractFulfillmentErr.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build attribute contract fulfillment request object: "+attributeContractFulfillmentErr.Error())
 		return
 	}
 	updateTokenProcessorToTokenGeneratorMapping := r.apiClient.TokenProcessorToTokenGeneratorMappingsAPI.UpdateTokenToTokenMappingById(config.AuthContext(ctx, r.providerConfig), plan.Id.ValueString())

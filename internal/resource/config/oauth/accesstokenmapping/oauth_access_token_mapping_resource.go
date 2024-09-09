@@ -234,7 +234,7 @@ func (r *oauthAccessTokenMappingResource) Create(ctx context.Context, req resour
 
 	for errorVal, hasErr := range hasObjectErrMap {
 		if hasErr {
-			resp.Diagnostics.AddError("Failed to create item for request object:", errorVal.Error())
+			resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to create item for request object: "+errorVal.Error())
 		}
 	}
 
@@ -324,7 +324,7 @@ func (r *oauthAccessTokenMappingResource) Update(ctx context.Context, req resour
 
 	for errorVal, hasErr := range hasObjectErrMap {
 		if hasErr {
-			resp.Diagnostics.AddError("Failed to create item for request object:", errorVal.Error())
+			resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to create item for request object: "+errorVal.Error())
 		}
 	}
 

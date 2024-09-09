@@ -483,7 +483,7 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 	pluginDescRefResLink.Id = pluginDescRefId
 	pluginDescRefErr := json.Unmarshal([]byte(internaljson.FromValue(plan.PluginDescriptorRef, false)), pluginDescRefResLink)
 	if pluginDescRefErr != nil {
-		resp.Diagnostics.AddError("Failed to build plugin descriptor ref request object:", pluginDescRefErr.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin descriptor ref request object: "+pluginDescRefErr.Error())
 		return
 	}
 
@@ -491,7 +491,7 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 	configuration := client.NewPluginConfigurationWithDefaults()
 	configErr := json.Unmarshal([]byte(internaljson.FromValue(plan.Configuration, true)), configuration)
 	if configErr != nil {
-		resp.Diagnostics.AddError("Failed to build plugin configuration request object:", configErr.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin configuration request object: "+configErr.Error())
 		return
 	}
 
@@ -570,7 +570,7 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 	pluginDescRefResLink.Id = pluginDescRefId
 	pluginDescRefErr := json.Unmarshal([]byte(internaljson.FromValue(state.PluginDescriptorRef, false)), pluginDescRefResLink)
 	if pluginDescRefErr != nil {
-		resp.Diagnostics.AddError("Failed to build plugin descriptor ref request object:", pluginDescRefErr.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin descriptor ref request object: "+pluginDescRefErr.Error())
 		return
 	}
 
@@ -578,7 +578,7 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 	configuration := client.NewPluginConfiguration()
 	configErr := json.Unmarshal([]byte(internaljson.FromValue(state.Configuration, true)), configuration)
 	if configErr != nil {
-		resp.Diagnostics.AddError("Failed to build plugin configuration request object:", configErr.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build plugin configuration request object: "+configErr.Error())
 		return
 	}
 
