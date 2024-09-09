@@ -133,6 +133,7 @@ func ReportHttpErrorCustomId(ctx context.Context, diagnostics *diag.Diagnostics,
 			if internalError == nil {
 				for _, validationError := range pfError.ValidationErrors {
 					var errorDetail strings.Builder
+					errorDetail.WriteString("Message: ")
 					errorDetail.WriteString(validationError.Message)
 					errorDetail.WriteString("\nHTTP status: " + httpResp.Status)
 					if validationError.FieldPath != "" {
