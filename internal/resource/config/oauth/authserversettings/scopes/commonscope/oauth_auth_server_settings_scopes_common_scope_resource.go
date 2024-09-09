@@ -71,8 +71,11 @@ func (r *oauthAuthServerSettingsScopesCommonScopeResource) ModifyPlan(ctx contex
 	if plan.Dynamic.ValueBool() && (plan.Name.ValueString() != "" || !plan.Name.IsNull()) {
 		{
 			containsAsteriskPrefix := strings.Index(plan.Name.ValueString(), "*")
-			if containsAsteriskPrefix != 0 {
-				resp.Diagnostics.AddError("Dynamic property is set to true with Name property incorrectly specified!", "The Name property must be prefixed with an \"*\". For example, \"*example\"")
+			if containsAsteriskPrefix == -1 {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("name"),
+					providererror.InvalidAttributeConfiguration,
+					"The name must include a \"*\" when set to dynamic")
 			}
 		}
 	}

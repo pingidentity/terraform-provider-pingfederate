@@ -71,8 +71,11 @@ func (r *oauthAuthServerSettingsScopesExclusiveScopeResource) ValidateConfig(ctx
 	if model.Dynamic.ValueBool() && (model.Name.ValueString() != "" || !model.Name.IsNull()) {
 		{
 			containsAsteriskPrefix := strings.Index(model.Name.ValueString(), "*")
-			if containsAsteriskPrefix != 0 {
-				resp.Diagnostics.AddError("Dynamic property is set to true with Name property incorrectly specified!", "The Name property must be prefixed with an \"*\". For example, \"*example\"")
+			if containsAsteriskPrefix == -1 {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("name"),
+					providererror.InvalidAttributeConfiguration,
+					"The name must include a \"*\" when set to dynamic")
 			}
 		}
 	}
