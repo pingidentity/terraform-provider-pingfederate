@@ -1077,52 +1077,52 @@ func (r *localIdentityProfileResource) ValidateConfig(ctx context.Context, req r
 			case "CHECKBOX":
 				// check to make sure options isn't set
 				if hasOptions {
-					resp.Diagnostics.AddAttributeError(fieldTypePath, "Invalid attribute combination",
+					resp.Diagnostics.AddAttributeError(fieldTypePath, providererror.InvalidAttributeConfiguration,
 						"\"options\" is not applicable for the \"CHECKBOX\" field type.")
 				}
 			case "CHECKBOX_GROUP":
 				// check to make sure default_value isn't set
 				if hasDefault {
-					resp.Diagnostics.AddAttributeError(fieldTypePath, "Invalid attribute combination",
+					resp.Diagnostics.AddAttributeError(fieldTypePath, providererror.InvalidAttributeConfiguration,
 						"\"default_value\" is not applicable for the \"CHECKBOX_GROUP\" field type.")
 				}
 			case "DATE":
 				if hasOptions {
-					resp.Diagnostics.AddAttributeError(fieldTypePath, "Invalid attribute combination",
+					resp.Diagnostics.AddAttributeError(fieldTypePath, providererror.InvalidAttributeConfiguration,
 						"\"options\" is not applicable for the \"DATE\" field type.")
 				}
 			// DROP_DOWN has all options, leaving this here in case of future use
 			// case "DROP_DOWN":
 			case "EMAIL":
 				if hasDefault {
-					resp.Diagnostics.AddAttributeError(fieldTypePath, "Invalid attribute combination",
+					resp.Diagnostics.AddAttributeError(fieldTypePath, providererror.InvalidAttributeConfiguration,
 						"\"default_value\" is not applicable for the \"EMAIL\" field type.")
 				}
 				if hasOptions {
-					resp.Diagnostics.AddAttributeError(fieldTypePath, "Invalid attribute combination",
+					resp.Diagnostics.AddAttributeError(fieldTypePath, providererror.InvalidAttributeConfiguration,
 						"\"options\" is not applicable for the \"EMAIL\" field type.")
 				}
 			case "HIDDEN":
 				if hasDefault {
-					resp.Diagnostics.AddAttributeError(fieldTypePath, "Invalid attribute combination",
+					resp.Diagnostics.AddAttributeError(fieldTypePath, providererror.InvalidAttributeConfiguration,
 						"\"default_value\" is not applicable for the \"HIDDEN\" field type.")
 				}
 				if hasOptions {
-					resp.Diagnostics.AddAttributeError(fieldTypePath, "Invalid attribute combination",
+					resp.Diagnostics.AddAttributeError(fieldTypePath, providererror.InvalidAttributeConfiguration,
 						"\"options\" is not applicable for the \"HIDDEN\" field type.")
 				}
 			case "PHONE":
 				if hasDefault {
-					resp.Diagnostics.AddAttributeError(fieldTypePath, "Invalid attribute combination",
+					resp.Diagnostics.AddAttributeError(fieldTypePath, providererror.InvalidAttributeConfiguration,
 						"\"default_value\" is not applicable for the \"PHONE\" field type.")
 				}
 				if hasOptions {
-					resp.Diagnostics.AddAttributeError(fieldTypePath, "Invalid attribute combination",
+					resp.Diagnostics.AddAttributeError(fieldTypePath, providererror.InvalidAttributeConfiguration,
 						"\"options\" is not applicable for the \"PHONE\" field type.")
 				}
 			case "TEXT":
 				if hasOptions {
-					resp.Diagnostics.AddAttributeError(fieldTypePath, "Invalid attribute combination",
+					resp.Diagnostics.AddAttributeError(fieldTypePath, providererror.InvalidAttributeConfiguration,
 						"\"options\" is not applicable for the \"TEXT\" field type.")
 				}
 			}
