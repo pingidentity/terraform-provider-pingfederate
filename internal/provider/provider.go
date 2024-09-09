@@ -93,6 +93,7 @@ import (
 	sptargeturlmappings "github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/sp/targeturlmappings"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/tokenprocessortotokengeneratormapping"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config/virtualhostnames"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -598,7 +599,7 @@ func (p *pingfederateProvider) Configure(ctx context.Context, req provider.Confi
 			}
 			tflog.Info(ctx, "Adding CA cert from file: "+pemFilename)
 			if !caCertPool.AppendCertsFromPEM(caCert) {
-				resp.Diagnostics.AddWarning("Failed to parse certificate", "Failed to parse CA PEM certificate from file: "+pemFilename)
+				resp.Diagnostics.AddWarning(providererror.InvalidProviderConfiguration, "Failed to parse CA PEM certificate from file: "+pemFilename)
 			}
 		}
 	}
