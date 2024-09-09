@@ -8,10 +8,12 @@ import (
 
 const (
 	// Common provider error summaries
-	InvalidProviderConfiguration  = "Invalid provider configuration"
-	InvalidAttributeConfiguration = "Invalid attribute configuration"
-	InvalidResourceConfiguration  = "Invalid resource configuration"
-	InternalProviderError         = "Internal provider error"
+	InvalidProviderConfiguration   = "Invalid provider configuration"
+	InvalidAttributeConfiguration  = "Invalid attribute configuration"
+	InvalidResourceConfiguration   = "Invalid resource configuration"
+	InvalidProductVersionAttribute = "Invalid product_version for attribute"
+	InvalidProductVersionResource  = "Invalid product_version for resource"
+	InternalProviderError          = "Internal provider error"
 )
 
 func WarnConfigurationCannotBeReset(resourceName string, diags *diag.Diagnostics) {

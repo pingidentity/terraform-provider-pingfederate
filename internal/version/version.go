@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 )
 
 type SupportedVersion string
@@ -177,8 +179,11 @@ func AddUnsupportedAttributeError(attr string, actualVersion, requiredVersion Su
 		return
 	}
 
-	diags.AddError(fmt.Sprintf("Attribute '%s' not supported by PingFederate version %s", attr, string(actualVersion)),
-		fmt.Sprintf("PingFederate version %s or later is required for this attribute. PingFederate version %s was provided via the 'product_version' field in your provider configuration or the 'PINGFEDERATE_PROVIDER_PRODUCT_VERSION' environment variable.", string(requiredVersion), string(actualVersion)))
+	diags.AddAttributeError(
+		path.Root(attr),
+		providererror.InvalidProductVersionAttribute,
+		fmt.Sprintf("PingFederate version %s or later is required for attribute %s. "+
+			"PingFederate version %s was provided via the 'product_version' field in your provider configuration or the 'PINGFEDERATE_PROVIDER_PRODUCT_VERSION' environment variable.", string(requiredVersion), attr, string(actualVersion)))
 }
 
 func AddUnsupportedResourceError(resource string, actualVersion, requiredVersion SupportedVersion, diags *diag.Diagnostics) {
@@ -186,6 +191,8 @@ func AddUnsupportedResourceError(resource string, actualVersion, requiredVersion
 		return
 	}
 
-	diags.AddError(fmt.Sprintf("Resource '%s' not supported by PingFederate version %s", resource, string(actualVersion)),
-		fmt.Sprintf("PingFederate version %s or later is required for this resource. PingFederate version %s was provided via the 'product_version' field in your provider configuration or the 'PINGFEDERATE_PROVIDER_PRODUCT_VERSION' environment variable.", string(requiredVersion), string(actualVersion)))
+	diags.AddError(
+		providererror.InvalidProductVersionResource,
+		fmt.Sprintf("PingFederate version %s or later is required for resource %s. "+
+			"PingFederate version %s was provided via the 'product_version' field in your provider configuration or the 'PINGFEDERATE_PROVIDER_PRODUCT_VERSION' environment variable.", string(requiredVersion), resource, string(actualVersion)))
 }
