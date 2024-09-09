@@ -50,6 +50,8 @@ var (
 	oidcPolicyDefaultObj, _     = types.ObjectValue(oidcPolicyAttrType, oidcPolicyDefaultAttrValue)
 	secondarySecretsEmptySet, _ = types.SetValue(types.ObjectType{AttrTypes: secondarySecretsAttrType}, []attr.Value{})
 	clientAuthDefaultObj, _     = types.ObjectValue(clientAuthAttrType, clientAuthDefaultAttrValue)
+
+	customId = "client_id"
 )
 
 // OauthClientResource is a helper function to simplify the provider implementation.
@@ -1491,7 +1493,7 @@ func (r *oauthClientResource) Create(ctx context.Context, req resource.CreateReq
 	apiCreateOauthClient = apiCreateOauthClient.Body(*createOauthClient)
 	oauthClientResponse, httpResp, err := r.apiClient.OauthClientsAPI.CreateOauthClientExecute(apiCreateOauthClient)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Client", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Client", err, httpResp, &customId)
 		return
 	}
 
@@ -1522,7 +1524,7 @@ func (r *oauthClientResource) Read(ctx context.Context, req resource.ReadRequest
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OAuth Client", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the  OAuth Client", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting the  OAuth Client", err, httpResp, &customId)
 		}
 		return
 	}
@@ -1557,7 +1559,7 @@ func (r *oauthClientResource) Update(ctx context.Context, req resource.UpdateReq
 	updateOauthClient = updateOauthClient.Body(*createUpdateRequest)
 	updateOauthClientResponse, httpResp, err := r.apiClient.OauthClientsAPI.UpdateOauthClientExecute(updateOauthClient)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the OAuth Client", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the OAuth Client", err, httpResp, &customId)
 		return
 	}
 
@@ -1581,7 +1583,7 @@ func (r *oauthClientResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 	httpResp, err := r.apiClient.OauthClientsAPI.DeleteOauthClient(config.AuthContext(ctx, r.providerConfig), state.ClientId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Client", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Client", err, httpResp, &customId)
 	}
 }
 

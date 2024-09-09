@@ -29,6 +29,8 @@ import (
 var (
 	_ resource.Resource              = &keypairsSigningKeyResource{}
 	_ resource.ResourceWithConfigure = &keypairsSigningKeyResource{}
+
+	customId = "key_id"
 )
 
 // KeypairsSigningKeyResource is a helper function to simplify the provider implementation.
@@ -604,7 +606,7 @@ func (r *keypairsSigningKeyResource) Create(ctx context.Context, req resource.Cr
 		apiCreateRequest = apiCreateRequest.Body(*clientData)
 		responseData, httpResp, err = r.apiClient.KeyPairsSigningAPI.CreateSigningKeyPairExecute(apiCreateRequest)
 		if err != nil {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while generating the signing key", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while generating the signing key", err, httpResp, &customId)
 			return
 		}
 	} else {
@@ -614,7 +616,7 @@ func (r *keypairsSigningKeyResource) Create(ctx context.Context, req resource.Cr
 		apiCreateRequest = apiCreateRequest.Body(*clientData)
 		responseData, httpResp, err = r.apiClient.KeyPairsSigningAPI.ImportSigningKeyPairExecute(apiCreateRequest)
 		if err != nil {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while importing the signing key", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while importing the signing key", err, httpResp, &customId)
 			return
 		}
 	}
@@ -643,7 +645,7 @@ func (r *keypairsSigningKeyResource) Read(ctx context.Context, req resource.Read
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Signing Key Pair", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the key pair", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the key pair", err, httpResp, &customId)
 		}
 		return
 	}
@@ -674,6 +676,6 @@ func (r *keypairsSigningKeyResource) Delete(ctx context.Context, req resource.De
 	// Delete API call logic
 	httpResp, err := r.apiClient.KeyPairsSigningAPI.DeleteSigningKeyPair(config.AuthContext(ctx, r.providerConfig), data.KeyId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the signing key", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the signing key", err, httpResp, &customId)
 	}
 }

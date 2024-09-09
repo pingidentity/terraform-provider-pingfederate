@@ -28,6 +28,8 @@ var (
 	_ resource.Resource                = &metadataUrlResource{}
 	_ resource.ResourceWithConfigure   = &metadataUrlResource{}
 	_ resource.ResourceWithImportState = &metadataUrlResource{}
+
+	customId = "url_id"
 )
 
 func MetadataUrlResource() resource.Resource {
@@ -319,7 +321,7 @@ func (r *metadataUrlResource) Create(ctx context.Context, req resource.CreateReq
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.MetadataUrlsAPI.AddMetadataUrlExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the metadataUrl", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the metadataUrl", err, httpResp, &customId)
 		return
 	}
 
@@ -347,7 +349,7 @@ func (r *metadataUrlResource) Read(ctx context.Context, req resource.ReadRequest
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Metadata URL", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the metadataUrl", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the metadataUrl", err, httpResp, &customId)
 		}
 		return
 	}
@@ -376,7 +378,7 @@ func (r *metadataUrlResource) Update(ctx context.Context, req resource.UpdateReq
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.MetadataUrlsAPI.UpdateMetadataUrlExecute(apiUpdateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the metadataUrl", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the metadataUrl", err, httpResp, &customId)
 		return
 	}
 
@@ -400,7 +402,7 @@ func (r *metadataUrlResource) Delete(ctx context.Context, req resource.DeleteReq
 	// Delete API call logic
 	httpResp, err := r.apiClient.MetadataUrlsAPI.DeleteMetadataUrl(config.AuthContext(ctx, r.providerConfig), data.UrlId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the metadataUrl", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the metadataUrl", err, httpResp, &customId)
 	}
 }
 

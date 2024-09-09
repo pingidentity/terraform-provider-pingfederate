@@ -398,8 +398,15 @@ func (r *authenticationPoliciesResource) Update(ctx context.Context, req resourc
 	resp.Diagnostics.Append(diags...)
 }
 
-// This resource is a put operation, so we do not need to implement the Delete method
 func (r *authenticationPoliciesResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// This delete will remove all authentication policies.
+	authPoliciesClientData := client.NewAuthenticationPolicy()
+	authPoliciesApiUpdateRequest := r.apiClient.AuthenticationPoliciesAPI.UpdateDefaultAuthenticationPolicy(config.AuthContext(ctx, r.providerConfig))
+	authPoliciesApiUpdateRequest = authPoliciesApiUpdateRequest.Body(*authPoliciesClientData)
+	_, httpResp, err := r.apiClient.AuthenticationPoliciesAPI.UpdateDefaultAuthenticationPolicyExecute(authPoliciesApiUpdateRequest)
+	if err != nil {
+		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while resetting the Authentication Policies", err, httpResp)
+	}
 }
 
 func (r *authenticationPoliciesResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

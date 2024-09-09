@@ -23,6 +23,8 @@ var (
 	_ resource.Resource                = &oauthIssuerResource{}
 	_ resource.ResourceWithConfigure   = &oauthIssuerResource{}
 	_ resource.ResourceWithImportState = &oauthIssuerResource{}
+
+	customId = "issuer_id"
 )
 
 // OauthIssuerResource is a helper function to simplify the provider implementation.
@@ -141,7 +143,7 @@ func (r *oauthIssuerResource) Create(ctx context.Context, req resource.CreateReq
 	oauthIssuerResponse, httpResp, err := r.apiClient.OauthIssuersAPI.AddOauthIssuerExecute(apiCreateOauthIssuer)
 
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating an OAuth Issuer", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating an OAuth Issuer", err, httpResp, &customId)
 		return
 	}
 
@@ -167,7 +169,7 @@ func (r *oauthIssuerResource) Read(ctx context.Context, req resource.ReadRequest
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OAuth Issuer", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Issuer", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting an OAuth Issuer", err, httpResp, &customId)
 		}
 		return
 	}
@@ -204,7 +206,7 @@ func (r *oauthIssuerResource) Update(ctx context.Context, req resource.UpdateReq
 	updateOauthIssuer = updateOauthIssuer.Body(*createUpdateRequest)
 	updateOauthIssuerResponse, httpResp, err := r.apiClient.OauthIssuersAPI.UpdateOauthIssuerExecute(updateOauthIssuer)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an OAuth Issuer", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating an OAuth Issuer", err, httpResp, &customId)
 		return
 	}
 
@@ -227,7 +229,7 @@ func (r *oauthIssuerResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 	httpResp, err := r.apiClient.OauthIssuersAPI.DeleteOauthIssuer(config.AuthContext(ctx, r.providerConfig), state.IssuerId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Issuer", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth Issuer", err, httpResp, &customId)
 	}
 }
 

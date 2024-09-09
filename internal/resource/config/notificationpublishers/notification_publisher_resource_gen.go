@@ -28,6 +28,8 @@ var (
 	_ resource.Resource                = &notificationPublisherResource{}
 	_ resource.ResourceWithConfigure   = &notificationPublisherResource{}
 	_ resource.ResourceWithImportState = &notificationPublisherResource{}
+
+	customId = "publisher_id"
 )
 
 func NotificationPublisherResource() resource.Resource {
@@ -220,7 +222,7 @@ func (r *notificationPublisherResource) Create(ctx context.Context, req resource
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.NotificationPublishersAPI.CreateNotificationPublisherExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the notificationPublisher", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the notificationPublisher", err, httpResp, &customId)
 		return
 	}
 
@@ -251,7 +253,7 @@ func (r *notificationPublisherResource) Read(ctx context.Context, req resource.R
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Notification Publisher", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the notificationPublisher", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the notificationPublisher", err, httpResp, &customId)
 		}
 		return
 	}
@@ -280,7 +282,7 @@ func (r *notificationPublisherResource) Update(ctx context.Context, req resource
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.NotificationPublishersAPI.UpdateNotificationPublisherExecute(apiUpdateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the notificationPublisher", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the notificationPublisher", err, httpResp, &customId)
 		return
 	}
 
@@ -304,7 +306,7 @@ func (r *notificationPublisherResource) Delete(ctx context.Context, req resource
 	// Delete API call logic
 	httpResp, err := r.apiClient.NotificationPublishersAPI.DeleteNotificationPublisher(config.AuthContext(ctx, r.providerConfig), data.PublisherId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the notificationPublisher", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the notificationPublisher", err, httpResp, &customId)
 	}
 }
 

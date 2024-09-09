@@ -31,6 +31,8 @@ var (
 	_ resource.Resource                = &passwordCredentialValidatorResource{}
 	_ resource.ResourceWithConfigure   = &passwordCredentialValidatorResource{}
 	_ resource.ResourceWithImportState = &passwordCredentialValidatorResource{}
+
+	customId = "validator_id"
 )
 
 // PasswordCredentialValidatorResource is a helper function to simplify the provider implementation.
@@ -353,7 +355,7 @@ func (r *passwordCredentialValidatorResource) Create(ctx context.Context, req re
 	apiCreatePasswordCredentialValidators = apiCreatePasswordCredentialValidators.Body(*createPasswordCredentialValidators)
 	passwordCredentialValidatorsResponse, httpResp, err := r.apiClient.PasswordCredentialValidatorsAPI.CreatePasswordCredentialValidatorExecute(apiCreatePasswordCredentialValidators)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating a Password Credential Validator", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating a Password Credential Validator", err, httpResp, &customId)
 		return
 	}
 
@@ -383,7 +385,7 @@ func (r *passwordCredentialValidatorResource) Read(ctx context.Context, req reso
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Password Credential Validator", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting a Password Credential Validator", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting a Password Credential Validator", err, httpResp, &customId)
 		}
 		return
 	}
@@ -432,7 +434,7 @@ func (r *passwordCredentialValidatorResource) Update(ctx context.Context, req re
 	updatePasswordCredentialValidators = updatePasswordCredentialValidators.Body(*createUpdateRequest)
 	updatePasswordCredentialValidatorsResponse, httpResp, err := r.apiClient.PasswordCredentialValidatorsAPI.UpdatePasswordCredentialValidatorExecute(updatePasswordCredentialValidators)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating a Password Credential Validator", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating a Password Credential Validator", err, httpResp, &customId)
 		return
 	}
 
@@ -455,7 +457,7 @@ func (r *passwordCredentialValidatorResource) Delete(ctx context.Context, req re
 	}
 	httpResp, err := r.apiClient.PasswordCredentialValidatorsAPI.DeletePasswordCredentialValidator(config.AuthContext(ctx, r.providerConfig), state.ValidatorId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a Password Credential Validator", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting a Password Credential Validator", err, httpResp, &customId)
 	}
 }
 

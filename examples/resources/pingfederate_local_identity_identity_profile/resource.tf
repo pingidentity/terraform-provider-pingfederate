@@ -92,7 +92,7 @@ resource "pingfederate_local_identity_identity_profile" "identityProfileExample"
     update_attributes = false
     update_interval   = 0
   }
-  registration_enabled = false
+  registration_enabled = true
   registration_config = {
 
     template_name                           = "local.identity.registration.html"

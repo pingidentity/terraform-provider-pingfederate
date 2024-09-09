@@ -83,6 +83,8 @@ var (
 		"check_session_revocation_status": types.BoolValue(false),
 		"update_authn_session_activity":   types.BoolValue(false),
 	})
+
+	customId = "manager_id"
 )
 
 // OauthAccessTokenManagerResource is a helper function to simplify the provider implementation.
@@ -506,7 +508,7 @@ func (r *oauthAccessTokenManagerResource) Create(ctx context.Context, req resour
 	apiCreateOauthAccessTokenManager = apiCreateOauthAccessTokenManager.Body(*createOauthAccessTokenManager)
 	oauthAccessTokenManagerResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.CreateTokenManagerExecute(apiCreateOauthAccessTokenManager)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Access Token Manager", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the OAuth Access Token Manager", err, httpResp, &customId)
 		return
 	}
 
@@ -538,7 +540,7 @@ func (r *oauthAccessTokenManagerResource) Read(ctx context.Context, req resource
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OAuth Access Token Manager", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Manager", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting the OAuth Access Token Manager", err, httpResp, &customId)
 		}
 		return
 	}
@@ -594,7 +596,7 @@ func (r *oauthAccessTokenManagerResource) Update(ctx context.Context, req resour
 	updateOauthAccessTokenManager = updateOauthAccessTokenManager.Body(*createUpdateRequest)
 	updateOauthAccessTokenManagerResponse, httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.UpdateTokenManagerExecute(updateOauthAccessTokenManager)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an OAuth access token manager", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating an OAuth access token manager", err, httpResp, &customId)
 		return
 	}
 
@@ -619,7 +621,7 @@ func (r *oauthAccessTokenManagerResource) Delete(ctx context.Context, req resour
 	}
 	httpResp, err := r.apiClient.OauthAccessTokenManagersAPI.DeleteTokenManager(config.AuthContext(ctx, r.providerConfig), state.ManagerId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth access token manager", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting an OAuth access token manager", err, httpResp, &customId)
 	}
 }
 

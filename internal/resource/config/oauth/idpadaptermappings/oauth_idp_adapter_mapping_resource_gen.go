@@ -27,6 +27,8 @@ var (
 	_ resource.Resource                = &oauthIdpAdapterMappingResource{}
 	_ resource.ResourceWithConfigure   = &oauthIdpAdapterMappingResource{}
 	_ resource.ResourceWithImportState = &oauthIdpAdapterMappingResource{}
+
+	customId = "mapping_id"
 )
 
 func OauthIdpAdapterMappingResource() resource.Resource {
@@ -180,7 +182,7 @@ func (r *oauthIdpAdapterMappingResource) Create(ctx context.Context, req resourc
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.OauthIdpAdapterMappingsAPI.CreateIdpAdapterMappingExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the oauthIdpAdapterMapping", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the oauthIdpAdapterMapping", err, httpResp, &customId)
 		return
 	}
 
@@ -208,7 +210,7 @@ func (r *oauthIdpAdapterMappingResource) Read(ctx context.Context, req resource.
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "OAuth IdP Adapter Mapping", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the oauthIdpAdapterMapping", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the oauthIdpAdapterMapping", err, httpResp, &customId)
 		}
 		return
 	}
@@ -240,7 +242,7 @@ func (r *oauthIdpAdapterMappingResource) Update(ctx context.Context, req resourc
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.OauthIdpAdapterMappingsAPI.UpdateIdpAdapterMappingExecute(apiUpdateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the oauthIdpAdapterMapping", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the oauthIdpAdapterMapping", err, httpResp, &customId)
 		return
 	}
 
@@ -264,7 +266,7 @@ func (r *oauthIdpAdapterMappingResource) Delete(ctx context.Context, req resourc
 	// Delete API call logic
 	httpResp, err := r.apiClient.OauthIdpAdapterMappingsAPI.DeleteIdpAdapterMapping(config.AuthContext(ctx, r.providerConfig), data.MappingId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the oauthIdpAdapterMapping", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the oauthIdpAdapterMapping", err, httpResp, &customId)
 	}
 }
 

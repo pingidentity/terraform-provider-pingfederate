@@ -46,6 +46,8 @@ var (
 	_ resource.Resource                = &idpSpConnectionResource{}
 	_ resource.ResourceWithConfigure   = &idpSpConnectionResource{}
 	_ resource.ResourceWithImportState = &idpSpConnectionResource{}
+
+	customId = "connection_id"
 )
 
 var (
@@ -3800,7 +3802,7 @@ func (r *idpSpConnectionResource) Create(ctx context.Context, req resource.Creat
 	apiCreateIdpSpconnection = apiCreateIdpSpconnection.Body(*createIdpSpconnection)
 	idpSpconnectionResponse, httpResp, err := r.apiClient.IdpSpConnectionsAPI.CreateSpConnectionExecute(apiCreateIdpSpconnection)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the IdP SP Connection", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the IdP SP Connection", err, httpResp, &customId)
 		return
 	}
 
@@ -3830,7 +3832,7 @@ func (r *idpSpConnectionResource) Read(ctx context.Context, req resource.ReadReq
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "IdP SP Connection", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the IdP SP Connection", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting the IdP SP Connection", err, httpResp, &customId)
 		}
 		return
 	}
@@ -3864,7 +3866,7 @@ func (r *idpSpConnectionResource) Update(ctx context.Context, req resource.Updat
 	updateIdpSpconnection = updateIdpSpconnection.Body(*createUpdateRequest)
 	updateIdpSpconnectionResponse, httpResp, err := r.apiClient.IdpSpConnectionsAPI.UpdateSpConnectionExecute(updateIdpSpconnection)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the IdP SP Connection", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the IdP SP Connection", err, httpResp, &customId)
 		return
 	}
 
@@ -3887,7 +3889,7 @@ func (r *idpSpConnectionResource) Delete(ctx context.Context, req resource.Delet
 	}
 	httpResp, err := r.apiClient.IdpSpConnectionsAPI.DeleteSpConnection(config.AuthContext(ctx, r.providerConfig), state.ConnectionId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the IdP SP Connection", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the IdP SP Connection", err, httpResp, &customId)
 	}
 }
 

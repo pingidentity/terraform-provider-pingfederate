@@ -37,6 +37,8 @@ var (
 				"name": types.StringType,
 			}}},
 	}
+
+	customId = "selector_id"
 )
 
 // AuthenticationSelectorsResource is a helper function to simplify the provider implementation.
@@ -231,7 +233,7 @@ func (r *authenticationSelectorResource) Create(ctx context.Context, req resourc
 	apiCreateAuthenticationSelectors = apiCreateAuthenticationSelectors.Body(*createAuthenticationSelectors)
 	authenticationSelectorResponse, httpResp, err := r.apiClient.AuthenticationSelectorsAPI.CreateAuthenticationSelectorExecute(apiCreateAuthenticationSelectors)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the Authentication Selector", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the Authentication Selector", err, httpResp, &customId)
 		return
 	}
 
@@ -262,7 +264,7 @@ func (r *authenticationSelectorResource) Read(ctx context.Context, req resource.
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Authentication Selector", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the Authentication Selector", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting the Authentication Selector", err, httpResp, &customId)
 		}
 		return
 	}
@@ -319,7 +321,7 @@ func (r *authenticationSelectorResource) Update(ctx context.Context, req resourc
 	updateAuthenticationSelectors = updateAuthenticationSelectors.Body(*createUpdateRequest)
 	updateAuthenticationSelectorsResponse, httpResp, err := r.apiClient.AuthenticationSelectorsAPI.UpdateAuthenticationSelectorExecute(updateAuthenticationSelectors)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating an Authentication Selector", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating an Authentication Selector", err, httpResp, &customId)
 		return
 	}
 
@@ -343,7 +345,7 @@ func (r *authenticationSelectorResource) Delete(ctx context.Context, req resourc
 	}
 	httpResp, err := r.apiClient.AuthenticationSelectorsAPI.DeleteAuthenticationSelector(config.AuthContext(ctx, r.providerConfig), state.SelectorId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting an Authentication Selector", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting an Authentication Selector", err, httpResp, &customId)
 	}
 }
 
