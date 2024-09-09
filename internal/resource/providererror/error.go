@@ -7,7 +7,9 @@ import (
 )
 
 const (
-	InvalidProviderConfiguration = "Invalid provider configuration"
+	// Common provider error summaries
+	InvalidProviderConfiguration  = "Invalid provider configuration"
+	InvalidAttributeConfiguration = "Invalid attribute configuration"
 )
 
 func WarnConfigurationCannotBeReset(resourceName string, diags *diag.Diagnostics) {
