@@ -14,6 +14,8 @@ const (
 	InvalidProductVersionAttribute = "Invalid product_version for attribute"
 	InvalidProductVersionResource  = "Invalid product_version for resource"
 	InternalProviderError          = "Internal provider error"
+	PingFederateValidationError    = "PingFederate validation error"
+	PingFederateAPIError           = "PingFederate API error"
 )
 
 func WarnConfigurationCannotBeReset(resourceName string, diags *diag.Diagnostics) {
