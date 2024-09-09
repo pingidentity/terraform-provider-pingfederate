@@ -153,23 +153,27 @@ func (r *kerberosRealmsResource) Configure(_ context.Context, req resource.Confi
 
 func (r *kerberosRealmsResource) validatePlan(ctx context.Context, plan *kerberosRealmsResourceModel) diag.Diagnostics {
 	var diags diag.Diagnostics
-	errSummary := "Invalid property combination:"
 	errorMsg := "is only applicable when connection_type is set to \"DIRECT\"."
 	if plan.ConnectionType.ValueString() != "DIRECT" {
 		if internaltypes.IsDefined(plan.KerberosUsername) {
-			diags.AddError(errSummary, "kerberos_username "+errorMsg)
+			diags.AddAttributeError(path.Root("kerberos_username"),
+				providererror.InvalidAttributeConfiguration, "kerberos_username "+errorMsg)
 		}
 		if internaltypes.IsDefined(plan.KerberosPassword) {
-			diags.AddError(errSummary, "kerberos_password "+errorMsg)
+			diags.AddAttributeError(path.Root("kerberos_password"),
+				providererror.InvalidAttributeConfiguration, "kerberos_password "+errorMsg)
 		}
 		if internaltypes.IsDefined(plan.RetainPreviousKeysOnPasswordChange) {
-			diags.AddError(errSummary, "retain_previous_keys_on_password_change "+errorMsg)
+			diags.AddAttributeError(path.Root("retain_previous_keys_on_password_change"),
+				providererror.InvalidAttributeConfiguration, "retain_previous_keys_on_password_change "+errorMsg)
 		}
 		if internaltypes.IsDefined(plan.SuppressDomainNameConcatenation) {
-			diags.AddError(errSummary, "suppress_domain_name_concatenation "+errorMsg)
+			diags.AddAttributeError(path.Root("suppress_domain_name_concatenation"),
+				providererror.InvalidAttributeConfiguration, "suppress_domain_name_concatenation "+errorMsg)
 		}
 		if internaltypes.IsDefined(plan.KeyDistributionCenters) {
-			diags.AddError(errSummary, "key_distribution_centers "+errorMsg)
+			diags.AddAttributeError(path.Root("key_distribution_centers"),
+				providererror.InvalidAttributeConfiguration, "key_distribution_centers "+errorMsg)
 		}
 	} else {
 		// This implies that connection_type is set to DIRECT, the default value

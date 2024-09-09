@@ -10,6 +10,7 @@ const (
 	// Common provider error summaries
 	InvalidProviderConfiguration  = "Invalid provider configuration"
 	InvalidAttributeConfiguration = "Invalid attribute configuration"
+	InvalidResourceConfiguration  = "Invalid resource configuration"
 	InternalProviderError         = "Internal provider error"
 )
 
