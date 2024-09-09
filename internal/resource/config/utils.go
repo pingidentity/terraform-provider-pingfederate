@@ -134,6 +134,7 @@ func ReportHttpErrorCustomId(ctx context.Context, diagnostics *diag.Diagnostics,
 				for _, validationError := range pfError.ValidationErrors {
 					var errorDetail strings.Builder
 					errorDetail.WriteString(validationError.Message)
+					errorDetail.WriteString("\nHTTP status: " + httpResp.Status)
 					if validationError.FieldPath != "" {
 						errorDetail.WriteString("\nPingFederate field path: ")
 						errorDetail.WriteString(validationError.FieldPath)
@@ -162,9 +163,9 @@ func ReportHttpErrorCustomId(ctx context.Context, diagnostics *diag.Diagnostics,
 								fieldPath = fieldPath.AtMapKey(step)
 							}
 						}
-						diagnostics.AddAttributeError(fieldPath, "PingFederate validation error "+httpResp.Status, errorDetail.String())
+						diagnostics.AddAttributeError(fieldPath, "PingFederate validation error", errorDetail.String())
 					} else {
-						diagnostics.AddError("PingFederate validation error "+httpResp.Status, errorDetail.String())
+						diagnostics.AddError("PingFederate validation error", errorDetail.String())
 					}
 				}
 			} else {
