@@ -587,7 +587,10 @@ func (r *oauthServerSettingsResource) ValidateConfig(ctx context.Context, req re
 			scopeEntryIsDynamic := scopeElemObjectAttrs.Attributes()["dynamic"].(basetypes.BoolValue).ValueBool()
 			if scopeEntryIsDynamic {
 				if strings.Count(scopeEntryName, "*") != 1 {
-					resp.Diagnostics.AddError("Scope name conflict!", fmt.Sprintf("Scope name \"%s\" must be include a single \"*\" when dynamic is set to true.", scopeEntryName))
+					resp.Diagnostics.AddAttributeError(
+						path.Root("scopes"),
+						providererror.InvalidAttributeConfiguration,
+						fmt.Sprintf("Scope name \"%s\" must be include a single \"*\" when dynamic is set to true.", scopeEntryName))
 				}
 			}
 		}
@@ -604,7 +607,10 @@ func (r *oauthServerSettingsResource) ValidateConfig(ctx context.Context, req re
 			eScopeEntryIsDynamic := esElemObjectAttrs.Attributes()["dynamic"].(basetypes.BoolValue).ValueBool()
 			if eScopeEntryIsDynamic {
 				if strings.Index(eScopeEntryName, "*") != 0 {
-					resp.Diagnostics.AddError("Exclusive scope name conflict!", fmt.Sprintf("Scope name \"%s\" must be prefixed with a \"*\" when dynamic is set to true.", eScopeEntryName))
+					resp.Diagnostics.AddAttributeError(
+						path.Root("exclusive_scopes"),
+						providererror.InvalidAttributeConfiguration,
+						fmt.Sprintf("Scope name \"%s\" must be prefixed with a \"*\" when dynamic is set to true.", eScopeEntryName))
 				}
 			}
 		}
@@ -613,12 +619,17 @@ func (r *oauthServerSettingsResource) ValidateConfig(ctx context.Context, req re
 	// Test if values in sets match
 	matchVal := internaltypes.MatchStringInSets(scopeNames, eScopeNames)
 	if matchVal != nil {
-		resp.Diagnostics.AddError("Scope name conflict!", fmt.Sprintf("The scope name \"%s\" is already defined in another scope list", *matchVal))
+		resp.Diagnostics.AddError(
+			providererror.InvalidAttributeConfiguration,
+			fmt.Sprintf("The scope name \"%s\" is defined in both scopes and exclusive_scopes", *matchVal))
 	}
 
 	// offline_access_require_consent_prompt can't be true if require_offline_access_scope_to_issue_refresh_tokens is false
 	if model.OfflineAccessRequireConsentPrompt.ValueBool() && !model.RequireOfflineAccessScopeToIssueRefreshTokens.ValueBool() {
-		resp.Diagnostics.AddError("require_offline_access_scope_to_issue_refresh_tokens must be set to true to set offline_access_require_consent_prompt to true", "")
+		resp.Diagnostics.AddAttributeError(
+			path.Root("require_offline_access_scope_to_issue_refresh_tokens"),
+			providererror.InvalidAttributeConfiguration,
+			"require_offline_access_scope_to_issue_refresh_tokens must be set to true to set offline_access_require_consent_prompt to true")
 	}
 }
 

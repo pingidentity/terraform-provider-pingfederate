@@ -171,13 +171,25 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 							}
 						}
 						if !usernameFound {
-							resp.Diagnostics.AddError("The \"Username\" field is required for the Simple Username Password Credential Validator", fmt.Sprintf("Missing from row index %d in Users table", tableRowIndex))
+							resp.Diagnostics.AddAttributeError(
+								path.Root("configuration").AtMapKey("tables"),
+								providererror.InvalidAttributeConfiguration,
+								"The \"Username\" field is required in the Users table for the Simple Username Password Credential Validator.\n"+
+									fmt.Sprintf("Missing from row index %d in Users table", tableRowIndex))
 						}
 						if !passwordFound {
-							resp.Diagnostics.AddError("The \"Password\" field is required for the Simple Username Password Credential Validator", fmt.Sprintf("Missing from row index %d in Users table", tableRowIndex))
+							resp.Diagnostics.AddAttributeError(
+								path.Root("configuration").AtMapKey("tables"),
+								providererror.InvalidAttributeConfiguration,
+								"The \"Password\" field is required in the Users table for the Simple Username Password Credential Validator.\n"+
+									fmt.Sprintf("Missing from row index %d in Users table", tableRowIndex))
 						}
 						if !confirmPasswordFound {
-							resp.Diagnostics.AddError("The \"Confirm Password\" field is required for the Simple Username Password Credential Validator", fmt.Sprintf("Missing from row index %d in Users table", tableRowIndex))
+							resp.Diagnostics.AddAttributeError(
+								path.Root("configuration").AtMapKey("tables"),
+								providererror.InvalidAttributeConfiguration,
+								"The \"Confirm Password\" field is required in the Users table for the Simple Username Password Credential Validator.\n"+
+									fmt.Sprintf("Missing from row index %d in Users table", tableRowIndex))
 						}
 					}
 				}
@@ -187,7 +199,10 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 
 	if pluginDescriptorRefId == "org.sourceid.saml20.domain.RadiusUsernamePasswordCredentialValidator" {
 		if !isRadiusServerTableFound {
-			resp.Diagnostics.AddError("At least one \"RADIUS Servers\" table is required for the RADIUS Username Password Credential Validator", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("configuration").AtMapKey("tables"),
+				providererror.InvalidAttributeConfiguration,
+				"At least one \"RADIUS Servers\" table is required for the RADIUS Username Password Credential Validator")
 		}
 	}
 
@@ -204,37 +219,58 @@ func (r *passwordCredentialValidatorResource) ValidateConfig(ctx context.Context
 		case "com.pingconnect.alexandria.pingfed.pcv.PingOnePasswordValidator":
 			_, hasClientId := fieldNameMap["Client Id"]
 			if !hasClientId {
-				resp.Diagnostics.AddError("The \"Client Id\" field is required for the PingOne for Enterprise Directory Password Credential Validator", "")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("configuration").AtMapKey("fields"),
+					providererror.InvalidAttributeConfiguration,
+					"The \"Client Id\" field is required for the PingOne for Enterprise Directory Password Credential Validator")
 			}
 			_, hasClientSecret := fieldNameMap["Client Secret"]
 			if !hasClientSecret {
-				resp.Diagnostics.AddError("The \"Client Secret\" field is required for the PingOne for Enterprise Directory Password Credential Validator", "")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("configuration").AtMapKey("fields"),
+					providererror.InvalidAttributeConfiguration,
+					"The \"Client Secret\" field is required for the PingOne for Enterprise Directory Password Credential Validator")
 			}
 
 		case "com.pingidentity.plugins.pcvs.p14c.PingOneForCustomersPCV":
 			_, hasPingOneForCustomersDs := fieldNameMap["PingOne For Customers Datastore"]
 			if !hasPingOneForCustomersDs {
-				resp.Diagnostics.AddError("The \"PingOne For Customers Datastore\" field is required for the PingOne Password Credential Validator", "")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("configuration").AtMapKey("fields"),
+					providererror.InvalidAttributeConfiguration,
+					"The \"PingOne For Customers Datastore\" field is required for the PingOne Password Credential Validator")
 			}
 
 		case "com.pingidentity.plugins.pcvs.pingid.PingIdPCV":
 			_, hasAuthenticationDuringErrors := fieldNameMap["Authentication During Errors"]
 			if !hasAuthenticationDuringErrors {
-				resp.Diagnostics.AddError("The \"Authentication During Errors\" field is required for the PingID Password Credential Validator", "")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("configuration").AtMapKey("fields"),
+					providererror.InvalidAttributeConfiguration,
+					"The \"Authentication During Errors\" field is required for the PingID Password Credential Validator")
 			}
 
 		case "org.sourceid.saml20.domain.LDAPUsernamePasswordCredentialValidator":
 			_, hasLdapDs := fieldNameMap["LDAP Datastore"]
 			if !hasLdapDs {
-				resp.Diagnostics.AddError("The \"LDAP Datastore\" field is required for the LDAP Username Password Credential Validator", "")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("configuration").AtMapKey("fields"),
+					providererror.InvalidAttributeConfiguration,
+					"The \"LDAP Datastore\" field is required for the LDAP Username Password Credential Validator")
 			}
 			_, hasSearchBase := fieldNameMap["Search Base"]
 			if !hasSearchBase {
-				resp.Diagnostics.AddError("The \"Search Base\" field is required for the LDAP Username Password Credential Validator", "")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("configuration").AtMapKey("fields"),
+					providererror.InvalidAttributeConfiguration,
+					"The \"Search Base\" field is required for the LDAP Username Password Credential Validator")
 			}
 			_, hasSearchFilter := fieldNameMap["Search Filter"]
 			if !hasSearchFilter {
-				resp.Diagnostics.AddError("The \"Search Filter\" field is required for the LDAP Username Password Credential Validator", "")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("configuration").AtMapKey("fields"),
+					providererror.InvalidAttributeConfiguration,
+					"The \"Search Filter\" field is required for the LDAP Username Password Credential Validator")
 			}
 		}
 	}

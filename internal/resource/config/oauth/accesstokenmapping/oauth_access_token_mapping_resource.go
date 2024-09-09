@@ -199,7 +199,9 @@ func (r *oauthAccessTokenMappingResource) ValidateConfig(ctx context.Context, re
 		modelContextType := model.Context.Attributes()["type"].(types.String).ValueString()
 		modelContextContextRef := model.Context.Attributes()["context_ref"].(types.Object)
 		if (modelContextType == "DEFAULT" || modelContextType == "CLIENT_CREDENTIALS") && internaltypes.IsDefined(modelContextContextRef) {
-			resp.Diagnostics.AddError("Invalid attribute combination",
+			resp.Diagnostics.AddAttributeError(
+				path.Root("context").AtMapKey("context_ref"),
+				providererror.InvalidAttributeConfiguration,
 				"context_ref is not required for the Access Token Mapping Context type: "+modelContextType)
 		}
 	}

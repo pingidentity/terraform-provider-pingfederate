@@ -653,7 +653,10 @@ func (r *serverSettingsResource) ValidateConfig(ctx context.Context, req resourc
 		if internaltypes.IsDefined(esUseSSLFlag) {
 			esUseSSLFlagValue := esUseSSLFlag.(types.Bool).ValueBool()
 			if esUseSSLFlagValue && internaltypes.IsDefined(esUseTLSFlag) {
-				resp.Diagnostics.AddError("Overlapping settings!", "If the email server setting \"use_ssl\" is true, \"use_tls\" cannot be set. Remove one of the two values from your resource file.")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("email_server"),
+					providererror.InvalidAttributeConfiguration,
+					"If the email server setting \"use_ssl\" is true, \"use_tls\" cannot be set. Remove one of the two values from your resource file.")
 			}
 		}
 	}

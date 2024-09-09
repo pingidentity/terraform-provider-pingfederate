@@ -178,17 +178,26 @@ func (r *kerberosRealmsResource) validatePlan(ctx context.Context, plan *kerbero
 	} else {
 		// This implies that connection_type is set to DIRECT, the default value
 		if plan.KerberosUsername.IsNull() {
-			diags.AddError("Property Required:", "kerberos_username is required when connection_type is set to \"DIRECT\".")
+			diags.AddAttributeError(
+				path.Root("kerberos_username"),
+				providererror.InvalidAttributeConfiguration,
+				"kerberos_username is required when connection_type is set to \"DIRECT\".")
 		}
 		if plan.KerberosPassword.IsNull() {
-			diags.AddError("Property Required:", "kerberos_password is required when connection_type is set to \"DIRECT\".")
+			diags.AddAttributeError(
+				path.Root("kerberos_password"),
+				providererror.InvalidAttributeConfiguration,
+				"kerberos_password is required when connection_type is set to \"DIRECT\".")
 		}
 	}
 
 	// ldap_gateway_data_store_ref is required when connection_type is set to LDAP_GATEWAY
 	if plan.ConnectionType.ValueString() == "LDAP_GATEWAY" {
 		if plan.LdapGatewayDataStoreRef.IsNull() {
-			diags.AddError("Property Required:", "ldap_gateway_data_store_ref is required when connection_type is set to \"LDAP_GATEWAY\".")
+			diags.AddAttributeError(
+				path.Root("ldap_gateway_data_store_ref"),
+				providererror.InvalidAttributeConfiguration,
+				"ldap_gateway_data_store_ref is required when connection_type is set to \"LDAP_GATEWAY\".")
 		}
 	}
 	return diags
