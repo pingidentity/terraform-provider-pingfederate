@@ -166,6 +166,7 @@ func updatedFieldConfig() *client.FieldConfig {
 				RegistrationPageField: pointers.Bool(true),
 				ProfilePageField:      pointers.Bool(true),
 				Attributes:            &textAttrs,
+				DefaultValue:          pointers.String("defaultValue"),
 			},
 			{
 				Type:                  "HIDDEN",
@@ -174,6 +175,7 @@ func updatedFieldConfig() *client.FieldConfig {
 				RegistrationPageField: pointers.Bool(true),
 				ProfilePageField:      pointers.Bool(true),
 				Attributes:            &hiddenAttrs,
+				Options:               []string{"option1, option2"},
 			},
 		},
 		StripSpaceFromUniqueField: pointers.Bool(true),
