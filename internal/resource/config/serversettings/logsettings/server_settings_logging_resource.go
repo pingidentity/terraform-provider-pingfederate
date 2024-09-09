@@ -247,7 +247,7 @@ func (r *serverSettingsLoggingResource) Create(ctx context.Context, req resource
 	createServerSettingsLogging := client.NewLogSettings()
 	err := addOptionalServerSettingsLoggingFields(ctx, createServerSettingsLogging, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings Log Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Server Settings Log Settings: "+err.Error())
 		return
 	}
 
@@ -318,7 +318,7 @@ func (r *serverSettingsLoggingResource) Update(ctx context.Context, req resource
 	createUpdateRequest := client.NewLogSettings()
 	err := addOptionalServerSettingsLoggingFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings Log Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Server Settings Log Settings: "+err.Error())
 		return
 	}
 

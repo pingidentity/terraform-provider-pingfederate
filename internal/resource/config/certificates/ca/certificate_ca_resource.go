@@ -17,6 +17,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -214,7 +215,7 @@ func (r *certificateCAResource) Create(ctx context.Context, req resource.CreateR
 	createCertificate := client.NewX509File((plan.FileData.ValueString()))
 	err := addOptionalCaCertsFields(ctx, createCertificate, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for a CA Certificate", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for a CA Certificate: "+err.Error())
 		return
 	}
 

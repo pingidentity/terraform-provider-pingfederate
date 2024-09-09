@@ -18,6 +18,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -159,7 +160,7 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Create(ctx context.Conte
 	createTokenProcessorToTokenGeneratorMapping := client.NewTokenToTokenMapping(attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
 	err = addOptionalTokenProcessorToTokenGeneratorMappingFields(ctx, createTokenProcessorToTokenGeneratorMapping, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Token Processor to Token Generator Mapping", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Token Processor to Token Generator Mapping: "+err.Error())
 		return
 	}
 
@@ -230,7 +231,7 @@ func (r *tokenProcessorToTokenGeneratorMappingResource) Update(ctx context.Conte
 	createUpdateRequest := client.NewTokenToTokenMapping(*attributeContractFulfillment, plan.SourceId.ValueString(), plan.TargetId.ValueString())
 	err := addOptionalTokenProcessorToTokenGeneratorMappingFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Token Processor to Token Generator Mapping", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Token Processor to Token Generator Mapping: "+err.Error())
 		return
 	}
 

@@ -25,6 +25,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -339,7 +340,7 @@ func (r *openidConnectPolicyResource) Create(ctx context.Context, req resource.C
 	newOIDCPolicy := client.NewOpenIdConnectPolicy(plan.PolicyId.ValueString(), plan.Name.ValueString(), *accessTokenManagerRef, *attributeContract, *attributeMapping)
 	err := addOptionalOauthOpenIdConnectPolicyFields(newOIDCPolicy, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OIDC Policy", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OIDC Policy: "+err.Error())
 		return
 	}
 
@@ -409,7 +410,7 @@ func (r *openidConnectPolicyResource) Update(ctx context.Context, req resource.U
 
 	err := addOptionalOauthOpenIdConnectPolicyFields(updatedPolicy, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the OIDC Policy", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the OIDC Policy: "+err.Error())
 		return
 	}
 

@@ -99,7 +99,7 @@ func (r *licenseAgreementResource) Create(ctx context.Context, req resource.Crea
 	createLicenseAgreement := client.NewLicenseAgreementInfo()
 	err := addOptionalLicenseAgreementFields(ctx, createLicenseAgreement, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the license agreement", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the license agreement: "+err.Error())
 		return
 	}
 
@@ -166,7 +166,7 @@ func (r *licenseAgreementResource) Update(ctx context.Context, req resource.Upda
 	createUpdateRequest := client.NewLicenseAgreementInfo()
 	err := addOptionalLicenseAgreementFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for license agreement", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for license agreement: "+err.Error())
 		return
 	}
 

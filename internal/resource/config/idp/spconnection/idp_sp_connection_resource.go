@@ -37,6 +37,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -3779,7 +3780,7 @@ func (r *idpSpConnectionResource) Create(ctx context.Context, req resource.Creat
 	createIdpSpconnection := client.NewSpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
 	err := addOptionalIdpSpconnectionFields(ctx, createIdpSpconnection, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for IdP SP Connection", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for IdP SP Connection: "+err.Error())
 		return
 	}
 
@@ -3844,7 +3845,7 @@ func (r *idpSpConnectionResource) Update(ctx context.Context, req resource.Updat
 	createUpdateRequest := client.NewSpConnection(plan.EntityId.ValueString(), plan.Name.ValueString())
 	err := addOptionalIdpSpconnectionFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the IdP SP Connection", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the IdP SP Connection: "+err.Error())
 		return
 	}
 

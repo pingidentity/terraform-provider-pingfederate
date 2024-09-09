@@ -25,6 +25,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/sourcetypeidkey"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -245,7 +246,7 @@ func (r *oauthAccessTokenMappingResource) Create(ctx context.Context, req resour
 
 	err = addOptionalOauthAccessTokenMappingsFields(createOauthAccessTokenMappings, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Mapping", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OAuth Access Token Mapping: "+err.Error())
 		return
 	}
 	apiCreateOauthAccessTokenMappings := r.apiClient.OauthAccessTokenMappingsAPI.CreateMapping(config.AuthContext(ctx, r.providerConfig))
@@ -334,7 +335,7 @@ func (r *oauthAccessTokenMappingResource) Update(ctx context.Context, req resour
 
 	err = addOptionalOauthAccessTokenMappingsFields(updateOauthAccessTokenMappings, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OAuth Access Token Mapping", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OAuth Access Token Mapping: "+err.Error())
 		return
 	}
 

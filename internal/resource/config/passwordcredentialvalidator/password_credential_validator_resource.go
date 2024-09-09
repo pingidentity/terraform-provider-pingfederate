@@ -22,6 +22,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -308,7 +309,7 @@ func (r *passwordCredentialValidatorResource) Create(ctx context.Context, req re
 	createPasswordCredentialValidators := client.NewPasswordCredentialValidator(plan.ValidatorId.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
 	err = addOptionalPasswordCredentialValidatorFields(ctx, createPasswordCredentialValidators, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for a Password Credential Validator", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for a Password Credential Validator: "+err.Error())
 		return
 	}
 
@@ -388,7 +389,7 @@ func (r *passwordCredentialValidatorResource) Update(ctx context.Context, req re
 	createUpdateRequest := client.NewPasswordCredentialValidator(plan.ValidatorId.ValueString(), plan.Name.ValueString(), *pluginDescRefResLink, *configuration)
 	err = addOptionalPasswordCredentialValidatorFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for a Password Credential Validator", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for a Password Credential Validator: "+err.Error())
 		return
 	}
 

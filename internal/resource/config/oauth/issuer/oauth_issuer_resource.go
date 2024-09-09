@@ -14,6 +14,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -131,7 +132,7 @@ func (r *oauthIssuerResource) Create(ctx context.Context, req resource.CreateReq
 	oauthIssuer := client.NewIssuer(plan.Name.ValueString(), plan.Host.ValueString())
 	err := addOptionalOauthIssuerFields(ctx, oauthIssuer, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for an OAuth Issuer", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an OAuth Issuer: "+err.Error())
 		return
 	}
 
@@ -196,7 +197,7 @@ func (r *oauthIssuerResource) Update(ctx context.Context, req resource.UpdateReq
 	createUpdateRequest := client.NewIssuer(plan.Name.ValueString(), plan.Host.ValueString())
 	err := addOptionalOauthIssuerFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to update request for an OAuth Issuer", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to update request for an OAuth Issuer: "+err.Error())
 		return
 	}
 

@@ -22,6 +22,7 @@ import (
 	datasourceresourcelink "github.com/pingidentity/terraform-provider-pingfederate/internal/datasource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -282,7 +283,7 @@ func createPingOneLdapGatewayDataStore(plan dataStoreModel, con context.Context,
 	))
 	err = addOptionalPingOneLdapGatewayDataStoreFields(createPingOneLdapGatewayDataStore, con, client.PingOneLdapGatewayDataStore{}, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for DataStore", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for DataStore: "+err.Error())
 		return
 	}
 
@@ -323,7 +324,7 @@ func updatePingOneLdapGatewayDataStore(plan dataStoreModel, con context.Context,
 
 	err = addOptionalPingOneLdapGatewayDataStoreFields(updatePingOneLdapGatewayDataStore, con, client.PingOneLdapGatewayDataStore{}, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the DataStore", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the DataStore: "+err.Error())
 		return
 	}
 

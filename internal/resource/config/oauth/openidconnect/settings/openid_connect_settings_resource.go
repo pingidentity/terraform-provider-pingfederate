@@ -182,7 +182,7 @@ func (r *openidConnectSettingsResource) Create(ctx context.Context, req resource
 	createOpenidConnectSettings := client.NewOpenIdConnectSettings()
 	err := addOptionalOpenidConnectSettingsFields(ctx, createOpenidConnectSettings, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OpenID Connect settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OpenID Connect settings: "+err.Error())
 		return
 	}
 	apiCreateOpenidConnectSettings := r.apiClient.OauthOpenIdConnectAPI.UpdateOIDCSettings(config.AuthContext(ctx, r.providerConfig))
@@ -250,7 +250,7 @@ func (r *openidConnectSettingsResource) Update(ctx context.Context, req resource
 	createUpdateRequest := client.NewOpenIdConnectSettings()
 	err := addOptionalOpenidConnectSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for OpenID Connect settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for OpenID Connect settings: "+err.Error())
 		return
 	}
 

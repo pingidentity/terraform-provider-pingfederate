@@ -24,6 +24,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -230,7 +231,7 @@ func createCustomDataStore(plan dataStoreModel, con context.Context, req resourc
 	createCustomDataStore := client.CustomDataStoreAsDataStoreAggregation(client.NewCustomDataStore("CUSTOM", name, *pluginDescriptorRef, *configuration))
 	err = addOptionalCustomDataStoreFields(createCustomDataStore, con, client.CustomDataStore{}, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for DataStore", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for DataStore: "+err.Error())
 		return
 	}
 
@@ -269,7 +270,7 @@ func updateCustomDataStore(plan dataStoreModel, con context.Context, req resourc
 	updateCustomDataStore := client.CustomDataStoreAsDataStoreAggregation(client.NewCustomDataStore("CUSTOM", name, *pluginDescriptorRef, *configuration))
 	err = addOptionalCustomDataStoreFields(updateCustomDataStore, con, client.CustomDataStore{}, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for DataStore", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for DataStore: "+err.Error())
 		return
 	}
 

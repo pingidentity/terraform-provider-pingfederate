@@ -19,6 +19,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -265,7 +266,7 @@ func (r *kerberosRealmsResource) Create(ctx context.Context, req resource.Create
 	createKerberosRealms := client.NewKerberosRealm(plan.KerberosRealmName.ValueString())
 	err := addOptionalKerberosRealmsFields(ctx, createKerberosRealms, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for a kerberos realm", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for a kerberos realm: "+err.Error())
 		return
 	}
 
@@ -328,7 +329,7 @@ func (r *kerberosRealmsResource) Update(ctx context.Context, req resource.Update
 	createUpdateRequest := client.NewKerberosRealm(plan.KerberosRealmName.ValueString())
 	err := addOptionalKerberosRealmsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for a kerberos realm", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for a kerberos realm: "+err.Error())
 		return
 	}
 

@@ -28,6 +28,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -1030,13 +1031,13 @@ func (r *localIdentityProfileResource) Create(ctx context.Context, req resource.
 	}
 	apcResourceLink, err := resourcelink.ClientStruct(plan.ApcId)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add apc id to add request for a local identity profile", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add apc id to add request for a local identity profile: "+err.Error())
 		return
 	}
 	createLocalIdentityProfiles := client.NewLocalIdentityProfile(plan.Name.ValueString(), *apcResourceLink)
 	err = addOptionalLocalIdentityProfileFields(ctx, createLocalIdentityProfiles, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for a local identity profile", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for a local identity profile: "+err.Error())
 		return
 	}
 	apiCreateLocalIdentityProfiles := r.apiClient.LocalIdentityIdentityProfilesAPI.CreateIdentityProfile(config.AuthContext(ctx, r.providerConfig))
@@ -1096,13 +1097,13 @@ func (r *localIdentityProfileResource) Update(ctx context.Context, req resource.
 	updateLocalIdentityProfiles := r.apiClient.LocalIdentityIdentityProfilesAPI.UpdateIdentityProfile(config.AuthContext(ctx, r.providerConfig), plan.ProfileId.ValueString())
 	apcResourceLink, err := resourcelink.ClientStruct(plan.ApcId)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add apc id to add request for the local identity profile", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add apc id to add request for the local identity profile: "+err.Error())
 		return
 	}
 	createUpdateRequest := client.NewLocalIdentityProfile(plan.Name.ValueString(), *apcResourceLink)
 	err = addOptionalLocalIdentityProfileFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for a local identity profile", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for a local identity profile: "+err.Error())
 		return
 	}
 	updateLocalIdentityProfiles = updateLocalIdentityProfiles.Body(*createUpdateRequest)

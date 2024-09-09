@@ -21,6 +21,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/pluginconfiguration"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -222,7 +223,7 @@ func (r *authenticationSelectorResource) Create(ctx context.Context, req resourc
 	createAuthenticationSelectors := client.NewAuthenticationSelector(plan.SelectorId.ValueString(), plan.Name.ValueString(), *pluginDescriptorRef, configuration)
 	err = addOptionalAuthenticationSelectorsFields(createAuthenticationSelectors, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for an Authentication Selector", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an Authentication Selector: "+err.Error())
 		return
 	}
 
@@ -311,7 +312,7 @@ func (r *authenticationSelectorResource) Update(ctx context.Context, req resourc
 	createUpdateRequest := client.NewAuthenticationSelector(plan.SelectorId.ValueString(), plan.Name.ValueString(), *pluginDescriptorRef, configuration)
 	err = addOptionalAuthenticationSelectorsFields(createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for an Authentication Selector", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for an Authentication Selector: "+err.Error())
 		return
 	}
 

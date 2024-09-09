@@ -23,6 +23,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -307,7 +308,7 @@ func (r *authenticationPoliciesResource) Create(ctx context.Context, req resourc
 	newPolicy := client.NewAuthenticationPolicy()
 	err := addOptionalAuthenticationPolicyFields(newPolicy, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to update request for Authentication Policies", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to update request for Authentication Policies: "+err.Error())
 		return
 	}
 
@@ -372,7 +373,7 @@ func (r *authenticationPoliciesResource) Update(ctx context.Context, req resourc
 	updatedPolicies := client.NewAuthenticationPolicy()
 	err := addOptionalAuthenticationPolicyFields(updatedPolicies, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to update request for the Authentication Policies", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to update request for the Authentication Policies: "+err.Error())
 		return
 	}
 

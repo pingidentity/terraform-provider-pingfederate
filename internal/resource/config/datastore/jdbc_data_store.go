@@ -23,6 +23,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/acctest/common/pointers"
 	internaljson "github.com/pingidentity/terraform-provider-pingfederate/internal/json"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -446,7 +447,7 @@ func createJdbcDataStore(plan dataStoreModel, con context.Context, req resource.
 	createJdbcDataStore := client.JdbcDataStoreAsDataStoreAggregation(client.NewJdbcDataStore(driverClass, "JDBC"))
 	err = addOptionalJdbcDataStoreFields(createJdbcDataStore, con, client.JdbcDataStore{}, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for DataStore", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for DataStore: "+err.Error())
 		return
 	}
 
@@ -474,7 +475,7 @@ func updateJdbcDataStore(plan dataStoreModel, con context.Context, req resource.
 	updateJdbcDataStore := client.JdbcDataStoreAsDataStoreAggregation(client.NewJdbcDataStore(driverClass, "JDBC"))
 	err = addOptionalJdbcDataStoreFields(updateJdbcDataStore, con, client.JdbcDataStore{}, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for the DataStore", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for the DataStore: "+err.Error())
 		return
 	}
 

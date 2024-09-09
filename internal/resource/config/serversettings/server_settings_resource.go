@@ -852,7 +852,7 @@ func (r *serverSettingsResource) Create(ctx context.Context, req resource.Create
 	createServerSettings := client.NewServerSettings()
 	err := addOptionalServerSettingsFields(ctx, createServerSettings, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Server Settings: "+err.Error())
 		return
 	}
 
@@ -921,7 +921,7 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 	createUpdateRequest := client.NewServerSettings()
 	err := addOptionalServerSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Server Settings: "+err.Error())
 		return
 	}
 
