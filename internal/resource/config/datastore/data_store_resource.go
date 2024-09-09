@@ -30,6 +30,8 @@ var (
 	_ resource.Resource                = &dataStoreResource{}
 	_ resource.ResourceWithConfigure   = &dataStoreResource{}
 	_ resource.ResourceWithImportState = &dataStoreResource{}
+
+	customId = "data_store_id"
 )
 
 func DataStoreResource() resource.Resource {
@@ -403,7 +405,7 @@ func (r *dataStoreResource) Read(ctx context.Context, req resource.ReadRequest, 
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Data Store", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting the data store", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting the data store", err, httpResp, &customId)
 		}
 		return
 	}
@@ -478,7 +480,7 @@ func (r *dataStoreResource) Delete(ctx context.Context, req resource.DeleteReque
 	}
 	httpResp, err := r.apiClient.DataStoresAPI.DeleteDataStore(config.AuthContext(ctx, r.providerConfig), state.Id.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a data store", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting a data store", err, httpResp, &customId)
 	}
 }
 

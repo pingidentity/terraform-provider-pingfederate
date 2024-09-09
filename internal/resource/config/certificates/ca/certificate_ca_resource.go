@@ -24,6 +24,8 @@ import (
 var (
 	_ resource.Resource              = &certificateCAResource{}
 	_ resource.ResourceWithConfigure = &certificateCAResource{}
+
+	customId = "ca_id"
 )
 
 // CertificateCAResource is a helper function to simplify the provider implementation.
@@ -222,7 +224,7 @@ func (r *certificateCAResource) Create(ctx context.Context, req resource.CreateR
 	apiCreateCertificate = apiCreateCertificate.Body(*createCertificate)
 	certificateResponse, httpResp, err := r.apiClient.CertificatesCaAPI.ImportTrustedCAExecute(apiCreateCertificate)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating a CA Certificate", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating a CA Certificate", err, httpResp, &customId)
 		return
 	}
 
@@ -248,7 +250,7 @@ func (r *certificateCAResource) Read(ctx context.Context, req resource.ReadReque
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Certificate CA", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while looking for a Certificate", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while looking for a Certificate", err, httpResp, &customId)
 		}
 		return
 	}
@@ -278,7 +280,7 @@ func (r *certificateCAResource) Delete(ctx context.Context, req resource.DeleteR
 
 	httpResp, err := r.apiClient.CertificatesCaAPI.DeleteTrustedCA(config.AuthContext(ctx, r.providerConfig), state.CaId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting a CA Certificate", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting a CA Certificate", err, httpResp, &customId)
 	}
 }
 

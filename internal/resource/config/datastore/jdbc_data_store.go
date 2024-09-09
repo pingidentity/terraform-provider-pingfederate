@@ -452,7 +452,7 @@ func createJdbcDataStore(plan dataStoreModel, con context.Context, req resource.
 
 	response, httpResponse, err := createDataStore(createJdbcDataStore, dsr, con, resp)
 	if err != nil {
-		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while creating the DataStore", err, httpResponse)
+		config.ReportHttpErrorCustomId(con, &resp.Diagnostics, "An error occurred while creating the DataStore", err, httpResponse, &customId)
 		return
 	}
 
@@ -480,7 +480,7 @@ func updateJdbcDataStore(plan dataStoreModel, con context.Context, req resource.
 
 	response, httpResponse, err := updateDataStore(updateJdbcDataStore, dsr, con, resp, plan.Id.ValueString())
 	if err != nil {
-		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while updating the DataStore", err, httpResponse)
+		config.ReportHttpErrorCustomId(con, &resp.Diagnostics, "An error occurred while updating the DataStore", err, httpResponse, &customId)
 		return
 	}
 

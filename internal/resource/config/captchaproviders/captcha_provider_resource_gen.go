@@ -27,6 +27,8 @@ var (
 	_ resource.Resource                = &captchaProviderResource{}
 	_ resource.ResourceWithConfigure   = &captchaProviderResource{}
 	_ resource.ResourceWithImportState = &captchaProviderResource{}
+
+	customId = "provider_id"
 )
 
 func CaptchaProviderResource() resource.Resource {
@@ -221,7 +223,7 @@ func (r *captchaProviderResource) Create(ctx context.Context, req resource.Creat
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.CaptchaProvidersAPI.CreateCaptchaProviderExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the captchaProvider", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the captchaProvider", err, httpResp, &customId)
 		return
 	}
 
@@ -252,7 +254,7 @@ func (r *captchaProviderResource) Read(ctx context.Context, req resource.ReadReq
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Captcha Provider", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the captchaProvider", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the captchaProvider", err, httpResp, &customId)
 		}
 		return
 	}
@@ -281,7 +283,7 @@ func (r *captchaProviderResource) Update(ctx context.Context, req resource.Updat
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.CaptchaProvidersAPI.UpdateCaptchaProviderExecute(apiUpdateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the captchaProvider", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the captchaProvider", err, httpResp, &customId)
 		return
 	}
 
@@ -305,7 +307,7 @@ func (r *captchaProviderResource) Delete(ctx context.Context, req resource.Delet
 	// Delete API call logic
 	httpResp, err := r.apiClient.CaptchaProvidersAPI.DeleteCaptchaProvider(config.AuthContext(ctx, r.providerConfig), data.ProviderId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the captchaProvider", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the captchaProvider", err, httpResp, &customId)
 	}
 }
 

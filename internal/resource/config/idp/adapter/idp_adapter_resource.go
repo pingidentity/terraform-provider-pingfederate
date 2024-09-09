@@ -35,6 +35,8 @@ var (
 	_ resource.Resource                = &idpAdapterResource{}
 	_ resource.ResourceWithConfigure   = &idpAdapterResource{}
 	_ resource.ResourceWithImportState = &idpAdapterResource{}
+
+	customId = "adapter_id"
 )
 
 // IdpAdapterResource is a helper function to simplify the provider implementation.
@@ -329,7 +331,7 @@ func (r *idpAdapterResource) Create(ctx context.Context, req resource.CreateRequ
 	apiCreateIdpAdapter = apiCreateIdpAdapter.Body(*createIdpAdapter)
 	idpAdapterResponse, httpResp, err := r.apiClient.IdpAdaptersAPI.CreateIdpAdapterExecute(apiCreateIdpAdapter)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the IdpAdapter", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the IdpAdapter", err, httpResp, &customId)
 		return
 	}
 
@@ -360,7 +362,7 @@ func (r *idpAdapterResource) Read(ctx context.Context, req resource.ReadRequest,
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "IdP Adapter", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while getting an IdpAdapter", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while getting an IdpAdapter", err, httpResp, &customId)
 		}
 		return
 	}
@@ -412,7 +414,7 @@ func (r *idpAdapterResource) Update(ctx context.Context, req resource.UpdateRequ
 	updateIdpAdapter = updateIdpAdapter.Body(*createUpdateRequest)
 	updateIdpAdapterResponse, httpResp, err := r.apiClient.IdpAdaptersAPI.UpdateIdpAdapterExecute(updateIdpAdapter)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating IdpAdapter", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating IdpAdapter", err, httpResp, &customId)
 		return
 	}
 
@@ -438,7 +440,7 @@ func (r *idpAdapterResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 	httpResp, err := r.apiClient.IdpAdaptersAPI.DeleteIdpAdapter(config.AuthContext(ctx, r.providerConfig), state.AdapterId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the IdP adapter", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the IdP adapter", err, httpResp, &customId)
 	}
 }
 

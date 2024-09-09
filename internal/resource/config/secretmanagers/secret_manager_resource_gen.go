@@ -27,6 +27,8 @@ var (
 	_ resource.Resource                = &secretManagerResource{}
 	_ resource.ResourceWithConfigure   = &secretManagerResource{}
 	_ resource.ResourceWithImportState = &secretManagerResource{}
+
+	customId = "manager_id"
 )
 
 func SecretManagerResource() resource.Resource {
@@ -220,7 +222,7 @@ func (r *secretManagerResource) Create(ctx context.Context, req resource.CreateR
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.SecretManagersAPI.CreateSecretManagerExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the secretManager", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the secretManager", err, httpResp, &customId)
 		return
 	}
 
@@ -251,7 +253,7 @@ func (r *secretManagerResource) Read(ctx context.Context, req resource.ReadReque
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "Secret Manager", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the secretManager", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the secretManager", err, httpResp, &customId)
 		}
 		return
 	}
@@ -280,7 +282,7 @@ func (r *secretManagerResource) Update(ctx context.Context, req resource.UpdateR
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.SecretManagersAPI.UpdateSecretManagerExecute(apiUpdateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the secretManager", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the secretManager", err, httpResp, &customId)
 		return
 	}
 
@@ -304,7 +306,7 @@ func (r *secretManagerResource) Delete(ctx context.Context, req resource.DeleteR
 	// Delete API call logic
 	httpResp, err := r.apiClient.SecretManagersAPI.DeleteSecretManager(config.AuthContext(ctx, r.providerConfig), data.ManagerId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the secretManager", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the secretManager", err, httpResp, &customId)
 	}
 }
 

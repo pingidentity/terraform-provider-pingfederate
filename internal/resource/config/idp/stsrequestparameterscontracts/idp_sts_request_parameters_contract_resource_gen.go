@@ -25,6 +25,8 @@ var (
 	_ resource.Resource                = &idpStsRequestParametersContractResource{}
 	_ resource.ResourceWithConfigure   = &idpStsRequestParametersContractResource{}
 	_ resource.ResourceWithImportState = &idpStsRequestParametersContractResource{}
+
+	customId = "contract_id"
 )
 
 func IdpStsRequestParametersContractResource() resource.Resource {
@@ -141,7 +143,7 @@ func (r *idpStsRequestParametersContractResource) Create(ctx context.Context, re
 	apiCreateRequest = apiCreateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.IdpStsRequestParametersContractsAPI.CreateStsRequestParamContractExecute(apiCreateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while creating the idpStsRequestParametersContract", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while creating the idpStsRequestParametersContract", err, httpResp, &customId)
 		return
 	}
 
@@ -169,7 +171,7 @@ func (r *idpStsRequestParametersContractResource) Read(ctx context.Context, req 
 			config.AddResourceNotFoundWarning(ctx, &resp.Diagnostics, "IdP STS Request Parameters Contract", httpResp)
 			resp.State.RemoveResource(ctx)
 		} else {
-			config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while reading the idpStsRequestParametersContract", err, httpResp)
+			config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while reading the idpStsRequestParametersContract", err, httpResp, &customId)
 		}
 		return
 	}
@@ -198,7 +200,7 @@ func (r *idpStsRequestParametersContractResource) Update(ctx context.Context, re
 	apiUpdateRequest = apiUpdateRequest.Body(*clientData)
 	responseData, httpResp, err := r.apiClient.IdpStsRequestParametersContractsAPI.UpdateStsRequestParamContractByIdExecute(apiUpdateRequest)
 	if err != nil {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while updating the idpStsRequestParametersContract", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while updating the idpStsRequestParametersContract", err, httpResp, &customId)
 		return
 	}
 
@@ -222,7 +224,7 @@ func (r *idpStsRequestParametersContractResource) Delete(ctx context.Context, re
 	// Delete API call logic
 	httpResp, err := r.apiClient.IdpStsRequestParametersContractsAPI.DeleteStsRequestParamContractById(config.AuthContext(ctx, r.providerConfig), data.ContractId.ValueString()).Execute()
 	if err != nil && (httpResp == nil || httpResp.StatusCode != 404) {
-		config.ReportHttpError(ctx, &resp.Diagnostics, "An error occurred while deleting the idpStsRequestParametersContract", err, httpResp)
+		config.ReportHttpErrorCustomId(ctx, &resp.Diagnostics, "An error occurred while deleting the idpStsRequestParametersContract", err, httpResp, &customId)
 	}
 }
 

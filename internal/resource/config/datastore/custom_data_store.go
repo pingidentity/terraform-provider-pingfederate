@@ -236,7 +236,7 @@ func createCustomDataStore(plan dataStoreModel, con context.Context, req resourc
 
 	response, httpResponse, err := createDataStore(createCustomDataStore, dsr, con, resp)
 	if err != nil {
-		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while creating the DataStore", err, httpResponse)
+		config.ReportHttpErrorCustomId(con, &resp.Diagnostics, "An error occurred while creating the DataStore", err, httpResponse, &customId)
 		return
 	}
 	// Read the response into the state
@@ -275,7 +275,7 @@ func updateCustomDataStore(plan dataStoreModel, con context.Context, req resourc
 
 	response, httpResponse, err := updateDataStore(updateCustomDataStore, dsr, con, resp, plan.Id.ValueString())
 	if err != nil {
-		config.ReportHttpError(con, &resp.Diagnostics, "An error occurred while updating the DataStore", err, httpResponse)
+		config.ReportHttpErrorCustomId(con, &resp.Diagnostics, "An error occurred while updating the DataStore", err, httpResponse, &customId)
 		return
 	}
 	// Read the response
