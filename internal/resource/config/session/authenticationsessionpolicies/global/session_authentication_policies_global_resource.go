@@ -94,6 +94,19 @@ func (r *sessionAuthenticationPoliciesGlobalResource) Schema(ctx context.Context
 	resp.Schema = schema
 }
 
+func (r *sessionAuthenticationPoliciesGlobalResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var config *sessionAuthenticationPoliciesGlobalModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	if config == nil {
+		return
+	}
+
+	if internaltypes.IsDefined(config.PersistentSessions) && !config.EnableSessions.ValueBool() {
+		resp.Diagnostics.AddAttributeError(path.Root("persistent_sessions"), "Invalid attribute combination", "persistent_sessions cannot be set when enable_sessions is set to \"false\"")
+	}
+}
+
 func addOptionalSessionAuthenticationPoliciesGlobalFields(ctx context.Context, addRequest *client.GlobalAuthenticationSessionPolicy, plan sessionAuthenticationPoliciesGlobalModel) error {
 	if internaltypes.IsDefined(plan.EnableSessions) {
 		addRequest.EnableSessions = plan.EnableSessions.ValueBool()
