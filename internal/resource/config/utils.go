@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -133,7 +134,9 @@ func ReportHttpErrorCustomId(ctx context.Context, diagnostics *diag.Diagnostics,
 			if internalError == nil {
 				for _, validationError := range pfError.ValidationErrors {
 					var errorDetail strings.Builder
-					errorDetail.WriteString("Message: ")
+					errorDetail.WriteString("Error summary: ")
+					errorDetail.WriteString(errorSummary)
+					errorDetail.WriteString("\nMessage: ")
 					errorDetail.WriteString(validationError.Message)
 					errorDetail.WriteString("\nHTTP status: " + httpResp.Status)
 					if validationError.FieldPath != "" {
@@ -164,13 +167,13 @@ func ReportHttpErrorCustomId(ctx context.Context, diagnostics *diag.Diagnostics,
 								fieldPath = fieldPath.AtMapKey(step)
 							}
 						}
-						diagnostics.AddAttributeError(fieldPath, "PingFederate validation error", errorDetail.String())
+						diagnostics.AddAttributeError(fieldPath, providererror.PingFederateValidationError, errorDetail.String())
 					} else {
-						diagnostics.AddError("PingFederate validation error", errorDetail.String())
+						diagnostics.AddError(providererror.PingFederateValidationError, errorDetail.String())
 					}
 				}
 			} else {
-				diagnostics.AddError(errorSummary, err.Error()+" - Detail: "+string(body))
+				diagnostics.AddError(providererror.PingFederateAPIError, errorSummary+"\n"+err.Error()+" - Detail:\n"+string(body))
 			}
 			httpErrorPrinted = true
 		}
@@ -179,6 +182,6 @@ func ReportHttpErrorCustomId(ctx context.Context, diagnostics *diag.Diagnostics,
 		if internalError != nil {
 			tflog.Warn(ctx, "Failed to read HTTP response body: "+internalError.Error())
 		}
-		diagnostics.AddError(errorSummary, err.Error())
+		diagnostics.AddError(providererror.PingFederateAPIError, errorSummary+"\n"+err.Error())
 	}
 }

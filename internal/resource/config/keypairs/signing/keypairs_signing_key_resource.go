@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -20,6 +21,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -327,63 +329,120 @@ func (r *keypairsSigningKeyResource) ModifyPlan(ctx context.Context, req resourc
 	if internaltypes.IsDefined(plan.FileData) {
 		// The key will be imported from file_data
 		if plan.Password.IsNull() {
-			resp.Diagnostics.AddError("password must be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("password"),
+				providererror.InvalidAttributeConfiguration,
+				"password must be configured when file_data is set")
 		}
 		if internaltypes.IsDefined(config.CommonName) {
-			resp.Diagnostics.AddError("common_name cannot be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("common_name"),
+				providererror.InvalidAttributeConfiguration,
+				"common_name cannot be configured when file_data is set")
 		}
 		if internaltypes.IsDefined(config.Organization) {
-			resp.Diagnostics.AddError("organization cannot be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("organization"),
+				providererror.InvalidAttributeConfiguration,
+				"organization cannot be configured when file_data is set")
 		}
 		if internaltypes.IsDefined(config.OrganizationUnit) {
-			resp.Diagnostics.AddError("organization_unit cannot be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("organization_unit"),
+				providererror.InvalidAttributeConfiguration,
+				"organization_unit cannot be configured when file_data is set")
 		}
 		if internaltypes.IsDefined(config.City) {
-			resp.Diagnostics.AddError("city cannot be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("city"),
+				providererror.InvalidAttributeConfiguration,
+				"city cannot be configured when file_data is set")
 		}
 		if internaltypes.IsDefined(config.State) {
-			resp.Diagnostics.AddError("state cannot be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("state"),
+				providererror.InvalidAttributeConfiguration,
+				"state cannot be configured when file_data is set")
 		}
 		if internaltypes.IsDefined(config.Country) {
-			resp.Diagnostics.AddError("country cannot be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("country"),
+				providererror.InvalidAttributeConfiguration,
+				"country cannot be configured when file_data is set")
 		}
 		if internaltypes.IsDefined(config.ValidDays) {
-			resp.Diagnostics.AddError("valid_days cannot be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("valid_days"),
+				providererror.InvalidAttributeConfiguration,
+				"valid_days cannot be configured when file_data is set")
 		}
 		if internaltypes.IsDefined(config.KeyAlgorithm) {
-			resp.Diagnostics.AddError("key_algorithm cannot be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("key_algorithm"),
+				providererror.InvalidAttributeConfiguration,
+				"key_algorithm cannot be configured when file_data is set")
 		}
 		if internaltypes.IsDefined(config.KeySize) {
-			resp.Diagnostics.AddError("key_size cannot be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("key_size"),
+				providererror.InvalidAttributeConfiguration,
+				"key_size cannot be configured when file_data is set")
 		}
 		if internaltypes.IsDefined(config.SignatureAlgorithm) {
-			resp.Diagnostics.AddError("signature_algorithm cannot be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("signature_algorithm"),
+				providererror.InvalidAttributeConfiguration,
+				"signature_algorithm cannot be configured when file_data is set")
 		}
 		if internaltypes.IsDefined(config.SubjectAlternativeNames) {
-			resp.Diagnostics.AddError("subject_alternative_names cannot be configured when file_data is set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("subject_alternative_names"),
+				providererror.InvalidAttributeConfiguration,
+				"subject_alternative_names cannot be configured when file_data is set")
 		}
 	} else {
 		// The key will be generated
 		if internaltypes.IsDefined(plan.Format) {
-			resp.Diagnostics.AddError("format cannot be configured when file_data is not set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("format"),
+				providererror.InvalidAttributeConfiguration,
+				"format cannot be configured when file_data is not set")
 		}
 		if internaltypes.IsDefined(plan.Password) {
-			resp.Diagnostics.AddError("password cannot be configured when file_data is not set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("password"),
+				providererror.InvalidAttributeConfiguration,
+				"password cannot be configured when file_data is not set")
 		}
 		if !internaltypes.IsDefined(plan.CommonName) {
-			resp.Diagnostics.AddError("common_name must be configured when file_data is not set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("common_name"),
+				providererror.InvalidAttributeConfiguration,
+				"common_name must be configured when file_data is not set")
 		}
 		if !internaltypes.IsDefined(plan.Organization) {
-			resp.Diagnostics.AddError("organization must be configured when file_data is not set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("organization"),
+				providererror.InvalidAttributeConfiguration,
+				"organization must be configured when file_data is not set")
 		}
 		if !internaltypes.IsDefined(plan.Country) {
-			resp.Diagnostics.AddError("country must be configured when file_data is not set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("country"),
+				providererror.InvalidAttributeConfiguration,
+				"country must be configured when file_data is not set")
 		}
 		if !internaltypes.IsDefined(plan.ValidDays) {
-			resp.Diagnostics.AddError("valid_days must be configured when file_data is not set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("valid_days"),
+				providererror.InvalidAttributeConfiguration,
+				"valid_days must be configured when file_data is not set")
 		}
 		if !internaltypes.IsDefined(plan.KeyAlgorithm) {
-			resp.Diagnostics.AddError("key_algorithm must be configured when file_data is not set", "")
+			resp.Diagnostics.AddAttributeError(
+				path.Root("key_algorithm"),
+				providererror.InvalidAttributeConfiguration,
+				"key_algorithm must be configured when file_data is not set")
 		}
 	}
 }

@@ -22,6 +22,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/version"
 )
@@ -652,7 +653,10 @@ func (r *serverSettingsResource) ValidateConfig(ctx context.Context, req resourc
 		if internaltypes.IsDefined(esUseSSLFlag) {
 			esUseSSLFlagValue := esUseSSLFlag.(types.Bool).ValueBool()
 			if esUseSSLFlagValue && internaltypes.IsDefined(esUseTLSFlag) {
-				resp.Diagnostics.AddError("Overlapping settings!", "If the email server setting \"use_ssl\" is true, \"use_tls\" cannot be set. Remove one of the two values from your resource file.")
+				resp.Diagnostics.AddAttributeError(
+					path.Root("email_server"),
+					providererror.InvalidAttributeConfiguration,
+					"If the email server setting \"use_ssl\" is true, \"use_tls\" cannot be set. Remove one of the two values from your resource file.")
 			}
 		}
 	}
@@ -662,19 +666,19 @@ func (r *serverSettingsResource) ModifyPlan(ctx context.Context, req resource.Mo
 	// Compare to versions 11.3 and 12.0 of PF
 	compare, err := version.Compare(r.providerConfig.ProductVersion, version.PingFederate1130)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast113 := compare >= 0
 	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1200)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast120 := compare >= 0
 	compare, err = version.Compare(r.providerConfig.ProductVersion, version.PingFederate1210)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to compare PingFederate versions", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to compare PingFederate versions: "+err.Error())
 		return
 	}
 	pfVersionAtLeast121 := compare >= 0
@@ -851,7 +855,7 @@ func (r *serverSettingsResource) Create(ctx context.Context, req resource.Create
 	createServerSettings := client.NewServerSettings()
 	err := addOptionalServerSettingsFields(ctx, createServerSettings, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Server Settings: "+err.Error())
 		return
 	}
 
@@ -920,7 +924,7 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 	createUpdateRequest := client.NewServerSettings()
 	err := addOptionalServerSettingsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for Server Settings", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for Server Settings: "+err.Error())
 		return
 	}
 
@@ -949,7 +953,7 @@ func (r *serverSettingsResource) Update(ctx context.Context, req resource.Update
 // This config object is edit-only, so Terraform can't delete it.
 func (r *serverSettingsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	// This resource is singleton, so it can't be deleted from the service. Deleting this resource will remove it from Terraform state.
-	resp.Diagnostics.AddWarning("Configuration cannot be returned to original state.  The resource has been removed from Terraform state but the configuration remains applied to the environment.", "")
+	providererror.WarnConfigurationCannotBeReset("pingfederate_server_settings", &resp.Diagnostics)
 }
 
 func (r *serverSettingsResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

@@ -19,6 +19,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/resourcelink"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -154,38 +155,51 @@ func (r *kerberosRealmsResource) Configure(_ context.Context, req resource.Confi
 
 func (r *kerberosRealmsResource) validatePlan(ctx context.Context, plan *kerberosRealmsResourceModel) diag.Diagnostics {
 	var diags diag.Diagnostics
-	errSummary := "Invalid property combination:"
 	errorMsg := "is only applicable when connection_type is set to \"DIRECT\"."
 	if plan.ConnectionType.ValueString() != "DIRECT" {
 		if internaltypes.IsDefined(plan.KerberosUsername) {
-			diags.AddError(errSummary, "kerberos_username "+errorMsg)
+			diags.AddAttributeError(path.Root("kerberos_username"),
+				providererror.InvalidAttributeConfiguration, "kerberos_username "+errorMsg)
 		}
 		if internaltypes.IsDefined(plan.KerberosPassword) {
-			diags.AddError(errSummary, "kerberos_password "+errorMsg)
+			diags.AddAttributeError(path.Root("kerberos_password"),
+				providererror.InvalidAttributeConfiguration, "kerberos_password "+errorMsg)
 		}
 		if internaltypes.IsDefined(plan.RetainPreviousKeysOnPasswordChange) {
-			diags.AddError(errSummary, "retain_previous_keys_on_password_change "+errorMsg)
+			diags.AddAttributeError(path.Root("retain_previous_keys_on_password_change"),
+				providererror.InvalidAttributeConfiguration, "retain_previous_keys_on_password_change "+errorMsg)
 		}
 		if internaltypes.IsDefined(plan.SuppressDomainNameConcatenation) {
-			diags.AddError(errSummary, "suppress_domain_name_concatenation "+errorMsg)
+			diags.AddAttributeError(path.Root("suppress_domain_name_concatenation"),
+				providererror.InvalidAttributeConfiguration, "suppress_domain_name_concatenation "+errorMsg)
 		}
 		if internaltypes.IsDefined(plan.KeyDistributionCenters) {
-			diags.AddError(errSummary, "key_distribution_centers "+errorMsg)
+			diags.AddAttributeError(path.Root("key_distribution_centers"),
+				providererror.InvalidAttributeConfiguration, "key_distribution_centers "+errorMsg)
 		}
 	} else {
 		// This implies that connection_type is set to DIRECT, the default value
 		if plan.KerberosUsername.IsNull() {
-			diags.AddError("Property Required:", "kerberos_username is required when connection_type is set to \"DIRECT\".")
+			diags.AddAttributeError(
+				path.Root("kerberos_username"),
+				providererror.InvalidAttributeConfiguration,
+				"kerberos_username is required when connection_type is set to \"DIRECT\".")
 		}
 		if plan.KerberosPassword.IsNull() {
-			diags.AddError("Property Required:", "kerberos_password is required when connection_type is set to \"DIRECT\".")
+			diags.AddAttributeError(
+				path.Root("kerberos_password"),
+				providererror.InvalidAttributeConfiguration,
+				"kerberos_password is required when connection_type is set to \"DIRECT\".")
 		}
 	}
 
 	// ldap_gateway_data_store_ref is required when connection_type is set to LDAP_GATEWAY
 	if plan.ConnectionType.ValueString() == "LDAP_GATEWAY" {
 		if plan.LdapGatewayDataStoreRef.IsNull() {
-			diags.AddError("Property Required:", "ldap_gateway_data_store_ref is required when connection_type is set to \"LDAP_GATEWAY\".")
+			diags.AddAttributeError(
+				path.Root("ldap_gateway_data_store_ref"),
+				providererror.InvalidAttributeConfiguration,
+				"ldap_gateway_data_store_ref is required when connection_type is set to \"LDAP_GATEWAY\".")
 		}
 	}
 	return diags
@@ -267,7 +281,7 @@ func (r *kerberosRealmsResource) Create(ctx context.Context, req resource.Create
 	createKerberosRealms := client.NewKerberosRealm(plan.KerberosRealmName.ValueString())
 	err := addOptionalKerberosRealmsFields(ctx, createKerberosRealms, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for a kerberos realm", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for a kerberos realm: "+err.Error())
 		return
 	}
 
@@ -330,7 +344,7 @@ func (r *kerberosRealmsResource) Update(ctx context.Context, req resource.Update
 	createUpdateRequest := client.NewKerberosRealm(plan.KerberosRealmName.ValueString())
 	err := addOptionalKerberosRealmsFields(ctx, createUpdateRequest, plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to add optional properties to add request for a kerberos realm", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to add optional properties to add request for a kerberos realm: "+err.Error())
 		return
 	}
 
