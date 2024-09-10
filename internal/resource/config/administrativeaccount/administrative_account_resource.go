@@ -115,6 +115,9 @@ func (r *administrativeAccountsResource) Schema(ctx context.Context, req resourc
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 		},
 	}
