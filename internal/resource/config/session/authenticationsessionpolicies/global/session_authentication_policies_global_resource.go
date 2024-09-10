@@ -104,7 +104,7 @@ func (r *sessionAuthenticationPoliciesGlobalResource) ValidateConfig(ctx context
 	}
 
 	if internaltypes.IsDefined(config.PersistentSessions) && !config.EnableSessions.ValueBool() {
-		resp.Diagnostics.AddAttributeError(path.Root("persistent_sessions"), "Invalid attribute combination", "persistent_sessions cannot be set when enable_sessions is set to \"false\"")
+		resp.Diagnostics.AddAttributeError(path.Root("persistent_sessions"), providererror.InvalidAttributeConfiguration, "persistent_sessions cannot be set when enable_sessions is set to \"false\"")
 	}
 }
 
