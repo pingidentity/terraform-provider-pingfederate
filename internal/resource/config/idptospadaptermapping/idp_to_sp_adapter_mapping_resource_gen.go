@@ -21,6 +21,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -222,7 +223,7 @@ func (r *idpToSpAdapterMappingResource) Create(ctx context.Context, req resource
 	// Create API call logic
 	clientData, err := data.buildClientStruct()
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to build client struct for the idpToSpAdapterMapping", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build client struct for the idpToSpAdapterMapping: "+err.Error())
 		return
 	}
 	apiCreateRequest := r.apiClient.IdpToSpAdapterMappingAPI.CreateIdpToSpAdapterMapping(config.AuthContext(ctx, r.providerConfig))
@@ -282,7 +283,7 @@ func (r *idpToSpAdapterMappingResource) Update(ctx context.Context, req resource
 	// Update API call logic
 	clientData, err := data.buildClientStruct()
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to build client struct for the idpToSpAdapterMapping", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build client struct for the idpToSpAdapterMapping: "+err.Error())
 		return
 	}
 	apiUpdateRequest := r.apiClient.IdpToSpAdapterMappingAPI.UpdateIdpToSpAdapterMapping(config.AuthContext(ctx, r.providerConfig), data.MappingId.ValueString())

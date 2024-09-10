@@ -13,6 +13,7 @@ import (
 	client "github.com/pingidentity/pingfederate-go-client/v1210/configurationapi"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/configvalidators"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/utils"
 )
@@ -117,7 +118,9 @@ func (r *defaultUrlsResource) ModifyPlan(ctx context.Context, req resource.Modif
 	}
 
 	if internaltypes.IsDefined(plan.ConfirmIdpSlo) && internaltypes.IsDefined(plan.ConfirmSpSlo) && plan.ConfirmIdpSlo.ValueBool() != plan.ConfirmSpSlo.ValueBool() {
-		resp.Diagnostics.AddError("`confirm_idp_slo` and `confirm_sp_slo` must be set to the same value", "")
+		resp.Diagnostics.AddError(
+			providererror.InvalidAttributeConfiguration,
+			"`confirm_idp_slo` and `confirm_sp_slo` must be set to the same value")
 	}
 }
 

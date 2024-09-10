@@ -19,6 +19,7 @@ import (
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/id"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/common/issuancecriteria"
 	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/config"
+	"github.com/pingidentity/terraform-provider-pingfederate/internal/resource/providererror"
 	internaltypes "github.com/pingidentity/terraform-provider-pingfederate/internal/types"
 )
 
@@ -174,7 +175,7 @@ func (r *oauthIdpAdapterMappingResource) Create(ctx context.Context, req resourc
 	// Create API call logic
 	clientData, err := data.buildClientStruct()
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to build client struct for the oauthIdpAdapterMapping", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build client struct for the oauthIdpAdapterMapping: "+err.Error())
 		return
 	}
 	apiCreateRequest := r.apiClient.OauthIdpAdapterMappingsAPI.CreateIdpAdapterMapping(config.AuthContext(ctx, r.providerConfig))
@@ -234,7 +235,7 @@ func (r *oauthIdpAdapterMappingResource) Update(ctx context.Context, req resourc
 	// Update API call logic
 	clientData, err := data.buildClientStruct()
 	if err != nil {
-		resp.Diagnostics.AddError("Failed to build client struct for the oauthIdpAdapterMapping", err.Error())
+		resp.Diagnostics.AddError(providererror.InternalProviderError, "Failed to build client struct for the oauthIdpAdapterMapping: "+err.Error())
 		return
 	}
 	apiUpdateRequest := r.apiClient.OauthIdpAdapterMappingsAPI.UpdateIdpAdapterMapping(config.AuthContext(ctx, r.providerConfig), data.MappingId.ValueString())
