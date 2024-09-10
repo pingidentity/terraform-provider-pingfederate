@@ -117,8 +117,7 @@ func (r *serverSettingsLoggingResource) Schema(ctx context.Context, req resource
 						},
 						"enabled": schema.BoolAttribute{
 							Description: "Determines whether or not the log category is enabled. The default is `false`.",
-							Optional:    true,
-							Computed:    true,
+							Required:    true,
 							// This default causes issues with unexpected plans - see https://github.com/hashicorp/terraform-plugin-framework/issues/867
 							// Default:     booldefault.StaticBool(false),
 						},

@@ -63,11 +63,8 @@ resource "pingfederate_server_settings_logging" "logSettings" {
 
 Required:
 
-- `id` (String) The ID of the log category. This field must match one of the category IDs defined in log4j-categories.xml.
-
-Optional:
-
 - `enabled` (Boolean) Determines whether or not the log category is enabled. The default is `false`.
+- `id` (String) The ID of the log category. This field must match one of the category IDs defined in log4j-categories.xml.
 
 Read-Only:
 
